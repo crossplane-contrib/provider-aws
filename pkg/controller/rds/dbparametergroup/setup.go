@@ -41,7 +41,7 @@ func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.DBParameterGroup{}).
 		Complete(managed.NewReconciler(mgr,

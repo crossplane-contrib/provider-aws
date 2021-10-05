@@ -170,7 +170,7 @@ type IPPermission struct {
 	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you specify
 	// all ICMP/ICMPv6 types, you must specify all codes.
 	// +optional
-	FromPort *int64 `json:"fromPort,omitempty"`
+	FromPort *int32 `json:"fromPort,omitempty"`
 
 	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
 	// (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
@@ -205,7 +205,7 @@ type IPPermission struct {
 	// A value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
 	// types, you must specify all codes.
 	// +optional
-	ToPort *int64 `json:"toPort,omitempty"`
+	ToPort *int32 `json:"toPort,omitempty"`
 
 	// UserIDGroupPairs are the source security group and AWS account ID pairs.
 	// It contains one or more accounts and security groups to allow flows from

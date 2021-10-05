@@ -3,7 +3,7 @@ package iam
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -40,7 +40,7 @@ var (
 func TestIsPolicyUpToDate(t *testing.T) {
 	type args struct {
 		p       v1alpha1.IAMPolicyParameters
-		version iam.PolicyVersion
+		version iamtypes.PolicyVersion
 	}
 
 	cases := map[string]struct {
@@ -52,7 +52,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 				p: v1alpha1.IAMPolicyParameters{
 					Document: document1,
 				},
-				version: iam.PolicyVersion{
+				version: iamtypes.PolicyVersion{
 					Document: &document1,
 				},
 			},
@@ -63,7 +63,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 				p: v1alpha1.IAMPolicyParameters{
 					Document: document1,
 				},
-				version: iam.PolicyVersion{
+				version: iamtypes.PolicyVersion{
 					Document: &document2,
 				},
 			},
@@ -72,7 +72,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		"EmptyPolicy": {
 			args: args{
 				p: v1alpha1.IAMPolicyParameters{},
-				version: iam.PolicyVersion{
+				version: iamtypes.PolicyVersion{
 					Document: &document2,
 				},
 			},

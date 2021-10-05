@@ -146,7 +146,7 @@ func (a *Association) ClearRefSelectors() {
 // AssociationState describes an association state in the route table.
 type AssociationState struct {
 	// Indicates whether this is the main route table.
-	Main bool `json:"main"`
+	Main *bool `json:"main"`
 
 	// The ID of the association between a route table and a subnet.
 	AssociationID string `json:"associationId,omitempty"`

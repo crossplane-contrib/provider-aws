@@ -12,7 +12,7 @@ spec:
       comment: Example CloudFront Distribution
       origins:
         items:
-          - domainName: test-bucket.s3.amazonaws.com
+          - domainName: crossplane-example-bucket.s3.amazonaws.com
             id: s3Origin
             s3OriginConfig:
               originAccessIDentity: ""

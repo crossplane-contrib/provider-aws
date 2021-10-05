@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,40 +29,40 @@ var _ clientset.InternetGatewayClient = (*MockInternetGatewayClient)(nil)
 
 // MockInternetGatewayClient is a type that implements all the methods for InternetGatewayClient interface
 type MockInternetGatewayClient struct {
-	MockCreate     func(*ec2.CreateInternetGatewayInput) ec2.CreateInternetGatewayRequest
-	MockDelete     func(*ec2.DeleteInternetGatewayInput) ec2.DeleteInternetGatewayRequest
-	MockDescribe   func(*ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest
-	MockAttach     func(*ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest
-	MockDetach     func(*ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest
-	MockCreateTags func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockCreate     func(ctx context.Context, input *ec2.CreateInternetGatewayInput, opts []func(*ec2.Options)) (*ec2.CreateInternetGatewayOutput, error)
+	MockDelete     func(ctx context.Context, input *ec2.DeleteInternetGatewayInput, opts []func(*ec2.Options)) (*ec2.DeleteInternetGatewayOutput, error)
+	MockDescribe   func(ctx context.Context, input *ec2.DescribeInternetGatewaysInput, opts []func(*ec2.Options)) (*ec2.DescribeInternetGatewaysOutput, error)
+	MockAttach     func(ctx context.Context, input *ec2.AttachInternetGatewayInput, opts []func(*ec2.Options)) (*ec2.AttachInternetGatewayOutput, error)
+	MockDetach     func(ctx context.Context, input *ec2.DetachInternetGatewayInput, opts []func(*ec2.Options)) (*ec2.DetachInternetGatewayOutput, error)
+	MockCreateTags func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
-// CreateInternetGatewayRequest mocks CreateInternetGatewayRequest method
-func (m *MockInternetGatewayClient) CreateInternetGatewayRequest(input *ec2.CreateInternetGatewayInput) ec2.CreateInternetGatewayRequest {
-	return m.MockCreate(input)
+// CreateInternetGateway mocks CreateInternetGateway method
+func (m *MockInternetGatewayClient) CreateInternetGateway(ctx context.Context, input *ec2.CreateInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.CreateInternetGatewayOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteInternetGatewayRequest mocks DeleteInternetGatewayRequest method
-func (m *MockInternetGatewayClient) DeleteInternetGatewayRequest(input *ec2.DeleteInternetGatewayInput) ec2.DeleteInternetGatewayRequest {
-	return m.MockDelete(input)
+// DeleteInternetGateway mocks DeleteInternetGateway method
+func (m *MockInternetGatewayClient) DeleteInternetGateway(ctx context.Context, input *ec2.DeleteInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.DeleteInternetGatewayOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeInternetGatewaysRequest mocks DescribeInternetGatewaysRequest method
-func (m *MockInternetGatewayClient) DescribeInternetGatewaysRequest(input *ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest {
-	return m.MockDescribe(input)
+// DescribeInternetGateways mocks DescribeInternetGateways method
+func (m *MockInternetGatewayClient) DescribeInternetGateways(ctx context.Context, input *ec2.DescribeInternetGatewaysInput, opts ...func(*ec2.Options)) (*ec2.DescribeInternetGatewaysOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// AttachInternetGatewayRequest mocks AttachInternetGatewayRequest method
-func (m *MockInternetGatewayClient) AttachInternetGatewayRequest(input *ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest {
-	return m.MockAttach(input)
+// AttachInternetGateway mocks AttachInternetGateway method
+func (m *MockInternetGatewayClient) AttachInternetGateway(ctx context.Context, input *ec2.AttachInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.AttachInternetGatewayOutput, error) {
+	return m.MockAttach(ctx, input, opts)
 }
 
-// DetachInternetGatewayRequest mocks DetachInternetGatewayRequest
-func (m *MockInternetGatewayClient) DetachInternetGatewayRequest(input *ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest {
-	return m.MockDetach(input)
+// DetachInternetGateway mocks DetachInternetGateway
+func (m *MockInternetGatewayClient) DetachInternetGateway(ctx context.Context, input *ec2.DetachInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.DetachInternetGatewayOutput, error) {
+	return m.MockDetach(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsInput method
-func (m *MockInternetGatewayClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTags(input)
+// CreateTags mocks CreateTags method
+func (m *MockInternetGatewayClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }

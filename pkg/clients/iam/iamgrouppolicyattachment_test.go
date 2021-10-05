@@ -3,7 +3,7 @@ package iam
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -12,7 +12,7 @@ import (
 func TestLateInitializeGroupPolicy(t *testing.T) {
 	type args struct {
 		spec v1alpha1.IAMGroupPolicyAttachmentParameters
-		in   iam.AttachedPolicy
+		in   iamtypes.AttachedPolicy
 	}
 	cases := map[string]struct {
 		args args
@@ -23,7 +23,7 @@ func TestLateInitializeGroupPolicy(t *testing.T) {
 				spec: v1alpha1.IAMGroupPolicyAttachmentParameters{
 					PolicyARN: policyARN,
 				},
-				in: iam.AttachedPolicy{
+				in: iamtypes.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},
@@ -36,7 +36,7 @@ func TestLateInitializeGroupPolicy(t *testing.T) {
 				spec: v1alpha1.IAMGroupPolicyAttachmentParameters{
 					PolicyARN: policyARN,
 				},
-				in: iam.AttachedPolicy{
+				in: iamtypes.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},

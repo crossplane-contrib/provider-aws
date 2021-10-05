@@ -35,12 +35,12 @@ func SetupMountTarget(mgr ctrl.Manager, l logging.Logger, limiter workqueue.Rate
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.MountTarget{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.MountTargetGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -62,7 +62,7 @@ func postCreate(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.Moun
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.MountTargetId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.DescribeMountTargetsInput) error {

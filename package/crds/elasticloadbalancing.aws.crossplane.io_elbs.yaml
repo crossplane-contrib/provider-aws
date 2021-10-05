@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: elbs.elasticloadbalancing.aws.crossplane.io
 spec:
@@ -83,12 +83,12 @@ spec:
                       healthyThreshold:
                         description: The number of consecutive health checks successes
                           required before moving the instance to the Healthy state.
-                        format: int64
+                        format: int32
                         type: integer
                       interval:
                         description: The approximate interval, in seconds, between
                           health checks of an individual instance.
-                        format: int64
+                        format: int32
                         type: integer
                       target:
                         description: The instance being checked.
@@ -96,12 +96,12 @@ spec:
                       timeout:
                         description: The amount of time, in seconds, during which
                           no response means a failed health check.
-                        format: int64
+                        format: int32
                         type: integer
                       unhealthyThreshold:
                         description: The number of consecutive health check failures
                           required before moving the instance to the Unhealthy state.
-                        format: int64
+                        format: int32
                         type: integer
                     required:
                     - healthyThreshold
@@ -118,7 +118,7 @@ spec:
                       properties:
                         instancePort:
                           description: The port on which the instance is listening.
-                          format: int64
+                          format: int32
                           type: integer
                         instanceProtocol:
                           description: 'The protocol to use for routing traffic to
@@ -127,7 +127,7 @@ spec:
                           type: string
                         loadBalancerPort:
                           description: The port on which the load balancer is listening.
-                          format: int64
+                          format: int32
                           type: integer
                         protocol:
                           description: 'The load balancer transport protocol to use
@@ -298,7 +298,7 @@ spec:
                       properties:
                         instancePort:
                           description: The port on which the EC2 instance is listening.
-                          format: int64
+                          format: int32
                           type: integer
                         policyNames:
                           description: The names of the policies enabled for the EC2

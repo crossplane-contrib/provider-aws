@@ -17,10 +17,8 @@ package queue
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awssqs "github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -95,26 +93,20 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
-						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueAttributesOutput{
-								Attributes: attributes,
-							}},
-						}
+					MockGetQueueAttributes: func(ctx context.Context, input *awssqs.GetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueAttributesOutput, error) {
+						return &awssqs.GetQueueAttributesOutput{
+							Attributes: attributes,
+						}, nil
 					},
-					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
-						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{
-								Tags: attributes,
-							}},
-						}
+					MockListQueueTags: func(ctx context.Context, input *awssqs.ListQueueTagsInput, opts []func(*awssqs.Options)) (*awssqs.ListQueueTagsOutput, error) {
+						return &awssqs.ListQueueTagsOutput{
+							Tags: attributes,
+						}, nil
 					},
-					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
-						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
-								QueueUrl: &queueURL,
-							}},
-						}
+					MockGetQueueURL: func(ctx context.Context, input *awssqs.GetQueueUrlInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueUrlOutput, error) {
+						return &awssqs.GetQueueUrlOutput{
+							QueueUrl: &queueURL,
+						}, nil
 					},
 				},
 				cr: queue(withExternalName(queueName)),
@@ -137,17 +129,13 @@ func TestObserve(t *testing.T) {
 		"GetAttributesFail": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
-						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
-								QueueUrl: &queueURL,
-							}},
-						}
+					MockGetQueueURL: func(ctx context.Context, input *awssqs.GetQueueUrlInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueUrlOutput, error) {
+						return &awssqs.GetQueueUrlOutput{
+							QueueUrl: &queueURL,
+						}, nil
 					},
-					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
-						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockGetQueueAttributes: func(ctx context.Context, input *awssqs.GetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: queue(withExternalName(queueName)),
@@ -160,24 +148,18 @@ func TestObserve(t *testing.T) {
 		"ListTagsFail": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
-						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
-								QueueUrl: &queueURL,
-							}},
-						}
+					MockGetQueueURL: func(ctx context.Context, input *awssqs.GetQueueUrlInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueUrlOutput, error) {
+						return &awssqs.GetQueueUrlOutput{
+							QueueUrl: &queueURL,
+						}, nil
 					},
-					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
-						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueAttributesOutput{
-								Attributes: attributes,
-							}},
-						}
+					MockGetQueueAttributes: func(ctx context.Context, input *awssqs.GetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.GetQueueAttributesOutput, error) {
+						return &awssqs.GetQueueAttributesOutput{
+							Attributes: attributes,
+						}, nil
 					},
-					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
-						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockListQueueTags: func(ctx context.Context, input *awssqs.ListQueueTagsInput, opts []func(*awssqs.Options)) (*awssqs.ListQueueTagsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: queue(withExternalName(queueName)),
@@ -224,12 +206,10 @@ func TestCreate(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				sqs: &fake.MockSQSClient{
-					MockCreateQueueRequest: func(input *awssqs.CreateQueueInput) awssqs.CreateQueueRequest {
-						return awssqs.CreateQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.CreateQueueOutput{
-								QueueUrl: &queueURL,
-							}},
-						}
+					MockCreateQueue: func(ctx context.Context, input *awssqs.CreateQueueInput, opts []func(*awssqs.Options)) (*awssqs.CreateQueueOutput, error) {
+						return &awssqs.CreateQueueOutput{
+							QueueUrl: &queueURL,
+						}, nil
 					},
 				},
 				cr: queue(withExternalName(queueURL)),
@@ -247,10 +227,8 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockCreateQueueRequest: func(input *awssqs.CreateQueueInput) awssqs.CreateQueueRequest {
-						return awssqs.CreateQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreateQueue: func(ctx context.Context, input *awssqs.CreateQueueInput, opts []func(*awssqs.Options)) (*awssqs.CreateQueueOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: queue(withExternalName(queueURL),
@@ -296,15 +274,11 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
-						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.SetQueueAttributesOutput{}},
-						}
+					MockSetQueueAttributes: func(ctx context.Context, input *awssqs.SetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.SetQueueAttributesOutput, error) {
+						return &awssqs.SetQueueAttributesOutput{}, nil
 					},
-					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
-						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{}},
-						}
+					MockListQueueTags: func(ctx context.Context, input *awssqs.ListQueueTagsInput, opts []func(*awssqs.Options)) (*awssqs.ListQueueTagsOutput, error) {
+						return &awssqs.ListQueueTagsOutput{}, nil
 					},
 				},
 				cr: queue(withStatus(v1beta1.QueueObservation{
@@ -320,30 +294,22 @@ func TestUpdate(t *testing.T) {
 		"TagsUpdate": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
-						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.SetQueueAttributesOutput{}},
-						}
+					MockSetQueueAttributes: func(ctx context.Context, input *awssqs.SetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.SetQueueAttributesOutput, error) {
+						return &awssqs.SetQueueAttributesOutput{}, nil
 					},
-					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
-						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{
-								Tags: map[string]string{
-									"k":  "v",
-									"k1": "v1",
-								},
-							}},
-						}
+					MockListQueueTags: func(ctx context.Context, input *awssqs.ListQueueTagsInput, opts []func(*awssqs.Options)) (*awssqs.ListQueueTagsOutput, error) {
+						return &awssqs.ListQueueTagsOutput{
+							Tags: map[string]string{
+								"k":  "v",
+								"k1": "v1",
+							},
+						}, nil
 					},
-					MockUntagQueueRequest: func(input *awssqs.UntagQueueInput) awssqs.UntagQueueRequest {
-						return awssqs.UntagQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.UntagQueueOutput{}},
-						}
+					MockUntagQueue: func(ctx context.Context, input *awssqs.UntagQueueInput, opts []func(*awssqs.Options)) (*awssqs.UntagQueueOutput, error) {
+						return &awssqs.UntagQueueOutput{}, nil
 					},
-					MockTagQueueRequest: func(input *awssqs.TagQueueInput) awssqs.TagQueueRequest {
-						return awssqs.TagQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.TagQueueOutput{}},
-						}
+					MockTagQueue: func(ctx context.Context, input *awssqs.TagQueueInput, opts []func(*awssqs.Options)) (*awssqs.TagQueueOutput, error) {
+						return &awssqs.TagQueueOutput{}, nil
 					},
 				},
 				cr: queue(withSpec(v1beta1.QueueParameters{
@@ -369,10 +335,8 @@ func TestUpdate(t *testing.T) {
 		"UpdateFailure": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
-						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockSetQueueAttributes: func(ctx context.Context, input *awssqs.SetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.SetQueueAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: queue(withStatus(v1beta1.QueueObservation{
@@ -419,10 +383,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockDeleteQueueRequest: func(input *awssqs.DeleteQueueInput) awssqs.DeleteQueueRequest {
-						return awssqs.DeleteQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.DeleteQueueOutput{}},
-						}
+					MockDeleteQueue: func(ctx context.Context, input *awssqs.DeleteQueueInput, opts []func(*awssqs.Options)) (*awssqs.DeleteQueueOutput, error) {
+						return &awssqs.DeleteQueueOutput{}, nil
 					},
 				},
 				cr: queue(withConditions(xpv1.Deleting()),
@@ -440,10 +402,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailure": {
 			args: args{
 				sqs: &fake.MockSQSClient{
-					MockDeleteQueueRequest: func(input *awssqs.DeleteQueueInput) awssqs.DeleteQueueRequest {
-						return awssqs.DeleteQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeleteQueue: func(ctx context.Context, input *awssqs.DeleteQueueInput, opts []func(*awssqs.Options)) (*awssqs.DeleteQueueOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: queue(withConditions(xpv1.Deleting()),

@@ -1,0 +1,15 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: example-aurora-mysql-instance
+spec:
+  forProvider:
+    region: us-east-1
+    dbInstanceClass: db.t3.small
+    engine: aurora-mysql
+    dbClusterIdentifier: example-aurora-mysql-cluster
+  writeConnectionSecretToRef:
+    name: example-aurora-mysql-instance
+    namespace: default
+  providerConfigRef:
+    name: example

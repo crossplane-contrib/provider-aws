@@ -18,11 +18,10 @@ package nodegroup
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
+	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +39,7 @@ import (
 
 var (
 	version           = "1.16"
-	desiredSize int64 = 3
+	desiredSize int32 = 3
 
 	errBoom = errors.New("boom")
 )
@@ -104,14 +103,12 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Status: awseks.NodegroupStatusActive,
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Status: awsekstypes.NodegroupStatusActive,
+							},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -129,14 +126,12 @@ func TestObserve(t *testing.T) {
 		"DeletingState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Status: awseks.NodegroupStatusDeleting,
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Status: awsekstypes.NodegroupStatusDeleting,
+							},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -154,14 +149,12 @@ func TestObserve(t *testing.T) {
 		"FailedState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Status: awseks.NodegroupStatusDegraded,
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Status: awsekstypes.NodegroupStatusDegraded,
+							},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -179,10 +172,8 @@ func TestObserve(t *testing.T) {
 		"FailedDescribeRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(),
@@ -195,10 +186,8 @@ func TestObserve(t *testing.T) {
 		"NotFound": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: nodeGroup(),
@@ -213,15 +202,13 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Status:  awseks.NodegroupStatusCreating,
-									Version: &version,
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Status:  awsekstypes.NodegroupStatusCreating,
+								Version: &version,
+							},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -244,15 +231,13 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(errBoom),
 				},
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Status:  awseks.NodegroupStatusCreating,
-									Version: &version,
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Status:  awsekstypes.NodegroupStatusCreating,
+								Version: &version,
+							},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -296,10 +281,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateNodegroupRequest: func(input *awseks.CreateNodegroupInput) awseks.CreateNodegroupRequest {
-						return awseks.CreateNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.CreateNodegroupOutput{}},
-						}
+					MockCreateNodegroup: func(tx context.Context, input *awseks.CreateNodegroupInput, opts []func(*awseks.Options)) (*awseks.CreateNodegroupOutput, error) {
+						return &awseks.CreateNodegroupOutput{}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -322,10 +305,8 @@ func TestCreate(t *testing.T) {
 		"FailedRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateNodegroupRequest: func(input *awseks.CreateNodegroupInput) awseks.CreateNodegroupRequest {
-						return awseks.CreateNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateNodegroup: func(tx context.Context, input *awseks.CreateNodegroupInput, opts []func(*awseks.Options)) (*awseks.CreateNodegroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(),
@@ -369,22 +350,16 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
-					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
-						return awseks.UpdateNodegroupConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
-						}
+					MockUpdateNodegroupConfig: func(tx context.Context, input *awseks.UpdateNodegroupConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupConfigOutput, error) {
+						return &awseks.UpdateNodegroupConfigOutput{}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.TagResourceOutput{}},
-						}
+					MockTagResource: func(tx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return &awseks.TagResourceOutput{}, nil
 					},
 				},
 				cr: nodeGroup(
@@ -398,22 +373,16 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
-					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
-						return awseks.UpdateNodegroupConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
-						}
+					MockUpdateNodegroupConfig: func(tx context.Context, input *awseks.UpdateNodegroupConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupConfigOutput, error) {
+						return &awseks.UpdateNodegroupConfigOutput{}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UntagResourceOutput{}},
-						}
+					MockUntagResource: func(tx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return &awseks.UntagResourceOutput{}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -425,17 +394,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateNodegroupVersionRequest: func(input *awseks.UpdateNodegroupVersionInput) awseks.UpdateNodegroupVersionRequest {
-						return awseks.UpdateNodegroupVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupVersionOutput{}},
-						}
+					MockUpdateNodegroupVersion: func(tx context.Context, input *awseks.UpdateNodegroupVersionInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupVersionOutput, error) {
+						return &awseks.UpdateNodegroupVersionOutput{}, nil
 					},
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
 				},
 				cr: nodeGroup(withVersion(&version)),
@@ -447,17 +412,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateNodeGroup": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
-						return awseks.UpdateNodegroupConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
-						}
+					MockUpdateNodegroupConfig: func(tx context.Context, input *awseks.UpdateNodegroupConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupConfigOutput, error) {
+						return &awseks.UpdateNodegroupConfigOutput{}, nil
 					},
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
 				},
 				cr: nodeGroup(withScalingConfig(&v1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
@@ -477,10 +438,8 @@ func TestUpdate(t *testing.T) {
 		"FailedDescribe": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(),
@@ -493,17 +452,13 @@ func TestUpdate(t *testing.T) {
 		"FailedUpdateConfig": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
-						return awseks.UpdateNodegroupConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateNodegroupConfig: func(tx context.Context, input *awseks.UpdateNodegroupConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupConfigOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -516,17 +471,13 @@ func TestUpdate(t *testing.T) {
 		"FailedUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateNodegroupVersionRequest: func(input *awseks.UpdateNodegroupVersionInput) awseks.UpdateNodegroupVersionRequest {
-						return awseks.UpdateNodegroupVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateNodegroupVersion: func(tx context.Context, input *awseks.UpdateNodegroupVersionInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupVersionOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
 				},
 				cr: nodeGroup(withVersion(&version)),
@@ -539,19 +490,15 @@ func TestUpdate(t *testing.T) {
 		"FailedRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{
-									Tags: map[string]string{"foo": "bar"},
-								},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								Tags: map[string]string{"foo": "bar"},
+							},
+						}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUntagResource: func(tx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(),
@@ -564,17 +511,13 @@ func TestUpdate(t *testing.T) {
 		"FailedAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
-						return awseks.DescribeNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
-								Nodegroup: &awseks.Nodegroup{},
-							}},
-						}
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{},
+						}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockTagResource: func(tx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(withTags(map[string]string{"foo": "bar"})),
@@ -617,10 +560,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
-						return awseks.DeleteNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DeleteNodegroupOutput{}},
-						}
+					MockDeleteNodegroup: func(tx context.Context, input *awseks.DeleteNodegroupInput, opts []func(*awseks.Options)) (*awseks.DeleteNodegroupOutput, error) {
+						return &awseks.DeleteNodegroupOutput{}, nil
 					},
 				},
 				cr: nodeGroup(),
@@ -641,10 +582,8 @@ func TestDelete(t *testing.T) {
 		"AlreadyDeleted": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
-						return awseks.DeleteNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDeleteNodegroup: func(tx context.Context, input *awseks.DeleteNodegroupInput, opts []func(*awseks.Options)) (*awseks.DeleteNodegroupOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: nodeGroup(),
@@ -656,10 +595,8 @@ func TestDelete(t *testing.T) {
 		"Failed": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
-						return awseks.DeleteNodegroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteNodegroup: func(tx context.Context, input *awseks.DeleteNodegroupInput, opts []func(*awseks.Options)) (*awseks.DeleteNodegroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nodeGroup(),

@@ -51,12 +51,12 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Cluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ClusterGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -117,7 +117,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.ClusterArn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 // LateInitialize fills the empty fields in *svcapitypes.ClusterParameters with

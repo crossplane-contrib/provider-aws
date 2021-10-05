@@ -18,12 +18,10 @@ package eks
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
+	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -104,14 +102,12 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(_ *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusActive,
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Status: awsekstypes.ClusterStatusActive,
+							},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -123,21 +119,19 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ConnectionDetails: eks.GetConnectionDetails(context.TODO(), &awsekstypes.Cluster{}, &fake.MockSTSClient{}),
 				},
 			},
 		},
 		"DeletingState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusDeleting,
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Status: awsekstypes.ClusterStatusDeleting,
+							},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -149,21 +143,19 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ConnectionDetails: eks.GetConnectionDetails(context.TODO(), &awsekstypes.Cluster{}, &fake.MockSTSClient{}),
 				},
 			},
 		},
 		"FailedState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusFailed,
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Status: awsekstypes.ClusterStatusFailed,
+							},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -175,17 +167,15 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ConnectionDetails: eks.GetConnectionDetails(context.TODO(), &awsekstypes.Cluster{}, &fake.MockSTSClient{}),
 				},
 			},
 		},
 		"FailedDescribeRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),
@@ -198,10 +188,8 @@ func TestObserve(t *testing.T) {
 		"NotFound": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: cluster(),
@@ -216,15 +204,13 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status:  awseks.ClusterStatusCreating,
-									Version: &version,
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Status:  awsekstypes.ClusterStatusCreating,
+								Version: &version,
+							},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -238,7 +224,7 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ConnectionDetails: eks.GetConnectionDetails(context.TODO(), &awsekstypes.Cluster{}, &fake.MockSTSClient{}),
 				},
 			},
 		},
@@ -248,15 +234,13 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(errBoom),
 				},
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status:  awseks.ClusterStatusCreating,
-									Version: &version,
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Status:  awsekstypes.ClusterStatusCreating,
+								Version: &version,
+							},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -300,10 +284,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateClusterRequest: func(input *awseks.CreateClusterInput) awseks.CreateClusterRequest {
-						return awseks.CreateClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.CreateClusterOutput{}},
-						}
+					MockCreateCluster: func(ctx context.Context, input *awseks.CreateClusterInput, opts []func(*awseks.Options)) (*awseks.CreateClusterOutput, error) {
+						return &awseks.CreateClusterOutput{}, nil
 					},
 				},
 				cr: cluster(),
@@ -326,10 +308,8 @@ func TestCreate(t *testing.T) {
 		"FailedRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateClusterRequest: func(input *awseks.CreateClusterInput) awseks.CreateClusterRequest {
-						return awseks.CreateClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateCluster: func(ctx context.Context, input *awseks.CreateClusterInput, opts []func(*awseks.Options)) (*awseks.CreateClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),
@@ -373,22 +353,16 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
-						}
+					MockUpdateClusterConfig: func(ctx context.Context, input *awseks.UpdateClusterConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterConfigOutput, error) {
+						return &awseks.UpdateClusterConfigOutput{}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.TagResourceOutput{}},
-						}
+					MockTagResource: func(ctx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return &awseks.TagResourceOutput{}, nil
 					},
 				},
 				cr: cluster(
@@ -402,24 +376,18 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Tags: map[string]string{"foo": "bar"},
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Tags: map[string]string{"foo": "bar"},
+							},
+						}, nil
 					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
-						}
+					MockUpdateClusterConfig: func(ctx context.Context, input *awseks.UpdateClusterConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterConfigOutput, error) {
+						return &awseks.UpdateClusterConfigOutput{}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UntagResourceOutput{}},
-						}
+					MockUntagResource: func(ctx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return &awseks.UntagResourceOutput{}, nil
 					},
 				},
 				cr: cluster(),
@@ -431,17 +399,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
-						return awseks.UpdateClusterVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterVersionOutput{}},
-						}
+					MockUpdateClusterVersion: func(ctx context.Context, input *awseks.UpdateClusterVersionInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterVersionOutput, error) {
+						return &awseks.UpdateClusterVersionOutput{}, nil
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
 				},
 				cr: cluster(withVersion(&version)),
@@ -453,17 +417,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateCluster": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
-						}
+					MockUpdateClusterConfig: func(ctx context.Context, input *awseks.UpdateClusterConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterConfigOutput, error) {
+						return &awseks.UpdateClusterConfigOutput{}, nil
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
 				},
 				cr: cluster(withConfig(v1beta1.VpcConfigRequest{SubnetIDs: []string{"subnet"}})),
@@ -483,10 +443,8 @@ func TestUpdate(t *testing.T) {
 		"FailedDescribe": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),
@@ -499,17 +457,13 @@ func TestUpdate(t *testing.T) {
 		"FailedUpdateConfig": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateClusterConfig: func(ctx context.Context, input *awseks.UpdateClusterConfigInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterConfigOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
 				},
 				cr: cluster(),
@@ -522,17 +476,13 @@ func TestUpdate(t *testing.T) {
 		"FailedUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
-						return awseks.UpdateClusterVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateClusterVersion: func(ctx context.Context, input *awseks.UpdateClusterVersionInput, opts []func(*awseks.Options)) (*awseks.UpdateClusterVersionOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
 				},
 				cr: cluster(withVersion(&version)),
@@ -545,19 +495,15 @@ func TestUpdate(t *testing.T) {
 		"FailedRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Tags: map[string]string{"foo": "bar"},
-								},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{
+								Tags: map[string]string{"foo": "bar"},
+							},
+						}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUntagResource: func(ctx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),
@@ -570,17 +516,13 @@ func TestUpdate(t *testing.T) {
 		"FailedAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
-							}},
-						}
+					MockDescribeCluster: func(ctx context.Context, input *awseks.DescribeClusterInput, opts []func(*awseks.Options)) (*awseks.DescribeClusterOutput, error) {
+						return &awseks.DescribeClusterOutput{
+							Cluster: &awsekstypes.Cluster{},
+						}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockTagResource: func(ctx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(withTags(map[string]string{"foo": "bar"})),
@@ -623,10 +565,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DeleteClusterOutput{}},
-						}
+					MockDeleteCluster: func(ctx context.Context, input *awseks.DeleteClusterInput, opts []func(*awseks.Options)) (*awseks.DeleteClusterOutput, error) {
+						return &awseks.DeleteClusterOutput{}, nil
 					},
 				},
 				cr: cluster(),
@@ -647,10 +587,8 @@ func TestDelete(t *testing.T) {
 		"AlreadyDeleted": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDeleteCluster: func(ctx context.Context, input *awseks.DeleteClusterInput, opts []func(*awseks.Options)) (*awseks.DeleteClusterOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: cluster(),
@@ -662,10 +600,8 @@ func TestDelete(t *testing.T) {
 		"Failed": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteCluster: func(ctx context.Context, input *awseks.DeleteClusterInput, opts []func(*awseks.Options)) (*awseks.DeleteClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),

@@ -60,7 +60,7 @@ func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 		Named(name).
 		For(&svcapitypes.DBSubnetGroup{}).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBSubnetGroupGroupVersionKind),

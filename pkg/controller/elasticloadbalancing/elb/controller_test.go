@@ -18,11 +18,10 @@ package elb
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	awselbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,20 +42,20 @@ import (
 var (
 	elbName                 = "some-elb"
 	protocol                = "HTTP"
-	port80            int64 = 80
+	port80            int32 = 80
 	availabilityZones       = []string{"us-east-2a"}
 	securityGroups          = []string{"sg-someid"}
 	subnets                 = []string{"subnet1"}
-	listener                = awselb.Listener{
-		InstancePort:     &port80,
+	listener                = awselbtypes.Listener{
+		InstancePort:     port80,
 		InstanceProtocol: &protocol,
-		LoadBalancerPort: &port80,
+		LoadBalancerPort: port80,
 		Protocol:         &protocol,
 	}
 
 	errBoom = errors.New("boom")
 
-	loadBalancer = awselb.LoadBalancerDescription{
+	loadBalancer = awselbtypes.LoadBalancerDescription{
 		AvailabilityZones: availabilityZones,
 	}
 )
@@ -107,21 +106,17 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),
@@ -144,12 +139,10 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer, loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer, loadBalancer},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),
@@ -165,10 +158,8 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),
@@ -182,21 +173,17 @@ func TestObserve(t *testing.T) {
 			args: args{
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),
@@ -215,21 +202,17 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -285,10 +268,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				elb: &fake.MockClient{
-					MockCreateLoadBalancerRequest: func(input *awselb.CreateLoadBalancerInput) awselb.CreateLoadBalancerRequest {
-						return awselb.CreateLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.CreateLoadBalancerOutput{}},
-						}
+					MockCreateLoadBalancer: func(ctx context.Context, input *awselb.CreateLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.CreateLoadBalancerOutput, error) {
+						return &awselb.CreateLoadBalancerOutput{}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -307,10 +288,8 @@ func TestCreate(t *testing.T) {
 		"CreateError": {
 			args: args{
 				elb: &fake.MockClient{
-					MockCreateLoadBalancerRequest: func(input *awselb.CreateLoadBalancerInput) awselb.CreateLoadBalancerRequest {
-						return awselb.CreateLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreateLoadBalancer: func(ctx context.Context, input *awselb.CreateLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.CreateLoadBalancerOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -362,31 +341,23 @@ func TestUpdate(t *testing.T) {
 		"UpdateAZ": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
-					MockEnableAvailabilityZonesForLoadBalancerRequest: func(input *awselb.EnableAvailabilityZonesForLoadBalancerInput) awselb.EnableAvailabilityZonesForLoadBalancerRequest {
-						return awselb.EnableAvailabilityZonesForLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.EnableAvailabilityZonesForLoadBalancerOutput{}},
-						}
+					MockEnableAvailabilityZonesForLoadBalancer: func(ctx context.Context, input *awselb.EnableAvailabilityZonesForLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.EnableAvailabilityZonesForLoadBalancerOutput, error) {
+						return &awselb.EnableAvailabilityZonesForLoadBalancerOutput{}, nil
 					},
-					MockDisableAvailabilityZonesForLoadBalancerRequest: func(input *awselb.DisableAvailabilityZonesForLoadBalancerInput) awselb.DisableAvailabilityZonesForLoadBalancerRequest {
-						return awselb.DisableAvailabilityZonesForLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DisableAvailabilityZonesForLoadBalancerOutput{}},
-						}
+					MockDisableAvailabilityZonesForLoadBalancer: func(ctx context.Context, input *awselb.DisableAvailabilityZonesForLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.DisableAvailabilityZonesForLoadBalancerOutput, error) {
+						return &awselb.DisableAvailabilityZonesForLoadBalancerOutput{}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -404,35 +375,27 @@ func TestUpdate(t *testing.T) {
 		"UpdateSubnet": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{
-									{
-										Subnets: subnets,
-									},
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{
+								{
+									Subnets: subnets,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockAttachLoadBalancerToSubnetsRequest: func(input *awselb.AttachLoadBalancerToSubnetsInput) awselb.AttachLoadBalancerToSubnetsRequest {
-						return awselb.AttachLoadBalancerToSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.AttachLoadBalancerToSubnetsOutput{}},
-						}
+					MockAttachLoadBalancerToSubnets: func(ctx context.Context, input *awselb.AttachLoadBalancerToSubnetsInput, opts []func(*awselb.Options)) (*awselb.AttachLoadBalancerToSubnetsOutput, error) {
+						return &awselb.AttachLoadBalancerToSubnetsOutput{}, nil
 					},
-					MockDetachLoadBalancerFromSubnetsRequest: func(input *awselb.DetachLoadBalancerFromSubnetsInput) awselb.DetachLoadBalancerFromSubnetsRequest {
-						return awselb.DetachLoadBalancerFromSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DetachLoadBalancerFromSubnetsOutput{}},
-						}
+					MockDetachLoadBalancerFromSubnets: func(ctx context.Context, input *awselb.DetachLoadBalancerFromSubnetsInput, opts []func(*awselb.Options)) (*awselb.DetachLoadBalancerFromSubnetsOutput, error) {
+						return &awselb.DetachLoadBalancerFromSubnetsOutput{}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -450,30 +413,24 @@ func TestUpdate(t *testing.T) {
 		"UpdateSG": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{
-									{
-										SecurityGroups: securityGroups,
-									},
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{
+								{
+									SecurityGroups: securityGroups,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockApplySecurityGroupsToLoadBalancerRequest: func(input *awselb.ApplySecurityGroupsToLoadBalancerInput) awselb.ApplySecurityGroupsToLoadBalancerRequest {
-						return awselb.ApplySecurityGroupsToLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.ApplySecurityGroupsToLoadBalancerOutput{}},
-						}
+					MockApplySecurityGroupsToLoadBalancer: func(ctx context.Context, input *awselb.ApplySecurityGroupsToLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.ApplySecurityGroupsToLoadBalancerOutput, error) {
+						return &awselb.ApplySecurityGroupsToLoadBalancerOutput{}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -491,39 +448,31 @@ func TestUpdate(t *testing.T) {
 		"UpdateListener": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{
-									{
-										ListenerDescriptions: []awselb.ListenerDescription{
-											{
-												Listener: &listener,
-											},
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{
+								{
+									ListenerDescriptions: []awselbtypes.ListenerDescription{
+										{
+											Listener: &listener,
 										},
 									},
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockCreateLoadBalancerListenersRequest: func(input *awselb.CreateLoadBalancerListenersInput) awselb.CreateLoadBalancerListenersRequest {
-						return awselb.CreateLoadBalancerListenersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.CreateLoadBalancerListenersOutput{}},
-						}
+					MockCreateLoadBalancerListeners: func(ctx context.Context, input *awselb.CreateLoadBalancerListenersInput, opts []func(*awselb.Options)) (*awselb.CreateLoadBalancerListenersOutput, error) {
+						return &awselb.CreateLoadBalancerListenersOutput{}, nil
 					},
-					MockDeleteLoadBalancerListenersRequest: func(input *awselb.DeleteLoadBalancerListenersInput) awselb.DeleteLoadBalancerListenersRequest {
-						return awselb.DeleteLoadBalancerListenersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DeleteLoadBalancerListenersOutput{}},
-						}
+					MockDeleteLoadBalancerListeners: func(ctx context.Context, input *awselb.DeleteLoadBalancerListenersInput, opts []func(*awselb.Options)) (*awselb.DeleteLoadBalancerListenersOutput, error) {
+						return &awselb.DeleteLoadBalancerListenersOutput{}, nil
 					},
-					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
-						return awselb.DescribeTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
-								TagDescriptions: []awselb.TagDescription{
-									{LoadBalancerName: &elbName},
-								},
-							}},
-						}
+					MockDescribeTags: func(ctx context.Context, input *awselb.DescribeTagsInput, opts []func(*awselb.Options)) (*awselb.DescribeTagsOutput, error) {
+						return &awselb.DescribeTagsOutput{
+							TagDescriptions: []awselbtypes.TagDescription{
+								{LoadBalancerName: &elbName},
+							},
+						}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName),
@@ -586,10 +535,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDeleteLoadBalancerRequest: func(input *awselb.DeleteLoadBalancerInput) awselb.DeleteLoadBalancerRequest {
-						return awselb.DeleteLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DeleteLoadBalancerOutput{}},
-						}
+					MockDeleteLoadBalancer: func(ctx context.Context, input *awselb.DeleteLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.DeleteLoadBalancerOutput, error) {
+						return &awselb.DeleteLoadBalancerOutput{}, nil
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),
@@ -602,10 +549,8 @@ func TestDelete(t *testing.T) {
 		"DeleteError": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDeleteLoadBalancerRequest: func(input *awselb.DeleteLoadBalancerInput) awselb.DeleteLoadBalancerRequest {
-						return awselb.DeleteLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeleteLoadBalancer: func(ctx context.Context, input *awselb.DeleteLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.DeleteLoadBalancerOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbResource(withExternalName(elbName)),

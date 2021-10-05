@@ -1,0 +1,321 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.2
+  creationTimestamp: null
+  name: users.transfer.aws.crossplane.io
+spec:
+  group: transfer.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: User
+    listKind: UserList
+    plural: users
+    singular: user
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: User is the Schema for the Users API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UserSpec defines the desired state of User
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: UserParameters defines the desired state of User
+                properties:
+                  homeDirectory:
+                    description: "The landing directory (folder) for a user when they
+                      log in to the server using the client. \n An example is your-Amazon-S3-bucket-name>/home/username
+                      ."
+                    type: string
+                  homeDirectoryMappings:
+                    description: "Logical directory mappings that specify what Amazon
+                      S3 paths and keys should be visible to your user and how you
+                      want to make them visible. You will need to specify the \"Entry\"
+                      and \"Target\" pair, where Entry shows how the path is made
+                      visible and Target is the actual Amazon S3 path. If you only
+                      specify a target, it will be displayed as is. You will need
+                      to also make sure that your IAM role provides access to paths
+                      in Target. The following is an example. \n '[ \"/bucket2/documentation\",
+                      { \"Entry\": \"your-personal-report.pdf\", \"Target\": \"/bucket3/customized-reports/${transfer:UserName}.pdf\"
+                      } ]' \n In most cases, you can use this value instead of the
+                      scope-down policy to lock your user down to the designated home
+                      directory (\"chroot\"). To do this, you can set Entry to '/'
+                      and set Target to the HomeDirectory parameter value. \n If the
+                      target of a logical directory entry does not exist in Amazon
+                      S3, the entry will be ignored. As a workaround, you can use
+                      the Amazon S3 API to create 0 byte objects as place holders
+                      for your directory. If using the CLI, use the s3api call instead
+                      of s3 so you can use the put-object operation. For example,
+                      you use the following: aws s3api put-object --bucket bucketname
+                      --key path/to/folder/. Make sure that the end of the key name
+                      ends in a '/' for it to be considered a folder."
+                    items:
+                      properties:
+                        entry:
+                          type: string
+                        target:
+                          type: string
+                      type: object
+                    type: array
+                  homeDirectoryType:
+                    description: The type of landing directory (folder) you want your
+                      users' home directory to be when they log into the server. If
+                      you set it to PATH, the user will see the absolute Amazon S3
+                      bucket paths as is in their file transfer protocol clients.
+                      If you set it LOGICAL, you will need to provide mappings in
+                      the HomeDirectoryMappings for how you want to make Amazon S3
+                      paths visible to your users.
+                    type: string
+                  policy:
+                    description: "A scope-down policy for your user so you can use
+                      the same IAM role across multiple users. This policy scopes
+                      down user access to portions of their Amazon S3 bucket. Variables
+                      that you can use inside this policy include ${Transfer:UserName},
+                      ${Transfer:HomeDirectory}, and ${Transfer:HomeBucket}. \n For
+                      scope-down policies, AWS Transfer Family stores the policy as
+                      a JSON blob, instead of the Amazon Resource Name (ARN) of the
+                      policy. You save the policy as a JSON blob and pass it in the
+                      Policy argument. \n For an example of a scope-down policy, see
+                      Creating a scope-down policy (https://docs.aws.amazon.com/transfer/latest/userguide/users.html#users-policies-scope-down).
+                      \n For more information, see AssumeRole (https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
+                      in the AWS Security Token Service API Reference."
+                    type: string
+                  posixProfile:
+                    properties:
+                      gid:
+                        format: int64
+                        type: integer
+                      secondaryGids:
+                        items:
+                          format: int64
+                          type: integer
+                        type: array
+                      uid:
+                        format: int64
+                        type: integer
+                    type: object
+                  region:
+                    description: Region is which region the User will be created.
+                    type: string
+                  role:
+                    description: The IAM role that controls your users' access to
+                      your Amazon S3 bucket. The policies attached to this role will
+                      determine the level of access you want to provide your users
+                      when transferring files into and out of your Amazon S3 bucket
+                      or buckets. The IAM role should also contain a trust relationship
+                      that allows the server to access your resources when servicing
+                      your users' transfer requests.
+                    type: string
+                  roleRef:
+                    description: RoleRef is a reference to a IAM role.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  roleSelector:
+                    description: RoleSelector selects references to a IAM role.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  serverID:
+                    description: A system-assigned unique identifier for a server
+                      instance. This is the specific server that you added your user
+                      to.
+                    type: string
+                  serverIDRef:
+                    description: ServerIDRef is a reference to an server instance.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  serverIDSelector:
+                    description: ServerIDSelector selects references to an server
+                      instance.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  sshPublicKeyBody:
+                    description: The public portion of the Secure Shell (SSH) key
+                      used to authenticate the user to the server.
+                    type: string
+                  tags:
+                    description: Key-value pairs that can be used to group and search
+                      for users. Tags are metadata attached to users for any purpose.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - region
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: UserStatus defines the observed state of User.
+            properties:
+              atProvider:
+                description: UserObservation defines the observed state of User
+                properties:
+                  serverID:
+                    description: The ID of the server that the user is attached to.
+                    type: string
+                  userName:
+                    description: A unique string that identifies a user account associated
+                      with a server.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

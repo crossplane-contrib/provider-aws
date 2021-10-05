@@ -1,0 +1,30 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: example-aurora-mysql-cluster
+spec:
+  forProvider:
+    region: us-east-1
+    engine: aurora-mysql
+    masterUsername: admin
+    masterUserPasswordSecretRef:
+      name: example-aurora-mysql-cluster
+      namespace: crossplane-system
+      key: password
+    databaseName: auroradb
+    skipFinalSnapshot: true
+    dbClusterParameterGroupName: example-clusterparametergroup
+  writeConnectionSecretToRef:
+    name: example-aurora-mysql-cluster
+    namespace: default
+  providerConfigRef:
+    name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-aurora-mysql-cluster
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

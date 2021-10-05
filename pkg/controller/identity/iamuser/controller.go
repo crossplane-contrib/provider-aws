@@ -61,7 +61,7 @@ func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.IAMUser{}).
 		Complete(managed.NewReconciler(mgr,
@@ -97,9 +97,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.GetUserRequest(&awsiam.GetUserInput{
+	observed, err := e.client.GetUser(ctx, &awsiam.GetUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
@@ -121,13 +121,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMUserObservation{
-		ARN:    aws.StringValue(user.Arn),
-		UserID: aws.StringValue(user.UserId),
+		ARN:    aws.ToString(user.Arn),
+		UserID: aws.ToString(user.UserId),
 	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: aws.StringValue(cr.Spec.ForProvider.Path) == aws.StringValue(user.Path),
+		ResourceUpToDate: aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path),
 	}, nil
 }
 
@@ -139,12 +139,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	_, err := e.client.CreateUserRequest(&awsiam.CreateUserInput{
+	_, err := e.client.CreateUser(ctx, &awsiam.CreateUserInput{
 		Path:                cr.Spec.ForProvider.Path,
 		PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
 		Tags:                iam.BuildIAMTags(cr.Spec.ForProvider.Tags),
 		UserName:            aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
@@ -154,10 +154,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateUserRequest(&awsiam.UpdateUserInput{
+	_, err := e.client.UpdateUser(ctx, &awsiam.UpdateUserInput{
 		NewPath:  cr.Spec.ForProvider.Path,
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -170,9 +170,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteUserRequest(&awsiam.DeleteUserInput{
+	_, err := e.client.DeleteUser(ctx, &awsiam.DeleteUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

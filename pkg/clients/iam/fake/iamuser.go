@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,28 +29,28 @@ var _ clientset.UserClient = (*MockUserClient)(nil)
 
 // MockUserClient is a type that implements all the methods for RoleClient interface
 type MockUserClient struct {
-	MockGetUser    func(*iam.GetUserInput) iam.GetUserRequest
-	MockCreateUser func(*iam.CreateUserInput) iam.CreateUserRequest
-	MockDeleteUser func(*iam.DeleteUserInput) iam.DeleteUserRequest
-	MockUpdateUser func(*iam.UpdateUserInput) iam.UpdateUserRequest
+	MockGetUser    func(ctx context.Context, input *iam.GetUserInput, opts []func(*iam.Options)) (*iam.GetUserOutput, error)
+	MockCreateUser func(ctx context.Context, input *iam.CreateUserInput, opts []func(*iam.Options)) (*iam.CreateUserOutput, error)
+	MockDeleteUser func(ctx context.Context, input *iam.DeleteUserInput, opts []func(*iam.Options)) (*iam.DeleteUserOutput, error)
+	MockUpdateUser func(ctx context.Context, input *iam.UpdateUserInput, opts []func(*iam.Options)) (*iam.UpdateUserOutput, error)
 }
 
-// GetUserRequest mocks GetUserRequest method
-func (m *MockUserClient) GetUserRequest(input *iam.GetUserInput) iam.GetUserRequest {
-	return m.MockGetUser(input)
+// GetUser mocks GetUser method
+func (m *MockUserClient) GetUser(ctx context.Context, input *iam.GetUserInput, opts ...func(*iam.Options)) (*iam.GetUserOutput, error) {
+	return m.MockGetUser(ctx, input, opts)
 }
 
-// CreateUserRequest mocks CreateUserRequest method
-func (m *MockUserClient) CreateUserRequest(input *iam.CreateUserInput) iam.CreateUserRequest {
-	return m.MockCreateUser(input)
+// CreateUser mocks CreateUser method
+func (m *MockUserClient) CreateUser(ctx context.Context, input *iam.CreateUserInput, opts ...func(*iam.Options)) (*iam.CreateUserOutput, error) {
+	return m.MockCreateUser(ctx, input, opts)
 }
 
-// DeleteUserRequest mocks DeleteUserRequest method
-func (m *MockUserClient) DeleteUserRequest(input *iam.DeleteUserInput) iam.DeleteUserRequest {
-	return m.MockDeleteUser(input)
+// DeleteUser mocks DeleteUser method
+func (m *MockUserClient) DeleteUser(ctx context.Context, input *iam.DeleteUserInput, opts ...func(*iam.Options)) (*iam.DeleteUserOutput, error) {
+	return m.MockDeleteUser(ctx, input, opts)
 }
 
-// UpdateUserRequest mocks UpdateUserRequest method
-func (m *MockUserClient) UpdateUserRequest(input *iam.UpdateUserInput) iam.UpdateUserRequest {
-	return m.MockUpdateUser(input)
+// UpdateUser mocks UpdateUser method
+func (m *MockUserClient) UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error) {
+	return m.MockUpdateUser(ctx, input, opts)
 }

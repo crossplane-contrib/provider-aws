@@ -1,31 +1,28 @@
 package ecr
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
-	// RepositoryPolicyNotFoundException policy was not found
-	RepositoryPolicyNotFoundException = "RepositoryPolicyNotFoundException"
-
 	errNotSpecified = "failed to format Repository Policy, no rawPolicy or policy specified"
 )
 
 // RepositoryPolicyClient is the external client used for Repository Policy Resource
 type RepositoryPolicyClient interface {
-	SetRepositoryPolicyRequest(input *ecr.SetRepositoryPolicyInput) ecr.SetRepositoryPolicyRequest
-	DeleteRepositoryPolicyRequest(input *ecr.DeleteRepositoryPolicyInput) ecr.DeleteRepositoryPolicyRequest
-	GetRepositoryPolicyRequest(input *ecr.GetRepositoryPolicyInput) ecr.GetRepositoryPolicyRequest
+	SetRepositoryPolicy(ctx context.Context, input *ecr.SetRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.SetRepositoryPolicyOutput, error)
+	DeleteRepositoryPolicy(ctx context.Context, input *ecr.DeleteRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.DeleteRepositoryPolicyOutput, error)
+	GetRepositoryPolicy(ctx context.Context, input *ecr.GetRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.GetRepositoryPolicyOutput, error)
 }
 
 // GenerateSetRepositoryPolicyInput Generates the CreateRepositoryInput from the RepositoryPolicyParameters
@@ -34,7 +31,7 @@ func GenerateSetRepositoryPolicyInput(params *v1alpha1.RepositoryPolicyParameter
 		RepositoryName: params.RepositoryName,
 		RegistryId:     params.RegistryID,
 		PolicyText:     policy,
-		Force:          params.Force,
+		Force:          awsclient.BoolValue(params.Force),
 	}
 
 	return c
@@ -42,7 +39,7 @@ func GenerateSetRepositoryPolicyInput(params *v1alpha1.RepositoryPolicyParameter
 
 // LateInitializeRepositoryPolicy fills the empty fields in *v1alpha1.RepositoryPolicyParameters with
 // the values seen in ecr.GetRepositoryPolicyResponse.
-func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyResponse) { // nolint:gocyclo
+func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyOutput) { // nolint:gocyclo
 	if r == nil {
 		return
 	}
@@ -51,10 +48,8 @@ func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *
 
 // IsPolicyNotFoundErr returns true if the error code indicates that the policy was not found
 func IsPolicyNotFoundErr(err error) bool {
-	if ecrErr, ok := err.(awserr.Error); ok && ecrErr.Code() == RepositoryPolicyNotFoundException {
-		return true
-	}
-	return false
+	_, ok := err.(*awsecrtypes.RepositoryPolicyNotFoundException)
+	return ok
 }
 
 // Serialize is the custom marshaller for the RepositoryPolicyBody
@@ -122,7 +117,7 @@ func SerializeRepositoryPolicyStatement(p v1alpha1.RepositoryPolicyStatement) (i
 // SerializeRepositoryPrincipal is the custom serializer for the RepositoryPrincipal
 func SerializeRepositoryPrincipal(p *v1alpha1.RepositoryPrincipal) (interface{}, error) {
 	all := "*"
-	if aws.BoolValue(p.AllowAnon) {
+	if awsclient.BoolValue(p.AllowAnon) {
 		return all, nil
 	}
 	m := make(map[string]interface{})
@@ -131,11 +126,11 @@ func SerializeRepositoryPrincipal(p *v1alpha1.RepositoryPrincipal) (interface{},
 	}
 
 	if len(p.AWSPrincipals) == 1 {
-		m["AWS"] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
+		m["AWS"] = awsclient.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
 	} else if len(p.AWSPrincipals) > 1 {
 		values := make([]interface{}, len(p.AWSPrincipals))
 		for i := range p.AWSPrincipals {
-			values[i] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
+			values[i] = awsclient.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
 		}
 		m["AWS"] = values
 	}

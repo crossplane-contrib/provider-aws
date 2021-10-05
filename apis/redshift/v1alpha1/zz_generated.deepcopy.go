@@ -200,7 +200,7 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	}
 	if in.AutomatedSnapshotRetentionPeriod != nil {
 		in, out := &in.AutomatedSnapshotRetentionPeriod, &out.AutomatedSnapshotRetentionPeriod
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.AvailabilityZone != nil {
@@ -270,7 +270,7 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	}
 	if in.FinalClusterSnapshotRetentionPeriod != nil {
 		in, out := &in.FinalClusterSnapshotRetentionPeriod, &out.FinalClusterSnapshotRetentionPeriod
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.HSMClientCertificateIdentifier != nil {
@@ -310,7 +310,7 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	}
 	if in.ManualSnapshotRetentionPeriod != nil {
 		in, out := &in.ManualSnapshotRetentionPeriod, &out.ManualSnapshotRetentionPeriod
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.NewMasterUserPassword != nil {
@@ -325,12 +325,12 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	}
 	if in.NumberOfNodes != nil {
 		in, out := &in.NumberOfNodes, &out.NumberOfNodes
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.PreferredMaintenanceWindow != nil {

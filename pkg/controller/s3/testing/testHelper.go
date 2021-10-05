@@ -17,9 +17,6 @@ limitations under the License.
 package testing
 
 import (
-	"net/http"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
@@ -132,9 +129,4 @@ func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 	}
 	meta.SetExternalName(cr, BucketName)
 	return cr
-}
-
-// CreateRequest creates an AWS request from an error and some data
-func CreateRequest(err error, data interface{}) *aws.Request {
-	return &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: err, Data: data}
 }

@@ -1,6 +1,8 @@
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -11,34 +13,34 @@ var _ clientset.NatGatewayClient = (*MockNatGatewayClient)(nil)
 
 // MockNatGatewayClient is a type that implements all the methods for NatGatewayClient interface
 type MockNatGatewayClient struct {
-	MockCreate     func(*ec2.CreateNatGatewayInput) ec2.CreateNatGatewayRequest
-	MockDelete     func(*ec2.DeleteNatGatewayInput) ec2.DeleteNatGatewayRequest
-	MockDescribe   func(*ec2.DescribeNatGatewaysInput) ec2.DescribeNatGatewaysRequest
-	MockCreateTags func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-	MockDeleteTags func(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
+	MockCreate     func(ctx context.Context, input *ec2.CreateNatGatewayInput, opts []func(*ec2.Options)) (*ec2.CreateNatGatewayOutput, error)
+	MockDelete     func(ctx context.Context, input *ec2.DeleteNatGatewayInput, opts []func(*ec2.Options)) (*ec2.DeleteNatGatewayOutput, error)
+	MockDescribe   func(ctx context.Context, input *ec2.DescribeNatGatewaysInput, opts []func(*ec2.Options)) (*ec2.DescribeNatGatewaysOutput, error)
+	MockCreateTags func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDeleteTags func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 }
 
-// CreateNatGatewayRequest mocks CreateNatGatewayRequest method
-func (m *MockNatGatewayClient) CreateNatGatewayRequest(input *ec2.CreateNatGatewayInput) ec2.CreateNatGatewayRequest {
-	return m.MockCreate(input)
+// CreateNatGateway mocks CreateNatGateway method
+func (m *MockNatGatewayClient) CreateNatGateway(ctx context.Context, input *ec2.CreateNatGatewayInput, opts ...func(*ec2.Options)) (*ec2.CreateNatGatewayOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteNatGatewayRequest mocks DeleteNatGatewayRequest method
-func (m *MockNatGatewayClient) DeleteNatGatewayRequest(input *ec2.DeleteNatGatewayInput) ec2.DeleteNatGatewayRequest {
-	return m.MockDelete(input)
+// DeleteNatGateway mocks DeleteNatGateway method
+func (m *MockNatGatewayClient) DeleteNatGateway(ctx context.Context, input *ec2.DeleteNatGatewayInput, opts ...func(*ec2.Options)) (*ec2.DeleteNatGatewayOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeNatGatewaysRequest mocks DescribeNatGatewaysRequest method
-func (m *MockNatGatewayClient) DescribeNatGatewaysRequest(input *ec2.DescribeNatGatewaysInput) ec2.DescribeNatGatewaysRequest {
-	return m.MockDescribe(input)
+// DescribeNatGateways mocks DescribeNatGateways method
+func (m *MockNatGatewayClient) DescribeNatGateways(ctx context.Context, input *ec2.DescribeNatGatewaysInput, opts ...func(*ec2.Options)) (*ec2.DescribeNatGatewaysOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsRequest method
-func (m *MockNatGatewayClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTags(input)
+// CreateTags mocks CreateTags method
+func (m *MockNatGatewayClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }
 
-// DeleteTagsRequest mocks DeleteTagsRequest method
-func (m *MockNatGatewayClient) DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest {
-	return m.MockDeleteTags(input)
+// DeleteTags mocks DeleteTags method
+func (m *MockNatGatewayClient) DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTags(ctx, input, opts)
 }

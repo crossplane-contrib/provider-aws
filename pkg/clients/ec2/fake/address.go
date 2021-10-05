@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -25,30 +27,30 @@ import (
 // this ensures that the mock implements the client interface
 var _ clientset.AddressClient = (*MockAddressClient)(nil)
 
-// MockAddressClient is a type that implements all the methods for AddressClient interface
+// MockAddressClient is a type that implements all the methods for ElasticIPClient interface
 type MockAddressClient struct {
-	MockAllocate          func(*ec2.AllocateAddressInput) ec2.AllocateAddressRequest
-	MockRelease           func(*ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest
-	MockDescribe          func(*ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest
-	MockCreateTagsRequest func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockAllocate   func(ctx context.Context, input *ec2.AllocateAddressInput, opts []func(*ec2.Options)) (*ec2.AllocateAddressOutput, error)
+	MockRelease    func(ctx context.Context, input *ec2.ReleaseAddressInput, opts []func(*ec2.Options)) (*ec2.ReleaseAddressOutput, error)
+	MockDescribe   func(ctx context.Context, input *ec2.DescribeAddressesInput, opts []func(*ec2.Options)) (*ec2.DescribeAddressesOutput, error)
+	MockCreateTags func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
-// AllocateAddressRequest mocks AllocateAddressRequest method
-func (m *MockAddressClient) AllocateAddressRequest(input *ec2.AllocateAddressInput) ec2.AllocateAddressRequest {
-	return m.MockAllocate(input)
+// AllocateAddress mocks AllocateAddress method
+func (m *MockAddressClient) AllocateAddress(ctx context.Context, input *ec2.AllocateAddressInput, opts ...func(*ec2.Options)) (*ec2.AllocateAddressOutput, error) {
+	return m.MockAllocate(ctx, input, opts)
 }
 
-// ReleaseAddressRequest mocks ReleaseAddressRequest method
-func (m *MockAddressClient) ReleaseAddressRequest(input *ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest {
-	return m.MockRelease(input)
+// ReleaseAddress mocks ReleaseAddress method
+func (m *MockAddressClient) ReleaseAddress(ctx context.Context, input *ec2.ReleaseAddressInput, opts ...func(*ec2.Options)) (*ec2.ReleaseAddressOutput, error) {
+	return m.MockRelease(ctx, input, opts)
 }
 
-// DescribeAddressesRequest mocks DescribeAddressesRequest method
-func (m *MockAddressClient) DescribeAddressesRequest(input *ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest {
-	return m.MockDescribe(input)
+// DescribeAddresses mocks DescribeAddresses method
+func (m *MockAddressClient) DescribeAddresses(ctx context.Context, input *ec2.DescribeAddressesInput, opts ...func(*ec2.Options)) (*ec2.DescribeAddressesOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsRequest method
-func (m *MockAddressClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTagsRequest(input)
+// CreateTags mocks CreateTags method
+func (m *MockAddressClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }

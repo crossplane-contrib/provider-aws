@@ -4,9 +4,9 @@ metadata:
   name: example-globalcluster
 spec:
   forProvider:
+    region: us-east-1
+    engine: aurora-postgresql
     databaseName: example
     deletionProtection: false
-    engine: aurora-postgresql
-    region: us-east-1
   providerConfigRef:
     name: example

@@ -17,12 +17,11 @@ package resourcerecordset
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,20 +48,11 @@ var (
 	rRecords       = make([]v1alpha1.ResourceRecord, 1)
 	zoneID         = aws.String("/hostedzone/XXXXXXXXXXXXXXXXXXX")
 
-	changeFn = func(*awsroute53.ChangeResourceRecordSetsInput) awsroute53.ChangeResourceRecordSetsRequest {
-		return awsroute53.ChangeResourceRecordSetsRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsroute53.ChangeResourceRecordSetsOutput{},
-				Error:       nil,
-				Retryer:     aws.NoOpRetryer{},
-			},
-		}
+	changeFn = func(ctx context.Context, input *route53.ChangeResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ChangeResourceRecordSetsOutput, error) {
+		return &route53.ChangeResourceRecordSetsOutput{}, nil
 	}
-	changeErrFn = func(*awsroute53.ChangeResourceRecordSetsInput) awsroute53.ChangeResourceRecordSetsRequest {
-		return awsroute53.ChangeResourceRecordSetsRequest{
-			Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom, Retryer: aws.NoOpRetryer{}},
-		}
+	changeErrFn = func(ctx context.Context, input *route53.ChangeResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ChangeResourceRecordSetsOutput, error) {
+		return nil, errBoom
 	}
 )
 
@@ -105,11 +95,11 @@ func instance(m ...rrModifier) *v1alpha1.ResourceRecordSet {
 func TestObserve(t *testing.T) {
 
 	name := rrName + "."
-	rrSet := awsroute53.ResourceRecordSet{
+	rrSet := route53types.ResourceRecordSet{
 		Name: &name,
-		Type: route53.RRType("A"),
+		Type: route53types.RRType("A"),
 		TTL:  TTL,
-		ResourceRecords: []route53.ResourceRecord{
+		ResourceRecords: []route53types.ResourceRecord{
 			{
 				Value: aws.String("0.0.0.0"),
 			},
@@ -132,17 +122,10 @@ func TestObserve(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				route53: &fake.MockResourceRecordSetClient{
-					MockListResourceRecordSetsRequest: func(*route53.ListResourceRecordSetsInput) awsroute53.ListResourceRecordSetsRequest {
-						return route53.ListResourceRecordSetsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data: &route53.ListResourceRecordSetsOutput{
-									ResourceRecordSets: []awsroute53.ResourceRecordSet{rrSet},
-								},
-								Error:   nil,
-								Retryer: aws.NoOpRetryer{},
-							},
-						}
+					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
+						return &route53.ListResourceRecordSetsOutput{
+							ResourceRecordSets: []route53types.ResourceRecordSet{rrSet},
+						}, nil
 					},
 				},
 				cr: instance(),
@@ -167,26 +150,19 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockListResourceRecordSetsRequest: func(*awsroute53.ListResourceRecordSetsInput) awsroute53.ListResourceRecordSetsRequest {
-						return awsroute53.ListResourceRecordSetsRequest{
-							Request: &aws.Request{
-								Retryer:     aws.NoOpRetryer{},
-								HTTPRequest: &http.Request{},
-								Data: &route53.ListResourceRecordSetsOutput{
-									ResourceRecordSets: []awsroute53.ResourceRecordSet{{
-										Name: aws.String(""),
-										Type: route53.RRType(""),
-										TTL:  aws.Int64(0),
-										ResourceRecords: []route53.ResourceRecord{
-											{
-												Value: aws.String(""),
-											},
-										},
-									}},
+					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
+						return &route53.ListResourceRecordSetsOutput{
+							ResourceRecordSets: []route53types.ResourceRecordSet{{
+								Name: aws.String(""),
+								Type: route53types.RRType(""),
+								TTL:  aws.Int64(0),
+								ResourceRecords: []route53types.ResourceRecord{
+									{
+										Value: aws.String(""),
+									},
 								},
-								Error: nil,
-							},
-						}
+							}},
+						}, nil
 					},
 				},
 				cr: instance(),
@@ -233,7 +209,7 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeFn,
+					MockChangeResourceRecordSets: changeFn,
 				},
 				cr: instance(),
 			},
@@ -253,7 +229,7 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeErrFn,
+					MockChangeResourceRecordSets: changeErrFn,
 				},
 				cr: instance(),
 			},
@@ -296,7 +272,7 @@ func TestUpdate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeFn,
+					MockChangeResourceRecordSets: changeFn,
 				},
 				cr: instance(),
 			},
@@ -316,7 +292,7 @@ func TestUpdate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeErrFn,
+					MockChangeResourceRecordSets: changeErrFn,
 				},
 				cr: instance(),
 			},
@@ -358,7 +334,7 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeFn,
+					MockChangeResourceRecordSets: changeFn,
 				},
 				cr: instance(),
 			},
@@ -378,7 +354,7 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockChangeResourceRecordSetsRequest: changeErrFn,
+					MockChangeResourceRecordSets: changeErrFn,
 				},
 				cr: instance(),
 			},

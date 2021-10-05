@@ -42,6 +42,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
+	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
@@ -105,6 +106,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
+	transferserver "github.com/crossplane/provider-aws/pkg/controller/transfer/server"
+	transferuser "github.com/crossplane/provider-aws/pkg/controller/transfer/user"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -186,11 +189,14 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		function.SetupFunction,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
+		cachepolicy.SetupCachePolicy,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
 		efsmounttarget.SetupMountTarget,
+		transferserver.SetupServer,
+		transferuser.SetupUser,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

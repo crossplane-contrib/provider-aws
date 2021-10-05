@@ -61,7 +61,7 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Named(name).
 		For(&svcapitypes.DBInstance{}).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBInstanceGroupVersionKind),

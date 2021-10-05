@@ -52,13 +52,13 @@ func SetupBackup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Backup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BackupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -94,7 +94,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBa
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.BackupDetails.BackupArn))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 

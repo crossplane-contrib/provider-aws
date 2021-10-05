@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -58,7 +58,7 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rat
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.ResourceRecordSet{}).
 		Complete(managed.NewReconciler(mgr,
@@ -131,8 +131,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
-	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionUpsert)
+	_, err := e.client.ChangeResourceRecordSets(ctx, input)
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
@@ -142,8 +142,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
-	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionUpsert)
+	_, err := e.client.ChangeResourceRecordSets(ctx, input)
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
@@ -154,9 +154,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
-	_, err := e.client.ChangeResourceRecordSetsRequest(
-		resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionDelete),
-	).Send(ctx)
+	_, err := e.client.ChangeResourceRecordSets(ctx,
+		resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionDelete),
+	)
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.

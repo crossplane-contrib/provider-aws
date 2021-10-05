@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -58,7 +59,7 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger, rl workqueu
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.IAMGroupUserMembership{}).
 		Complete(managed.NewReconciler(mgr,
@@ -66,7 +67,7 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger, rl workqueu
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupUserMembershipClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -107,16 +108,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	groupName, userName := nn[0], nn[1]
 
-	observed, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
+	observed, err := e.client.ListGroupsForUser(ctx, &awsiam.ListGroupsForUserInput{
 		UserName: &userName,
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGet)
 	}
 
-	var attachedGroupObject *awsiam.Group
+	var attachedGroupObject *awsiamtypes.Group
 	for i, group := range observed.Groups {
-		if groupName == aws.StringValue(group.GroupName) {
+		if groupName == aws.ToString(group.GroupName) {
 			attachedGroupObject = &observed.Groups[i]
 			break
 		}
@@ -129,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	cr.Status.AtProvider = v1alpha1.IAMGroupUserMembershipObservation{
-		AttachedGroupARN: aws.StringValue(attachedGroupObject.Arn),
+		AttachedGroupARN: aws.ToString(attachedGroupObject.Arn),
 	}
 
 	cr.SetConditions(xpv1.Available())
@@ -146,10 +147,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
+	_, err := e.client.AddUserToGroup(ctx, &awsiam.AddUserToGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
 	}
@@ -159,7 +160,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// names of the group and user that are bound.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -177,10 +178,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.RemoveUserFromGroupRequest(&awsiam.RemoveUserFromGroupInput{
+	_, err := e.client.RemoveUserFromGroup(ctx, &awsiam.RemoveUserFromGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(err, errRemove)
 }

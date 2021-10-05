@@ -67,11 +67,15 @@ type NodeGroupParameters struct {
 	// +optional
 	ClusterNameSelector *xpv1.Selector `json:"clusterNameSelector,omitempty"`
 
+	// CapacityType for your node group.
+	// +kubebuilder:validation:Enum=ON_DEMAND;SPOT
+	CapacityType *string `json:"capacityType,omitempty"`
+
 	// The root device disk size (in GiB) for your node group instances. The default
 	// disk size is 20 GiB.
 	// +immutable
 	// +optional
-	DiskSize *int64 `json:"diskSize,omitempty"`
+	DiskSize *int32 `json:"diskSize,omitempty"`
 
 	// The instance type to use for your node group. Currently, you can specify
 	// a single instance type for a node group. The default value for this parameter
@@ -85,6 +89,12 @@ type NodeGroupParameters struct {
 	// are created.
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
+
+	// An object representing a node group's launch template specification. If
+	// specified, then do not specify instanceTypes, diskSize, or remoteAccess and make
+	// sure that the launch template meets the requirements in
+	// launchTemplateSpecification.
+	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the IAM role to associate with your node
 	// group. The Amazon EKS worker node kubelet daemon makes calls to AWS APIs
@@ -153,9 +163,57 @@ type NodeGroupParameters struct {
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`
 
+	// The Kubernetes taints to be applied to the nodes in the node group.
+	Taints []Taint `json:"taints,omitempty"`
+
 	// The Kubernetes version to use for your managed nodes. By default, the Kubernetes
 	// version of the cluster is used, and this is the only accepted specified value.
 	// +optional
+	Version *string `json:"version,omitempty"`
+}
+
+// Taint is a property that allows a node to repel a set of pods.
+type Taint struct {
+	// The effect of the taint.
+	// +kubebuilder:validation:Enum=NO_SCHEDULE;NO_EXECUTE;PREFER_NO_SCHEDULE
+	Effect string `json:"effect"`
+
+	// The key of the taint.
+	Key *string `json:"key,omitempty"`
+
+	// The value of the taint.
+	Value *string `json:"value,omitempty"`
+}
+
+// LaunchTemplateSpecification is an object representing a node group launch
+// template specification. The launch
+// template cannot include SubnetId
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html),
+// IamInstanceProfile
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_IamInstanceProfile.html),
+// RequestSpotInstances
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html),
+// HibernationOptions
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html),
+// or TerminateInstances
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TerminateInstances.html),
+// or the node group deployment or update will fail. For more information about
+// launch templates, see CreateLaunchTemplate
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateLaunchTemplate.html)
+// in the Amazon EC2 API Reference. For more information about using launch
+// templates with Amazon EKS, see Launch template support
+// (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html) in the
+// Amazon EKS User Guide. Specify either name or id, but not both.
+type LaunchTemplateSpecification struct {
+
+	// The ID of the launch template.
+	ID *string `json:"id,omitempty"`
+
+	// The name of the launch template.
+	Name *string `json:"name,omitempty"`
+
+	// The version of the launch template to use. If no version is specified, then the
+	// template's default version is used.
 	Version *string `json:"version,omitempty"`
 }
 
@@ -194,23 +252,23 @@ type NodeGroupScalingConfig struct {
 	// is expected to manage the desired size of the node group. If not set, the initial
 	// desired size will be the configured minimum size of the node group.
 	// +optional
-	DesiredSize *int64 `json:"desiredSize,omitempty"`
+	DesiredSize *int32 `json:"desiredSize,omitempty"`
 
 	// The maximum number of worker nodes that the managed node group can scale
 	// out to. Managed node groups can support up to 100 nodes by default.
 	// +optional
-	MaxSize *int64 `json:"maxSize,omitempty"`
+	MaxSize *int32 `json:"maxSize,omitempty"`
 
 	// The minimum number of worker nodes that the managed node group can scale
 	// in to. This number must be greater than zero.
 	// +optional
-	MinSize *int64 `json:"minSize,omitempty"`
+	MinSize *int32 `json:"minSize,omitempty"`
 }
 
 // NodeGroupScalingConfigStatus is the observed scaling configuration for a node group.
 type NodeGroupScalingConfigStatus struct {
 	// The current number of worker nodes for the managed node group.
-	DesiredSize *int64 `json:"desiredSize,omitempty"`
+	DesiredSize *int32 `json:"desiredSize,omitempty"`
 }
 
 // NodeGroupObservation is the observed state of a NodeGroup.

@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: securitygroups.ec2.aws.crossplane.io
 spec:
@@ -109,7 +109,7 @@ spec:
                             protocols, or an ICMP/ICMPv6 type number. A value of -1
                             indicates all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
                             types, you must specify all codes.
-                          format: int64
+                          format: int32
                           type: integer
                         ipProtocol:
                           description: "The IP protocol name (tcp, udp, icmp, icmpv6)
@@ -190,7 +190,7 @@ spec:
                             or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
                             codes. If you specify all ICMP/ICMPv6 types, you must
                             specify all codes.
-                          format: int64
+                          format: int32
                           type: integer
                         userIdGroupPairs:
                           description: UserIDGroupPairs are the source security group
@@ -283,7 +283,7 @@ spec:
                             protocols, or an ICMP/ICMPv6 type number. A value of -1
                             indicates all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
                             types, you must specify all codes.
-                          format: int64
+                          format: int32
                           type: integer
                         ipProtocol:
                           description: "The IP protocol name (tcp, udp, icmp, icmpv6)
@@ -364,7 +364,7 @@ spec:
                             or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
                             codes. If you specify all ICMP/ICMPv6 types, you must
                             specify all codes.
-                          format: int64
+                          format: int32
                           type: integer
                         userIdGroupPairs:
                           description: UserIDGroupPairs are the source security group

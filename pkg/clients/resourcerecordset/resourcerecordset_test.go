@@ -19,7 +19,7 @@ package resourcerecordset
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
@@ -32,7 +32,7 @@ func TestCreatePatch(t *testing.T) {
 	var ttl2 int64 = 200
 
 	type args struct {
-		rrSet route53.ResourceRecordSet
+		rrSet route53types.ResourceRecordSet
 		p     v1alpha1.ResourceRecordSetParameters
 	}
 
@@ -46,7 +46,7 @@ func TestCreatePatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				rrSet: route53.ResourceRecordSet{
+				rrSet: route53types.ResourceRecordSet{
 					Name: &resourceRecordSetName,
 					TTL:  &ttl,
 				},
@@ -60,7 +60,7 @@ func TestCreatePatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				rrSet: route53.ResourceRecordSet{
+				rrSet: route53types.ResourceRecordSet{
 					Name: &resourceRecordSetName,
 					TTL:  &ttl,
 				},
@@ -93,7 +93,7 @@ func TestIsUpToDate(t *testing.T) {
 	var ttl2 int64 = 200
 
 	type args struct {
-		rrSet route53.ResourceRecordSet
+		rrSet route53types.ResourceRecordSet
 		p     v1alpha1.ResourceRecordSetParameters
 	}
 
@@ -103,7 +103,7 @@ func TestIsUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				rrSet: route53.ResourceRecordSet{
+				rrSet: route53types.ResourceRecordSet{
 					Name: &resourceRecordSetName,
 					TTL:  &ttl,
 				},
@@ -115,7 +115,7 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				rrSet: route53.ResourceRecordSet{
+				rrSet: route53types.ResourceRecordSet{
 					Name: &resourceRecordSetName,
 					TTL:  &ttl,
 				},
@@ -127,7 +127,7 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"IgnoresRefs": {
 			args: args{
-				rrSet: route53.ResourceRecordSet{
+				rrSet: route53types.ResourceRecordSet{
 					Name: &resourceRecordSetName,
 					TTL:  &ttl,
 				},

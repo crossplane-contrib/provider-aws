@@ -55,7 +55,7 @@ func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.RepositoryPolicy{}).
 		Complete(managed.NewReconciler(mgr,
@@ -80,7 +80,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: awsecr.New(*cfg), kube: c.kube}, nil
+	return &external{client: awsecr.NewFromConfig(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
@@ -94,10 +94,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.GetRepositoryPolicyRequest(&awsecr.GetRepositoryPolicyInput{
+	response, err := e.client.GetRepositoryPolicy(ctx, &awsecr.GetRepositoryPolicyInput{
 		RegistryId:     cr.Spec.ForProvider.RegistryID,
 		RepositoryName: cr.Spec.ForProvider.RepositoryName,
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.IgnoreAny(err, ecr.IsRepoNotFoundErr, ecr.IsPolicyNotFoundErr), errGet)
@@ -131,7 +131,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-	_, err = e.client.SetRepositoryPolicyRequest(ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData)).Send(ctx)
+	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
@@ -146,7 +146,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 	}
-	_, err = e.client.SetRepositoryPolicyRequest(ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData)).Send(ctx)
+	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
@@ -156,10 +156,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.DeleteRepositoryPolicyRequest(&awsecr.DeleteRepositoryPolicyInput{
+	_, err := e.client.DeleteRepositoryPolicy(ctx, &awsecr.DeleteRepositoryPolicyInput{
 		RepositoryName: cr.Spec.ForProvider.RepositoryName,
 		RegistryId:     cr.Spec.ForProvider.RegistryID,
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ecr.IsPolicyNotFoundErr, err), errDelete)
 }

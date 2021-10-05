@@ -52,13 +52,13 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Route{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.RouteGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -90,7 +90,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Route, res *svcsdk.CreateRout
 	// NOTE(muvaf): Route ID is chosen as external name since it's the only unique
 	// identifier.
 	meta.SetExternalName(cr, aws.StringValue(res.RouteId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

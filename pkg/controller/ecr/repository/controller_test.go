@@ -18,11 +18,11 @@ package repository
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
+	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -45,7 +45,7 @@ var (
 	testARN             = "testARN"
 	tagKey              = "test"
 	tagValue            = "value"
-	testECRTag          = awsecr.Tag{Key: &tagKey, Value: &tagValue}
+	testECRTag          = awsecrtypes.Tag{Key: &tagKey, Value: &tagValue}
 	testTag             = v1alpha1.Tag{Key: "test", Value: "value"}
 	errBoom             = errors.New("boom")
 	imageScanConfigTrue = v1alpha1.ImageScanningConfiguration{
@@ -54,8 +54,8 @@ var (
 	imageScanConfigFalse = v1alpha1.ImageScanningConfiguration{
 		ScanOnPush: false,
 	}
-	awsImageScanConfigFalse = awsecr.ImageScanningConfiguration{
-		ScanOnPush: &imageScanConfigFalse.ScanOnPush,
+	awsImageScanConfigFalse = awsecrtypes.ImageScanningConfiguration{
+		ScanOnPush: imageScanConfigFalse.ScanOnPush,
 	}
 )
 
@@ -125,23 +125,19 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:      &testARN,
-									RepositoryName:     &repoName,
-									ImageTagMutability: awsecr.ImageTagMutabilityMutable,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityMutable,
 							}},
-						}
+						}, nil
 					},
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{
-								Tags: []awsecr.Tag{testECRTag},
-							}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{
+							Tags: []awsecrtypes.Tag{testECRTag},
+						}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -150,7 +146,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
-					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
 					Tags:               []v1alpha1.Tag{testTag},
 				}), withStatus(v1alpha1.RepositoryObservation{
 					RepositoryName: repoName,
@@ -169,19 +165,17 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
+							},
+								{
 									RepositoryArn:  &testARN,
 									RepositoryName: &repoName,
-								},
-									{
-										RepositoryArn:  &testARN,
-										RepositoryName: &repoName,
-									}},
-							}},
-						}
+								}},
+						}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
@@ -197,10 +191,8 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
@@ -216,20 +208,16 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:  &testARN,
-									RepositoryName: &repoName,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
 							}},
-						}
+						}, nil
 					},
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
@@ -277,15 +265,13 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockCreate: func(input *awsecr.CreateRepositoryInput) awsecr.CreateRepositoryRequest {
-						return awsecr.CreateRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.CreateRepositoryOutput{
-								Repository: &awsecr.Repository{
-									RepositoryName: &repoName,
-									RepositoryArn:  &testARN,
-								},
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsecr.CreateRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.CreateRepositoryOutput, error) {
+						return &awsecr.CreateRepositoryOutput{
+							Repository: &awsecrtypes.Repository{
+								RepositoryName: &repoName,
+								RepositoryArn:  &testARN,
+							},
+						}, nil
 					},
 				},
 				cr: repository(),
@@ -302,10 +288,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				repository: &fake.MockRepositoryClient{
-					MockCreate: func(input *awsecr.CreateRepositoryInput) awsecr.CreateRepositoryRequest {
-						return awsecr.CreateRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreate: func(ctx context.Context, input *awsecr.CreateRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.CreateRepositoryOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(),
@@ -349,25 +333,19 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulAddTag": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockTag: func(input *awsecr.TagResourceInput) awsecr.TagResourceRequest {
-						return awsecr.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.TagResourceOutput{}},
-						}
+					MockTag: func(ctx context.Context, input *awsecr.TagResourceInput, opts []func(*awsecr.Options)) (*awsecr.TagResourceOutput, error) {
+						return &awsecr.TagResourceOutput{}, nil
 					},
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:  &testARN,
-									RepositoryName: &repoName,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -383,27 +361,22 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulRemoveTag": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockUntag: func(input *awsecr.UntagResourceInput) awsecr.UntagResourceRequest {
-						return awsecr.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.UntagResourceOutput{}},
-						}
+					MockUntag: func(ctx context.Context, input *awsecr.UntagResourceInput, opts []func(*awsecr.Options)) (*awsecr.UntagResourceOutput, error) {
+						return &awsecr.UntagResourceOutput{}, nil
 					},
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{
-								Tags: []awsecr.Tag{{Key: aws.String("something"), Value: aws.String("extra")}},
-							}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{
+							Tags: []awsecrtypes.Tag{{Key: aws.String("something"), Value: aws.String("extra")}},
+						}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:  &testARN,
-									RepositoryName: &repoName,
-								}},
+
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{})),
@@ -415,15 +388,11 @@ func TestUpdate(t *testing.T) {
 		"ModifyTagFailed": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockTag: func(input *awsecr.TagResourceInput) awsecr.TagResourceRequest {
-						return awsecr.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockTag: func(ctx context.Context, input *awsecr.TagResourceInput, opts []func(*awsecr.Options)) (*awsecr.TagResourceOutput, error) {
+						return nil, errBoom
 					},
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -440,70 +409,58 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulImageMutate": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:      &testARN,
-									RepositoryName:     &repoName,
-									ImageTagMutability: awsecr.ImageTagMutabilityImmutable,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityImmutable,
 							}},
-						}
+						}, nil
 					},
-					MockPutImageTagMutability: func(input *awsecr.PutImageTagMutabilityInput) awsecr.PutImageTagMutabilityRequest {
-						return awsecr.PutImageTagMutabilityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.PutImageTagMutabilityOutput{}},
-						}
+					MockPutImageTagMutability: func(ctx context.Context, input *awsecr.PutImageTagMutabilityInput, opts []func(*awsecr.Options)) (*awsecr.PutImageTagMutabilityOutput, error) {
+						return &awsecr.PutImageTagMutabilityOutput{}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
-					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
 				})),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
-					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
 				})),
 			},
 		},
 		"FailedImageMutate": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:      &testARN,
-									RepositoryName:     &repoName,
-									ImageTagMutability: awsecr.ImageTagMutabilityImmutable,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityImmutable,
 							}},
-						}
+						}, nil
 					},
-					MockPutImageTagMutability: func(input *awsecr.PutImageTagMutabilityInput) awsecr.PutImageTagMutabilityRequest {
-						return awsecr.PutImageTagMutabilityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockPutImageTagMutability: func(ctx context.Context, input *awsecr.PutImageTagMutabilityInput, opts []func(*awsecr.Options)) (*awsecr.PutImageTagMutabilityOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
-					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
 				})),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
-					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
 				})),
 				err: awsclient.Wrap(errBoom, errUpdateMutability),
 			},
@@ -511,26 +468,20 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulScanConfig": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:              &testARN,
-									RepositoryName:             &repoName,
-									ImageScanningConfiguration: &awsImageScanConfigFalse,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:              &testARN,
+								RepositoryName:             &repoName,
+								ImageScanningConfiguration: &awsImageScanConfigFalse,
 							}},
-						}
+						}, nil
 					},
-					MockPutImageScan: func(input *awsecr.PutImageScanningConfigurationInput) awsecr.PutImageScanningConfigurationRequest {
-						return awsecr.PutImageScanningConfigurationRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.PutImageScanningConfigurationOutput{}},
-						}
+					MockPutImageScan: func(ctx context.Context, input *awsecr.PutImageScanningConfigurationInput, opts []func(*awsecr.Options)) (*awsecr.PutImageScanningConfigurationOutput, error) {
+						return &awsecr.PutImageScanningConfigurationOutput{}, nil
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -546,26 +497,20 @@ func TestUpdate(t *testing.T) {
 		"FailedScanConfig": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockListTags: func(input *awsecr.ListTagsForResourceInput) awsecr.ListTagsForResourceRequest {
-						return awsecr.ListTagsForResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.ListTagsForResourceOutput{}},
-						}
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
-					MockDescribe: func(input *awsecr.DescribeRepositoriesInput) awsecr.DescribeRepositoriesRequest {
-						return awsecr.DescribeRepositoriesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DescribeRepositoriesOutput{
-								Repositories: []awsecr.Repository{{
-									RepositoryArn:              &testARN,
-									RepositoryName:             &repoName,
-									ImageScanningConfiguration: &awsImageScanConfigFalse,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:              &testARN,
+								RepositoryName:             &repoName,
+								ImageScanningConfiguration: &awsImageScanConfigFalse,
 							}},
-						}
+						}, nil
 					},
-					MockPutImageScan: func(input *awsecr.PutImageScanningConfigurationInput) awsecr.PutImageScanningConfigurationRequest {
-						return awsecr.PutImageScanningConfigurationRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockPutImageScan: func(ctx context.Context, input *awsecr.PutImageScanningConfigurationInput, opts []func(*awsecr.Options)) (*awsecr.PutImageScanningConfigurationOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -612,14 +557,12 @@ func TestDelete(t *testing.T) {
 		"SuccessfulForce": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryOutput, error) {
 						var err error
-						if !aws.BoolValue(input.Force) {
+						if !input.Force {
 							err = errors.New("force must be set when forceDelete=true")
 						}
-						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
-						}
+						return &awsecr.DeleteRepositoryOutput{}, err
 					},
 				},
 				cr: repository(withForceDelete(true)),
@@ -631,14 +574,12 @@ func TestDelete(t *testing.T) {
 		"SuccessfulNoForce": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryOutput, error) {
 						var err error
-						if aws.BoolValue(input.Force) {
+						if input.Force {
 							err = errors.New("force must not be true when forceDelete is not set")
 						}
-						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
-						}
+						return &awsecr.DeleteRepositoryOutput{}, err
 					},
 				},
 				cr: repository(withForceDelete(false)),
@@ -650,10 +591,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
-						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: repository(),

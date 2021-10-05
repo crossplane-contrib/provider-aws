@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -27,246 +29,246 @@ var _ clientset.BucketClient = (*MockBucketClient)(nil)
 
 // MockBucketClient is a type that implements all the methods for BucketClient interface
 type MockBucketClient struct {
-	MockHeadBucketRequest   func(input *s3.HeadBucketInput) s3.HeadBucketRequest
-	MockCreateBucketRequest func(input *s3.CreateBucketInput) s3.CreateBucketRequest
-	MockDeleteBucketRequest func(input *s3.DeleteBucketInput) s3.DeleteBucketRequest
+	MockHeadBucket   func(ctx context.Context, input *s3.HeadBucketInput, opts []func(*s3.Options)) (*s3.HeadBucketOutput, error)
+	MockCreateBucket func(ctx context.Context, input *s3.CreateBucketInput, opts []func(*s3.Options)) (*s3.CreateBucketOutput, error)
+	MockDeleteBucket func(ctx context.Context, input *s3.DeleteBucketInput, opts []func(*s3.Options)) (*s3.DeleteBucketOutput, error)
 
-	MockPutBucketEncryptionRequest    func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest
-	MockGetBucketEncryptionRequest    func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest
-	MockDeleteBucketEncryptionRequest func(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest
+	MockPutBucketEncryption    func(ctx context.Context, input *s3.PutBucketEncryptionInput, opts []func(*s3.Options)) (*s3.PutBucketEncryptionOutput, error)
+	MockGetBucketEncryption    func(ctx context.Context, input *s3.GetBucketEncryptionInput, opts []func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error)
+	MockDeleteBucketEncryption func(ctx context.Context, input *s3.DeleteBucketEncryptionInput, opts []func(*s3.Options)) (*s3.DeleteBucketEncryptionOutput, error)
 
-	MockPutBucketVersioningRequest func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest
-	MockGetBucketVersioningRequest func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest
+	MockPutBucketVersioning func(ctx context.Context, input *s3.PutBucketVersioningInput, opts []func(*s3.Options)) (*s3.PutBucketVersioningOutput, error)
+	MockGetBucketVersioning func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error)
 
-	MockPutBucketAccelerateConfigurationRequest func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest
-	MockGetBucketAccelerateConfigurationRequest func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest
+	MockPutBucketAccelerateConfiguration func(ctx context.Context, input *s3.PutBucketAccelerateConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketAccelerateConfigurationOutput, error)
+	MockGetBucketAccelerateConfiguration func(ctx context.Context, input *s3.GetBucketAccelerateConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketAccelerateConfigurationOutput, error)
 
-	MockPutBucketCorsRequest    func(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest
-	MockGetBucketCorsRequest    func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest
-	MockDeleteBucketCorsRequest func(input *s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest
+	MockPutBucketCors    func(ctx context.Context, input *s3.PutBucketCorsInput, opts []func(*s3.Options)) (*s3.PutBucketCorsOutput, error)
+	MockGetBucketCors    func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error)
+	MockDeleteBucketCors func(ctx context.Context, input *s3.DeleteBucketCorsInput, opts []func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error)
 
-	MockPutBucketWebsiteRequest    func(input *s3.PutBucketWebsiteInput) s3.PutBucketWebsiteRequest
-	MockGetBucketWebsiteRequest    func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest
-	MockDeleteBucketWebsiteRequest func(input *s3.DeleteBucketWebsiteInput) s3.DeleteBucketWebsiteRequest
+	MockPutBucketWebsite    func(ctx context.Context, input *s3.PutBucketWebsiteInput, opts []func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error)
+	MockGetBucketWebsite    func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error)
+	MockDeleteBucketWebsite func(ctx context.Context, input *s3.DeleteBucketWebsiteInput, opts []func(*s3.Options)) (*s3.DeleteBucketWebsiteOutput, error)
 
-	MockPutBucketLoggingRequest func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest
-	MockGetBucketLoggingRequest func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest
+	MockPutBucketLogging func(ctx context.Context, input *s3.PutBucketLoggingInput, opts []func(*s3.Options)) (*s3.PutBucketLoggingOutput, error)
+	MockGetBucketLogging func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error)
 
-	MockPutBucketReplicationRequest    func(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest
-	MockGetBucketReplicationRequest    func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest
-	MockDeleteBucketReplicationRequest func(input *s3.DeleteBucketReplicationInput) s3.DeleteBucketReplicationRequest
+	MockPutBucketReplication    func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error)
+	MockGetBucketReplication    func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error)
+	MockDeleteBucketReplication func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error)
 
-	MockPutBucketRequestPaymentRequest func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest
-	MockGetBucketRequestPaymentRequest func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest
+	MockPutBucketRequestPayment func(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error)
+	MockGetBucketRequestPayment func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error)
 
-	MockPutBucketTaggingRequest    func(input *s3.PutBucketTaggingInput) s3.PutBucketTaggingRequest
-	MockGetBucketTaggingRequest    func(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest
-	MockDeleteBucketTaggingRequest func(input *s3.DeleteBucketTaggingInput) s3.DeleteBucketTaggingRequest
+	MockPutBucketTagging    func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error)
+	MockGetBucketTagging    func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error)
+	MockDeleteBucketTagging func(ctx context.Context, input *s3.DeleteBucketTaggingInput, opts []func(*s3.Options)) (*s3.DeleteBucketTaggingOutput, error)
 
-	MockPutBucketAnalyticsConfigurationRequest func(input *s3.PutBucketAnalyticsConfigurationInput) s3.PutBucketAnalyticsConfigurationRequest
-	MockGetBucketAnalyticsConfigurationRequest func(input *s3.GetBucketAnalyticsConfigurationInput) s3.GetBucketAnalyticsConfigurationRequest
+	MockPutBucketAnalyticsConfiguration func(ctx context.Context, input *s3.PutBucketAnalyticsConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketAnalyticsConfigurationOutput, error)
+	MockGetBucketAnalyticsConfiguration func(ctx context.Context, input *s3.GetBucketAnalyticsConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketAnalyticsConfigurationOutput, error)
 
-	MockPutBucketLifecycleConfigurationRequest func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest
-	MockGetBucketLifecycleConfigurationRequest func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest
-	MockDeleteBucketLifecycleRequest           func(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest
+	MockPutBucketLifecycleConfiguration func(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error)
+	MockGetBucketLifecycleConfiguration func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error)
+	MockDeleteBucketLifecycle           func(ctx context.Context, input *s3.DeleteBucketLifecycleInput, opts []func(*s3.Options)) (*s3.DeleteBucketLifecycleOutput, error)
 
-	MockPutBucketNotificationConfigurationRequest func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest
-	MockGetBucketNotificationConfigurationRequest func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest
+	MockPutBucketNotificationConfiguration func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error)
+	MockGetBucketNotificationConfiguration func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error)
 
-	MockGetBucketAclRequest func(*s3.GetBucketAclInput) s3.GetBucketAclRequest //nolint
-	MockPutBucketAclRequest func(*s3.PutBucketAclInput) s3.PutBucketAclRequest //nolint
+	MockGetBucketAcl func(ctx context.Context, input *s3.GetBucketAclInput, opts []func(*s3.Options)) (*s3.GetBucketAclOutput, error) //nolint
+	MockPutBucketAcl func(ctx context.Context, input *s3.PutBucketAclInput, opts []func(*s3.Options)) (*s3.PutBucketAclOutput, error) //nolint
 
-	MockGetPublicAccessBlockRequest    func(*s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest
-	MockPutPublicAccessBlockRequest    func(*s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest
-	MockDeletePublicAccessBlockRequest func(*s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest
+	MockGetPublicAccessBlock    func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
+	MockPutPublicAccessBlock    func(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error)
+	MockDeletePublicAccessBlock func(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts []func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error)
 }
 
-// HeadBucketRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) HeadBucketRequest(input *s3.HeadBucketInput) s3.HeadBucketRequest {
-	return m.MockHeadBucketRequest(input)
+// HeadBucket is the fake method call to invoke the internal mock method
+func (m MockBucketClient) HeadBucket(ctx context.Context, input *s3.HeadBucketInput, opts ...func(*s3.Options)) (*s3.HeadBucketOutput, error) {
+	return m.MockHeadBucket(ctx, input, opts)
 }
 
-// CreateBucketRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest {
-	return m.MockCreateBucketRequest(input)
+// CreateBucket is the fake method call to invoke the internal mock method
+func (m MockBucketClient) CreateBucket(ctx context.Context, input *s3.CreateBucketInput, opts ...func(*s3.Options)) (*s3.CreateBucketOutput, error) {
+	return m.MockCreateBucket(ctx, input, opts)
 }
 
-// DeleteBucketRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest {
-	return m.MockDeleteBucketRequest(input)
+// DeleteBucket is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucket(ctx context.Context, input *s3.DeleteBucketInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOutput, error) {
+	return m.MockDeleteBucket(ctx, input, opts)
 }
 
-// PutBucketEncryptionRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketEncryptionRequest(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
-	return m.MockPutBucketEncryptionRequest(input)
+// PutBucketEncryption is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketEncryption(ctx context.Context, input *s3.PutBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.PutBucketEncryptionOutput, error) {
+	return m.MockPutBucketEncryption(ctx, input, opts)
 }
 
-// GetBucketEncryptionRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketEncryptionRequest(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-	return m.MockGetBucketEncryptionRequest(input)
+// GetBucketEncryption is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketEncryption(ctx context.Context, input *s3.GetBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
+	return m.MockGetBucketEncryption(ctx, input, opts)
 }
 
-// DeleteBucketEncryptionRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketEncryptionRequest(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest {
-	return m.MockDeleteBucketEncryptionRequest(input)
+// DeleteBucketEncryption is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketEncryption(ctx context.Context, input *s3.DeleteBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.DeleteBucketEncryptionOutput, error) {
+	return m.MockDeleteBucketEncryption(ctx, input, opts)
 }
 
-// PutBucketVersioningRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketVersioningRequest(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-	return m.MockPutBucketVersioningRequest(input)
+// PutBucketVersioning is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketVersioning(ctx context.Context, input *s3.PutBucketVersioningInput, opts ...func(*s3.Options)) (*s3.PutBucketVersioningOutput, error) {
+	return m.MockPutBucketVersioning(ctx, input, opts)
 }
 
-// GetBucketVersioningRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-	return m.MockGetBucketVersioningRequest(input)
+// GetBucketVersioning is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketVersioning(ctx context.Context, input *s3.GetBucketVersioningInput, opts ...func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
+	return m.MockGetBucketVersioning(ctx, input, opts)
 }
 
-// PutBucketAccelerateConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketAccelerateConfigurationRequest(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
-	return m.MockPutBucketAccelerateConfigurationRequest(input)
+// PutBucketAccelerateConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketAccelerateConfiguration(ctx context.Context, input *s3.PutBucketAccelerateConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketAccelerateConfigurationOutput, error) {
+	return m.MockPutBucketAccelerateConfiguration(ctx, input, opts)
 }
 
-// GetBucketAccelerateConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketAccelerateConfigurationRequest(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
-	return m.MockGetBucketAccelerateConfigurationRequest(input)
+// GetBucketAccelerateConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketAccelerateConfiguration(ctx context.Context, input *s3.GetBucketAccelerateConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketAccelerateConfigurationOutput, error) {
+	return m.MockGetBucketAccelerateConfiguration(ctx, input, opts)
 }
 
-// PutBucketCorsRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketCorsRequest(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest {
-	return m.MockPutBucketCorsRequest(input)
+// PutBucketCors is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketCors(ctx context.Context, input *s3.PutBucketCorsInput, opts ...func(*s3.Options)) (*s3.PutBucketCorsOutput, error) {
+	return m.MockPutBucketCors(ctx, input, opts)
 }
 
-// GetBucketCorsRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketCorsRequest(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
-	return m.MockGetBucketCorsRequest(input)
+// GetBucketCors is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketCors(ctx context.Context, input *s3.GetBucketCorsInput, opts ...func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
+	return m.MockGetBucketCors(ctx, input, opts)
 }
 
-// DeleteBucketCorsRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketCorsRequest(input *s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest {
-	return m.MockDeleteBucketCorsRequest(input)
+// DeleteBucketCors is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketCors(ctx context.Context, input *s3.DeleteBucketCorsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error) {
+	return m.MockDeleteBucketCors(ctx, input, opts)
 }
 
-// PutBucketWebsiteRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketWebsiteRequest(input *s3.PutBucketWebsiteInput) s3.PutBucketWebsiteRequest {
-	return m.MockPutBucketWebsiteRequest(input)
+// PutBucketWebsite is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketWebsite(ctx context.Context, input *s3.PutBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error) {
+	return m.MockPutBucketWebsite(ctx, input, opts)
 }
 
-// GetBucketWebsiteRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketWebsiteRequest(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
-	return m.MockGetBucketWebsiteRequest(input)
+// GetBucketWebsite is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketWebsite(ctx context.Context, input *s3.GetBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
+	return m.MockGetBucketWebsite(ctx, input, opts)
 }
 
-// DeleteBucketWebsiteRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketWebsiteRequest(input *s3.DeleteBucketWebsiteInput) s3.DeleteBucketWebsiteRequest {
-	return m.MockDeleteBucketWebsiteRequest(input)
+// DeleteBucketWebsite is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketWebsite(ctx context.Context, input *s3.DeleteBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.DeleteBucketWebsiteOutput, error) {
+	return m.MockDeleteBucketWebsite(ctx, input, opts)
 }
 
-// PutBucketLoggingRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketLoggingRequest(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-	return m.MockPutBucketLoggingRequest(input)
+// PutBucketLogging is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketLogging(ctx context.Context, input *s3.PutBucketLoggingInput, opts ...func(*s3.Options)) (*s3.PutBucketLoggingOutput, error) {
+	return m.MockPutBucketLogging(ctx, input, opts)
 }
 
-// GetBucketLoggingRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketLoggingRequest(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-	return m.MockGetBucketLoggingRequest(input)
+// GetBucketLogging is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketLogging(ctx context.Context, input *s3.GetBucketLoggingInput, opts ...func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+	return m.MockGetBucketLogging(ctx, input, opts)
 }
 
-// PutBucketReplicationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketReplicationRequest(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest {
-	return m.MockPutBucketReplicationRequest(input)
+// PutBucketReplication is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketReplication(ctx context.Context, input *s3.PutBucketReplicationInput, opts ...func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
+	return m.MockPutBucketReplication(ctx, input, opts)
 }
 
-// GetBucketReplicationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketReplicationRequest(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-	return m.MockGetBucketReplicationRequest(input)
+// GetBucketReplication is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketReplication(ctx context.Context, input *s3.GetBucketReplicationInput, opts ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+	return m.MockGetBucketReplication(ctx, input, opts)
 }
 
-// DeleteBucketReplicationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketReplicationRequest(input *s3.DeleteBucketReplicationInput) s3.DeleteBucketReplicationRequest {
-	return m.MockDeleteBucketReplicationRequest(input)
+// DeleteBucketReplication is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketReplication(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts ...func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
+	return m.MockDeleteBucketReplication(ctx, input, opts)
 }
 
-// PutBucketRequestPaymentRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketRequestPaymentRequest(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-	return m.MockPutBucketRequestPaymentRequest(input)
+// PutBucketRequestPayment is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketRequestPayment(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts ...func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error) {
+	return m.MockPutBucketRequestPayment(ctx, input, opts)
 }
 
-// GetBucketRequestPaymentRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketRequestPaymentRequest(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-	return m.MockGetBucketRequestPaymentRequest(input)
+// GetBucketRequestPayment is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketRequestPayment(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts ...func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+	return m.MockGetBucketRequestPayment(ctx, input, opts)
 }
 
-// PutBucketTaggingRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketTaggingRequest(input *s3.PutBucketTaggingInput) s3.PutBucketTaggingRequest {
-	return m.MockPutBucketTaggingRequest(input)
+// PutBucketTagging is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketTagging(ctx context.Context, input *s3.PutBucketTaggingInput, opts ...func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
+	return m.MockPutBucketTagging(ctx, input, opts)
 }
 
-// GetBucketTaggingRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketTaggingRequest(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest {
-	return m.MockGetBucketTaggingRequest(input)
+// GetBucketTagging is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketTagging(ctx context.Context, input *s3.GetBucketTaggingInput, opts ...func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+	return m.MockGetBucketTagging(ctx, input, opts)
 }
 
-// DeleteBucketTaggingRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketTaggingRequest(input *s3.DeleteBucketTaggingInput) s3.DeleteBucketTaggingRequest {
-	return m.MockDeleteBucketTaggingRequest(input)
+// DeleteBucketTagging is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketTagging(ctx context.Context, input *s3.DeleteBucketTaggingInput, opts ...func(*s3.Options)) (*s3.DeleteBucketTaggingOutput, error) {
+	return m.MockDeleteBucketTagging(ctx, input, opts)
 }
 
-// PutBucketAnalyticsConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketAnalyticsConfigurationRequest(input *s3.PutBucketAnalyticsConfigurationInput) s3.PutBucketAnalyticsConfigurationRequest {
-	return m.MockPutBucketAnalyticsConfigurationRequest(input)
+// PutBucketAnalyticsConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketAnalyticsConfiguration(ctx context.Context, input *s3.PutBucketAnalyticsConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketAnalyticsConfigurationOutput, error) {
+	return m.MockPutBucketAnalyticsConfiguration(ctx, input, opts)
 }
 
-// GetBucketAnalyticsConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketAnalyticsConfigurationRequest(input *s3.GetBucketAnalyticsConfigurationInput) s3.GetBucketAnalyticsConfigurationRequest {
-	return m.MockGetBucketAnalyticsConfigurationRequest(input)
+// GetBucketAnalyticsConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketAnalyticsConfiguration(ctx context.Context, input *s3.GetBucketAnalyticsConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketAnalyticsConfigurationOutput, error) {
+	return m.MockGetBucketAnalyticsConfiguration(ctx, input, opts)
 }
 
-// PutBucketLifecycleConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketLifecycleConfigurationRequest(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
-	return m.MockPutBucketLifecycleConfigurationRequest(input)
+// PutBucketLifecycleConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketLifecycleConfiguration(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error) {
+	return m.MockPutBucketLifecycleConfiguration(ctx, input, opts)
 }
 
-// GetBucketLifecycleConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketLifecycleConfigurationRequest(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-	return m.MockGetBucketLifecycleConfigurationRequest(input)
+// GetBucketLifecycleConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketLifecycleConfiguration(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+	return m.MockGetBucketLifecycleConfiguration(ctx, input, opts)
 }
 
-// DeleteBucketLifecycleRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeleteBucketLifecycleRequest(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest {
-	return m.MockDeleteBucketLifecycleRequest(input)
+// DeleteBucketLifecycle is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketLifecycle(ctx context.Context, input *s3.DeleteBucketLifecycleInput, opts ...func(*s3.Options)) (*s3.DeleteBucketLifecycleOutput, error) {
+	return m.MockDeleteBucketLifecycle(ctx, input, opts)
 }
 
-// PutBucketNotificationConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketNotificationConfigurationRequest(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-	return m.MockPutBucketNotificationConfigurationRequest(input)
+// PutBucketNotificationConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketNotificationConfiguration(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
+	return m.MockPutBucketNotificationConfiguration(ctx, input, opts)
 }
 
-// GetBucketNotificationConfigurationRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketNotificationConfigurationRequest(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-	return m.MockGetBucketNotificationConfigurationRequest(input)
+// GetBucketNotificationConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketNotificationConfiguration(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+	return m.MockGetBucketNotificationConfiguration(ctx, input, opts)
 }
 
-// GetBucketAclRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketAclRequest(input *s3.GetBucketAclInput) s3.GetBucketAclRequest { //nolint
-	return m.MockGetBucketAclRequest(input)
+// GetBucketAcl is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketAcl(ctx context.Context, input *s3.GetBucketAclInput, opts ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) { //nolint
+	return m.MockGetBucketAcl(ctx, input, opts)
 }
 
-// PutBucketAclRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketAclRequest(input *s3.PutBucketAclInput) s3.PutBucketAclRequest { //nolint
-	return m.MockPutBucketAclRequest(input)
+// PutBucketAcl is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketAcl(ctx context.Context, input *s3.PutBucketAclInput, opts ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) { //nolint
+	return m.MockPutBucketAcl(ctx, input, opts)
 }
 
-// GetPublicAccessBlockRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetPublicAccessBlockRequest(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-	return m.MockGetPublicAccessBlockRequest(input)
+// GetPublicAccessBlock is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetPublicAccessBlock(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+	return m.MockGetPublicAccessBlock(ctx, input, opts)
 }
 
-// PutPublicAccessBlockRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutPublicAccessBlockRequest(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest {
-	return m.MockPutPublicAccessBlockRequest(input)
+// PutPublicAccessBlock is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutPublicAccessBlock(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error) {
+	return m.MockPutPublicAccessBlock(ctx, input, opts)
 }
 
-// DeletePublicAccessBlockRequest is the fake method call to invoke the internal mock method
-func (m MockBucketClient) DeletePublicAccessBlockRequest(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest {
-	return m.MockDeletePublicAccessBlockRequest(input)
+// DeletePublicAccessBlock is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeletePublicAccessBlock(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error) {
+	return m.MockDeletePublicAccessBlock(ctx, input, opts)
 }

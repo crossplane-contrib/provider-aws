@@ -37,13 +37,13 @@ func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.ResolverRule{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(v1alpha1.ResolverRuleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -61,7 +61,6 @@ func preCreate(_ context.Context, cr *v1alpha1.ResolverRule, obj *svcsdk.CreateR
 
 func postCreate(_ context.Context, cr *v1alpha1.ResolverRule, obj *svcsdk.CreateResolverRuleOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	meta.SetExternalName(cr, aws.StringValue(obj.ResolverRule.Id))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 

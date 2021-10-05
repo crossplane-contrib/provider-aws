@@ -16,5 +16,8 @@ limitations under the License.
 
 package v1alpha1
 
-// CustomDistributionParameters includes the custom fields of Stage.
+// CustomDistributionParameters includes the custom fields of Distribution.
 type CustomDistributionParameters struct{}
+
+// CustomCachePolicyParameters includes the custom fields of CachePolicy.
+type CustomCachePolicyParameters struct{}

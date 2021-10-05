@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
@@ -27,40 +29,42 @@ var _ clientset.Client = (*MockDBSubnetGroupClient)(nil)
 
 // MockDBSubnetGroupClient is a type that implements all the methods for DBSubnetGroupClient interface
 type MockDBSubnetGroupClient struct {
-	MockCreateDBSubnetGroupRequest    func(*rds.CreateDBSubnetGroupInput) rds.CreateDBSubnetGroupRequest
-	MockDeleteDBSubnetGroupRequest    func(*rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest
-	MockDescribeDBSubnetGroupsRequest func(*rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest
-	MockModifyDBSubnetGroupRequest    func(*rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest
-	MockAddTagsToResourceRequest      func(*rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest
-	MockListTagsForResourceRequest    func(*rds.ListTagsForResourceInput) rds.ListTagsForResourceRequest
+	MockCreateDBSubnetGroup    func(context.Context, *rds.CreateDBSubnetGroupInput, []func(*rds.Options)) (*rds.CreateDBSubnetGroupOutput, error)
+	MockDeleteDBSubnetGroup    func(context.Context, *rds.DeleteDBSubnetGroupInput, []func(*rds.Options)) (*rds.DeleteDBSubnetGroupOutput, error)
+	MockDescribeDBSubnetGroups func(context.Context, *rds.DescribeDBSubnetGroupsInput, []func(*rds.Options)) (*rds.DescribeDBSubnetGroupsOutput, error)
+	MockModifyDBSubnetGroup    func(context.Context, *rds.ModifyDBSubnetGroupInput, []func(*rds.Options)) (*rds.ModifyDBSubnetGroupOutput, error)
+	MockAddTagsToResource      func(context.Context, *rds.AddTagsToResourceInput, []func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
+	MockListTagsForResource    func(context.Context, *rds.ListTagsForResourceInput, []func(*rds.Options)) (*rds.ListTagsForResourceOutput, error)
 }
 
-// CreateDBSubnetGroupRequest mocks CreateDBSubnetGroupRequest method
-func (m *MockDBSubnetGroupClient) CreateDBSubnetGroupRequest(input *rds.CreateDBSubnetGroupInput) rds.CreateDBSubnetGroupRequest {
-	return m.MockCreateDBSubnetGroupRequest(input)
+// CreateDBSubnetGroup mocks CreateDBSubnetGroup method
+func (m *MockDBSubnetGroupClient) CreateDBSubnetGroup(ctx context.Context, input *rds.CreateDBSubnetGroupInput, opts ...func(*rds.Options)) (*rds.CreateDBSubnetGroupOutput, error) {
+	return m.MockCreateDBSubnetGroup(ctx, input, opts)
 }
 
-// DeleteDBSubnetGroupRequest mocks DeleteDBSubnetGroupRequest method
-func (m *MockDBSubnetGroupClient) DeleteDBSubnetGroupRequest(input *rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest {
-	return m.MockDeleteDBSubnetGroupRequest(input)
+// DeleteDBSubnetGroup mocks DeleteDBSubnetGroup method
+func (m *MockDBSubnetGroupClient) DeleteDBSubnetGroup(ctx context.Context, input *rds.DeleteDBSubnetGroupInput, opts ...func(*rds.Options)) (*rds.DeleteDBSubnetGroupOutput, error) {
+	return m.MockDeleteDBSubnetGroup(ctx, input, opts)
 }
 
-// DescribeDBSubnetGroupsRequest mocks DescribeDBSubnetGroupsRequest method
-func (m *MockDBSubnetGroupClient) DescribeDBSubnetGroupsRequest(input *rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest {
-	return m.MockDescribeDBSubnetGroupsRequest(input)
+// DescribeDBSubnetGroups mocks DescribeDBSubnetGroups method
+func (m *MockDBSubnetGroupClient) DescribeDBSubnetGroups(ctx context.Context, input *rds.DescribeDBSubnetGroupsInput, opts ...func(*rds.Options)) (*rds.DescribeDBSubnetGroupsOutput, error) {
+	return m.MockDescribeDBSubnetGroups(ctx, input, opts)
+
 }
 
-// ModifyDBSubnetGroupRequest mocks ModifyDBSubnetGroupRequest method
-func (m *MockDBSubnetGroupClient) ModifyDBSubnetGroupRequest(input *rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest {
-	return m.MockModifyDBSubnetGroupRequest(input)
+// ModifyDBSubnetGroup mocks ModifyDBSubnetGroup method
+func (m *MockDBSubnetGroupClient) ModifyDBSubnetGroup(ctx context.Context, input *rds.ModifyDBSubnetGroupInput, opts ...func(*rds.Options)) (*rds.ModifyDBSubnetGroupOutput, error) {
+	return m.MockModifyDBSubnetGroup(ctx, input, opts)
+
 }
 
-// AddTagsToResourceRequest mocks AddTagsToResourceRequest method
-func (m *MockDBSubnetGroupClient) AddTagsToResourceRequest(input *rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest {
-	return m.MockAddTagsToResourceRequest(input)
+// AddTagsToResource mocks AddTagsToResource method
+func (m *MockDBSubnetGroupClient) AddTagsToResource(ctx context.Context, input *rds.AddTagsToResourceInput, opts ...func(*rds.Options)) (*rds.AddTagsToResourceOutput, error) {
+	return m.MockAddTagsToResource(ctx, input, opts)
 }
 
-// ListTagsForResourceRequest mocks ListTagsForResourceRequest method
-func (m *MockDBSubnetGroupClient) ListTagsForResourceRequest(input *rds.ListTagsForResourceInput) rds.ListTagsForResourceRequest {
-	return m.MockListTagsForResourceRequest(input)
+// ListTagsForResource mocks ListTagsForResource method
+func (m *MockDBSubnetGroupClient) ListTagsForResource(ctx context.Context, input *rds.ListTagsForResourceInput, opts ...func(*rds.Options)) (*rds.ListTagsForResourceOutput, error) {
+	return m.MockListTagsForResource(ctx, input, opts)
 }

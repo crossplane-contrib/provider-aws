@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,58 +29,58 @@ var _ clientset.RouteTableClient = (*MockRouteTableClient)(nil)
 
 // MockRouteTableClient is a type that implements all the methods for RouteTableClient interface
 type MockRouteTableClient struct {
-	MockCreate       func(*ec2.CreateRouteTableInput) ec2.CreateRouteTableRequest
-	MockDelete       func(*ec2.DeleteRouteTableInput) ec2.DeleteRouteTableRequest
-	MockDescribe     func(*ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest
-	MockCreateRoute  func(*ec2.CreateRouteInput) ec2.CreateRouteRequest
-	MockDeleteRoute  func(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
-	MockAssociate    func(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
-	MockDisassociate func(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
-	MockCreateTags   func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-	MockDeleteTags   func(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
+	MockCreate       func(ctx context.Context, input *ec2.CreateRouteTableInput, opts []func(*ec2.Options)) (*ec2.CreateRouteTableOutput, error)
+	MockDelete       func(ctx context.Context, input *ec2.DeleteRouteTableInput, opts []func(*ec2.Options)) (*ec2.DeleteRouteTableOutput, error)
+	MockDescribe     func(ctx context.Context, input *ec2.DescribeRouteTablesInput, opts []func(*ec2.Options)) (*ec2.DescribeRouteTablesOutput, error)
+	MockCreateRoute  func(ctx context.Context, input *ec2.CreateRouteInput, opts []func(*ec2.Options)) (*ec2.CreateRouteOutput, error)
+	MockDeleteRoute  func(ctx context.Context, input *ec2.DeleteRouteInput, opts []func(*ec2.Options)) (*ec2.DeleteRouteOutput, error)
+	MockAssociate    func(ctx context.Context, input *ec2.AssociateRouteTableInput, opts []func(*ec2.Options)) (*ec2.AssociateRouteTableOutput, error)
+	MockDisassociate func(ctx context.Context, input *ec2.DisassociateRouteTableInput, opts []func(*ec2.Options)) (*ec2.DisassociateRouteTableOutput, error)
+	MockCreateTags   func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDeleteTags   func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 }
 
-// CreateRouteTableRequest mocks CreateRouteTableRequest method
-func (m *MockRouteTableClient) CreateRouteTableRequest(input *ec2.CreateRouteTableInput) ec2.CreateRouteTableRequest {
-	return m.MockCreate(input)
+// CreateRouteTable mocks CreateRouteTable method
+func (m *MockRouteTableClient) CreateRouteTable(ctx context.Context, input *ec2.CreateRouteTableInput, opts ...func(*ec2.Options)) (*ec2.CreateRouteTableOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteRouteTableRequest mocks DeleteRouteTableRequest method
-func (m *MockRouteTableClient) DeleteRouteTableRequest(input *ec2.DeleteRouteTableInput) ec2.DeleteRouteTableRequest {
-	return m.MockDelete(input)
+// DeleteRouteTable mocks DeleteRouteTable method
+func (m *MockRouteTableClient) DeleteRouteTable(ctx context.Context, input *ec2.DeleteRouteTableInput, opts ...func(*ec2.Options)) (*ec2.DeleteRouteTableOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeRouteTablesRequest mocks DescribeRouteTablesRequest method
-func (m *MockRouteTableClient) DescribeRouteTablesRequest(input *ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest {
-	return m.MockDescribe(input)
+// DescribeRouteTables mocks DescribeRouteTables method
+func (m *MockRouteTableClient) DescribeRouteTables(ctx context.Context, input *ec2.DescribeRouteTablesInput, opts ...func(*ec2.Options)) (*ec2.DescribeRouteTablesOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// AssociateRouteTableRequest mocks AssociateRouteTableRequest method
-func (m *MockRouteTableClient) AssociateRouteTableRequest(input *ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest {
-	return m.MockAssociate(input)
+// AssociateRouteTable mocks AssociateRouteTable method
+func (m *MockRouteTableClient) AssociateRouteTable(ctx context.Context, input *ec2.AssociateRouteTableInput, opts ...func(*ec2.Options)) (*ec2.AssociateRouteTableOutput, error) {
+	return m.MockAssociate(ctx, input, opts)
 }
 
-// DisassociateRouteTableRequest mocks DisassociateRouteTableRequest method
-func (m *MockRouteTableClient) DisassociateRouteTableRequest(input *ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest {
-	return m.MockDisassociate(input)
+// DisassociateRouteTable mocks DisassociateRouteTable method
+func (m *MockRouteTableClient) DisassociateRouteTable(ctx context.Context, input *ec2.DisassociateRouteTableInput, opts ...func(*ec2.Options)) (*ec2.DisassociateRouteTableOutput, error) {
+	return m.MockDisassociate(ctx, input, opts)
 }
 
-// CreateRouteRequest mocks CreateRouteRequest method
-func (m *MockRouteTableClient) CreateRouteRequest(input *ec2.CreateRouteInput) ec2.CreateRouteRequest {
-	return m.MockCreateRoute(input)
+// CreateRoute mocks CreateRoute method
+func (m *MockRouteTableClient) CreateRoute(ctx context.Context, input *ec2.CreateRouteInput, opts ...func(*ec2.Options)) (*ec2.CreateRouteOutput, error) {
+	return m.MockCreateRoute(ctx, input, opts)
 }
 
-// DeleteRouteRequest mocks DeleteRouteRequest method
-func (m *MockRouteTableClient) DeleteRouteRequest(input *ec2.DeleteRouteInput) ec2.DeleteRouteRequest {
-	return m.MockDeleteRoute(input)
+// DeleteRoute mocks DeleteRoute method
+func (m *MockRouteTableClient) DeleteRoute(ctx context.Context, input *ec2.DeleteRouteInput, opts ...func(*ec2.Options)) (*ec2.DeleteRouteOutput, error) {
+	return m.MockDeleteRoute(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsInput method
-func (m *MockRouteTableClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTags(input)
+// CreateTags mocks CreateTags method
+func (m *MockRouteTableClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }
 
-// DeleteTagsRequest mocks DeleteTagsInput method
-func (m *MockRouteTableClient) DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest {
-	return m.MockDeleteTags(input)
+// DeleteTags mocks DeleteTags method
+func (m *MockRouteTableClient) DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTags(ctx, input, opts)
 }

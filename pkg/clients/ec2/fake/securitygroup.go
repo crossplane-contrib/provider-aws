@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,52 +29,52 @@ var _ clientset.SecurityGroupClient = (*MockSecurityGroupClient)(nil)
 
 // MockSecurityGroupClient is a type that implements all the methods for SecurityGroupClient interface
 type MockSecurityGroupClient struct {
-	MockCreate          func(*ec2.CreateSecurityGroupInput) ec2.CreateSecurityGroupRequest
-	MockDelete          func(*ec2.DeleteSecurityGroupInput) ec2.DeleteSecurityGroupRequest
-	MockDescribe        func(*ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
-	MockAuthorizeIgress func(*ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
-	MockAuthorizeEgress func(*ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
-	MockRevokeEgress    func(*ec2.RevokeSecurityGroupEgressInput) ec2.RevokeSecurityGroupEgressRequest
-	MockCreateTags      func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-	MockDeleteTags      func(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
+	MockCreate           func(ctx context.Context, input *ec2.CreateSecurityGroupInput, opts []func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
+	MockDelete           func(ctx context.Context, input *ec2.DeleteSecurityGroupInput, opts []func(*ec2.Options)) (*ec2.DeleteSecurityGroupOutput, error)
+	MockDescribe         func(ctx context.Context, input *ec2.DescribeSecurityGroupsInput, opts []func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error)
+	MockAuthorizeIngress func(ctx context.Context, input *ec2.AuthorizeSecurityGroupIngressInput, opts []func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error)
+	MockAuthorizeEgress  func(ctx context.Context, input *ec2.AuthorizeSecurityGroupEgressInput, opts []func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupEgressOutput, error)
+	MockRevokeEgress     func(ctx context.Context, input *ec2.RevokeSecurityGroupEgressInput, opts []func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error)
+	MockCreateTags       func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDeleteTags       func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 }
 
-// CreateSecurityGroupRequest mocks CreateSecurityGroupRequest method
-func (m *MockSecurityGroupClient) CreateSecurityGroupRequest(input *ec2.CreateSecurityGroupInput) ec2.CreateSecurityGroupRequest {
-	return m.MockCreate(input)
+// CreateSecurityGroup mocks CreateSecurityGroup method
+func (m *MockSecurityGroupClient) CreateSecurityGroup(ctx context.Context, input *ec2.CreateSecurityGroupInput, opts ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteSecurityGroupRequest mocks DeleteSecurityGroupRequest method
-func (m *MockSecurityGroupClient) DeleteSecurityGroupRequest(input *ec2.DeleteSecurityGroupInput) ec2.DeleteSecurityGroupRequest {
-	return m.MockDelete(input)
+// DeleteSecurityGroup mocks DeleteSecurityGroup method
+func (m *MockSecurityGroupClient) DeleteSecurityGroup(ctx context.Context, input *ec2.DeleteSecurityGroupInput, opts ...func(*ec2.Options)) (*ec2.DeleteSecurityGroupOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeSecurityGroupsRequest mocks DescribeSecurityGroupsRequest method
-func (m *MockSecurityGroupClient) DescribeSecurityGroupsRequest(input *ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest {
-	return m.MockDescribe(input)
+// DescribeSecurityGroups mocks DescribeSecurityGroups method
+func (m *MockSecurityGroupClient) DescribeSecurityGroups(ctx context.Context, input *ec2.DescribeSecurityGroupsInput, opts ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// AuthorizeSecurityGroupIngressRequest mocks AuthorizeSecurityGroupIngressRequest method
-func (m *MockSecurityGroupClient) AuthorizeSecurityGroupIngressRequest(input *ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest {
-	return m.MockAuthorizeIgress(input)
+// AuthorizeSecurityGroupIngress mocks AuthorizeSecurityGroupIngress method
+func (m *MockSecurityGroupClient) AuthorizeSecurityGroupIngress(ctx context.Context, input *ec2.AuthorizeSecurityGroupIngressInput, opts ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
+	return m.MockAuthorizeIngress(ctx, input, opts)
 }
 
-// AuthorizeSecurityGroupEgressRequest mocks AuthorizeSecurityGroupEgressRequest method
-func (m *MockSecurityGroupClient) AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest {
-	return m.MockAuthorizeEgress(input)
+// AuthorizeSecurityGroupEgress mocks AuthorizeSecurityGroupEgress method
+func (m *MockSecurityGroupClient) AuthorizeSecurityGroupEgress(ctx context.Context, input *ec2.AuthorizeSecurityGroupEgressInput, opts ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupEgressOutput, error) {
+	return m.MockAuthorizeEgress(ctx, input, opts)
 }
 
-// RevokeSecurityGroupEgressRequest mocks RevokeSecurityGroupEgressRequest method
-func (m *MockSecurityGroupClient) RevokeSecurityGroupEgressRequest(input *ec2.RevokeSecurityGroupEgressInput) ec2.RevokeSecurityGroupEgressRequest {
-	return m.MockRevokeEgress(input)
+// RevokeSecurityGroupEgress mocks RevokeSecurityGroupEgress method
+func (m *MockSecurityGroupClient) RevokeSecurityGroupEgress(ctx context.Context, input *ec2.RevokeSecurityGroupEgressInput, opts ...func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error) {
+	return m.MockRevokeEgress(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsInput method
-func (m *MockSecurityGroupClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTags(input)
+// CreateTags mocks CreateTagsInput method
+func (m *MockSecurityGroupClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }
 
-// DeleteTagsRequest mocks DeleteTagsInput method
-func (m *MockSecurityGroupClient) DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest {
-	return m.MockDeleteTags(input)
+// DeleteTags mocks DeleteTagsInput method
+func (m *MockSecurityGroupClient) DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTags(ctx, input, opts)
 }

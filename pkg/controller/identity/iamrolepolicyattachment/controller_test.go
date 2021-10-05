@@ -18,12 +18,10 @@ package iamrolepolicyattachment
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -93,16 +91,14 @@ func TestObserve(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockListAttachedRolePoliciesRequest: func(input *awsiam.ListAttachedRolePoliciesInput) awsiam.ListAttachedRolePoliciesRequest {
-						return awsiam.ListAttachedRolePoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedRolePoliciesOutput{
-								AttachedPolicies: []awsiam.AttachedPolicy{
-									{
-										PolicyArn: &specPolicyArn,
-									},
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
 				cr: rolePolicy(withSpecPolicyArn(&specPolicyArn)),
@@ -129,10 +125,8 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockListAttachedRolePoliciesRequest: func(input *awsiam.ListAttachedRolePoliciesInput) awsiam.ListAttachedRolePoliciesRequest {
-						return awsiam.ListAttachedRolePoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName)),
@@ -145,10 +139,8 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockListAttachedRolePoliciesRequest: func(input *awsiam.ListAttachedRolePoliciesInput) awsiam.ListAttachedRolePoliciesRequest {
-						return awsiam.ListAttachedRolePoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: rolePolicy(),
@@ -192,10 +184,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
-						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachRolePolicyOutput{}},
-						}
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return &awsiam.AttachRolePolicyOutput{}, nil
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
@@ -220,10 +210,8 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
-						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
@@ -271,15 +259,11 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
-						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachRolePolicyOutput{}},
-						}
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return &awsiam.AttachRolePolicyOutput{}, nil
 					},
-					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
-						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachRolePolicyOutput{}},
-						}
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return &awsiam.DetachRolePolicyOutput{}, nil
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
@@ -325,10 +309,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
-						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachRolePolicyOutput{}},
-						}
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return &awsiam.DetachRolePolicyOutput{}, nil
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
@@ -353,10 +335,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
-						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
@@ -372,10 +352,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockRolePolicyAttachmentClient{
-					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
-						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: rolePolicy(),

@@ -40,7 +40,7 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.VPCPeeringConnection{}).
 		Complete(managed.NewReconciler(mgr,
@@ -140,6 +140,5 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConne
 	// set peering connection id as external name annotation on k8s object after creation
 
 	meta.SetExternalName(cr, aws.StringValue(obj.VpcPeeringConnection.VpcPeeringConnectionId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }

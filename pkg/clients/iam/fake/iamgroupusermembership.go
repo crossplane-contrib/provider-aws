@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,22 +29,22 @@ var _ clientset.GroupUserMembershipClient = (*MockGroupUserMembershipClient)(nil
 
 // MockGroupUserMembershipClient is a type that implements all the methods for IAMGroupUserMembershipClient interface
 type MockGroupUserMembershipClient struct {
-	MockAddUserToGroup      func(*iam.AddUserToGroupInput) iam.AddUserToGroupRequest
-	MockRemoveUserFromGroup func(*iam.RemoveUserFromGroupInput) iam.RemoveUserFromGroupRequest
-	MockListGroupsForUser   func(*iam.ListGroupsForUserInput) iam.ListGroupsForUserRequest
+	MockAddUserToGroup      func(ctx context.Context, input *iam.AddUserToGroupInput, opts []func(*iam.Options)) (*iam.AddUserToGroupOutput, error)
+	MockRemoveUserFromGroup func(ctx context.Context, input *iam.RemoveUserFromGroupInput, opts []func(*iam.Options)) (*iam.RemoveUserFromGroupOutput, error)
+	MockListGroupsForUser   func(ctx context.Context, input *iam.ListGroupsForUserInput, opts []func(*iam.Options)) (*iam.ListGroupsForUserOutput, error)
 }
 
-// AddUserToGroupRequest mocks AddUserToGroupRequest method
-func (m *MockGroupUserMembershipClient) AddUserToGroupRequest(input *iam.AddUserToGroupInput) iam.AddUserToGroupRequest {
-	return m.MockAddUserToGroup(input)
+// AddUserToGroup mocks AddUserToGroup method
+func (m *MockGroupUserMembershipClient) AddUserToGroup(ctx context.Context, input *iam.AddUserToGroupInput, opts ...func(*iam.Options)) (*iam.AddUserToGroupOutput, error) {
+	return m.MockAddUserToGroup(ctx, input, opts)
 }
 
-// RemoveUserFromGroupRequest mocks RemoveUserFromGroupRequest method
-func (m *MockGroupUserMembershipClient) RemoveUserFromGroupRequest(input *iam.RemoveUserFromGroupInput) iam.RemoveUserFromGroupRequest {
-	return m.MockRemoveUserFromGroup(input)
+// RemoveUserFromGroup mocks RemoveUserFromGroup method
+func (m *MockGroupUserMembershipClient) RemoveUserFromGroup(ctx context.Context, input *iam.RemoveUserFromGroupInput, opts ...func(*iam.Options)) (*iam.RemoveUserFromGroupOutput, error) {
+	return m.MockRemoveUserFromGroup(ctx, input, opts)
 }
 
-// ListGroupsForUserRequest mocks ListGroupsForUserRequest method
-func (m *MockGroupUserMembershipClient) ListGroupsForUserRequest(input *iam.ListGroupsForUserInput) iam.ListGroupsForUserRequest {
-	return m.MockListGroupsForUser(input)
+// ListGroupsForUser mocks ListGroupsForUser method
+func (m *MockGroupUserMembershipClient) ListGroupsForUser(ctx context.Context, input *iam.ListGroupsForUserInput, opts ...func(*iam.Options)) (*iam.ListGroupsForUserOutput, error) {
+	return m.MockListGroupsForUser(ctx, input, opts)
 }

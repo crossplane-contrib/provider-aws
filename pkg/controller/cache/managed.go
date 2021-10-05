@@ -23,7 +23,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
+	awselasticache "github.com/aws/aws-sdk-go-v2/service/elasticache"
+	awselasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -63,7 +64,7 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.ReplicationGroup{}).
 		Complete(managed.NewReconciler(mgr,
@@ -87,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotReplicationGroup)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +106,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotReplicationGroup)
 	}
 
-	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
-	rsp, err := dr.Send(ctx)
+	rsp, err := e.client.DescribeReplicationGroups(ctx, elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
 	}
@@ -119,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGetCacheClusterList)
 	}
-	var oneCC elasticacheservice.CacheCluster
+	var oneCC awselasticachetypes.CacheCluster
 	if len(ccList) > 0 {
 		oneCC = ccList[0]
 	}
@@ -164,15 +164,15 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
 	var token *string
-	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
+	if aws.ToBool(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := password.Generate()
 		if err != nil {
 			return managed.ExternalCreation{}, awsclient.Wrap(err, errGenerateAuthToken)
 		}
 		token = &t
 	}
-	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
-	if _, err := r.Send(ctx); err != nil {
+	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
+	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
 	if token != nil {
@@ -195,8 +195,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.Status != v1beta1.StatusAvailable {
 		return managed.ExternalUpdate{}, nil
 	}
-	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
-	_, err := mr.Send(ctx)
+	_, err := e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
 }
 
@@ -209,8 +208,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1beta1.StatusDeleting {
 		return nil
 	}
-	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
-	_, err := req.Send(ctx)
+	_, err := e.client.DeleteReplicationGroup(ctx, elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
 	return awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
 }
 
@@ -242,15 +240,13 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	return errors.Wrap(t.kube.Update(ctx, cr), errUpdateReplicationGroupCR)
 }
 
-func getCacheClusterList(ctx context.Context, client elasticache.Client, idList []string) ([]elasticacheservice.CacheCluster, error) {
+func getCacheClusterList(ctx context.Context, client awselasticache.DescribeCacheClustersAPIClient, idList []string) ([]awselasticachetypes.CacheCluster, error) {
 	if len(idList) < 1 {
 		return nil, nil
 	}
-	ccList := make([]elasticacheservice.CacheCluster, len(idList))
+	ccList := make([]awselasticachetypes.CacheCluster, len(idList))
 	for i, cc := range idList {
-		dcc := client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
-		dcc.SetContext(ctx)
-		rsp, err := dcc.Send(ctx)
+		rsp, err := client.DescribeCacheClusters(ctx, elasticache.NewDescribeCacheClustersInput(cc))
 		if err != nil {
 			return nil, err
 		}

@@ -18,11 +18,11 @@ package dbsubnetgroup
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -72,10 +72,8 @@ func withDBSubnetGroupTags() dbSubnetGroupModifier {
 	}
 }
 
-func mockListTagsForResourceRequest(input *awsrds.ListTagsForResourceInput) awsrds.ListTagsForResourceRequest {
-	return awsrds.ListTagsForResourceRequest{
-		Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ListTagsForResourceOutput{TagList: []awsrds.Tag{}}},
-	}
+func mockListTagsForResource(ctx context.Context, input *awsrds.ListTagsForResourceInput, opts []func(*awsrds.Options)) (*awsrds.ListTagsForResourceOutput, error) {
+	return &awsrds.ListTagsForResourceOutput{TagList: []awsrdstypes.Tag{}}, nil
 }
 
 func dbSubnetGroup(m ...dbSubnetGroupModifier) *v1beta1.DBSubnetGroup {
@@ -109,18 +107,16 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{
-									{
-										SubnetGroupStatus: aws.String(string(v1beta1.DBSubnetGroupStateAvailable)),
-									},
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{
+								{
+									SubnetGroupStatus: aws.String(string(v1beta1.DBSubnetGroupStateAvailable)),
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -138,14 +134,12 @@ func TestObserve(t *testing.T) {
 		"DeletingState": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -161,14 +155,12 @@ func TestObserve(t *testing.T) {
 		"FailedState": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -184,12 +176,10 @@ func TestObserve(t *testing.T) {
 		"FailedDescribeRequest": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return nil, errBoom
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -201,12 +191,10 @@ func TestObserve(t *testing.T) {
 		"NotFound": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault)},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return nil, &awsrdstypes.DBSubnetGroupNotFoundFault{}
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -220,18 +208,16 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{
-									{
-										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
-									},
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{
+								{
+									DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -251,18 +237,16 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(errBoom),
 				},
 				client: &fake.MockDBSubnetGroupClient{
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{
-									{
-										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
-									},
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{
+								{
+									DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+					MockListTagsForResource: mockListTagsForResource,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -307,10 +291,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockCreateDBSubnetGroupRequest: func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
-						return awsrds.CreateDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.CreateDBSubnetGroupOutput{}},
-						}
+					MockCreateDBSubnetGroup: func(ctx context.Context, input *awsrds.CreateDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.CreateDBSubnetGroupOutput, error) {
+						return &awsrds.CreateDBSubnetGroupOutput{}, nil
 					},
 				},
 				cr: dbSubnetGroup(withDBSubnetGroupDescription(dbSubnetGroupDescription)),
@@ -324,10 +306,8 @@ func TestCreate(t *testing.T) {
 		"FailedRequest": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockCreateDBSubnetGroupRequest: func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
-						return awsrds.CreateDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateDBSubnetGroup: func(ctx context.Context, input *awsrds.CreateDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.CreateDBSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: dbSubnetGroup(),
@@ -371,17 +351,13 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
-						return awsrds.ModifyDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
-						}
+					MockModifyDBSubnetGroup: func(ctx context.Context, input *awsrds.ModifyDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBSubnetGroupOutput, error) {
+						return &awsrds.ModifyDBSubnetGroupOutput{}, nil
 					},
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
 				},
 				cr: dbSubnetGroup(),
@@ -393,17 +369,13 @@ func TestUpdate(t *testing.T) {
 		"FailedModify": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
-						return awsrds.ModifyDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockModifyDBSubnetGroup: func(ctx context.Context, input *awsrds.ModifyDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
 				},
 				cr: dbSubnetGroup(),
@@ -416,22 +388,16 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulWithTags": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
-						return awsrds.ModifyDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
-						}
+					MockModifyDBSubnetGroup: func(ctx context.Context, input *awsrds.ModifyDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBSubnetGroupOutput, error) {
+						return &awsrds.ModifyDBSubnetGroupOutput{}, nil
 					},
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
-					MockAddTagsToResourceRequest: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
-						return awsrds.AddTagsToResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.AddTagsToResourceOutput{}},
-						}
+					MockAddTagsToResource: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
 					},
 				},
 				cr: dbSubnetGroup(withDBSubnetGroupTags()),
@@ -473,22 +439,16 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
-						return awsrds.DeleteDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DeleteDBSubnetGroupOutput{}},
-						}
+					MockDeleteDBSubnetGroup: func(ctx context.Context, input *awsrds.DeleteDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.DeleteDBSubnetGroupOutput, error) {
+						return &awsrds.DeleteDBSubnetGroupOutput{}, nil
 					},
-					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
-						return awsrds.ModifyDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
-						}
+					MockModifyDBSubnetGroup: func(ctx context.Context, input *awsrds.ModifyDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBSubnetGroupOutput, error) {
+						return &awsrds.ModifyDBSubnetGroupOutput{}, nil
 					},
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
 				},
 				cr: dbSubnetGroup(),
@@ -500,10 +460,8 @@ func TestDelete(t *testing.T) {
 		"AlreadyDeleted": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
-						return awsrds.DeleteDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault)},
-						}
+					MockDeleteDBSubnetGroup: func(ctx context.Context, input *awsrds.DeleteDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.DeleteDBSubnetGroupOutput, error) {
+						return nil, &awsrdstypes.DBSubnetGroupNotFoundFault{}
 					},
 				},
 				cr: dbSubnetGroup(),
@@ -515,22 +473,16 @@ func TestDelete(t *testing.T) {
 		"Failed": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
-					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
-						return awsrds.DeleteDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteDBSubnetGroup: func(ctx context.Context, input *awsrds.DeleteDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.DeleteDBSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
-					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
-						return awsrds.ModifyDBSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
-						}
+					MockModifyDBSubnetGroup: func(ctx context.Context, input *awsrds.ModifyDBSubnetGroupInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBSubnetGroupOutput, error) {
+						return &awsrds.ModifyDBSubnetGroupOutput{}, nil
 					},
-					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-						return awsrds.DescribeDBSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
-							}},
-						}
+					MockDescribeDBSubnetGroups: func(ctx context.Context, input *awsrds.DescribeDBSubnetGroupsInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBSubnetGroupsOutput, error) {
+						return &awsrds.DescribeDBSubnetGroupsOutput{
+							DBSubnetGroups: []awsrdstypes.DBSubnetGroup{{}},
+						}, nil
 					},
 				},
 				cr: dbSubnetGroup(),

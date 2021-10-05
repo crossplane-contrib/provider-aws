@@ -17,33 +17,35 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
 )
 
 // MockRedshiftClient for testing.
 type MockRedshiftClient struct {
-	MockCreate   func(*redshift.CreateClusterInput) redshift.CreateClusterRequest
-	MockDescribe func(*redshift.DescribeClustersInput) redshift.DescribeClustersRequest
-	MockModify   func(*redshift.ModifyClusterInput) redshift.ModifyClusterRequest
-	MockDelete   func(*redshift.DeleteClusterInput) redshift.DeleteClusterRequest
+	MockCreate   func(ctx context.Context, input *redshift.CreateClusterInput, opts []func(*redshift.Options)) (*redshift.CreateClusterOutput, error)
+	MockDescribe func(ctx context.Context, input *redshift.DescribeClustersInput, opts []func(*redshift.Options)) (*redshift.DescribeClustersOutput, error)
+	MockModify   func(ctx context.Context, input *redshift.ModifyClusterInput, opts []func(*redshift.Options)) (*redshift.ModifyClusterOutput, error)
+	MockDelete   func(ctx context.Context, input *redshift.DeleteClusterInput, opts []func(*redshift.Options)) (*redshift.DeleteClusterOutput, error)
 }
 
-// DescribeClustersRequest finds Redshift Instance by name
-func (m *MockRedshiftClient) DescribeClustersRequest(i *redshift.DescribeClustersInput) redshift.DescribeClustersRequest {
-	return m.MockDescribe(i)
+// DescribeClusters finds Redshift Instance by name
+func (m *MockRedshiftClient) DescribeClusters(ctx context.Context, input *redshift.DescribeClustersInput, opts ...func(*redshift.Options)) (*redshift.DescribeClustersOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// CreateClusterRequest creates Redshift Instance with provided Specification
-func (m *MockRedshiftClient) CreateClusterRequest(i *redshift.CreateClusterInput) redshift.CreateClusterRequest {
-	return m.MockCreate(i)
+// CreateCluster creates Redshift Instance with provided Specification
+func (m *MockRedshiftClient) CreateCluster(ctx context.Context, input *redshift.CreateClusterInput, opts ...func(*redshift.Options)) (*redshift.CreateClusterOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// ModifyClusterRequest modifies Redshift Instance with provided Specification
-func (m *MockRedshiftClient) ModifyClusterRequest(i *redshift.ModifyClusterInput) redshift.ModifyClusterRequest {
-	return m.MockModify(i)
+// ModifyCluster modifies Redshift Instance with provided Specification
+func (m *MockRedshiftClient) ModifyCluster(ctx context.Context, input *redshift.ModifyClusterInput, opts ...func(*redshift.Options)) (*redshift.ModifyClusterOutput, error) {
+	return m.MockModify(ctx, input, opts)
 }
 
-// DeleteClusterRequest deletes Redshift Instance
-func (m *MockRedshiftClient) DeleteClusterRequest(i *redshift.DeleteClusterInput) redshift.DeleteClusterRequest {
-	return m.MockDelete(i)
+// DeleteCluster deletes Redshift Instance
+func (m *MockRedshiftClient) DeleteCluster(ctx context.Context, input *redshift.DeleteClusterInput, opts ...func(*redshift.Options)) (*redshift.DeleteClusterOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }

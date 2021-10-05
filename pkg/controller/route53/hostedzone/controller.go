@@ -59,7 +59,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.HostedZone{}).
 		Complete(managed.NewReconciler(
@@ -67,7 +67,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: hostedzone.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))),
@@ -104,9 +104,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	res, err := e.client.GetHostedZoneRequest(&route53.GetHostedZoneInput{
+	res, err := e.client.GetHostedZone(ctx, &route53.GetHostedZoneInput{
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
 	}
@@ -129,16 +129,16 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	res, err := e.client.CreateHostedZoneRequest(hostedzone.GenerateCreateHostedZoneInput(cr)).Send(ctx)
+	res, err := e.client.CreateHostedZone(ctx, hostedzone.GenerateCreateHostedZoneInput(cr))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
-	id := strings.SplitAfter(aws.StringValue(res.CreateHostedZoneOutput.HostedZone.Id), hostedzone.IDPrefix)
+	id := strings.SplitAfter(aws.ToString(res.HostedZone.Id), hostedzone.IDPrefix)
 	if len(id) < 2 {
 		return managed.ExternalCreation{}, errors.Wrap(errors.New("returned id does not contain /hostedzone/ prefix"), errCreate)
 	}
 	meta.SetExternalName(cr, id[1])
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -147,9 +147,9 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateHostedZoneCommentRequest(
+	_, err := e.client.UpdateHostedZoneComment(ctx,
 		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
-	).Send(ctx)
+	)
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -162,9 +162,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteHostedZoneRequest(&route53.DeleteHostedZoneInput{
+	_, err := e.client.DeleteHostedZone(ctx, &route53.DeleteHostedZoneInput{
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
 }

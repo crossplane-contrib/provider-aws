@@ -65,7 +65,7 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workque
 		Named(name).
 		For(&svcapitypes.DBClusterParameterGroup{}).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBClusterParameterGroupGroupVersionKind),

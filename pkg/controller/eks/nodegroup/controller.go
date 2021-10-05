@@ -61,7 +61,7 @@ func SetupNodeGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.NodeGroup{}).
 		Complete(managed.NewReconciler(mgr,
@@ -102,7 +102,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotEKSNodeGroup)
 	}
 
-	rsp, err := e.client.DescribeNodegroupRequest(&awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	rsp, err := e.client.DescribeNodegroup(ctx, &awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
@@ -144,7 +144,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.Status == v1alpha1.NodeGroupStatusCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	_, err := e.client.CreateNodegroupRequest(eks.GenerateCreateNodeGroupInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.CreateNodegroup(ctx, eks.GenerateCreateNodeGroupInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 }
 
@@ -160,29 +160,29 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	// NOTE(hasheddan): we have to describe the node group again because
 	// different fields require different update methods.
-	rsp, err := e.client.DescribeNodegroupRequest(&awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	rsp, err := e.client.DescribeNodegroup(ctx, &awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil || rsp.Nodegroup == nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
 	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.Nodegroup.Tags)
 	if len(remove) != 0 {
-		if _, err := e.client.UntagResourceRequest(&awseks.UntagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, TagKeys: remove}).Send(ctx); err != nil {
+		if _, err := e.client.UntagResource(ctx, &awseks.UntagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, TagKeys: remove}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
-		if _, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, Tags: add}).Send(ctx); err != nil {
+		if _, err := e.client.TagResource(ctx, &awseks.TagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, Tags: add}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if !reflect.DeepEqual(rsp.Nodegroup.Version, cr.Spec.ForProvider.Version) {
-		_, err := e.client.UpdateNodegroupVersionRequest(&awseks.UpdateNodegroupVersionInput{
+		_, err := e.client.UpdateNodegroupVersion(ctx, &awseks.UpdateNodegroupVersionInput{
 			ClusterName:   &cr.Spec.ForProvider.ClusterName,
 			NodegroupName: awsclient.String(meta.GetExternalName(cr)),
-			Version:       cr.Spec.ForProvider.Version}).Send(ctx)
+			Version:       cr.Spec.ForProvider.Version})
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
-	_, err = e.client.UpdateNodegroupConfigRequest(eks.GenerateUpdateNodeGroupConfigInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup)).Send(ctx)
+	_, err = e.client.UpdateNodegroupConfig(ctx, eks.GenerateUpdateNodeGroupConfigInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup))
 	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
@@ -195,7 +195,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1alpha1.NodeGroupStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteNodegroupRequest(&awseks.DeleteNodegroupInput{NodegroupName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	_, err := e.client.DeleteNodegroup(ctx, &awseks.DeleteNodegroupInput{NodegroupName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
