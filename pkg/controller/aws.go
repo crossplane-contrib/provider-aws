@@ -55,6 +55,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
@@ -197,6 +198,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		efsmounttarget.SetupMountTarget,
 		transferserver.SetupServer,
 		transferuser.SetupUser,
+		instance.SetupInstance,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
