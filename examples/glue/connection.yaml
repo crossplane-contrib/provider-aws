@@ -1,0 +1,22 @@
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  name: glue-connection
+spec:
+  forProvider:
+    region: us-east-1
+    connectionInput: 
+      connectionType: JDBC
+      connectionProperties:
+        JDBC_CONNECTION_URL: "jdbc:mysql://example.com:3306/exampledatabase"
+        USERNAME: "test"
+        PASSWORD: "test"
+      physicalConnectionRequirements:
+        availabilityZone: us-east-1a
+        subnetIDRef:
+          name: sample-subnet1
+        securityGroupIDRefs:
+          - name: sample-cluster-sg
+  providerConfigRef:
+    name: example
