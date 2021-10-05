@@ -40,6 +40,8 @@ type MockClient struct {
 	MockCreateCacheCluster    func(context.Context, *elasticache.CreateCacheClusterInput, []func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error)
 	MockDeleteCacheCluster    func(context.Context, *elasticache.DeleteCacheClusterInput, []func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
 	MockModifyCacheCluster    func(context.Context, *elasticache.ModifyCacheClusterInput, []func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
+
+	MockModifyReplicationGroupShardConfiguration func(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, []func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
 }
 
 // DescribeReplicationGroups calls the underlying
@@ -70,6 +72,12 @@ func (c *MockClient) DeleteReplicationGroup(ctx context.Context, i *elasticache.
 // MockDescribeCacheClusters method.
 func (c *MockClient) DescribeCacheClusters(ctx context.Context, i *elasticache.DescribeCacheClustersInput, opts ...func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 	return c.MockDescribeCacheClusters(ctx, i, opts)
+}
+
+// ModifyReplicationGroupShardConfiguration calls the underlying
+// MockModifyReplicationGroupShardConfiguration method.
+func (c *MockClient) ModifyReplicationGroupShardConfiguration(ctx context.Context, i *elasticache.ModifyReplicationGroupShardConfigurationInput, opts ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error) {
+	return c.MockModifyReplicationGroupShardConfiguration(ctx, i, opts)
 }
 
 // DescribeCacheSubnetGroups calls the underlying
