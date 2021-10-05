@@ -1,7 +1,7 @@
 apiVersion: rds.aws.crossplane.io/v1alpha1
 kind: DBClusterParameterGroup
 metadata:
-  name: example-dbclusterparametergroup
+  name: example-clusterparametergroup
 spec:
   forProvider:
     region: us-east-1
@@ -18,4 +18,4 @@ spec:
         parameterValue: '500'
         applyMethod: immediate
   providerConfigRef:
-    name: default
+    name: example

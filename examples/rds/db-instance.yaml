@@ -4,6 +4,7 @@ metadata:
   name: example-dbinstance
 spec:
   forProvider:
+    region: us-east-1
     allocatedStorage: 20
     autoMinorVersionUpgrade: true
     autogeneratePassword: true
@@ -15,17 +16,26 @@ spec:
     masterUsername: adminuser
     masterUserPasswordSecretRef:
       key: password
-      name: example-dbinstance-in
+      name: example-dbinstance
       namespace: crossplane-system
     preferredBackupWindow: "7:00-8:00"
     preferredMaintenanceWindow: "Sat:8:00-Sat:11:00"
     publiclyAccessible: false
-    region: us-east-1
     skipFinalSnapshot: true
     storageEncrypted: false
     storageType: gp2
+    dbParameterGroupName: example-dbparametergroup
   writeConnectionSecretToRef:
-    namespace: crossplane-system
     name: example-dbinstance-out
+    namespace: default
   providerConfigRef:
     name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-dbinstance
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123
