@@ -49,7 +49,7 @@ func SetupDatabase(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLim
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Database{}).
 		Complete(managed.NewReconciler(mgr,

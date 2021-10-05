@@ -50,7 +50,7 @@ func SetupJob(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter,
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Job{}).
 		Complete(managed.NewReconciler(mgr,

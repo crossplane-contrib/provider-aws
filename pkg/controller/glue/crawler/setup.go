@@ -49,7 +49,7 @@ func SetupCrawler(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Crawler{}).
 		Complete(managed.NewReconciler(mgr,

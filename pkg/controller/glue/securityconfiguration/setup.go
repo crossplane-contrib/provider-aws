@@ -50,7 +50,7 @@ func SetupSecurityConfiguration(mgr ctrl.Manager, l logging.Logger, limiter work
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.SecurityConfiguration{}).
 		Complete(managed.NewReconciler(mgr,

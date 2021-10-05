@@ -49,7 +49,7 @@ func SetupClassifier(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Classifier{}).
 		Complete(managed.NewReconciler(mgr,
