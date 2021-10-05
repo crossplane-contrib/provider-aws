@@ -150,3 +150,6 @@ type CustomTransitGatewayVPCAttachmentParameters struct {
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 }
+
+// CustomRouteParameters are custom parameters for Route
+type CustomRouteParameters struct{}

@@ -5,6 +5,7 @@ ignore:
     - CarrierGateway
     - ClientVpnEndpoint
     - ClientVpnRoute
+    - CoipPool
     - CustomerGateway
     - DefaultSubnet
     - DefaultVpc
@@ -30,7 +31,6 @@ ignore:
     - PlacementGroup
     - ReservedInstancesListing
     - RouteTable
-    - Route
     - SecurityGroup
     - Snapshot
     - SpotDatafeedSubscription
