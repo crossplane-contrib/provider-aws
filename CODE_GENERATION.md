@@ -124,17 +124,14 @@ If the group didn't exist before, we need to register its schema [here](https://
 ### Referencer Fields
 
 In Crossplane, fields whose value can be taken from another CRD have two additional
-fields called `*Ref` and `*Selector`. At the moment, ACK doesn't know about them
-so we add them manually.
+fields called `*Ref` and `*Selector`. At the moment, there is no metadata in
+neither ACK nor AWS SDK about these relations, so we need to define them manually.
 
-You'll see that `<CRDName>Parameters` struct has an inline field called `Custom<CRDName>Parameters`
-whose struct we left empty earlier. We'll add the additional fields there.
-
-Note that some fields are required and reference-able but we cannot mark them required
-since when a reference is given, their value is resolved after the creation. In
-such cases, we need to omit that field and put it under `Custom<CRDName>Parameters`
-alongside with its referencer and selector fields. To ignore, you need to add the
-following in `generator-config.yaml` like the following:
+Let's say you're working on `Route` resource and there is a parameter called
+`ApiId` in the CRD and its value can be taken from an `API` managed resource.
+In order to define the relation, we first make ACK omit the field from the code
+generation by adding the instances of SDK calls it exists in like the following
+in `generator-config.yaml`:
 
 ```yaml
 ignore:
@@ -143,18 +140,60 @@ ignore:
     - DeleteRouteInput.ApiId
 ```
 
-In this example, we don't want `Route` resource to have a required `ApiId` field.
-But in order to skip it, we need to make sure to ignore it in every API call like
-above. In the future, we hope to mark it once but that's how it works right now.
+Once you see that it doesn't exist under `RouteParameters` anymore, you can add
+that field and its `ApiIdRef` and `ApiIdSelector` fields to `Custom<CRDName>Parameters`
+struct we created in the earlier section. The addition will be similar to the
+following:
 
-Note that any field you ignore needs to be handled in the hook functions you'll
-define in the next steps.
+```go
+// APIID is actually required but since it's reference-able, it's not marked
+// as required.
+type CustomAPIMappingParameters struct {
+  // ApiId is the ID for the API.
+  // +immutable
+  // +crossplane:generate:reference:type=API
+  ApiId *string `json:"apiId,omitempty"`
 
-### Reference Resolvers
+  // ApiIdRef is a reference to an API used to set
+  // the APIID.
+  // +optional
+  ApiIdRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
-We need to implement the resolver functions for every reference-able field. They
-are mostly identical and you can see examples in the existing implementations like
-[`Stage`](https://github.com/crossplane/provider-aws/blob/c269977/apis/apigatewayv2/v1alpha1/referencers.go#L30) resource.
+  // ApiIdSelector selects references to API used
+  // to set the APIID.
+  // +optional
+  ApiIdSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
+}
+```
+
+After you added the new field here, you need to handle usage of that field manually
+in all hooks, like `preCreate`, `preObserve` etc., one by one since ACK won't
+generate the assignment statements for it anymore.
+
+Please note the line right before the definition of `ApiId` field that starts
+with `+crossplane`. That's where we tell code generator that which kind this
+field can reference to, and in this case it's `API` kind that lives under the
+same package. If it was in another package like `ec2.VPC`, we could add the following
+line to make it reference it:
+```go
+// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.VPC
+```
+
+Once you're done, you can run `make generate`, the necessary reference resolvers
+will be generated automatically.
+
+In case you need to override some of the behavior like the name of the ref and
+selector fields, or a custom function to fetch the value that is other than
+external name of the referenced object, you can use the following comment markers:
+```go
+// +crossplane:generate:reference:type=API
+// +crossplane:generate:reference:extractor=ApiARN()
+// +crossplane:generate:reference:refFieldName=ApiIdRef
+// +crossplane:generate:reference:selectorFieldName=ApiIdSelector
+```
+
+You can add the package prefix for `type` and `extractor` configurations if they
+live in a different Go package.
 
 ### External Name
 
@@ -218,15 +257,17 @@ func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStage
 }
 ```
 
-If the external-name is decided by AWS after the creation, then you
-need to inject `postCreate` to set the crossplane resource external-name to 
-the unique identifier of the resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L77)
+If the external-name is decided by AWS after the creation (like in most EC2
+resources such as `vpc-id` of `VPC`), then you need to inject `postCreate` to
+set the crossplane resource external-name to the unique identifier of the
+resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L77)
 You can discover what you can inject by inspecting `zz_controller.go` file.
 
 ### Readiness Check
 
 Every managed resource needs to report its readiness. We'll do that in `postObserve`
 call like the following:
+
 ```golang
 func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
@@ -246,6 +287,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.Describ
 
 Some resources get ready right when you create them, like `Stage`. In such cases,
 `postObserve` could be just like the following:
+
 ```golang
 func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
   if err != nil {
