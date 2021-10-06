@@ -95,6 +95,119 @@ spec:
                     - MUTABLE
                     - IMMUTABLE
                     type: string
+                  lifecyclePolicy:
+                    description: LifecyclePolicy contains one or more rules, where
+                      each rule defines an action for Amazon ECR. This provides a
+                      way to automate the cleaning up of unused images, for example
+                      expiring images based on age or count
+                    properties:
+                      rules:
+                        description: Rules are separate lifecycle rules to be applied
+                          to the repository.
+                        items:
+                          description: LifecyclePolicyRule defines the actions on
+                            the ECR repsitory https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html
+                          properties:
+                            action:
+                              description: Action defines an action type, where the
+                                only sypported value is 'expire'
+                              enum:
+                              - expire
+                              properties:
+                                expore:
+                                  description: Type is what action to be taken when
+                                    Selection matches
+                                  enum:
+                                  - expire
+                                  type: string
+                              required:
+                              - expore
+                              type: object
+                            description:
+                              description: Description describes the purpose of the
+                                rule
+                              type: string
+                            rulePriority:
+                              description: RulePriority is required and represents
+                                the order in which the rules are applied
+                              type: integer
+                            selection:
+                              description: Selection provides information about which
+                                objects to be handled
+                              properties:
+                                countNumber:
+                                  description: CountNumber is the number of images
+                                    or days based on CountType Specify a count number.
+                                    Acceptable values are positive integers (0 is
+                                    not an accepted value). If the countType used
+                                    is imageCountMoreThan, then the value is the maximum
+                                    number of images that you want to retain in your
+                                    repository. If the countType used is sinceImagePushed,
+                                    then the value is the maximum age limit for your
+                                    images.
+                                  minimum: 1
+                                  type: integer
+                                countType:
+                                  description: CountType selects what type to count
+                                    objects on If countType is set to imageCountMoreThan,
+                                    you also specify countNumber to create a rule
+                                    that sets a limit on the number of images that
+                                    exist in your repository. If countType is set
+                                    to sinceImagePushed, you also specify countUnit
+                                    and countNumber to specify a time limit on the
+                                    images that exist in your repository.
+                                  enum:
+                                  - imageCountMoreThan
+                                  - sinceImagePushed
+                                  type: string
+                                countUnit:
+                                  description: 'CountUnit Required: yes, only if countType
+                                    is set to sinceImagePushed Specify a count unit
+                                    of days to indicate that as the unit of time,
+                                    in addition to countNumber, which is the number
+                                    of days. This should only be specified when countType
+                                    is sinceImagePushed; an error will occur if you
+                                    specify a count unit when countType is any other
+                                    value.'
+                                  enum:
+                                  - days
+                                  type: string
+                                tagPrefixList:
+                                  description: 'TagPrefixList specifies a comma-separated
+                                    list of image tag prefixes on which to take action
+                                    with your lifecycle policy. For example, if your
+                                    images are tagged as prod, prod1, prod2, and so
+                                    on, you would use the tag prefix prod to specify
+                                    all of them. If you specify multiple tags, only
+                                    the images with all specified tags are selected.
+                                    Required: yes, only if tagStatus is set to tagged'
+                                  type: string
+                                tagStatus:
+                                  description: TagStatus determines whether the lifecycle
+                                    policy rule that you are adding specifies a tag
+                                    for an image. Acceptable options are tagged, untagged,
+                                    or any. If you specify any, then all images have
+                                    the rule evaluated against them. If you specify
+                                    tagged, then you must also specify a tagPrefixList
+                                    value. If you specify untagged, then you must
+                                    omit tagPrefixList.
+                                  enum:
+                                  - tagged
+                                  - untagged
+                                  - any
+                                  type: string
+                              required:
+                              - countNumber
+                              - countType
+                              - tagStatus
+                              type: object
+                          required:
+                          - action
+                          - rulePriority
+                          - selection
+                          type: object
+                        type: array
+                    type: object
                   region:
                     description: Region is the region you'd like your Repository to
                       be created in.

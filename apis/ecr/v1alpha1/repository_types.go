@@ -48,6 +48,77 @@ type RepositoryParameters struct {
 	// If a repository contains images, forces the deletion.
 	// +optional
 	ForceDelete *bool `json:"forceDelete,omitempty"`
+
+	// LifecyclePolicy contains one or more rules, where each rule defines an action for Amazon ECR.
+	// This provides a way to automate the cleaning up of unused images, for example expiring images based on age or count
+	// +optional
+	LifecyclePolicy *LifecyclePolicy `json:"lifecyclePolicy,omitempty"`
+}
+
+// LifecyclePolicy represents the rules to be applied to the repository
+// https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html
+type LifecyclePolicy struct {
+	// Rules are separate lifecycle rules to be applied to the repository.
+	Rules []LifecyclePolicyRule `json:"rules,omitempty"`
+	// LifecyclePolicyString is a representation of all rules jsonified
+	// LifecyclePolicyString *string `json:"lifecyclePolicyString,omitempty"`
+}
+
+// LifecyclePolicyRule defines the actions on the ECR repsitory
+// https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html
+type LifecyclePolicyRule struct {
+	// RulePriority is required and represents the order in which the rules are applied
+	RulePriority int `json:"rulePriority"`
+	// Description describes the purpose of the rule
+	// +optional
+	Description string `json:"description,omitempty"`
+	// Selection provides information about which objects to be handled
+	Selection LifecyclePolicySelection `json:"selection"`
+	// Action defines an action type, where the only sypported value is 'expire'
+	// +kubebuilder:validation:Enum=expire
+	Action LifecyclePolicyAction `json:"action"`
+}
+
+// LifecyclePolicySelection defines which objects to be handled
+type LifecyclePolicySelection struct {
+	// TagStatus determines whether the lifecycle policy rule that you are adding specifies a tag for an image.
+	// Acceptable options are tagged, untagged, or any. If you specify any, then all images have the rule evaluated against them.
+	// If you specify tagged, then you must also specify a tagPrefixList value. If you specify untagged, then you must omit tagPrefixList.
+	// +kubebuilder:validation:Enum=tagged;untagged;any
+	TagStatus string `json:"tagStatus"`
+
+	// TagPrefixList specifies a comma-separated list of image tag prefixes on which to take action with your lifecycle policy.
+	// For example, if your images are tagged as prod, prod1, prod2, and so on, you would use the tag prefix prod to specify all of them.
+	// If you specify multiple tags, only the images with all specified tags are selected.
+	// Required: yes, only if tagStatus is set to tagged
+	TagPrefixList string `json:"tagPrefixList,omitempty"`
+
+	// CountType selects what type to count objects on
+	// If countType is set to imageCountMoreThan, you also specify countNumber to create a rule that sets a limit on the number of images that exist in your repository. If countType is set to sinceImagePushed, you also specify countUnit and countNumber to specify a time limit on the images that exist in your repository.
+	// +kubebuilder:validation:Enum=imageCountMoreThan;sinceImagePushed
+	CountType string `json:"countType"`
+
+	// CountUnit
+	// Required: yes, only if countType is set to sinceImagePushed
+	// Specify a count unit of days to indicate that as the unit of time, in addition to countNumber, which is the number of days.
+	// This should only be specified when countType is sinceImagePushed; an error will occur if you specify a count unit when countType is any other value.
+	// +optional
+	// +kubebuilder:validation:Enum=days
+	CountUnit string `json:"countUnit,omitempty"`
+
+	// CountNumber is the number of images or days based on CountType
+	// Specify a count number. Acceptable values are positive integers (0 is not an accepted value).
+	// If the countType used is imageCountMoreThan, then the value is the maximum number of images that you want to retain in your repository.
+	// If the countType used is sinceImagePushed, then the value is the maximum age limit for your images.
+	// +kubebuilder:validation:Minimum=1
+	CountNumber int `json:"countNumber"`
+}
+
+// LifecyclePolicyAction represents the actions to be taken on a selection of images
+type LifecyclePolicyAction struct {
+	// Type is what action to be taken when Selection matches
+	// +kubebuilder:validation:Enum=expire
+	Type string `json:"expore"`
 }
 
 // Tag defines a tag
