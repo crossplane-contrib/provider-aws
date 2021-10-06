@@ -25,6 +25,7 @@ type CustomAPIParameters struct{}
 type CustomAPIMappingParameters struct {
 	// APIID is the ID for the API.
 	// +immutable
+	// +crossplane:generate:reference:type=API
 	APIID *string `json:"apiId,omitempty"`
 
 	// APIIDRef is a reference to an API used to set
@@ -39,6 +40,7 @@ type CustomAPIMappingParameters struct {
 
 	// Stage is the name for the Stage.
 	// +immutable
+	// +crossplane:generate:reference:type=Stage
 	Stage *string `json:"stage,omitempty"`
 
 	// StageDRef is a reference to an Stage used to set
@@ -53,6 +55,7 @@ type CustomAPIMappingParameters struct {
 
 	// DomainName is the DomainName for the DomainName.
 	// +immutable
+	// +crossplane:generate:reference:type=DomainName
 	DomainName *string `json:"domainName,omitempty"`
 
 	// DomainNameRef is a reference to a DomainName used to set

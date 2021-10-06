@@ -125,7 +125,7 @@ If the group didn't exist before, we need to register its schema [here](https://
 
 In Crossplane, fields whose value can be taken from another CRD have two additional
 fields called `*Ref` and `*Selector`. At the moment, there is no metadata in
-neither ACK nor AWS SDK about these relations, so we need to define them manually.
+either ACK or AWS SDK about these relations, so we will need to define them manually.
 
 Let's say you're working on `Route` resource and there is a parameter called
 `ApiId` in the CRD and its value can be taken from an `API` managed resource.
