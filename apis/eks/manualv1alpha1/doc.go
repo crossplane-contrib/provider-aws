@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains managed resources for AWS Elastic Kubernetes Service
+// Package manualv1alpha1 contains managed resources for AWS Elastic Kubernetes Service
 // such as NodeGroup.
 // +kubebuilder:object:generate=true
 // +groupName=eks.aws.crossplane.io
 // +versionName=v1alpha1
-package v1alpha1
+package manualv1alpha1

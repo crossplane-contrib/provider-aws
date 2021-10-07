@@ -23,11 +23,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 )
 
 // GenerateAssociateIdentityProviderConfigInput from IdentityProviderConfigParameters
-func GenerateAssociateIdentityProviderConfigInput(name string, p *v1alpha1.IdentityProviderConfigParameters) *eks.AssociateIdentityProviderConfigInput {
+func GenerateAssociateIdentityProviderConfigInput(name string, p *manualv1alpha1.IdentityProviderConfigParameters) *eks.AssociateIdentityProviderConfigInput {
 	ip := &eks.AssociateIdentityProviderConfigInput{
 		ClusterName: &p.ClusterName,
 		Tags:        p.Tags,
@@ -53,20 +53,20 @@ func GenerateDisassociateIdentityProviderConfigInput(name string, clusterName st
 		ClusterName: &clusterName,
 		IdentityProviderConfig: &types.IdentityProviderConfig{
 			Name: aws.String(name),
-			Type: aws.String(string(v1alpha1.OidcIdentityProviderConfigType)),
+			Type: aws.String(string(manualv1alpha1.OidcIdentityProviderConfigType)),
 		},
 	}
 	return ip
 }
 
-// GenerateIdentityProviderConfigObservation is used to produce v1alpha1.IdentityProviderConfigObservation
+// GenerateIdentityProviderConfigObservation is used to produce manualv1alpha1.IdentityProviderConfigObservation
 // from eks.IdentityProviderConfigResponse.
-func GenerateIdentityProviderConfigObservation(ip *types.IdentityProviderConfigResponse) v1alpha1.IdentityProviderConfigObservation {
+func GenerateIdentityProviderConfigObservation(ip *types.IdentityProviderConfigResponse) manualv1alpha1.IdentityProviderConfigObservation {
 	if ip == nil {
-		return v1alpha1.IdentityProviderConfigObservation{}
+		return manualv1alpha1.IdentityProviderConfigObservation{}
 	}
-	o := v1alpha1.IdentityProviderConfigObservation{
-		Status: v1alpha1.IdentityProviderConfigStatusType(ip.Oidc.Status),
+	o := manualv1alpha1.IdentityProviderConfigObservation{
+		Status: manualv1alpha1.IdentityProviderConfigStatusType(ip.Oidc.Status),
 	}
 	if ip.Oidc != nil && ip.Oidc.IdentityProviderConfigArn != nil {
 		o.IdentityProviderConfigArn = *ip.Oidc.IdentityProviderConfigArn
@@ -76,13 +76,13 @@ func GenerateIdentityProviderConfigObservation(ip *types.IdentityProviderConfigR
 
 // IsIdentityProviderConfigUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsIdentityProviderConfigUpToDate(p *v1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) bool { // nolint:gocyclo
+func IsIdentityProviderConfigUpToDate(p *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) bool { // nolint:gocyclo
 	return cmp.Equal(p.Tags, ip.Oidc.Tags, cmpopts.EquateEmpty())
 }
 
-// LateInitializeIdentityProviderConfig fills the empty fields in *v1alpha1.IdentityProviderConfigParameters with the
+// LateInitializeIdentityProviderConfig fills the empty fields in *manualv1alpha1.IdentityProviderConfigParameters with the
 // values seen in eks.IdentityProviderConfigResponse.
-func LateInitializeIdentityProviderConfig(in *v1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) { // nolint:gocyclo
+func LateInitializeIdentityProviderConfig(in *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) { // nolint:gocyclo
 	if ip == nil {
 		return
 	}

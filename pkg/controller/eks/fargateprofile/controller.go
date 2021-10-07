@@ -37,7 +37,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 )
@@ -53,16 +53,16 @@ const (
 
 // SetupFargateProfile adds a controller that reconciles FargateProfiles.
 func SetupFargateProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.FargateProfileKind)
+	name := managed.ControllerName(manualv1alpha1.FargateProfileKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.FargateProfile{}).
+		For(&manualv1alpha1.FargateProfile{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.FargateProfileGroupVersionKind),
+			resource.ManagedKind(manualv1alpha1.FargateProfileGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -77,7 +77,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return nil, errors.New(errNotEKSFargateProfile)
 	}
@@ -94,7 +94,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotEKSFargateProfile)
 	}
@@ -111,11 +111,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Any of the statuses we don't explicitly address should be considered as
 	// the fargate profile being unavailable.
 	switch cr.Status.AtProvider.Status { // nolint:exhaustive
-	case v1alpha1.FargateProfileStatusActive:
+	case manualv1alpha1.FargateProfileStatusActive:
 		cr.Status.SetConditions(xpv1.Available())
-	case v1alpha1.FargateProfileStatusCreating:
+	case manualv1alpha1.FargateProfileStatusCreating:
 		cr.Status.SetConditions(xpv1.Creating())
-	case v1alpha1.FargateProfileStatusDeleting:
+	case manualv1alpha1.FargateProfileStatusDeleting:
 		cr.Status.SetConditions(xpv1.Deleting())
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
@@ -129,12 +129,12 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotEKSFargateProfile)
 	}
 	cr.SetConditions(xpv1.Creating())
-	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusCreating {
+	if cr.Status.AtProvider.Status == manualv1alpha1.FargateProfileStatusCreating {
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.CreateFargateProfile(ctx, eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), cr.Spec.ForProvider))
@@ -142,7 +142,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotEKSFargateProfile)
 	}
@@ -168,12 +168,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return errors.New(errNotEKSFargateProfile)
 	}
 	cr.SetConditions(xpv1.Deleting())
-	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusDeleting {
+	if cr.Status.AtProvider.Status == manualv1alpha1.FargateProfileStatusDeleting {
 		return nil
 	}
 	_, err := e.client.DeleteFargateProfile(ctx, &awseks.DeleteFargateProfileInput{FargateProfileName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
@@ -185,7 +185,7 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.FargateProfile)
+	cr, ok := mg.(*manualv1alpha1.FargateProfile)
 	if !ok {
 		return errors.New(errNotEKSFargateProfile)
 	}
