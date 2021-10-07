@@ -17,6 +17,9 @@ This guide shows how to get a new resource support up and running step by step.
 
 ## Code generation
 
+Before getting started with generating code, ensure you have set up your
+environment by following the steps in the Crossplane [contributing guide.](https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md#establishing-a-development-environment)
+
 AWS groups their resources under _services_ and the code generator works on
 per-service basis. For example, `rds` is a service that contains `DBInstance`,
 `DBCluster` and many other related resources. The first thing to do is to figure
@@ -220,8 +223,16 @@ func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStage
 
 If the external-name is decided by AWS after the creation, then you
 need to inject `postCreate` to set the crossplane resource external-name to 
-the unique identifier of the resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L77)
+the unique identifier of the resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L83)
 You can discover what you can inject by inspecting `zz_controller.go` file.
+
+You also need to tell the reconciler not to initialize the external name
+annotation by [adding `managed.WithInitializers()`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L60) to set an empty initializer
+on the object, otherwise the initializer will set the external name annotation
+to the name of the object before creation, which can cause problems with API
+calls and any resources that should reference the external name value of the
+object.
+
 
 ### Readiness Check
 
@@ -325,7 +336,9 @@ with custom logic to work around an API quirk.
 ### Unit Tests
 
 For the generated code, you don't need to write any tests. However, we encourage
-you to write tests for all custom code blocks you have written.
+you to write tests for all custom code blocks you have written. See the section
+on unit testing in the [contribution guide](https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md#prefer-table-driven-tests)
+for details on how tests should be written.
 
 ### End-to-End Test
 
