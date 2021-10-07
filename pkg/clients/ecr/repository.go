@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
@@ -37,6 +38,9 @@ type RepositoryClient interface {
 	PutImageTagMutability(ctx context.Context, input *ecr.PutImageTagMutabilityInput, opts ...func(*ecr.Options)) (*ecr.PutImageTagMutabilityOutput, error)
 	PutImageScanningConfiguration(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts ...func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error)
 	UntagResource(ctx context.Context, input *ecr.UntagResourceInput, opts ...func(*ecr.Options)) (*ecr.UntagResourceOutput, error)
+	GetLifecyclePolicy(ctx context.Context, input *ecr.GetLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.GetLifecyclePolicyOutput, error)
+	PutLifecyclePolicy(ctx context.Context, input *ecr.PutLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.PutLifecyclePolicyOutput, error)
+	DeleteLifecyclePolicy(ctx context.Context, input *ecr.DeleteLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.DeleteLifecyclePolicyOutput, error)
 }
 
 // GenerateRepositoryObservation is used to produce v1alpha1.RepositoryObservation from
@@ -104,9 +108,55 @@ func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecrtypes.Tag,
 		CompareTags(e.Tags, tags)
 }
 
+// IsLifecyclePolicyUpToDate checks whether there is a change in the lifecycle policy
+// Returns true if it is up to date, false if they differ and an error when json unmarshal fails
+func IsLifecyclePolicyUpToDate(lp *v1alpha1.LifecyclePolicy, lifecyclePolicy *ecr.GetLifecyclePolicyOutput) (bool, error) {
+	// Lifecycle setup in either cr or server
+	if (lifecyclePolicy == nil) != (lp == nil) {
+		return false, nil
+	}
+	// Lifecycle policy not configured
+	if lifecyclePolicy == nil && lp == nil {
+		return true, nil
+	}
+
+	var lifecycle v1alpha1.LifecyclePolicy
+	// lifecycle unmarshal from aws response to cr
+	if err := json.Unmarshal([]byte(*lifecyclePolicy.LifecyclePolicyText), &lifecycle); err != nil {
+		return false, err
+	}
+
+	if len(lifecycle.Rules) != len(lp.Rules) {
+		return false, nil
+	}
+
+	sort.Slice(lifecycle.Rules, func(i, j int) bool {
+		return lifecycle.Rules[i].RulePriority < lifecycle.Rules[j].RulePriority
+	})
+
+	sort.Slice(lp.Rules, func(i, j int) bool {
+		return lp.Rules[i].RulePriority < lp.Rules[j].RulePriority
+	})
+
+	// Unmarshalled object and cr differ
+	if diff := cmp.Diff(lp, &lifecycle); diff != "" {
+		return false, nil
+	}
+
+	// TODO: Sort string slice (tagPrefix)
+	return true, nil
+
+}
+
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
 func IsRepoNotFoundErr(err error) bool {
 	var notFoundError *ecrtypes.RepositoryNotFoundException
+	return errors.As(err, &notFoundError)
+}
+
+// IsLifecyclePolicyNotFoundErr returns a bool if the current error is a lifecycle that does not exist
+func IsLifecyclePolicyNotFoundErr(err error) bool {
+	var notFoundError *ecrtypes.LifecyclePolicyNotFoundException
 	return errors.As(err, &notFoundError)
 }
 

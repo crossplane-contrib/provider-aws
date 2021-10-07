@@ -18,6 +18,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -56,6 +57,19 @@ var (
 	}
 	awsImageScanConfigFalse = awsecrtypes.ImageScanningConfiguration{
 		ScanOnPush: imageScanConfigFalse.ScanOnPush,
+	}
+	lifecyclePolicyString           = `{"rules":[{"rulePriority":1,"description":"Expire images older than 14 days","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":14},"action":{"type":"expire"}}]}`
+	multipleLifecyclePoliciesString = `{"rules":[{"rulePriority":1,"description":"Rule 1","selection":{"tagStatus":"tagged","tagPrefixList":["prod"],"countType":"imageCountMoreThan","countNumber":1},"action":{"type":"expire"}},{"rulePriority":2,"description":"Rule 2","selection":{"tagStatus":"tagged","tagPrefixList":["beta"],"countType":"imageCountMoreThan","countNumber":1},"action":{"type":"expire"}}]}`
+	/* 	lifecyclePolicyStringMarshalled = &v1alpha1.LifecyclePolicy{
+		Rules: []v1alpha1.LifecyclePolicyRule{
+			{RulePriority: 1, Description: "Expire images older than 14 days", Selection: v1alpha1.LifecyclePolicySelection{TagStatus: "untagged", CountType: "sinceImagePushed", CountUnit: "days", CountNumber: 14}, Action: v1alpha1.LifecyclePolicyAction{Type: "expire"}},
+		},
+	} */
+	multipleLifecyclePolicyStringMarshalled = &v1alpha1.LifecyclePolicy{
+		Rules: []v1alpha1.LifecyclePolicyRule{
+			{RulePriority: 2, Description: "Rule 2", Selection: v1alpha1.LifecyclePolicySelection{TagStatus: "tagged", TagPrefixList: []string{"beta"}, CountType: "imageCountMoreThan", CountNumber: 1}, Action: v1alpha1.LifecyclePolicyAction{Type: "expire"}},
+			{RulePriority: 1, Description: "Rule 1", Selection: v1alpha1.LifecyclePolicySelection{TagStatus: "tagged", TagPrefixList: []string{"prod"}, CountType: "imageCountMoreThan", CountNumber: 1}, Action: v1alpha1.LifecyclePolicyAction{Type: "expire"}},
+		},
 	}
 )
 
@@ -138,6 +152,9 @@ func TestObserve(t *testing.T) {
 						return &awsecr.ListTagsForResourceOutput{
 							Tags: []awsecrtypes.Tag{testECRTag},
 						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
 					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
@@ -225,6 +242,158 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr:  repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
 				err: awsclient.Wrap(errBoom, errListTags),
+			},
+		},
+		"LifecyclePolicyIsUpToDate": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				repository: &fake.MockRepositoryClient{
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityMutable,
+							}},
+						}, nil
+					},
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{
+							Tags: []awsecrtypes.Tag{testECRTag},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return &awsecr.GetLifecyclePolicyOutput{
+							RepositoryName:      &repoName,
+							LifecyclePolicyText: &multipleLifecyclePoliciesString,
+						}, nil
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					Tags:            []v1alpha1.Tag{testTag},
+					LifecyclePolicy: multipleLifecyclePolicyStringMarshalled,
+				}), withExternalName(repoName)),
+			},
+			want: want{
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
+					Tags:               []v1alpha1.Tag{testTag},
+					LifecyclePolicy:    multipleLifecyclePolicyStringMarshalled,
+				}), withStatus(v1alpha1.RepositoryObservation{
+					RepositoryName: repoName,
+					RepositoryArn:  testARN,
+				}), withExternalName(repoName),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"LifecyclePolicyIsMissing": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				repository: &fake.MockRepositoryClient{
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityMutable,
+							}},
+						}, nil
+					},
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{
+							Tags: []awsecrtypes.Tag{testECRTag},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return &awsecr.GetLifecyclePolicyOutput{
+							RepositoryName:      &repoName,
+							LifecyclePolicyText: &lifecyclePolicyString,
+						}, nil
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					Tags:            []v1alpha1.Tag{testTag},
+					LifecyclePolicy: nil,
+				}), withExternalName(repoName)),
+			},
+			want: want{
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
+					Tags:               []v1alpha1.Tag{testTag},
+					LifecyclePolicy:    nil,
+				}), withStatus(v1alpha1.RepositoryObservation{
+					RepositoryName: repoName,
+					RepositoryArn:  testARN,
+				}), withExternalName(repoName),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"LifecyclePolicyIsNotUpToDate": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				repository: &fake.MockRepositoryClient{
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:      &testARN,
+								RepositoryName:     &repoName,
+								ImageTagMutability: awsecrtypes.ImageTagMutabilityMutable,
+							}},
+						}, nil
+					},
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{
+							Tags: []awsecrtypes.Tag{testECRTag},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return &awsecr.GetLifecyclePolicyOutput{
+							RepositoryName:      &repoName,
+							LifecyclePolicyText: &lifecyclePolicyString,
+						}, nil
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					Tags: []v1alpha1.Tag{testTag},
+					LifecyclePolicy: &v1alpha1.LifecyclePolicy{
+						Rules: []v1alpha1.LifecyclePolicyRule{
+							{RulePriority: 1, Description: "NOT MATCHING", Selection: v1alpha1.LifecyclePolicySelection{TagStatus: "untagged", CountType: "sinceImagePushed", CountUnit: "days", CountNumber: 14}, Action: v1alpha1.LifecyclePolicyAction{Type: "expire"}},
+						},
+					},
+				}), withExternalName(repoName)),
+			},
+			want: want{
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
+					Tags:               []v1alpha1.Tag{testTag},
+					LifecyclePolicy: &v1alpha1.LifecyclePolicy{
+						Rules: []v1alpha1.LifecyclePolicyRule{
+							{RulePriority: 1, Description: "NOT MATCHING", Selection: v1alpha1.LifecyclePolicySelection{TagStatus: "untagged", CountType: "sinceImagePushed", CountUnit: "days", CountNumber: 14}, Action: v1alpha1.LifecyclePolicyAction{Type: "expire"}},
+						},
+					},
+				}), withStatus(v1alpha1.RepositoryObservation{
+					RepositoryName: repoName,
+					RepositoryArn:  testARN,
+				}), withExternalName(repoName),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
 			},
 		},
 	}
@@ -347,15 +516,18 @@ func TestUpdate(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{testTag},
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{testTag},
-				})),
+				}), withExternalName(repoName)),
 			},
 		},
 		"SuccessfulRemoveTag": {
@@ -378,11 +550,14 @@ func TestUpdate(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
-				cr: repository(withSpec(v1alpha1.RepositoryParameters{})),
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
 			},
 			want: want{
-				cr: repository(withSpec(v1alpha1.RepositoryParameters{})),
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
 			},
 		},
 		"ModifyTagFailed": {
@@ -394,15 +569,18 @@ func TestUpdate(t *testing.T) {
 					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
 						return &awsecr.ListTagsForResourceOutput{}, nil
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{testTag},
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{testTag},
-				})),
+				}), withExternalName(repoName)),
 				err: awsclient.Wrap(errBoom, errCreateTags),
 			},
 		},
@@ -424,15 +602,18 @@ func TestUpdate(t *testing.T) {
 					MockPutImageTagMutability: func(ctx context.Context, input *awsecr.PutImageTagMutabilityInput, opts []func(*awsecr.Options)) (*awsecr.PutImageTagMutabilityOutput, error) {
 						return &awsecr.PutImageTagMutabilityOutput{}, nil
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
-				})),
+				}), withExternalName(repoName)),
 			},
 		},
 		"FailedImageMutate": {
@@ -453,15 +634,18 @@ func TestUpdate(t *testing.T) {
 					MockPutImageTagMutability: func(ctx context.Context, input *awsecr.PutImageTagMutabilityInput, opts []func(*awsecr.Options)) (*awsecr.PutImageTagMutabilityOutput, error) {
 						return nil, errBoom
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageTagMutability: aws.String(string(awsecrtypes.ImageTagMutabilityMutable)),
-				})),
+				}), withExternalName(repoName)),
 				err: awsclient.Wrap(errBoom, errUpdateMutability),
 			},
 		},
@@ -483,15 +667,18 @@ func TestUpdate(t *testing.T) {
 					MockPutImageScan: func(ctx context.Context, input *awsecr.PutImageScanningConfigurationInput, opts []func(*awsecr.Options)) (*awsecr.PutImageScanningConfigurationOutput, error) {
 						return &awsecr.PutImageScanningConfigurationOutput{}, nil
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfigTrue,
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfigTrue,
-				})),
+				}), withExternalName(repoName)),
 			},
 		},
 		"FailedScanConfig": {
@@ -512,16 +699,109 @@ func TestUpdate(t *testing.T) {
 					MockPutImageScan: func(ctx context.Context, input *awsecr.PutImageScanningConfigurationInput, opts []func(*awsecr.Options)) (*awsecr.PutImageScanningConfigurationOutput, error) {
 						return nil, errBoom
 					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
 				},
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfigTrue,
-				})),
+				}), withExternalName(repoName)),
 			},
 			want: want{
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfigTrue,
-				})),
+				}), withExternalName(repoName)),
 				err: awsclient.Wrap(errBoom, errUpdateScan),
+			},
+		},
+		"SuccessfulAddLifecyclePolicy": {
+			args: args{
+				repository: &fake.MockRepositoryClient{
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
+							}},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
+					MockPutLifecyclePolicy: func(ctx context.Context, input *awsecr.PutLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.PutLifecyclePolicyOutput, error) {
+						return &awsecr.PutLifecyclePolicyOutput{LifecyclePolicyText: &multipleLifecyclePoliciesString, RepositoryName: &repoName}, nil
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					LifecyclePolicy: multipleLifecyclePolicyStringMarshalled,
+				}), withExternalName(repoName)),
+			},
+			want: want{
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					LifecyclePolicy: multipleLifecyclePolicyStringMarshalled,
+				}), withExternalName(repoName)),
+			},
+		},
+		"SuccessfulMutateLifecyclePolicy": {
+			args: args{
+				repository: &fake.MockRepositoryClient{
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
+							}},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return &awsecr.GetLifecyclePolicyOutput{LifecyclePolicyText: &lifecyclePolicyString, RepositoryName: &repoName}, nil
+					},
+					MockPutLifecyclePolicy: func(ctx context.Context, input *awsecr.PutLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.PutLifecyclePolicyOutput, error) {
+						return &awsecr.PutLifecyclePolicyOutput{LifecyclePolicyText: &multipleLifecyclePoliciesString, RepositoryName: &repoName}, nil
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					LifecyclePolicy: multipleLifecyclePolicyStringMarshalled,
+				}), withExternalName(repoName)),
+			},
+			want: want{
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{
+					LifecyclePolicy: multipleLifecyclePolicyStringMarshalled,
+				}), withExternalName(repoName)),
+			},
+		},
+		"FailedLifecyclePolicy": {
+			args: args{
+				repository: &fake.MockRepositoryClient{
+					MockListTags: func(ctx context.Context, input *awsecr.ListTagsForResourceInput, opts []func(*awsecr.Options)) (*awsecr.ListTagsForResourceOutput, error) {
+						return &awsecr.ListTagsForResourceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsecr.DescribeRepositoriesInput, opts []func(*awsecr.Options)) (*awsecr.DescribeRepositoriesOutput, error) {
+						return &awsecr.DescribeRepositoriesOutput{
+							Repositories: []awsecrtypes.Repository{{
+								RepositoryArn:  &testARN,
+								RepositoryName: &repoName,
+							}},
+						}, nil
+					},
+					MockGetLifecyclePolicy: func(ctx context.Context, input *awsecr.GetLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetLifecyclePolicyOutput, error) {
+						return nil, &awsecrtypes.LifecyclePolicyNotFoundException{}
+					},
+					MockPutLifecyclePolicy: func(ctx context.Context, input *awsecr.PutLifecyclePolicyInput, opts []func(*awsecr.Options)) (*awsecr.PutLifecyclePolicyOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: repository(withSpec(v1alpha1.RepositoryParameters{LifecyclePolicy: multipleLifecyclePolicyStringMarshalled}), withExternalName(repoName)),
+			},
+			want: want{
+				cr:  repository(withSpec(v1alpha1.RepositoryParameters{LifecyclePolicy: multipleLifecyclePolicyStringMarshalled}), withExternalName(repoName)),
+				err: awsclient.Wrap(errBoom, errCreateLifecyclePolicy),
 			},
 		},
 	}
@@ -666,4 +946,68 @@ func TestInitialize(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDecodeEncodeLifecyclePolicy(t *testing.T) {
+	var policies v1alpha1.LifecyclePolicyRule
+	if err := json.Unmarshal([]byte(lifecyclePolicyString), &policies); err != nil {
+		t.Errorf("could not decode policystring \n%s\n, err: %+v", lifecyclePolicyString, err)
+	}
+
+	var multiplePolicies v1alpha1.LifecyclePolicy
+	if err := json.Unmarshal([]byte(multipleLifecyclePoliciesString), &multiplePolicies); err != nil {
+		t.Errorf("could not decode multiple \n%s\n policystrings, err: %+v", multipleLifecyclePoliciesString, err)
+	}
+
+	lifecyclePolicy := v1alpha1.LifecyclePolicy{
+		Rules: []v1alpha1.LifecyclePolicyRule{
+			{
+				RulePriority: 1,
+				Description:  "Expire images older than 14 days",
+				Selection: v1alpha1.LifecyclePolicySelection{
+					TagStatus:   "untagged",
+					CountType:   "sinceImagePushed",
+					CountUnit:   "days",
+					CountNumber: 14,
+				},
+				Action: v1alpha1.LifecyclePolicyAction{
+					Type: "expire",
+				},
+			},
+		},
+	}
+
+	policy, err := json.Marshal(lifecyclePolicy)
+	if err != nil {
+		t.Errorf("could not marshal policy as json, err: %+v", err)
+	}
+	if diff := cmp.Diff(lifecyclePolicyString, string(policy)); diff != "" {
+		t.Errorf("marshal diff: -want, +got:\n%s", diff)
+	}
+
+	lifecyclePolicyMultiple := v1alpha1.LifecyclePolicy{
+		Rules: []v1alpha1.LifecyclePolicyRule{
+			{
+				RulePriority: 1,
+				Description:  "Expire images older than 14 days",
+				Selection: v1alpha1.LifecyclePolicySelection{
+					TagStatus:   "untagged",
+					CountType:   "sinceImagePushed",
+					CountUnit:   "days",
+					CountNumber: 14,
+				},
+				Action: v1alpha1.LifecyclePolicyAction{
+					Type: "expire",
+				},
+			},
+		},
+	}
+	policyMultiple, err := json.Marshal(lifecyclePolicyMultiple)
+	if err != nil {
+		t.Errorf("could not marshal policy as json, err: %+v", err)
+	}
+	if diff := cmp.Diff(lifecyclePolicyString, string(policyMultiple)); diff != "" {
+		t.Errorf("marshal diff: -want, +got:\n%s", diff)
+	}
+
 }

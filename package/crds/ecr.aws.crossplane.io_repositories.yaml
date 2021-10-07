@@ -109,19 +109,16 @@ spec:
                             the ECR repsitory https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html
                           properties:
                             action:
-                              description: Action defines an action type, where the
-                                only sypported value is 'expire'
-                              enum:
-                              - expire
+                              description: Action defines an action type
                               properties:
-                                expore:
+                                type:
                                   description: Type is what action to be taken when
                                     Selection matches
                                   enum:
                                   - expire
                                   type: string
                               required:
-                              - expore
+                              - type
                               type: object
                             description:
                               description: Description describes the purpose of the
@@ -181,7 +178,9 @@ spec:
                                     all of them. If you specify multiple tags, only
                                     the images with all specified tags are selected.
                                     Required: yes, only if tagStatus is set to tagged'
-                                  type: string
+                                  items:
+                                    type: string
+                                  type: array
                                 tagStatus:
                                   description: TagStatus determines whether the lifecycle
                                     policy rule that you are adding specifies a tag

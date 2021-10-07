@@ -18,6 +18,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 	"time"
 
@@ -48,18 +49,23 @@ const (
 	errUnexpectedObject = "managed resource is not an repository resource"
 	errKubeUpdateFailed = "cannot update repository custom resource"
 
-	errDescribe            = "failed to describe repository with id"
-	errMultipleItems       = "retrieved multiple repository for the given ECR name"
-	errCreate              = "failed to create the repository resource"
-	errCreateTags          = "failed to create tags for the repository resource"
-	errRemoveTags          = "failed to remove tags for the repository resource"
-	errListTags            = "failed to list tags for the repository resource"
-	errDelete              = "failed to delete the repository resource"
-	errSpecUpdate          = "cannot update spec of repository custom resource"
-	errStatusUpdate        = "cannot update status of repository custom resource"
-	errUpdateScan          = "failed to update scan config for repository resource"
-	errUpdateMutability    = "failed to update mutability for repository resource"
-	errPatchCreationFailed = "cannot create a patch object"
+	errDescribe                 = "failed to describe repository with id"
+	errMultipleItems            = "retrieved multiple repository for the given ECR name"
+	errCreate                   = "failed to create the repository resource"
+	errCreateTags               = "failed to create tags for the repository resource"
+	errRemoveTags               = "failed to remove tags for the repository resource"
+	errListTags                 = "failed to list tags for the repository resource"
+	errDelete                   = "failed to delete the repository resource"
+	errSpecUpdate               = "cannot update spec of repository custom resource"
+	errStatusUpdate             = "cannot update status of repository custom resource"
+	errUpdateScan               = "failed to update scan config for repository resource"
+	errUpdateMutability         = "failed to update mutability for repository resource"
+	errPatchCreationFailed      = "cannot create a patch object"
+	errComparingLifecyclePolicy = "failed to compare lifecycle policies"
+	errGettingLifecyclePolicy   = "failed to get lifecycle policy for the repository resource"
+	errCreateLifecyclePolicy    = "failed to create lifecycle policy for the repository resource"
+	errDeletingLifecyclePolicy  = "failed to delete lifecycle policy for the repository resource"
+	errRepositoryNameNotDefined = "name of repository not found"
 )
 
 // SetupRepository adds a controller that reconciles ECR.
@@ -118,8 +124,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	response, err := e.client.DescribeRepositories(ctx, &awsecr.DescribeRepositoriesInput{
 		RepositoryNames: []string{meta.GetExternalName(cr)},
 	})
-	if err != nil {
+	if err != nil && !ecr.IsRepoNotFoundErr(err) {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
+	} else if ecr.IsRepoNotFoundErr(err) {
+
+		return managed.ExternalObservation{
+			ResourceExists:   false,
+			ResourceUpToDate: false,
+		}, nil
 	}
 
 	// in a successful response, there should be one and only one object
@@ -134,6 +146,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errListTags)
 	}
+
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ecr.LateInitializeRepository(&cr.Spec.ForProvider, &observed)
@@ -143,13 +156,22 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
+	lifecyclePolicyResp, err := e.client.GetLifecyclePolicy(ctx, &awsecr.GetLifecyclePolicyInput{RepositoryName: observed.RepositoryName, RegistryId: observed.RegistryId})
+	if err != nil && !ecr.IsLifecyclePolicyNotFoundErr(err) {
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errGettingLifecyclePolicy)
+	}
+
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = ecr.GenerateRepositoryObservation(observed)
+	lifecyclePolicyUpToDate, err := ecr.IsLifecyclePolicyUpToDate(cr.Spec.ForProvider.LifecyclePolicy, lifecyclePolicyResp)
+	if err != nil {
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errComparingLifecyclePolicy)
+	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed),
+		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed) && lifecyclePolicyUpToDate,
 	}, nil
 }
 
@@ -164,10 +186,18 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	_, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	repository, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
+
+	if cr.Spec.ForProvider.LifecyclePolicy != nil && len(cr.Spec.ForProvider.LifecyclePolicy.Rules) > 0 {
+		err = e.putLifecyclePolicy(ctx, repository.Repository.RepositoryName, cr.Spec.ForProvider.LifecyclePolicy)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+	}
+
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
@@ -223,6 +253,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
+	err = e.updateLifecyclePolicy(ctx, meta.GetExternalName(cr), patch.LifecyclePolicy)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -265,6 +300,7 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
 		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
 	})
+
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
@@ -285,4 +321,60 @@ func (e *external) updateTags(ctx context.Context, repo *v1alpha1.Repository) er
 		}
 	}
 	return nil
+}
+
+func (e *external) putLifecyclePolicy(ctx context.Context, repoName *string, lifecycle *v1alpha1.LifecyclePolicy) error {
+	policyText, err := json.Marshal(lifecycle)
+	if err != nil {
+		return awsclient.Wrap(err, errCreateLifecyclePolicy)
+	}
+	policyTextString := string(policyText)
+	_, err = e.client.PutLifecyclePolicy(ctx, &awsecr.PutLifecyclePolicyInput{
+		LifecyclePolicyText: &policyTextString,
+		RepositoryName:      repoName,
+	})
+	if err != nil {
+		return awsclient.Wrap(err, errCreateLifecyclePolicy)
+	}
+	return nil
+}
+
+func (e *external) updateLifecyclePolicy(ctx context.Context, repoName string, lifecycle *v1alpha1.LifecyclePolicy) error {
+	if repoName == "" {
+		return errors.New(errRepositoryNameNotDefined)
+	}
+	policy, err := e.client.GetLifecyclePolicy(ctx, &awsecr.GetLifecyclePolicyInput{RepositoryName: &repoName})
+	if err != nil && !ecr.IsLifecyclePolicyNotFoundErr(err) {
+		return awsclient.Wrap(err, errGettingLifecyclePolicy)
+	}
+
+	var observed *v1alpha1.LifecyclePolicy
+	if !ecr.IsLifecyclePolicyNotFoundErr(err) && policy.LifecyclePolicyText != nil {
+		observed, err = decodeLifecyclePolicy(*policy.LifecyclePolicyText)
+		if err != nil {
+			return awsclient.Wrap(err, errCreateLifecyclePolicy)
+		}
+	}
+	if upToDate, err := ecr.IsLifecyclePolicyUpToDate(lifecycle, policy); upToDate && err == nil {
+		return nil
+	}
+
+	// When the diff is the removal of lifecyclePolicy
+	if lifecycle == nil && observed != nil {
+		_, err := e.client.DeleteLifecyclePolicy(ctx, &awsecr.DeleteLifecyclePolicyInput{RepositoryName: &repoName})
+		if err != nil {
+			return awsclient.Wrap(err, errDeletingLifecyclePolicy)
+		}
+		return nil
+	}
+
+	return e.putLifecyclePolicy(ctx, &repoName, lifecycle)
+}
+
+func decodeLifecyclePolicy(lifecyclePolicyText string) (*v1alpha1.LifecyclePolicy, error) {
+	var lifecycle v1alpha1.LifecyclePolicy
+	if err := json.Unmarshal([]byte(lifecyclePolicyText), &lifecycle); err != nil {
+		return nil, err
+	}
+	return &lifecycle, nil
 }

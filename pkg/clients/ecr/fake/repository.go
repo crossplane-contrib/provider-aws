@@ -37,6 +37,9 @@ type MockRepositoryClient struct {
 	MockUntag                 func(ctx context.Context, input *ecr.UntagResourceInput, opts []func(*ecr.Options)) (*ecr.UntagResourceOutput, error)
 	MockPutImageScan          func(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts []func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error)
 	MockPutImageTagMutability func(ctx context.Context, input *ecr.PutImageTagMutabilityInput, opts []func(*ecr.Options)) (*ecr.PutImageTagMutabilityOutput, error)
+	MockGetLifecyclePolicy    func(ctx context.Context, input *ecr.GetLifecyclePolicyInput, opts []func(*ecr.Options)) (*ecr.GetLifecyclePolicyOutput, error)
+	MockPutLifecyclePolicy    func(ctx context.Context, input *ecr.PutLifecyclePolicyInput, opts []func(*ecr.Options)) (*ecr.PutLifecyclePolicyOutput, error)
+	MockDeleteLifecyclePolicy func(ctx context.Context, input *ecr.DeleteLifecyclePolicyInput, opts []func(*ecr.Options)) (*ecr.DeleteLifecyclePolicyOutput, error)
 }
 
 // CreateRepository mocks CreateRepository method
@@ -77,4 +80,19 @@ func (m *MockRepositoryClient) PutImageTagMutability(ctx context.Context, input 
 // PutImageScanningConfiguration mocks PutImageScanningConfiguration method
 func (m *MockRepositoryClient) PutImageScanningConfiguration(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts ...func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error) {
 	return m.MockPutImageScan(ctx, input, opts)
+}
+
+// GetLifecyclePolicy mocks GetLifecyclePolicy method
+func (m *MockRepositoryClient) GetLifecyclePolicy(ctx context.Context, input *ecr.GetLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.GetLifecyclePolicyOutput, error) {
+	return m.MockGetLifecyclePolicy(ctx, input, opts)
+}
+
+// PutLifecyclePolicy mocks PutLifecyclePolicy method
+func (m *MockRepositoryClient) PutLifecyclePolicy(ctx context.Context, input *ecr.PutLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.PutLifecyclePolicyOutput, error) {
+	return m.MockPutLifecyclePolicy(ctx, input, opts)
+}
+
+// DeleteLifecyclePolicy mocks DeleteLifecyclePolicy method
+func (m *MockRepositoryClient) DeleteLifecyclePolicy(ctx context.Context, input *ecr.DeleteLifecyclePolicyInput, opts ...func(*ecr.Options)) (*ecr.DeleteLifecyclePolicyOutput, error) {
+	return m.MockDeleteLifecyclePolicy(ctx, input, opts)
 }

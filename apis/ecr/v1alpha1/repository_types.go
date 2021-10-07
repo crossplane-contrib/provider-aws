@@ -74,8 +74,7 @@ type LifecyclePolicyRule struct {
 	Description string `json:"description,omitempty"`
 	// Selection provides information about which objects to be handled
 	Selection LifecyclePolicySelection `json:"selection"`
-	// Action defines an action type, where the only sypported value is 'expire'
-	// +kubebuilder:validation:Enum=expire
+	// Action defines an action type
 	Action LifecyclePolicyAction `json:"action"`
 }
 
@@ -91,7 +90,7 @@ type LifecyclePolicySelection struct {
 	// For example, if your images are tagged as prod, prod1, prod2, and so on, you would use the tag prefix prod to specify all of them.
 	// If you specify multiple tags, only the images with all specified tags are selected.
 	// Required: yes, only if tagStatus is set to tagged
-	TagPrefixList string `json:"tagPrefixList,omitempty"`
+	TagPrefixList []string `json:"tagPrefixList,omitempty"`
 
 	// CountType selects what type to count objects on
 	// If countType is set to imageCountMoreThan, you also specify countNumber to create a rule that sets a limit on the number of images that exist in your repository. If countType is set to sinceImagePushed, you also specify countUnit and countNumber to specify a time limit on the images that exist in your repository.
@@ -118,7 +117,7 @@ type LifecyclePolicySelection struct {
 type LifecyclePolicyAction struct {
 	// Type is what action to be taken when Selection matches
 	// +kubebuilder:validation:Enum=expire
-	Type string `json:"expore"`
+	Type string `json:"type"`
 }
 
 // Tag defines a tag
