@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -97,39 +96,44 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(mg, cfg), nil
 	default:
 		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
 		cfg, err := UseProviderSecret(ctx, data, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(mg, cfg), nil
 	}
 }
 
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
-func SetResolver(ctx context.Context, mg resource.Managed, cfg *aws.Config) *aws.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := aws.Endpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			endpointResolver := func(service, region string) (aws.Endpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return endpoint, &aws.EndpointNotFoundError{}
-			}
-			cfg.EndpointResolver = aws.EndpointResolverFunc(endpointResolver)
-		}
+func SetResolver(mg resource.Managed, cfg *aws.Config) *aws.Config {
+	endpointURL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]
+	if !ok {
+		return cfg
 	}
+	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		e := aws.Endpoint{
+			URL:               endpointURL,
+			SigningRegion:     region,
+			HostnameImmutable: true,
+		}
+		if val, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+			e.SigningRegion = val
+		}
+		if val, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointHostnameImmutable"]; ok {
+			e.HostnameImmutable = val == "true"
+		}
+		return e, nil
+	})
 	return cfg
 }
 
@@ -290,7 +294,7 @@ func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, 
 	}
 
 	creds := credentialsv1.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+	return SetResolverV1(mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
 }
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
@@ -308,31 +312,26 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed, 
 		v2creds.AccessKeyID,
 		v2creds.SecretAccessKey,
 		v2creds.SessionToken)
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
+	return SetResolverV1(mg, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(ctx context.Context, mg resource.Managed, cfg *awsv1.Config) *awsv1.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := endpointsv1.ResolvedEndpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			endpointResolver := func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return endpointsv1.DefaultResolver().EndpointFor(service, region, optFns...)
-			}
-			cfg.EndpointResolver = endpointsv1.ResolverFunc(endpointResolver)
-		}
+func SetResolverV1(mg resource.Managed, cfg *awsv1.Config) *awsv1.Config {
+	endpointURL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]
+	if !ok {
+		return cfg
 	}
+	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
+		e := endpointsv1.ResolvedEndpoint{
+			URL:           endpointURL,
+			SigningRegion: region,
+		}
+		if val, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+			e.SigningRegion = val
+		}
+		return e, nil
+	})
 	return cfg
 }
 
