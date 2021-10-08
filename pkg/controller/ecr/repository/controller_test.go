@@ -18,7 +18,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -400,7 +399,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.repository}
+			e := &external{kube: tc.kube, client: tc.repository, subresourceClients: NewSubresourceClients(tc.repository)}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -472,7 +471,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.repository}
+			e := &external{kube: tc.kube, client: tc.repository, subresourceClients: NewSubresourceClients(tc.repository)}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -808,7 +807,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.repository}
+			e := &external{kube: tc.kube, client: tc.repository, subresourceClients: NewSubresourceClients(tc.repository)}
 			u, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -886,7 +885,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.repository}
+			e := &external{kube: tc.kube, client: tc.repository, subresourceClients: NewSubresourceClients(tc.repository)}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -946,68 +945,4 @@ func TestInitialize(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestDecodeEncodeLifecyclePolicy(t *testing.T) {
-	var policies v1alpha1.LifecyclePolicyRule
-	if err := json.Unmarshal([]byte(lifecyclePolicyString), &policies); err != nil {
-		t.Errorf("could not decode policystring \n%s\n, err: %+v", lifecyclePolicyString, err)
-	}
-
-	var multiplePolicies v1alpha1.LifecyclePolicy
-	if err := json.Unmarshal([]byte(multipleLifecyclePoliciesString), &multiplePolicies); err != nil {
-		t.Errorf("could not decode multiple \n%s\n policystrings, err: %+v", multipleLifecyclePoliciesString, err)
-	}
-
-	lifecyclePolicy := v1alpha1.LifecyclePolicy{
-		Rules: []v1alpha1.LifecyclePolicyRule{
-			{
-				RulePriority: 1,
-				Description:  "Expire images older than 14 days",
-				Selection: v1alpha1.LifecyclePolicySelection{
-					TagStatus:   "untagged",
-					CountType:   "sinceImagePushed",
-					CountUnit:   "days",
-					CountNumber: 14,
-				},
-				Action: v1alpha1.LifecyclePolicyAction{
-					Type: "expire",
-				},
-			},
-		},
-	}
-
-	policy, err := json.Marshal(lifecyclePolicy)
-	if err != nil {
-		t.Errorf("could not marshal policy as json, err: %+v", err)
-	}
-	if diff := cmp.Diff(lifecyclePolicyString, string(policy)); diff != "" {
-		t.Errorf("marshal diff: -want, +got:\n%s", diff)
-	}
-
-	lifecyclePolicyMultiple := v1alpha1.LifecyclePolicy{
-		Rules: []v1alpha1.LifecyclePolicyRule{
-			{
-				RulePriority: 1,
-				Description:  "Expire images older than 14 days",
-				Selection: v1alpha1.LifecyclePolicySelection{
-					TagStatus:   "untagged",
-					CountType:   "sinceImagePushed",
-					CountUnit:   "days",
-					CountNumber: 14,
-				},
-				Action: v1alpha1.LifecyclePolicyAction{
-					Type: "expire",
-				},
-			},
-		},
-	}
-	policyMultiple, err := json.Marshal(lifecyclePolicyMultiple)
-	if err != nil {
-		t.Errorf("could not marshal policy as json, err: %+v", err)
-	}
-	if diff := cmp.Diff(lifecyclePolicyString, string(policyMultiple)); diff != "" {
-		t.Errorf("marshal diff: -want, +got:\n%s", diff)
-	}
-
 }

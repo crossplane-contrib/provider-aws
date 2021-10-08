@@ -18,7 +18,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"sort"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	k8serrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,23 +49,18 @@ const (
 	errUnexpectedObject = "managed resource is not an repository resource"
 	errKubeUpdateFailed = "cannot update repository custom resource"
 
-	errDescribe                 = "failed to describe repository with id"
-	errMultipleItems            = "retrieved multiple repository for the given ECR name"
-	errCreate                   = "failed to create the repository resource"
-	errCreateTags               = "failed to create tags for the repository resource"
-	errRemoveTags               = "failed to remove tags for the repository resource"
-	errListTags                 = "failed to list tags for the repository resource"
-	errDelete                   = "failed to delete the repository resource"
-	errSpecUpdate               = "cannot update spec of repository custom resource"
-	errStatusUpdate             = "cannot update status of repository custom resource"
-	errUpdateScan               = "failed to update scan config for repository resource"
-	errUpdateMutability         = "failed to update mutability for repository resource"
-	errPatchCreationFailed      = "cannot create a patch object"
-	errComparingLifecyclePolicy = "failed to compare lifecycle policies"
-	errGettingLifecyclePolicy   = "failed to get lifecycle policy for the repository resource"
-	errCreateLifecyclePolicy    = "failed to create lifecycle policy for the repository resource"
-	errDeletingLifecyclePolicy  = "failed to delete lifecycle policy for the repository resource"
-	errRepositoryNameNotDefined = "name of repository not found"
+	errDescribe            = "failed to describe repository with id"
+	errMultipleItems       = "retrieved multiple repository for the given ECR name"
+	errCreate              = "failed to create the repository resource"
+	errCreateTags          = "failed to create tags for the repository resource"
+	errRemoveTags          = "failed to remove tags for the repository resource"
+	errListTags            = "failed to list tags for the repository resource"
+	errDelete              = "failed to delete the repository resource"
+	errSpecUpdate          = "cannot update spec of repository custom resource"
+	errStatusUpdate        = "cannot update status of repository custom resource"
+	errUpdateScan          = "failed to update scan config for repository resource"
+	errUpdateMutability    = "failed to update mutability for repository resource"
+	errPatchCreationFailed = "cannot create a patch object"
 )
 
 // SetupRepository adds a controller that reconciles ECR.
@@ -101,15 +96,17 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: awsecr.NewFromConfig(*cfg), kube: c.kube}, nil
+	ecrClient := awsecr.NewFromConfig(*cfg)
+	return &external{client: ecrClient, subresourceClients: NewSubresourceClients(ecrClient), kube: c.kube}, nil
 }
 
 type external struct {
-	kube   client.Client
-	client ecr.RepositoryClient
+	kube               client.Client
+	client             ecr.RepositoryClient
+	subresourceClients []SubresourceClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint: gocyclo
 	cr, ok := mgd.(*v1alpha1.Repository)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -156,26 +153,37 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	lifecyclePolicyResp, err := e.client.GetLifecyclePolicy(ctx, &awsecr.GetLifecyclePolicyInput{RepositoryName: observed.RepositoryName, RegistryId: observed.RegistryId})
-	if err != nil && !ecr.IsLifecyclePolicyNotFoundErr(err) {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errGettingLifecyclePolicy)
+	for _, awsClient := range e.subresourceClients {
+		if awsClient.SubresourceExists(cr) {
+			err := awsClient.LateInitialize(ctx, cr)
+			if err != nil {
+				return managed.ExternalObservation{}, err
+			}
+		}
 	}
-
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = ecr.GenerateRepositoryObservation(observed)
-	lifecyclePolicyUpToDate, err := ecr.IsLifecyclePolicyUpToDate(cr.Spec.ForProvider.LifecyclePolicy, lifecyclePolicyResp)
-	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errComparingLifecyclePolicy)
+	for _, awsClient := range e.subresourceClients {
+		obs, err := awsClient.Observe(ctx, cr)
+		if err != nil {
+			return managed.ExternalObservation{}, err
+		}
+		if obs == NeedsCreate {
+			return managed.ExternalObservation{ResourceExists: false, ResourceUpToDate: false}, nil
+		}
+		if obs != Updated {
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
+		}
 	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed) && lifecyclePolicyUpToDate,
+		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed),
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) { // nolint: gocyclo
 	cr, ok := mgd.(*v1alpha1.Repository)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
@@ -186,22 +194,31 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	repository, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	_, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	if cr.Spec.ForProvider.LifecyclePolicy != nil && len(cr.Spec.ForProvider.LifecyclePolicy.Rules) > 0 {
-		err = e.putLifecyclePolicy(ctx, repository.Repository.RepositoryName, cr.Spec.ForProvider.LifecyclePolicy)
+	errs := make([]error, 0)
+	for _, awsClient := range e.subresourceClients {
+		err = awsClient.CreateOrUpdate(ctx, cr)
+		// err := awsClient.LateInitialize(ctx, cr)
 		if err != nil {
-			return managed.ExternalCreation{}, err
+			// aggregate errors since we dont want all late inits to fail if just the first one fails
+			// this can only really be run on creation, and we lose fidelty if we let this go into the
+			// reconcile loop/Observe func
+			errs = append(errs, err)
 		}
+	}
+	if len(errs) != 0 {
+		return managed.ExternalCreation{}, k8serrors.NewAggregate(errs)
 	}
 
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+// Update ensures that the upstream object are in sync when difference is detected
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint: gocyclo
 	cr, ok := mgd.(*v1alpha1.Repository)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -253,11 +270,24 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	err = e.updateLifecyclePolicy(ctx, meta.GetExternalName(cr), patch.LifecyclePolicy)
-	if err != nil {
-		return managed.ExternalUpdate{}, err
+	for _, awsClient := range e.subresourceClients {
+		status, err := awsClient.Observe(ctx, cr)
+		if err != nil {
+			cr.Status.SetConditions(xpv1.ReconcileError(err))
+			return managed.ExternalUpdate{}, err
+		}
+		switch status { //nolint:exhaustive
+		case NeedsDeletion:
+			err = awsClient.Delete(ctx, cr)
+			if err != nil {
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDelete)
+			}
+		case NeedsUpdate, NeedsCreate:
+			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
+				return managed.ExternalUpdate{}, err
+			}
+		}
 	}
-
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -321,60 +351,4 @@ func (e *external) updateTags(ctx context.Context, repo *v1alpha1.Repository) er
 		}
 	}
 	return nil
-}
-
-func (e *external) putLifecyclePolicy(ctx context.Context, repoName *string, lifecycle *v1alpha1.LifecyclePolicy) error {
-	policyText, err := json.Marshal(lifecycle)
-	if err != nil {
-		return awsclient.Wrap(err, errCreateLifecyclePolicy)
-	}
-	policyTextString := string(policyText)
-	_, err = e.client.PutLifecyclePolicy(ctx, &awsecr.PutLifecyclePolicyInput{
-		LifecyclePolicyText: &policyTextString,
-		RepositoryName:      repoName,
-	})
-	if err != nil {
-		return awsclient.Wrap(err, errCreateLifecyclePolicy)
-	}
-	return nil
-}
-
-func (e *external) updateLifecyclePolicy(ctx context.Context, repoName string, lifecycle *v1alpha1.LifecyclePolicy) error {
-	if repoName == "" {
-		return errors.New(errRepositoryNameNotDefined)
-	}
-	policy, err := e.client.GetLifecyclePolicy(ctx, &awsecr.GetLifecyclePolicyInput{RepositoryName: &repoName})
-	if err != nil && !ecr.IsLifecyclePolicyNotFoundErr(err) {
-		return awsclient.Wrap(err, errGettingLifecyclePolicy)
-	}
-
-	var observed *v1alpha1.LifecyclePolicy
-	if !ecr.IsLifecyclePolicyNotFoundErr(err) && policy.LifecyclePolicyText != nil {
-		observed, err = decodeLifecyclePolicy(*policy.LifecyclePolicyText)
-		if err != nil {
-			return awsclient.Wrap(err, errCreateLifecyclePolicy)
-		}
-	}
-	if upToDate, err := ecr.IsLifecyclePolicyUpToDate(lifecycle, policy); upToDate && err == nil {
-		return nil
-	}
-
-	// When the diff is the removal of lifecyclePolicy
-	if lifecycle == nil && observed != nil {
-		_, err := e.client.DeleteLifecyclePolicy(ctx, &awsecr.DeleteLifecyclePolicyInput{RepositoryName: &repoName})
-		if err != nil {
-			return awsclient.Wrap(err, errDeletingLifecyclePolicy)
-		}
-		return nil
-	}
-
-	return e.putLifecyclePolicy(ctx, &repoName, lifecycle)
-}
-
-func decodeLifecyclePolicy(lifecyclePolicyText string) (*v1alpha1.LifecyclePolicy, error) {
-	var lifecycle v1alpha1.LifecyclePolicy
-	if err := json.Unmarshal([]byte(lifecyclePolicyText), &lifecycle); err != nil {
-		return nil, err
-	}
-	return &lifecycle, nil
 }
