@@ -19,6 +19,7 @@ package resourcerecordset
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -56,8 +57,8 @@ func (r *NotFoundError) Error() string {
 
 // IsNotFound returns true if the error code indicates that the requested Resource Record was not found
 func IsNotFound(err error) bool {
-	_, ok := err.(*NotFoundError)
-	return ok
+	var notFoundError *NotFoundError
+	return errors.As(err, &notFoundError)
 }
 
 // NewClient creates new AWS client with provided AWS Configuration/Credentials

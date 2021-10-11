@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -222,14 +223,14 @@ func (c *iamClient) attachPolicyToUser(policyName string, username string) error
 }
 
 func isErrorAlreadyExists(err error) bool {
-	_, ok := err.(*iamtypes.EntityAlreadyExistsException)
-	return ok
+	var notFoundError *iamtypes.EntityAlreadyExistsException
+	return errors.As(err, &notFoundError)
 }
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found
 func IsErrorNotFound(err error) bool {
-	_, ok := err.(*iamtypes.NoSuchEntityException)
-	return ok
+	var notFoundError *iamtypes.NoSuchEntityException
+	return errors.As(err, &notFoundError)
 }
 
 // PolicyDocument is the structure of IAM policy document

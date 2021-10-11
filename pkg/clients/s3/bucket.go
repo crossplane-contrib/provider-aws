@@ -18,6 +18,7 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 
@@ -118,14 +119,14 @@ func NewClient(cfg aws.Config) BucketClient {
 
 // IsNotFound helper function to test for NotFound error
 func IsNotFound(err error) bool {
-	_, ok := err.(*s3types.NoSuchBucket)
-	return ok
+	var notFoundError *s3types.NoSuchBucket
+	return errors.As(err, &notFoundError)
 }
 
 // IsAlreadyExists helper function to test for ErrCodeBucketAlreadyOwnedByYou error
 func IsAlreadyExists(err error) bool {
-	_, ok := err.(*s3types.BucketAlreadyOwnedByYou)
-	return ok
+	var notFoundError *s3types.BucketAlreadyOwnedByYou
+	return errors.As(err, &notFoundError)
 }
 
 // GenerateCreateBucketInput creates the input for CreateBucket S3 Client request

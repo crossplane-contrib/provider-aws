@@ -48,8 +48,8 @@ func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *
 
 // IsPolicyNotFoundErr returns true if the error code indicates that the policy was not found
 func IsPolicyNotFoundErr(err error) bool {
-	_, ok := err.(*awsecrtypes.RepositoryPolicyNotFoundException)
-	return ok
+	var notFoundError *awsecrtypes.RepositoryPolicyNotFoundException
+	return errors.As(err, &notFoundError)
 }
 
 // Serialize is the custom marshaller for the RepositoryPolicyBody

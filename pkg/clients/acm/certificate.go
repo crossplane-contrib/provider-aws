@@ -2,6 +2,7 @@ package acm
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -164,6 +165,6 @@ func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd types.Certificat
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found
 func IsErrorNotFound(err error) bool {
-	_, ok := err.(*acmtypes.ResourceNotFoundException)
-	return ok
+	var notFoundError *acmtypes.ResourceNotFoundException
+	return errors.As(err, &notFoundError)
 }
