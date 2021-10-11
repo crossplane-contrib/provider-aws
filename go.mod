@@ -27,6 +27,7 @@ require (
 	github.com/crossplane/crossplane-tools v0.0.0-20210916125540-071de511ae8e
 	github.com/evanphx/json-patch v4.11.0+incompatible
 	github.com/go-ini/ini v1.46.0
+	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.6
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.14.0
