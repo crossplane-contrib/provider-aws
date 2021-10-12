@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -30,7 +31,8 @@ type AddressClient interface {
 
 // IsAddressNotFoundErr returns true if the error is because the address doesn't exist
 func IsAddressNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == AddressAddressNotFound || awsErr.ErrorCode() == AddressAllocationNotFound {
 			return true
 		}

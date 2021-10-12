@@ -3,6 +3,7 @@ package ec2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -52,7 +53,8 @@ func NewRouteTableClient(cfg aws.Config) RouteTableClient {
 
 // IsRouteTableNotFoundErr returns true if the error is because the route table doesn't exist
 func IsRouteTableNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == RouteTableIDNotFound {
 			return true
 		}
@@ -62,7 +64,8 @@ func IsRouteTableNotFoundErr(err error) bool {
 
 // IsRouteNotFoundErr returns true if the error is because the route doesn't exist
 func IsRouteNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == RouteNotFound {
 			return true
 		}
@@ -72,7 +75,8 @@ func IsRouteNotFoundErr(err error) bool {
 
 // IsAssociationIDNotFoundErr returns true if the error is because the association doesn't exist
 func IsAssociationIDNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == AssociationIDNotFound {
 			return true
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/smithy-go"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -40,7 +41,16 @@ func (r *CIDRNotFoundError) Error() string {
 // IsCIDRNotFound returns true if the error code indicates that the CIDR Block Association was not found
 func IsCIDRNotFound(err error) bool {
 	var notFoundError *CIDRNotFoundError
-	return errors.As(err, &notFoundError)
+	if errors.As(err, &notFoundError) {
+		return true
+	}
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
+		if awsErr.ErrorCode() == errCIDRAssociationNotFound {
+			return true
+		}
+	}
+	return false
 }
 
 // IsVpcCidrBlockUpToDate returns true if there is no update-able difference between desired

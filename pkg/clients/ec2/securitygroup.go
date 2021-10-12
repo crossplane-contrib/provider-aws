@@ -3,6 +3,7 @@ package ec2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 	"strings"
 
@@ -47,7 +48,8 @@ func NewSecurityGroupClient(cfg awsgo.Config) SecurityGroupClient {
 
 // IsSecurityGroupNotFoundErr returns true if the error is because the item doesn't exist
 func IsSecurityGroupNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == InvalidGroupNotFound {
 			return true
 		}
@@ -57,7 +59,8 @@ func IsSecurityGroupNotFoundErr(err error) bool {
 
 // IsRuleAlreadyExistsErr returns true if the error is because the rule already exists.
 func IsRuleAlreadyExistsErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == InvalidPermissionDuplicate {
 			return true
 		}

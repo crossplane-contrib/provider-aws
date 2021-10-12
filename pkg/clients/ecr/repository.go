@@ -3,6 +3,7 @@ package ecr
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 	"strings"
 
@@ -105,8 +106,8 @@ func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecrtypes.Tag,
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
 func IsRepoNotFoundErr(err error) bool {
-	_, ok := err.(*ecrtypes.RepositoryNotFoundException)
-	return ok
+	var notFoundError *ecrtypes.RepositoryNotFoundException
+	return errors.As(err, &notFoundError)
 }
 
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters
