@@ -22,7 +22,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -144,7 +143,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, awsgo.StringValue(observed.OpenIDConnectProviderArn))
+	meta.SetExternalName(cr, aws.ToString(observed.OpenIDConnectProviderArn))
 	return managed.ExternalCreation{}, nil
 }
 

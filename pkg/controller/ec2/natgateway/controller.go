@@ -49,6 +49,7 @@ func SetupNatGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.NATGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewNatGatewayClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),

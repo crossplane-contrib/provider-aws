@@ -66,6 +66,7 @@ func SetupSubnet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SubnetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),

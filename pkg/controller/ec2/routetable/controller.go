@@ -73,6 +73,7 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RouteTableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
