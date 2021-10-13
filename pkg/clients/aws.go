@@ -25,6 +25,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/smithy-go"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -751,18 +753,9 @@ func IsPolicyUpToDate(local, remote *string) bool {
 // CleanError Will remove the requestID from a awserr.Error and return a new awserr.
 // If not awserr it will return the original error
 func CleanError(err error) error {
-	if err == nil {
-		return err
-	}
-	// TODO cvodak revisit this
-	// var re *awshttp.ResponseError
-	// if errors.As(err, &re) {
-	//	log.Printf("requestID: %s, error: %v", re.ServiceRequestID(), re.Unwrap());
-	//  }
-	// if awsErr, ok := err.(awserr.Error); ok {
-	//	return awserr.New(awsErr.Code(), awsErr.Message(), nil)
-	//}
-	return err
+	var awsErr smithy.APIError
+	_ = errors.As(err, &awsErr)
+	return awsErr
 }
 
 // Wrap Attempts to remove requestID from awserr before calling Wrap
