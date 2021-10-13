@@ -43,17 +43,8 @@ type ProviderCredentials struct {
 
 // EndpointConfig is used to configure the AWS client for a custom endpoint.
 type EndpointConfig struct {
-	// URL endpoint the SDK API clients will use to make API calls to.
-	// This will be used for all queries made by AWS SDK, regardless of the region
-	// and service.
-	// Recommended for tools like localstack.
-	URL *string `json:"url,omitempty"`
-
-	// URLSuffix can be used where you need the SDK to prepend region and service
-	// ID to the URL.
-	// For example, if you provide someurl.com, SDK will construct a URL
-	// like dynamodb.us-east-1.someurl.com
-	URLSuffix *string `json:"urlSuffix,omitempty"`
+	// URL lets you configure the endpoint URL to be used in SDK calls.
+	URL URLConfig `json:"url"`
 
 	// Specifies if the endpoint's hostname can be modified by the SDK's API
 	// client.
@@ -90,6 +81,8 @@ type EndpointConfig struct {
 	SigningName *string `json:"signingName,omitempty"`
 
 	// The region that should be used for signing the request to the endpoint.
+	// For IAM, which doesn't have any region, us-east-1 is used to sign the
+	// requests, which is the only signing region of IAM.
 	SigningRegion *string `json:"signingRegion,omitempty"`
 
 	// The signing method that should be used for signing the requests to the
@@ -104,6 +97,39 @@ type EndpointConfig struct {
 	// Note that this is effective only for resources that use AWS SDK v2.
 	// +kubebuilder:validation:Enum=ServiceMetadata;Custom
 	Source *string `json:"source,omitempty"`
+}
+
+// URLConfig lets users configure the URL of the AWS SDK calls.
+type URLConfig struct {
+	// You can provide a static URL that will be used regardless of the service
+	// and region by choosing Static type. Alternatively, you can provide
+	// configuration for dynamically resolving the URL with the config you provide
+	// once you set the type as Dynamic.
+	// +kubebuilder:validation:Enum=Static;Dynamic
+	Type string `json:"type"`
+
+	// Static is the full URL you'd like the AWS SDK to use.
+	// Recommended for using tools like localstack where a single host is exposed
+	// for all services and regions.
+	Static *string `json:"static,omitempty"`
+
+	// Dynamic lets you configure the behavior of endpoint URL resolver.
+	Dynamic *DynamicURLConfig `json:"dynamic,omitempty"`
+}
+
+// DynamicURLConfig lets users configure endpoint resolving functionality.
+type DynamicURLConfig struct {
+	// Protocol is the HTTP protocol that will be used in the URL. Currently,
+	// only http and https are supported.
+	// +kubebuilder:validation:Enum=http;https
+	Protocol string `json:"protocol"`
+
+	// Host is the address of the main host that the resolver will use to
+	// prepend protocol, service and region configurations.
+	// For example, the final URL for EC2 in us-east-1 looks like https://ec2.us-east-1.amazonaws.com
+	// You would need to use "amazonaws.com" as Host and "https" as protocol
+	// to have the resolver construct it.
+	Host string `json:"host"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.

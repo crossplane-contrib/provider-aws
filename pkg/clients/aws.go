@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -54,6 +55,12 @@ const DefaultSection = ini.DefaultSection
 // GlobalRegion is the region name used for AWS services that do not have a notion
 // of region.
 const GlobalRegion = "aws-global"
+
+// Endpoint URL configuration types.
+const (
+	URLConfigTypeStatic  = "Static"
+	URLConfigTypeDynamic = "Dynamic"
+)
 
 // A FieldOption determines how common Go types are translated to the types
 // required by the AWS Go SDK.
@@ -115,27 +122,44 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
-func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config {
+func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // nolint:gocyclo
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
 	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		url := ""
-		switch {
-		case pc.Spec.Endpoint.URL != nil:
-			url = *pc.Spec.Endpoint.URL
-		case pc.Spec.Endpoint.URLSuffix != nil:
-			url = fmt.Sprintf("%s.%s.%s", service, region, *pc.Spec.Endpoint.URLSuffix)
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
 		default:
-			return aws.Endpoint{}, errors.New("neither url nor urlSuffix is given in endpoint config")
+			return aws.Endpoint{}, errors.New("unsupported url config type is chosen")
 		}
 		e := aws.Endpoint{
-			URL:               url,
+			URL:               fullURL,
 			HostnameImmutable: BoolValue(pc.Spec.Endpoint.HostnameImmutable),
 			PartitionID:       StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:       StringValue(pc.Spec.Endpoint.SigningName),
 			SigningRegion:     StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod:     StringValue(pc.Spec.Endpoint.SigningMethod),
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			e.SigningRegion = "us-east-1"
 		}
 		if pc.Spec.Endpoint.Source != nil {
 			switch *pc.Spec.Endpoint.Source {
@@ -335,22 +359,40 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		return cfg
 	}
 	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
-		url := ""
-		switch {
-		case pc.Spec.Endpoint.URL != nil:
-			url = *pc.Spec.Endpoint.URL
-		case pc.Spec.Endpoint.URLSuffix != nil:
-			url = fmt.Sprintf("%s.%s.%s", service, region, *pc.Spec.Endpoint.URLSuffix)
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
 		default:
-			return endpointsv1.ResolvedEndpoint{}, errors.New("neither url nor urlSuffix is given in endpoint config")
+			return endpointsv1.ResolvedEndpoint{}, errors.New("unsupported url config type is chosen")
 		}
-		return endpointsv1.ResolvedEndpoint{
-			URL:           url,
+		e := endpointsv1.ResolvedEndpoint{
+			URL:           fullURL,
 			PartitionID:   StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:   StringValue(pc.Spec.Endpoint.SigningName),
 			SigningRegion: StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod: StringValue(pc.Spec.Endpoint.SigningMethod),
-		}, nil
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			e.SigningRegion = "us-east-1"
+		}
+		return e, nil
 	})
 	return cfg
 }

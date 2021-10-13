@@ -139,7 +139,9 @@ spec:
                     type: string
                   signingRegion:
                     description: The region that should be used for signing the request
-                      to the endpoint.
+                      to the endpoint. For IAM, which doesn't have any region, us-east-1
+                      is used to sign the requests, which is the only signing region
+                      of IAM.
                     type: string
                   source:
                     description: The source of the Endpoint. By default, this will
@@ -154,16 +156,53 @@ spec:
                     - Custom
                     type: string
                   url:
-                    description: URL endpoint the SDK API clients will use to make
-                      API calls to. This will be used for all queries made by AWS
-                      SDK, regardless of the region and service. Recommended for tools
-                      like localstack.
-                    type: string
-                  urlSuffix:
-                    description: URLSuffix can be used where you need the SDK to prepend
-                      region and service ID to the URL. For example, if you provide
-                      someurl.com, SDK will construct a URL like dynamodb.us-east-1.someurl.com
-                    type: string
+                    description: URL lets you configure the endpoint URL to be used
+                      in SDK calls.
+                    properties:
+                      dynamic:
+                        description: Dynamic lets you configure the behavior of endpoint
+                          URL resolver.
+                        properties:
+                          host:
+                            description: Host is the address of the main host that
+                              the resolver will use to prepend protocol, service and
+                              region configurations. For example, the final URL for
+                              EC2 in us-east-1 looks like https://ec2.us-east-1.amazonaws.com
+                              You would need to use "amazonaws.com" as Host and "https"
+                              as protocol to have the resolver construct it.
+                            type: string
+                          protocol:
+                            description: Protocol is the HTTP protocol that will be
+                              used in the URL. Currently, only http and https are
+                              supported.
+                            enum:
+                            - http
+                            - https
+                            type: string
+                        required:
+                        - host
+                        - protocol
+                        type: object
+                      static:
+                        description: Static is the full URL you'd like the AWS SDK
+                          to use. Recommended for using tools like localstack where
+                          a single host is exposed for all services and regions.
+                        type: string
+                      type:
+                        description: You can provide a static URL that will be used
+                          regardless of the service and region by choosing Static
+                          type. Alternatively, you can provide configuration for dynamically
+                          resolving the URL with the config you provide once you set
+                          the type as Dynamic.
+                        enum:
+                        - Static
+                        - Dynamic
+                        type: string
+                    required:
+                    - type
+                    type: object
+                required:
+                - url
                 type: object
             required:
             - credentials
