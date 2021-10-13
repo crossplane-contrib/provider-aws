@@ -155,11 +155,15 @@ spec:
                     type: string
                   url:
                     description: URL endpoint the SDK API clients will use to make
-                      API calls to. The SDK will suffix URI path and query elements
-                      to this endpoint.
+                      API calls to. This will be used for all queries made by AWS
+                      SDK, regardless of the region and service. Recommended for tools
+                      like localstack.
                     type: string
-                required:
-                - url
+                  urlSuffix:
+                    description: URLSuffix can be used where you need the SDK to prepend
+                      region and service ID to the URL. For example, if you provide
+                      someurl.com, SDK will construct a URL like dynamodb.us-east-1.someurl.com
+                    type: string
                 type: object
             required:
             - credentials

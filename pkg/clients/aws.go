@@ -120,8 +120,17 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config {
 		return cfg
 	}
 	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		url := ""
+		switch {
+		case pc.Spec.Endpoint.URL != nil:
+			url = *pc.Spec.Endpoint.URL
+		case pc.Spec.Endpoint.URLSuffix != nil:
+			url = fmt.Sprintf("%s.%s.%s", service, region, *pc.Spec.Endpoint.URLSuffix)
+		default:
+			return aws.Endpoint{}, errors.New("neither url nor urlSuffix is given in endpoint config")
+		}
 		e := aws.Endpoint{
-			URL:               pc.Spec.Endpoint.URL,
+			URL:               url,
 			HostnameImmutable: BoolValue(pc.Spec.Endpoint.HostnameImmutable),
 			PartitionID:       StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:       StringValue(pc.Spec.Endpoint.SigningName),
@@ -326,8 +335,17 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		return cfg
 	}
 	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
+		url := ""
+		switch {
+		case pc.Spec.Endpoint.URL != nil:
+			url = *pc.Spec.Endpoint.URL
+		case pc.Spec.Endpoint.URLSuffix != nil:
+			url = fmt.Sprintf("%s.%s.%s", service, region, *pc.Spec.Endpoint.URLSuffix)
+		default:
+			return endpointsv1.ResolvedEndpoint{}, errors.New("neither url nor urlSuffix is given in endpoint config")
+		}
 		return endpointsv1.ResolvedEndpoint{
-			URL:           pc.Spec.Endpoint.URL,
+			URL:           url,
 			PartitionID:   StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:   StringValue(pc.Spec.Endpoint.SigningName),
 			SigningRegion: StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),

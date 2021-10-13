@@ -44,8 +44,16 @@ type ProviderCredentials struct {
 // EndpointConfig is used to configure the AWS client for a custom endpoint.
 type EndpointConfig struct {
 	// URL endpoint the SDK API clients will use to make API calls to.
-	// The SDK will suffix URI path and query elements to this endpoint.
-	URL string `json:"url"`
+	// This will be used for all queries made by AWS SDK, regardless of the region
+	// and service.
+	// Recommended for tools like localstack.
+	URL *string `json:"url,omitempty"`
+
+	// URLSuffix can be used where you need the SDK to prepend region and service
+	// ID to the URL.
+	// For example, if you provide someurl.com, SDK will construct a URL
+	// like dynamodb.us-east-1.someurl.com
+	URLSuffix *string `json:"urlSuffix,omitempty"`
 
 	// Specifies if the endpoint's hostname can be modified by the SDK's API
 	// client.
