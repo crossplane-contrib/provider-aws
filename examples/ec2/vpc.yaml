@@ -11,19 +11,19 @@ spec:
     instanceTenancy: default
   providerConfigRef:
     name: example
-#
-#---
-#
-#apiVersion: ec2.aws.crossplane.io/v1beta1
-#kind: VPC
-#metadata:
-#  name: sample-vpc2
-#spec:
-#  forProvider:
-#    region: us-east-1
-#    cidrBlock: 10.1.0.0/16
-#    enableDnsSupport: true
-#    enableDnsHostNames: true
-#    instanceTenancy: default
-#  providerConfigRef:
-#    name: example
+
+---
+
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: VPC
+metadata:
+  name: sample-vpc2
+spec:
+  forProvider:
+    region: us-east-1
+    cidrBlock: 10.1.0.0/16
+    enableDnsSupport: true
+    enableDnsHostNames: true
+    instanceTenancy: default
+  providerConfigRef:
+    name: example

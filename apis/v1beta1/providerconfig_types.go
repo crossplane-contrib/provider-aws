@@ -29,6 +29,7 @@ type ProviderConfigSpec struct {
 
 	// Endpoint is where you can override the default endpoint configuration
 	// of AWS calls made by the provider.
+	// +optional
 	Endpoint *EndpointConfig `json:"endpoint,omitempty"`
 }
 
@@ -71,22 +72,27 @@ type EndpointConfig struct {
 	// used to perform Endpoint Discovery. That behavior is configured via the
 	// API Client's Options.
 	// Note that this is effective only for resources that use AWS SDK v2.
+	// +optional
 	HostnameImmutable *bool `json:"hostnameImmutable,omitempty"`
 
 	// The AWS partition the endpoint belongs to.
+	// +optional
 	PartitionID *string `json:"partitionId,omitempty"`
 
 	// The service name that should be used for signing the requests to the
 	// endpoint.
+	// +optional
 	SigningName *string `json:"signingName,omitempty"`
 
 	// The region that should be used for signing the request to the endpoint.
 	// For IAM, which doesn't have any region, us-east-1 is used to sign the
 	// requests, which is the only signing region of IAM.
+	// +optional
 	SigningRegion *string `json:"signingRegion,omitempty"`
 
 	// The signing method that should be used for signing the requests to the
 	// endpoint.
+	// +optional
 	SigningMethod *string `json:"signingMethod,omitempty"`
 
 	// The source of the Endpoint. By default, this will be ServiceMetadata.
@@ -95,6 +101,7 @@ type EndpointConfig struct {
 	// perform required host mutations correctly. Source should be used along with
 	// HostnameImmutable property as per the usage requirement.
 	// Note that this is effective only for resources that use AWS SDK v2.
+	// +optional
 	// +kubebuilder:validation:Enum=ServiceMetadata;Custom
 	Source *string `json:"source,omitempty"`
 }
@@ -111,9 +118,11 @@ type URLConfig struct {
 	// Static is the full URL you'd like the AWS SDK to use.
 	// Recommended for using tools like localstack where a single host is exposed
 	// for all services and regions.
+	// +optional
 	Static *string `json:"static,omitempty"`
 
 	// Dynamic lets you configure the behavior of endpoint URL resolver.
+	// +optional
 	Dynamic *DynamicURLConfig `json:"dynamic,omitempty"`
 }
 
