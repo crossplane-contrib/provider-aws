@@ -15,6 +15,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -22,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/smithy-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
@@ -51,8 +52,9 @@ func NewInstanceClient(cfg aws.Config) InstanceClient {
 
 // IsInstanceNotFoundErr returns true if the error is because the item doesn't exist
 func IsInstanceNotFoundErr(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == InstanceNotFound {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
+		if awsErr.ErrorCode() == InstanceNotFound {
 			return true
 		}
 	}

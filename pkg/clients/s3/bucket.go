@@ -18,6 +18,7 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 
@@ -118,14 +119,14 @@ func NewClient(cfg aws.Config) BucketClient {
 
 // IsNotFound helper function to test for NotFound error
 func IsNotFound(err error) bool {
-	_, ok := err.(*s3types.NoSuchBucket)
-	return ok
+	var notFoundError *s3types.NoSuchBucket
+	return errors.As(err, &notFoundError)
 }
 
 // IsAlreadyExists helper function to test for ErrCodeBucketAlreadyOwnedByYou error
 func IsAlreadyExists(err error) bool {
-	_, ok := err.(*s3types.BucketAlreadyOwnedByYou)
-	return ok
+	var alreadyOwnedByYou *s3types.BucketAlreadyOwnedByYou
+	return errors.As(err, &alreadyOwnedByYou)
 }
 
 // GenerateCreateBucketInput creates the input for CreateBucket S3 Client request
@@ -155,7 +156,8 @@ func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 
 // CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
 func CORSConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == CORSNotFoundErrCode {
 			return true
 		}
@@ -165,7 +167,8 @@ func CORSConfigurationNotFound(err error) bool {
 
 // ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
 func ReplicationConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == ReplicationNotFoundErrCode {
 			return true
 		}
@@ -175,7 +178,8 @@ func ReplicationConfigurationNotFound(err error) bool {
 
 // PublicAccessBlockConfigurationNotFound is parses the aws Error and validates if the public access block does not exist
 func PublicAccessBlockConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == PublicAccessBlockNotFoundErrCode {
 			return true
 		}
@@ -185,7 +189,8 @@ func PublicAccessBlockConfigurationNotFound(err error) bool {
 
 // LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
 func LifecycleConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == LifecycleNotFoundErrCode {
 			return true
 		}
@@ -195,7 +200,8 @@ func LifecycleConfigurationNotFound(err error) bool {
 
 // SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
 func SSEConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == SSENotFoundErrCode {
 			return true
 		}
@@ -205,7 +211,8 @@ func SSEConfigurationNotFound(err error) bool {
 
 // TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
 func TaggingNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == TaggingNotFoundErrCode {
 			return true
 		}
@@ -215,7 +222,8 @@ func TaggingNotFound(err error) bool {
 
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == WebsiteNotFoundErrCode {
 			return true
 		}
@@ -225,7 +233,8 @@ func WebsiteConfigurationNotFound(err error) bool {
 
 // MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
 func MethodNotSupported(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == MethodNotAllowed {
 			return true
 		}
@@ -235,7 +244,8 @@ func MethodNotSupported(err error) bool {
 
 // ArgumentNotSupported is parses the aws Error and validates if parameters are now allowed for a request
 func ArgumentNotSupported(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == UnsupportedArgument {
 			return true
 		}

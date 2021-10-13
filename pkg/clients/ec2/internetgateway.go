@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -37,7 +38,8 @@ func NewInternetGatewayClient(cfg aws.Config) InternetGatewayClient {
 
 // IsInternetGatewayNotFoundErr returns true if the error is because the item doesn't exist
 func IsInternetGatewayNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == InternetGatewayIDNotFound {
 			return true
 		}
@@ -47,7 +49,8 @@ func IsInternetGatewayNotFoundErr(err error) bool {
 
 // IsInternetGatewayAlreadyAttached returns true if the error is because the item doesn't exist
 func IsInternetGatewayAlreadyAttached(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
 		if awsErr.ErrorCode() == InternetGatewayAlreadyAttached {
 			return true
 		}

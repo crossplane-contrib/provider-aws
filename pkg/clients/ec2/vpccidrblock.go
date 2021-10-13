@@ -2,12 +2,13 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	awsgo "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/smithy-go"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -39,12 +40,13 @@ func (r *CIDRNotFoundError) Error() string {
 
 // IsCIDRNotFound returns true if the error code indicates that the CIDR Block Association was not found
 func IsCIDRNotFound(err error) bool {
-	if _, ok := err.(*CIDRNotFoundError); ok {
+	var notFoundError *CIDRNotFoundError
+	if errors.As(err, &notFoundError) {
 		return true
 	}
-
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == errCIDRAssociationNotFound {
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
+		if awsErr.ErrorCode() == errCIDRAssociationNotFound {
 			return true
 		}
 	}
