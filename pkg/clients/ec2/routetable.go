@@ -54,34 +54,19 @@ func NewRouteTableClient(cfg aws.Config) RouteTableClient {
 // IsRouteTableNotFoundErr returns true if the error is because the route table doesn't exist
 func IsRouteTableNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == RouteTableIDNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == RouteTableIDNotFound
 }
 
 // IsRouteNotFoundErr returns true if the error is because the route doesn't exist
 func IsRouteNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == RouteNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == RouteNotFound
 }
 
 // IsAssociationIDNotFoundErr returns true if the error is because the association doesn't exist
 func IsAssociationIDNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == AssociationIDNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == AssociationIDNotFound
 }
 
 // GenerateRTObservation is used to produce v1beta1.RouteTableExternalStatus from

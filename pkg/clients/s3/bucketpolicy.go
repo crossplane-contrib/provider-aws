@@ -44,12 +44,7 @@ func NewBucketPolicyClient(cfg aws.Config) BucketPolicyClient {
 // IsErrorPolicyNotFound returns true if the error code indicates that the item was not found
 func IsErrorPolicyNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == "NoSuchBucketPolicy" {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == "NoSuchBucketPolicy"
 }
 
 // IsErrorBucketNotFound returns true if the error code indicates that the bucket was not found

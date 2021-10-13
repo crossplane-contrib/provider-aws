@@ -119,7 +119,7 @@ func NewClient(cfg aws.Config) BucketClient {
 
 // IsNotFound helper function to test for NotFound error
 func IsNotFound(err error) bool {
-	var notFoundError *s3types.NoSuchBucket
+	var notFoundError *s3types.NotFound
 	return errors.As(err, &notFoundError)
 }
 
@@ -157,100 +157,55 @@ func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 // CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
 func CORSConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == CORSNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == CORSNotFoundErrCode
 }
 
 // ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
 func ReplicationConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == ReplicationNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == ReplicationNotFoundErrCode
 }
 
 // PublicAccessBlockConfigurationNotFound is parses the aws Error and validates if the public access block does not exist
 func PublicAccessBlockConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == PublicAccessBlockNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == PublicAccessBlockNotFoundErrCode
 }
 
 // LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
 func LifecycleConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == LifecycleNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == LifecycleNotFoundErrCode
 }
 
 // SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
 func SSEConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == SSENotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == SSENotFoundErrCode
 }
 
 // TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
 func TaggingNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == TaggingNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == TaggingNotFoundErrCode
 }
 
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == WebsiteNotFoundErrCode {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == WebsiteNotFoundErrCode
 }
 
 // MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
 func MethodNotSupported(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == MethodNotAllowed {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == MethodNotAllowed
 }
 
 // ArgumentNotSupported is parses the aws Error and validates if parameters are now allowed for a request
 func ArgumentNotSupported(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == UnsupportedArgument {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == UnsupportedArgument
 }
 
 // UpdateBucketACL creates the ACLInput, sends the request to put an ACL based on the bucket

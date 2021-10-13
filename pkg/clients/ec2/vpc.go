@@ -37,10 +37,7 @@ func NewVPCClient(cfg aws.Config) VPCClient {
 // IsVPCNotFoundErr returns true if the error is because the item doesn't exist
 func IsVPCNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		return awsErr.ErrorCode() == VPCIDNotFound
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == VPCIDNotFound
 }
 
 // IsVpcUpToDate returns true if there is no update-able difference between desired

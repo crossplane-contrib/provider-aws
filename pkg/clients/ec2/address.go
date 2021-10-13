@@ -32,12 +32,7 @@ type AddressClient interface {
 // IsAddressNotFoundErr returns true if the error is because the address doesn't exist
 func IsAddressNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == AddressAddressNotFound || awsErr.ErrorCode() == AddressAllocationNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && (awsErr.ErrorCode() == AddressAddressNotFound || awsErr.ErrorCode() == AddressAllocationNotFound)
 }
 
 // GenerateAddressObservation is used to produce v1beta1.AddressObservation from

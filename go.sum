@@ -82,8 +82,6 @@ github.com/aws/aws-sdk-go-v2/service/acm v1.6.1 h1:VtAzCtIBLCwkSdA7L9uG0ZkKeEDSa
 github.com/aws/aws-sdk-go-v2/service/acm v1.6.1/go.mod h1:iOP3tLxkXzTlV+BqgIVYmBCGJaZjgDP12WXFopp+Rzw=
 github.com/aws/aws-sdk-go-v2/service/acmpca v1.8.1 h1:vTtSRHHKnT7o9DpK9Uxz4HXQ+qg0czIEMh3IZ16edqI=
 github.com/aws/aws-sdk-go-v2/service/acmpca v1.8.1/go.mod h1:auQKNheXl81Yu6S5JuTwEjpL+cFPppJgQsp/tS0Du0I=
-github.com/aws/aws-sdk-go-v2/service/cloudformation v1.10.1 h1:gzhtXomhFLQ+buBaFDvqmF1zKI4ool1Gbc54d3SHfGM=
-github.com/aws/aws-sdk-go-v2/service/cloudformation v1.10.1/go.mod h1:ccHKnr19GgmHUdlpVI8vr36PAfG7Q1V/pT5ZH7Owmq8=
 github.com/aws/aws-sdk-go-v2/service/ec2 v1.18.0 h1:5wWtSfYRWgkpKKMW4yJ5llzI9s24Fls7Pv7uw2BiYbk=
 github.com/aws/aws-sdk-go-v2/service/ec2 v1.18.0/go.mod h1:d8R2f1hFcknkA3MW4SeExwEua2KpR+dhSrwWlnlwe5Q=
 github.com/aws/aws-sdk-go-v2/service/ecr v1.7.0 h1:lgPtXjJNEbRLLlnk8fGDQk80A4cSpPBtyTcI4VSxork=
@@ -522,7 +520,6 @@ github.com/spf13/viper v1.8.1/go.mod h1:o0Pch8wJ9BVSWGQMbra6iw0oQ5oktSIBaujf1rJH
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
-github.com/stretchr/objx v0.2.0 h1:Hbg2NidpLE8veEBkEZTL3CvlkUIVzuU9jDplZO54c48=
 github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoHMkEqE=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=

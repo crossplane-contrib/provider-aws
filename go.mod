@@ -9,7 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.4.2
 	github.com/aws/aws-sdk-go-v2/service/acm v1.6.1
 	github.com/aws/aws-sdk-go-v2/service/acmpca v1.8.1
-	github.com/aws/aws-sdk-go-v2/service/cloudformation v1.10.1
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.7.0
 	github.com/aws/aws-sdk-go-v2/service/eks v1.10.1
@@ -32,7 +31,6 @@ require (
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/api v0.21.3
 	k8s.io/apimachinery v0.21.3
