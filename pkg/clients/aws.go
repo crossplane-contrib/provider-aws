@@ -56,6 +56,12 @@ const DefaultSection = ini.DefaultSection
 // of region.
 const GlobalRegion = "aws-global"
 
+// Endpoint URL configuration types.
+const (
+	URLConfigTypeStatic  = "Static"
+	URLConfigTypeDynamic = "Dynamic"
+)
+
 // A FieldOption determines how common Go types are translated to the types
 // required by the AWS Go SDK.
 type FieldOption int
@@ -97,39 +103,74 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(pc, cfg), nil
 	default:
 		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
 		cfg, err := UseProviderSecret(ctx, data, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(pc, cfg), nil
 	}
 }
 
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
-func SetResolver(ctx context.Context, mg resource.Managed, cfg *aws.Config) *aws.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := aws.Endpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			endpointResolver := func(service, region string) (aws.Endpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return endpoint, &aws.EndpointNotFoundError{}
-			}
-			cfg.EndpointResolver = aws.EndpointResolverFunc(endpointResolver)
-		}
+func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // nolint:gocyclo
+	if pc.Spec.Endpoint == nil {
+		return cfg
 	}
+	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
+		default:
+			return aws.Endpoint{}, errors.New("unsupported url config type is chosen")
+		}
+		e := aws.Endpoint{
+			URL:               fullURL,
+			HostnameImmutable: BoolValue(pc.Spec.Endpoint.HostnameImmutable),
+			PartitionID:       StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:       StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion:     StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod:     StringValue(pc.Spec.Endpoint.SigningMethod),
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			e.SigningRegion = "us-east-1"
+		}
+		if pc.Spec.Endpoint.Source != nil {
+			switch *pc.Spec.Endpoint.Source {
+			case "ServiceMetadata":
+				e.Source = aws.EndpointSourceServiceMetadata
+			case "Custom":
+				e.Source = aws.EndpointSourceCustom
+			}
+		}
+		return e, nil
+	})
 	return cfg
 }
 
@@ -243,7 +284,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, mg, DefaultSection, region)
+		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
@@ -253,7 +294,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
-		cfg, err := UseProviderSecretV1(ctx, data, mg, DefaultSection, region)
+		cfg, err := UseProviderSecretV1(ctx, data, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
@@ -267,13 +308,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 // [default]
 // aws_access_key_id = <YOUR_ACCESS_KEY_ID>
 // aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
-func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, profile, region string) (*awsv1.Config, error) {
-	config, err := ini.InsensitiveLoad(data)
+func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderConfig, profile, region string) (*awsv1.Config, error) {
+	cfg, err := ini.InsensitiveLoad(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	iniProfile, err := config.GetSection(profile)
+	iniProfile, err := cfg.GetSection(profile)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("cannot get %s profile in credentials secret", profile))
 	}
@@ -290,12 +331,12 @@ func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, 
 	}
 
 	creds := credentialsv1.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
 }
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed, _, region string) (*awsv1.Config, error) {
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
@@ -308,31 +349,51 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed, 
 		v2creds.AccessKeyID,
 		v2creds.SecretAccessKey,
 		v2creds.SessionToken)
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(ctx context.Context, mg resource.Managed, cfg *awsv1.Config) *awsv1.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := endpointsv1.ResolvedEndpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			endpointResolver := func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return endpointsv1.DefaultResolver().EndpointFor(service, region, optFns...)
-			}
-			cfg.EndpointResolver = endpointsv1.ResolverFunc(endpointResolver)
-		}
+func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config {
+	if pc.Spec.Endpoint == nil {
+		return cfg
 	}
+	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
+		default:
+			return endpointsv1.ResolvedEndpoint{}, errors.New("unsupported url config type is chosen")
+		}
+		e := endpointsv1.ResolvedEndpoint{
+			URL:           fullURL,
+			PartitionID:   StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:   StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion: StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod: StringValue(pc.Spec.Endpoint.SigningMethod),
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			e.SigningRegion = "us-east-1"
+		}
+		return e, nil
+	})
 	return cfg
 }
 

@@ -1,0 +1,30 @@
+---
+# AWS credentials secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-creds
+  namespace: crossplane-system
+type: Opaque
+data:
+  credentials: <REPLACEME>
+---
+# AWS provider that references the secrete credentials
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: example
+spec:
+  endpoint:
+    # An endpoint configuration for the global AWS endpoint.
+    url:
+      type: Dynamic
+      dynamic:
+        protocol: https
+        host: amazonaws.com
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: example-creds
+      key: credentials

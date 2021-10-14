@@ -38,11 +38,8 @@ func NewVPCClient(cfg aws.Config) VPCClient {
 func IsVPCNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
 	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == VPCIDNotFound {
-			return true
-		}
+		return awsErr.ErrorCode() == VPCIDNotFound
 	}
-
 	return false
 }
 
