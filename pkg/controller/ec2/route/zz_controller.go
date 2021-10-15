@@ -104,11 +104,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			derefString(route.TransitGatewayId) == derefString(cr.Spec.ForProvider.TransitGatewayID) &&
 			derefString(route.InstanceId) == derefString(cr.Spec.ForProvider.InstanceID) {
 			cr.SetConditions(xpv1.Available())
+
 			return managed.ExternalObservation{
 				ResourceExists:          true,
 				ResourceUpToDate:        true,
 				ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 			}, nil
+		} else {
+			cr.SetConditions(xpv1.Unavailable())
 		}
 	}
 	return e.observe(ctx, mg)
