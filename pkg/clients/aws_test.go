@@ -21,6 +21,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws/transport/http"
+	"github.com/aws/smithy-go"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
+	"github.com/pkg/errors"
+
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go/document"
@@ -31,6 +38,9 @@ import (
 
 const (
 	awsCredentialsFileFormat = "[%s]\naws_access_key_id = %s\naws_secret_access_key = %s"
+
+	errBoom = "boom"
+	errMsg  = "example err msg"
 )
 
 func TestCredentialsIdSecret(t *testing.T) {
@@ -521,6 +531,51 @@ func TestIsPolicyUpToDate(t *testing.T) {
 			got := IsPolicyUpToDate(&tc.args.local, &tc.args.remote)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestWrap(t *testing.T) {
+	rootErr := &smithy.GenericAPIError{
+		Code:    "InvalidVpcID.NotFound",
+		Message: "The vpc ID 'vpc-06f35a4eaed9b4609' does not exist",
+		Fault:   smithy.FaultUnknown,
+	}
+	cases := map[string]struct {
+		reason string
+		arg    error
+		want   error
+	}{
+		"Nil": {
+			arg:  nil,
+			want: nil,
+		},
+		"NonAWSError": {
+			reason: "It should not change anything if the error is not coming from AWS",
+			arg:    errors.New(errBoom),
+			want:   errors.Wrap(errors.New(errBoom), errMsg),
+		},
+		"AWSError": {
+			reason: "Request ID should be removed from the final error if it's an AWS error",
+			arg: &smithy.OperationError{
+				ServiceID:     "EC2",
+				OperationName: "DescribeVpcs",
+				Err: &http.ResponseError{
+					ResponseError: &smithyhttp.ResponseError{
+						Err: rootErr,
+					},
+					RequestID: "c3dc34d4-b9d6-42a1-9909-7e8f62c6b9cc",
+				},
+			},
+			want: errors.Wrap(rootErr, errMsg),
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := Wrap(tc.arg, errMsg)
+			if diff := cmp.Diff(tc.want, err, test.EquateErrors()); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
 			}
 		})
 	}

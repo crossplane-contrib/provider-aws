@@ -25,8 +25,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/smithy-go"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -35,8 +33,7 @@ import (
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/aws/smithy-go"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/google/go-cmp/cmp"
@@ -46,6 +43,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
 	"github.com/crossplane/provider-aws/apis/v1beta1"
@@ -750,15 +750,17 @@ func IsPolicyUpToDate(local, remote *string) bool {
 	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
 }
 
-// CleanError Will remove the requestID from a awserr.Error and return a new awserr.
-// If not awserr it will return the original error
-func CleanError(err error) error {
-	var awsErr smithy.APIError
-	_ = errors.As(err, &awsErr)
-	return awsErr
-}
-
-// Wrap Attempts to remove requestID from awserr before calling Wrap
+// Wrap will remove the request-specific information from the error and only then
+// wrap it.
 func Wrap(err error, msg string) error {
-	return errors.Wrap(CleanError(err), msg)
+	// NOTE(muvaf): nil check is done for performance, otherwise errors.As makes
+	// a few reflection calls before returning false, letting awsErr be nil.
+	if err == nil {
+		return nil
+	}
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
+		return errors.Wrap(awsErr, msg)
+	}
+	return errors.Wrap(err, msg)
 }
