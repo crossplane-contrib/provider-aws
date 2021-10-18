@@ -59,13 +59,6 @@ func NewClient(cfg *aws.Config) Client {
 	return rds.NewFromConfig(*cfg)
 }
 
-// IsErrorAlreadyExists returns true if the supplied error indicates an instance
-// already exists.
-func IsErrorAlreadyExists(err error) bool {
-	var aef *rdstypes.DBInstanceAlreadyExistsFault
-	return errors.As(err, &aef)
-}
-
 // IsErrorNotFound helper function to test for ErrCodeDBInstanceNotFoundFault error
 func IsErrorNotFound(err error) bool {
 	var nff *rdstypes.DBInstanceNotFoundFault

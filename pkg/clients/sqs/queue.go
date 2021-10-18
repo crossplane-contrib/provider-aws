@@ -147,12 +147,7 @@ func GenerateQueueObservation(url string, attr map[string]string) v1beta1.QueueO
 // IsNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
 func IsNotFound(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == QueueNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == QueueNotFound
 }
 
 // LateInitialize fills the empty fields in *v1beta1.QueueParameters with

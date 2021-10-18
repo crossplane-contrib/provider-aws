@@ -45,12 +45,7 @@ func IsCIDRNotFound(err error) bool {
 		return true
 	}
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == errCIDRAssociationNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == errCIDRAssociationNotFound
 }
 
 // IsVpcCidrBlockUpToDate returns true if there is no update-able difference between desired

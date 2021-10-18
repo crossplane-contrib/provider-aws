@@ -53,13 +53,7 @@ func NewInstanceClient(cfg aws.Config) InstanceClient {
 // IsInstanceNotFoundErr returns true if the error is because the item doesn't exist
 func IsInstanceNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == InstanceNotFound {
-			return true
-		}
-	}
-
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == InstanceNotFound
 }
 
 // IsInstanceUpToDate returns true if there is no update-able difference between desired

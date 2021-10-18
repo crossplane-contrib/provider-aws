@@ -161,8 +161,5 @@ func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
 func IsTopicNotFound(err error) bool {
 	var nfe *snstypes.NotFoundException
 	var rnfe *snstypes.ResourceNotFoundException
-	if errors.As(err, &nfe) || errors.As(err, &rnfe) {
-		return true
-	}
-	return false
+	return errors.As(err, &nfe) || errors.As(err, &rnfe)
 }

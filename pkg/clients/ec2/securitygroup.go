@@ -49,23 +49,13 @@ func NewSecurityGroupClient(cfg awsgo.Config) SecurityGroupClient {
 // IsSecurityGroupNotFoundErr returns true if the error is because the item doesn't exist
 func IsSecurityGroupNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == InvalidGroupNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == InvalidGroupNotFound
 }
 
 // IsRuleAlreadyExistsErr returns true if the error is because the rule already exists.
 func IsRuleAlreadyExistsErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == InvalidPermissionDuplicate {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == InvalidPermissionDuplicate
 }
 
 // GenerateEC2Permissions converts object Permissions to ec2 format

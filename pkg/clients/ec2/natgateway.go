@@ -37,12 +37,7 @@ func NewNatGatewayClient(cfg aws.Config) NatGatewayClient {
 // IsNatGatewayNotFoundErr returns true if the error is because the item doesn't exist
 func IsNatGatewayNotFoundErr(err error) bool {
 	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
-		if awsErr.ErrorCode() == NatGatewayNotFound {
-			return true
-		}
-	}
-	return false
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == NatGatewayNotFound
 }
 
 // GenerateNATGatewayObservation is used to produce v1beta1.NatGatewayObservation from

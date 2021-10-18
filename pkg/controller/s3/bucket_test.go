@@ -95,7 +95,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
-						return nil, &awss3types.NoSuchBucket{}
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -705,7 +705,7 @@ func TestDelete(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
-						return nil, &awss3types.NoSuchBucket{}
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),

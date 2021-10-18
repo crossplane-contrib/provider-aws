@@ -145,8 +145,5 @@ func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, s
 func IsSubscriptionNotFound(err error) bool {
 	var nfe *snstypes.NotFoundException
 	var rnfe *snstypes.ResourceNotFoundException
-	if errors.As(err, &nfe) || errors.As(err, &rnfe) {
-		return true
-	}
-	return false
+	return errors.As(err, &nfe) || errors.As(err, &rnfe)
 }

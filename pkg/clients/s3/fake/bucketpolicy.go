@@ -19,11 +19,8 @@ package fake
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 	clientset "github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -50,11 +47,4 @@ func (m *MockBucketPolicyClient) PutBucketPolicy(ctx context.Context, input *s3.
 // DeleteBucketPolicy mocks DeleteBucketPolicy method
 func (m *MockBucketPolicyClient) DeleteBucketPolicy(ctx context.Context, input *s3.DeleteBucketPolicyInput, opts ...func(*s3.Options)) (*s3.DeleteBucketPolicyOutput, error) {
 	return m.MockDeleteBucketPolicy(ctx, input, opts)
-}
-
-// NewMockBucketPolicyClient returns a new client given an aws config
-func NewMockBucketPolicyClient(conf *aws.Config) (clientset.BucketPolicyClient, iam.Client, error) {
-	s3client := MockBucketPolicyClient{}
-	iamclient := fake.Client{}
-	return &s3client, &iamclient, nil
 }
