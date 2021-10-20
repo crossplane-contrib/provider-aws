@@ -107,6 +107,10 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
 	in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
+	if len(v.Ipv6CidrBlockAssociationSet) != 0 {
+		ipv6Association := v.Ipv6CidrBlockAssociationSet[0]
+		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
+	}
 	if attributes.EnableDnsHostnames != nil {
 		in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
 	}
