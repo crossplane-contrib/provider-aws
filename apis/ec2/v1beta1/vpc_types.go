@@ -81,6 +81,20 @@ type VPCParameters struct {
 	// +immutable
 	CIDRBlock string `json:"cidrBlock"`
 
+	// The IPv6 CIDR block from the IPv6 address pool. You must also specify Ipv6Pool
+	// in the request. To let Amazon choose the IPv6 CIDR block for you, omit this
+	// parameter.
+	// +optional
+	// +immutable
+	Ipv6CIDRBlock *string `json:"ipv6CIDRBlock,omitempty"`
+
+	// Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for the
+	// VPC. You cannot specify the range of IP addresses, or the size of the CIDR
+	// block.
+	// +optional
+	// +immutable
+	AmazonProvidedIpv6CIDRBlock *bool `json:"amazonProvidedIpv6CIDRBlock,omitempty"`
+
 	// A boolean flag to enable/disable DNS support in the VPC
 	// +optional
 	EnableDNSSupport *bool `json:"enableDnsSupport,omitempty"`
