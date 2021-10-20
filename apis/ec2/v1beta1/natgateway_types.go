@@ -56,6 +56,12 @@ type NATGatewayParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
+	// Indicates whether the NAT gateway supports public or private connectivity. The
+	// default is public connectivity.
+	// +optional
+	// +kubebuilder:validation:Enum=public;private
+	ConnectivityType string `json:"connectivityType,omitempty"`
+
 	// Tags represents to current ec2 tags.
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`

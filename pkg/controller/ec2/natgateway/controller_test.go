@@ -26,16 +26,18 @@ import (
 )
 
 var (
-	natAllocationID       = "some allocation id"
-	natNetworkInterfaceID = "some network interface id"
-	natPrivateIP          = "some private ip"
-	natPublicIP           = "some public ip"
-	natGatewayID          = "some gateway id"
-	natSubnetID           = "some subnet id"
-	natVpcID              = "some vpc"
-	natFailureCode        = "some failure code"
-	natFailureMessage     = "some failure message"
-	errBoom               = errors.New("nat boomed")
+	natAllocationID         = "some allocation id"
+	natNetworkInterfaceID   = "some network interface id"
+	natPrivateIP            = "some private ip"
+	natPublicIP             = "some public ip"
+	natGatewayID            = "some gateway id"
+	natSubnetID             = "some subnet id"
+	natVpcID                = "some vpc"
+	natFailureCode          = "some failure code"
+	natFailureMessage       = "some failure message"
+	connectivityTypePrivate = "private"
+	connectivityTypePublic  = "public"
+	errBoom                 = errors.New("nat boomed")
 )
 
 type natModifier func(*v1beta1.NATGateway)
@@ -109,6 +111,23 @@ func specNatSpec() v1beta1.NATGatewayParameters {
 		AllocationID: &natAllocationID,
 		SubnetID:     &natSubnetID,
 		Tags:         specTags(),
+	}
+}
+
+func specNatPrivateSpec() v1beta1.NATGatewayParameters {
+	return v1beta1.NATGatewayParameters{
+		ConnectivityType: connectivityTypePrivate,
+		SubnetID:         &natSubnetID,
+		Tags:             specTags(),
+	}
+}
+
+func specNatPublicSpec() v1beta1.NATGatewayParameters {
+	return v1beta1.NATGatewayParameters{
+		ConnectivityType: connectivityTypePublic,
+		AllocationID:     &natAllocationID,
+		SubnetID:         &natSubnetID,
+		Tags:             specTags(),
 	}
 }
 
@@ -431,6 +450,113 @@ func TestCreate(t *testing.T) {
 				result: managed.ExternalCreation{},
 			},
 		},
+		"SuccessfulPublic": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				nat: &fake.MockNatGatewayClient{
+					MockCreate: func(ctx context.Context, input *awsec2.CreateNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.CreateNatGatewayOutput, error) {
+						return &awsec2.CreateNatGatewayOutput{
+							NatGateway: &awsec2types.NatGateway{
+								CreateTime:          &time,
+								ConnectivityType:    awsec2types.ConnectivityTypePublic,
+								NatGatewayAddresses: natAddresses(),
+								NatGatewayId:        aws.String(natGatewayID),
+								State:               awsec2types.NatGatewayStatePending,
+								SubnetId:            aws.String(natSubnetID),
+								Tags:                natTags(),
+								VpcId:               aws.String(natVpcID),
+							},
+						}, nil
+					},
+				},
+				cr: nat(withSpec(v1beta1.NATGatewayParameters{
+					AllocationID: &natAllocationID,
+					SubnetID:     &natSubnetID,
+					Tags:         specTags(),
+				})),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"SuccessfulPublicSet": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				nat: &fake.MockNatGatewayClient{
+					MockCreate: func(ctx context.Context, input *awsec2.CreateNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.CreateNatGatewayOutput, error) {
+						return &awsec2.CreateNatGatewayOutput{
+							NatGateway: &awsec2types.NatGateway{
+								CreateTime:          &time,
+								ConnectivityType:    awsec2types.ConnectivityTypePublic,
+								NatGatewayAddresses: natAddresses(),
+								NatGatewayId:        aws.String(natGatewayID),
+								State:               awsec2types.NatGatewayStatePending,
+								SubnetId:            aws.String(natSubnetID),
+								Tags:                natTags(),
+								VpcId:               aws.String(natVpcID),
+							},
+						}, nil
+					},
+				},
+				cr: nat(withSpec(v1beta1.NATGatewayParameters{
+					ConnectivityType: string(awsec2types.ConnectivityTypePublic),
+					AllocationID:     &natAllocationID,
+					SubnetID:         &natSubnetID,
+					Tags:             specTags(),
+				})),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatPublicSpec()),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"SuccessfulPrivate": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				nat: &fake.MockNatGatewayClient{
+					MockCreate: func(ctx context.Context, input *awsec2.CreateNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.CreateNatGatewayOutput, error) {
+						return &awsec2.CreateNatGatewayOutput{
+							NatGateway: &awsec2types.NatGateway{
+								CreateTime:          &time,
+								ConnectivityType:    awsec2types.ConnectivityTypePrivate,
+								NatGatewayAddresses: natAddresses(),
+								NatGatewayId:        aws.String(natGatewayID),
+								State:               awsec2types.NatGatewayStatePending,
+								SubnetId:            aws.String(natSubnetID),
+								Tags:                natTags(),
+								VpcId:               aws.String(natVpcID),
+							},
+						}, nil
+					},
+				},
+				cr: nat(withSpec(v1beta1.NATGatewayParameters{
+					ConnectivityType: string(awsec2types.ConnectivityTypePrivate),
+					SubnetID:         &natSubnetID,
+					Tags:             specTags(),
+				})),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatPrivateSpec()),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+
 		"FailedRequest": {
 			args: args{
 				kube: &test.MockClient{
