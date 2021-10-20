@@ -304,12 +304,15 @@ type IAMInstanceProfile struct {
 }
 
 // IAMInstanceProfileSpecification describes an IAM instance profile.
+// Use one of 'arn' or 'name'.
 type IAMInstanceProfileSpecification struct {
 	// The Amazon Resource Name (ARN) of the instance profile.
-	ARN *string `json:"arn"`
+	// +optional
+	ARN *string `json:"arn,omitempty"`
 
 	// The name of the instance profile.
-	Name *string `json:"name"`
+	// +optional
+	Name *string `json:"name,omitempty"`
 }
 
 // InstanceBlockDeviceMapping describes a block device mapping.
