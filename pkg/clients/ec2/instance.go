@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -503,6 +503,20 @@ func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address
 	return nil
 }
 
+// GenerateEC2Ipv6PrefixSpecificationRequest coverts an internal slice of Ipv6PrefixSpecificationRequest into a slice of ec2.Ipv6PrefixSpecificationRequest
+func GenerateEC2Ipv6PrefixSpecificationRequest(prefixes []manualv1alpha1.Ipv6PrefixSpecificationRequest) []types.Ipv6PrefixSpecificationRequest {
+	if len(prefixes) == 0 {
+		return nil
+	}
+	res := make([]types.Ipv6PrefixSpecificationRequest, len(prefixes))
+	for i, a := range prefixes {
+		res[i] = types.Ipv6PrefixSpecificationRequest{
+			Ipv6Prefix: aws.String(a.Ipv6Prefix),
+		}
+	}
+	return res
+}
+
 // GenerateInstanceIPV6Addresses coverts a slice of ec2.InstanceIpv6Address into a slice of internal InstanceIPv6Address
 func GenerateInstanceIPV6Addresses(addrs []types.InstanceIpv6Address) []manualv1alpha1.InstanceIPv6Address {
 	if addrs != nil {
@@ -592,6 +606,8 @@ func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNet
 				InterfaceType:                  s.InterfaceType,
 				Ipv6AddressCount:               s.IPv6AddressCount,
 				Ipv6Addresses:                  GenerateEC2InstanceIPV6Addresses(s.IPv6Addresses),
+				Ipv6PrefixCount:                s.Ipv6PrefixCount,
+				Ipv6Prefixes:                   GenerateEC2Ipv6PrefixSpecificationRequest(s.Ipv6Prefixes),
 				NetworkInterfaceId:             s.NetworkInterfaceID,
 				PrivateIpAddress:               s.PrivateIPAddress,
 				PrivateIpAddresses:             GenerateEC2PrivateIPAddressSpecs(s.PrivateIPAddresses),

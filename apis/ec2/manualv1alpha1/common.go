@@ -352,6 +352,14 @@ type InstanceIPv6Address struct {
 	IPv6Address *string `json:"ipv6Address"`
 }
 
+// Ipv6PrefixSpecificationRequest describes the IPv4 prefix option for a network interface.
+type Ipv6PrefixSpecificationRequest struct {
+	// The IPv6 prefix.
+	// +immutable
+	// +kubebuilder:validation:Required
+	Ipv6Prefix string `json:"ipv6Prefix"`
+}
+
 // InstanceMetadataOptionsRequest defines the metadata options for the instance.
 type InstanceMetadataOptionsRequest struct {
 	// This parameter enables or disables the HTTP metadata endpoint on your instances.
@@ -552,6 +560,18 @@ type InstanceNetworkInterfaceSpecification struct {
 	// number of instances to launch.
 	// +optional
 	IPv6Addresses []InstanceIPv6Address `json:"ipv6Addresses"`
+
+	// The number of IPv6 delegated prefixes to be automatically assigned to the
+	// network interface. You cannot use this option if you use the Ipv6Prefix option.
+	// +optional
+	// +immutable
+	Ipv6PrefixCount *int32 `json:"ipv6PrefixCount,omitempty"`
+
+	// One or more IPv6 delegated prefixes to be assigned to the network interface. You
+	// cannot use this option if you use the Ipv6PrefixCount option.
+	// +optional
+	// +immutable
+	Ipv6Prefixes []Ipv6PrefixSpecificationRequest `json:"ipv6Prefixes,omitempty"`
 
 	// The ID of the network interface.
 	//
