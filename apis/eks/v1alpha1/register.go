@@ -48,9 +48,15 @@ var (
 	FargateProfileGroupKind        = schema.GroupKind{Group: Group, Kind: FargateProfileKind}.String()
 	FargateProfileKindAPIVersion   = FargateProfileKind + "." + SchemeGroupVersion.String()
 	FargateProfileGroupVersionKind = SchemeGroupVersion.WithKind(FargateProfileKind)
+
+	IdentityProviderConfigKind             = reflect.TypeOf(IdentityProviderConfig{}).Name()
+	IdentityProviderConfigGroupKind        = schema.GroupKind{Group: Group, Kind: IdentityProviderConfigKind}.String()
+	IdentityProviderConfigKindAPIVersion   = IdentityProviderConfigKind + "." + SchemeGroupVersion.String()
+	IdentityProviderConfigGroupVersionKind = SchemeGroupVersion.WithKind(IdentityProviderConfigKind)
 )
 
 func init() {
 	SchemeBuilder.Register(&NodeGroup{}, &NodeGroupList{})
 	SchemeBuilder.Register(&FargateProfile{}, &FargateProfileList{})
+	SchemeBuilder.Register(&IdentityProviderConfig{}, &IdentityProviderConfigList{})
 }

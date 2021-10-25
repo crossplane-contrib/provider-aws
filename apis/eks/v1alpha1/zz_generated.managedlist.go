@@ -29,6 +29,15 @@ func (l *FargateProfileList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this IdentityProviderConfigList.
+func (l *IdentityProviderConfigList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this NodeGroupList.
 func (l *NodeGroupList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
