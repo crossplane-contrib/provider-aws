@@ -87,6 +87,10 @@ spec:
                     - public-read
                     - public-read-write
                     - authenticated-read
+                    - aws-exec-read
+                    - bucket-owner-read
+                    - bucket-owner-full-control
+                    - log-delivery-write
                     type: string
                   corsConfiguration:
                     description: Describes the cross-origin access configuration for
