@@ -45,6 +45,7 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an RouteTable resource"
+	errInvalidRoutes    = "RouteTable routes are invalid"
 
 	errDescribe           = "failed to describe RouteTable"
 	errMultipleItems      = "retrieved multiple RouteTables for the given routeTableId"
@@ -108,7 +109,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-
+	if err := ec2.ValidateRoutes(cr.Spec.ForProvider.Routes); err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errInvalidRoutes)
+	}
 	// To find out whether a RouteTable exist:
 	// - the object's ExternalName should have routeTableId populated
 	// - a RouteTable with the given routeTableId should exist
@@ -165,6 +168,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
+	if err := ec2.ValidateRoutes(cr.Spec.ForProvider.Routes); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errInvalidRoutes)
+	}
 	result, err := e.client.CreateRouteTable(ctx, &awsec2.CreateRouteTableInput{
 		VpcId: cr.Spec.ForProvider.VPCID,
 	})
@@ -180,7 +186,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-
+	if err := ec2.ValidateRoutes(cr.Spec.ForProvider.Routes); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errInvalidRoutes)
+	}
 	response, err := e.client.DescribeRouteTables(ctx, &awsec2.DescribeRouteTablesInput{
 		RouteTableIds: []string{meta.GetExternalName(cr)},
 	})
@@ -242,6 +250,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return errors.New(errUnexpectedObject)
+	}
+
+	if err := ec2.ValidateRoutes(cr.Spec.ForProvider.Routes); err != nil {
+		return errors.Wrap(err, errInvalidRoutes)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())

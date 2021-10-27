@@ -39,18 +39,19 @@ import (
 )
 
 var (
-	rtID           = "some rt"
-	vpcID          = "some vpc"
-	igID           = "some ig"
-	instanceID     = "natID"
-	associationID  = "someAssociation"
-	subnetID       = "some subnet"
-	removeSubnetID = "removeMe"
-	testKey        = "testKey"
-	testValue      = "testValue"
-	CIDR           = "10.0.0.0/8"
-	instanceCIDR   = "10.1.1.1/32"
-	errBoom        = errors.New("boom")
+	rtID            = "some rt"
+	vpcID           = "some vpc"
+	igID            = "some ig"
+	destinationCIDR = "0.0.0.0/0"
+	instanceID      = "natID"
+	associationID   = "someAssociation"
+	subnetID        = "some subnet"
+	removeSubnetID  = "removeMe"
+	testKey         = "testKey"
+	testValue       = "testValue"
+	CIDR            = "10.0.0.0/8"
+	instanceCIDR    = "10.1.1.1/32"
+	errBoom         = errors.New("boom")
 )
 
 type args struct {
@@ -282,7 +283,8 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: aws.String(igID),
+						GatewayID:            aws.String(igID),
+						DestinationCIDRBlock: aws.String(destinationCIDR),
 					}},
 					Associations: []v1beta1.Association{{
 						SubnetID: aws.String(subnetID),
@@ -295,7 +297,8 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: aws.String(igID),
+						GatewayID:            aws.String(igID),
+						DestinationCIDRBlock: aws.String(destinationCIDR),
 					}},
 					Associations: []v1beta1.Association{{
 						SubnetID: aws.String(subnetID),
@@ -685,7 +688,8 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: aws.String(igID),
+						GatewayID:            aws.String(igID),
+						DestinationCIDRBlock: aws.String(destinationCIDR),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{
@@ -695,7 +699,8 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: aws.String(igID),
+						GatewayID:            aws.String(igID),
+						DestinationCIDRBlock: aws.String(destinationCIDR),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{

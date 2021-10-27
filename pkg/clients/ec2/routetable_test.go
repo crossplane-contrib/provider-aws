@@ -1,6 +1,7 @@
 package ec2
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -166,6 +167,214 @@ func TestCreateRTPatch(t *testing.T) {
 			result, _ := CreateRTPatch(tc.args.rt, *tc.args.p)
 			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSortRoutes(t *testing.T) {
+	type args struct {
+		route    []v1beta1.Route
+		ec2Route []ec2types.Route
+	}
+
+	type want struct {
+		route    []v1beta1.Route
+		ec2Route []ec2types.Route
+	}
+
+	var (
+		v4RouteMin = aws.String("v4_0")
+		v4RouteMax = aws.String("v4_1")
+		v6RouteMin = aws.String("v6_0")
+		v6RouteMax = aws.String("v6_1")
+	)
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"v4": {
+			args: args{
+				route: []v1beta1.Route{
+					{
+						DestinationCIDRBlock: v4RouteMax,
+					},
+					{
+						DestinationCIDRBlock: v4RouteMin,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v4RouteMax,
+					},
+					{
+						DestinationCidrBlock: v4RouteMin,
+					},
+				},
+			},
+			want: want{
+				route: []v1beta1.Route{
+					{
+						DestinationCIDRBlock: v4RouteMin,
+					},
+					{
+						DestinationCIDRBlock: v4RouteMax,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v4RouteMin,
+					},
+					{
+						DestinationCidrBlock: v4RouteMax,
+					},
+				},
+			},
+		},
+		"v6": {
+			args: args{
+				route: []v1beta1.Route{
+					{
+						DestinationIPV6CIDRBlock: v6RouteMax,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMin,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v6RouteMax,
+					},
+					{
+						DestinationCidrBlock: v6RouteMin,
+					},
+				},
+			},
+			want: want{
+				route: []v1beta1.Route{
+					{
+						DestinationIPV6CIDRBlock: v6RouteMin,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMax,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v6RouteMin,
+					},
+					{
+						DestinationCidrBlock: v6RouteMax,
+					},
+				},
+			},
+		},
+		"both": {
+			args: args{
+				route: []v1beta1.Route{
+					{
+						DestinationCIDRBlock: v4RouteMax,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMax,
+					},
+					{
+						DestinationCIDRBlock: v4RouteMin,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMin,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v4RouteMax,
+					},
+					{
+						DestinationIpv6CidrBlock: v6RouteMax,
+					},
+					{
+						DestinationCidrBlock: v4RouteMin,
+					},
+					{
+						DestinationIpv6CidrBlock: v6RouteMin,
+					},
+				},
+			},
+			want: want{
+				route: []v1beta1.Route{
+					{
+						DestinationCIDRBlock: v4RouteMin,
+					},
+					{
+						DestinationCIDRBlock: v4RouteMax,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMin,
+					},
+					{
+						DestinationIPV6CIDRBlock: v6RouteMax,
+					},
+				},
+				ec2Route: []ec2types.Route{
+					{
+						DestinationCidrBlock: v4RouteMin,
+					},
+					{
+						DestinationCidrBlock: v4RouteMax,
+					},
+					{
+						DestinationIpv6CidrBlock: v6RouteMin,
+					},
+					{
+						DestinationIpv6CidrBlock: v6RouteMax,
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			SortRoutes(tc.args.route, tc.args.ec2Route)
+			if !reflect.DeepEqual(tc.args.route, tc.want.route) {
+				t.Errorf("SortRoutes() route got = %v, want %v", tc.args.route, tc.want.route)
+			}
+			if !reflect.DeepEqual(tc.args.ec2Route, tc.want.ec2Route) {
+				t.Errorf("SortRoutes() ec2 route got = %v, want %v", tc.args.ec2Route, tc.want.ec2Route)
+			}
+		})
+	}
+}
+
+func TestValidateRoutes(t *testing.T) {
+	type args struct {
+		route []v1beta1.Route
+	}
+	tests := map[string]struct {
+		args args
+		err  string
+	}{
+		"valid": {
+			args: args{
+				route: []v1beta1.Route{{DestinationCIDRBlock: aws.String("0.0.0.0/0")}},
+			},
+		},
+		"empty cidrs": {
+			args: args{
+				route: []v1beta1.Route{{}},
+			},
+			err: "invalid routes: route[0]: both v4 and v6 cidrs are empty",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := ValidateRoutes(tt.args.route)
+			if err != nil && err.Error() != tt.err {
+				t.Errorf("ValidateRoutes() error = %s, wantErr %s", err, err)
+			}
+			if err == nil && tt.err != "" {
+				t.Errorf("ValidateRoutes() error = %s, wantErr %s", err, err)
 			}
 		})
 	}

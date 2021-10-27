@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -205,12 +207,56 @@ func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2types.RouteTable) (bool,
 // SortRoutes sorts array of Routes on DestinationCIDR
 func SortRoutes(route []v1beta1.Route, ec2Route []ec2types.Route) {
 	sort.Slice(route, func(i, j int) bool {
-		return (route[i].DestinationCIDRBlock != nil && *route[i].DestinationCIDRBlock < *route[j].DestinationCIDRBlock) ||
-			(route[i].DestinationIPV6CIDRBlock != nil && *route[i].DestinationIPV6CIDRBlock < *route[j].DestinationIPV6CIDRBlock)
+		return compareRoutes(i, j, route)
 	})
 
 	sort.Slice(ec2Route, func(i, j int) bool {
-		return (ec2Route[i].DestinationCidrBlock != nil && *ec2Route[i].DestinationCidrBlock < *ec2Route[j].DestinationCidrBlock) ||
-			(ec2Route[i].DestinationIpv6CidrBlock != nil && *ec2Route[i].DestinationIpv6CidrBlock < *ec2Route[j].DestinationIpv6CidrBlock)
+		return compareEC2Routes(i, j, ec2Route)
 	})
+}
+
+func compareRoutes(i, j int, route []v1beta1.Route) bool {
+	if route[i].DestinationCIDRBlock != nil && route[j].DestinationCIDRBlock != nil {
+		return *route[i].DestinationCIDRBlock < *route[j].DestinationCIDRBlock
+	}
+	if route[i].DestinationIPV6CIDRBlock != nil && route[j].DestinationIPV6CIDRBlock != nil {
+		return *route[i].DestinationIPV6CIDRBlock < *route[j].DestinationIPV6CIDRBlock
+	}
+	if route[i].DestinationCIDRBlock != nil && route[j].DestinationIPV6CIDRBlock != nil {
+		return true
+	}
+	if route[i].DestinationIPV6CIDRBlock != nil && route[j].DestinationCIDRBlock != nil {
+		return false
+	}
+	return false
+}
+
+func compareEC2Routes(i, j int, ec2Route []ec2types.Route) bool {
+	if ec2Route[i].DestinationCidrBlock != nil && ec2Route[j].DestinationCidrBlock != nil {
+		return *ec2Route[i].DestinationCidrBlock < *ec2Route[j].DestinationCidrBlock
+	}
+	if ec2Route[i].DestinationIpv6CidrBlock != nil && ec2Route[j].DestinationIpv6CidrBlock != nil {
+		return *ec2Route[i].DestinationIpv6CidrBlock < *ec2Route[j].DestinationIpv6CidrBlock
+	}
+	if ec2Route[i].DestinationCidrBlock != nil && ec2Route[j].DestinationIpv6CidrBlock != nil {
+		return true
+	}
+	if ec2Route[i].DestinationIpv6CidrBlock != nil && ec2Route[j].DestinationCidrBlock != nil {
+		return false
+	}
+	return false
+}
+
+// ValidateRoutes on empty cidrs
+func ValidateRoutes(route []v1beta1.Route) error {
+	errs := make([]string, 0, len(route))
+	for i, r := range route {
+		if r.DestinationCIDRBlock == nil && r.DestinationIPV6CIDRBlock == nil {
+			errs = append(errs, fmt.Sprintf("route[%d]: both v4 and v6 cidrs are empty", i))
+		}
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("invalid routes: %s", strings.Join(errs, ";"))
+	}
+	return nil
 }
