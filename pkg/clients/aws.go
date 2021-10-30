@@ -62,6 +62,7 @@ const GlobalRegion = "aws-global"
 const (
 	URLConfigTypeStatic  = "Static"
 	URLConfigTypeDynamic = "Dynamic"
+	URLConfigTypeService = "Service"
 )
 
 // A FieldOption determines how common Go types are translated to the types
@@ -131,6 +132,23 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		fullURL := ""
 		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeService:
+			if pc.Spec.Endpoint.URL.Service == nil {
+				return aws.Endpoint{}, errors.New("service type is chosen but no values are defined")
+			}
+			// Match the service to an associated configuration
+			for _, serviceUrlConfig := range pc.Spec.Endpoint.URL.Service {
+				if strings.EqualFold(serviceUrlConfig.Service, service) {
+					if serviceUrlConfig.Url != nil {
+						fullURL = StringValue(serviceUrlConfig.Url)
+					}
+				}
+			}
+			if fullURL == "" {
+				// returning EndpointNotFoundError will allow the service to fallback to the default resolution
+				// See - https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/aws#EndpointNotFoundError
+				return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+			}
 		case URLConfigTypeStatic:
 			if pc.Spec.Endpoint.URL.Static == nil {
 				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
@@ -161,7 +179,12 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			e.SigningRegion = "us-east-1"
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
 		}
 		if pc.Spec.Endpoint.Source != nil {
 			switch *pc.Spec.Endpoint.Source {
@@ -363,6 +386,23 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
 		fullURL := ""
 		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeService:
+			if pc.Spec.Endpoint.URL.Service == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("service type is chosen but no values are defined")
+			}
+			// Match the service to an associated configuration
+			for _, serviceUrlConfig := range pc.Spec.Endpoint.URL.Service {
+				if strings.EqualFold(serviceUrlConfig.Service, service) {
+					if serviceUrlConfig.Url != nil {
+						fullURL = StringValue(serviceUrlConfig.Url)
+					}
+				}
+			}
+			if fullURL == "" {
+				// returning EndpointNotFoundError will allow the service to fallback to the default resolution
+				// See - https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/aws#EndpointNotFoundError
+				return endpointsv1.ResolvedEndpoint{}, &aws.EndpointNotFoundError{}
+			}
 		case URLConfigTypeStatic:
 			if pc.Spec.Endpoint.URL.Static == nil {
 				return endpointsv1.ResolvedEndpoint{}, errors.New("static type is chosen but static field does not have a value")
@@ -392,7 +432,12 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			e.SigningRegion = "us-east-1"
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
 		}
 		return e, nil
 	})

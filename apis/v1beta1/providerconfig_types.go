@@ -112,7 +112,8 @@ type URLConfig struct {
 	// and region by choosing Static type. Alternatively, you can provide
 	// configuration for dynamically resolving the URL with the config you provide
 	// once you set the type as Dynamic.
-	// +kubebuilder:validation:Enum=Static;Dynamic
+	// Lastly Service type can be used to specify service specific endpoints
+	// +kubebuilder:validation:Enum=Static;Dynamic;Service
 	Type string `json:"type"`
 
 	// Static is the full URL you'd like the AWS SDK to use.
@@ -124,6 +125,10 @@ type URLConfig struct {
 	// Dynamic lets you configure the behavior of endpoint URL resolver.
 	// +optional
 	Dynamic *DynamicURLConfig `json:"dynamic,omitempty"`
+
+	// Service lets you configure the behavior of endpoint URL resolver on a per-service basis
+	// +optional
+	Service []ServiceURLConfig `json:"service"`
 }
 
 // DynamicURLConfig lets users configure endpoint resolving functionality.
@@ -139,6 +144,16 @@ type DynamicURLConfig struct {
 	// You would need to use "amazonaws.com" as Host and "https" as protocol
 	// to have the resolver construct it.
 	Host string `json:"host"`
+}
+
+// ServiceURLConfig lets users configure endpoint resolving functionality on a per-service basis
+type ServiceURLConfig struct {
+	// Aws service name to match
+	Service string `json:"id"`
+
+	// Url is the url which should be used for all calls to this service
+	// For example, https://iam-fips.amazonaws.com
+	Url *string `json:"url,omitempty"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.

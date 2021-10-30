@@ -183,6 +183,24 @@ spec:
                         - host
                         - protocol
                         type: object
+                      service:
+                        description: Service lets you configure the behavior of endpoint
+                          URL resolver on a per-service basis
+                        items:
+                          description: ServiceURLConfig lets users configure endpoint
+                            resolving functionality on a per-service basis
+                          properties:
+                            id:
+                              description: Aws service name to match
+                              type: string
+                            url:
+                              description: Url is the url which should be used for
+                                all calls to this service For example, https://iam-fips.amazonaws.com
+                              type: string
+                          required:
+                          - id
+                          type: object
+                        type: array
                       static:
                         description: Static is the full URL you'd like the AWS SDK
                           to use. Recommended for using tools like localstack where
@@ -193,10 +211,12 @@ spec:
                           regardless of the service and region by choosing Static
                           type. Alternatively, you can provide configuration for dynamically
                           resolving the URL with the config you provide once you set
-                          the type as Dynamic.
+                          the type as Dynamic. Lastly Service type can be used to
+                          specify service specific endpoints
                         enum:
                         - Static
                         - Dynamic
+                        - Service
                         type: string
                     required:
                     - type
