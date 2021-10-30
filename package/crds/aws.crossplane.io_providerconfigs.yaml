@@ -194,7 +194,7 @@ spec:
                               description: Aws service name to match
                               type: string
                             url:
-                              description: Url is the url which should be used for
+                              description: URL is the url which should be used for
                                 all calls to this service For example, https://iam-fips.amazonaws.com
                               type: string
                           required:
