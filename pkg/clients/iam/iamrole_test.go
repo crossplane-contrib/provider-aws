@@ -427,7 +427,13 @@ func TestDiffIAMTags(t *testing.T) {
 			tagCmp := cmpopts.SortSlices(func(i, j iamtypes.Tag) bool {
 				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
 			})
-			add, remove := DiffIAMTags(tc.args.local, tc.args.remote)
+
+			crTagMap := make(map[string]string, len(tc.args.local))
+			for _, v := range tc.args.local {
+				crTagMap[v.Key] = v.Value
+			}
+
+			add, remove, _ := DiffIAMTags(crTagMap, tc.args.remote)
 			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

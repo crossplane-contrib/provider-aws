@@ -165,7 +165,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errSDK)
 	}
 
-	add, remove := iam.DiffIAMTags(cr.Spec.ForProvider.Tags, observed.Role.Tags)
+	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
+	for _, v := range cr.Spec.ForProvider.Tags {
+		crTagMap[v.Key] = v.Value
+	}
+
+	add, remove, _ := iam.DiffIAMTags(crTagMap, observed.Role.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagRole(ctx, &awsiam.UntagRoleInput{
 			RoleName: aws.String(meta.GetExternalName(cr)),
