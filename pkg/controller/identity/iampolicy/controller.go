@@ -136,13 +136,20 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	update, err := iam.IsPolicyUpToDate(cr.Spec.ForProvider, *versionRsp.PolicyVersion)
+
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDate)
 	}
 
+	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
+	for _, v := range cr.Spec.ForProvider.Tags {
+		crTagMap[v.Key] = v.Value
+	}
+	_, _, areRolesUpdated := iam.DiffIAMTags(crTagMap, policyResp.Policy.Tags)
+
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: update,
+		ResourceUpToDate: update && areRolesUpdated,
 	}, nil
 }
 
@@ -152,11 +159,21 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
+	tags := cr.Spec.ForProvider.Tags
+	inputPolicyTags := make([]awsiamtypes.Tag, len(tags))
+	for i := range tags {
+		inputPolicyTags[i] = awsiamtypes.Tag{
+			Key:   &tags[i].Key,
+			Value: &tags[i].Value,
+		}
+	}
+
 	createOutput, err := e.client.CreatePolicy(ctx, &awsiam.CreatePolicyInput{
 		Description:    cr.Spec.ForProvider.Description,
 		Path:           cr.Spec.ForProvider.Path,
 		PolicyDocument: aws.String(cr.Spec.ForProvider.Document),
 		PolicyName:     aws.String(cr.Spec.ForProvider.Name),
+		Tags:           inputPolicyTags,
 	})
 
 	if err != nil {
@@ -189,7 +206,43 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		SetAsDefault:   true,
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	}
+
+	observed, err := e.client.GetPolicy(ctx, &awsiam.GetPolicyInput{
+		PolicyArn: aws.String(meta.GetExternalName(cr)),
+	})
+
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+	}
+
+	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
+	for _, v := range cr.Spec.ForProvider.Tags {
+		crTagMap[v.Key] = v.Value
+	}
+
+	add, remove, _ := iam.DiffIAMTags(crTagMap, observed.Policy.Tags)
+	if len(add) != 0 {
+		if _, err := e.client.TagPolicy(ctx, &awsiam.TagPolicyInput{
+			PolicyArn: aws.String(meta.GetExternalName(cr)),
+			Tags:      add,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot tag policy")
+		}
+	}
+
+	if len(remove) != 0 {
+		if _, err := e.client.UntagPolicy(ctx, &awsiam.UntagPolicyInput{
+			PolicyArn: aws.String(meta.GetExternalName(cr)),
+			TagKeys:   remove,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot untag policy")
+		}
+	}
+
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

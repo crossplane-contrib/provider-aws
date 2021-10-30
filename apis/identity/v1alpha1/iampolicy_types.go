@@ -37,6 +37,8 @@ type IAMPolicyParameters struct {
 
 	// The name of the policy.
 	Name string `json:"name"`
+
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // An IAMPolicySpec defines the desired state of an IAMPolicy.
