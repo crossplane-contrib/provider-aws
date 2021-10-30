@@ -137,10 +137,10 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 				return aws.Endpoint{}, errors.New("service type is chosen but no values are defined")
 			}
 			// Match the service to an associated configuration
-			for _, serviceUrlConfig := range pc.Spec.Endpoint.URL.Service {
-				if strings.EqualFold(serviceUrlConfig.Service, service) {
-					if serviceUrlConfig.Url != nil {
-						fullURL = StringValue(serviceUrlConfig.Url)
+			for _, serviceURLConfig := range pc.Spec.Endpoint.URL.Service {
+				if strings.EqualFold(serviceURLConfig.Service, service) {
+					if serviceURLConfig.URL != nil {
+						fullURL = StringValue(serviceURLConfig.URL)
 					}
 				}
 			}
@@ -379,7 +379,7 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config {
+func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config { // nolint:gocyclo
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
@@ -391,10 +391,10 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 				return endpointsv1.ResolvedEndpoint{}, errors.New("service type is chosen but no values are defined")
 			}
 			// Match the service to an associated configuration
-			for _, serviceUrlConfig := range pc.Spec.Endpoint.URL.Service {
-				if strings.EqualFold(serviceUrlConfig.Service, service) {
-					if serviceUrlConfig.Url != nil {
-						fullURL = StringValue(serviceUrlConfig.Url)
+			for _, serviceURLConfig := range pc.Spec.Endpoint.URL.Service {
+				if strings.EqualFold(serviceURLConfig.Service, service) {
+					if serviceURLConfig.URL != nil {
+						fullURL = StringValue(serviceURLConfig.URL)
 					}
 				}
 			}

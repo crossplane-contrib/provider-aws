@@ -151,9 +151,9 @@ type ServiceURLConfig struct {
 	// Aws service name to match
 	Service string `json:"id"`
 
-	// Url is the url which should be used for all calls to this service
+	// URL is the url which should be used for all calls to this service
 	// For example, https://iam-fips.amazonaws.com
-	Url *string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.

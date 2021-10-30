@@ -655,7 +655,7 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 					HostnameImmutable: aws.Bool(false),
 					URL: v1beta1.URLConfig{
 						Type:    "Service",
-						Service: []v1beta1.ServiceURLConfig{{Service: "iam", Url: aws.String("https://iam-fips.amazonaws.com")}},
+						Service: []v1beta1.ServiceURLConfig{{Service: "iam", URL: aws.String("https://iam-fips.amazonaws.com")}},
 					},
 				},
 			},
@@ -670,7 +670,7 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 				endpointConfig: &v1beta1.EndpointConfig{
 					URL: v1beta1.URLConfig{
 						Type:    "Service",
-						Service: []v1beta1.ServiceURLConfig{{Service: "iam", Url: aws.String("https://iam-fips.amazonaws.com")}},
+						Service: []v1beta1.ServiceURLConfig{{Service: "iam", URL: aws.String("https://iam-fips.amazonaws.com")}},
 					},
 				},
 			},
