@@ -40,11 +40,15 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 const (
-	clusterIDHeader = "x-k8s-aws-id"
-	v1Prefix        = "k8s-aws-v1."
+	clusterIDHeader  = "x-k8s-aws-id"
+	expireHeader     = "X-Amz-Expires"
+	expireHeaderTime = "60"
+	v1Prefix         = "k8s-aws-v1."
 )
 
 // Client defines EKS Client operations
@@ -338,8 +342,17 @@ func GetConnectionDetails(ctx context.Context, cluster *ekstypes.Cluster, stsCli
 	if cluster == nil || cluster.Name == nil || cluster.Endpoint == nil || cluster.CertificateAuthority == nil || cluster.CertificateAuthority.Data == nil {
 		return managed.ConnectionDetails{}
 	}
-	getCallerIdentity, _ := stsClient.PresignGetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
-	getCallerIdentity.SignedHeader[clusterIDHeader] = []string{*cluster.Name}
+
+	getCallerIdentity, _ := stsClient.PresignGetCallerIdentity(ctx, &sts.GetCallerIdentityInput{},
+		func(po *sts.PresignOptions) {
+			po.ClientOptions = []func(*sts.Options){
+				sts.WithAPIOptions(
+					smithyhttp.AddHeaderValue(clusterIDHeader, *cluster.Name),
+					smithyhttp.AddHeaderValue(expireHeader, expireHeaderTime), // otherwise we get in authenticator log invalid X-Amz-Expires parameter in pre-signed URL: 0
+				),
+			}
+		},
+	)
 
 	// NOTE(hasheddan): This is carried over from the v1alpha3 version of the
 	// EKS cluster resource. Signing the URL means that anyone in possession of
