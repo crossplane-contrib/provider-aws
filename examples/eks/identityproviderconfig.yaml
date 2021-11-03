@@ -1,0 +1,23 @@
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: IdentityProviderConfig
+metadata:
+  name: azure-identityproviderconfig
+  labels:
+    examplelabelkey: "examplelabelval"
+spec:
+  forProvider:
+    region: us-east-1
+    clusterNameRef:
+      name: sample-cluster
+
+    oidc:
+      clientId: spn:example-client-id
+      issuerUrl: https://sts.windows.net/example-tenant-id/
+      usernameClaim: "upn"
+      usernamePrefix: "aad:"
+      groupsClaim: "group"
+      groupsPrefix: "aad:"
+    tags:
+      exampletagkey: "exampletagval"
+  providerConfigRef:
+    name: example

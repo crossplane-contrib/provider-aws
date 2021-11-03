@@ -70,6 +70,10 @@ type Client interface {
 	DescribeFargateProfile(ctx context.Context, input *eks.DescribeFargateProfileInput, opts ...func(*eks.Options)) (*eks.DescribeFargateProfileOutput, error)
 	CreateFargateProfile(ctx context.Context, input *eks.CreateFargateProfileInput, opts ...func(*eks.Options)) (*eks.CreateFargateProfileOutput, error)
 	DeleteFargateProfile(ctx context.Context, input *eks.DeleteFargateProfileInput, opts ...func(*eks.Options)) (*eks.DeleteFargateProfileOutput, error)
+
+	DescribeIdentityProviderConfig(ctx context.Context, input *eks.DescribeIdentityProviderConfigInput, opts ...func(*eks.Options)) (*eks.DescribeIdentityProviderConfigOutput, error)
+	AssociateIdentityProviderConfig(ctx context.Context, input *eks.AssociateIdentityProviderConfigInput, opts ...func(*eks.Options)) (*eks.AssociateIdentityProviderConfigOutput, error)
+	DisassociateIdentityProviderConfig(ctx context.Context, input *eks.DisassociateIdentityProviderConfigInput, opts ...func(*eks.Options)) (*eks.DisassociateIdentityProviderConfigOutput, error)
 }
 
 // STSClient STS presigner

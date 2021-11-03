@@ -1,0 +1,277 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.2
+  creationTimestamp: null
+  name: identityproviderconfigs.eks.aws.crossplane.io
+spec:
+  group: eks.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: IdentityProviderConfig
+    listKind: IdentityProviderConfigList
+    plural: identityproviderconfigs
+    singular: identityproviderconfig
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .spec.forProvider.clusterName
+      name: CLUSTER
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: An IdentityProviderConfig is a managed resource that represents
+          an AWS Elastic Kubernetes Service IdentityProviderConfig.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: A IdentityProviderConfigSpec defines the desired state of
+              an EKS identity provider.
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: IdentityProviderConfigParameters define the desired state
+                  of an AWS Elastic Kubernetes Service Identity Provider.
+                properties:
+                  clusterName:
+                    description: The name of the cluster to associate the identity
+                      provider with.
+                    type: string
+                  clusterNameRef:
+                    description: ClusterNameRef is a reference to a Cluster used to
+                      set the ClusterName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  clusterNameSelector:
+                    description: ClusterNameSelector selects references to a Cluster
+                      used to set the ClusterName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  oidc:
+                    description: An object that represents an OpenID Connect (OIDC)
+                      identity provider configuration.
+                    properties:
+                      clientId:
+                        description: This is also known as audience. The ID for the
+                          client application that makes authentication requests to
+                          the OpenID identity provider.
+                        type: string
+                      groupsClaim:
+                        description: The JWT claim that the provider uses to return
+                          your groups.
+                        type: string
+                      groupsPrefix:
+                        description: 'The prefix that is prepended to group claims
+                          to prevent clashes with existing names (such as system:
+                          groups). For example, the value oidc: will create group
+                          names like oidc:engineering and oidc:infra.'
+                        type: string
+                      issuerUrl:
+                        description: The URL of the OpenID identity provider that
+                          allows the API server to discover public signing keys for
+                          verifying tokens. The URL must begin with https:// and should
+                          correspond to the iss claim in the provider's OIDC ID tokens.
+                          Per the OIDC standard, path components are allowed but query
+                          parameters are not. Typically the URL consists of only a
+                          hostname, like https://server.example.org or https://example.com.
+                          This URL should point to the level below .well-known/openid-configuration
+                          and must be publicly accessible over the internet.
+                        type: string
+                      requiredClaims:
+                        additionalProperties:
+                          type: string
+                        description: The key value pairs that describe required claims
+                          in the identity token. If set, each claim is verified to
+                          be present in the token with a matching value. For the maximum
+                          number of claims that you can require, see Amazon EKS service
+                          quotas (https://docs.aws.amazon.com/eks/latest/userguide/service-quotas.html)
+                          in the Amazon EKS User Guide.
+                        type: object
+                      usernameClaim:
+                        description: The JSON Web Token (JWT) claim to use as the
+                          username. The default is sub, which is expected to be a
+                          unique identifier of the end user. You can choose other
+                          claims, such as email or name, depending on the OpenID identity
+                          provider. Claims other than email are prefixed with the
+                          issuer URL to prevent naming clashes with other plug-ins.
+                        type: string
+                      usernamePrefix:
+                        description: The prefix that is prepended to username claims
+                          to prevent clashes with existing names. If you do not provide
+                          this field, and username is a value other than email, the
+                          prefix defaults to issuerurl#. You can use the value - to
+                          disable all prefixing.
+                        type: string
+                    required:
+                    - clientId
+                    - issuerUrl
+                    type: object
+                  region:
+                    description: Region is the region you'd like the identity provider
+                      to be created in.
+                    type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: The metadata to apply to the configuration to assist
+                      with categorization and organization. Each tag consists of a
+                      key and an optional value, both of which you define.
+                    type: object
+                required:
+                - oidc
+                - region
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: An IdentityProviderConfigStatus represents the observed state
+              of an EKS associated identity provider.
+            properties:
+              atProvider:
+                description: IdentityProviderConfigObservation is the observed state
+                  of an identity provider.
+                properties:
+                  identityProviderConfigArn:
+                    type: string
+                  status:
+                    description: The current status of the managed identity provider
+                      config.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
