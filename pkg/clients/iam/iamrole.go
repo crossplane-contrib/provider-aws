@@ -200,19 +200,15 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iamtypes.Role) (bool,
 // DiffIAMTags returns the lists of tags that need to be removed and added according
 // to current and desired states, also returns if desired state needs to be updated
 func DiffIAMTags(local map[string]string, remote []iamtypes.Tag) (add []iamtypes.Tag, remove []string, areTagsUpToDate bool) {
-	addMap := make(map[string]string, len(local))
-	for k, v := range local {
-		addMap[k] = v
-	}
 	removeMap := map[string]struct{}{}
 	for _, t := range remote {
-		if addMap[aws.ToString(t.Key)] == aws.ToString(t.Value) {
-			delete(addMap, aws.ToString(t.Key))
+		if local[aws.ToString(t.Key)] == aws.ToString(t.Value) {
+			delete(local, aws.ToString(t.Key))
 			continue
 		}
 		removeMap[aws.ToString(t.Key)] = struct{}{}
 	}
-	for k, v := range addMap {
+	for k, v := range local {
 		add = append(add, iamtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 	for k := range removeMap {
