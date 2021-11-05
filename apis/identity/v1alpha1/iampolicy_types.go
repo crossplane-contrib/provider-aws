@@ -17,9 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // IAMPolicyParameters define the desired state of an AWS IAM Policy.
@@ -37,6 +36,8 @@ type IAMPolicyParameters struct {
 
 	// The name of the policy.
 	Name string `json:"name"`
+
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // An IAMPolicySpec defines the desired state of an IAMPolicy.

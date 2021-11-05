@@ -311,6 +311,11 @@ func TestUpdate(t *testing.T) {
 					MockCreatePolicyVersion: func(ctx context.Context, input *awsiam.CreatePolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.CreatePolicyVersionOutput, error) {
 						return &awsiam.CreatePolicyVersionOutput{}, nil
 					},
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, nil
+					},
 				},
 				cr: policy(withExterName(arn)),
 			},
