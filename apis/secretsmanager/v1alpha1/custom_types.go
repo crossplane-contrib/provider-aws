@@ -64,6 +64,17 @@ type CustomSecretParameters struct {
 	//
 	// This value can range from 7 to 30 days. The default value is 30.
 	RecoveryWindowInDays *int64 `json:"recoveryWindowInDays,omitempty"`
+
+	// A JSON-formatted string constructed according to the grammar and syntax for
+	// an Amazon Web Services resource-based policy. The policy in the string identifies
+	// who can access or manage this secret and its versions. For information on
+	// how to format a JSON parameter for the various command line tool environments,
+	// see Using JSON for Parameters (http://docs.aws.amazon.com/cli/latest/userguide/cli-using-param.html#cli-using-param-json)
+	// in the CLI User Guide.
+	//
+	// ResourcePolicy is a required field
+	// +optional
+	ResourcePolicy *string `json:"resourcePolicy,omitempty"`
 }
 
 // A SecretReference is a reference to a secret in an arbitrary namespace.
