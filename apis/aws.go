@@ -34,6 +34,7 @@ import (
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	ecrv1alpha1 "github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	efsv1alpha1 "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
+	eksmanualv1alpha1 "github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -80,10 +81,11 @@ func init() {
 		secretsmanagerv1alpha1.SchemeBuilder.AddToScheme,
 		servicediscoveryv1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
+		eksv1alpha1.SchemeBuilder.AddToScheme,
 		eksv1beta1.SchemeBuilder.AddToScheme,
 		sqsv1beta1.SchemeBuilder.AddToScheme,
 		redshiftv1alpha1.SchemeBuilder.AddToScheme,
-		eksv1alpha1.SchemeBuilder.AddToScheme,
+		eksmanualv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
 		apigatewayv2.SchemeBuilder.AddToScheme,
 		sfnv1alpha1.SchemeBuilder.AddToScheme,

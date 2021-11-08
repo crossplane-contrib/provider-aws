@@ -31,7 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
@@ -45,13 +45,13 @@ var (
 type args struct {
 	eks  eks.Client
 	kube client.Client
-	cr   *v1alpha1.IdentityProviderConfig
+	cr   *manualv1alpha1.IdentityProviderConfig
 }
 
-type identityProviderConfigModifier func(config *v1alpha1.IdentityProviderConfig)
+type identityProviderConfigModifier func(config *manualv1alpha1.IdentityProviderConfig)
 
 func withConditions(c ...xpv1.Condition) identityProviderConfigModifier {
-	return func(r *v1alpha1.IdentityProviderConfig) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *manualv1alpha1.IdentityProviderConfig) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withTags(tagMaps ...map[string]string) identityProviderConfigModifier {
@@ -61,15 +61,15 @@ func withTags(tagMaps ...map[string]string) identityProviderConfigModifier {
 			tags[k] = v
 		}
 	}
-	return func(r *v1alpha1.IdentityProviderConfig) { r.Spec.ForProvider.Tags = tags }
+	return func(r *manualv1alpha1.IdentityProviderConfig) { r.Spec.ForProvider.Tags = tags }
 }
 
-func withStatus(s v1alpha1.IdentityProviderConfigStatusType) identityProviderConfigModifier {
-	return func(r *v1alpha1.IdentityProviderConfig) { r.Status.AtProvider.Status = s }
+func withStatus(s manualv1alpha1.IdentityProviderConfigStatusType) identityProviderConfigModifier {
+	return func(r *manualv1alpha1.IdentityProviderConfig) { r.Status.AtProvider.Status = s }
 }
 
-func identityProviderConfig(m ...identityProviderConfigModifier) *v1alpha1.IdentityProviderConfig {
-	cr := &v1alpha1.IdentityProviderConfig{}
+func identityProviderConfig(m ...identityProviderConfigModifier) *manualv1alpha1.IdentityProviderConfig {
+	cr := &manualv1alpha1.IdentityProviderConfig{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -81,7 +81,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.IdentityProviderConfig
+		cr     *manualv1alpha1.IdentityProviderConfig
 		result managed.ExternalObservation
 		err    error
 	}
@@ -109,7 +109,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: identityProviderConfig(
 					withConditions(xpv1.Available()),
-					withStatus(v1alpha1.IdentityProviderConfigStatusActive)),
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -136,7 +136,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: identityProviderConfig(
 					withConditions(xpv1.Deleting()),
-					withStatus(v1alpha1.IdentityProviderConfigStatusDeleting)),
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -192,7 +192,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: identityProviderConfig(
-					withStatus(v1alpha1.IdentityProviderConfigStatusCreating),
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusCreating),
 					withConditions(xpv1.Creating()),
 					withTags(tags),
 				),
@@ -225,7 +225,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.IdentityProviderConfig
+		cr     *manualv1alpha1.IdentityProviderConfig
 		result managed.ExternalCreation
 		err    error
 	}
@@ -250,11 +250,11 @@ func TestCreate(t *testing.T) {
 		},
 		"SuccessfulNoNeedForCreate": {
 			args: args{
-				cr: identityProviderConfig(withStatus(v1alpha1.IdentityProviderConfigStatusCreating)),
+				cr: identityProviderConfig(withStatus(manualv1alpha1.IdentityProviderConfigStatusCreating)),
 			},
 			want: want{
 				cr: identityProviderConfig(
-					withStatus(v1alpha1.IdentityProviderConfigStatusCreating),
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusCreating),
 					withConditions(xpv1.Creating())),
 			},
 		},
@@ -294,7 +294,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.IdentityProviderConfig
+		cr     *manualv1alpha1.IdentityProviderConfig
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -410,7 +410,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.IdentityProviderConfig
+		cr  *manualv1alpha1.IdentityProviderConfig
 		err error
 	}
 
@@ -433,10 +433,10 @@ func TestDelete(t *testing.T) {
 		},
 		"AlreadyDeleting": {
 			args: args{
-				cr: identityProviderConfig(withStatus(v1alpha1.IdentityProviderConfigStatusDeleting)),
+				cr: identityProviderConfig(withStatus(manualv1alpha1.IdentityProviderConfigStatusDeleting)),
 			},
 			want: want{
-				cr: identityProviderConfig(withStatus(v1alpha1.IdentityProviderConfigStatusDeleting),
+				cr: identityProviderConfig(withStatus(manualv1alpha1.IdentityProviderConfigStatusDeleting),
 					withConditions(xpv1.Deleting())),
 			},
 		},
@@ -486,7 +486,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.IdentityProviderConfig
+		cr  *manualv1alpha1.IdentityProviderConfig
 		err error
 	}
 

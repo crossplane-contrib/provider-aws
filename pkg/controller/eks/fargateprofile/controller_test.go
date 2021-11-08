@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
@@ -46,13 +46,13 @@ var (
 type args struct {
 	eks  eks.Client
 	kube client.Client
-	cr   *v1alpha1.FargateProfile
+	cr   *manualv1alpha1.FargateProfile
 }
 
-type fargateProfileModifier func(*v1alpha1.FargateProfile)
+type fargateProfileModifier func(*manualv1alpha1.FargateProfile)
 
 func withConditions(c ...xpv1.Condition) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *manualv1alpha1.FargateProfile) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withTags(tagMaps ...map[string]string) fargateProfileModifier {
@@ -62,19 +62,19 @@ func withTags(tagMaps ...map[string]string) fargateProfileModifier {
 			tags[k] = v
 		}
 	}
-	return func(r *v1alpha1.FargateProfile) { r.Spec.ForProvider.Tags = tags }
+	return func(r *manualv1alpha1.FargateProfile) { r.Spec.ForProvider.Tags = tags }
 }
 
 func withSubnets(s []string) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Spec.ForProvider.Subnets = s }
+	return func(r *manualv1alpha1.FargateProfile) { r.Spec.ForProvider.Subnets = s }
 }
 
-func withStatus(s v1alpha1.FargateProfileStatusType) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Status.AtProvider.Status = s }
+func withStatus(s manualv1alpha1.FargateProfileStatusType) fargateProfileModifier {
+	return func(r *manualv1alpha1.FargateProfile) { r.Status.AtProvider.Status = s }
 }
 
-func fargateProfile(m ...fargateProfileModifier) *v1alpha1.FargateProfile {
-	cr := &v1alpha1.FargateProfile{}
+func fargateProfile(m ...fargateProfileModifier) *manualv1alpha1.FargateProfile {
+	cr := &manualv1alpha1.FargateProfile{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -86,7 +86,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalObservation
 		err    error
 	}
@@ -111,7 +111,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withConditions(xpv1.Available()),
-					withStatus(v1alpha1.FargateProfileStatusActive)),
+					withStatus(manualv1alpha1.FargateProfileStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -135,7 +135,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withConditions(xpv1.Deleting()),
-					withStatus(v1alpha1.FargateProfileStatusDeleting)),
+					withStatus(manualv1alpha1.FargateProfileStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -189,7 +189,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: fargateProfile(
-					withStatus(v1alpha1.FargateProfileStatusCreating),
+					withStatus(manualv1alpha1.FargateProfileStatusCreating),
 					withConditions(xpv1.Creating()),
 					withSubnets(subnets),
 				),
@@ -222,7 +222,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalCreation
 		err    error
 	}
@@ -247,11 +247,11 @@ func TestCreate(t *testing.T) {
 		},
 		"SuccessfulNoNeedForCreate": {
 			args: args{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusCreating)),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusCreating)),
 			},
 			want: want{
 				cr: fargateProfile(
-					withStatus(v1alpha1.FargateProfileStatusCreating),
+					withStatus(manualv1alpha1.FargateProfileStatusCreating),
 					withConditions(xpv1.Creating())),
 			},
 		},
@@ -291,7 +291,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -400,7 +400,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.FargateProfile
+		cr  *manualv1alpha1.FargateProfile
 		err error
 	}
 
@@ -423,10 +423,10 @@ func TestDelete(t *testing.T) {
 		},
 		"AlreadyDeleting": {
 			args: args{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusDeleting)),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusDeleting)),
 			},
 			want: want{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusDeleting),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusDeleting),
 					withConditions(xpv1.Deleting())),
 			},
 		},
@@ -476,7 +476,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.FargateProfile
+		cr  *manualv1alpha1.FargateProfile
 		err error
 	}
 

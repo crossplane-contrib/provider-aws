@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 )
 
 var (
@@ -43,7 +43,7 @@ var (
 func TestGenerateAssociateIdentityProviderConfigInput(t *testing.T) {
 	type args struct {
 		name string
-		p    v1alpha1.IdentityProviderConfigParameters
+		p    manualv1alpha1.IdentityProviderConfigParameters
 	}
 
 	cases := map[string]struct {
@@ -53,9 +53,9 @@ func TestGenerateAssociateIdentityProviderConfigInput(t *testing.T) {
 		"AllFields": {
 			args: args{
 				name: ipName,
-				p: v1alpha1.IdentityProviderConfigParameters{
+				p: manualv1alpha1.IdentityProviderConfigParameters{
 					ClusterName: clusterName,
-					Oidc: &v1alpha1.OIDCIdentityProvider{
+					Oidc: &manualv1alpha1.OIDCIdentityProvider{
 						ClientID:       ipClientID,
 						IssuerURL:      ipIssuerURL,
 						GroupsClaim:    ipGroupsClaim,
@@ -113,7 +113,7 @@ func TestGenerateDisassociateIdentityProviderConfigInput(t *testing.T) {
 				ClusterName: &clusterName,
 				IdentityProviderConfig: &types.IdentityProviderConfig{
 					Name: &ipName,
-					Type: aws.String(string(v1alpha1.OidcIdentityProviderConfigType)),
+					Type: aws.String(string(manualv1alpha1.OidcIdentityProviderConfigType)),
 				},
 			},
 		},
@@ -138,7 +138,7 @@ func TestGenerateIdentityProviderConfigObservation(t *testing.T) {
 
 	cases := map[string]struct {
 		args args
-		want v1alpha1.IdentityProviderConfigObservation
+		want manualv1alpha1.IdentityProviderConfigObservation
 	}{
 		"Full": {
 			args: args{
@@ -149,8 +149,8 @@ func TestGenerateIdentityProviderConfigObservation(t *testing.T) {
 					},
 				},
 			},
-			want: v1alpha1.IdentityProviderConfigObservation{
-				Status:                    v1alpha1.IdentityProviderConfigStatusActive,
+			want: manualv1alpha1.IdentityProviderConfigObservation{
+				Status:                    manualv1alpha1.IdentityProviderConfigStatusActive,
 				IdentityProviderConfigArn: ipArn,
 			},
 		},
@@ -169,24 +169,24 @@ func TestGenerateIdentityProviderConfigObservation(t *testing.T) {
 
 func TestTestLateInitializeIdentityProviderConfigProfile(t *testing.T) {
 	type args struct {
-		p *v1alpha1.IdentityProviderConfigParameters
+		p *manualv1alpha1.IdentityProviderConfigParameters
 		n *types.IdentityProviderConfigResponse
 	}
 
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.IdentityProviderConfigParameters
+		want *manualv1alpha1.IdentityProviderConfigParameters
 	}{
 		"AllFieldsEmpty": {
 			args: args{
-				p: &v1alpha1.IdentityProviderConfigParameters{},
+				p: &manualv1alpha1.IdentityProviderConfigParameters{},
 				n: &types.IdentityProviderConfigResponse{
 					Oidc: &types.OidcIdentityProviderConfig{
 						Tags: map[string]string{"cool": "tag"},
 					},
 				},
 			},
-			want: &v1alpha1.IdentityProviderConfigParameters{
+			want: &manualv1alpha1.IdentityProviderConfigParameters{
 				Tags: map[string]string{"cool": "tag"},
 			},
 		},
@@ -204,7 +204,7 @@ func TestTestLateInitializeIdentityProviderConfigProfile(t *testing.T) {
 
 func TestIsIdentityProviderConfigUpToDate(t *testing.T) {
 	type args struct {
-		p v1alpha1.IdentityProviderConfigParameters
+		p manualv1alpha1.IdentityProviderConfigParameters
 		n *types.IdentityProviderConfigResponse
 	}
 
@@ -214,7 +214,7 @@ func TestIsIdentityProviderConfigUpToDate(t *testing.T) {
 	}{
 		"UpToDate": {
 			args: args{
-				p: v1alpha1.IdentityProviderConfigParameters{
+				p: manualv1alpha1.IdentityProviderConfigParameters{
 					Tags: map[string]string{"cool": "tag"},
 				},
 				n: &types.IdentityProviderConfigResponse{
@@ -227,7 +227,7 @@ func TestIsIdentityProviderConfigUpToDate(t *testing.T) {
 		},
 		"UpdateTags": {
 			args: args{
-				p: v1alpha1.IdentityProviderConfigParameters{
+				p: manualv1alpha1.IdentityProviderConfigParameters{
 					Tags: map[string]string{"cool": "tag", "another": "tag"},
 				},
 				n: &types.IdentityProviderConfigResponse{
