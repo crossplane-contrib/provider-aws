@@ -321,7 +321,7 @@ type CustomOriginConfig struct {
 	OriginReadTimeout *int64 `json:"originReadTimeout,omitempty"`
 	// A complex type that contains information about the SSL/TLS protocols that
 	// CloudFront can use when establishing an HTTPS connection with your origin.
-	OriginSSLProtocols *OriginSSLProtocols `json:"originSSLProtocols,omitempty"`
+	OriginSslProtocols *OriginSslProtocols `json:"originSSLProtocols,omitempty"`
 }
 
 type DefaultCacheBehavior struct {
@@ -993,7 +993,7 @@ type OriginRequestPolicyQueryStringsConfig struct {
 	QueryStrings *QueryStringNames `json:"queryStrings,omitempty"`
 }
 
-type OriginSSLProtocols struct {
+type OriginSslProtocols struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`

@@ -717,7 +717,7 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								f0f4f11f0elemf3.OriginReadTimeout = f0f4f11f0iter.CustomOriginConfig.OriginReadTimeout
 							}
 							if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols != nil {
-								f0f4f11f0elemf3f5 := &svcapitypes.OriginSSLProtocols{}
+								f0f4f11f0elemf3f5 := &svcapitypes.OriginSslProtocols{}
 								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
 									f0f4f11f0elemf3f5f0 := []*string{}
 									for _, f0f4f11f0elemf3f5f0iter := range f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items {
@@ -730,7 +730,7 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
 									f0f4f11f0elemf3f5.Quantity = f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity
 								}
-								f0f4f11f0elemf3.OriginSSLProtocols = f0f4f11f0elemf3f5
+								f0f4f11f0elemf3.OriginSslProtocols = f0f4f11f0elemf3f5
 							}
 							f0f4f11f0elem.CustomOriginConfig = f0f4f11f0elemf3
 						}
@@ -1436,19 +1436,19 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						if f0f11f0iter.CustomOriginConfig.OriginReadTimeout != nil {
 							f0f11f0elemf3.SetOriginReadTimeout(*f0f11f0iter.CustomOriginConfig.OriginReadTimeout)
 						}
-						if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
+						if f0f11f0iter.CustomOriginConfig.OriginSslProtocols != nil {
 							f0f11f0elemf3f5 := &svcsdk.OriginSslProtocols{}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
+							if f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
 								f0f11f0elemf3f5f0 := []*string{}
-								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
+								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Items {
 									var f0f11f0elemf3f5f0elem string
 									f0f11f0elemf3f5f0elem = *f0f11f0elemf3f5f0iter
 									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
 								}
 								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
 							}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity != nil {
-								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity)
+							if f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
+								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity)
 							}
 							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
 						}
@@ -2132,19 +2132,19 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						if f0f11f0iter.CustomOriginConfig.OriginReadTimeout != nil {
 							f0f11f0elemf3.SetOriginReadTimeout(*f0f11f0iter.CustomOriginConfig.OriginReadTimeout)
 						}
-						if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
+						if f0f11f0iter.CustomOriginConfig.OriginSslProtocols != nil {
 							f0f11f0elemf3f5 := &svcsdk.OriginSslProtocols{}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
+							if f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
 								f0f11f0elemf3f5f0 := []*string{}
-								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
+								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Items {
 									var f0f11f0elemf3f5f0elem string
 									f0f11f0elemf3f5f0elem = *f0f11f0elemf3f5f0iter
 									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
 								}
 								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
 							}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity != nil {
-								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity)
+							if f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
+								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity)
 							}
 							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
 						}

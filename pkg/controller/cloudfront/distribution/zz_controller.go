@@ -791,7 +791,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								f0f4f11f0elemf3.OriginReadTimeout = f0f4f11f0iter.CustomOriginConfig.OriginReadTimeout
 							}
 							if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols != nil {
-								f0f4f11f0elemf3f5 := &svcapitypes.OriginSSLProtocols{}
+								f0f4f11f0elemf3f5 := &svcapitypes.OriginSslProtocols{}
 								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
 									f0f4f11f0elemf3f5f0 := []*string{}
 									for _, f0f4f11f0elemf3f5f0iter := range f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items {
@@ -804,7 +804,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
 									f0f4f11f0elemf3f5.Quantity = f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity
 								}
-								f0f4f11f0elemf3.OriginSSLProtocols = f0f4f11f0elemf3f5
+								f0f4f11f0elemf3.OriginSslProtocols = f0f4f11f0elemf3f5
 							}
 							f0f4f11f0elem.CustomOriginConfig = f0f4f11f0elemf3
 						}
