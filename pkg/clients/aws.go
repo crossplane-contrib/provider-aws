@@ -161,7 +161,12 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			e.SigningRegion = "us-east-1"
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
 		}
 		if pc.Spec.Endpoint.Source != nil {
 			switch *pc.Spec.Endpoint.Source {
@@ -356,7 +361,7 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config {
+func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config { // nolint:gocyclo
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
@@ -392,7 +397,12 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			e.SigningRegion = "us-east-1"
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
 		}
 		return e, nil
 	})
