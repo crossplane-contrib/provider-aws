@@ -40,4 +40,33 @@ type CustomBrokerParameters struct {
 	// to set the SecurityGroupsIDs.
 	// +optional
 	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
+
+	CustomUsers []*CustomUser `json:"users,omitempty"`
+}
+
+// CustomUser contains the fields for Users with PasswordSecretRef
+type CustomUser struct {
+	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
+
+	Groups []*string `json:"groups,omitempty"`
+
+	PasswordSecretRef xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
+
+	Username *string `json:"username,omitempty"`
+}
+
+// CustomUserParameters contains the additional fields for CustomUserParameters
+type CustomUserParameters struct {
+	// +optional
+	BrokerID *string `json:"brokerID,omitempty"`
+
+	// BrokerIDRef is a reference to a Broker used to set BrokerID.
+	// +optional
+	BrokerIDRef *xpv1.Reference `json:"brokerIDRef,omitempty"`
+
+	// BrokerIDSelector selects a reference to a Broker used to set BrokerID.
+	// +optional
+	BrokerIDSelector *xpv1.Selector `json:"brokerIDSelector,omitempty"`
+
+	PasswordSecretRef xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
 }

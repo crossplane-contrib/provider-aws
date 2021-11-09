@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: brokers.mq.aws.crossplane.io
 spec:
@@ -25,15 +25,6 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .spec.forProvider.engineType
-      name: Broker engine
-      type: string
-    - jsonPath: .spec.forProvider.deploymentMode
-      name: Deployment mode
-      type: string
-    - jsonPath: .spec.forProvider.hostInstanceType
-      name: Instance type
-      type: string
     - jsonPath: .metadata.annotations.crossplane\.io/external-name
       name: EXTERNAL-NAME
       type: string
@@ -43,10 +34,14 @@ spec:
         description: Broker is the Schema for the Brokers API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -55,7 +50,9 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -67,8 +64,6 @@ spec:
                     type: string
                   autoMinorVersionUpgrade:
                     type: boolean
-                  brokerName:
-                    type: string
                   configuration:
                     properties:
                       id:
@@ -143,7 +138,8 @@ spec:
                     description: Region is which region the Broker will be created.
                     type: string
                   securityGroupIdRefs:
-                    description: SecurityGroupIDRefs is a list of references to SecurityGroups used to set the SecurityGroupsIDs.
+                    description: SecurityGroupIDRefs is a list of references to SecurityGroups
+                      used to set the SecurityGroupsIDs.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -155,15 +151,18 @@ spec:
                       type: object
                     type: array
                   securityGroupIdSelector:
-                    description: SecurityGroupIDsSelector selects references to SecurityGroups used to set the SecurityGroupsIDs.
+                    description: SecurityGroupIDsSelector selects references to SecurityGroups
+                      used to set the SecurityGroupsIDs.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   securityGroups:
@@ -173,7 +172,8 @@ spec:
                   storageType:
                     type: string
                   subnetIDRefs:
-                    description: SubnetIDRefs is a list of references to Subnets used to set the SubnetIDs.
+                    description: SubnetIDRefs is a list of references to Subnets used
+                      to set the SubnetIDs.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -185,15 +185,18 @@ spec:
                       type: object
                     type: array
                   subnetIDSelector:
-                    description: SubnetIDsSelector selects references to Subnets used to set the SubnetIDs.
+                    description: SubnetIDsSelector selects references to Subnets used
+                      to set the SubnetIDs.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   subnetIDs:
@@ -206,6 +209,7 @@ spec:
                     type: object
                   users:
                     items:
+                      description: CustomUser contains the fields for Users with PasswordSecretRef
                       properties:
                         consoleAccess:
                           type: boolean
@@ -213,8 +217,24 @@ spec:
                           items:
                             type: string
                           type: array
-                        password:
-                          type: string
+                        passwordSecretRef:
+                          description: A SecretKeySelector is a reference to a secret
+                            key in an arbitrary namespace.
+                          properties:
+                            key:
+                              description: The key to select.
+                              type: string
+                            name:
+                              description: Name of the secret.
+                              type: string
+                            namespace:
+                              description: Namespace of the secret.
+                              type: string
+                          required:
+                          - key
+                          - name
+                          - namespace
+                          type: object
                         username:
                           type: string
                       type: object
@@ -225,7 +245,9 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -234,7 +256,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -243,7 +267,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -275,20 +303,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime

@@ -68,18 +68,15 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
 		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
 	}
-	if cr.Spec.ForProvider.BrokerName != nil {
-		res.SetBrokerName(*cr.Spec.ForProvider.BrokerName)
-	}
 	if cr.Spec.ForProvider.Configuration != nil {
-		f3 := &svcsdk.ConfigurationId{}
+		f2 := &svcsdk.ConfigurationId{}
 		if cr.Spec.ForProvider.Configuration.ID != nil {
-			f3.SetId(*cr.Spec.ForProvider.Configuration.ID)
+			f2.SetId(*cr.Spec.ForProvider.Configuration.ID)
 		}
 		if cr.Spec.ForProvider.Configuration.Revision != nil {
-			f3.SetRevision(*cr.Spec.ForProvider.Configuration.Revision)
+			f2.SetRevision(*cr.Spec.ForProvider.Configuration.Revision)
 		}
-		res.SetConfiguration(f3)
+		res.SetConfiguration(f2)
 	}
 	if cr.Spec.ForProvider.CreatorRequestID != nil {
 		res.SetCreatorRequestId(*cr.Spec.ForProvider.CreatorRequestID)
@@ -88,14 +85,14 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 		res.SetDeploymentMode(*cr.Spec.ForProvider.DeploymentMode)
 	}
 	if cr.Spec.ForProvider.EncryptionOptions != nil {
-		f6 := &svcsdk.EncryptionOptions{}
+		f5 := &svcsdk.EncryptionOptions{}
 		if cr.Spec.ForProvider.EncryptionOptions.KMSKeyID != nil {
-			f6.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionOptions.KMSKeyID)
+			f5.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionOptions.KMSKeyID)
 		}
 		if cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey != nil {
-			f6.SetUseAwsOwnedKey(*cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey)
+			f5.SetUseAwsOwnedKey(*cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey)
 		}
-		res.SetEncryptionOptions(f6)
+		res.SetEncryptionOptions(f5)
 	}
 	if cr.Spec.ForProvider.EngineType != nil {
 		res.SetEngineType(*cr.Spec.ForProvider.EngineType)
@@ -107,129 +104,103 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 		res.SetHostInstanceType(*cr.Spec.ForProvider.HostInstanceType)
 	}
 	if cr.Spec.ForProvider.LDAPServerMetadata != nil {
-		f10 := &svcsdk.LdapServerMetadataInput{}
+		f9 := &svcsdk.LdapServerMetadataInput{}
 		if cr.Spec.ForProvider.LDAPServerMetadata.Hosts != nil {
-			f10f0 := []*string{}
-			for _, f10f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
-				var f10f0elem string
-				f10f0elem = *f10f0iter
-				f10f0 = append(f10f0, &f10f0elem)
+			f9f0 := []*string{}
+			for _, f9f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
+				var f9f0elem string
+				f9f0elem = *f9f0iter
+				f9f0 = append(f9f0, &f9f0elem)
 			}
-			f10.SetHosts(f10f0)
+			f9.SetHosts(f9f0)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleBase != nil {
-			f10.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
+			f9.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleName != nil {
-			f10.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
+			f9.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching != nil {
-			f10.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
+			f9.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree != nil {
-			f10.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
+			f9.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword != nil {
-			f10.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
+			f9.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername != nil {
-			f10.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
+			f9.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserBase != nil {
-			f10.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
+			f9.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName != nil {
-			f10.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
+			f9.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching != nil {
-			f10.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
+			f9.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree != nil {
-			f10.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
+			f9.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
 		}
-		res.SetLdapServerMetadata(f10)
+		res.SetLdapServerMetadata(f9)
 	}
 	if cr.Spec.ForProvider.Logs != nil {
-		f11 := &svcsdk.Logs{}
+		f10 := &svcsdk.Logs{}
 		if cr.Spec.ForProvider.Logs.Audit != nil {
-			f11.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
+			f10.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
 		}
 		if cr.Spec.ForProvider.Logs.General != nil {
-			f11.SetGeneral(*cr.Spec.ForProvider.Logs.General)
+			f10.SetGeneral(*cr.Spec.ForProvider.Logs.General)
 		}
-		res.SetLogs(f11)
+		res.SetLogs(f10)
 	}
 	if cr.Spec.ForProvider.MaintenanceWindowStartTime != nil {
-		f12 := &svcsdk.WeeklyStartTime{}
+		f11 := &svcsdk.WeeklyStartTime{}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek != nil {
-			f12.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
+			f11.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay != nil {
-			f12.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
+			f11.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone != nil {
-			f12.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
+			f11.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
 		}
-		res.SetMaintenanceWindowStartTime(f12)
+		res.SetMaintenanceWindowStartTime(f11)
 	}
 	if cr.Spec.ForProvider.PubliclyAccessible != nil {
 		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
 	}
 	if cr.Spec.ForProvider.SecurityGroups != nil {
-		f14 := []*string{}
-		for _, f14iter := range cr.Spec.ForProvider.SecurityGroups {
-			var f14elem string
-			f14elem = *f14iter
-			f14 = append(f14, &f14elem)
+		f13 := []*string{}
+		for _, f13iter := range cr.Spec.ForProvider.SecurityGroups {
+			var f13elem string
+			f13elem = *f13iter
+			f13 = append(f13, &f13elem)
 		}
-		res.SetSecurityGroups(f14)
+		res.SetSecurityGroups(f13)
 	}
 	if cr.Spec.ForProvider.StorageType != nil {
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
 	}
 	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f16 := []*string{}
-		for _, f16iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f15 := []*string{}
+		for _, f15iter := range cr.Spec.ForProvider.SubnetIDs {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
 		}
-		res.SetSubnetIds(f16)
+		res.SetSubnetIds(f15)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f17 := map[string]*string{}
-		for f17key, f17valiter := range cr.Spec.ForProvider.Tags {
-			var f17val string
-			f17val = *f17valiter
-			f17[f17key] = &f17val
+		f16 := map[string]*string{}
+		for f16key, f16valiter := range cr.Spec.ForProvider.Tags {
+			var f16val string
+			f16val = *f16valiter
+			f16[f16key] = &f16val
 		}
-		res.SetTags(f17)
-	}
-	if cr.Spec.ForProvider.Users != nil {
-		f18 := []*svcsdk.User{}
-		for _, f18iter := range cr.Spec.ForProvider.Users {
-			f18elem := &svcsdk.User{}
-			if f18iter.ConsoleAccess != nil {
-				f18elem.SetConsoleAccess(*f18iter.ConsoleAccess)
-			}
-			if f18iter.Groups != nil {
-				f18elemf1 := []*string{}
-				for _, f18elemf1iter := range f18iter.Groups {
-					var f18elemf1elem string
-					f18elemf1elem = *f18elemf1iter
-					f18elemf1 = append(f18elemf1, &f18elemf1elem)
-				}
-				f18elem.SetGroups(f18elemf1)
-			}
-			if f18iter.Password != nil {
-				f18elem.SetPassword(*f18iter.Password)
-			}
-			if f18iter.Username != nil {
-				f18elem.SetUsername(*f18iter.Username)
-			}
-			f18 = append(f18, f18elem)
-		}
-		res.SetUsers(f18)
+		res.SetTags(f16)
 	}
 
 	return res

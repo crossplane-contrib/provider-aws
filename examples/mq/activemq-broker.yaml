@@ -1,0 +1,37 @@
+apiVersion: mq.aws.crossplane.io/v1alpha1
+kind: Broker
+metadata:
+  name: example-activemq
+spec:
+  forProvider:
+    region: eu-central-1
+    engineType: ActiveMQ
+    storageType: EFS
+    engineVersion: 5.16.3
+    hostInstanceType: mq.t3.micro
+    deploymentMode: SINGLE_INSTANCE
+    subnetIDRefs:
+      - name: sample-subnet1
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
+    users: 
+      - username: activemq-admin
+        consoleAccess: true
+        passwordSecretRef:
+          key: password
+          name: example-activemq
+          namespace: crossplane-system
+  writeConnectionSecretToRef:
+    name: example-activemq
+    namespace: default
+  providerConfigRef:
+    name: default
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-activemq
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

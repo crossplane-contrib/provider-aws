@@ -34,8 +34,6 @@ type BrokerParameters struct {
 
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
-	BrokerName *string `json:"brokerName,omitempty"`
-
 	Configuration *ConfigurationID `json:"configuration,omitempty"`
 
 	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
@@ -64,9 +62,7 @@ type BrokerParameters struct {
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
-	Tags map[string]*string `json:"tags,omitempty"`
-
-	Users                  []*User `json:"users,omitempty"`
+	Tags                   map[string]*string `json:"tags,omitempty"`
 	CustomBrokerParameters `json:",inline"`
 }
 
@@ -94,9 +90,6 @@ type BrokerStatus struct {
 // Broker is the Schema for the Brokers API
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="Broker engine",type="string",JSONPath=".spec.forProvider.engineType"
-// +kubebuilder:printcolumn:name="Deployment mode",type="string",JSONPath=".spec.forProvider.deploymentMode"
-// +kubebuilder:printcolumn:name="Instance type",type="string",JSONPath=".spec.forProvider.hostInstanceType"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

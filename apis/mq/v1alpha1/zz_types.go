@@ -209,16 +209,6 @@ type SanitizationWarning struct {
 	ElementName *string `json:"elementName,omitempty"`
 }
 
-type User struct {
-	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
-
-	Groups []*string `json:"groups,omitempty"`
-
-	Password *string `json:"password,omitempty"`
-
-	Username *string `json:"username,omitempty"`
-}
-
 type UserPendingChanges struct {
 	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
 
@@ -230,6 +220,16 @@ type UserPendingChanges struct {
 type UserSummary struct {
 	// The type of change pending for the ActiveMQ user.
 	PendingChange *string `json:"pendingChange,omitempty"`
+
+	Username *string `json:"username,omitempty"`
+}
+
+type User_SDK struct {
+	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
+
+	Groups []*string `json:"groups,omitempty"`
+
+	Password *string `json:"password,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }

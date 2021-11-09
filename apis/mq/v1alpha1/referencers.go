@@ -61,3 +61,24 @@ func (mg *Broker) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	return nil
 }
+
+// ResolveReferences of this User
+func (mg *User) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.brokerID
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.BrokerID),
+		Reference:    mg.Spec.ForProvider.BrokerIDRef,
+		Selector:     mg.Spec.ForProvider.BrokerIDSelector,
+		To:           reference.To{Managed: &Broker{}, List: &BrokerList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.brokerID")
+	}
+	mg.Spec.ForProvider.BrokerID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.BrokerIDRef = rsp.ResolvedReference
+
+	return nil
+}

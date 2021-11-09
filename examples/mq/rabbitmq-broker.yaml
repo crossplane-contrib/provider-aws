@@ -1,0 +1,37 @@
+apiVersion: mq.aws.crossplane.io/v1alpha1
+kind: Broker
+metadata:
+  name: example-rabbitmq
+spec:
+  forProvider:
+    region: eu-central-1
+    engineType: RabbitMQ
+    engineVersion: 3.8.11
+    hostInstanceType: mq.t3.micro
+    deploymentMode: SINGLE_INSTANCE
+    subnetIDRefs:
+      - name: sample-subnet1
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
+    users: 
+      # To manage broker users, please use the RabbitMQ web console, or the management API
+      - username: rabbitmq-admin
+        consoleAccess: true
+        passwordSecretRef:
+          key: password
+          name: example-rabbitmq
+          namespace: crossplane-system
+  writeConnectionSecretToRef:
+    name: example-rabbitmq
+    namespace: default
+  providerConfigRef:
+    name: default
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-rabbitmq
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123
