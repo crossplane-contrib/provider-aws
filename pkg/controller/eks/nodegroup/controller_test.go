@@ -31,7 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
@@ -47,13 +47,13 @@ var (
 type args struct {
 	eks  eks.Client
 	kube client.Client
-	cr   *v1alpha1.NodeGroup
+	cr   *manualv1alpha1.NodeGroup
 }
 
-type nodeGroupModifier func(*v1alpha1.NodeGroup)
+type nodeGroupModifier func(*manualv1alpha1.NodeGroup)
 
 func withConditions(c ...xpv1.Condition) nodeGroupModifier {
-	return func(r *v1alpha1.NodeGroup) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *manualv1alpha1.NodeGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withTags(tagMaps ...map[string]string) nodeGroupModifier {
@@ -63,23 +63,23 @@ func withTags(tagMaps ...map[string]string) nodeGroupModifier {
 			tags[k] = v
 		}
 	}
-	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.Tags = tags }
+	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.Tags = tags }
 }
 
 func withVersion(v *string) nodeGroupModifier {
-	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.Version = v }
+	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.Version = v }
 }
 
-func withStatus(s v1alpha1.NodeGroupStatusType) nodeGroupModifier {
-	return func(r *v1alpha1.NodeGroup) { r.Status.AtProvider.Status = s }
+func withStatus(s manualv1alpha1.NodeGroupStatusType) nodeGroupModifier {
+	return func(r *manualv1alpha1.NodeGroup) { r.Status.AtProvider.Status = s }
 }
 
-func withScalingConfig(c *v1alpha1.NodeGroupScalingConfig) nodeGroupModifier {
-	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.ScalingConfig = c }
+func withScalingConfig(c *manualv1alpha1.NodeGroupScalingConfig) nodeGroupModifier {
+	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.ScalingConfig = c }
 }
 
-func nodeGroup(m ...nodeGroupModifier) *v1alpha1.NodeGroup {
-	cr := &v1alpha1.NodeGroup{}
+func nodeGroup(m ...nodeGroupModifier) *manualv1alpha1.NodeGroup {
+	cr := &manualv1alpha1.NodeGroup{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -91,7 +91,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NodeGroup
+		cr     *manualv1alpha1.NodeGroup
 		result managed.ExternalObservation
 		err    error
 	}
@@ -116,7 +116,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Available()),
-					withStatus(v1alpha1.NodeGroupStatusActive)),
+					withStatus(manualv1alpha1.NodeGroupStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -139,7 +139,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Deleting()),
-					withStatus(v1alpha1.NodeGroupStatusDeleting)),
+					withStatus(manualv1alpha1.NodeGroupStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -162,7 +162,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Unavailable()),
-					withStatus(v1alpha1.NodeGroupStatusDegraded)),
+					withStatus(manualv1alpha1.NodeGroupStatusDegraded)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -215,7 +215,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: nodeGroup(
-					withStatus(v1alpha1.NodeGroupStatusCreating),
+					withStatus(manualv1alpha1.NodeGroupStatusCreating),
 					withConditions(xpv1.Creating()),
 					withVersion(&version),
 				),
@@ -269,7 +269,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NodeGroup
+		cr     *manualv1alpha1.NodeGroup
 		result managed.ExternalCreation
 		err    error
 	}
@@ -294,11 +294,11 @@ func TestCreate(t *testing.T) {
 		},
 		"SuccessfulNoNeedForCreate": {
 			args: args{
-				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusCreating)),
+				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusCreating)),
 			},
 			want: want{
 				cr: nodeGroup(
-					withStatus(v1alpha1.NodeGroupStatusCreating),
+					withStatus(manualv1alpha1.NodeGroupStatusCreating),
 					withConditions(xpv1.Creating())),
 			},
 		},
@@ -338,7 +338,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NodeGroup
+		cr     *manualv1alpha1.NodeGroup
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -421,18 +421,18 @@ func TestUpdate(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: nodeGroup(withScalingConfig(&v1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
+				cr: nodeGroup(withScalingConfig(&manualv1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
 			},
 			want: want{
-				cr: nodeGroup(withScalingConfig(&v1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
+				cr: nodeGroup(withScalingConfig(&manualv1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
 			},
 		},
 		"AlreadyModifying": {
 			args: args{
-				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusUpdating)),
+				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusUpdating)),
 			},
 			want: want{
-				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusUpdating)),
+				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusUpdating)),
 			},
 		},
 		"FailedDescribe": {
@@ -549,7 +549,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.NodeGroup
+		cr  *manualv1alpha1.NodeGroup
 		err error
 	}
 
@@ -572,10 +572,10 @@ func TestDelete(t *testing.T) {
 		},
 		"AlreadyDeleting": {
 			args: args{
-				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusDeleting)),
+				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusDeleting)),
 			},
 			want: want{
-				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusDeleting),
+				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusDeleting),
 					withConditions(xpv1.Deleting())),
 			},
 		},
@@ -625,7 +625,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.NodeGroup
+		cr  *manualv1alpha1.NodeGroup
 		err error
 	}
 

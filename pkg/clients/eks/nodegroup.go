@@ -24,12 +24,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // GenerateCreateNodeGroupInput from NodeGroupParameters.
-func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) *eks.CreateNodegroupInput {
+func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParameters) *eks.CreateNodegroupInput {
 	c := &eks.CreateNodegroupInput{
 		NodegroupName:  &name,
 		AmiType:        ekstypes.AMITypes(awsclient.StringValue(p.AMIType)),
@@ -88,7 +88,7 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 }
 
 // GenerateUpdateNodeGroupConfigInput from NodeGroupParameters.
-func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) *eks.UpdateNodegroupConfigInput {
+func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) *eks.UpdateNodegroupConfigInput {
 	u := &eks.UpdateNodegroupConfigInput{
 		NodegroupName: &name,
 		ClusterName:   &p.ClusterName,
@@ -126,25 +126,25 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParame
 	return u
 }
 
-// GenerateNodeGroupObservation is used to produce v1alpha1.NodeGroupObservation
+// GenerateNodeGroupObservation is used to produce manualv1alpha1.NodeGroupObservation
 // from eks.Nodegroup.
-func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) v1alpha1.NodeGroupObservation { // nolint:gocyclo
+func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGroupObservation { // nolint:gocyclo
 	if ng == nil {
-		return v1alpha1.NodeGroupObservation{}
+		return manualv1alpha1.NodeGroupObservation{}
 	}
-	o := v1alpha1.NodeGroupObservation{
+	o := manualv1alpha1.NodeGroupObservation{
 		NodeGroupArn: awsclient.StringValue(ng.NodegroupArn),
-		Status:       v1alpha1.NodeGroupStatusType(ng.Status),
+		Status:       manualv1alpha1.NodeGroupStatusType(ng.Status),
 	}
 	if ng.CreatedAt != nil {
 		o.CreatedAt = &metav1.Time{Time: *ng.CreatedAt}
 	}
 	if ng.Health != nil && len(ng.Health.Issues) > 0 {
-		o.Health = v1alpha1.NodeGroupHealth{
-			Issues: make([]v1alpha1.Issue, len(ng.Health.Issues)),
+		o.Health = manualv1alpha1.NodeGroupHealth{
+			Issues: make([]manualv1alpha1.Issue, len(ng.Health.Issues)),
 		}
 		for c, i := range ng.Health.Issues {
-			o.Health.Issues[c] = v1alpha1.Issue{
+			o.Health.Issues[c] = manualv1alpha1.Issue{
 				Code:        string(i.Code),
 				Message:     awsclient.StringValue(i.Message),
 				ResourceIDs: i.ResourceIds,
@@ -155,29 +155,29 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) v1alpha1.NodeGroupObse
 		o.ModifiedAt = &metav1.Time{Time: *ng.ModifiedAt}
 	}
 	if ng.Resources != nil {
-		o.Resources = v1alpha1.NodeGroupResources{
+		o.Resources = manualv1alpha1.NodeGroupResources{
 			RemoteAccessSecurityGroup: awsclient.StringValue(ng.Resources.RemoteAccessSecurityGroup),
 		}
 		if len(ng.Resources.AutoScalingGroups) > 0 {
-			asg := make([]v1alpha1.AutoScalingGroup, len(ng.Resources.AutoScalingGroups))
+			asg := make([]manualv1alpha1.AutoScalingGroup, len(ng.Resources.AutoScalingGroups))
 			for c, a := range ng.Resources.AutoScalingGroups {
-				asg[c] = v1alpha1.AutoScalingGroup{Name: awsclient.StringValue(a.Name)}
+				asg[c] = manualv1alpha1.AutoScalingGroup{Name: awsclient.StringValue(a.Name)}
 			}
 			o.Resources.AutoScalingGroups = asg
 		}
 	}
 
 	if ng.ScalingConfig != nil {
-		o.ScalingConfig = v1alpha1.NodeGroupScalingConfigStatus{
+		o.ScalingConfig = manualv1alpha1.NodeGroupScalingConfigStatus{
 			DesiredSize: ng.ScalingConfig.DesiredSize,
 		}
 	}
 	return o
 }
 
-// LateInitializeNodeGroup fills the empty fields in *v1alpha1.NodeGroupParameters with the
+// LateInitializeNodeGroup fills the empty fields in *manualv1alpha1.NodeGroupParameters with the
 // values seen in eks.Nodegroup.
-func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) { // nolint:gocyclo
+func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) { // nolint:gocyclo
 	if ng == nil {
 		return
 	}
@@ -191,13 +191,13 @@ func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Node
 		in.Labels = ng.Labels
 	}
 	if in.RemoteAccess == nil && ng.RemoteAccess != nil {
-		in.RemoteAccess = &v1alpha1.RemoteAccessConfig{
+		in.RemoteAccess = &manualv1alpha1.RemoteAccessConfig{
 			EC2SSHKey:            ng.RemoteAccess.Ec2SshKey,
 			SourceSecurityGroups: ng.RemoteAccess.SourceSecurityGroups,
 		}
 	}
 	if in.ScalingConfig == nil && ng.ScalingConfig != nil {
-		in.ScalingConfig = &v1alpha1.NodeGroupScalingConfig{
+		in.ScalingConfig = &manualv1alpha1.NodeGroupScalingConfig{
 			DesiredSize: ng.ScalingConfig.DesiredSize,
 			MinSize:     ng.ScalingConfig.MinSize,
 			MaxSize:     ng.ScalingConfig.MaxSize,
@@ -212,9 +212,9 @@ func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Node
 		in.Tags = ng.Tags
 	}
 	if len(in.Taints) == 0 && len(ng.Taints) != 0 {
-		in.Taints = make([]v1alpha1.Taint, len(ng.Taints))
+		in.Taints = make([]manualv1alpha1.Taint, len(ng.Taints))
 		for i, t := range ng.Taints {
-			in.Taints[i] = v1alpha1.Taint{
+			in.Taints[i] = manualv1alpha1.Taint{
 				Effect: string(t.Effect),
 				Key:    t.Key,
 				Value:  t.Value,
@@ -224,7 +224,7 @@ func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Node
 }
 
 // IsNodeGroupUpToDate checks whether there is a change in any of the modifiable fields.
-func IsNodeGroupUpToDate(p *v1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) bool { // nolint:gocyclo
+func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) bool { // nolint:gocyclo
 	if !cmp.Equal(p.Tags, ng.Tags, cmpopts.EquateEmpty()) {
 		return false
 	}

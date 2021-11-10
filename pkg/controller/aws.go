@@ -69,6 +69,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
 	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
+	eksaddon "github.com/crossplane/provider-aws/pkg/controller/eks/addon"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/identityproviderconfig"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
@@ -131,6 +132,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		docdbclusterparametergroup.SetupDBClusterParameterGroup,
 		docdbsubnetgroup.SetupDBSubnetGroup,
 		eks.SetupCluster,
+		eksaddon.SetupAddon,
 		identityproviderconfig.SetupIdentityProviderConfig,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
