@@ -94,6 +94,8 @@ import (
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
+	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
@@ -215,6 +217,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		glueDatabase.SetupDatabase,
 		gluecrawler.SetupCrawler,
 		glueclassifier.SetupClassifier,
+		mqbroker.SetupBroker,
+		mquser.SetupUser,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
