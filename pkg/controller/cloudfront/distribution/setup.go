@@ -104,7 +104,8 @@ var mappingOptions = []cloudfront.LateInitOption{
 	cloudfront.Replacer("ID", "Id"),
 	cloudfront.Replacer("ARN", "Arn"),
 	cloudfront.MapReplacer(map[string]string{
-		"HTTPVersion": "HttpVersion",
+		"HTTPVersion":        "HttpVersion",
+		"OriginSSLProtocols": "OriginSslProtocols",
 	})}
 
 func lateInitialize(in *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistributionOutput) error {
