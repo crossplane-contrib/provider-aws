@@ -6,7 +6,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= cac5654b7bb64c8f754ad9af01799ef70d9541b6
+CODE_GENERATOR_COMMIT ?= 966e9a9ac6dfb4bbc2d3ded1972ce2b706391d44
 GENERATED_SERVICES="apigatewayv2,cloudfront,cloudwatchlogs,dynamodb,efs,glue,kafka,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer"
 
 # kind-related versions
@@ -135,7 +135,7 @@ services: $(GOIMPORTS)
 	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
-		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../ || exit 1; \
+		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --output ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 
