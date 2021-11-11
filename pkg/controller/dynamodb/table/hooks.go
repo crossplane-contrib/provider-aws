@@ -20,10 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
-	"strings"
 	"time"
 
-	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
@@ -59,7 +57,6 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 			e.isUpToDate = isUpToDate
 			u := &updateClient{client: e.client}
 			e.preUpdate = u.preUpdate
-			e.postUpdate = postUpdate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -109,10 +106,10 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"TableName":         []byte(meta.GetExternalName(cr)),
-		"TableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
-		"LatestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
-		"LatestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
+		"tableName":         []byte(meta.GetExternalName(cr)),
+		"tableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
+		"latestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
+		"latestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
 	}
 
 	return obs, nil
@@ -177,18 +174,18 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			WriteCapacityUnits: t.Table.ProvisionedThroughput.WriteCapacityUnits,
 		}
 	}
-	if in.SSESpecification == nil && t.Table.SSEDescription != nil {
-		in.SSESpecification = &svcapitypes.SSESpecification{
-			SSEType: t.Table.SSEDescription.SSEType,
+	if t.Table.SSEDescription != nil {
+		if in.SSESpecification == nil {
+			in.SSESpecification = &svcapitypes.SSESpecification{}
 		}
-	}
-	if in.SSESpecification != nil {
+		if in.SSESpecification.Enabled == nil && t.Table.SSEDescription.Status != nil {
+			in.SSESpecification.Enabled = aws.Bool(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
+		}
 		if in.SSESpecification.KMSMasterKeyID == nil && t.Table.SSEDescription.KMSMasterKeyArn != nil {
-			in.SSESpecification = &svcapitypes.SSESpecification{
-				KMSMasterKeyID: t.Table.SSEDescription.KMSMasterKeyArn,
-				SSEType:        t.Table.SSEDescription.SSEType,
-				Enabled:        in.SSESpecification.Enabled,
-			}
+			in.SSESpecification.KMSMasterKeyID = t.Table.SSEDescription.KMSMasterKeyArn
+		}
+		if in.SSESpecification.SSEType == nil && t.Table.SSEDescription.SSEType != nil {
+			in.SSESpecification.SSEType = t.Table.SSEDescription.SSEType
 		}
 	}
 	if in.StreamSpecification == nil && t.Table.StreamSpecification != nil {
@@ -197,6 +194,11 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			StreamViewType: t.Table.StreamSpecification.StreamViewType,
 		}
 	}
+
+	if in.BillingMode == nil && t.Table.BillingModeSummary != nil {
+		in.BillingMode = t.Table.BillingModeSummary.BillingMode
+	}
+
 	return nil
 }
 
@@ -289,10 +291,24 @@ func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 }
 
 func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+	// A table that's currently updating or creating can't be updated, so we
+	// temporarily consider it to be up-to-date no matter what.
+	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
+		return true, nil
+	}
+
+	// Similarly, a table that's currently updating its SSE status can't be
+	// updated, so we temporarily consider it to be up-to-date.
+	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
+		return true, nil
+	}
+
 	patch, err := createPatch(resp, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
+
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters")), nil
@@ -302,59 +318,55 @@ type updateClient struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-// nolint: gocyclo
-func (e *updateClient) preUpdate(_ context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
-	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
-	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
-		return nil
-	}
-	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
+func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
+
+	filtered := &svcsdk.UpdateTableInput{TableName: aws.String(meta.GetExternalName(cr))}
+
+	// The AWS API requires us to do one kind of update at a time per
+	// https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
+	// This means that we need to return a filtered UpdateTableInput that
+	// contains at most one thing that needs updating. In order to be
+	// eventually consistent (i.e. to eventually update all the things, one
+	// on each reconcile pass) we need to determine the 'next' thing to
+	// update on each pass. This means we need to diff actual vs desired
+	// state here inside preUpdate. Unfortunately we read the actual state
+	// during Observe, but don't typically pass it to update. We could stash
+	// the observed state in a cache during postObserve then read it here,
+	// but we typically prefer to be as stateless as possible even if it
+	// means redundant API calls.
+	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return aws.Wrap(err, errDescribe)
 	}
 
-	newUpdateObj := &svcsdk.UpdateTableInput{
-		TableName: aws.String(meta.GetExternalName(cr)),
+	p, err := createPatch(out, &cr.Spec.ForProvider)
+	if err != nil {
+		return err
 	}
-	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
-	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
+
+	// TODO(muvaf): Implement ReplicaUpdates and GlobalSecondaryIndexUpdates.
 	switch {
-	case cr.Spec.ForProvider.ProvisionedThroughput != nil &&
-		(aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
-			aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)):
-		newUpdateObj.ProvisionedThroughput = u.ProvisionedThroughput
-	// NOTE(muvaf): Unless StreamEnabled is changed, updating stream specification
-	// won't work.
-	case cr.Spec.ForProvider.StreamSpecification != nil &&
-		(awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled)):
-		newUpdateObj.StreamSpecification = u.StreamSpecification
-
-	case cr.Spec.ForProvider.SSESpecification != nil &&
-		(aws.StringValue(t.Table.SSEDescription.KMSMasterKeyArn) != aws.StringValue(cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)) &&
-		(aws.StringValue(t.Table.SSEDescription.SSEType) == aws.StringValue(cr.Spec.ForProvider.SSESpecification.SSEType)):
-		newUpdateObj.SSESpecification = u.SSESpecification
-
-	case cr.Spec.ForProvider.BillingMode != nil &&
-		cr.Spec.ForProvider.BillingMode != t.Table.BillingModeSummary.BillingMode:
-		newUpdateObj.BillingMode = u.BillingMode
-
-		// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
-		// are not implemented yet.
+	case p.ProvisionedThroughput != nil:
+		filtered.ProvisionedThroughput = u.ProvisionedThroughput
+	case p.StreamSpecification != nil:
+		// NOTE(muvaf): Unless StreamEnabled is changed, updating stream
+		// specification won't work.
+		filtered.StreamSpecification = u.StreamSpecification
+	case p.SSESpecification != nil:
+		// NOTE(negz): Attempting to update the KMSMasterKeyId to its
+		// current value returns an error
+		filtered.SSESpecification = &svcsdk.SSESpecification{
+			Enabled: u.SSESpecification.Enabled,
+			SSEType: u.SSESpecification.SSEType,
+		}
+		if p.SSESpecification.KMSMasterKeyID != nil {
+			filtered.SSESpecification.KMSMasterKeyId = u.SSESpecification.KMSMasterKeyId
+		}
+	case p.BillingMode != nil:
+		filtered.BillingMode = u.BillingMode
 	}
 
-	*u = *newUpdateObj
+	*u = *filtered
 
 	return nil
-}
-
-func postUpdate(_ context.Context, cr *svcapitypes.Table, t *svcsdk.UpdateTableOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	if err != nil {
-		// no update required - newUpdateObj was empty
-		// no enum available for this skip
-		if strings.Contains(err.Error(), "ProvisionedThroughput, BillingMode, UpdateStreamEnabled, GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is required") {
-			return upd, nil
-		}
-		return managed.ExternalUpdate{}, err
-	}
-	return upd, nil
 }
