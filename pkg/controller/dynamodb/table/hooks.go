@@ -106,10 +106,10 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"TableName":         []byte(meta.GetExternalName(cr)),
-		"TableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
-		"LatestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
-		"LatestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
+		"tableName":         []byte(meta.GetExternalName(cr)),
+		"tableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
+		"latestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
+		"latestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
 	}
 
 	return obs, nil
