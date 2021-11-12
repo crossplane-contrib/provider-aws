@@ -276,3 +276,216 @@ func TestLateInitialize(t *testing.T) {
 		})
 	}
 }
+
+func TestDiffGlobalSecondaryIndexes(t *testing.T) {
+	type args struct {
+		spec []*svcsdk.GlobalSecondaryIndexDescription
+		obs  []*svcsdk.GlobalSecondaryIndexDescription
+	}
+	type want struct {
+		result []*svcsdk.GlobalSecondaryIndexUpdate
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoOp": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("one"),
+					},
+				},
+				obs: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("one"),
+					},
+				},
+			},
+		},
+		"Create": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("newone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(10),
+							WriteCapacityUnits: aws.Int64(10),
+						},
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Create: &svcsdk.CreateGlobalSecondaryIndexAction{
+							IndexName: aws.String("newone"),
+							ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+								ReadCapacityUnits:  aws.Int64(10),
+								WriteCapacityUnits: aws.Int64(10),
+							},
+						},
+					},
+				},
+			},
+		},
+		"CreateOnlyOne": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("newone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(10),
+							WriteCapacityUnits: aws.Int64(10),
+						},
+					},
+					{
+						IndexName: aws.String("secondnewone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(10),
+							WriteCapacityUnits: aws.Int64(10),
+						},
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Create: &svcsdk.CreateGlobalSecondaryIndexAction{
+							IndexName: aws.String("newone"),
+							ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+								ReadCapacityUnits:  aws.Int64(10),
+								WriteCapacityUnits: aws.Int64(10),
+							},
+						},
+					},
+				},
+			},
+		},
+		"AddNewToExisting": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("newone"),
+					},
+				},
+				obs: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("oldone"),
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Create: &svcsdk.CreateGlobalSecondaryIndexAction{
+							IndexName: aws.String("newone"),
+						},
+					},
+				},
+			},
+		},
+		"UpdateExistingOnes": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("newone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits: aws.Int64(20),
+						},
+					},
+					{
+						IndexName: aws.String("oldone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits: aws.Int64(20),
+						},
+					},
+				},
+				obs: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("newone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits: aws.Int64(10),
+						},
+					},
+					{
+						IndexName: aws.String("oldone"),
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits: aws.Int64(5),
+						},
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
+							IndexName: aws.String("newone"),
+							ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+								ReadCapacityUnits: aws.Int64(20),
+							},
+						},
+					},
+					{
+						Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
+							IndexName: aws.String("oldone"),
+							ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+								ReadCapacityUnits: aws.Int64(20),
+							},
+						},
+					},
+				},
+			},
+		},
+		"Delete": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{},
+				obs: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("oldone"),
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Delete: &svcsdk.DeleteGlobalSecondaryIndexAction{
+							IndexName: aws.String("oldone"),
+						},
+					},
+				},
+			},
+		},
+		"DeleteOnlyOne": {
+			args: args{
+				spec: []*svcsdk.GlobalSecondaryIndexDescription{},
+				obs: []*svcsdk.GlobalSecondaryIndexDescription{
+					{
+						IndexName: aws.String("oldone"),
+					},
+					{
+						IndexName: aws.String("secondoldone"),
+					},
+				},
+			},
+			want: want{
+				result: []*svcsdk.GlobalSecondaryIndexUpdate{
+					{
+						Delete: &svcsdk.DeleteGlobalSecondaryIndexAction{
+							IndexName: aws.String("oldone"),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := diffGlobalSecondaryIndexes(tc.args.spec, tc.args.obs)
+			if diff := cmp.Diff(got, tc.want.result); diff != "" {
+				t.Errorf("diffGlobalSecondaryIndexes(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

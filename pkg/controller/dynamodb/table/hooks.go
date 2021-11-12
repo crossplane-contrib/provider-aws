@@ -318,7 +318,7 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 		return false, nil
 	case patch.StreamSpecification != nil:
 		return false, nil
-	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexes(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
+	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
 		return false, nil
 	}
 	return true, nil
@@ -356,7 +356,7 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	if err != nil {
 		return err
 	}
-	gsiUpdates := diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexes(cr.Spec.ForProvider.GlobalSecondaryIndexes), out.Table.GlobalSecondaryIndexes)
+	gsiUpdates := diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), out.Table.GlobalSecondaryIndexes)
 	switch {
 	case p.ProvisionedThroughput != nil:
 		filtered.ProvisionedThroughput = u.ProvisionedThroughput
@@ -384,41 +384,60 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	return nil
 }
 
-func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndex, obs []*svcsdk.GlobalSecondaryIndexDescription) []*svcsdk.GlobalSecondaryIndexUpdate {
-	desired := map[string]*svcsdk.GlobalSecondaryIndex{}
-	for _, gsi := range spec {
+func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, obs []*svcsdk.GlobalSecondaryIndexDescription) []*svcsdk.GlobalSecondaryIndexUpdate { //nolint:gocyclo
+	// Linter is disabled because there isn't an easy good way to reduce the cyclo
+	// complexity here.
+	desired := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
+	desiredKeys := make([]string, len(spec))
+	for i, gsi := range spec {
 		desired[aws.StringValue(gsi.IndexName)] = gsi
+		desiredKeys[i] = aws.StringValue(gsi.IndexName)
 	}
 	existing := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
-	for _, gsi := range obs {
+	existingKeys := make([]string, len(obs))
+	for i, gsi := range obs {
 		existing[aws.StringValue(gsi.IndexName)] = gsi
+		existingKeys[i] = aws.StringValue(gsi.IndexName)
 	}
+	sort.Strings(desiredKeys)
+	sort.Strings(existingKeys)
 	// NOTE(muvaf): AWS API supports only a single deletion or creation at once,
 	// i.e. we can create or delete only one GlobalSecondaryIndex with a single
 	// UpdateTable call. However, we can make multiple updates.
 	var updates []*svcsdk.GlobalSecondaryIndexUpdate
-	for k := range desired {
+	for _, k := range desiredKeys {
 		existingGSI, ok := existing[k]
 		if !ok {
-			return []*svcsdk.GlobalSecondaryIndexUpdate{
+			gsi := []*svcsdk.GlobalSecondaryIndexUpdate{
 				{
 					Create: &svcsdk.CreateGlobalSecondaryIndexAction{
-						IndexName:             desired[k].IndexName,
-						KeySchema:             desired[k].KeySchema,
-						Projection:            desired[k].Projection,
-						ProvisionedThroughput: desired[k].ProvisionedThroughput,
+						IndexName:  desired[k].IndexName,
+						KeySchema:  desired[k].KeySchema,
+						Projection: desired[k].Projection,
 					},
 				},
 			}
+			if desired[k].ProvisionedThroughput != nil {
+				gsi[0].Create.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
+					ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+					WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+				}
+			}
+			return gsi
 		}
 		if desired[k].ProvisionedThroughput != nil {
 			if aws.Int64Value(desired[k].ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.WriteCapacityUnits) ||
 				aws.Int64Value(desired[k].ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.ReadCapacityUnits) {
-				updates = append(updates, &svcsdk.GlobalSecondaryIndexUpdate{
+				u := &svcsdk.GlobalSecondaryIndexUpdate{
 					Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
-						IndexName:             desired[k].IndexName,
-						ProvisionedThroughput: desired[k].ProvisionedThroughput,
-					}})
+						IndexName: desired[k].IndexName,
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+							ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+							WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+						},
+					},
+				}
+				updates = append(updates, u)
 			}
 		}
 	}
@@ -427,7 +446,7 @@ func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndex, obs []*svcs
 	}
 	// At this point, we handled all creations and updates. The last thing to check
 	// is whether there is a removal.
-	for k := range existing {
+	for _, k := range existingKeys {
 		if _, ok := desired[k]; !ok {
 			return []*svcsdk.GlobalSecondaryIndexUpdate{
 				{
@@ -441,10 +460,13 @@ func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndex, obs []*svcs
 	return nil
 }
 
-func GenerateGlobalSecondaryIndexes(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndex {
-	var result []*svcsdk.GlobalSecondaryIndex
-	for _, desiredGSI := range p {
-		gsi := &svcsdk.GlobalSecondaryIndex{}
+// GenerateGlobalSecondaryIndexDescriptions generates an array of GlobalSecondaryIndexDescriptions.
+func GenerateGlobalSecondaryIndexDescriptions(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndexDescription { // nolint:gocyclo
+	// Linter is disabled because this is a copy-paste from generated code and
+	// very simple.
+	result := make([]*svcsdk.GlobalSecondaryIndexDescription, len(p))
+	for i, desiredGSI := range p {
+		gsi := &svcsdk.GlobalSecondaryIndexDescription{}
 		if desiredGSI.IndexName != nil {
 			gsi.SetIndexName(*desiredGSI.IndexName)
 		}
@@ -465,10 +487,9 @@ func GenerateGlobalSecondaryIndexes(p []*svcapitypes.GlobalSecondaryIndex) []*sv
 		if desiredGSI.Projection != nil {
 			projection := &svcsdk.Projection{}
 			if desiredGSI.Projection.NonKeyAttributes != nil {
-				nonKeyAttrList := []*string{}
+				var nonKeyAttrList []*string
 				for _, nonKeyAttrIter := range desiredGSI.Projection.NonKeyAttributes {
-					var nonKeyAttr string
-					nonKeyAttr = *nonKeyAttrIter
+					nonKeyAttr := *nonKeyAttrIter
 					nonKeyAttrList = append(nonKeyAttrList, &nonKeyAttr)
 				}
 				projection.SetNonKeyAttributes(nonKeyAttrList)
@@ -479,7 +500,7 @@ func GenerateGlobalSecondaryIndexes(p []*svcapitypes.GlobalSecondaryIndex) []*sv
 			gsi.SetProjection(projection)
 		}
 		if desiredGSI.ProvisionedThroughput != nil {
-			provisionedThroughput := &svcsdk.ProvisionedThroughput{}
+			provisionedThroughput := &svcsdk.ProvisionedThroughputDescription{}
 			if desiredGSI.ProvisionedThroughput.ReadCapacityUnits != nil {
 				provisionedThroughput.SetReadCapacityUnits(*desiredGSI.ProvisionedThroughput.ReadCapacityUnits)
 			}
@@ -488,7 +509,7 @@ func GenerateGlobalSecondaryIndexes(p []*svcapitypes.GlobalSecondaryIndex) []*sv
 			}
 			gsi.SetProvisionedThroughput(provisionedThroughput)
 		}
-		result = append(result, gsi)
+		result[i] = gsi
 	}
 	return result
 }
