@@ -69,16 +69,31 @@ spec:
 apiVersion: dynamodb.aws.crossplane.io/v1alpha1
 kind: Table
 metadata:
-  name: sample-table-ppr
+  name: sample-table-global-secondary-indexes
 spec:
   forProvider:
     region: us-east-1
+    globalSecondaryIndexes:
+      - indexName: IndexKey
+        keySchema:
+          - keyType: HASH
+            attributeName: IndexKey
+          - keyType: RANGE
+            attributeName: SomeKey
+        projection:
+          projectionType: INCLUDE
+          nonKeyAttributes:
+            - SomeId
     attributeDefinitions:
-      - attributeName: attribute1
+      - attributeName: IndexKey
+        attributeType: S
+      - attributeName: SomeKey
         attributeType: S
     keySchema:
-      - attributeName: attribute1
+      - attributeName: IndexKey
         keyType: HASH
+      - attributeName: SomeKey
+        keyType: RANGE
     billingMode: PAY_PER_REQUEST
   providerConfigRef:
     name: example
