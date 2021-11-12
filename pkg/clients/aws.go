@@ -264,7 +264,10 @@ func UseProviderSecret(ctx context.Context, data []byte, profile, region string)
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
@@ -344,7 +347,10 @@ func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderCon
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
