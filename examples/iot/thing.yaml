@@ -1,0 +1,9 @@
+apiVersion: iot.aws.crossplane.io/v1alpha1
+kind: Thing
+metadata:
+  name: example-thing
+spec:
+  forProvider:
+    region: us-east-1
+  providerConfigRef:
+    name: example

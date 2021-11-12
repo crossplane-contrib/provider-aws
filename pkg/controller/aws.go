@@ -96,6 +96,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/user"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
+	iotpolicy "github.com/crossplane/provider-aws/pkg/controller/iot/policy"
+	"github.com/crossplane/provider-aws/pkg/controller/iot/thing"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
@@ -231,6 +233,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		volume.SetupVolume,
 		transitgateway.SetupTransitGateway,
 		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
+		thing.SetupThing,
+		iotpolicy.SetupPolicy,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

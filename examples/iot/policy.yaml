@@ -1,0 +1,20 @@
+apiVersion: iot.aws.crossplane.io/v1alpha1
+kind: Policy
+metadata:
+  name: example-policy
+spec:
+  forProvider:
+    region: us-east-1
+    policyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Deny",
+            "Action": "iot:Connect",
+            "Resource": "arn:aws:iot:us-east-1:609897127049:client/replaceWithAClientId"
+          }
+        ]
+      }
+  providerConfigRef:
+    name: example
