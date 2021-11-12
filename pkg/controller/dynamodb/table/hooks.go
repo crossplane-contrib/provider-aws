@@ -311,7 +311,7 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters")), nil
+		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters")), nil
 }
 
 type updateClient struct {
@@ -366,7 +366,108 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		filtered.BillingMode = u.BillingMode
 	}
 
+	gsiList := generateGlobalSecondaryIndexesUpdate(p)
+
+	var gsiUpdateList []*svcsdk.GlobalSecondaryIndexUpdate
+
+	for _, gsi := range gsiList {
+		if searchGlobalSecondaryIndex(out.Table.GlobalSecondaryIndexes, gsi.IndexName) {
+			gsiUpdateList = append(gsiUpdateList, &svcsdk.GlobalSecondaryIndexUpdate{Update: setUpdateGlobalSecondaryIndexAction(gsi)})
+		} else {
+			gsiUpdateList = append(gsiUpdateList, &svcsdk.GlobalSecondaryIndexUpdate{Create: setCreateGlobalSecondaryIndexAction(gsi)})
+		}
+	}
+
+	filtered.SetGlobalSecondaryIndexUpdates(gsiUpdateList)
+
 	*u = *filtered
 
 	return nil
+}
+
+func generateGlobalSecondaryIndexesUpdate(p *svcapitypes.TableParameters) []*svcsdk.GlobalSecondaryIndex {
+	gsiList := []*svcsdk.GlobalSecondaryIndex{}
+	for _, gsiIter := range p.GlobalSecondaryIndexes {
+		gsi := &svcsdk.GlobalSecondaryIndex{}
+		if gsiIter.IndexName != nil {
+			gsi.SetIndexName(*gsiIter.IndexName)
+		}
+		if gsiIter.KeySchema != nil {
+			keySchemaList := []*svcsdk.KeySchemaElement{}
+			for _, keySchemaIter := range gsiIter.KeySchema {
+				keySchema := &svcsdk.KeySchemaElement{}
+				if keySchemaIter.AttributeName != nil {
+					keySchema.SetAttributeName(*keySchemaIter.AttributeName)
+				}
+				if keySchemaIter.KeyType != nil {
+					keySchema.SetKeyType(*keySchemaIter.KeyType)
+				}
+				keySchemaList = append(keySchemaList, keySchema)
+			}
+			gsi.SetKeySchema(keySchemaList)
+		}
+		if gsiIter.Projection != nil {
+			projection := &svcsdk.Projection{}
+			if gsiIter.Projection.NonKeyAttributes != nil {
+				nonKeyAttrList := []*string{}
+				for _, nonKeyAttrIter := range gsiIter.Projection.NonKeyAttributes {
+					var nonKeyAttr string
+					nonKeyAttr = *nonKeyAttrIter
+					nonKeyAttrList = append(nonKeyAttrList, &nonKeyAttr)
+				}
+				projection.SetNonKeyAttributes(nonKeyAttrList)
+			}
+			if gsiIter.Projection.ProjectionType != nil {
+				projection.SetProjectionType(*gsiIter.Projection.ProjectionType)
+			}
+			gsi.SetProjection(projection)
+		}
+		if gsiIter.ProvisionedThroughput != nil {
+			provisionedThroughput := &svcsdk.ProvisionedThroughput{}
+			if gsiIter.ProvisionedThroughput.ReadCapacityUnits != nil {
+				provisionedThroughput.SetReadCapacityUnits(*gsiIter.ProvisionedThroughput.ReadCapacityUnits)
+			}
+			if gsiIter.ProvisionedThroughput.WriteCapacityUnits != nil {
+				provisionedThroughput.SetWriteCapacityUnits(*gsiIter.ProvisionedThroughput.WriteCapacityUnits)
+			}
+			gsi.SetProvisionedThroughput(provisionedThroughput)
+		}
+		gsiList = append(gsiList, gsi)
+	}
+
+	return gsiList
+}
+
+func setCreateGlobalSecondaryIndexAction(gsi *svcsdk.GlobalSecondaryIndex) *svcsdk.CreateGlobalSecondaryIndexAction {
+	action := &svcsdk.CreateGlobalSecondaryIndexAction{}
+
+	action.SetIndexName(*gsi.IndexName)
+	action.SetKeySchema(gsi.KeySchema)
+	action.SetProjection(gsi.Projection)
+	action.SetProvisionedThroughput(gsi.ProvisionedThroughput)
+
+	return action
+}
+
+func setUpdateGlobalSecondaryIndexAction(gsi *svcsdk.GlobalSecondaryIndex) (action *svcsdk.UpdateGlobalSecondaryIndexAction) {
+	action.SetIndexName(*gsi.IndexName)
+	action.SetProvisionedThroughput(gsi.ProvisionedThroughput)
+
+	return
+}
+
+func setDeleteGlobalSecondaryIndexAction(gsi *svcsdk.GlobalSecondaryIndex) (action *svcsdk.DeleteGlobalSecondaryIndexAction) {
+	action.SetIndexName(*gsi.IndexName)
+
+	return
+}
+
+func searchGlobalSecondaryIndex(gsiList []*svcsdk.GlobalSecondaryIndexDescription, indexName *string) bool {
+	for _, gsi := range gsiList {
+		if gsi.IndexName == indexName {
+			return true
+		}
+	}
+
+	return false
 }
