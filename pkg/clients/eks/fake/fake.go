@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// https://github.com/golang/mock
+// Automatically generate mock interfaces as part of "go generate"
+// Ex. go:generate mockgen  --build_flags=--mod=mod -package eksiface -destination pkg/clients/eks/fake/eksiface/fake.go github.com/aws/aws-sdk-go/service/eks/eksiface EKSAPI
+
 package fake
 
 import (
@@ -28,6 +32,8 @@ import (
 type MockClient struct {
 	MockCreateCluster        func(ctx context.Context, input *eks.CreateClusterInput, opts []func(*eks.Options)) (*eks.CreateClusterOutput, error)
 	MockDescribeCluster      func(ctx context.Context, input *eks.DescribeClusterInput, opts []func(*eks.Options)) (*eks.DescribeClusterOutput, error)
+	MockDeregisterCluster    func(ctx context.Context, input *eks.DeregisterClusterInput, opts []func(*eks.Options)) (*eks.DeregisterClusterOutput, error)
+	MockRegisterCluster      func(ctx context.Context, input *eks.RegisterClusterInput, opts []func(*eks.Options)) (*eks.RegisterClusterOutput, error)
 	MockUpdateClusterConfig  func(ctx context.Context, input *eks.UpdateClusterConfigInput, opts []func(*eks.Options)) (*eks.UpdateClusterConfigOutput, error)
 	MockDeleteCluster        func(ctx context.Context, input *eks.DeleteClusterInput, opts []func(*eks.Options)) (*eks.DeleteClusterOutput, error)
 	MockTagResource          func(ctx context.Context, input *eks.TagResourceInput, opts []func(*eks.Options)) (*eks.TagResourceOutput, error)
@@ -47,6 +53,9 @@ type MockClient struct {
 	MockDescribeIdentityProviderConfig     func(ctx context.Context, input *eks.DescribeIdentityProviderConfigInput, opts []func(*eks.Options)) (*eks.DescribeIdentityProviderConfigOutput, error)
 	MockAssociateIdentityProviderConfig    func(ctx context.Context, input *eks.AssociateIdentityProviderConfigInput, opts []func(*eks.Options)) (*eks.AssociateIdentityProviderConfigOutput, error)
 	MockDisassociateIdentityProviderConfig func(ctx context.Context, input *eks.DisassociateIdentityProviderConfigInput, opts []func(*eks.Options)) (*eks.DisassociateIdentityProviderConfigOutput, error)
+	MockListIdentityProviderConfigs        func(ctx context.Context, input *eks.ListIdentityProviderConfigsInput, opts []func(*eks.Options)) (*eks.ListIdentityProviderConfigsOutput, error)
+
+	MockAssociateEncryptionConfig func(ctx context.Context, input *eks.AssociateEncryptionConfigInput, opts []func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error)
 }
 
 // MockSTSClient mock sts client
@@ -79,6 +88,16 @@ func (c *MockClient) UpdateClusterConfig(ctx context.Context, input *eks.UpdateC
 // DeleteCluster calls the underlying MockDeleteCluster method.
 func (c *MockClient) DeleteCluster(ctx context.Context, input *eks.DeleteClusterInput, opts ...func(*eks.Options)) (*eks.DeleteClusterOutput, error) {
 	return c.MockDeleteCluster(ctx, input, opts)
+}
+
+// DeregisterCluster calls the underlying MockDeregisterCluster method.
+func (c *MockClient) DeregisterCluster(ctx context.Context, input *eks.DeregisterClusterInput, opts ...func(*eks.Options)) (*eks.DeregisterClusterOutput, error) {
+	return c.MockDeregisterCluster(ctx, input, opts)
+}
+
+// RegisterCluster calls the underlying MockRegisterCluster method.
+func (c *MockClient) RegisterCluster(ctx context.Context, input *eks.RegisterClusterInput, opts ...func(*eks.Options)) (*eks.RegisterClusterOutput, error) {
+	return c.MockRegisterCluster(ctx, input, opts)
 }
 
 // TagResource calls the underlying MockTagResource method.
@@ -161,4 +180,16 @@ func (c *MockClient) AssociateIdentityProviderConfig(ctx context.Context, input 
 // method
 func (c *MockClient) DisassociateIdentityProviderConfig(ctx context.Context, input *eks.DisassociateIdentityProviderConfigInput, opts ...func(*eks.Options)) (*eks.DisassociateIdentityProviderConfigOutput, error) {
 	return c.MockDisassociateIdentityProviderConfig(ctx, input, opts)
+}
+
+// ListIdentityProviderConfigs calls the underlying ListIdentityProviderConfigs
+// method
+func (c *MockClient) ListIdentityProviderConfigs(ctx context.Context, input *eks.ListIdentityProviderConfigsInput, opts ...func(*eks.Options)) (*eks.ListIdentityProviderConfigsOutput, error) {
+	return c.MockListIdentityProviderConfigs(ctx, input, opts)
+}
+
+// AssociateEncryptionConfig calls the underlying MockAssociateEncryptionConfig
+// method
+func (c *MockClient) AssociateEncryptionConfig(ctx context.Context, input *eks.AssociateEncryptionConfigInput, opts ...func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error) {
+	return c.MockAssociateEncryptionConfig(ctx, input, opts)
 }
