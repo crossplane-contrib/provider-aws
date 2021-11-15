@@ -99,7 +99,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{}, nil
+		// If external name not set there is still a change it may already exist
+		// Try to get the policy by name
+		policyArn, _ := e.getPolicyArnByName(ctx, cr.Spec.ForProvider.Name)
+		if policyArn == nil {
+			return managed.ExternalObservation{}, nil
+		}
+		meta.SetExternalName(cr, aws.ToString(policyArn))
+		_ = e.kube.Update(ctx, cr)
 	}
 
 	policyResp, err := e.client.GetPolicy(ctx, &awsiam.GetPolicyInput{
@@ -274,4 +281,45 @@ func (e *external) deleteNonDefaultVersions(ctx context.Context, policyArn strin
 	}
 
 	return nil
+}
+
+// ListPoliciesPages paginates ListPolicies
+func (e *external) ListPoliciesPages(ctx context.Context, input *awsiam.ListPoliciesInput, fn func(*awsiam.ListPoliciesOutput, bool) bool) error {
+	for {
+		output, err := e.client.ListPolicies(ctx, input)
+		if err != nil {
+			return err
+		}
+		lastPage := awsclient.StringValue(output.Marker) == ""
+		if !fn(output, lastPage) || lastPage {
+			break
+		}
+		input.Marker = output.Marker
+	}
+	return nil
+}
+
+// getPolicyArnByName will paginate through all policies to retrieve by name instead of arn
+func (e *external) getPolicyArnByName(ctx context.Context, policyName string) (*string, error) {
+
+	input := &awsiam.ListPoliciesInput{Scope: awsiamtypes.PolicyScopeTypeLocal}
+
+	policyArn := awsclient.String("")
+	err := e.ListPoliciesPages(ctx, input, func(page *awsiam.ListPoliciesOutput, lastPage bool) bool {
+		if page == nil {
+			return !lastPage
+		}
+		// Set the ARN and return if found
+		for _, policy := range page.Policies {
+			if policyName == awsclient.StringValue(policy.PolicyName) {
+				policyArn = policy.Arn
+				return lastPage
+			}
+		}
+		return !lastPage
+	})
+	if err != nil {
+		return nil, err
+	}
+	return policyArn, nil
 }

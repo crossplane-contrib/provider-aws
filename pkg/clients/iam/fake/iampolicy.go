@@ -32,6 +32,7 @@ type MockPolicyClient struct {
 	MockGetPolicy           func(ctx context.Context, input *iam.GetPolicyInput, opts []func(*iam.Options)) (*iam.GetPolicyOutput, error)
 	MockCreatePolicy        func(ctx context.Context, input *iam.CreatePolicyInput, opts []func(*iam.Options)) (*iam.CreatePolicyOutput, error)
 	MockDeletePolicy        func(ctx context.Context, input *iam.DeletePolicyInput, opts []func(*iam.Options)) (*iam.DeletePolicyOutput, error)
+	MockListPolicies        func(ctx context.Context, input *iam.ListPoliciesInput, opts []func(*iam.Options)) (*iam.ListPoliciesOutput, error)
 	MockGetPolicyVersion    func(ctx context.Context, input *iam.GetPolicyVersionInput, opts []func(*iam.Options)) (*iam.GetPolicyVersionOutput, error)
 	MockCreatePolicyVersion func(ctx context.Context, input *iam.CreatePolicyVersionInput, opts []func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
 	MockListPolicyVersions  func(ctx context.Context, input *iam.ListPolicyVersionsInput, opts []func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
@@ -51,6 +52,11 @@ func (m *MockPolicyClient) CreatePolicy(ctx context.Context, input *iam.CreatePo
 // DeletePolicy mocks DeletePolicy method
 func (m *MockPolicyClient) DeletePolicy(ctx context.Context, input *iam.DeletePolicyInput, opts ...func(*iam.Options)) (*iam.DeletePolicyOutput, error) {
 	return m.MockDeletePolicy(ctx, input, opts)
+}
+
+// ListPolicies mocks ListPolicies method
+func (m *MockPolicyClient) ListPolicies(ctx context.Context, input *iam.ListPoliciesInput, opts ...func(*iam.Options)) (*iam.ListPoliciesOutput, error) {
+	return m.MockListPolicies(ctx, input, opts)
 }
 
 // GetPolicyVersion mocks GetPolicyVersion method

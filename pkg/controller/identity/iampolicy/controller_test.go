@@ -183,6 +183,71 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
+		"EmptyExternalNameAndEntityDoesNotExist": {
+			args: args{
+				iam: &fake.MockPolicyClient{
+					MockListPolicies: func(ctx context.Context, input *awsiam.ListPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListPoliciesOutput, error) {
+						return &awsiam.ListPoliciesOutput{
+							IsTruncated: false,
+							Policies:    []awsiamtypes.Policy{},
+						}, nil
+					},
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, nil
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExterName("")),
+			},
+			want: want{
+				cr: policy(withExterName("")),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"EmptyExternalNameAndEntityAlreadyExists": {
+			args: args{
+				iam: &fake.MockPolicyClient{
+					MockListPolicies: func(ctx context.Context, input *awsiam.ListPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListPoliciesOutput, error) {
+						return &awsiam.ListPoliciesOutput{
+							IsTruncated: false,
+							Policies: []awsiamtypes.Policy{{
+								Arn: awsclient.String(arn), PolicyName: awsclient.String(name),
+							}},
+						}, nil
+					},
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, nil
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExterName(arn)),
+			},
+			want: want{
+				cr: policy(withExterName(arn),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists: true,
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
