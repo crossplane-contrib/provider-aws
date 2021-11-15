@@ -19,10 +19,14 @@ package eks
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 )
 
 var (
@@ -35,7 +39,7 @@ var (
 func TestGenerateCreateFargateProfileInput(t *testing.T) {
 	type args struct {
 		name string
-		p    v1alpha1.FargateProfileParameters
+		p    manualv1alpha1.FargateProfileParameters
 	}
 
 	cases := map[string]struct {
@@ -45,12 +49,12 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 		"AllFields": {
 			args: args{
 				name: fpName,
-				p: v1alpha1.FargateProfileParameters{
+				p: manualv1alpha1.FargateProfileParameters{
 					ClusterName:         clusterName,
 					PodExecutionRoleArn: podExecutionRoleArn,
 					Subnets:             subnets,
 					Tags:                map[string]string{"cool": "tag"},
-					Selectors: []v1alpha1.FargateProfileSelector{
+					Selectors: []manualv1alpha1.FargateProfileSelector{
 						{
 							Namespace: &namespace,
 							Labels: map[string]string{
@@ -66,7 +70,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 				PodExecutionRoleArn: &podExecutionRoleArn,
 				Subnets:             subnets,
 				Tags:                map[string]string{"cool": "tag"},
-				Selectors: []eks.FargateProfileSelector{
+				Selectors: []ekstypes.FargateProfileSelector{
 					{
 						Namespace: &namespace,
 						Labels: map[string]string{
@@ -79,10 +83,10 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 		"SomeFields": {
 			args: args{
 				name: fpName,
-				p: v1alpha1.FargateProfileParameters{
+				p: manualv1alpha1.FargateProfileParameters{
 					ClusterName:         clusterName,
 					PodExecutionRoleArn: podExecutionRoleArn,
-					Selectors: []v1alpha1.FargateProfileSelector{
+					Selectors: []manualv1alpha1.FargateProfileSelector{
 						{
 							Namespace: &namespace,
 							Labels: map[string]string{
@@ -96,7 +100,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 				FargateProfileName:  &fpName,
 				ClusterName:         &clusterName,
 				PodExecutionRoleArn: &podExecutionRoleArn,
-				Selectors: []eks.FargateProfileSelector{
+				Selectors: []ekstypes.FargateProfileSelector{
 					{
 						Namespace: &namespace,
 						Labels: map[string]string{
@@ -111,7 +115,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateCreateFargateProfileInput(tc.args.name, tc.args.p)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -120,23 +124,23 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 
 func TestLateInitializeFargateProfile(t *testing.T) {
 	type args struct {
-		p *v1alpha1.FargateProfileParameters
-		n *eks.FargateProfile
+		p *manualv1alpha1.FargateProfileParameters
+		n *ekstypes.FargateProfile
 	}
 
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.FargateProfileParameters
+		want *manualv1alpha1.FargateProfileParameters
 	}{
 		"AllFieldsEmpty": {
 			args: args{
-				p: &v1alpha1.FargateProfileParameters{},
-				n: &eks.FargateProfile{
+				p: &manualv1alpha1.FargateProfileParameters{},
+				n: &ekstypes.FargateProfile{
 					Subnets: subnets,
 					Tags:    map[string]string{"cool": "tag"},
 				},
 			},
-			want: &v1alpha1.FargateProfileParameters{
+			want: &manualv1alpha1.FargateProfileParameters{
 				Subnets: subnets,
 				Tags:    map[string]string{"cool": "tag"},
 			},
@@ -155,8 +159,8 @@ func TestLateInitializeFargateProfile(t *testing.T) {
 
 func TestIsFargateProfileUpToDate(t *testing.T) {
 	type args struct {
-		p v1alpha1.FargateProfileParameters
-		n *eks.FargateProfile
+		p manualv1alpha1.FargateProfileParameters
+		n *ekstypes.FargateProfile
 	}
 
 	cases := map[string]struct {
@@ -165,10 +169,10 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 	}{
 		"UpToDate": {
 			args: args{
-				p: v1alpha1.FargateProfileParameters{
+				p: manualv1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag"},
 				},
-				n: &eks.FargateProfile{
+				n: &ekstypes.FargateProfile{
 					Tags: map[string]string{"cool": "tag"},
 				},
 			},
@@ -176,10 +180,10 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 		},
 		"UpdateTags": {
 			args: args{
-				p: v1alpha1.FargateProfileParameters{
+				p: manualv1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag", "another": "tag"},
 				},
-				n: &eks.FargateProfile{
+				n: &ekstypes.FargateProfile{
 					Tags: map[string]string{"cool": "tag"},
 				},
 			},

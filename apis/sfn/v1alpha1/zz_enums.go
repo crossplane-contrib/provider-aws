@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -109,4 +109,12 @@ type StateMachineType string
 const (
 	StateMachineType_STANDARD StateMachineType = "STANDARD"
 	StateMachineType_EXPRESS  StateMachineType = "EXPRESS"
+)
+
+type SyncExecutionStatus string
+
+const (
+	SyncExecutionStatus_SUCCEEDED SyncExecutionStatus = "SUCCEEDED"
+	SyncExecutionStatus_FAILED    SyncExecutionStatus = "FAILED"
+	SyncExecutionStatus_TIMED_OUT SyncExecutionStatus = "TIMED_OUT"
 )

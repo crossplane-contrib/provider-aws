@@ -20,20 +20,22 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
+	"time"
 
-	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -42,7 +44,7 @@ import (
 )
 
 // SetupTable adds a controller that reconciles Table.
-func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
+func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.TableGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -58,6 +60,9 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Table{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TableGroupVersionKind),
@@ -66,6 +71,7 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 				managed.NewNameAsExternalName(mgr.GetClient()),
 				managed.NewDefaultProviderConfig(mgr.GetClient()),
 				&tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -78,9 +84,9 @@ func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTable
 	obj.TableName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
 	obj.TableName = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -97,6 +103,14 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	case string(svcapitypes.TableStatus_SDK_ARCHIVED), string(svcapitypes.TableStatus_SDK_INACCESSIBLE_ENCRYPTION_CREDENTIALS), string(svcapitypes.TableStatus_SDK_ARCHIVING):
 		cr.SetConditions(xpv1.Unavailable())
 	}
+
+	obs.ConnectionDetails = managed.ConnectionDetails{
+		"tableName":         []byte(meta.GetExternalName(cr)),
+		"tableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
+		"latestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
+		"latestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
+	}
+
 	return obs, nil
 }
 
@@ -141,15 +155,15 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		in.AttributeDefinitions = buildAttributeDefinitions(t.Table.AttributeDefinitions)
 	}
 
-	if len(in.GlobalSecondaryIndexes) == 0 && len(t.Table.GlobalSecondaryIndexes) != 0 {
+	if in.GlobalSecondaryIndexes == nil && len(t.Table.GlobalSecondaryIndexes) != 0 {
 		in.GlobalSecondaryIndexes = buildGlobalIndexes(t.Table.GlobalSecondaryIndexes)
 	}
 
-	if len(in.LocalSecondaryIndexes) == 0 && len(t.Table.LocalSecondaryIndexes) != 0 {
+	if in.LocalSecondaryIndexes == nil && len(t.Table.LocalSecondaryIndexes) != 0 {
 		in.LocalSecondaryIndexes = buildLocalIndexes(t.Table.LocalSecondaryIndexes)
 	}
 
-	if len(in.KeySchema) == 0 && len(t.Table.KeySchema) != 0 {
+	if in.KeySchema == nil && len(t.Table.KeySchema) != 0 {
 		in.KeySchema = buildAlphaKeyElements(t.Table.KeySchema)
 	}
 
@@ -159,9 +173,18 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			WriteCapacityUnits: t.Table.ProvisionedThroughput.WriteCapacityUnits,
 		}
 	}
-	if in.SSESpecification == nil && t.Table.SSEDescription != nil {
-		in.SSESpecification = &svcapitypes.SSESpecification{
-			SSEType: t.Table.SSEDescription.SSEType,
+	if t.Table.SSEDescription != nil {
+		if in.SSESpecification == nil {
+			in.SSESpecification = &svcapitypes.SSESpecification{}
+		}
+		if in.SSESpecification.Enabled == nil && t.Table.SSEDescription.Status != nil {
+			in.SSESpecification.Enabled = aws.Bool(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
+		}
+		if in.SSESpecification.KMSMasterKeyID == nil && t.Table.SSEDescription.KMSMasterKeyArn != nil {
+			in.SSESpecification.KMSMasterKeyID = t.Table.SSEDescription.KMSMasterKeyArn
+		}
+		if in.SSESpecification.SSEType == nil && t.Table.SSEDescription.SSEType != nil {
+			in.SSESpecification.SSEType = t.Table.SSEDescription.SSEType
 		}
 	}
 	if in.StreamSpecification == nil && t.Table.StreamSpecification != nil {
@@ -170,13 +193,41 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			StreamViewType: t.Table.StreamSpecification.StreamViewType,
 		}
 	}
+
+	if in.BillingMode == nil && t.Table.BillingModeSummary != nil {
+		in.BillingMode = t.Table.BillingModeSummary.BillingMode
+	}
+
 	return nil
 }
 
+// describeContinuousBackups describes backups
 func (e *updateClient) describeContinuousBackups(ctx context.Context, t *svcsdk.DescribeTableOutput)(*svcsdk.DescribeContinuousBackupsOutput, error){
 	return e.client.DescribeContinuousBackupsWithContext(ctx, &svcsdk.DescribeContinuousBackupsInput {
 		TableName: t.Table.TableName,
 	})
+}
+
+// updateContinuousBackups updates continuous backups
+func (e *updateClient) updateContinuousBackups(ctx context.Context, cr *svcapitypes.Table) error {
+	if cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != nil &&
+		*cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != "ENABLING" {
+
+		var pointInTimeRecovery *svcsdk.PointInTimeRecoverySpecification
+		switch aws.StringValue(cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus) {
+		case string(svcapitypes.PointInTimeRecoveryStatus_ENABLED):
+			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(true)
+		case string(svcapitypes.PointInTimeRecoveryStatus_DISABLED):
+			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(false)
+		}
+
+		_, err := e.client.UpdateContinuousBackupsWithContext(ctx, &svcsdk.UpdateContinuousBackupsInput{PointInTimeRecoverySpecification: pointInTimeRecovery,
+			TableName: aws.String(meta.GetExternalName(cr))})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func buildAlphaKeyElements(keys []*svcsdk.KeySchemaElement) []*svcapitypes.KeySchemaElement {
@@ -268,77 +319,232 @@ func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 }
 
 func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+	// A table that's currently updating or creating can't be updated, so we
+	// temporarily consider it to be up-to-date no matter what.
+	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
+		return true, nil
+	}
+
+	// Similarly, a table that's currently updating its SSE status can't be
+	// updated, so we temporarily consider it to be up-to-date.
+	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
+		return true, nil
+	}
+
 	patch, err := createPatch(resp, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters")), nil
+
+	// At least one of ProvisionedThroughput, BillingMode, UpdateStreamEnabled,
+	// GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is
+	// required.
+	switch {
+	case patch.ProvisionedThroughput != nil:
+		return false, nil
+	case patch.BillingMode != nil:
+		return false, nil
+	case patch.StreamSpecification != nil:
+		return false, nil
+	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
+		return false, nil
+	}
+	return true, nil
 }
 
 type updateClient struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-func (e *updateClient) updateContinuousBackups(ctx context.Context, cr *svcapitypes.Table) error {
-	if cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != nil &&
-		*cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != "ENABLING" {
+func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 
-		var pointInTimeRecovery *svcsdk.PointInTimeRecoverySpecification
-		switch aws.StringValue(cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus) {
-		case string(svcapitypes.PointInTimeRecoveryStatus_ENABLED):
-			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(true)
-		case string(svcapitypes.PointInTimeRecoveryStatus_DISABLED):
-			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(false)
+	filtered := &svcsdk.UpdateTableInput{
+		TableName:            aws.String(meta.GetExternalName(cr)),
+		AttributeDefinitions: u.AttributeDefinitions,
+	}
+
+	// The AWS API requires us to do one kind of update at a time per
+	// https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
+	// This means that we need to return a filtered UpdateTableInput that
+	// contains at most one thing that needs updating. In order to be
+	// eventually consistent (i.e. to eventually update all the things, one
+	// on each reconcile pass) we need to determine the 'next' thing to
+	// update on each pass. This means we need to diff actual vs desired
+	// state here inside preUpdate. Unfortunately we read the actual state
+	// during Observe, but don't typically pass it to update. We could stash
+	// the observed state in a cache during postObserve then read it here,
+	// but we typically prefer to be as stateless as possible even if it
+	// means redundant API calls.
+	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
+	if err != nil {
+		return aws.Wrap(err, errDescribe)
+	}
+
+	p, err := createPatch(out, &cr.Spec.ForProvider)
+	if err != nil {
+		return err
+	}
+
+	err = e.updateContinuousBackups(ctx, cr)
+	if err != nil {
+		return aws.Wrap(err, errUpdate)
+	}
+
+	gsiUpdates := diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), out.Table.GlobalSecondaryIndexes)
+	switch {
+	case p.ProvisionedThroughput != nil:
+		filtered.ProvisionedThroughput = u.ProvisionedThroughput
+	case p.StreamSpecification != nil:
+		// NOTE(muvaf): Unless StreamEnabled is changed, updating stream
+		// specification won't work.
+		filtered.StreamSpecification = u.StreamSpecification
+	case p.SSESpecification != nil:
+		// NOTE(negz): Attempting to update the KMSMasterKeyId to its
+		// current value returns an error
+		filtered.SSESpecification = &svcsdk.SSESpecification{
+			Enabled: u.SSESpecification.Enabled,
+			SSEType: u.SSESpecification.SSEType,
 		}
+		if p.SSESpecification.KMSMasterKeyID != nil {
+			filtered.SSESpecification.KMSMasterKeyId = u.SSESpecification.KMSMasterKeyId
+		}
+	case p.BillingMode != nil:
+		filtered.BillingMode = u.BillingMode
+	case len(gsiUpdates) != 0:
+		filtered.SetGlobalSecondaryIndexUpdates(gsiUpdates)
+	}
 
-		_, err := e.client.UpdateContinuousBackupsWithContext(ctx, &svcsdk.UpdateContinuousBackupsInput{PointInTimeRecoverySpecification: pointInTimeRecovery,
-			TableName: aws.String(meta.GetExternalName(cr))})
-		if err != nil {
-			return err
+	*u = *filtered
+	return nil
+}
+
+func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, obs []*svcsdk.GlobalSecondaryIndexDescription) []*svcsdk.GlobalSecondaryIndexUpdate { //nolint:gocyclo
+	// Linter is disabled because there isn't an easy good way to reduce the cyclo
+	// complexity here.
+	desired := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
+	desiredKeys := make([]string, len(spec))
+	for i, gsi := range spec {
+		desired[aws.StringValue(gsi.IndexName)] = gsi
+		desiredKeys[i] = aws.StringValue(gsi.IndexName)
+	}
+	existing := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
+	existingKeys := make([]string, len(obs))
+	for i, gsi := range obs {
+		existing[aws.StringValue(gsi.IndexName)] = gsi
+		existingKeys[i] = aws.StringValue(gsi.IndexName)
+	}
+	sort.Strings(desiredKeys)
+	sort.Strings(existingKeys)
+	// NOTE(muvaf): AWS API supports only a single deletion or creation at once,
+	// i.e. we can create or delete only one GlobalSecondaryIndex with a single
+	// UpdateTable call. However, we can make multiple updates.
+	var updates []*svcsdk.GlobalSecondaryIndexUpdate
+	for _, k := range desiredKeys {
+		existingGSI, ok := existing[k]
+		if !ok {
+			gsi := []*svcsdk.GlobalSecondaryIndexUpdate{
+				{
+					Create: &svcsdk.CreateGlobalSecondaryIndexAction{
+						IndexName:  desired[k].IndexName,
+						KeySchema:  desired[k].KeySchema,
+						Projection: desired[k].Projection,
+					},
+				},
+			}
+			if desired[k].ProvisionedThroughput != nil {
+				gsi[0].Create.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
+					ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+					WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+				}
+			}
+			return gsi
+		}
+		if desired[k].ProvisionedThroughput != nil {
+			if aws.Int64Value(desired[k].ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.WriteCapacityUnits) ||
+				aws.Int64Value(desired[k].ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.ReadCapacityUnits) {
+				u := &svcsdk.GlobalSecondaryIndexUpdate{
+					Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
+						IndexName: desired[k].IndexName,
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+							ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+							WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+						},
+					},
+				}
+				updates = append(updates, u)
+			}
+		}
+	}
+	if len(updates) != 0 {
+		return updates
+	}
+	// At this point, we handled all creations and updates. The last thing to check
+	// is whether there is a removal.
+	for _, k := range existingKeys {
+		if _, ok := desired[k]; !ok {
+			return []*svcsdk.GlobalSecondaryIndexUpdate{
+				{
+					Delete: &svcsdk.DeleteGlobalSecondaryIndexAction{
+						IndexName: existing[k].IndexName,
+					},
+				},
+			}
 		}
 	}
 	return nil
 }
 
-func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
-	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
-	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
-		return nil
+// GenerateGlobalSecondaryIndexDescriptions generates an array of GlobalSecondaryIndexDescriptions.
+func GenerateGlobalSecondaryIndexDescriptions(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndexDescription { // nolint:gocyclo
+	// Linter is disabled because this is a copy-paste from generated code and
+	// very simple.
+	result := make([]*svcsdk.GlobalSecondaryIndexDescription, len(p))
+	for i, desiredGSI := range p {
+		gsi := &svcsdk.GlobalSecondaryIndexDescription{}
+		if desiredGSI.IndexName != nil {
+			gsi.SetIndexName(*desiredGSI.IndexName)
+		}
+		if desiredGSI.KeySchema != nil {
+			var keySchemaList []*svcsdk.KeySchemaElement
+			for _, keySchemaIter := range desiredGSI.KeySchema {
+				keySchema := &svcsdk.KeySchemaElement{}
+				if keySchemaIter.AttributeName != nil {
+					keySchema.SetAttributeName(*keySchemaIter.AttributeName)
+				}
+				if keySchemaIter.KeyType != nil {
+					keySchema.SetKeyType(*keySchemaIter.KeyType)
+				}
+				keySchemaList = append(keySchemaList, keySchema)
+			}
+			gsi.SetKeySchema(keySchemaList)
+		}
+		if desiredGSI.Projection != nil {
+			projection := &svcsdk.Projection{}
+			if desiredGSI.Projection.NonKeyAttributes != nil {
+				var nonKeyAttrList []*string
+				for _, nonKeyAttrIter := range desiredGSI.Projection.NonKeyAttributes {
+					nonKeyAttr := *nonKeyAttrIter
+					nonKeyAttrList = append(nonKeyAttrList, &nonKeyAttr)
+				}
+				projection.SetNonKeyAttributes(nonKeyAttrList)
+			}
+			if desiredGSI.Projection.ProjectionType != nil {
+				projection.SetProjectionType(*desiredGSI.Projection.ProjectionType)
+			}
+			gsi.SetProjection(projection)
+		}
+		if desiredGSI.ProvisionedThroughput != nil {
+			provisionedThroughput := &svcsdk.ProvisionedThroughputDescription{}
+			if desiredGSI.ProvisionedThroughput.ReadCapacityUnits != nil {
+				provisionedThroughput.SetReadCapacityUnits(*desiredGSI.ProvisionedThroughput.ReadCapacityUnits)
+			}
+			if desiredGSI.ProvisionedThroughput.WriteCapacityUnits != nil {
+				provisionedThroughput.SetWriteCapacityUnits(*desiredGSI.ProvisionedThroughput.WriteCapacityUnits)
+			}
+			gsi.SetProvisionedThroughput(provisionedThroughput)
+		}
+		result[i] = gsi
 	}
-
-	err := e.updateContinuousBackups(ctx, cr)
-	if err != nil {
-		return aws.Wrap(err, errUpdate)
-	}
-
-	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
-	if err != nil {
-		return aws.Wrap(err, errDescribe)
-	}
-
-	newUpdateObj := &svcsdk.UpdateTableInput{
-		TableName: aws.String(meta.GetExternalName(cr)),
-	}
-	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
-	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
-	switch {
-	case cr.Spec.ForProvider.ProvisionedThroughput != nil &&
-		(aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
-			aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)):
-		newUpdateObj.ProvisionedThroughput = u.ProvisionedThroughput
-	// NOTE(muvaf): Unless StreamEnabled is changed, updating stream specification
-	// won't work.
-	case cr.Spec.ForProvider.StreamSpecification != nil &&
-		(awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled)):
-		newUpdateObj.StreamSpecification = u.StreamSpecification
-	default:
-		return errors.New("only provisionedThroughput and streamSpecification updates are supported")
-	}
-	// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
-	// are not implemented yet.
-
-	*u = *newUpdateObj
-	return nil
+	return result
 }

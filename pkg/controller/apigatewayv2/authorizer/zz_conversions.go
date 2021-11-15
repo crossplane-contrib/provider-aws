@@ -46,6 +46,8 @@ func GenerateAuthorizer(resp *svcsdk.GetAuthorizerOutput) *svcapitypes.Authorize
 
 	if resp.AuthorizerId != nil {
 		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
+	} else {
+		cr.Status.AtProvider.AuthorizerID = nil
 	}
 
 	return cr

@@ -46,9 +46,13 @@ func GenerateRoute(resp *svcsdk.GetRouteOutput) *svcapitypes.Route {
 
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.RouteId != nil {
 		cr.Status.AtProvider.RouteID = resp.RouteId
+	} else {
+		cr.Status.AtProvider.RouteID = nil
 	}
 
 	return cr

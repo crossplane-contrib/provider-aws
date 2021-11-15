@@ -17,19 +17,21 @@ limitations under the License.
 package iam
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 )
 
 // AccessClient is the external client used for IAMAccessKey Custom Resource
 type AccessClient interface {
-	CreateAccessKeyRequest(*iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest
-	DeleteAccessKeyRequest(*iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest
-	ListAccessKeysRequest(*iam.ListAccessKeysInput) iam.ListAccessKeysRequest
-	UpdateAccessKeyRequest(*iam.UpdateAccessKeyInput) iam.UpdateAccessKeyRequest
+	CreateAccessKey(ctx context.Context, input *iam.CreateAccessKeyInput, opts ...func(*iam.Options)) (*iam.CreateAccessKeyOutput, error)
+	DeleteAccessKey(ctx context.Context, input *iam.DeleteAccessKeyInput, opts ...func(*iam.Options)) (*iam.DeleteAccessKeyOutput, error)
+	ListAccessKeys(ctx context.Context, input *iam.ListAccessKeysInput, opts ...func(*iam.Options)) (*iam.ListAccessKeysOutput, error)
+	UpdateAccessKey(ctx context.Context, input *iam.UpdateAccessKeyInput, opts ...func(*iam.Options)) (*iam.UpdateAccessKeyOutput, error)
 }
 
 // NewAccessClient returns a new client using AWS credentials as JSON encoded data.
 func NewAccessClient(conf aws.Config) AccessClient {
-	return iam.New(conf)
+	return iam.NewFromConfig(conf)
 }

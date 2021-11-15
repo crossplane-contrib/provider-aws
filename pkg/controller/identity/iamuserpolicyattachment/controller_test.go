@@ -18,12 +18,10 @@ package iamuserpolicyattachment
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -92,16 +90,14 @@ func TestObserve(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockListAttachedUserPolicies: func(input *awsiam.ListAttachedUserPoliciesInput) awsiam.ListAttachedUserPoliciesRequest {
-						return awsiam.ListAttachedUserPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedUserPoliciesOutput{
-								AttachedPolicies: []awsiam.AttachedPolicy{
-									{
-										PolicyArn: &policyArn,
-									},
+					MockListAttachedUserPolicies: func(ictx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
 				cr: userPolicy(withUserName(userName),
@@ -130,10 +126,8 @@ func TestObserve(t *testing.T) {
 		"NoAttachedPolicy": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockListAttachedUserPolicies: func(input *awsiam.ListAttachedUserPoliciesInput) awsiam.ListAttachedUserPoliciesRequest {
-						return awsiam.ListAttachedUserPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedUserPoliciesOutput{}},
-						}
+					MockListAttachedUserPolicies: func(ictx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{}, nil
 					},
 				},
 				cr: userPolicy(withSpecPolicyArn(policyArn)),
@@ -145,10 +139,8 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockListAttachedUserPolicies: func(input *awsiam.ListAttachedUserPoliciesInput) awsiam.ListAttachedUserPoliciesRequest {
-						return awsiam.ListAttachedUserPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockListAttachedUserPolicies: func(ictx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: userPolicy(withUserName(userName)),
@@ -193,10 +185,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockAttachUserPolicy: func(input *awsiam.AttachUserPolicyInput) awsiam.AttachUserPolicyRequest {
-						return awsiam.AttachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachUserPolicyOutput{}},
-						}
+					MockAttachUserPolicy: func(ictx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return &awsiam.AttachUserPolicyOutput{}, nil
 					},
 				},
 				cr: userPolicy(withUserName(userName),
@@ -221,10 +211,8 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockAttachUserPolicy: func(input *awsiam.AttachUserPolicyInput) awsiam.AttachUserPolicyRequest {
-						return awsiam.AttachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockAttachUserPolicy: func(ictx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: userPolicy(withUserName(userName),
@@ -271,10 +259,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockDetachUserPolicy: func(input *awsiam.DetachUserPolicyInput) awsiam.DetachUserPolicyRequest {
-						return awsiam.DetachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachUserPolicyOutput{}},
-						}
+					MockDetachUserPolicy: func(ictx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return &awsiam.DetachUserPolicyOutput{}, nil
 					},
 				},
 				cr: userPolicy(withUserName(userName),
@@ -299,10 +285,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockDetachUserPolicy: func(input *awsiam.DetachUserPolicyInput) awsiam.DetachUserPolicyRequest {
-						return awsiam.DetachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDetachUserPolicy: func(ictx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: userPolicy(withUserName(userName),
@@ -318,10 +302,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{
-					MockDetachUserPolicy: func(input *awsiam.DetachUserPolicyInput) awsiam.DetachUserPolicyRequest {
-						return awsiam.DetachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockDetachUserPolicy: func(ictx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: userPolicy(),

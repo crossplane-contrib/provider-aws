@@ -47,15 +47,23 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 
 	if resp.ApiEndpoint != nil {
 		cr.Status.AtProvider.APIEndpoint = resp.ApiEndpoint
+	} else {
+		cr.Status.AtProvider.APIEndpoint = nil
 	}
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.ApiId != nil {
 		cr.Status.AtProvider.APIID = resp.ApiId
+	} else {
+		cr.Status.AtProvider.APIID = nil
 	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	} else {
+		cr.Status.AtProvider.CreatedDate = nil
 	}
 	if resp.ImportInfo != nil {
 		f9 := []*string{}
@@ -65,6 +73,8 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 			f9 = append(f9, &f9elem)
 		}
 		cr.Status.AtProvider.ImportInfo = f9
+	} else {
+		cr.Status.AtProvider.ImportInfo = nil
 	}
 	if resp.Warnings != nil {
 		f15 := []*string{}
@@ -74,6 +84,8 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 			f15 = append(f15, &f15elem)
 		}
 		cr.Status.AtProvider.Warnings = f15
+	} else {
+		cr.Status.AtProvider.Warnings = nil
 	}
 
 	return cr

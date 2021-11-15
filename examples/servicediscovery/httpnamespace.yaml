@@ -1,0 +1,13 @@
+apiVersion: servicediscovery.aws.crossplane.io/v1alpha1
+kind: HTTPNamespace
+metadata:
+  name: example-httpnamespace
+spec:
+  forProvider:
+    region: us-east-1
+    name: crossplane-http-namespace-test
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example

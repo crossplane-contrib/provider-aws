@@ -29,11 +29,15 @@ type SubresourceClient interface {
 	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error
 	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
 	LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error
+	SubresourceExists(bucket *v1beta1.Bucket) bool
 }
 
 // NewSubresourceClients creates the array of all clients for a given BucketProvider
 func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
 	return []SubresourceClient{
+		// Note: Moved VersioningClient up, since ReplicationConfiguration may be blocked
+		// by an invalid VersioningConfig, see https://github.com/crossplane/provider-aws/issues/553
+		NewVersioningConfigurationClient(client),
 		NewAccelerateConfigurationClient(client),
 		NewCORSConfigurationClient(client),
 		NewLifecycleConfigurationClient(client),
@@ -43,8 +47,8 @@ func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
 		NewRequestPaymentConfigurationClient(client),
 		NewSSEConfigurationClient(client),
 		NewTaggingConfigurationClient(client),
-		NewVersioningConfigurationClient(client),
 		NewWebsiteConfigurationClient(client),
+		NewPublicAccessBlockClient(client),
 	}
 }
 

@@ -94,7 +94,7 @@ type InternetGatewayObservation struct {
 // An InternetGatewayStatus represents the observed state of an InternetGateway.
 type InternetGatewayStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          InternetGatewayObservation `json:"atProvider"`
+	AtProvider          InternetGatewayObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -108,6 +108,7 @@ type InternetGatewayStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:storageversion
 type InternetGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

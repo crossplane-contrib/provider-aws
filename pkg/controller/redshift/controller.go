@@ -19,18 +19,22 @@ package redshift
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsredshift "github.com/aws/aws-sdk-go-v2/service/redshift"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/password"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -51,15 +55,19 @@ const (
 )
 
 // SetupCluster adds a controller that reconciles Redshift clusters.
-func SetupCluster(mgr ctrl.Manager, l logging.Logger) error {
+func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ClusterGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.Cluster{}).
 		Complete(managed.NewReconciler(
 			mgr, resource.ManagedKind(v1alpha1.ClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: redshift.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -92,9 +100,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	rsp, err := e.client.DescribeClustersRequest(&awsredshift.DescribeClustersInput{
+	rsp, err := e.client.DescribeClusters(ctx, &awsredshift.DescribeClustersInput{
 		ClusterIdentifier: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
 	}
@@ -152,14 +160,14 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 	input := redshift.GenerateCreateClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr)), aws.String(pw))
-	_, err = e.client.CreateClusterRequest(input).Send(ctx)
+	_, err = e.client.CreateCluster(ctx, input)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 	}
 
 	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(input.MasterUserPassword)),
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(input.MasterUsername)),
+		xpv1.ResourceCredentialsSecretPasswordKey: []byte(aws.ToString(input.MasterUserPassword)),
+		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.ToString(input.MasterUsername)),
 	}
 
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
@@ -175,17 +183,17 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	rsp, err := e.client.DescribeClustersRequest(&awsredshift.DescribeClustersInput{
+	rsp, err := e.client.DescribeClusters(ctx, &awsredshift.DescribeClustersInput{
 		ClusterIdentifier: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
 	}
 
-	_, err = e.client.ModifyClusterRequest(redshift.GenerateModifyClusterInput(&cr.Spec.ForProvider, rsp.Clusters[0])).Send(ctx)
+	_, err = e.client.ModifyCluster(ctx, redshift.GenerateModifyClusterInput(&cr.Spec.ForProvider, rsp.Clusters[0]))
 
-	if err == nil && aws.StringValue(cr.Spec.ForProvider.NewClusterIdentifier) != meta.GetExternalName(cr) {
-		meta.SetExternalName(cr, aws.StringValue(cr.Spec.ForProvider.NewClusterIdentifier))
+	if err == nil && aws.ToString(cr.Spec.ForProvider.NewClusterIdentifier) != meta.GetExternalName(cr) {
+		meta.SetExternalName(cr, aws.ToString(cr.Spec.ForProvider.NewClusterIdentifier))
 
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errKubeUpdateFailed)
@@ -205,7 +213,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 
-	_, err := e.client.DeleteClusterRequest(redshift.GenerateDeleteClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr)))).Send(ctx)
+	_, err := e.client.DeleteCluster(ctx, redshift.GenerateDeleteClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr))))
 
 	return awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDeleteFailed)
 }

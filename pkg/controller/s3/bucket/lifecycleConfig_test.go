@@ -21,8 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,14 +39,14 @@ import (
 )
 
 var (
-	days        = 1
-	location, _ = time.LoadLocation("UTC")
-	date        = metav1.Date(2020, time.September, 25, 11, 40, 0, 0, location)
-	awsDate     = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
-	marker      = false
-	prefix      = "test-"
-	id          = "test-id"
-	storage     = "ONEZONE_IA"
+	days        int32 = 1
+	location, _       = time.LoadLocation("UTC")
+	date              = metav1.Date(2020, time.September, 25, 11, 40, 0, 0, location)
+	awsDate           = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
+	marker            = false
+	prefix            = "test-"
+	id                = "test-id"
+	storage           = "ONEZONE_IA"
 )
 
 var _ SubresourceClient = &LifecycleConfigurationClient{}
@@ -54,27 +58,25 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &v1beta1.LifecycleExpiration{
 					Date:                      &date,
-					Days:                      awsclient.Int64(days),
-					ExpiredObjectDeleteMarker: awsclient.Bool(marker),
+					Days:                      days,
+					ExpiredObjectDeleteMarker: marker,
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
 						Prefix: awsclient.String(prefix),
 						Tags:   tags,
 					},
-					Prefix: awsclient.String(prefix),
-					Tag:    &tag,
 				},
 				ID:                          awsclient.String(id),
-				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: awsclient.Int64(days)},
+				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []v1beta1.NoncurrentVersionTransition{{
-					NoncurrentDays: awsclient.Int64(days),
+					NoncurrentDays: days,
 					StorageClass:   storage,
 				}},
 				Status: enabled,
 				Transitions: []v1beta1.Transition{{
 					Date:         &date,
-					Days:         awsclient.Int64(days),
+					Days:         days,
 					StorageClass: storage,
 				}},
 			},
@@ -82,35 +84,33 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 	}
 }
 
-func generateAWSLifecycle(sortTag bool) *s3.BucketLifecycleConfiguration {
-	conf := &s3.BucketLifecycleConfiguration{
-		Rules: []s3.LifecycleRule{
+func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
+	conf := &s3types.BucketLifecycleConfiguration{
+		Rules: []s3types.LifecycleRule{
 			{
-				AbortIncompleteMultipartUpload: &s3.AbortIncompleteMultipartUpload{DaysAfterInitiation: awsclient.Int64(1)},
-				Expiration: &s3.LifecycleExpiration{
+				AbortIncompleteMultipartUpload: &s3types.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
+				Expiration: &s3types.LifecycleExpiration{
 					Date:                      &awsDate,
-					Days:                      awsclient.Int64(days),
-					ExpiredObjectDeleteMarker: awsclient.Bool(marker),
+					Days:                      days,
+					ExpiredObjectDeleteMarker: marker,
 				},
-				Filter: &s3.LifecycleRuleFilter{
-					And: &s3.LifecycleRuleAndOperator{
+				Filter: &s3types.LifecycleRuleFilterMemberAnd{
+					Value: s3types.LifecycleRuleAndOperator{
 						Prefix: awsclient.String(prefix),
 						Tags:   awsTags,
 					},
-					Prefix: awsclient.String(prefix),
-					Tag:    &awsTag,
 				},
 				ID:                          awsclient.String(id),
-				NoncurrentVersionExpiration: &s3.NoncurrentVersionExpiration{NoncurrentDays: awsclient.Int64(days)},
-				NoncurrentVersionTransitions: []s3.NoncurrentVersionTransition{{
-					NoncurrentDays: awsclient.Int64(days),
-					StorageClass:   s3.TransitionStorageClassOnezoneIa,
+				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: days},
+				NoncurrentVersionTransitions: []s3types.NoncurrentVersionTransition{{
+					NoncurrentDays: days,
+					StorageClass:   s3types.TransitionStorageClassOnezoneIa,
 				}},
-				Status: s3.ExpirationStatusEnabled,
-				Transitions: []s3.Transition{{
+				Status: s3types.ExpirationStatusEnabled,
+				Transitions: []s3types.Transition{{
 					Date:         &awsDate,
-					Days:         awsclient.Int64(days),
-					StorageClass: s3.TransitionStorageClassOnezoneIa,
+					Days:         days,
+					StorageClass: s3types.TransitionStorageClassOnezoneIa,
 				}},
 			},
 		},
@@ -127,7 +127,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 	}
 
 	type want struct {
-		input []s3.LifecycleRule
+		input []s3types.LifecycleRule
 	}
 
 	cases := map[string]struct {
@@ -147,7 +147,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			generated := GenerateLifecycleRules(tc.args.b.Spec.ForProvider.LifecycleConfiguration.Rules)
-			if diff := cmp.Diff(generated, tc.want.input); diff != "" {
+			if diff := cmp.Diff(generated, tc.want.input, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -173,10 +173,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -189,10 +187,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}, nil
 					},
 				}),
 			},
@@ -205,10 +201,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}, nil
 					},
 				}),
 			},
@@ -221,10 +215,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleErrCode, "", nil), &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return nil, &smithy.GenericAPIError{Code: clients3.LifecycleNotFoundErrCode}
 					},
 				}),
 			},
@@ -237,10 +229,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}, nil
 					},
 				}),
 			},
@@ -253,10 +243,8 @@ func TestLifecycleObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
-						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
-						}
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}, nil
 					},
 				}),
 			},
@@ -273,7 +261,7 @@ func TestLifecycleObserve(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.status, status); diff != "" {
+			if diff := cmp.Diff(tc.want.status, status, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -298,10 +286,8 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
-						return s3.PutBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLifecycleConfigurationOutput{}),
-						}
+					MockPutBucketLifecycleConfiguration: func(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -313,10 +299,8 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
-						return s3.PutBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
-						}
+					MockPutBucketLifecycleConfiguration: func(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error) {
+						return &s3.PutBucketLifecycleConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -328,10 +312,8 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
-						return s3.PutBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
-						}
+					MockPutBucketLifecycleConfiguration: func(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error) {
+						return &s3.PutBucketLifecycleConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -369,10 +351,8 @@ func TestLifecycleDelete(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockDeleteBucketLifecycleRequest: func(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest {
-						return s3.DeleteBucketLifecycleRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.DeleteBucketLifecycleOutput{}),
-						}
+					MockDeleteBucketLifecycle: func(ctx context.Context, input *s3.DeleteBucketLifecycleInput, opts []func(*s3.Options)) (*s3.DeleteBucketLifecycleOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -384,10 +364,8 @@ func TestLifecycleDelete(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
-					MockDeleteBucketLifecycleRequest: func(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest {
-						return s3.DeleteBucketLifecycleRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.DeleteBucketLifecycleOutput{}),
-						}
+					MockDeleteBucketLifecycle: func(ctx context.Context, input *s3.DeleteBucketLifecycleInput, opts []func(*s3.Options)) (*s3.DeleteBucketLifecycleOutput, error) {
+						return &s3.DeleteBucketLifecycleOutput{}, nil
 					},
 				}),
 			},
@@ -401,6 +379,108 @@ func TestLifecycleDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestLifecycleLateInit(t *testing.T) {
+	type args struct {
+		cl SubresourceClient
+		b  *v1beta1.Bucket
+	}
+
+	type want struct {
+		err error
+		cr  *v1beta1.Bucket
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Error": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{}, errBoom
+					},
+				}),
+			},
+			want: want{
+				err: awsclient.Wrap(errBoom, lifecycleGetFailed),
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"ErrorLifecycleConfigurationNotFound": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{}, &smithy.GenericAPIError{Code: clients3.LifecycleNotFoundErrCode}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitEmpty": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: make([]s3types.LifecycleRule, 0)}, nil
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"SuccessfulLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
+				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}, nil
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
+			},
+		},
+		"NoOpLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
+				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+						return &s3.GetBucketLifecycleConfigurationOutput{Rules: []s3types.LifecycleRule{
+							{},
+						}}, nil
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

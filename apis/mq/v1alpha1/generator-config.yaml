@@ -1,0 +1,9 @@
+ignore:
+  field_paths:
+    - CreateBrokerRequest.Users
+    - CreateBrokerRequest.BrokerName
+    - CreateUserRequest.Username
+    - CreateUserRequest.BrokerId
+    - CreateUserRequest.Password
+  resource_names:
+    - Configuration

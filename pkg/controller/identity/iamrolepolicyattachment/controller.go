@@ -18,17 +18,22 @@ package iamrolepolicyattachment
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,17 +53,21 @@ const (
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
 // IAMRolePolicyAttachments.
-func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.IAMRolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1beta1.IAMRolePolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.IAMRolePolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -87,16 +96,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
+	observed, err := e.client.ListAttachedRolePolicies(ctx, &awsiam.ListAttachedRolePoliciesInput{
 		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiam.AttachedPolicy
+	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -134,10 +143,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(xpv1.Creating())
 
-	_, err := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
+	_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
@@ -155,10 +164,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
+	_, err := e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 
 	if iam.IsErrorNotFound(err) {
 		return nil

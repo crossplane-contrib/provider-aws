@@ -180,7 +180,7 @@ func (in *CacheClusterParameters) DeepCopyInto(out *CacheClusterParameters) {
 	}
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.PreferredAvailabilityZone != nil {
@@ -230,7 +230,7 @@ func (in *CacheClusterParameters) DeepCopyInto(out *CacheClusterParameters) {
 	}
 	if in.SnapshotRetentionLimit != nil {
 		in, out := &in.SnapshotRetentionLimit, &out.SnapshotRetentionLimit
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.SnapshotWindow != nil {

@@ -93,7 +93,7 @@ type SubnetSpec struct {
 // SubnetObservation keeps the state for the external resource
 type SubnetObservation struct {
 	// The number of unused private IPv4 addresses in the subnet.
-	AvailableIPAddressCount int64 `json:"availableIpAddressCount,omitempty"`
+	AvailableIPAddressCount int32 `json:"availableIpAddressCount,omitempty"`
 
 	// Indicates whether this is the default subnet for the Availability Zone.
 	DefaultForAZ bool `json:"defaultForAz,omitempty"`
@@ -109,7 +109,7 @@ type SubnetObservation struct {
 // A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SubnetObservation `json:"atProvider"`
+	AtProvider          SubnetObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -123,6 +123,7 @@ type SubnetStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:storageversion
 type Subnet struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/acmpca"
@@ -27,22 +29,22 @@ var _ clientset.CAPermissionClient = (*MockCertificateAuthorityPermissionClient)
 
 // MockCertificateAuthorityPermissionClient is a type that implements all the methods for Certificate Authority Permission Client interface
 type MockCertificateAuthorityPermissionClient struct {
-	MockCreatePermissionRequest func(*acmpca.CreatePermissionInput) acmpca.CreatePermissionRequest
-	MockDeletePermissionRequest func(*acmpca.DeletePermissionInput) acmpca.DeletePermissionRequest
-	MockListPermissionsRequest  func(*acmpca.ListPermissionsInput) acmpca.ListPermissionsRequest
+	MockCreatePermission func(context.Context, *acmpca.CreatePermissionInput, []func(*acmpca.Options)) (*acmpca.CreatePermissionOutput, error)
+	MockDeletePermission func(context.Context, *acmpca.DeletePermissionInput, []func(*acmpca.Options)) (*acmpca.DeletePermissionOutput, error)
+	MockListPermissions  func(context.Context, *acmpca.ListPermissionsInput, []func(*acmpca.Options)) (*acmpca.ListPermissionsOutput, error)
 }
 
-// CreatePermissionRequest mocks CreatePermissionRequest method
-func (m *MockCertificateAuthorityPermissionClient) CreatePermissionRequest(input *acmpca.CreatePermissionInput) acmpca.CreatePermissionRequest {
-	return m.MockCreatePermissionRequest(input)
+// CreatePermission mocks CreatePermission method
+func (m *MockCertificateAuthorityPermissionClient) CreatePermission(ctx context.Context, input *acmpca.CreatePermissionInput, opts ...func(*acmpca.Options)) (*acmpca.CreatePermissionOutput, error) {
+	return m.MockCreatePermission(ctx, input, opts)
 }
 
-// DeletePermissionRequest mocks DeletePermissionRequest method
-func (m *MockCertificateAuthorityPermissionClient) DeletePermissionRequest(input *acmpca.DeletePermissionInput) acmpca.DeletePermissionRequest {
-	return m.MockDeletePermissionRequest(input)
+// DeletePermission mocks DeletePermission method
+func (m *MockCertificateAuthorityPermissionClient) DeletePermission(ctx context.Context, input *acmpca.DeletePermissionInput, opts ...func(*acmpca.Options)) (*acmpca.DeletePermissionOutput, error) {
+	return m.MockDeletePermission(ctx, input, opts)
 }
 
-// ListPermissionsRequest mocks ListPermissionsRequest method
-func (m *MockCertificateAuthorityPermissionClient) ListPermissionsRequest(input *acmpca.ListPermissionsInput) acmpca.ListPermissionsRequest {
-	return m.MockListPermissionsRequest(input)
+// ListPermissions mocks ListPermissions method
+func (m *MockCertificateAuthorityPermissionClient) ListPermissions(ctx context.Context, input *acmpca.ListPermissionsInput, opts ...func(*acmpca.Options)) (*acmpca.ListPermissionsOutput, error) {
+	return m.MockListPermissions(ctx, input, opts)
 }

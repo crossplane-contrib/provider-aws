@@ -1,0 +1,14 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCPeeringConnection
+metadata:
+  name: example
+spec:
+  forProvider:
+    vpcIDRef:
+      name: sample-vpc
+    region: us-east-1
+    peerVPCIDRef:
+      name: sample-vpc2
+    acceptRequest: true
+  providerConfigRef:
+    name: example

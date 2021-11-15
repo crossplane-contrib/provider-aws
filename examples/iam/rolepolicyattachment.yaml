@@ -5,10 +5,72 @@ metadata:
   name: sample-rolepolicyattachment
 spec:
   forProvider:
-    # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
     policyArnRef:
       name: somepolicy
     roleNameRef:
       name: somerole
   providerConfigRef:
     name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: sample-rolemanagedpolicyattachment
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+    roleNameRef:
+      name: somerole
+  providerConfigRef:
+    name: example
+
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: sample-noderolemanagedpolicyattachment1
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+    roleNameRef:
+      name: somenoderole
+  providerConfigRef:
+    name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: sample-noderolemanagedpolicyattachment2
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+    roleNameRef:
+      name: somenoderole
+  providerConfigRef:
+    name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: sample-noderolemanagedpolicyattachment3
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+    roleNameRef:
+      name: somenoderole
+  providerConfigRef:
+    name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: glue-rolepolicyattachment
+spec:
+  forProvider:
+    policyArnRef:
+      name: glue-policy
+    roleNameRef:
+      name: glue-role
+  providerConfigRef:
+    name: example
+  

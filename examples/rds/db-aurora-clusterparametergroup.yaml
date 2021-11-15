@@ -1,0 +1,21 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: example-clusterparametergroup
+spec:
+  forProvider:
+    region: us-east-1
+    dbParameterGroupFamily: aurora-mysql5.7
+    description: example
+    tags:
+      - key: created-by
+        value: example
+    parameters:
+      - parameterName: performance_schema
+        parameterValue: '1'
+        applyMethod: pending-reboot
+      - parameterName: max_connections
+        parameterValue: '500'
+        applyMethod: immediate
+  providerConfigRef:
+    name: example

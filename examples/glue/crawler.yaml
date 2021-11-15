@@ -1,0 +1,28 @@
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Crawler
+metadata:
+  name: glue-crawler
+spec:
+  forProvider:
+    region: us-east-1
+    roleArnRef:
+      name: glue-role
+    classifiers:
+      - glue-classifier-csv
+    crawlerSecurityConfiguration: glue-securityconfiguration
+    databaseName: glue-database
+    lineageConfiguration: 
+      crawlerLineageSettings: ENABLE
+    recrawlPolicy: 
+      recrawlBehavior: CRAWL_EVERYTHING
+    schedule: "Cron(5,15,25,35,45,55 * * * ? *)"
+    schemaChangePolicy:
+      deleteBehavior: "DELETE_FROM_DATABASE"
+      updateBehavior: "UPDATE_IN_DATABASE"
+    targets: 
+      jdbcTargets: [
+        connectionName: "glue-connection",
+      ]
+  providerConfigRef:
+    name: example

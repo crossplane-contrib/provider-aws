@@ -156,6 +156,10 @@ type KeyParameters struct {
 	// in the AWS Key Management Service Developer Guide.
 	//
 	// The key policy size quota is 32 kilobytes (32768 bytes).
+	//
+	// For help writing and formatting a JSON policy document, see the IAM JSON
+	// Policy Reference (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html)
+	// in the IAM User Guide .
 	Policy *string `json:"policy,omitempty"`
 	// One or more tags. Each tag consists of a tag key and a tag value. Both the
 	// tag key and the tag value are required, but the tag value can be an empty
@@ -167,6 +171,9 @@ type KeyParameters struct {
 	//
 	// Use this parameter to tag the CMK when it is created. To add tags to an existing
 	// CMK, use the TagResource operation.
+	//
+	// To use this parameter, you must have kms:TagResource (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+	// permission in an IAM policy.
 	Tags                []*Tag `json:"tags,omitempty"`
 	CustomKeyParameters `json:",inline"`
 }
@@ -235,7 +242,7 @@ type KeyObservation struct {
 // KeyStatus defines the observed state of Key.
 type KeyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          KeyObservation `json:"atProvider"`
+	AtProvider          KeyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -249,7 +256,7 @@ type KeyStatus struct {
 type Key struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              KeySpec   `json:"spec,omitempty"`
+	Spec              KeySpec   `json:"spec"`
 	Status            KeyStatus `json:"status,omitempty"`
 }
 

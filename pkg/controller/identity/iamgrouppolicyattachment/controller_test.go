@@ -18,15 +18,15 @@ package iamgrouppolicyattachment
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,11 +52,15 @@ type args struct {
 
 type groupPolicyModifier func(*v1alpha1.IAMGroupPolicyAttachment)
 
+func withExternalName(name string) groupPolicyModifier {
+	return func(r *v1alpha1.IAMGroupPolicyAttachment) { meta.SetExternalName(r, name) }
+}
+
 func withConditions(c ...xpv1.Condition) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withGroupName(s string) groupPolicyModifier {
+func withSpecGroupName(s string) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
 }
 
@@ -88,26 +92,27 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockListAttachedGroupPolicies: func(input *awsiam.ListAttachedGroupPoliciesInput) awsiam.ListAttachedGroupPoliciesRequest {
-						return awsiam.ListAttachedGroupPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedGroupPoliciesOutput{
-								AttachedPolicies: []awsiam.AttachedPolicy{
-									{
-										PolicyArn: &policyArn,
-									},
+					MockListAttachedGroupPolicies: func(ctx context.Context, input *awsiam.ListAttachedGroupPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedGroupPoliciesOutput, error) {
+						return &awsiam.ListAttachedGroupPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
+					withExternalName(groupName+"/"+policyArn),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(
+					withExternalName(groupName+"/"+policyArn),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Available()),
 					withStatusPolicyArn(policyArn)),
@@ -129,10 +134,8 @@ func TestObserve(t *testing.T) {
 		"NoAttachedPolicy": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockListAttachedGroupPolicies: func(input *awsiam.ListAttachedGroupPoliciesInput) awsiam.ListAttachedGroupPoliciesRequest {
-						return awsiam.ListAttachedGroupPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedGroupPoliciesOutput{}},
-						}
+					MockListAttachedGroupPolicies: func(ctx context.Context, input *awsiam.ListAttachedGroupPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedGroupPoliciesOutput, error) {
+						return &awsiam.ListAttachedGroupPoliciesOutput{}, nil
 					},
 				},
 				cr: groupPolicy(withSpecPolicyArn(policyArn)),
@@ -144,16 +147,14 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockListAttachedGroupPolicies: func(input *awsiam.ListAttachedGroupPoliciesInput) awsiam.ListAttachedGroupPoliciesRequest {
-						return awsiam.ListAttachedGroupPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockListAttachedGroupPolicies: func(ctx context.Context, input *awsiam.ListAttachedGroupPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedGroupPoliciesOutput, error) {
+						return nil, errBoom
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName)),
+				cr: groupPolicy(withSpecGroupName(groupName), withExternalName(groupName+"/"+policyArn)),
 			},
 			want: want{
-				cr:  groupPolicy(withGroupName(groupName)),
+				cr:  groupPolicy(withSpecGroupName(groupName), withExternalName(groupName+"/"+policyArn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -192,20 +193,19 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockAttachGroupPolicy: func(input *awsiam.AttachGroupPolicyInput) awsiam.AttachGroupPolicyRequest {
-						return awsiam.AttachGroupPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachGroupPolicyOutput{}},
-						}
+					MockAttachGroupPolicy: func(ctx context.Context, input *awsiam.AttachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachGroupPolicyOutput, error) {
+						return &awsiam.AttachGroupPolicyOutput{}, nil
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+					withExternalName(groupName+"/"+policyArn)),
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {
@@ -220,19 +220,16 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockAttachGroupPolicy: func(input *awsiam.AttachGroupPolicyInput) awsiam.AttachGroupPolicyRequest {
-						return awsiam.AttachGroupPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockAttachGroupPolicy: func(ctx context.Context, input *awsiam.AttachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachGroupPolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+				cr: groupPolicy(withSpecGroupName(groupName),
+					withSpecPolicyArn(policyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -270,18 +267,16 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockDetachGroupPolicy: func(input *awsiam.DetachGroupPolicyInput) awsiam.DetachGroupPolicyRequest {
-						return awsiam.DetachGroupPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachGroupPolicyOutput{}},
-						}
+					MockDetachGroupPolicy: func(ctx context.Context, input *awsiam.DetachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachGroupPolicyOutput, error) {
+						return &awsiam.DetachGroupPolicyOutput{}, nil
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Deleting())),
 			},
@@ -298,17 +293,15 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockDetachGroupPolicy: func(input *awsiam.DetachGroupPolicyInput) awsiam.DetachGroupPolicyRequest {
-						return awsiam.DetachGroupPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDetachGroupPolicy: func(ctx context.Context, input *awsiam.DetachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachGroupPolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDetach),
@@ -317,17 +310,15 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
-					MockDetachGroupPolicy: func(input *awsiam.DetachGroupPolicyInput) awsiam.DetachGroupPolicyRequest {
-						return awsiam.DetachGroupPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(errGet)},
-						}
+					MockDetachGroupPolicy: func(ctx context.Context, input *awsiam.DetachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachGroupPolicyOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: groupPolicy(),
 			},
 			want: want{
 				cr:  groupPolicy(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errors.New(errGet), errDetach),
+				err: nil,
 			},
 		},
 	}

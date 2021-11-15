@@ -1,4 +1,4 @@
-apiVersion: database.aws.crossplane.io/v1alpha1
+apiVersion: database.aws.crossplane.io/v1beta1
 kind: DBSubnetGroup
 metadata:
   name: sample-subnet-group
@@ -8,5 +8,6 @@ spec:
     description: "sample group"
     subnetIdRefs:
       - name: sample-subnet1
+      - name: sample-subnet2
   providerConfigRef:
     name: example

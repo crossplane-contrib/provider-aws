@@ -18,17 +18,22 @@ package iamuserpolicyattachment
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -49,17 +54,21 @@ const (
 
 // SetupIAMUserPolicyAttachment adds a controller that reconciles
 // IAMUserPolicyAttachments.
-func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMUserPolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.IAMUserPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMUserPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -88,16 +97,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListAttachedUserPoliciesRequest(&awsiam.ListAttachedUserPoliciesInput{
+	observed, err := e.client.ListAttachedUserPolicies(ctx, &awsiam.ListAttachedUserPoliciesInput{
 		UserName: aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiam.AttachedPolicy
+	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -120,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMUserPolicyAttachmentObservation{
-		AttachedPolicyARN: aws.StringValue(attachedPolicyObject.PolicyArn),
+		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
 
 	return managed.ExternalObservation{
@@ -137,10 +146,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(xpv1.Creating())
 
-	_, err := e.client.AttachUserPolicyRequest(&awsiam.AttachUserPolicyInput{
+	_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
@@ -160,10 +169,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachUserPolicyRequest(&awsiam.DetachUserPolicyInput{
+	_, err := e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

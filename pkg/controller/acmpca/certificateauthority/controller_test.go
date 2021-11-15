@@ -18,12 +18,11 @@ package certificateauthority
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
+	awsacmpcatypes "github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -41,7 +40,7 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem              resource.Managed
+	unexpectedItem             resource.Managed
 	certificateAuthorityArn    = "someauthorityarn"
 	nextToken                  = "someNextToken"
 	commonName                 = "someCommonName"
@@ -81,9 +80,15 @@ func withCertificateAuthorityArn() certificateAuthorityModifier {
 
 func withCertificateAuthorityType() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
-		r.Spec.ForProvider.Type = awsacmpca.CertificateAuthorityTypeRoot
+		r.Spec.ForProvider.Type = awsacmpcatypes.CertificateAuthorityTypeRoot
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
+	}
+}
+
+func withCertificateAuthorityAtProviderStatus(s string) certificateAuthorityModifier {
+	return func(r *v1alpha1.CertificateAuthority) {
+		r.Status.AtProvider.Status = s
 	}
 }
 
@@ -121,53 +126,50 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
-								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Arn:  aws.String(certificateAuthorityArn),
-									Type: awsacmpca.CertificateAuthorityTypeRoot,
-									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
-										CrlConfiguration: &awsacmpca.CrlConfiguration{
-											Enabled: aws.Bool(false),
-										},
-									},
-									CertificateAuthorityConfiguration: &awsacmpca.CertificateAuthorityConfiguration{
-										SigningAlgorithm: awsacmpca.SigningAlgorithmSha256withecdsa,
-										KeyAlgorithm:     awsacmpca.KeyAlgorithmRsa2048,
-										Subject: &awsacmpca.ASN1Subject{
-											CommonName:                 aws.String(commonName),
-											Country:                    aws.String(country),
-											DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
-											GenerationQualifier:        aws.String(generationQualifier),
-											GivenName:                  aws.String(givenName),
-											Initials:                   aws.String(initials),
-											Locality:                   aws.String(locality),
-											Organization:               aws.String(organization),
-											OrganizationalUnit:         aws.String(organizationalUnit),
-											Pseudonym:                  aws.String(pseudonym),
-											State:                      aws.String(state),
-											Surname:                    aws.String(surname),
-											Title:                      aws.String(title),
-										},
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return &awsacmpca.DescribeCertificateAuthorityOutput{
+							CertificateAuthority: &awsacmpcatypes.CertificateAuthority{
+								Arn:    aws.String(certificateAuthorityArn),
+								Type:   awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
+								RevocationConfiguration: &awsacmpcatypes.RevocationConfiguration{
+									CrlConfiguration: &awsacmpcatypes.CrlConfiguration{
+										Enabled: false,
 									},
 								},
-							}},
-						}
+								CertificateAuthorityConfiguration: &awsacmpcatypes.CertificateAuthorityConfiguration{
+									SigningAlgorithm: awsacmpcatypes.SigningAlgorithmSha256withecdsa,
+									KeyAlgorithm:     awsacmpcatypes.KeyAlgorithmRsa2048,
+									Subject: &awsacmpcatypes.ASN1Subject{
+										CommonName:                 aws.String(commonName),
+										Country:                    aws.String(country),
+										DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
+										GenerationQualifier:        aws.String(generationQualifier),
+										GivenName:                  aws.String(givenName),
+										Initials:                   aws.String(initials),
+										Locality:                   aws.String(locality),
+										Organization:               aws.String(organization),
+										OrganizationalUnit:         aws.String(organizationalUnit),
+										Pseudonym:                  aws.String(pseudonym),
+										State:                      aws.String(state),
+										Surname:                    aws.String(surname),
+										Title:                      aws.String(title),
+									},
+								},
+							},
+						}, nil
 					},
-					MockListTagsRequest: func(input *awsacmpca.ListTagsInput) awsacmpca.ListTagsRequest {
-						return awsacmpca.ListTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListTagsOutput{
-								NextToken: aws.String(nextToken),
-								Tags:      []awsacmpca.Tag{{}},
-							}},
-						}
+					MockListTags: func(ctx context.Context, input *awsacmpca.ListTagsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListTagsOutput, error) {
+						return &awsacmpca.ListTagsOutput{
+							NextToken: aws.String(nextToken),
+							Tags:      []awsacmpcatypes.Tag{{}},
+						}, nil
 					},
 				},
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityType(), withConditions(xpv1.Available())),
+				cr: certificateAuthority(withCertificateAuthorityType(), withCertificateAuthorityStatus(), withCertificateAuthorityAtProviderStatus("ACTIVE"), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
 				},
@@ -175,20 +177,18 @@ func TestObserve(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: certificateAuthority(withCertificateAuthorityArn()),
@@ -239,47 +239,39 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockCreateCertificateAuthorityRequest: func(input *awsacmpca.CreateCertificateAuthorityInput) awsacmpca.CreateCertificateAuthorityRequest {
-						return awsacmpca.CreateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreateCertificateAuthorityOutput{
-								CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-							}},
-						}
+					MockCreateCertificateAuthority: func(ctx context.Context, input *awsacmpca.CreateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreateCertificateAuthorityOutput, error) {
+						return &awsacmpca.CreateCertificateAuthorityOutput{
+							CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+						}, nil
 					},
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreatePermissionOutput{}},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return &awsacmpca.CreatePermissionOutput{}, nil
 					},
 				},
 				cr: certificateAuthority(withCertificateAuthorityArn()),
 			},
 			want: want{
 				cr:     certificateAuthority(withCertificateAuthorityArn()),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockCreateCertificateAuthorityRequest: func(input *awsacmpca.CreateCertificateAuthorityInput) awsacmpca.CreateCertificateAuthorityRequest {
-						return awsacmpca.CreateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreateCertificateAuthority: func(ctx context.Context, input *awsacmpca.CreateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreateCertificateAuthorityOutput, error) {
+						return nil, errBoom
 					},
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: certificateAuthority(),
@@ -329,53 +321,39 @@ func TestUpdate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DeletePermissionOutput{}},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return &awsacmpca.DeletePermissionOutput{}, nil
 					},
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
-								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Type:   awsacmpca.CertificateAuthorityTypeRoot,
-									Status: awsacmpca.CertificateAuthorityStatusActive,
-									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
-										CrlConfiguration: &awsacmpca.CrlConfiguration{
-											Enabled: aws.Bool(false),
-										},
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return &awsacmpca.DescribeCertificateAuthorityOutput{
+							CertificateAuthority: &awsacmpcatypes.CertificateAuthority{
+								Type:   awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
+								RevocationConfiguration: &awsacmpcatypes.RevocationConfiguration{
+									CrlConfiguration: &awsacmpcatypes.CrlConfiguration{
+										Enabled: false,
 									},
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockUpdateCertificateAuthorityRequest: func(*awsacmpca.UpdateCertificateAuthorityInput) awsacmpca.UpdateCertificateAuthorityRequest {
-						return awsacmpca.UpdateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.UpdateCertificateAuthorityOutput{}},
-						}
+					MockUpdateCertificateAuthority: func(ctx context.Context, input *awsacmpca.UpdateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UpdateCertificateAuthorityOutput, error) {
+						return &awsacmpca.UpdateCertificateAuthorityOutput{}, nil
 					},
-					MockListTagsRequest: func(input *awsacmpca.ListTagsInput) awsacmpca.ListTagsRequest {
-						return awsacmpca.ListTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListTagsOutput{
-								NextToken: aws.String(nextToken),
-								Tags:      []awsacmpca.Tag{{}},
-							}},
-						}
+					MockListTags: func(ctx context.Context, input *awsacmpca.ListTagsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListTagsOutput, error) {
+						return &awsacmpca.ListTagsOutput{
+							NextToken: aws.String(nextToken),
+							Tags:      []awsacmpcatypes.Tag{{}},
+						}, nil
 					},
-					MockUntagCertificateAuthorityRequest: func(input *awsacmpca.UntagCertificateAuthorityInput) awsacmpca.UntagCertificateAuthorityRequest {
-						return awsacmpca.UntagCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.UntagCertificateAuthorityOutput{}},
-						}
+					MockUntagCertificateAuthority: func(ctx context.Context, input *awsacmpca.UntagCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UntagCertificateAuthorityOutput, error) {
+						return &awsacmpca.UntagCertificateAuthorityOutput{}, nil
 					},
-					MockTagCertificateAuthorityRequest: func(input *awsacmpca.TagCertificateAuthorityInput) awsacmpca.TagCertificateAuthorityRequest {
-						return awsacmpca.TagCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.TagCertificateAuthorityOutput{}},
-						}
+					MockTagCertificateAuthority: func(ctx context.Context, input *awsacmpca.TagCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.TagCertificateAuthorityOutput, error) {
+						return &awsacmpca.TagCertificateAuthorityOutput{}, nil
 					},
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreatePermissionOutput{}},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return &awsacmpca.CreatePermissionOutput{}, nil
 					},
 				},
 				cr: certificateAuthority(withCertificateAuthorityStatus()),
@@ -386,50 +364,36 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientUpdateCertificateDescribeError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return nil, errBoom
 					},
-					MockUpdateCertificateAuthorityRequest: func(*awsacmpca.UpdateCertificateAuthorityInput) awsacmpca.UpdateCertificateAuthorityRequest {
-						return awsacmpca.UpdateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockUpdateCertificateAuthority: func(ctx context.Context, input *awsacmpca.UpdateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UpdateCertificateAuthorityOutput, error) {
+						return nil, errBoom
 					},
-					MockListTagsRequest: func(input *awsacmpca.ListTagsInput) awsacmpca.ListTagsRequest {
-						return awsacmpca.ListTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockListTags: func(ctx context.Context, input *awsacmpca.ListTagsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListTagsOutput, error) {
+						return nil, errBoom
 					},
-					MockUntagCertificateAuthorityRequest: func(input *awsacmpca.UntagCertificateAuthorityInput) awsacmpca.UntagCertificateAuthorityRequest {
-						return awsacmpca.UntagCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.UntagCertificateAuthorityOutput{}},
-						}
+					MockUntagCertificateAuthority: func(ctx context.Context, input *awsacmpca.UntagCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UntagCertificateAuthorityOutput, error) {
+						return &awsacmpca.UntagCertificateAuthorityOutput{}, nil
 					},
-					MockTagCertificateAuthorityRequest: func(input *awsacmpca.TagCertificateAuthorityInput) awsacmpca.TagCertificateAuthorityRequest {
-						return awsacmpca.TagCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.TagCertificateAuthorityOutput{}},
-						}
+					MockTagCertificateAuthority: func(ctx context.Context, input *awsacmpca.TagCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.TagCertificateAuthorityOutput, error) {
+						return &awsacmpca.TagCertificateAuthorityOutput{}, nil
 					},
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreatePermissionOutput{}},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return &awsacmpca.CreatePermissionOutput{}, nil
 					},
 				},
 				cr: certificateAuthority(withCertificateAuthorityStatus()),
@@ -473,30 +437,22 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDeleteCertificateAuthorityRequest: func(*awsacmpca.DeleteCertificateAuthorityInput) awsacmpca.DeleteCertificateAuthorityRequest {
-						return awsacmpca.DeleteCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DeleteCertificateAuthorityOutput{}},
-						}
+					MockDeleteCertificateAuthority: func(ctx context.Context, input *awsacmpca.DeleteCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeleteCertificateAuthorityOutput, error) {
+						return &awsacmpca.DeleteCertificateAuthorityOutput{}, nil
 					},
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DeletePermissionOutput{}},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return &awsacmpca.DeletePermissionOutput{}, nil
 					},
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
-								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Type:   awsacmpca.CertificateAuthorityTypeRoot,
-									Status: awsacmpca.CertificateAuthorityStatusActive,
-								},
-							}},
-						}
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return &awsacmpca.DescribeCertificateAuthorityOutput{
+							CertificateAuthority: &awsacmpcatypes.CertificateAuthority{
+								Type:   awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
+							},
+						}, nil
 					},
-					MockUpdateCertificateAuthorityRequest: func(*awsacmpca.UpdateCertificateAuthorityInput) awsacmpca.UpdateCertificateAuthorityRequest {
-						return awsacmpca.UpdateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.UpdateCertificateAuthorityOutput{}},
-						}
+					MockUpdateCertificateAuthority: func(ctx context.Context, input *awsacmpca.UpdateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UpdateCertificateAuthorityOutput, error) {
+						return &awsacmpca.UpdateCertificateAuthorityOutput{}, nil
 					},
 				},
 				cr: certificateAuthority(withCertificateAuthorityArn()),
@@ -507,35 +463,29 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDeleteCertificateAuthorityRequest: func(*awsacmpca.DeleteCertificateAuthorityInput) awsacmpca.DeleteCertificateAuthorityRequest {
-						return awsacmpca.DeleteCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeleteCertificateAuthority: func(ctx context.Context, input *awsacmpca.DeleteCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeleteCertificateAuthorityOutput, error) {
+						return nil, errBoom
 					},
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
-								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Type:   awsacmpca.CertificateAuthorityTypeRoot,
-									Status: awsacmpca.CertificateAuthorityStatusActive,
-								},
-							}},
-						}
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return &awsacmpca.DescribeCertificateAuthorityOutput{
+							CertificateAuthority: &awsacmpcatypes.CertificateAuthority{
+								Type:   awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
+							},
+						}, nil
 					},
-					MockUpdateCertificateAuthorityRequest: func(*awsacmpca.UpdateCertificateAuthorityInput) awsacmpca.UpdateCertificateAuthorityRequest {
-						return awsacmpca.UpdateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.UpdateCertificateAuthorityOutput{}},
-						}
+					MockUpdateCertificateAuthority: func(ctx context.Context, input *awsacmpca.UpdateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UpdateCertificateAuthorityOutput, error) {
+						return &awsacmpca.UpdateCertificateAuthorityOutput{}, nil
 					},
 				},
 				cr: certificateAuthority(),
@@ -548,27 +498,21 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-					MockDeleteCertificateAuthorityRequest: func(*awsacmpca.DeleteCertificateAuthorityInput) awsacmpca.DeleteCertificateAuthorityRequest {
-						return awsacmpca.DeleteCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
-						}
+					MockDeleteCertificateAuthority: func(ctx context.Context, input *awsacmpca.DeleteCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeleteCertificateAuthorityOutput, error) {
+						return nil, &awsacmpcatypes.ResourceNotFoundException{}
 					},
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
-						}
+					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
+						return nil, &awsacmpcatypes.ResourceNotFoundException{}
 					},
-					MockUpdateCertificateAuthorityRequest: func(*awsacmpca.UpdateCertificateAuthorityInput) awsacmpca.UpdateCertificateAuthorityRequest {
-						return awsacmpca.UpdateCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
-						}
+					MockUpdateCertificateAuthority: func(ctx context.Context, input *awsacmpca.UpdateCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.UpdateCertificateAuthorityOutput, error) {
+						return nil, &awsacmpcatypes.ResourceNotFoundException{}
 					},
 				},
 				cr: certificateAuthority(),
 			},
 			want: want{
 				cr:  certificateAuthority(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
+				err: awsclient.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
 			},
 		},
 	}

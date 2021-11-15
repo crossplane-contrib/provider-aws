@@ -18,14 +18,19 @@ package integration
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -34,7 +39,7 @@ import (
 )
 
 // SetupIntegration adds a controller that reconciles Integration.
-func SetupIntegration(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIntegration(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -47,11 +52,15 @@ func SetupIntegration(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Integration{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.IntegrationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -72,6 +81,17 @@ func postObserve(_ context.Context, cr *svcapitypes.Integration, _ *svcsdk.GetIn
 
 func preCreate(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.CreateIntegrationInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	if len(cr.Spec.ForProvider.ResponseParameters) != 0 {
+		obj.ResponseParameters = make(map[string]map[string]*string, len(cr.Spec.ForProvider.ResponseParameters))
+	}
+	for k, m := range cr.Spec.ForProvider.ResponseParameters {
+		if m.OverwriteStatusCode != nil {
+			obj.ResponseParameters[k]["overwrite:statuscode"] = m.OverwriteStatusCode
+		}
+		for _, h := range m.HeaderEntries {
+			obj.ResponseParameters[k][fmt.Sprintf("%s:header.%s", h.Operation, h.Name)] = aws.String(h.Value)
+		}
+	}
 	return nil
 }
 
@@ -80,12 +100,11 @@ func postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.Cre
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.IntegrationId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.IntegrationId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

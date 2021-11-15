@@ -18,14 +18,18 @@ package deployment
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -34,7 +38,7 @@ import (
 )
 
 // SetupDeployment adds a controller that reconciles Deployment.
-func SetupDeployment(mgr ctrl.Manager, l logging.Logger) error {
+func SetupDeployment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -47,11 +51,15 @@ func SetupDeployment(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Deployment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DeploymentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -80,12 +88,11 @@ func postCreate(_ context.Context, cr *svcapitypes.Deployment, resp *svcsdk.Crea
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.DeploymentId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

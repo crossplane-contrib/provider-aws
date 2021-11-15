@@ -18,12 +18,11 @@ package fargateprofile
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
+	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -33,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
@@ -47,13 +46,13 @@ var (
 type args struct {
 	eks  eks.Client
 	kube client.Client
-	cr   *v1alpha1.FargateProfile
+	cr   *manualv1alpha1.FargateProfile
 }
 
-type fargateProfileModifier func(*v1alpha1.FargateProfile)
+type fargateProfileModifier func(*manualv1alpha1.FargateProfile)
 
 func withConditions(c ...xpv1.Condition) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *manualv1alpha1.FargateProfile) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withTags(tagMaps ...map[string]string) fargateProfileModifier {
@@ -63,19 +62,19 @@ func withTags(tagMaps ...map[string]string) fargateProfileModifier {
 			tags[k] = v
 		}
 	}
-	return func(r *v1alpha1.FargateProfile) { r.Spec.ForProvider.Tags = tags }
+	return func(r *manualv1alpha1.FargateProfile) { r.Spec.ForProvider.Tags = tags }
 }
 
 func withSubnets(s []string) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Spec.ForProvider.Subnets = s }
+	return func(r *manualv1alpha1.FargateProfile) { r.Spec.ForProvider.Subnets = s }
 }
 
-func withStatus(s v1alpha1.FargateProfileStatusType) fargateProfileModifier {
-	return func(r *v1alpha1.FargateProfile) { r.Status.AtProvider.Status = s }
+func withStatus(s manualv1alpha1.FargateProfileStatusType) fargateProfileModifier {
+	return func(r *manualv1alpha1.FargateProfile) { r.Status.AtProvider.Status = s }
 }
 
-func fargateProfile(m ...fargateProfileModifier) *v1alpha1.FargateProfile {
-	cr := &v1alpha1.FargateProfile{}
+func fargateProfile(m ...fargateProfileModifier) *manualv1alpha1.FargateProfile {
+	cr := &manualv1alpha1.FargateProfile{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -87,7 +86,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalObservation
 		err    error
 	}
@@ -99,14 +98,12 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{
-									Status: awseks.FargateProfileStatusActive,
-								},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{
+								Status: awsekstypes.FargateProfileStatusActive,
+							},
+						}, nil
 					},
 				},
 				cr: fargateProfile(),
@@ -114,7 +111,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withConditions(xpv1.Available()),
-					withStatus(v1alpha1.FargateProfileStatusActive)),
+					withStatus(manualv1alpha1.FargateProfileStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -125,14 +122,12 @@ func TestObserve(t *testing.T) {
 		"DeletingState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{
-									Status: awseks.FargateProfileStatusDeleting,
-								},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{
+								Status: awsekstypes.FargateProfileStatusDeleting,
+							},
+						}, nil
 					},
 				},
 				cr: fargateProfile(),
@@ -140,7 +135,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withConditions(xpv1.Deleting()),
-					withStatus(v1alpha1.FargateProfileStatusDeleting)),
+					withStatus(manualv1alpha1.FargateProfileStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        true,
@@ -151,10 +146,8 @@ func TestObserve(t *testing.T) {
 		"FailedDescribeRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: fargateProfile(),
@@ -167,10 +160,8 @@ func TestObserve(t *testing.T) {
 		"NotFound": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: fargateProfile(),
@@ -185,22 +176,20 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{
-									Status:  awseks.FargateProfileStatusCreating,
-									Subnets: subnets,
-								},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{
+								Status:  awsekstypes.FargateProfileStatusCreating,
+								Subnets: subnets,
+							},
+						}, nil
 					},
 				},
 				cr: fargateProfile(),
 			},
 			want: want{
 				cr: fargateProfile(
-					withStatus(v1alpha1.FargateProfileStatusCreating),
+					withStatus(manualv1alpha1.FargateProfileStatusCreating),
 					withConditions(xpv1.Creating()),
 					withSubnets(subnets),
 				),
@@ -233,7 +222,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalCreation
 		err    error
 	}
@@ -245,10 +234,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateFargateProfileRequest: func(input *awseks.CreateFargateProfileInput) awseks.CreateFargateProfileRequest {
-						return awseks.CreateFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.CreateFargateProfileOutput{}},
-						}
+					MockCreateFargateProfile: func(ctx context.Context, input *awseks.CreateFargateProfileInput, opts []func(*awseks.Options)) (*awseks.CreateFargateProfileOutput, error) {
+						return &awseks.CreateFargateProfileOutput{}, nil
 					},
 				},
 				cr: fargateProfile(),
@@ -260,21 +247,19 @@ func TestCreate(t *testing.T) {
 		},
 		"SuccessfulNoNeedForCreate": {
 			args: args{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusCreating)),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusCreating)),
 			},
 			want: want{
 				cr: fargateProfile(
-					withStatus(v1alpha1.FargateProfileStatusCreating),
+					withStatus(manualv1alpha1.FargateProfileStatusCreating),
 					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateFargateProfileRequest: func(input *awseks.CreateFargateProfileInput) awseks.CreateFargateProfileRequest {
-						return awseks.CreateFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateFargateProfile: func(ctx context.Context, input *awseks.CreateFargateProfileInput, opts []func(*awseks.Options)) (*awseks.CreateFargateProfileOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: fargateProfile(),
@@ -306,7 +291,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.FargateProfile
+		cr     *manualv1alpha1.FargateProfile
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -318,17 +303,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(input *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{},
+						}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.TagResourceOutput{}},
-						}
+					MockTagResource: func(ctx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return &awseks.TagResourceOutput{}, nil
 					},
 				},
 				cr: fargateProfile(
@@ -342,17 +323,13 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(input *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{},
+						}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UntagResourceOutput{}},
-						}
+					MockUntagResource: func(ctx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return &awseks.UntagResourceOutput{}, nil
 					},
 				},
 				cr: fargateProfile(),
@@ -364,19 +341,15 @@ func TestUpdate(t *testing.T) {
 		"FailedRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(input *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{
-									Tags: map[string]string{"foo": "bar"},
-								},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{
+								Tags: map[string]string{"foo": "bar"},
+							},
+						}, nil
 					},
-					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
-						return awseks.UntagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUntagResource: func(ctx context.Context, input *awseks.UntagResourceInput, opts []func(*awseks.Options)) (*awseks.UntagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: fargateProfile(),
@@ -389,17 +362,13 @@ func TestUpdate(t *testing.T) {
 		"FailedAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(input *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{},
-							}},
-						}
+					MockDescribeFargateProfile: func(ctx context.Context, input *awseks.DescribeFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DescribeFargateProfileOutput, error) {
+						return &awseks.DescribeFargateProfileOutput{
+							FargateProfile: &awsekstypes.FargateProfile{},
+						}, nil
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockTagResource: func(ctx context.Context, input *awseks.TagResourceInput, opts []func(*awseks.Options)) (*awseks.TagResourceOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: fargateProfile(withTags(map[string]string{"foo": "bar"})),
@@ -431,7 +400,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.FargateProfile
+		cr  *manualv1alpha1.FargateProfile
 		err error
 	}
 
@@ -442,10 +411,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteFargateProfileRequest: func(input *awseks.DeleteFargateProfileInput) awseks.DeleteFargateProfileRequest {
-						return awseks.DeleteFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DeleteFargateProfileOutput{}},
-						}
+					MockDeleteFargateProfile: func(ctx context.Context, input *awseks.DeleteFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DeleteFargateProfileOutput, error) {
+						return &awseks.DeleteFargateProfileOutput{}, nil
 					},
 				},
 				cr: fargateProfile(),
@@ -456,20 +423,18 @@ func TestDelete(t *testing.T) {
 		},
 		"AlreadyDeleting": {
 			args: args{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusDeleting)),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusDeleting)),
 			},
 			want: want{
-				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusDeleting),
+				cr: fargateProfile(withStatus(manualv1alpha1.FargateProfileStatusDeleting),
 					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteFargateProfileRequest: func(input *awseks.DeleteFargateProfileInput) awseks.DeleteFargateProfileRequest {
-						return awseks.DeleteFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
-						}
+					MockDeleteFargateProfile: func(ctx context.Context, input *awseks.DeleteFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DeleteFargateProfileOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
 					},
 				},
 				cr: fargateProfile(),
@@ -481,10 +446,8 @@ func TestDelete(t *testing.T) {
 		"Failed": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteFargateProfileRequest: func(input *awseks.DeleteFargateProfileInput) awseks.DeleteFargateProfileRequest {
-						return awseks.DeleteFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteFargateProfile: func(ctx context.Context, input *awseks.DeleteFargateProfileInput, opts []func(*awseks.Options)) (*awseks.DeleteFargateProfileOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: fargateProfile(),
@@ -513,7 +476,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.FargateProfile
+		cr  *manualv1alpha1.FargateProfile
 		err error
 	}
 

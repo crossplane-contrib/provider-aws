@@ -1,0 +1,29 @@
+---
+# AWS credentials secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: localstack-creds
+  namespace: crossplane-system
+type: Opaque
+data:
+  # This is just test/test.
+  credentials: W2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0gdGVzdAphd3Nfc2VjcmV0X2FjY2Vzc19rZXkgPSB0ZXN0Cg==
+---
+# AWS provider that references the secrete credentials
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: example
+spec:
+  endpoint:
+    hostnameImmutable: true
+    url:
+      type: Static
+      static: http://localstack:4566
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: localstack-creds
+      key: credentials

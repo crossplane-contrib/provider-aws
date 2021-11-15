@@ -31,3 +31,8 @@ ignore:
     - DeleteRouteResponseInput.RouteId
     - CreateVpcLinkInput.SecurityGroupIds
     - CreateVpcLinkInput.SubnetIds
+    # map[string]map[string]*string is not supported, we use alias for
+    # ResponseParameters in custom type struct.
+    - CreateIntegrationInput.ResponseParameters
+    - GetIntegrationOutput.ResponseParameters
+    - CreateIntegrationOutput.ResponseParameters

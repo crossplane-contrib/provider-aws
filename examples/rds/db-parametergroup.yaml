@@ -1,0 +1,15 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBParameterGroup
+metadata:
+  name: example-dbparametergroup
+spec:
+  forProvider:
+    region: eu-central-1
+    dbParameterGroupFamily: postgres12
+    description: example
+    parameters:
+      - parameterName: application_name
+        parameterValue: "example"
+        applyMethod: immediate
+  providerConfigRef:
+    name: example

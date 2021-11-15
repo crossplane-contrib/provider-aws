@@ -17,27 +17,27 @@ This guide shows how to get a new resource support up and running step by step.
 
 ## Code generation
 
-This is the very first step. You need to clone [code generator](https://github.com/aws-controllers-k8s/code-generator) from AWS and run the following
-command in the root directory:
+AWS groups their resources under _services_ and the code generator works on
+per-service basis. For example, `rds` is a service that contains `DBInstance`,
+`DBCluster` and many other related resources. The first thing to do is to figure
+out which service the resource we'd like to generate belongs to.
+
+Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.4/models/apis)
+and make note of the service name. For example, in order to generate Lambda
+resources, you need to use `lambda` as service name. Once you figure that out,
+the following is the command you need to run to generate CRDs and controllers:
 
 ```console
-go run -tags codegen cmd/ack-generate/main.go crossplane <ServiceID> --provider-dir <provider-aws directory>
+make services SERVICES=<service id>
 ```
 
-Full `ServiceID` list is found [here](https://github.com/aws/aws-sdk-go/tree/v1.34.32/models/apis).
-For example, in order to generate Lambda resources, you need to use `lambda` as
-Service ID. Here is an example call:
+The first run will take a while since it clones the code generator and AWS SDK.
+Once it is completed, you'll see new folders in `apis` and `pkg/controller`
+directories. By default, it generates every resource it can recognize but that's
+not what you want if you'd like to add support for only a few resources. In order
+to ignore some of the generated resources, you need to create a
+`apis/<serviceid>/v1alpha1/generator-config.yaml` file with the following content:
 
-```console
-go run -tags codegen cmd/ack-generate/main.go crossplane dynamodb --provider-dir /Users/username/go/src/github.com/crossplane/provider-aws
-```
-
-The first run will take a while since it clones AWS SDK. Once it is completed,
-you'll see new folders in `apis` and `pkg/controller` directories. By default,
-it generates every resource it can recognize but that's not what you want if you'd
-like to add support for only a few resources. In order to ignore some of the
-generated resources, you need to create a `apis/<serviceid>/v1alpha1/generator-config.yaml`
-file with the following content:
 ```yaml
 ignore:
   resource_names:
@@ -49,6 +49,15 @@ ignore:
 When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
+
+If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
+
+### Makefile
+
+```bash
+- GENERATED_SERVICES="apigatewayv2"
++ GENERATED_SERVICES="apigatewayv2,<serviceid>"
+```
 
 If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
 and mention that you're using Crossplane pipeline.
@@ -89,14 +98,18 @@ of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -106,22 +119,19 @@ Now you need to make sure this function is called in setup phase [here](https://
 
 #### Register CRD
 
-If the group didn't exist before, we need to register its schema [here](https://github.com/crossplane/provider-aws/blob/483058c/apis/aws.go#L77).
+If the group didn't exist before, we need to register its schema [here](https://github.com/crossplane/provider-aws/blob/master/apis/aws.go).
 
 ### Referencer Fields
 
 In Crossplane, fields whose value can be taken from another CRD have two additional
-fields called `*Ref` and `*Selector`. At the moment, ACK doesn't know about them
-so we add them manually.
+fields called `*Ref` and `*Selector`. At the moment, there is no metadata in
+either ACK or AWS SDK about these relations, so we will need to define them manually.
 
-You'll see that `<CRDName>Parameters` struct has an inline field called `Custom<CRDName>Parameters`
-whose struct we left empty earlier. We'll add the additional fields there.
-
-Note that some fields are required and reference-able but we cannot mark them required
-since when a reference is given, their value is resolved after the creation. In
-such cases, we need to omit that field and put it under `Custom<CRDName>Parameters`
-alongside with its referencer and selector fields. To ignore, you need to add the
-following in `generator-config.yaml` like the following:
+Let's say you're working on `Route` resource and there is a parameter called
+`ApiId` in the CRD and its value can be taken from an `API` managed resource.
+In order to define the relation, we first make ACK omit the field from the code
+generation by adding the instances of SDK calls it exists in like the following
+in `generator-config.yaml`:
 
 ```yaml
 ignore:
@@ -130,18 +140,60 @@ ignore:
     - DeleteRouteInput.ApiId
 ```
 
-In this example, we don't want `Route` resource to have a required `ApiId` field.
-But in order to skip it, we need to make sure to ignore it in every API call like
-above. In the future, we hope to mark it once but that's how it works right now.
+Once you see that it doesn't exist under `RouteParameters` anymore, you can add
+that field and its `ApiIdRef` and `ApiIdSelector` fields to `Custom<CRDName>Parameters`
+struct we created in the earlier section. The addition will be similar to the
+following:
 
-Note that any field you ignore needs to be handled in the hook functions you'll
-define in the next steps.
+```go
+// APIID is actually required but since it's reference-able, it's not marked
+// as required.
+type CustomAPIMappingParameters struct {
+  // ApiId is the ID for the API.
+  // +immutable
+  // +crossplane:generate:reference:type=API
+  ApiId *string `json:"apiId,omitempty"`
 
-### Reference Resolvers
+  // ApiIdRef is a reference to an API used to set
+  // the APIID.
+  // +optional
+  ApiIdRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
-We need to implement the resolver functions for every reference-able field. They
-are mostly identical and you can see examples in the existing implementations like
-[`Stage`](https://github.com/crossplane/provider-aws/blob/c269977/apis/apigatewayv2/v1alpha1/referencers.go#L30) resource.
+  // ApiIdSelector selects references to API used
+  // to set the APIID.
+  // +optional
+  ApiIdSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
+}
+```
+
+After you added the new field here, you need to handle usage of that field manually
+in all hooks, like `preCreate`, `preObserve` etc., one by one since ACK won't
+generate the assignment statements for it anymore.
+
+Please note the line right before the definition of `ApiId` field that starts
+with `+crossplane`. That's where we tell code generator that which kind this
+field can reference to, and in this case it's `API` kind that lives under the
+same package. If it was in another package like `ec2.VPC`, we could add the following
+line to make it reference it:
+```go
+// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.VPC
+```
+
+Once you're done, you can run `make generate`, the necessary reference resolvers
+will be generated automatically.
+
+In case you need to override some of the behavior like the name of the ref and
+selector fields, or a custom function to fetch the value that is other than
+external name of the referenced object, you can use the following comment markers:
+```go
+// +crossplane:generate:reference:type=API
+// +crossplane:generate:reference:extractor=ApiARN()
+// +crossplane:generate:reference:refFieldName=ApiIdRef
+// +crossplane:generate:reference:selectorFieldName=ApiIdSelector
+```
+
+You can add the package prefix for `type` and `extractor` configurations if they
+live in a different Go package.
 
 ### External Name
 
@@ -159,7 +211,7 @@ Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -171,11 +223,15 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -201,16 +257,17 @@ func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStage
 }
 ```
 
-If the external-name is decided by AWS after the creation, like in VPC, then you
-need to inject `postCreate` and make sure to `meta.SetExternalName(cr, id)` there
-and return `managed.ExternalCreation{ExternalNameAssigned: true}`.
-
+If the external-name is decided by AWS after the creation (like in most EC2
+resources such as `vpc-id` of `VPC`), then you need to inject `postCreate` to
+set the crossplane resource external-name to the unique identifier of the
+resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L77)
 You can discover what you can inject by inspecting `zz_controller.go` file.
 
 ### Readiness Check
 
 Every managed resource needs to report its readiness. We'll do that in `postObserve`
 call like the following:
+
 ```golang
 func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
@@ -230,6 +287,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.Describ
 
 Some resources get ready right when you create them, like `Stage`. In such cases,
 `postObserve` could be just like the following:
+
 ```golang
 func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
   if err != nil {
@@ -258,7 +316,7 @@ it's not that long.
 In order to override default no-op late initialization code, we'll use the same
 mechanism as others:
 ```golang
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -283,7 +341,7 @@ and our `spec`. Here is an [example](https://github.com/crossplane/provider-aws/
 After writing the function, you can use it instead of the default `alwaysUpToDate`
 similar to others:
 ```golang
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -345,25 +403,36 @@ go run cmd/provider/main.go
 
 ##### In-cluster
 
-You can build the images and deploy it into cluster using Crossplane Package Manager
+You can build the images and deploy it into the cluster using Crossplane Package Manager
 to test the real-world scenario. There are two Docker images to be built; one has
 the controller image, the other one has package metadata and CRDs. We need to choose a
 controller image before building metadata image. Then we'll start the build process.
 
-Example image URL pair:
-* `username/provider-aws-controller:test`: Controller Image
-  This is the one that will be running in the cluster.
-* `username/provider-aws:test`: Metadata Image
-  This is the one we'll use when we install the provider.
+Pre-requisites: 
+* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.1/reference/install.html).
+* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.1/getting-started/install-configure.html#install-crossplane-cli). 
+* Docker hub account with your own public repository.
 
-1. Edit `package/crossplane.yaml` and change the `spec.controller.image` with your controller image URL.
-1. Go to `package` folder and build the package using Crossplane CLI: `kubectl crossplane build provider`.
-1. Push the images using: `kubectl crossplane push provider <metadata image URL>`.
+Follow the steps below to get set-up for in-cluster testing:
+* Run `make build DOCKER_REGISTRY=<username> VERSION=test-version` in `provider-aws`. This will create two images mentioned above:
+  * `build-<short-sha>/provider-aws-amd64:latest //Controller Image This is the one that will be running in the cluster.` 
+  * `build-<short-sha>/provider-aws-controller-amd64:latest //Metadata Image This is the one we'll use when we install the provider.`
+  
 
-Now we got the provider package pushed, and we can install it just like an official provider.
-Run:
+* Tag and push both the images to your personal docker repository.
+
 ```console
-kubectl crossplane install provider <metadata image URL>`
+docker image tag build-<short-sha>/provider-aws-controller-amd64:latest <username>/provider-aws-controller:test-version
+docker push <username>/provider-aws-controller:test-version
+
+docker image tag build-<short-sha>/provider-aws-amd64:latest <username>/provider-aws:test-version
+docker push <username>/provider-aws:test-version
+```
+
+* Now we got the provider package pushed, and we can install it just like an official provider.
+  Run:
+```console
+kubectl crossplane install provider <username>/provider-aws:test-version
 ```
 
 #### Testing YAML

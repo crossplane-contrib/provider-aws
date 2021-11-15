@@ -18,18 +18,22 @@ package internetgateway
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -52,18 +56,23 @@ const (
 )
 
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
-func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger) error {
+func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.InternetGatewayGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1beta1.InternetGateway{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.InternetGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInternetGatewayClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -78,7 +87,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -102,9 +111,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
+	response, err := e.client.DescribeInternetGateways(ctx, &awsec2.DescribeInternetGatewaysInput{
 		InternetGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
@@ -141,14 +150,14 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	ig, err := e.client.CreateInternetGatewayRequest(&awsec2.CreateInternetGatewayInput{}).Send(ctx)
+	ig, err := e.client.CreateInternetGateway(ctx, &awsec2.CreateInternetGatewayInput{})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(ig.InternetGateway.InternetGatewayId))
+	meta.SetExternalName(cr, aws.ToString(ig.InternetGateway.InternetGatewayId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -159,17 +168,17 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	// Tagging the created InternetGateway
 	if len(cr.Spec.ForProvider.Tags) > 0 {
-		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
 	}
 
-	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
+	response, err := e.client.DescribeInternetGateways(ctx, &awsec2.DescribeInternetGatewaysInput{
 		InternetGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
@@ -187,20 +196,20 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if len(observed.Attachments) == 1 &&
-		aws.StringValue(observed.Attachments[0].VpcId) != aws.StringValue(cr.Spec.ForProvider.VPCID) {
-		if _, err = e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
+		aws.ToString(observed.Attachments[0].VpcId) != aws.ToString(cr.Spec.ForProvider.VPCID) {
+		if _, err = e.client.DetachInternetGateway(ctx, &awsec2.DetachInternetGatewayInput{
 			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 			VpcId:             observed.Attachments[0].VpcId,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDetach)
 		}
 	}
 
 	// Attach IG to VPC in spec.
-	_, err = e.client.AttachInternetGatewayRequest(&awsec2.AttachInternetGatewayInput{
+	_, err = e.client.AttachInternetGateway(ctx, &awsec2.AttachInternetGatewayInput{
 		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 		VpcId:             cr.Spec.ForProvider.VPCID,
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayAlreadyAttached, err), errUpdate)
 }
@@ -215,10 +224,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	// first detach all vpc attachments
 	for _, a := range cr.Status.AtProvider.Attachments {
-		_, err := e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
+		_, err := e.client.DetachInternetGateway(ctx, &awsec2.DetachInternetGatewayInput{
 			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 			VpcId:             aws.String(a.VPCID),
-		}).Send(ctx)
+		})
 
 		if resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err) == nil {
 			continue
@@ -227,9 +236,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	// now delete the IG
-	_, err := e.client.DeleteInternetGatewayRequest(&awsec2.DeleteInternetGatewayInput{
+	_, err := e.client.DeleteInternetGateway(ctx, &awsec2.DeleteInternetGatewayInput{
 		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
-	return errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDelete)
 }

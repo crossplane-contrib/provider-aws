@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ecr"
@@ -27,52 +29,52 @@ var _ clientset.RepositoryClient = (*MockRepositoryClient)(nil)
 
 // MockRepositoryClient is a type that implements all the methods for ECRClient interface
 type MockRepositoryClient struct {
-	MockCreate                func(*ecr.CreateRepositoryInput) ecr.CreateRepositoryRequest
-	MockDelete                func(*ecr.DeleteRepositoryInput) ecr.DeleteRepositoryRequest
-	MockDescribe              func(*ecr.DescribeRepositoriesInput) ecr.DescribeRepositoriesRequest
-	MockListTags              func(*ecr.ListTagsForResourceInput) ecr.ListTagsForResourceRequest
-	MockTag                   func(*ecr.TagResourceInput) ecr.TagResourceRequest
-	MockUntag                 func(*ecr.UntagResourceInput) ecr.UntagResourceRequest
-	MockPutImageScan          func(*ecr.PutImageScanningConfigurationInput) ecr.PutImageScanningConfigurationRequest
-	MockPutImageTagMutability func(*ecr.PutImageTagMutabilityInput) ecr.PutImageTagMutabilityRequest
+	MockCreate                func(ctx context.Context, input *ecr.CreateRepositoryInput, opts []func(*ecr.Options)) (*ecr.CreateRepositoryOutput, error)
+	MockDelete                func(ctx context.Context, input *ecr.DeleteRepositoryInput, opts []func(*ecr.Options)) (*ecr.DeleteRepositoryOutput, error)
+	MockDescribe              func(ctx context.Context, input *ecr.DescribeRepositoriesInput, opts []func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error)
+	MockListTags              func(ctx context.Context, input *ecr.ListTagsForResourceInput, opts []func(*ecr.Options)) (*ecr.ListTagsForResourceOutput, error)
+	MockTag                   func(ctx context.Context, input *ecr.TagResourceInput, opts []func(*ecr.Options)) (*ecr.TagResourceOutput, error)
+	MockUntag                 func(ctx context.Context, input *ecr.UntagResourceInput, opts []func(*ecr.Options)) (*ecr.UntagResourceOutput, error)
+	MockPutImageScan          func(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts []func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error)
+	MockPutImageTagMutability func(ctx context.Context, input *ecr.PutImageTagMutabilityInput, opts []func(*ecr.Options)) (*ecr.PutImageTagMutabilityOutput, error)
 }
 
-// CreateRepositoryRequest mocks CreateRepositoryRequest method
-func (m *MockRepositoryClient) CreateRepositoryRequest(input *ecr.CreateRepositoryInput) ecr.CreateRepositoryRequest {
-	return m.MockCreate(input)
+// CreateRepository mocks CreateRepository method
+func (m *MockRepositoryClient) CreateRepository(ctx context.Context, input *ecr.CreateRepositoryInput, opts ...func(*ecr.Options)) (*ecr.CreateRepositoryOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteRepositoryRequest mocks DeleteRepositoryRequest method
-func (m *MockRepositoryClient) DeleteRepositoryRequest(input *ecr.DeleteRepositoryInput) ecr.DeleteRepositoryRequest {
-	return m.MockDelete(input)
+// DeleteRepository mocks DeleteRepository method
+func (m *MockRepositoryClient) DeleteRepository(ctx context.Context, input *ecr.DeleteRepositoryInput, opts ...func(*ecr.Options)) (*ecr.DeleteRepositoryOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeRepositoriesRequest mocks DescribeRepositoriesRequest method
-func (m *MockRepositoryClient) DescribeRepositoriesRequest(input *ecr.DescribeRepositoriesInput) ecr.DescribeRepositoriesRequest {
-	return m.MockDescribe(input)
+// DescribeRepositories mocks DescribeRepositories method
+func (m *MockRepositoryClient) DescribeRepositories(ctx context.Context, input *ecr.DescribeRepositoriesInput, opts ...func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// ListTagsForResourceRequest mocks ListTagsForResourceRequest method
-func (m *MockRepositoryClient) ListTagsForResourceRequest(input *ecr.ListTagsForResourceInput) ecr.ListTagsForResourceRequest {
-	return m.MockListTags(input)
+// ListTagsForResource mocks ListTagsForResource method
+func (m *MockRepositoryClient) ListTagsForResource(ctx context.Context, input *ecr.ListTagsForResourceInput, opts ...func(*ecr.Options)) (*ecr.ListTagsForResourceOutput, error) {
+	return m.MockListTags(ctx, input, opts)
 }
 
-// TagResourceRequest mocks TagResourceRequest method
-func (m *MockRepositoryClient) TagResourceRequest(input *ecr.TagResourceInput) ecr.TagResourceRequest {
-	return m.MockTag(input)
+// TagResource mocks TagResource method
+func (m *MockRepositoryClient) TagResource(ctx context.Context, input *ecr.TagResourceInput, opts ...func(*ecr.Options)) (*ecr.TagResourceOutput, error) {
+	return m.MockTag(ctx, input, opts)
 }
 
-// UntagResourceRequest mocks UntagResourceRequest method
-func (m *MockRepositoryClient) UntagResourceRequest(input *ecr.UntagResourceInput) ecr.UntagResourceRequest {
-	return m.MockUntag(input)
+// UntagResource mocks UntagResource method
+func (m *MockRepositoryClient) UntagResource(ctx context.Context, input *ecr.UntagResourceInput, opts ...func(*ecr.Options)) (*ecr.UntagResourceOutput, error) {
+	return m.MockUntag(ctx, input, opts)
 }
 
-// PutImageTagMutabilityRequest mocks PutImageTagMutabilityRequest method
-func (m *MockRepositoryClient) PutImageTagMutabilityRequest(input *ecr.PutImageTagMutabilityInput) ecr.PutImageTagMutabilityRequest {
-	return m.MockPutImageTagMutability(input)
+// PutImageTagMutability mocks PutImageTagMutability method
+func (m *MockRepositoryClient) PutImageTagMutability(ctx context.Context, input *ecr.PutImageTagMutabilityInput, opts ...func(*ecr.Options)) (*ecr.PutImageTagMutabilityOutput, error) {
+	return m.MockPutImageTagMutability(ctx, input, opts)
 }
 
-// PutImageScanningConfigurationRequest mocks PutImageScanningConfigurationRequest method
-func (m *MockRepositoryClient) PutImageScanningConfigurationRequest(input *ecr.PutImageScanningConfigurationInput) ecr.PutImageScanningConfigurationRequest {
-	return m.MockPutImageScan(input)
+// PutImageScanningConfiguration mocks PutImageScanningConfiguration method
+func (m *MockRepositoryClient) PutImageScanningConfiguration(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts ...func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error) {
+	return m.MockPutImageScan(ctx, input, opts)
 }

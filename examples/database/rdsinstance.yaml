@@ -4,6 +4,7 @@ metadata:
   name: example-rds
 spec:
   forProvider:
+    region: us-east-1
     allocatedStorage: 20
     autoMinorVersionUpgrade: true
     backupRetentionPeriod: 0
@@ -20,8 +21,6 @@ spec:
     masterUsername: admin
     multiAZ: true
     port: 3306
-    preferredBackupWindow: 06:15-06:45
-    preferredMaintenanceWindow: sat:09:21-sat:09:51
     publiclyAccessible: false
     storageEncrypted: false
     storageType: gp2

@@ -18,18 +18,23 @@ package subnet
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -50,17 +55,22 @@ const (
 )
 
 // SetupSubnet adds a controller that reconciles Subnets.
-func SetupSubnet(mgr ctrl.Manager, l logging.Logger) error {
+func SetupSubnet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.SubnetGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1beta1.Subnet{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SubnetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -75,7 +85,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +109,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
+	response, err := e.client.DescribeSubnets(ctx, &awsec2.DescribeSubnetsInput{
 		SubnetIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
@@ -119,9 +129,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	ec2.LateInitializeSubnet(&cr.Spec.ForProvider, &observed)
 
 	switch observed.State {
-	case awsec2.SubnetStateAvailable:
+	case awsec2types.SubnetStateAvailable:
 		cr.SetConditions(xpv1.Available())
-	case awsec2.SubnetStatePending:
+	case awsec2types.SubnetStatePending:
 		cr.SetConditions(xpv1.Creating())
 	}
 
@@ -140,21 +150,21 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.CreateSubnetRequest(&awsec2.CreateSubnetInput{
+	result, err := e.client.CreateSubnet(ctx, &awsec2.CreateSubnetInput{
 		AvailabilityZone:   cr.Spec.ForProvider.AvailabilityZone,
 		AvailabilityZoneId: cr.Spec.ForProvider.AvailabilityZoneID,
 		CidrBlock:          aws.String(cr.Spec.ForProvider.CIDRBlock),
 		Ipv6CidrBlock:      cr.Spec.ForProvider.IPv6CIDRBlock,
 		VpcId:              cr.Spec.ForProvider.VPCID,
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
+	meta.SetExternalName(cr, aws.ToString(result.Subnet.SubnetId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -163,9 +173,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
+	response, err := e.client.DescribeSubnets(ctx, &awsec2.DescribeSubnetsInput{
 		SubnetIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
@@ -178,33 +188,33 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	subnet := response.Subnets[0]
 
 	if !v1beta1.CompareTags(cr.Spec.ForProvider.Tags, subnet.Tags) {
-		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
 	}
 
-	if subnet.MapPublicIpOnLaunch != cr.Spec.ForProvider.MapPublicIPOnLaunch {
-		_, err = e.client.ModifySubnetAttributeRequest(&awsec2.ModifySubnetAttributeInput{
-			MapPublicIpOnLaunch: &awsec2.AttributeBooleanValue{
+	if aws.ToBool(subnet.MapPublicIpOnLaunch) != aws.ToBool(cr.Spec.ForProvider.MapPublicIPOnLaunch) {
+		_, err = e.client.ModifySubnetAttribute(ctx, &awsec2.ModifySubnetAttributeInput{
+			MapPublicIpOnLaunch: &awsec2types.AttributeBooleanValue{
 				Value: cr.Spec.ForProvider.MapPublicIPOnLaunch,
 			},
 			SubnetId: aws.String(meta.GetExternalName(cr)),
-		}).Send((ctx))
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
 
-	if subnet.AssignIpv6AddressOnCreation != cr.Spec.ForProvider.AssignIPv6AddressOnCreation {
-		_, err = e.client.ModifySubnetAttributeRequest(&awsec2.ModifySubnetAttributeInput{
-			AssignIpv6AddressOnCreation: &awsec2.AttributeBooleanValue{
+	if aws.ToBool(subnet.AssignIpv6AddressOnCreation) != aws.ToBool(cr.Spec.ForProvider.AssignIPv6AddressOnCreation) {
+		_, err = e.client.ModifySubnetAttribute(ctx, &awsec2.ModifySubnetAttributeInput{
+			AssignIpv6AddressOnCreation: &awsec2types.AttributeBooleanValue{
 				Value: cr.Spec.ForProvider.AssignIPv6AddressOnCreation,
 			},
 			SubnetId: aws.String(meta.GetExternalName(cr)),
-		}).Send((ctx))
+		})
 	}
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
@@ -218,9 +228,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteSubnetRequest(&awsec2.DeleteSubnetInput{
+	_, err := e.client.DeleteSubnet(ctx, &awsec2.DeleteSubnetInput{
 		SubnetId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
 }

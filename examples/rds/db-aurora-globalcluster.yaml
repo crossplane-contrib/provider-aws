@@ -1,0 +1,12 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: GlobalCluster
+metadata:
+  name: example-globalcluster
+spec:
+  forProvider:
+    region: us-east-1
+    engine: aurora-postgresql
+    databaseName: example
+    deletionProtection: false
+  providerConfigRef:
+    name: example

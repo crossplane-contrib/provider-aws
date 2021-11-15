@@ -1,9 +1,12 @@
 /*
 Copyright 2020 The Crossplane Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +18,23 @@ package cluster
 
 import (
 	"context"
+	"time"
 
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -47,16 +54,20 @@ const (
 )
 
 // SetupCacheCluster adds a controller that reconciles CacheCluster.
-func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger) error {
+func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CacheClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.CacheCluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CacheClusterGroupVersionKind),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
@@ -90,7 +101,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotCacheCluster)
 	}
 
-	resp, err := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(meta.GetExternalName(cr))).Send(ctx)
+	resp, err := e.client.DescribeCacheClusters(ctx, elasticache.NewDescribeCacheClustersInput(meta.GetExternalName(cr)))
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDescribeCacheCluster)
 	}
@@ -136,7 +147,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	_, err := e.client.CreateCacheClusterRequest(elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
+	_, err := e.client.CreateCacheCluster(ctx, elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateCacheCluster)
 }
@@ -152,7 +163,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	_, err := e.client.ModifyCacheClusterRequest(elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
+	_, err := e.client.ModifyCacheCluster(ctx, elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyCacheCluster)
 }
 
@@ -168,9 +179,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 
-	_, err := e.client.DeleteCacheClusterRequest(&elasticacheservice.DeleteCacheClusterInput{
+	_, err := e.client.DeleteCacheCluster(ctx, &elasticacheservice.DeleteCacheClusterInput{
 		CacheClusterId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
-
+	})
 	return awsclient.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDeleteCacheCluster)
 }

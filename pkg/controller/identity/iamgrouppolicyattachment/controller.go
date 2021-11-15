@@ -18,16 +18,23 @@ package iamgrouppolicyattachment
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -46,18 +53,22 @@ const (
 
 // SetupIAMGroupPolicyAttachment adds a controller that reconciles
 // IAMGroupPolicyAttachments.
-func SetupIAMGroupPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMGroupPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMGroupPolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.IAMGroupPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMGroupPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -86,16 +97,27 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListAttachedGroupPoliciesRequest(&awsiam.ListAttachedGroupPoliciesInput{
-		GroupName: &cr.Spec.ForProvider.GroupName,
-	}).Send(ctx)
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+	// ARN can have its own slashes, we'll use the first part and assume the rest
+	// is ARN.
+	nn := strings.SplitN(meta.GetExternalName(cr), "/", 2)
+	if len(nn) != 2 {
+		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <group-name>/<policy-arn>")
+	}
+	groupName, policyARN := nn[0], nn[1]
+
+	observed, err := e.client.ListAttachedGroupPolicies(ctx, &awsiam.ListAttachedGroupPoliciesInput{
+		GroupName: &groupName,
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiam.AttachedPolicy
+	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if policyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -110,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMGroupPolicyAttachmentObservation{
-		AttachedPolicyARN: aws.StringValue(attachedPolicyObject.PolicyArn),
+		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
 
 	return managed.ExternalObservation{
@@ -125,14 +147,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.SetConditions(xpv1.Creating())
-
-	_, err := e.client.AttachGroupPolicyRequest(&awsiam.AttachGroupPolicyInput{
+	_, err := e.client.AttachGroupPolicy(ctx, &awsiam.AttachGroupPolicyInput{
 		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
 		GroupName: &cr.Spec.ForProvider.GroupName,
-	}).Send(ctx)
+	})
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	}
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// names of the group and user that are bound.
+	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.PolicyARN)
+
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -150,14 +178,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachGroupPolicyRequest(&awsiam.DetachGroupPolicyInput{
+	_, err := e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
 		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
 		GroupName: &cr.Spec.ForProvider.GroupName,
-	}).Send(ctx)
+	})
 
-	if iam.IsErrorNotFound(err) {
-		return nil
-	}
-
-	return awsclient.Wrap(err, errDetach)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

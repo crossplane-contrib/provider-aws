@@ -61,7 +61,7 @@ type IAMRoleParameters struct {
 	// role. The default maximum of one hour is applied. This setting can have a value from 1 hour to 12 hours.
 	// Default: 3600
 	// +optional
-	MaxSessionDuration *int64 `json:"maxSessionDuration,omitempty"`
+	MaxSessionDuration *int32 `json:"maxSessionDuration,omitempty"`
 
 	// Path is the path to the role.
 	// Default: /
@@ -104,7 +104,7 @@ type IAMRoleExternalStatus struct {
 // An IAMRoleStatus represents the observed state of an IAMRole.
 type IAMRoleStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMRoleExternalStatus `json:"atProvider"`
+	AtProvider          IAMRoleExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

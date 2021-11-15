@@ -18,11 +18,11 @@ package subnet
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -93,16 +93,14 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
-								Subnets: []awsec2.Subnet{
-									{
-										State: awsec2.SubnetStateAvailable,
-									},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return &awsec2.DescribeSubnetsOutput{
+							Subnets: []awsec2types.Subnet{
+								{
+									State: awsec2types.SubnetStateAvailable,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
 				cr: subnet(withExternalName(subnetID)),
@@ -121,12 +119,10 @@ func TestObserve(t *testing.T) {
 		"MultipleSubnets": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
-								Subnets: []awsec2.Subnet{{}, {}},
-							}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return &awsec2.DescribeSubnetsOutput{
+							Subnets: []awsec2types.Subnet{{}, {}},
+						}, nil
 					},
 				},
 				cr: subnet(withExternalName(subnetID)),
@@ -139,17 +135,16 @@ func TestObserve(t *testing.T) {
 		"NotUpToDate": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
-								Subnets: []awsec2.Subnet{
-									{
-										State:               awsec2.SubnetStateAvailable,
-										MapPublicIpOnLaunch: aws.Bool(false),
-									},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return &awsec2.DescribeSubnetsOutput{
+							Subnets: []awsec2types.Subnet{
+								{
+									State:                       awsec2types.SubnetStateAvailable,
+									MapPublicIpOnLaunch:         aws.Bool(false),
+									AssignIpv6AddressOnCreation: aws.Bool(false),
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
@@ -159,24 +154,24 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
-					MapPublicIPOnLaunch: aws.Bool(true),
+					MapPublicIPOnLaunch:         aws.Bool(true),
+					AssignIPv6AddressOnCreation: aws.Bool(false),
 				}), withStatus(v1beta1.SubnetObservation{
-					SubnetState: string(awsec2.SubnetStateAvailable),
+					SubnetState: string(awsec2types.SubnetStateAvailable),
 				}), withExternalName(subnetID),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceExists:          true,
+					ResourceUpToDate:        false,
+					ResourceLateInitialized: true,
 				},
 			},
 		},
 		"DescribeFailed": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subnet(withExternalName(subnetID)),
@@ -220,21 +215,19 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
-						return awsec2.CreateSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSubnetOutput{
-								Subnet: &awsec2.Subnet{
-									SubnetId: aws.String(subnetID),
-								},
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateSubnetInput, opts []func(*awsec2.Options)) (*awsec2.CreateSubnetOutput, error) {
+						return &awsec2.CreateSubnetOutput{
+							Subnet: &awsec2types.Subnet{
+								SubnetId: aws.String(subnetID),
+							},
+						}, nil
 					},
 				},
 				cr: subnet(),
 			},
 			want: want{
 				cr:     subnet(withExternalName(subnetID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFailed": {
@@ -244,10 +237,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				subnet: &fake.MockSubnetClient{
-					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
-						return awsec2.CreateSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateSubnetInput, opts []func(*awsec2.Options)) (*awsec2.CreateSubnetOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subnet(),
@@ -291,20 +282,16 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
-						return awsec2.ModifySubnetAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
-						}
+					MockModify: func(ctx context.Context, input *awsec2.ModifySubnetAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifySubnetAttributeOutput, error) {
+						return &awsec2.ModifySubnetAttributeOutput{}, nil
 					},
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
-								Subnets: []awsec2.Subnet{{
-									SubnetId:            aws.String(subnetID),
-									MapPublicIpOnLaunch: aws.Bool(false),
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return &awsec2.DescribeSubnetsOutput{
+							Subnets: []awsec2types.Subnet{{
+								SubnetId:            aws.String(subnetID),
+								MapPublicIpOnLaunch: aws.Bool(false),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
@@ -324,20 +311,16 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
-						return awsec2.ModifySubnetAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
-						}
+					MockModify: func(ctx context.Context, input *awsec2.ModifySubnetAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifySubnetAttributeOutput, error) {
+						return &awsec2.ModifySubnetAttributeOutput{}, nil
 					},
-					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
-								Subnets: []awsec2.Subnet{{
-									SubnetId:            aws.String(subnetID),
-									MapPublicIpOnLaunch: aws.Bool(false),
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSubnetsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSubnetsOutput, error) {
+						return &awsec2.DescribeSubnetsOutput{
+							Subnets: []awsec2types.Subnet{{
+								SubnetId:            aws.String(subnetID),
+								MapPublicIpOnLaunch: aws.Bool(false),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
@@ -387,10 +370,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
-						return awsec2.DeleteSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSubnetOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteSubnetInput, opts []func(*awsec2.Options)) (*awsec2.DeleteSubnetOutput, error) {
+						return &awsec2.DeleteSubnetOutput{}, nil
 					},
 				},
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
@@ -406,10 +387,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				subnet: &fake.MockSubnetClient{
-					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
-						return awsec2.DeleteSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteSubnetInput, opts []func(*awsec2.Options)) (*awsec2.DeleteSubnetOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subnet(withStatus(v1beta1.SubnetObservation{

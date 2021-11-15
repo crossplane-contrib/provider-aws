@@ -20,6 +20,7 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	awss3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -37,32 +38,6 @@ type AccelerateConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil {
-		// Short stop method for requests in a region without Acceleration Support
-		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
-			return nil
-		}
-		return awsclient.Wrap(err, accelGetFailed)
-	}
-
-	// We need the second check here because by default the accelerateConfig status is not set
-	// by default
-	if external.GetBucketAccelerateConfigurationOutput == nil || len(external.Status) == 0 {
-		return nil
-	}
-
-	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
-		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
-	}
-	bucket.Spec.ForProvider.AccelerateConfiguration.Status = awsclient.LateInitializeString(
-		bucket.Spec.ForProvider.AccelerateConfiguration.Status,
-		awsclient.String(string(external.GetBucketAccelerateConfigurationOutput.Status)))
-	return nil
-}
-
 // NewAccelerateConfigurationClient creates the client for Accelerate Configuration
 func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigurationClient {
 	return &AccelerateConfigurationClient{client: client}
@@ -70,7 +45,7 @@ func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		// Short stop method for requests in a region without Acceleration Support
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
@@ -85,25 +60,56 @@ func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1
 	return Updated, nil
 }
 
-// GenerateAccelerateConfigurationInput creates the input for the AccelerateConfiguration request for the S3 Client
-func GenerateAccelerateConfigurationInput(name string, config *v1beta1.AccelerateConfiguration) *awss3.PutBucketAccelerateConfigurationInput {
-	return &awss3.PutBucketAccelerateConfigurationInput{
-		Bucket:                  awsclient.String(name),
-		AccelerateConfiguration: &awss3.AccelerateConfiguration{Status: awss3.BucketAccelerateStatus(config.Status)},
-	}
-}
-
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
 	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
 		return nil
 	}
 	input := GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.AccelerateConfiguration)
-	_, err := in.client.PutBucketAccelerateConfigurationRequest(input).Send(ctx)
+	_, err := in.client.PutBucketAccelerateConfiguration(ctx, input)
 	return awsclient.Wrap(err, accelPutFailed)
 }
 
 // Delete does not do anything since AccelerateConfiguration doesn't have Delete call.
 func (*AccelerateConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
+}
+
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	if err != nil {
+		// Short stop method for requests without Acceleration Support
+		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
+			return nil
+		}
+		return awsclient.Wrap(err, accelGetFailed)
+	}
+
+	// We need the second check here because by default the accelerateConfig status is not set
+	if external == nil || len(external.Status) == 0 {
+		return nil
+	}
+
+	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
+		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
+	}
+
+	bucket.Spec.ForProvider.AccelerateConfiguration.Status = awsclient.LateInitializeString(
+		bucket.Spec.ForProvider.AccelerateConfiguration.Status,
+		awsclient.String(string(external.Status)))
+	return nil
+}
+
+// SubresourceExists checks if the subresource this controller manages currently exists
+func (in *AccelerateConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) bool {
+	return bucket.Spec.ForProvider.AccelerateConfiguration != nil
+}
+
+// GenerateAccelerateConfigurationInput creates the input for the AccelerateConfiguration request for the S3 Client
+func GenerateAccelerateConfigurationInput(name string, config *v1beta1.AccelerateConfiguration) *awss3.PutBucketAccelerateConfigurationInput {
+	return &awss3.PutBucketAccelerateConfigurationInput{
+		Bucket:                  awsclient.String(name),
+		AccelerateConfiguration: &awss3types.AccelerateConfiguration{Status: awss3types.BucketAccelerateStatus(config.Status)},
+	}
 }

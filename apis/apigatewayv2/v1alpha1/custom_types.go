@@ -25,6 +25,7 @@ type CustomAPIParameters struct{}
 type CustomAPIMappingParameters struct {
 	// APIID is the ID for the API.
 	// +immutable
+	// +crossplane:generate:reference:type=API
 	APIID *string `json:"apiId,omitempty"`
 
 	// APIIDRef is a reference to an API used to set
@@ -39,6 +40,7 @@ type CustomAPIMappingParameters struct {
 
 	// Stage is the name for the Stage.
 	// +immutable
+	// +crossplane:generate:reference:type=Stage
 	Stage *string `json:"stage,omitempty"`
 
 	// StageDRef is a reference to an Stage used to set
@@ -53,6 +55,7 @@ type CustomAPIMappingParameters struct {
 
 	// DomainName is the DomainName for the DomainName.
 	// +immutable
+	// +crossplane:generate:reference:type=DomainName
 	DomainName *string `json:"domainName,omitempty"`
 
 	// DomainNameRef is a reference to a DomainName used to set
@@ -113,8 +116,48 @@ type CustomDeploymentParameters struct {
 // CustomDomainNameParameters includes the custom fields.
 type CustomDomainNameParameters struct{}
 
+// ResponseParameters is a map of status codes and transform operations on each
+// of them.
+type ResponseParameters map[string]ResponseParameter
+
+// ResponseParameter represents a single response parameter transform operation.
+type ResponseParameter struct {
+	// HeaderEntries is the array of header changes you'd like to make.
+	// For details, see Transforming API responses in https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
+	HeaderEntries []HeaderEntry `json:"headerEntry,omitempty"`
+
+	// OverwriteStatusCode is the status code you'd like the response to have,
+	// overwriting the one in the original response.
+	// For details, see Transforming API responses in https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
+	OverwriteStatusCode *string `json:"overwriteStatusCodeEntry,omitempty"`
+}
+
+// HeaderEntry can be used to represent a single header transform.
+type HeaderEntry struct {
+	// Operation is what you'd like to do with given header. Only append, overwrite
+	// and remove values are supported.
+	// +kubebuilder:validation:Enum=append;overwrite;remove
+	Operation string `json:"operation"`
+
+	// Name is the name of the header.
+	Name string `json:"name"`
+
+	// Value is the new value.
+	Value string `json:"value"`
+}
+
 // CustomIntegrationParameters includes the custom fields.
 type CustomIntegrationParameters struct {
+	// NOTE(muvaf): Original type of ResponseParameters is map[string]map[string]*string,
+	// but we cannot use that since kubebuilder does not support generating CRD
+	// schema for map of maps.
+
+	// Supported only for HTTP APIs. You use response parameters to transform the
+	// HTTP response from a backend integration before returning the response to
+	// clients. Specify a key-value map from a selection key to response parameters.
+	// The selection key must be a valid HTTP status code within the range of 200-599.
+	ResponseParameters ResponseParameters `json:"responseParameters,omitempty"`
+
 	// APIID is the ID for the API.
 	// +immutable
 	APIID *string `json:"apiId,omitempty"`

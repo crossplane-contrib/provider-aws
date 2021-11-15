@@ -20,8 +20,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
+	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -156,7 +160,7 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 			in: *topicParams(),
 			out: awssns.CreateTopicInput{
 				Name: aws.String(topicName),
-				Tags: []awssns.Tag{
+				Tags: []awssnstypes.Tag{
 					{Key: aws.String(tagKey1), Value: aws.String(tagValue1)},
 					{Key: aws.String(tagKey2), Value: aws.String(tagValue2)},
 				},
@@ -167,7 +171,7 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			input := GenerateCreateTopicInput(&tc.in)
-			if diff := cmp.Diff(input, &tc.out); diff != "" {
+			if diff := cmp.Diff(input, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCreateTopicInput(...): -want, +got\n:%s", diff)
 			}
 		})

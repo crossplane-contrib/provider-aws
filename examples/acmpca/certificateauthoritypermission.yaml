@@ -7,5 +7,6 @@ spec:
     region: us-east-1
     certificateAuthorityARNRef:
       name: example
+    principal: acm.amazonaws.com
   providerConfigRef:
     name: example

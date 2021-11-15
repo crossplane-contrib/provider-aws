@@ -3,7 +3,12 @@ package acm
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/acm"
+	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/acm/v1alpha1"
@@ -17,8 +22,8 @@ var (
 )
 
 func TestGenerateCreateCertificateInput(t *testing.T) {
-	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
-	validationMethod := acm.ValidationMethodDns
+	certificateTransparencyLoggingPreference := acmtypes.CertificateTransparencyLoggingPreferenceDisabled
+	validationMethod := acmtypes.ValidationMethodDns
 	cases := map[string]struct {
 		in  v1alpha1.CertificateParameters
 		out acm.RequestCertificateInput
@@ -37,9 +42,9 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 			out: acm.RequestCertificateInput{
 				DomainName:              aws.String(domainName),
 				CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-				Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
-				ValidationMethod:        acm.ValidationMethodDns,
-				Tags: []acm.Tag{{
+				Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
+				ValidationMethod:        acmtypes.ValidationMethodDns,
+				Tags: []acmtypes.Tag{{
 					Key:   aws.String("key1"),
 					Value: aws.String("value1"),
 				}},
@@ -51,7 +56,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateCertificateInput(name, &tc.in)
 
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCreateCertificateInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -59,10 +64,10 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 }
 
 func TestLateInitializeCertificate(t *testing.T) {
-	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
+	certificateTransparencyLoggingPreference := acmtypes.CertificateTransparencyLoggingPreferenceDisabled
 	type args struct {
 		spec *v1alpha1.CertificateParameters
-		in   *acm.CertificateDetail
+		in   *acmtypes.CertificateDetail
 	}
 	cases := map[string]struct {
 		args args
@@ -75,10 +80,10 @@ func TestLateInitializeCertificate(t *testing.T) {
 					CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
 					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 				},
-				in: &acm.CertificateDetail{
+				in: &acmtypes.CertificateDetail{
 					DomainName:              aws.String(domainName),
 					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-					Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1alpha1.CertificateParameters{
@@ -94,10 +99,10 @@ func TestLateInitializeCertificate(t *testing.T) {
 					CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
 					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 				},
-				in: &acm.CertificateDetail{
+				in: &acmtypes.CertificateDetail{
 					DomainName:              aws.String(domainName),
 					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-					Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1alpha1.CertificateParameters{
@@ -112,10 +117,10 @@ func TestLateInitializeCertificate(t *testing.T) {
 					DomainName:              domainName,
 					CertificateAuthorityARN: aws.String(certificateAuthorityArn),
 				},
-				in: &acm.CertificateDetail{
+				in: &acmtypes.CertificateDetail{
 					DomainName:              aws.String(domainName),
 					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-					Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1alpha1.CertificateParameters{
@@ -137,28 +142,61 @@ func TestLateInitializeCertificate(t *testing.T) {
 }
 
 func TestGenerateCertificateStatus(t *testing.T) {
+	sName := "_xyz.crossplane.io."
+	sType := "CNAME"
+	sValue := "_xxx.zzz.acm-validations.aws."
+
 	cases := map[string]struct {
-		in  acm.CertificateDetail
+		in  acmtypes.CertificateDetail
 		out v1alpha1.CertificateExternalStatus
 	}{
 		"AllFilled": {
-			in: acm.CertificateDetail{
+			in: acmtypes.CertificateDetail{
 				CertificateArn:     aws.String(certificateArn),
-				RenewalEligibility: acm.RenewalEligibilityEligible,
+				RenewalEligibility: acmtypes.RenewalEligibilityEligible,
 			},
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     certificateArn,
-				RenewalEligibility: acm.RenewalEligibilityEligible,
+				RenewalEligibility: acmtypes.RenewalEligibilityEligible,
 			},
 		},
 		"NoRoleId": {
-			in: acm.CertificateDetail{
+			in: acmtypes.CertificateDetail{
 				CertificateArn:     nil,
-				RenewalEligibility: acm.RenewalEligibilityEligible,
+				RenewalEligibility: acmtypes.RenewalEligibilityEligible,
 			},
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     "",
-				RenewalEligibility: acm.RenewalEligibilityEligible,
+				RenewalEligibility: acmtypes.RenewalEligibilityEligible,
+			},
+		},
+		"DomainValidationOptionsResourceRecord": {
+			in: acmtypes.CertificateDetail{
+				CertificateArn:     aws.String(certificateArn),
+				RenewalEligibility: acmtypes.RenewalEligibilityIneligible,
+				Type:               acmtypes.CertificateTypeAmazonIssued,
+				Status:             acmtypes.CertificateStatusPendingValidation,
+				DomainValidationOptions: []acmtypes.DomainValidation{
+					{
+						DomainName: &sName,
+						ResourceRecord: &acmtypes.ResourceRecord{
+							Name:  &sName,
+							Value: &sValue,
+							Type:  acmtypes.RecordType(sType),
+						},
+					},
+				},
+			},
+			out: v1alpha1.CertificateExternalStatus{
+				CertificateARN:     certificateArn,
+				RenewalEligibility: acmtypes.RenewalEligibilityIneligible,
+				Type:               acmtypes.CertificateTypeAmazonIssued,
+				Status:             acmtypes.CertificateStatusPendingValidation,
+				ResourceRecord: &v1alpha1.ResourceRecord{
+					Name:  &sName,
+					Value: &sValue,
+					Type:  &sType,
+				},
 			},
 		},
 	}
@@ -174,11 +212,11 @@ func TestGenerateCertificateStatus(t *testing.T) {
 }
 
 func TestIsCertificateUpToDate(t *testing.T) {
-	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
+	certificateTransparencyLoggingPreference := acmtypes.CertificateTransparencyLoggingPreferenceDisabled
 	type args struct {
 		p    v1alpha1.CertificateParameters
-		cd   acm.CertificateDetail
-		tags []acm.Tag
+		cd   acmtypes.CertificateDetail
+		tags []acmtypes.Tag
 	}
 
 	cases := map[string]struct {
@@ -187,8 +225,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				cd: acm.CertificateDetail{
-					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+				cd: acmtypes.CertificateDetail{
+					Options: &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 				p: v1alpha1.CertificateParameters{
 					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
@@ -198,17 +236,17 @@ func TestIsCertificateUpToDate(t *testing.T) {
 						Value: "value1",
 					}},
 				},
-				tags: []acm.Tag{{
+				tags: []acmtypes.Tag{{
 					Key:   aws.String("key1"),
 					Value: aws.String("value1"),
 				}},
 			},
 			want: true,
 		},
-		"DifferentFields": {
+		"DifferentCertificateDetail": {
 			args: args{
-				cd: acm.CertificateDetail{
-					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled},
+				cd: acmtypes.CertificateDetail{
+					Options: &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceEnabled},
 				},
 				p: v1alpha1.CertificateParameters{
 					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
@@ -218,12 +256,72 @@ func TestIsCertificateUpToDate(t *testing.T) {
 						Value: "value1",
 					}},
 				},
-				tags: []acm.Tag{{
+				tags: []acmtypes.Tag{{
 					Key:   aws.String("key1"),
 					Value: aws.String("value1"),
 				}},
 			},
 			want: false,
+		},
+		"DifferentTags": {
+			args: args{
+				cd: acmtypes.CertificateDetail{
+					Options: &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
+				},
+				p: v1alpha1.CertificateParameters{
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
+					RenewCertificate:                         aws.Bool(false),
+					Tags: []v1alpha1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+				tags: []acmtypes.Tag{{
+					Key:   aws.String("key2"),
+					Value: aws.String("value2"),
+				}},
+			},
+			want: false,
+		},
+		"RenewCertificateTrueReturnsFalse": {
+			args: args{
+				cd: acmtypes.CertificateDetail{
+					Options: &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
+				},
+				p: v1alpha1.CertificateParameters{
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
+					RenewCertificate:                         aws.Bool(true),
+					Tags: []v1alpha1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+				tags: []acmtypes.Tag{{
+					Key:   aws.String("key1"),
+					Value: aws.String("value1"),
+				}},
+			},
+			want: false,
+		},
+		"RenewCertificateFalseReturnsTrue": {
+			args: args{
+				cd: acmtypes.CertificateDetail{
+					Options: &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
+				},
+				p: v1alpha1.CertificateParameters{
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
+					RenewCertificate:                         aws.Bool(false),
+					Tags: []v1alpha1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+				tags: []acmtypes.Tag{{
+					Key:   aws.String("key1"),
+					Value: aws.String("value1"),
+				}},
+			},
+			want: true,
 		},
 	}
 

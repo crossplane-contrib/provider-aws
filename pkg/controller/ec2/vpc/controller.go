@@ -19,18 +19,23 @@ package vpc
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -53,17 +58,22 @@ const (
 )
 
 // SetupVPC adds a controller that reconciles VPCs.
-func SetupVPC(mgr ctrl.Manager, l logging.Logger) error {
+func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.VPCGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1beta1.VPC{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.VPCGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -78,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -102,9 +112,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
+	response, err := e.client.DescribeVpcs(ctx, &awsec2.DescribeVpcsInput{
 		VpcIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
 	}
@@ -116,29 +126,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.Vpcs[0]
 
-	// update the CRD spec for any new values from provider
-	current := cr.Spec.ForProvider.DeepCopy()
-	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed)
-
-	switch observed.State {
-	case awsec2.VpcStateAvailable:
-		cr.SetConditions(xpv1.Available())
-	case awsec2.VpcStatePending:
-		cr.SetConditions(xpv1.Creating())
-	}
-
-	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
-
 	o := awsec2.DescribeVpcAttributeOutput{}
 
-	for _, input := range []awsec2.VpcAttributeName{
-		awsec2.VpcAttributeNameEnableDnsSupport,
-		awsec2.VpcAttributeNameEnableDnsHostnames,
+	for _, input := range []awsec2types.VpcAttributeName{
+		awsec2types.VpcAttributeNameEnableDnsSupport,
+		awsec2types.VpcAttributeNameEnableDnsHostnames,
 	} {
-		r, err := e.client.DescribeVpcAttributeRequest(&awsec2.DescribeVpcAttributeInput{
+		r, err := e.client.DescribeVpcAttribute(context.Background(), &awsec2.DescribeVpcAttributeInput{
 			VpcId:     aws.String(meta.GetExternalName(cr)),
 			Attribute: input,
-		}).Send(context.Background())
+		})
 
 		if err != nil {
 			return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
@@ -153,6 +150,30 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
+	// update the CRD spec for any new values from provider
+	current := cr.Spec.ForProvider.DeepCopy()
+	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed, &o)
+
+	switch observed.State {
+	case awsec2types.VpcStateAvailable:
+		cr.SetConditions(xpv1.Available())
+	case awsec2types.VpcStatePending:
+		cr.SetConditions(xpv1.Creating())
+	}
+
+	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
+
+	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed, &o)
+
+	switch observed.State {
+	case awsec2types.VpcStateAvailable:
+		cr.SetConditions(xpv1.Available())
+	case awsec2types.VpcStatePending:
+		cr.SetConditions(xpv1.Creating())
+	}
+
+	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
+
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed, o),
@@ -166,17 +187,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
+	result, err := e.client.CreateVpc(ctx, &awsec2.CreateVpcInput{
 		CidrBlock:       aws.String(cr.Spec.ForProvider.CIDRBlock),
-		InstanceTenancy: awsec2.Tenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
-	}).Send(ctx)
+		InstanceTenancy: awsec2types.Tenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(result.Vpc.VpcId))
+	meta.SetExternalName(cr, aws.ToString(result.Vpc.VpcId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -185,34 +206,39 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	for _, input := range []*awsec2.ModifyVpcAttributeInput{
-		{
+	if cr.Spec.ForProvider.EnableDNSSupport != nil {
+		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:            aws.String(meta.GetExternalName(cr)),
-			EnableDnsSupport: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
-		},
-		{
+			EnableDnsSupport: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
+		}
+		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.EnableDNSHostNames != nil {
+		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:              aws.String(meta.GetExternalName(cr)),
-			EnableDnsHostnames: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
-		},
-	} {
-		if _, err := e.client.ModifyVpcAttributeRequest(input).Send(ctx); err != nil {
+			EnableDnsHostnames: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
+		}
+		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
 		}
 	}
 
 	// NOTE(muvaf): VPCs can only be tagged after the creation and this request
 	// is idempotent.
-	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}).Send(ctx); err != nil {
+	}); err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 	}
 
-	_, err := e.client.ModifyVpcTenancyRequest(&awsec2.ModifyVpcTenancyInput{
-		InstanceTenancy: awsec2.VpcTenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
+	_, err := e.client.ModifyVpcTenancy(ctx, &awsec2.ModifyVpcTenancyInput{
+		InstanceTenancy: awsec2types.VpcTenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
 		VpcId:           aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -225,9 +251,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteVpcRequest(&awsec2.DeleteVpcInput{
+	_, err := e.client.DeleteVpc(ctx, &awsec2.DeleteVpcInput{
 		VpcId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
 }

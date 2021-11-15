@@ -1,0 +1,18 @@
+apiVersion: route53resolver.aws.crossplane.io/v1alpha1
+kind: ResolverEndpoint
+metadata:
+  name: sample-resolver
+spec:
+  forProvider:
+    region: us-east-1
+    direction: OUTBOUND
+    name: sample-resolver
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
+    ipAddresses:
+      - subnetIdRef:
+          name: sample-subnet1
+      - subnetIdRef:
+          name: sample-subnet2
+  providerConfigRef:
+    name: example

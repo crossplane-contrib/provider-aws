@@ -21,24 +21,26 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	awss3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	k8serrors "k8s.io/apimachinery/pkg/util/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
@@ -49,7 +51,7 @@ var (
 )
 
 type args struct {
-	s3   s3.BucketClient
+	s3   clients3.BucketClient
 	kube client.Client
 	cr   resource.Managed
 }
@@ -78,10 +80,8 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				s3: &fake.MockBucketClient{
-					MockHeadBucketRequest: func(input *awss3.HeadBucketInput) awss3.HeadBucketRequest {
-						return awss3.HeadBucketRequest{
-							Request: s3Testing.CreateRequest(errBoom, nil),
-						}
+					MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -94,10 +94,8 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				s3: &fake.MockBucketClient{
-					MockHeadBucketRequest: func(input *awss3.HeadBucketInput) awss3.HeadBucketRequest {
-						return awss3.HeadBucketRequest{
-							Request: s3Testing.CreateRequest(awserr.New(s3.BucketErrCode, "", nil), nil),
-						}
+					MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -120,18 +118,16 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 					ConnectionDetails: map[string][]byte{
-						xpv1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
-						ResourceCredentialsSecretRegionKey:        []byte(s3Testing.Region),
+						xpv1.ResourceCredentialsSecretEndpointKey:  []byte(s3Testing.BucketName),
+						v1beta1.ResourceCredentialsSecretRegionKey: []byte(s3Testing.Region),
 					},
 				},
 			},
 		},
 		"ValidInputNoLateInitializeUpdateACLFail": {
 			args: args{
-				s3: s3Testing.Client(s3Testing.WithPutACL(func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest {
-					return awss3.PutBucketAclRequest{
-						Request: s3Testing.CreateRequest(errBoom, &awss3.PutBucketAclOutput{}),
-					}
+				s3: s3Testing.Client(s3Testing.WithPutACL(func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error) {
+					return nil, errBoom
 				})),
 				cr: s3Testing.Bucket(),
 			},
@@ -139,26 +135,19 @@ func TestObserve(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 				),
-				err: errBoom,
-				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: false,
-				},
+				err:    errBoom,
+				result: managed.ExternalObservation{},
 			},
 		},
-		"ValidInputLateInitialize": {
+		"LateInitialize": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
 				s3: s3Testing.Client(
-					s3Testing.WithGetRequestPayment(func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-						return awss3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketRequestPaymentOutput{Payer: awss3.PayerRequester}),
-						}
-					}),
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+					},
+					),
 				),
-				cr: s3Testing.Bucket(),
+				cr: s3Testing.Bucket(s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{})),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
@@ -170,36 +159,84 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 					ConnectionDetails: map[string][]byte{
-						xpv1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
-						ResourceCredentialsSecretRegionKey:        []byte(s3Testing.Region),
+						xpv1.ResourceCredentialsSecretEndpointKey:  []byte(s3Testing.BucketName),
+						v1beta1.ResourceCredentialsSecretRegionKey: []byte(s3Testing.Region),
 					},
+					ResourceLateInitialized: true,
 				},
 			},
 		},
-		"ValidInputLateInitializeKubeErr": {
+		"LateInitializeNotOccurNil": {
+			// this case is the same as needing an update, we should not late init here.
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(errBoom),
-				},
 				s3: s3Testing.Client(
-					s3Testing.WithGetRequestPayment(func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-						return awss3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketRequestPaymentOutput{Payer: awss3.PayerRequester}),
-						}
-					}),
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+					},
+					),
 				),
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
-					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:   false,
+					ResourceExists:   true,
 					ResourceUpToDate: false,
 				},
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+		"LateInitializeNotOccurExistsList": {
+			// Validating that late init should not occur here because SSE already exists.
+			args: args{
+				s3: s3Testing.Client(
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return &awss3.GetBucketEncryptionOutput{
+							ServerSideEncryptionConfiguration: &awss3types.ServerSideEncryptionConfiguration{
+								Rules: []awss3types.ServerSideEncryptionRule{
+									{
+										ApplyServerSideEncryptionByDefault: &awss3types.ServerSideEncryptionByDefault{
+											KMSMasterKeyID: aws.String("1234567890"),
+											SSEAlgorithm:   awss3types.ServerSideEncryptionAwsKms,
+										},
+									},
+								},
+							},
+						}, nil
+					}),
+				),
+				cr: s3Testing.Bucket(
+					s3Testing.WithSSEConfig(&v1beta1.ServerSideEncryptionConfiguration{
+						Rules: []v1beta1.ServerSideEncryptionRule{
+							{
+								ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+									KMSMasterKeyID: aws.String("test"),
+									SSEAlgorithm:   "AES256",
+								},
+							},
+						},
+					}),
+				),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
+					s3Testing.WithSSEConfig(&v1beta1.ServerSideEncryptionConfiguration{
+						Rules: []v1beta1.ServerSideEncryptionRule{
+							{
+								ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+									KMSMasterKeyID: aws.String("test"),
+									SSEAlgorithm:   "AES256",
+								},
+							},
+						},
+					}),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
 			},
 		},
 	}
@@ -236,21 +273,21 @@ func TestCreate(t *testing.T) {
 	}{
 		"VaildInput": {
 			args: args{
-				s3: &fake.MockBucketClient{
-					MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
-						return awss3.CreateBucketRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.CreateBucketOutput{}),
-						}
-					},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
 				},
+				s3: s3Testing.Client(),
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
+				cr: s3Testing.Bucket(),
 			},
 		},
 		"InValidInput": {
 			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
 				cr: unexpectedItem,
 			},
 			want: want{
@@ -260,25 +297,150 @@ func TestCreate(t *testing.T) {
 		},
 		"ClientError": {
 			args: args{
-				s3: &fake.MockBucketClient{
-					MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
-						return awss3.CreateBucketRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.CreateBucketOutput{}),
-						}
-					},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
 				},
+				s3: s3Testing.Client(s3Testing.WithCreateBucket(func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+					return &awss3.CreateBucketOutput{}, &smithy.GenericAPIError{Code: "boom"}
+				})),
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:  s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreate),
+				cr:  s3Testing.Bucket(),
+				err: awsclient.Wrap(errors.New("api error boom: "), errCreate),
+			},
+		},
+		"ValidInputLateInitialize": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				s3: s3Testing.Client(
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+					}),
+					s3Testing.WithCreateBucket(func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+						return &awss3.CreateBucketOutput{}, nil
+					}),
+				),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+
+					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"LateInitializeFailedErrors": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				s3: s3Testing.Client(
+					s3Testing.WithCreateBucket(func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+						return &awss3.CreateBucketOutput{}, nil
+					}),
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{}, errBoom
+					}),
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return &awss3.GetBucketEncryptionOutput{}, errBoom
+					}),
+				),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr:     s3Testing.Bucket(),
+				result: managed.ExternalCreation{},
+				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, "cannot get request payment configuration"), awsclient.Wrap(errBoom, "cannot get encryption configuration")}),
+			},
+		},
+		"ExternalDiffersFromLocalNoLateInit": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				s3: s3Testing.Client(
+					s3Testing.WithCreateBucket(func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+						return &awss3.CreateBucketOutput{}, nil
+					}),
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+					}),
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return &awss3.GetBucketEncryptionOutput{
+							ServerSideEncryptionConfiguration: &awss3types.ServerSideEncryptionConfiguration{
+								Rules: []awss3types.ServerSideEncryptionRule{
+									{
+										ApplyServerSideEncryptionByDefault: &awss3types.ServerSideEncryptionByDefault{
+											KMSMasterKeyID: aws.String("1234567890"),
+											SSEAlgorithm:   awss3types.ServerSideEncryptionAwsKms,
+										},
+									},
+								},
+							},
+						}, nil
+					}),
+				),
+				cr: s3Testing.Bucket(s3Testing.WithSSEConfig(&v1beta1.ServerSideEncryptionConfiguration{
+					Rules: []v1beta1.ServerSideEncryptionRule{
+						{
+							ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+								KMSMasterKeyID: aws.String("test"),
+								SSEAlgorithm:   "AES256",
+							},
+						},
+					},
+				})),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithSSEConfig(&v1beta1.ServerSideEncryptionConfiguration{
+						Rules: []v1beta1.ServerSideEncryptionRule{
+							{
+								ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+									KMSMasterKeyID: aws.String("test"),
+									SSEAlgorithm:   "AES256",
+								},
+							},
+						},
+					}),
+					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"ValidInputLateInitializeKubeErr": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(errBoom),
+				},
+				s3: s3Testing.Client(
+					s3Testing.WithCreateBucket(func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+						return &awss3.CreateBucketOutput{}, nil
+					}),
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+					}),
+				),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
+				),
+				result: managed.ExternalCreation{},
+				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, errKubeUpdateFailed)}),
 			},
 		},
 	}
 
 	for name, tc := range cases {
+		noop := logging.NewNopLogger()
 		t.Run(name, func(t *testing.T) {
-			e := &external{s3client: tc.s3}
+			e := &external{s3client: tc.s3, kube: tc.kube, logger: noop, subresourceClients: bucket.NewSubresourceClients(tc.s3)}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -321,29 +483,26 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:     s3Testing.Bucket(s3Testing.WithConditions(xpv1.ReconcileSuccess())),
+				cr:     s3Testing.Bucket(),
 				result: managed.ExternalUpdate{},
 			},
 		},
 		"ValidInputUpdateNeededSuccess": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithGetRequestPayment(func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-						return awss3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketRequestPaymentOutput{Payer: awss3.PayerBucketOwner}),
-						}
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerBucketOwner}, nil
+
 					}),
-					s3Testing.WithPutRequestPayment(func(input *awss3.PutBucketRequestPaymentInput) awss3.PutBucketRequestPaymentRequest {
-						return awss3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.PutBucketRequestPaymentOutput{}),
-						}
+					s3Testing.WithPutRequestPayment(func(ctx context.Context, input *awss3.PutBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.PutBucketRequestPaymentOutput, error) {
+						return &awss3.PutBucketRequestPaymentOutput{}, nil
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"})),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileSuccess()),
+					s3Testing.WithConditions(),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				result: managed.ExternalUpdate{},
@@ -352,15 +511,12 @@ func TestUpdate(t *testing.T) {
 		"ValidInputUpdateNeededFailed": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithGetRequestPayment(func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-						return awss3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketRequestPaymentOutput{Payer: awss3.PayerBucketOwner}),
-						}
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerBucketOwner}, nil
+
 					}),
-					s3Testing.WithPutRequestPayment(func(input *awss3.PutBucketRequestPaymentInput) awss3.PutBucketRequestPaymentRequest {
-						return awss3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.PutBucketRequestPaymentOutput{}),
-						}
+					s3Testing.WithPutRequestPayment(func(ctx context.Context, input *awss3.PutBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.PutBucketRequestPaymentOutput, error) {
+						return nil, errBoom
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"})),
@@ -369,22 +525,19 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    errors.Wrap(awsclient.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
+				err:    awsclient.Wrap(awsclient.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
 				result: managed.ExternalUpdate{},
 			},
 		},
 		"ValidInputUpdateNeededObserveFailed": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithGetRequestPayment(func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-						return awss3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.GetBucketRequestPaymentOutput{Payer: awss3.PayerBucketOwner}),
-						}
+					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+						return nil, errBoom
+
 					}),
-					s3Testing.WithPutRequestPayment(func(input *awss3.PutBucketRequestPaymentInput) awss3.PutBucketRequestPaymentRequest {
-						return awss3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.PutBucketRequestPaymentOutput{}),
-						}
+					s3Testing.WithPutRequestPayment(func(ctx context.Context, input *awss3.PutBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.PutBucketRequestPaymentOutput, error) {
+						return &awss3.PutBucketRequestPaymentOutput{}, nil
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"})),
@@ -401,33 +554,29 @@ func TestUpdate(t *testing.T) {
 		"ValidInputDeleteNeededSuccess": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithDeleteSSE(func(input *awss3.DeleteBucketEncryptionInput) awss3.DeleteBucketEncryptionRequest {
-						return awss3.DeleteBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.DeleteBucketEncryptionOutput{}),
-						}
+					s3Testing.WithDeleteSSE(func(ctx context.Context, input *awss3.DeleteBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketEncryptionOutput, error) {
+						return &awss3.DeleteBucketEncryptionOutput{}, nil
 					}),
-					s3Testing.WithGetSSE(func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest {
-						return awss3.GetBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketEncryptionOutput{
-								ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{
-									Rules: []awss3.ServerSideEncryptionRule{
-										{
-											ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
-												KMSMasterKeyID: aws.String("key-id"),
-												SSEAlgorithm:   awss3.ServerSideEncryptionAes256,
-											},
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return &awss3.GetBucketEncryptionOutput{
+							ServerSideEncryptionConfiguration: &awss3types.ServerSideEncryptionConfiguration{
+								Rules: []awss3types.ServerSideEncryptionRule{
+									{
+										ApplyServerSideEncryptionByDefault: &awss3types.ServerSideEncryptionByDefault{
+											KMSMasterKeyID: aws.String("key-id"),
+											SSEAlgorithm:   awss3types.ServerSideEncryptionAes256,
 										},
 									},
 								},
-							}),
-						}
+							},
+						}, nil
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileSuccess()),
+					s3Testing.WithConditions(),
 					s3Testing.WithSSEConfig(nil),
 				),
 				result: managed.ExternalUpdate{},
@@ -436,26 +585,22 @@ func TestUpdate(t *testing.T) {
 		"ValidInputDeleteNeededFailed": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithDeleteSSE(func(input *awss3.DeleteBucketEncryptionInput) awss3.DeleteBucketEncryptionRequest {
-						return awss3.DeleteBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.DeleteBucketEncryptionOutput{}),
-						}
+					s3Testing.WithDeleteSSE(func(ctx context.Context, input *awss3.DeleteBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketEncryptionOutput, error) {
+						return nil, errBoom
 					}),
-					s3Testing.WithGetSSE(func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest {
-						return awss3.GetBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.GetBucketEncryptionOutput{
-								ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{
-									Rules: []awss3.ServerSideEncryptionRule{
-										{
-											ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
-												KMSMasterKeyID: aws.String("key-id"),
-												SSEAlgorithm:   awss3.ServerSideEncryptionAes256,
-											},
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return &awss3.GetBucketEncryptionOutput{
+							ServerSideEncryptionConfiguration: &awss3types.ServerSideEncryptionConfiguration{
+								Rules: []awss3types.ServerSideEncryptionRule{
+									{
+										ApplyServerSideEncryptionByDefault: &awss3types.ServerSideEncryptionByDefault{
+											KMSMasterKeyID: aws.String("key-id"),
+											SSEAlgorithm:   awss3types.ServerSideEncryptionAes256,
 										},
 									},
 								},
-							}),
-						}
+							},
+						}, nil
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
@@ -464,43 +609,28 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    errors.Wrap(awsclient.Wrap(errBoom, "cannot delete Bucket encryption configuration"), errDelete),
+				err:    awsclient.Wrap(awsclient.Wrap(errBoom, "cannot delete encryption configuration"), errDelete),
 				result: managed.ExternalUpdate{},
 			},
 		},
 		"ValidInputDeleteNeededObserveFailed": {
 			args: args{
 				s3: s3Testing.Client(
-					s3Testing.WithDeleteSSE(func(input *awss3.DeleteBucketEncryptionInput) awss3.DeleteBucketEncryptionRequest {
-						return awss3.DeleteBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.DeleteBucketEncryptionOutput{}),
-						}
+					s3Testing.WithDeleteSSE(func(ctx context.Context, input *awss3.DeleteBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketEncryptionOutput, error) {
+						return &awss3.DeleteBucketEncryptionOutput{}, nil
 					}),
-					s3Testing.WithGetSSE(func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest {
-						return awss3.GetBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.GetBucketEncryptionOutput{
-								ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{
-									Rules: []awss3.ServerSideEncryptionRule{
-										{
-											ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
-												KMSMasterKeyID: aws.String("key-id"),
-												SSEAlgorithm:   awss3.ServerSideEncryptionAes256,
-											},
-										},
-									},
-								},
-							}),
-						}
+					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+						return nil, errBoom
 					}),
 				),
 				cr: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get Bucket encryption configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get encryption configuration"))),
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    awsclient.Wrap(errBoom, "cannot get Bucket encryption configuration"),
+				err:    awsclient.Wrap(errBoom, "cannot get encryption configuration"),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -538,10 +668,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				s3: &fake.MockBucketClient{
-					MockDeleteBucketRequest: func(input *awss3.DeleteBucketInput) awss3.DeleteBucketRequest {
-						return awss3.DeleteBucketRequest{
-							Request: s3Testing.CreateRequest(nil, &awss3.DeleteBucketOutput{}),
-						}
+					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
+						return &awss3.DeleteBucketOutput{}, nil
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -562,10 +690,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				s3: &fake.MockBucketClient{
-					MockDeleteBucketRequest: func(input *awss3.DeleteBucketInput) awss3.DeleteBucketRequest {
-						return awss3.DeleteBucketRequest{
-							Request: s3Testing.CreateRequest(errBoom, &awss3.DeleteBucketOutput{}),
-						}
+					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -578,10 +704,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				s3: &fake.MockBucketClient{
-					MockDeleteBucketRequest: func(input *awss3.DeleteBucketInput) awss3.DeleteBucketRequest {
-						return awss3.DeleteBucketRequest{
-							Request: s3Testing.CreateRequest(awserr.New(s3.BucketErrCode, "", nil), &awss3.DeleteBucketOutput{}),
-						}
+					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),

@@ -1,0 +1,165 @@
+/*
+Copyright 2021 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package repositorypolicy
+
+import (
+	"context"
+	"time"
+
+	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
+)
+
+const (
+	errUnexpectedObject = "managed resource is not an repository resource"
+
+	errCreate = "failed to create repository policy"
+	errGet    = "failed to get repository policy"
+	errUpdate = "failed to update repository policy"
+	errDelete = "failed to delete the repository resource"
+)
+
+// SetupRepositoryPolicy adds a controller that reconciles ECR.
+func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1alpha1.RepositoryPolicyGroupKind)
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
+		For(&v1alpha1.RepositoryPolicy{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(v1alpha1.RepositoryPolicyGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+type connector struct {
+	kube client.Client
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cr, ok := mg.(*v1alpha1.RepositoryPolicy)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	if err != nil {
+		return nil, err
+	}
+	return &external{client: awsecr.NewFromConfig(*cfg), kube: c.kube}, nil
+}
+
+type external struct {
+	kube   client.Client
+	client ecr.RepositoryPolicyClient
+}
+
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
+	}
+
+	response, err := e.client.GetRepositoryPolicy(ctx, &awsecr.GetRepositoryPolicyInput{
+		RegistryId:     cr.Spec.ForProvider.RegistryID,
+		RepositoryName: cr.Spec.ForProvider.RepositoryName,
+	})
+
+	if err != nil {
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.IgnoreAny(err, ecr.IsRepoNotFoundErr, ecr.IsPolicyNotFoundErr), errGet)
+	}
+
+	policyData, err := ecr.RawPolicyData(cr)
+
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errGet)
+	}
+
+	current := cr.Spec.ForProvider.DeepCopy()
+	ecr.LateInitializeRepositoryPolicy(&cr.Spec.ForProvider, response)
+
+	cr.SetConditions(xpv1.Available())
+
+	return managed.ExternalObservation{
+		ResourceExists:          true,
+		ResourceUpToDate:        awsclient.IsPolicyUpToDate(&policyData, response.PolicyText),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
+	}
+
+	policyData, err := ecr.RawPolicyData(cr)
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	}
+	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
+
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	policyData, err := ecr.RawPolicyData(cr)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	}
+	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+}
+
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+
+	_, err := e.client.DeleteRepositoryPolicy(ctx, &awsecr.DeleteRepositoryPolicyInput{
+		RepositoryName: cr.Spec.ForProvider.RepositoryName,
+		RegistryId:     cr.Spec.ForProvider.RegistryID,
+	})
+
+	return awsclient.Wrap(resource.Ignore(ecr.IsPolicyNotFoundErr, err), errDelete)
+}

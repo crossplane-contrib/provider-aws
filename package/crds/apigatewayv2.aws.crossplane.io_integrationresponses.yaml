@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: integrationresponses.apigatewayv2.aws.crossplane.io
 spec:
@@ -31,13 +31,18 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: IntegrationResponse is the Schema for the IntegrationResponses API
+        description: IntegrationResponse is the Schema for the IntegrationResponses
+          API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -45,19 +50,24 @@ spec:
             description: IntegrationResponseSpec defines the desired state of IntegrationResponse
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
                 type: string
               forProvider:
-                description: IntegrationResponseParameters defines the desired state of IntegrationResponse
+                description: IntegrationResponseParameters defines the desired state
+                  of IntegrationResponse
                 properties:
                   apiId:
                     description: APIID is the ID for the API.
                     type: string
                   apiIdRef:
-                    description: APIIDRef is a reference to an API used to set the APIID.
+                    description: APIIDRef is a reference to an API used to set the
+                      APIID.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -66,15 +76,18 @@ spec:
                     - name
                     type: object
                   apiIdSelector:
-                    description: APIIDSelector selects references to API used to set the APIID.
+                    description: APIIDSelector selects references to API used to set
+                      the APIID.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   contentHandlingStrategy:
@@ -83,7 +96,8 @@ spec:
                     description: IntegrationID is the ID for the Integration.
                     type: string
                   integrationIdRef:
-                    description: IntegrationIDRef is a reference to an Integration used to set the IntegrationID.
+                    description: IntegrationIDRef is a reference to an Integration
+                      used to set the IntegrationID.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -92,21 +106,25 @@ spec:
                     - name
                     type: object
                   integrationIdSelector:
-                    description: IntegrationIDSelector selects references to Integration used to set the IntegrationID.
+                    description: IntegrationIDSelector selects references to Integration
+                      used to set the IntegrationID.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   integrationResponseKey:
                     type: string
                   region:
-                    description: Region is which region the IntegrationResponse will be created.
+                    description: Region is which region the IntegrationResponse will
+                      be created.
                     type: string
                   responseParameters:
                     additionalProperties:
@@ -123,7 +141,11 @@ spec:
                 - region
                 type: object
               providerConfigRef:
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -132,7 +154,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -141,7 +165,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -160,7 +188,8 @@ spec:
             description: IntegrationResponseStatus defines the observed state of IntegrationResponse.
             properties:
               atProvider:
-                description: IntegrationResponseObservation defines the observed state of IntegrationResponse
+                description: IntegrationResponseObservation defines the observed state
+                  of IntegrationResponse
                 properties:
                   integrationResponseID:
                     type: string
@@ -171,20 +200,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -193,9 +227,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

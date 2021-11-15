@@ -18,12 +18,11 @@ package certificateauthoritypermission
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
+	awsacmpcatypes "github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -33,15 +32,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
+	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
 )
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem           resource.Managed
+	unexpectedItem          resource.Managed
 	certificateAuthorityArn = "someauthorityarn"
 	nextToken               = "someNextToken"
 
@@ -59,9 +58,20 @@ func withConditions(c ...xpv1.Condition) certificateAuthorityPermissionModifier 
 	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Status.ConditionedStatus.Conditions = c }
 }
 
+func withExternalName(name string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { meta.SetExternalName(r, name) }
+}
+
+func withPrincipal(p string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.Principal = p }
+}
+
+func withCertificateAuthorityARN(arn string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.CertificateAuthorityARN = &arn }
+}
+
 func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier) *v1alpha1.CertificateAuthorityPermission {
 	cr := &v1alpha1.CertificateAuthorityPermission{}
-	meta.SetExternalName(cr, certificateAuthorityArn)
 	for _, f := range m {
 		f(cr)
 	}
@@ -69,6 +79,8 @@ func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier)
 }
 
 func TestObserve(t *testing.T) {
+	arn := "aws:arn:cool"
+	principal := "excellent"
 
 	type want struct {
 		cr     resource.Managed
@@ -80,53 +92,59 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken: aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{
-									Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
-									CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-								}},
+					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
+						return &awsacmpca.ListPermissionsOutput{
+							NextToken: aws.String(nextToken),
+							Permissions: []awsacmpcatypes.Permission{{
+								Actions:                 []awsacmpcatypes.ActionType{awsacmpcatypes.ActionTypeIssueCertificate, awsacmpcatypes.ActionTypeGetCertificate, awsacmpcatypes.ActionTypeListPermissions},
+								CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+								Principal:               &principal,
 							}},
-						}
+						}, nil
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(
+					withExternalName(principal+"/"+arn),
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+				),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Available())),
+				cr: certificateAuthorityPermission(
+					withExternalName(principal+"/"+arn),
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+					withConditions(xpv1.Available()),
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 				},
 			},
 		},
-		"InValidInput": {
+		"InvalidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
+						return nil, errBoom
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(withExternalName(principal + "/" + arn)),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(),
+				cr:  certificateAuthorityPermission(withExternalName(principal + "/" + arn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -157,7 +175,8 @@ func TestObserve(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-
+	arn := "aws:arn:cool"
+	principal := "excellent"
 	type want struct {
 		cr     resource.Managed
 		result managed.ExternalCreation
@@ -171,40 +190,42 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreatePermissionOutput{}},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return &awsacmpca.CreatePermissionOutput{}, nil
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn)),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Creating())),
+				cr: certificateAuthorityPermission(
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+					withExternalName(principal+"/"+arn)),
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
-						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreatePermission: func(ctx context.Context, input *awsacmpca.CreatePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.CreatePermissionOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Creating())),
+				cr:  certificateAuthorityPermission(),
 				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
@@ -247,81 +268,69 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DeletePermissionOutput{}},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return &awsacmpca.DeletePermissionOutput{}, nil
 					},
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken:   aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{}},
-							}},
-						}
+					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
+						return &awsacmpca.ListPermissionsOutput{
+							NextToken:   aws.String(nextToken),
+							Permissions: []awsacmpcatypes.Permission{{}},
+						}, nil
 					},
 				},
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Deleting())),
+				cr: certificateAuthorityPermission(),
 			},
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return nil, errBoom
 					},
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken:   aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{}},
-							}},
-						}
+					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
+						return &awsacmpca.ListPermissionsOutput{
+							NextToken:   aws.String(nextToken),
+							Permissions: []awsacmpcatypes.Permission{{}},
+						}, nil
 					},
 				},
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
+				cr:  certificateAuthorityPermission(),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
-						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
-						}
+					MockDeletePermission: func(ctx context.Context, input *awsacmpca.DeletePermissionInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DeletePermissionOutput, error) {
+						return nil, &awsacmpcatypes.ResourceNotFoundException{}
 					},
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken:   aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{}},
-							}},
-						}
+					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
+						return &awsacmpca.ListPermissionsOutput{
+							NextToken:   aws.String(nextToken),
+							Permissions: []awsacmpcatypes.Permission{{}},
+						}, nil
 					},
 				},
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
+				cr:  certificateAuthorityPermission(),
+				err: awsclient.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
 			},
 		},
 	}

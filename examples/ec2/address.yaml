@@ -1,0 +1,10 @@
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: Address
+metadata:
+  name: sample-eip
+spec:
+  forProvider:
+    region: us-east-1
+    domain: "vpc"
+  providerConfigRef:
+    name: example

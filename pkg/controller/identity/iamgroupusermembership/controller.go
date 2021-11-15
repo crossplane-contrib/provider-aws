@@ -18,16 +18,23 @@ package iamgroupusermembership
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -46,18 +53,22 @@ const (
 
 // SetupIAMGroupUserMembership adds a controller that reconciles
 // IAMGroupUserMemberships.
-func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMGroupUserMembershipGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.IAMGroupUserMembership{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMGroupUserMembershipGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupUserMembershipClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -86,16 +97,27 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
-		UserName: &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	// We need to use external name if it exists in order to support resource import.
+	nn := strings.Split(meta.GetExternalName(cr), "/")
+	if len(nn) != 2 {
+		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <group-name>/<user-name>")
+	}
+	groupName, userName := nn[0], nn[1]
+
+	observed, err := e.client.ListGroupsForUser(ctx, &awsiam.ListGroupsForUserInput{
+		UserName: &userName,
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGet)
 	}
 
-	var attachedGroupObject *awsiam.Group
+	var attachedGroupObject *awsiamtypes.Group
 	for i, group := range observed.Groups {
-		if cr.Spec.ForProvider.GroupName == aws.StringValue(group.GroupName) {
+		if groupName == aws.ToString(group.GroupName) {
 			attachedGroupObject = &observed.Groups[i]
 			break
 		}
@@ -108,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	cr.Status.AtProvider = v1alpha1.IAMGroupUserMembershipObservation{
-		AttachedGroupARN: aws.StringValue(attachedGroupObject.Arn),
+		AttachedGroupARN: aws.ToString(attachedGroupObject.Arn),
 	}
 
 	cr.SetConditions(xpv1.Available())
@@ -125,14 +147,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.SetConditions(xpv1.Creating())
-
-	_, err := e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
+	_, err := e.client.AddUserToGroup(ctx, &awsiam.AddUserToGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
+	})
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+	}
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// names of the group and user that are bound.
+	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
+
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -150,10 +178,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.RemoveUserFromGroupRequest(&awsiam.RemoveUserFromGroupInput{
+	_, err := e.client.RemoveUserFromGroup(ctx, &awsiam.RemoveUserFromGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(err, errRemove)
 }

@@ -21,31 +21,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
-	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/aws/smithy-go"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
 	"github.com/crossplane/provider-aws/apis/v1beta1"
@@ -57,6 +58,12 @@ const DefaultSection = ini.DefaultSection
 // GlobalRegion is the region name used for AWS services that do not have a notion
 // of region.
 const GlobalRegion = "aws-global"
+
+// Endpoint URL configuration types.
+const (
+	URLConfigTypeStatic  = "Static"
+	URLConfigTypeDynamic = "Dynamic"
+)
 
 // A FieldOption determines how common Go types are translated to the types
 // required by the AWS Go SDK.
@@ -99,40 +106,79 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(pc, cfg), nil
 	default:
 		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
 		cfg, err := UseProviderSecret(ctx, data, DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
+		if err != nil {
+			return nil, err
+		}
+		return SetResolver(pc, cfg), nil
 	}
 }
 
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
-func SetResolver(ctx context.Context, mg resource.Managed, cfg *aws.Config) *aws.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := aws.Endpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			defaultResolver := endpoints.NewDefaultResolver()
-			endpointResolver := func(service, region string) (aws.Endpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return defaultResolver.ResolveEndpoint(service, region)
-			}
-			cfg.EndpointResolver = aws.EndpointResolverFunc(endpointResolver)
-		}
+func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // nolint:gocyclo
+	if pc.Spec.Endpoint == nil {
+		return cfg
 	}
+	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
+		default:
+			return aws.Endpoint{}, errors.New("unsupported url config type is chosen")
+		}
+		e := aws.Endpoint{
+			URL:               fullURL,
+			HostnameImmutable: BoolValue(pc.Spec.Endpoint.HostnameImmutable),
+			PartitionID:       StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:       StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion:     StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod:     StringValue(pc.Spec.Endpoint.SigningMethod),
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
+		}
+		if pc.Spec.Endpoint.Source != nil {
+			switch *pc.Spec.Endpoint.Source {
+			case "ServiceMetadata":
+				e.Source = aws.EndpointSourceServiceMetadata
+			case "Custom":
+				e.Source = aws.EndpointSourceCustom
+			}
+		}
+		return e, nil
+	})
 	return cfg
 }
 
@@ -148,7 +194,7 @@ func UseProvider(ctx context.Context, c client.Client, mg resource.Managed, regi
 		region = p.Spec.Region
 	}
 
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
+	if BoolValue(p.Spec.UseServiceAccount) {
 		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 	}
 
@@ -204,62 +250,29 @@ func CredentialsIDSecret(data []byte, profile string) (aws.Credentials, error) {
 type AuthMethod func(context.Context, []byte, string, string) (*aws.Config, error)
 
 // UseProviderSecret - AWS configuration which can be used to issue requests against AWS API
-func UseProviderSecret(_ context.Context, data []byte, profile, region string) (*aws.Config, error) {
+func UseProviderSecret(ctx context.Context, data []byte, profile, region string) (*aws.Config, error) {
 	creds, err := CredentialsIDSecret(data, profile)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	shared := external.SharedConfig{
-		Credentials: creds,
-		Region:      region,
-	}
-
-	config, err := external.LoadDefaultAWSConfig(shared)
+	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+		Value: creds,
+	}))
 	return &config, err
 }
 
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-//
-// TODO(hasheddan): This should be replaced by the implementation of the Web
-// Identity Token Provider in the following PR after merge and subsequent
-// release of AWS SDK: https://github.com/aws/aws-sdk-go-v2/pull/488
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
-	cfg, err := external.LoadDefaultAWSConfig()
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
-	cfg.Region = region
-	svc := sts.New(cfg)
-
-	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
-	}
-	token := string(b)
-	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
-	role := os.Getenv("AWS_ROLE_ARN")
-	resp, err := svc.AssumeRoleWithWebIdentityRequest(
-		&sts.AssumeRoleWithWebIdentityInput{
-			RoleSessionName:  &sess,
-			WebIdentityToken: &token,
-			RoleArn:          &role,
-		}).Send(ctx)
-	if err != nil {
-		return nil, err
-	}
-	creds := aws.Credentials{
-		AccessKeyID:     aws.StringValue(resp.Credentials.AccessKeyId),
-		SecretAccessKey: aws.StringValue(resp.Credentials.SecretAccessKey),
-		SessionToken:    aws.StringValue(resp.Credentials.SessionToken),
-	}
-	shared := external.SharedConfig{
-		Credentials: creds,
-		Region:      region,
-	}
-	config, err := external.LoadDefaultAWSConfig(shared)
-	return &config, err
+	return &cfg, err
 }
 
 // NOTE(muvaf): ACK-generated controllers use aws/aws-sdk-go instead of
@@ -282,7 +295,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, mg, DefaultSection, region)
+		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
@@ -292,7 +305,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
-		cfg, err := UseProviderSecretV1(ctx, data, mg, DefaultSection, region)
+		cfg, err := UseProviderSecretV1(ctx, data, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
@@ -306,13 +319,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 // [default]
 // aws_access_key_id = <YOUR_ACCESS_KEY_ID>
 // aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
-func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, profile, region string) (*awsv1.Config, error) {
-	config, err := ini.InsensitiveLoad(data)
+func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderConfig, profile, region string) (*awsv1.Config, error) {
+	cfg, err := ini.InsensitiveLoad(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	iniProfile, err := config.GetSection(profile)
+	iniProfile, err := cfg.GetSection(profile)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("cannot get %s profile in credentials secret", profile))
 	}
@@ -328,66 +341,78 @@ func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, 
 		return nil, errors.New("returned key can be empty but cannot be nil")
 	}
 
-	creds := credentials.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+	creds := credentialsv1.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
 }
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed, _, region string) (*awsv1.Config, error) {
-	cfg, err := external.LoadDefaultAWSConfig()
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
-	cfg.Region = region
-	svc := sts.New(cfg)
-
-	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
+	v2creds, err := cfg.Credentials.Retrieve(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
+		return nil, errors.Wrap(err, "failed to retrieve credentials")
 	}
-	token := string(b)
-	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
-	role := os.Getenv("AWS_ROLE_ARN")
-	resp, err := svc.AssumeRoleWithWebIdentityRequest(
-		&sts.AssumeRoleWithWebIdentityInput{
-			RoleSessionName:  &sess,
-			WebIdentityToken: &token,
-			RoleArn:          &role,
-		}).Send(ctx)
-	if err != nil {
-		return nil, err
-	}
-	creds := credentials.NewStaticCredentials(
-		aws.StringValue(resp.Credentials.AccessKeyId),
-		aws.StringValue(resp.Credentials.SecretAccessKey),
-		aws.StringValue(resp.Credentials.SessionToken))
-
-	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+	v1creds := credentialsv1.NewStaticCredentials(
+		v2creds.AccessKeyID,
+		v2creds.SecretAccessKey,
+		v2creds.SessionToken)
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(ctx context.Context, mg resource.Managed, cfg *awsv1.Config) *awsv1.Config {
-	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
-		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-			endpoint := endpointsv1.ResolvedEndpoint{
-				URL: URL,
-			}
-			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
-				endpoint.SigningRegion = Region
-			}
-
-			endpointResolver := func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
-				if strings.Contains(ServiceID, service) {
-					return endpoint, nil
-				}
-
-				return endpointsv1.DefaultResolver().EndpointFor(service, region, optFns...)
-			}
-			cfg.EndpointResolver = endpointsv1.ResolverFunc(endpointResolver)
-		}
+func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config { // nolint:gocyclo
+	if pc.Spec.Endpoint == nil {
+		return cfg
 	}
+	cfg.EndpointResolver = endpointsv1.ResolverFunc(func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
+		fullURL := ""
+		switch pc.Spec.Endpoint.URL.Type {
+		case URLConfigTypeStatic:
+			if pc.Spec.Endpoint.URL.Static == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("static type is chosen but static field does not have a value")
+			}
+			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+		case URLConfigTypeDynamic:
+			if pc.Spec.Endpoint.URL.Dynamic == nil {
+				return endpointsv1.ResolvedEndpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+			}
+			// NOTE(muvaf): IAM does not have any region.
+			if service == "IAM" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			} else {
+				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
+			}
+		default:
+			return endpointsv1.ResolvedEndpoint{}, errors.New("unsupported url config type is chosen")
+		}
+		e := endpointsv1.ResolvedEndpoint{
+			URL:           fullURL,
+			PartitionID:   StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:   StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion: StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod: StringValue(pc.Spec.Endpoint.SigningMethod),
+		}
+		// Only IAM does not have a region parameter and "aws-global" is used in
+		// SDK setup. However, signing region has to be us-east-1 and it needs
+		// to be set.
+		if region == "aws-global" {
+			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			case "aws-us-gov", "aws-cn":
+				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+			default:
+				e.SigningRegion = "us-east-1"
+			}
+		}
+		return e, nil
+	})
 	return cfg
 }
 
@@ -432,7 +457,12 @@ func String(v string, o ...FieldOption) *string {
 // empty string if the pointer is nil.
 // TODO(muvaf): is this really meaningful? why not implement it?
 func StringValue(v *string) string {
-	return aws.StringValue(v)
+	return aws.ToString(v)
+}
+
+// BoolValue calls underlying aws ToBool
+func BoolValue(v *bool) bool {
+	return aws.ToBool(v)
 }
 
 // Int64Value converts the supplied int64 pointer to a int64, returning
@@ -462,6 +492,19 @@ func LateInitializeString(in string, from *string) string {
 	return in
 }
 
+// LateInitializeTimePtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeTimePtr(in *metav1.Time, from *time.Time) *metav1.Time {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		t := metav1.NewTime(*from)
+		return &t
+	}
+	return nil
+}
+
 // Int64 converts the supplied int for use with the AWS Go SDK.
 func Int64(v int, o ...FieldOption) *int64 {
 	for _, fo := range o {
@@ -477,6 +520,21 @@ func Int64(v int, o ...FieldOption) *int64 {
 	return aws.Int64(int64(v))
 }
 
+// Int32 converts the supplied int for use with the AWS Go SDK.
+func Int32(v int, o ...FieldOption) *int32 {
+	for _, fo := range o {
+		if fo == FieldRequired && v == 0 {
+			return aws.Int32(int32(v))
+		}
+	}
+
+	if v == 0 {
+		return nil
+	}
+
+	return aws.Int32(int32(v))
+}
+
 // Int64Address returns the given *int in the form of *int64.
 func Int64Address(i *int) *int64 {
 	if i == nil {
@@ -485,9 +543,27 @@ func Int64Address(i *int) *int64 {
 	return aws.Int64(int64(*i))
 }
 
+// Int32Address returns the given *int in the form of *int32.
+func Int32Address(i *int) *int32 {
+	if i == nil {
+		return nil
+	}
+	return aws.Int32(int32(*i))
+}
+
 // IntAddress converts the supplied int64 pointer to an int pointer, returning nil if
 // the pointer is nil.
 func IntAddress(i *int64) *int {
+	if i == nil {
+		return nil
+	}
+	r := int(*i)
+	return &r
+}
+
+// IntFrom32Address converts the supplied int32 pointer to an int pointer, returning nil if
+// the pointer is nil.
+func IntFrom32Address(i *int32) *int {
 	if i == nil {
 		return nil
 	}
@@ -508,10 +584,50 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 	return nil
 }
 
+// LateInitializeIntFrom32Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeIntFrom32Ptr(in *int, from *int32) *int {
+	if in != nil {
+		return in
+	}
+	if from != nil && *from != 0 {
+		i := int(*from)
+		return &i
+	}
+	return nil
+}
+
+// LateInitializeInt32Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeInt32Ptr(in *int32, from *int32) *int32 {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
 // LateInitializeInt64Ptr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
 	if in != nil {
+		return in
+	}
+	return from
+}
+
+// LateInitializeInt32 returns in if it's non-zero, otherwise returns from
+// which is the backup for the cases in is zero.
+func LateInitializeInt32(in int32, from int32) int32 {
+	if in != 0 {
+		return in
+	}
+	return from
+}
+
+// LateInitializeInt64 returns in if it's non-zero, otherwise returns from
+// which is the backup for the cases in is zero.
+func LateInitializeInt64(in int64, from int64) int64 {
+	if in != 0 {
 		return in
 	}
 	return from
@@ -529,12 +645,6 @@ func Bool(v bool, o ...FieldOption) *bool {
 		return nil
 	}
 	return aws.Bool(v)
-}
-
-// BoolValue returns the value of the bool pointer passed in or
-// false if the pointer is nil.
-func BoolValue(v *bool) bool {
-	return aws.BoolValue(v)
 }
 
 // LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
@@ -576,27 +686,27 @@ func DiffTags(local, remote map[string]string) (add map[string]string, remove []
 	return
 }
 
-// DiffEC2Tags returns []ec2.Tag that should be added or removed.
-func DiffEC2Tags(local []ec2.Tag, remote []ec2.Tag) (add []ec2.Tag, remove []ec2.Tag) {
+// DiffEC2Tags returns []ec2type.Tag that should be added or removed.
+func DiffEC2Tags(local []ec2type.Tag, remote []ec2type.Tag) (add []ec2type.Tag, remove []ec2type.Tag) {
 	var tagsToAdd = make(map[string]string, len(local))
-	add = []ec2.Tag{}
-	remove = []ec2.Tag{}
+	add = []ec2type.Tag{}
+	remove = []ec2type.Tag{}
 	for _, j := range local {
-		tagsToAdd[aws.StringValue(j.Key)] = aws.StringValue(j.Value)
+		tagsToAdd[aws.ToString(j.Key)] = aws.ToString(j.Value)
 	}
 	for _, j := range remote {
-		switch val, ok := tagsToAdd[aws.StringValue(j.Key)]; {
-		case ok && val == aws.StringValue(j.Value):
-			delete(tagsToAdd, aws.StringValue(j.Key))
+		switch val, ok := tagsToAdd[aws.ToString(j.Key)]; {
+		case ok && val == aws.ToString(j.Value):
+			delete(tagsToAdd, aws.ToString(j.Key))
 		case !ok:
-			remove = append(remove, ec2.Tag{
+			remove = append(remove, ec2type.Tag{
 				Key:   j.Key,
 				Value: nil,
 			})
 		}
 	}
 	for i, j := range tagsToAdd {
-		add = append(add, ec2.Tag{
+		add = append(add, ec2type.Tag{
 			Key:   aws.String(i),
 			Value: aws.String(j),
 		})
@@ -627,19 +737,53 @@ func DiffLabels(local, remote map[string]string) (addOrModify map[string]string,
 	return
 }
 
-// CleanError Will remove the requestID from a awserr.Error and return a new awserr.
-// If not awserr it will return the original error
-func CleanError(err error) error {
-	if err == nil {
-		return err
+// IsPolicyUpToDate Marshall policies to json for a compare to get around string ordering
+func IsPolicyUpToDate(local, remote *string) bool {
+	var localUnmarshalled interface{}
+	var remoteUnmarshalled interface{}
+
+	var err error
+	err = json.Unmarshal([]byte(*local), &localUnmarshalled)
+	if err != nil {
+		return false
 	}
-	if awsErr, ok := err.(awserr.Error); ok {
-		return awserr.New(awsErr.Code(), awsErr.Message(), nil)
+	err = json.Unmarshal([]byte(*remote), &remoteUnmarshalled)
+	if err != nil {
+		return false
 	}
-	return err
+
+	sortSlicesOpt := cmpopts.SortSlices(func(x, y interface{}) bool {
+		if a, ok := x.(string); ok {
+			if b, ok := y.(string); ok {
+				return a < b
+			}
+		}
+		// Note: Unknown types in slices will not cause a panic, but
+		// may not be sorted correctly. Depending on how AWS handles
+		// these, it may cause constant updates - but better this than
+		// panicing.
+		return false
+	})
+	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
 }
 
-// Wrap Attempts to remove requestID from awserr before calling Wrap
+// Wrap will remove the request-specific information from the error and only then
+// wrap it.
 func Wrap(err error, msg string) error {
-	return errors.Wrap(CleanError(err), msg)
+	// NOTE(muvaf): nil check is done for performance, otherwise errors.As makes
+	// a few reflection calls before returning false, letting awsErr be nil.
+	if err == nil {
+		return nil
+	}
+	var awsErr smithy.APIError
+	if errors.As(err, &awsErr) {
+		return errors.Wrap(awsErr, msg)
+	}
+	// AWS SDK v1 uses different interfaces than v2 and it doesn't unwrap to
+	// the underlying error. So, we need to strip off the unique request ID
+	// manually.
+	if v1RequestError, ok := err.(awserr.RequestFailure); ok {
+		return errors.Wrap(errors.New(strings.ReplaceAll(err.Error(), v1RequestError.RequestID(), "")), msg)
+	}
+	return errors.Wrap(err, msg)
 }

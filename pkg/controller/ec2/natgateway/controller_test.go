@@ -2,17 +2,16 @@ package natgateway
 
 import (
 	"context"
-	"net/http"
 	"testing"
 	"time"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -20,7 +19,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -40,34 +38,34 @@ var (
 	errBoom               = errors.New("nat boomed")
 )
 
-type natModifier func(*v1alpha1.NATGateway)
+type natModifier func(*v1beta1.NATGateway)
 
 func withExternalName(name string) natModifier {
-	return func(r *v1alpha1.NATGateway) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.NATGateway) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) natModifier {
-	return func(r *v1alpha1.NATGateway) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.NATGateway) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1alpha1.NATGatewayParameters) natModifier {
-	return func(r *v1alpha1.NATGateway) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.NATGatewayParameters) natModifier {
+	return func(r *v1beta1.NATGateway) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1alpha1.NATGatewayObservation) natModifier {
-	return func(r *v1alpha1.NATGateway) { r.Status.AtProvider = s }
+func withStatus(s v1beta1.NATGatewayObservation) natModifier {
+	return func(r *v1beta1.NATGateway) { r.Status.AtProvider = s }
 }
 
-func nat(m ...natModifier) *v1alpha1.NATGateway {
-	cr := &v1alpha1.NATGateway{}
+func nat(m ...natModifier) *v1beta1.NATGateway {
+	cr := &v1beta1.NATGateway{}
 	for _, f := range m {
 		f(cr)
 	}
 	return cr
 }
 
-func natAddresses() []awsec2.NatGatewayAddress {
-	return []awsec2.NatGatewayAddress{
+func natAddresses() []awsec2types.NatGatewayAddress {
+	return []awsec2types.NatGatewayAddress{
 		{
 			AllocationId:       aws.String(natAllocationID),
 			NetworkInterfaceId: aws.String(natNetworkInterfaceID),
@@ -77,8 +75,8 @@ func natAddresses() []awsec2.NatGatewayAddress {
 	}
 }
 
-func specAddresses() []v1alpha1.NATGatewayAddress {
-	return []v1alpha1.NATGatewayAddress{
+func specAddresses() []v1beta1.NATGatewayAddress {
+	return []v1beta1.NATGatewayAddress{
 		{
 			AllocationID:       natAllocationID,
 			NetworkInterfaceID: natNetworkInterfaceID,
@@ -88,34 +86,34 @@ func specAddresses() []v1alpha1.NATGatewayAddress {
 	}
 }
 
-func specNatStatus(state string, time time.Time, failureCode *string, failureMessage *string, delete bool) v1alpha1.NATGatewayObservation {
-	observation := v1alpha1.NATGatewayObservation{
-		CreateTime:          &v1.Time{Time: time},
+func specNatStatus(state string, time time.Time, failureCode *string, failureMessage *string, delete bool) v1beta1.NATGatewayObservation {
+	observation := v1beta1.NATGatewayObservation{
+		CreateTime:          &metav1.Time{Time: time},
 		NatGatewayAddresses: specAddresses(),
 		NatGatewayID:        natGatewayID,
 		State:               state,
 		VpcID:               natVpcID,
 	}
-	if state == v1alpha1.NatGatewayStatusFailed {
-		observation.FailureCode = aws.StringValue(failureCode)
-		observation.FailureMessage = aws.StringValue(failureMessage)
+	if state == v1beta1.NatGatewayStatusFailed {
+		observation.FailureCode = aws.ToString(failureCode)
+		observation.FailureMessage = aws.ToString(failureMessage)
 	}
 	if delete {
-		observation.DeleteTime = &v1.Time{Time: time}
+		observation.DeleteTime = &metav1.Time{Time: time}
 	}
 	return observation
 }
 
-func specNatSpec() v1alpha1.NATGatewayParameters {
-	return v1alpha1.NATGatewayParameters{
+func specNatSpec() v1beta1.NATGatewayParameters {
+	return v1beta1.NATGatewayParameters{
 		AllocationID: &natAllocationID,
 		SubnetID:     &natSubnetID,
 		Tags:         specTags(),
 	}
 }
 
-func natTags() []awsec2.Tag {
-	return []awsec2.Tag{
+func natTags() []awsec2types.Tag {
+	return []awsec2types.Tag{
 		{
 			Key:   aws.String("key1"),
 			Value: aws.String("value1"),
@@ -140,8 +138,8 @@ func specTags() []v1beta1.Tag {
 	}
 }
 
-func natGatewayDescription(state awsec2.NatGatewayState, time time.Time, failureCode *string, failureMessage *string, delete bool) *awsec2.DescribeNatGatewaysOutput {
-	natGatewayDescription := []awsec2.NatGateway{
+func natGatewayDescription(state awsec2types.NatGatewayState, time time.Time, failureCode *string, failureMessage *string, delete bool) *awsec2.DescribeNatGatewaysOutput {
+	natGatewayDescription := []awsec2types.NatGateway{
 		{
 			CreateTime:          &time,
 			NatGatewayAddresses: natAddresses(),
@@ -152,7 +150,7 @@ func natGatewayDescription(state awsec2.NatGatewayState, time time.Time, failure
 			VpcId:               aws.String(natVpcID),
 		},
 	}
-	if state == awsec2.NatGatewayStateFailed {
+	if state == awsec2types.NatGatewayStateFailed {
 		natGatewayDescription[0].FailureCode = failureCode
 		natGatewayDescription[0].FailureMessage = failureMessage
 	}
@@ -170,12 +168,12 @@ var _ managed.ExternalConnecter = &connector{}
 type args struct {
 	nat  ec2.NatGatewayClient
 	kube client.Client
-	cr   *v1alpha1.NATGateway
+	cr   *v1beta1.NATGateway
 }
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NATGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalObservation
 		err    error
 	}
@@ -201,10 +199,8 @@ func TestObserve(t *testing.T) {
 		"NatGatewayNotFound": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(ec2.NatGatewayNotFound, ec2.NatGatewayNotFound, errors.New(ec2.NatGatewayNotFound))},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return nil, &smithy.GenericAPIError{Code: ec2.NatGatewayNotFound}
 					},
 				},
 				cr: nat(withExternalName(natGatewayID)),
@@ -218,10 +214,8 @@ func TestObserve(t *testing.T) {
 		"ErrorDescribe": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nat(withExternalName(natGatewayID)),
@@ -235,18 +229,13 @@ func TestObserve(t *testing.T) {
 		"ErrorMultipleNatAddresses": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{},
-										{},
-									},
-								}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return &awsec2.DescribeNatGatewaysOutput{
+							NatGateways: []awsec2types.NatGateway{
+								{},
+								{},
+							},
+						}, nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID)),
@@ -260,14 +249,8 @@ func TestObserve(t *testing.T) {
 		"StatusPending": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStatePending, time, nil, nil, false),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStatePending, time, nil, nil, false), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -277,7 +260,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusPending, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusPending, time, nil, nil, false)),
 					withConditions(xpv1.Unavailable()),
 				),
 				result: managed.ExternalObservation{
@@ -290,14 +273,8 @@ func TestObserve(t *testing.T) {
 		"StatusFailed": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateFailed, time, aws.String(natFailureCode), aws.String(natFailureMessage), true),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateFailed, time, aws.String(natFailureCode), aws.String(natFailureMessage), true), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -307,7 +284,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusFailed, time, &natFailureCode, &natFailureMessage, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusFailed, time, &natFailureCode, &natFailureMessage, true)),
 					withConditions(xpv1.Unavailable().WithMessage(natFailureMessage)),
 				),
 				result: managed.ExternalObservation{
@@ -320,14 +297,8 @@ func TestObserve(t *testing.T) {
 		"StatusAvailale": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateAvailable, time, nil, nil, false), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -337,7 +308,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
 					withConditions(xpv1.Available()),
 				),
 				result: managed.ExternalObservation{
@@ -350,14 +321,8 @@ func TestObserve(t *testing.T) {
 		"StatusDeleting": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleting, time, nil, nil, true),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateDeleting, time, nil, nil, true), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -367,7 +332,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleting, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 					withConditions(xpv1.Deleting()),
 				),
 				result: managed.ExternalObservation{
@@ -380,14 +345,8 @@ func TestObserve(t *testing.T) {
 		"StatusDeleted": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, true),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateDeleted, time, nil, nil, true), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -397,7 +356,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleted, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
@@ -427,7 +386,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NATGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalCreation
 		err    error
 	}
@@ -445,23 +404,21 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				nat: &fake.MockNatGatewayClient{
-					MockCreate: func(e *awsec2.CreateNatGatewayInput) awsec2.CreateNatGatewayRequest {
-						return awsec2.CreateNatGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateNatGatewayOutput{
-								NatGateway: &awsec2.NatGateway{
-									CreateTime:          &time,
-									NatGatewayAddresses: natAddresses(),
-									NatGatewayId:        aws.String(natGatewayID),
-									State:               awsec2.NatGatewayStatePending,
-									SubnetId:            aws.String(natSubnetID),
-									Tags:                natTags(),
-									VpcId:               aws.String(natVpcID),
-								},
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.CreateNatGatewayOutput, error) {
+						return &awsec2.CreateNatGatewayOutput{
+							NatGateway: &awsec2types.NatGateway{
+								CreateTime:          &time,
+								NatGatewayAddresses: natAddresses(),
+								NatGatewayId:        aws.String(natGatewayID),
+								State:               awsec2types.NatGatewayStatePending,
+								SubnetId:            aws.String(natSubnetID),
+								Tags:                natTags(),
+								VpcId:               aws.String(natVpcID),
+							},
+						}, nil
 					},
 				},
-				cr: nat(withSpec(v1alpha1.NATGatewayParameters{
+				cr: nat(withSpec(v1beta1.NATGatewayParameters{
 					AllocationID: &natAllocationID,
 					SubnetID:     &natSubnetID,
 					Tags:         specTags(),
@@ -471,7 +428,7 @@ func TestCreate(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 				),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"FailedRequest": {
@@ -480,10 +437,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				nat: &fake.MockNatGatewayClient{
-					MockCreate: func(e *awsec2.CreateNatGatewayInput) awsec2.CreateNatGatewayRequest {
-						return awsec2.CreateNatGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.CreateNatGatewayOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nat(),
@@ -515,7 +470,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.NATGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -529,53 +484,37 @@ func TestUpdate(t *testing.T) {
 		"TagsInSync": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateAvailable, time, nil, nil, false), nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false))),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false))),
 				result: managed.ExternalUpdate{},
 			},
 		},
 		"TagsNotInSync": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
-							},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeNatGatewaysInput, opts []func(*awsec2.Options)) (*awsec2.DescribeNatGatewaysOutput, error) {
+						return natGatewayDescription(awsec2types.NatGatewayStateAvailable, time, nil, nil, false), nil
 					},
-					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
-					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
-						return awsec2.DeleteTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteTagsOutput{}},
-						}
+					MockDeleteTags: func(ctx context.Context, input *awsec2.DeleteTagsInput, opts []func(*awsec2.Options)) (*awsec2.DeleteTagsOutput, error) {
+						return &awsec2.DeleteTagsOutput{}, nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1alpha1.NATGatewayParameters{
+					withSpec(v1beta1.NATGatewayParameters{
 						AllocationID: aws.String(natAllocationID),
 						SubnetID:     aws.String(natSubnetID),
 						Tags: []v1beta1.Tag{
@@ -589,12 +528,12 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 					}),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1alpha1.NATGatewayParameters{
+					withSpec(v1beta1.NATGatewayParameters{
 						AllocationID: aws.String(natAllocationID),
 						SubnetID:     aws.String(natSubnetID),
 						Tags: []v1beta1.Tag{
@@ -608,7 +547,7 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 					}),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false))),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false))),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -634,7 +573,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.NATGateway
+		cr  *v1beta1.NATGateway
 		err error
 	}
 
@@ -647,10 +586,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDelete: func(e *awsec2.DeleteNatGatewayInput) awsec2.DeleteNatGatewayRequest {
-						return awsec2.DeleteNatGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteNatGatewayOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.DeleteNatGatewayOutput, error) {
+						return &awsec2.DeleteNatGatewayOutput{}, nil
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
@@ -669,14 +606,14 @@ func TestDelete(t *testing.T) {
 				nat: &fake.MockNatGatewayClient{},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleting, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withConditions(xpv1.Deleting()),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleting, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 				),
 				err: nil,
 			},
@@ -686,14 +623,14 @@ func TestDelete(t *testing.T) {
 				nat: &fake.MockNatGatewayClient{},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleted, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withConditions(xpv1.Deleting()),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleted, time, nil, nil, true)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 				err: nil,
 			},
@@ -701,10 +638,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFail": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDelete: func(e *awsec2.DeleteNatGatewayInput) awsec2.DeleteNatGatewayRequest {
-						return awsec2.DeleteNatGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteNatGatewayInput, opts []func(*awsec2.Options)) (*awsec2.DeleteNatGatewayOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: nat(withExternalName(natGatewayID)),

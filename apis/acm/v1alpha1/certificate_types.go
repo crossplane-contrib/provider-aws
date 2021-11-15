@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acm"
+	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -56,21 +56,44 @@ type CertificateExternalStatus struct {
 
 	// Flag to check eligibility for renewal status
 	// +kubebuilder:validation:Enum=ELIGIBLE;INELIGIBLE
-	RenewalEligibility acm.RenewalEligibility `json:"renewalEligibility,omitempty"`
+	RenewalEligibility types.RenewalEligibility `json:"renewalEligibility,omitempty"`
 
 	// Status of the certificate
 	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
-	Status acm.CertificateStatus `json:"status,omitempty"`
+	Status types.CertificateStatus `json:"status,omitempty"`
 
 	// Type of the certificate
 	// +kubebuilder:validation:Enum=IMPORTED;AMAZON_ISSUED;PRIVATE
-	Type acm.CertificateType `json:"type,omitempty"`
+	Type types.CertificateType `json:"type,omitempty"`
+
+	// Contains the CNAME record that you add to your DNS database for domain
+	// validation. For more information, see Use DNS to Validate Domain Ownership
+	// (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html).
+	// Note: The CNAME information that you need does not include the name of your
+	// domain. If you include your domain name in the DNS database CNAME record,
+	// validation fails. For example, if the name is
+	// "_a79865eb4cd1a6ab990a45779b4e0b96.yourdomain.com", only
+	// "_a79865eb4cd1a6ab990a45779b4e0b96" must be used.
+	ResourceRecord *ResourceRecord `json:"resourceRecord,omitempty"`
 }
 
 // An CertificateStatus represents the observed state of an Certificate manager.
 type CertificateStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          CertificateExternalStatus `json:"atProvider"`
+	AtProvider          CertificateExternalStatus `json:"atProvider,omitempty"`
+}
+
+// ResourceRecord Contains a DNS record value that you can use to validate ownership or control of a domain.
+type ResourceRecord struct {
+	// The name of the DNS record to create in your domain. This is supplied by ACM.
+	Name *string `json:"name,omitempty"`
+
+	// The type of DNS record. Currently this can be CNAME.
+	// +kubebuilder:validation:Enum=CNAME
+	Type *string `json:"type,omitempty"`
+
+	// The value of the CNAME record to add to your DNS database.
+	Value *string `json:"value,omitempty"`
 }
 
 // CertificateParameters defines the desired state of an AWS Certificate.
@@ -104,7 +127,7 @@ type CertificateParameters struct {
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
 	// +kubebuilder:validation:Enum=ENABLED;DISABLED
-	CertificateTransparencyLoggingPreference *acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
+	CertificateTransparencyLoggingPreference *types.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
@@ -117,7 +140,7 @@ type CertificateParameters struct {
 	// Method to validate certificate.
 	// +optional
 	// +kubebuilder:validation:Enum=DNS;EMAIL
-	ValidationMethod *acm.ValidationMethod `json:"validationMethod,omitempty"`
+	ValidationMethod *types.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
 	// +optional
@@ -138,7 +161,7 @@ type Certificate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CertificateSpec   `json:"spec,omitempty"`
+	Spec   CertificateSpec   `json:"spec"`
 	Status CertificateStatus `json:"status,omitempty"`
 }
 

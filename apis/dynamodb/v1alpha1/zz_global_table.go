@@ -64,7 +64,7 @@ type GlobalTableObservation struct {
 // GlobalTableStatus defines the observed state of GlobalTable.
 type GlobalTableStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          GlobalTableObservation `json:"atProvider"`
+	AtProvider          GlobalTableObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -78,7 +78,7 @@ type GlobalTableStatus struct {
 type GlobalTable struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              GlobalTableSpec   `json:"spec,omitempty"`
+	Spec              GlobalTableSpec   `json:"spec"`
 	Status            GlobalTableStatus `json:"status,omitempty"`
 }
 

@@ -19,17 +19,21 @@ package snstopic
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,18 +52,22 @@ const (
 )
 
 // SetupSNSTopic adds a controller that reconciles SNSTopic.
-func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger) error {
+func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.SNSTopicGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.SNSTopic{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.SNSTopicGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewTopicClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -97,9 +105,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	// Fetch SNS Topic Attributes with matching TopicARN
-	res, err := e.client.GetTopicAttributesRequest(&awssns.GetTopicAttributesInput{
+	res, err := e.client.GetTopicAttributes(ctx, &awssns.GetTopicAttributesInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{},
 			awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
@@ -127,13 +135,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	resp, err := e.client.CreateTopicRequest(snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider)).Send(ctx)
+	resp, err := e.client.CreateTopic(ctx, snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(resp.CreateTopicOutput.TopicArn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	meta.SetExternalName(cr, aws.ToString(resp.TopicArn))
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -143,9 +151,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Fetch Topic Attributes again
-	resp, err := e.client.GetTopicAttributesRequest(&awssns.GetTopicAttributesInput{
+	resp, err := e.client.GetTopicAttributes(ctx, &awssns.GetTopicAttributesInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetTopicAttr)
 	}
@@ -153,11 +161,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Update Topic Attributes
 	attrs := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
-		_, err = e.client.SetTopicAttributesRequest(&awssns.SetTopicAttributesInput{
+		_, err = e.client.SetTopicAttributes(ctx, &awssns.SetTopicAttributesInput{
 			AttributeName:  aws.String(k),
 			AttributeValue: aws.String(v),
 			TopicArn:       aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx)
+		})
 
 	}
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
@@ -171,9 +179,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteTopicRequest(&awssns.DeleteTopicInput{
+	_, err := e.client.DeleteTopic(ctx, &awssns.DeleteTopicInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
 }

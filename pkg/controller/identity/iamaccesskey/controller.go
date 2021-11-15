@@ -18,17 +18,22 @@ package iamaccesskey
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -46,16 +51,20 @@ const (
 )
 
 // SetupIAMAccessKey adds a controller that reconciles IAMAccessKeys.
-func SetupIAMAccessKey(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMAccessKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMAccessKeyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.IAMAccessKey{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMAccessKeyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewAccessClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -88,14 +97,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, nil
 	}
 
-	keys, err := e.client.ListAccessKeysRequest(&awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
+	keys, err := e.client.ListAccessKeys(ctx, &awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)})
 	if err != nil || len(keys.AccessKeyMetadata) == 0 {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
 	}
 	found := false
-	var accessKey awsiam.AccessKeyMetadata
+	var accessKey awsiamtypes.AccessKeyMetadata
 	for _, key := range keys.AccessKeyMetadata {
-		if aws.StringValue(key.AccessKeyId) == meta.GetExternalName(cr) {
+		if aws.ToString(key.AccessKeyId) == meta.GetExternalName(cr) {
 			found = true
 			accessKey = key
 		}
@@ -104,9 +113,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 	switch accessKey.Status {
-	case awsiam.StatusTypeActive:
+	case awsiamtypes.StatusTypeActive:
 		cr.SetConditions(xpv1.Available())
-	case awsiam.StatusTypeInactive:
+	case awsiamtypes.StatusTypeInactive:
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	current := cr.Spec.ForProvider.Status
@@ -124,7 +133,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.CreateAccessKeyRequest(&awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
+	response, err := e.client.CreateAccessKey(ctx, &awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -132,12 +141,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	var conn managed.ConnectionDetails
 	if response != nil && response.AccessKey != nil {
 		conn = managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(response.AccessKey.AccessKeyId)),
-			xpv1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(response.AccessKey.SecretAccessKey)),
+			xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.ToString(response.AccessKey.AccessKeyId)),
+			xpv1.ResourceCredentialsSecretPasswordKey: []byte(aws.ToString(response.AccessKey.SecretAccessKey)),
 		}
 	}
-	meta.SetExternalName(cr, aws.StringValue(response.AccessKey.AccessKeyId))
-	return managed.ExternalCreation{ExternalNameAssigned: true, ConnectionDetails: conn}, nil
+	meta.SetExternalName(cr, aws.ToString(response.AccessKey.AccessKeyId))
+	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -146,11 +155,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateAccessKeyRequest(&awsiam.UpdateAccessKeyInput{
+	_, err := e.client.UpdateAccessKey(ctx, &awsiam.UpdateAccessKeyInput{
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
-		Status:      awsiam.StatusType(cr.Spec.ForProvider.Status),
+		Status:      awsiamtypes.StatusType(cr.Spec.ForProvider.Status),
 		UserName:    aws.String(cr.Spec.ForProvider.IAMUsername),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -163,10 +172,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteAccessKeyRequest(&awsiam.DeleteAccessKeyInput{
+	_, err := e.client.DeleteAccessKey(ctx, &awsiam.DeleteAccessKeyInput{
 		UserName:    aws.String(cr.Spec.ForProvider.IAMUsername),
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

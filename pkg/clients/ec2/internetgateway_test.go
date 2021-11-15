@@ -3,7 +3,7 @@ package ec2
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -16,11 +16,11 @@ var (
 	ownerID = "some owner"
 )
 
-func igAttachments() []ec2.InternetGatewayAttachment {
-	return []ec2.InternetGatewayAttachment{
+func igAttachments() []ec2types.InternetGatewayAttachment {
+	return []ec2types.InternetGatewayAttachment{
 		{
 			VpcId: aws.String(vpcID),
-			State: ec2.AttachmentStatusAttached,
+			State: ec2types.AttachmentStatusAttached,
 		},
 	}
 }
@@ -28,14 +28,14 @@ func igAttachments() []ec2.InternetGatewayAttachment {
 func specAttachments() []v1beta1.InternetGatewayAttachment {
 	return []v1beta1.InternetGatewayAttachment{
 		{
-			AttachmentStatus: string(ec2.AttachmentStatusAttached),
+			AttachmentStatus: string(ec2types.AttachmentStatusAttached),
 			VPCID:            vpcID,
 		},
 	}
 }
 func TestIsIGUpToDate(t *testing.T) {
 	type args struct {
-		ig ec2.InternetGateway
+		ig ec2types.InternetGateway
 		p  v1beta1.InternetGatewayParameters
 	}
 
@@ -45,7 +45,7 @@ func TestIsIGUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				ig: ec2.InternetGateway{
+				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
 					InternetGatewayId: aws.String(igID),
 				},
@@ -57,7 +57,7 @@ func TestIsIGUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				ig: ec2.InternetGateway{
+				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
 					InternetGatewayId: aws.String(igID),
 				},
@@ -79,11 +79,11 @@ func TestIsIGUpToDate(t *testing.T) {
 
 func TestGenerateIGObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.InternetGateway
+		in  ec2types.InternetGateway
 		out v1beta1.InternetGatewayObservation
 	}{
 		"AllFilled": {
-			in: ec2.InternetGateway{
+			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
 				InternetGatewayId: aws.String(igID),
 				OwnerId:           aws.String(ownerID),
@@ -95,7 +95,7 @@ func TestGenerateIGObservation(t *testing.T) {
 			},
 		},
 		"NoOwnerId": {
-			in: ec2.InternetGateway{
+			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
 				InternetGatewayId: aws.String(igID),
 			},

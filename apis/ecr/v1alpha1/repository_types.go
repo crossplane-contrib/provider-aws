@@ -44,6 +44,10 @@ type RepositoryParameters struct {
 	// Metadata tagging key value pairs
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
+
+	// If a repository contains images, forces the deletion.
+	// +optional
+	ForceDelete *bool `json:"forceDelete,omitempty"`
 }
 
 // Tag defines a tag
@@ -59,7 +63,8 @@ type Tag struct {
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       RepositoryParameters `json:"forProvider"`
+
+	ForProvider RepositoryParameters `json:"forProvider"`
 }
 
 // RepositoryObservation keeps the state for the external resource
@@ -98,7 +103,7 @@ type ImageScanningConfiguration struct {
 // A RepositoryStatus represents the observed state of a Elastic Container Repository.
 type RepositoryStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          RepositoryObservation `json:"atProvider"`
+	AtProvider          RepositoryObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

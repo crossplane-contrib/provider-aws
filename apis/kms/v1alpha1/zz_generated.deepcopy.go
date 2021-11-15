@@ -32,6 +32,14 @@ func (in *AliasListEntry) DeepCopyInto(out *AliasListEntry) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CreationDate != nil {
+		in, out := &in.CreationDate, &out.CreationDate
+		*out = (*in).DeepCopy()
+	}
+	if in.LastUpdatedDate != nil {
+		in, out := &in.LastUpdatedDate, &out.LastUpdatedDate
+		*out = (*in).DeepCopy()
+	}
 	if in.TargetKeyID != nil {
 		in, out := &in.TargetKeyID, &out.TargetKeyID
 		*out = new(string)

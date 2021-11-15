@@ -17,6 +17,8 @@ limitations under the License.
 package iam
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -24,13 +26,13 @@ import (
 
 // GroupClient is the external client used for IAMGroup Custom Resource
 type GroupClient interface {
-	CreateGroupRequest(*iam.CreateGroupInput) iam.CreateGroupRequest
-	GetGroupRequest(*iam.GetGroupInput) iam.GetGroupRequest
-	UpdateGroupRequest(*iam.UpdateGroupInput) iam.UpdateGroupRequest
-	DeleteGroupRequest(*iam.DeleteGroupInput) iam.DeleteGroupRequest
+	GetGroup(ctx context.Context, input *iam.GetGroupInput, opts ...func(*iam.Options)) (*iam.GetGroupOutput, error)
+	CreateGroup(ctx context.Context, input *iam.CreateGroupInput, opts ...func(*iam.Options)) (*iam.CreateGroupOutput, error)
+	DeleteGroup(ctx context.Context, input *iam.DeleteGroupInput, opts ...func(*iam.Options)) (*iam.DeleteGroupOutput, error)
+	UpdateGroup(ctx context.Context, input *iam.UpdateGroupInput, opts ...func(*iam.Options)) (*iam.UpdateGroupOutput, error)
 }
 
 // NewGroupClient returns a new client using AWS credentials as JSON encoded data.
 func NewGroupClient(cfg aws.Config) GroupClient {
-	return iam.New(cfg)
+	return iam.NewFromConfig(cfg)
 }

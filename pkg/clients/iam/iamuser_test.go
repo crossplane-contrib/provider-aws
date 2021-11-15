@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -27,8 +27,8 @@ func userParams(m ...func(*v1alpha1.IAMUserParameters)) *v1alpha1.IAMUserParamet
 	return o
 }
 
-func user(m ...func(*iam.User)) *iam.User {
-	o := &iam.User{
+func user(m ...func(*iamtypes.User)) *iamtypes.User {
+	o := &iamtypes.User{
 		Path:   &path,
 		UserId: &userID,
 	}
@@ -43,7 +43,7 @@ func user(m ...func(*iam.User)) *iam.User {
 func TestLateInitializeUser(t *testing.T) {
 	type args struct {
 		spec *v1alpha1.IAMUserParameters
-		in   iam.User
+		in   iamtypes.User
 	}
 	cases := map[string]struct {
 		args args
@@ -59,7 +59,7 @@ func TestLateInitializeUser(t *testing.T) {
 		"AllFilledExternalDiff": {
 			args: args{
 				spec: userParams(),
-				in: *user(func(r *iam.User) {
+				in: *user(func(r *iamtypes.User) {
 					r.CreateDate = &time.Time{}
 				}),
 			},

@@ -18,16 +18,17 @@ package eks
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // GenerateCreateFargateProfileInput from FargateProfileInputParameters.
-func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfileParameters) *eks.CreateFargateProfileInput {
+func GenerateCreateFargateProfileInput(name string, p manualv1alpha1.FargateProfileParameters) *eks.CreateFargateProfileInput {
 	c := &eks.CreateFargateProfileInput{
 		FargateProfileName:  &name,
 		ClusterName:         &p.ClusterName,
@@ -36,9 +37,9 @@ func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfilePar
 		Tags:                p.Tags,
 	}
 	if len(p.Selectors) > 0 {
-		c.Selectors = make([]eks.FargateProfileSelector, len(p.Selectors))
+		c.Selectors = make([]ekstypes.FargateProfileSelector, len(p.Selectors))
 		for i, sel := range p.Selectors {
-			c.Selectors[i] = eks.FargateProfileSelector{
+			c.Selectors[i] = ekstypes.FargateProfileSelector{
 				Labels:    sel.Labels,
 				Namespace: sel.Namespace,
 			}
@@ -47,15 +48,15 @@ func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfilePar
 	return c
 }
 
-// GenerateFargateProfileObservation is used to produce v1alpha1.FargateProfileObservation
+// GenerateFargateProfileObservation is used to produce manualv1alpha1.FargateProfileObservation
 // from eks.FargateProfile.
-func GenerateFargateProfileObservation(fp *eks.FargateProfile) v1alpha1.FargateProfileObservation { // nolint:gocyclo
+func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) manualv1alpha1.FargateProfileObservation { // nolint:gocyclo
 	if fp == nil {
-		return v1alpha1.FargateProfileObservation{}
+		return manualv1alpha1.FargateProfileObservation{}
 	}
-	o := v1alpha1.FargateProfileObservation{
+	o := manualv1alpha1.FargateProfileObservation{
 		FargateProfileArn: awsclients.StringValue(fp.FargateProfileArn),
-		Status:            v1alpha1.FargateProfileStatusType(fp.Status),
+		Status:            manualv1alpha1.FargateProfileStatusType(fp.Status),
 	}
 	if fp.CreatedAt != nil {
 		o.CreatedAt = &metav1.Time{Time: *fp.CreatedAt}
@@ -63,9 +64,9 @@ func GenerateFargateProfileObservation(fp *eks.FargateProfile) v1alpha1.FargateP
 	return o
 }
 
-// LateInitializeFargateProfile fills the empty fields in *v1alpha1.FargateProfileParameters with the
+// LateInitializeFargateProfile fills the empty fields in *manualv1alpha1.FargateProfileParameters with the
 // values seen in eks.FargateProfile.
-func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) { // nolint:gocyclo
+func LateInitializeFargateProfile(in *manualv1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) { // nolint:gocyclo
 	if fp == nil {
 		return
 	}
@@ -83,6 +84,6 @@ func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks
 
 // IsFargateProfileUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsFargateProfileUpToDate(p v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) bool { // nolint:gocyclo
+func IsFargateProfileUpToDate(p manualv1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool { // nolint:gocyclo
 	return cmp.Equal(p.Tags, fp.Tags, cmpopts.EquateEmpty())
 }

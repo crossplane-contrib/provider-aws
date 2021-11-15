@@ -18,18 +18,22 @@ package resourcerecordset
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -49,16 +53,20 @@ const (
 )
 
 // SetupResourceRecordSet adds a controller that reconciles ResourceRecordSets.
-func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger) error {
+func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ResourceRecordSetGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.ResourceRecordSet{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.ResourceRecordSetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: resourcerecordset.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -123,8 +131,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
-	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionUpsert)
+	_, err := e.client.ChangeResourceRecordSets(ctx, input)
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
@@ -134,8 +142,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
-	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionUpsert)
+	_, err := e.client.ChangeResourceRecordSets(ctx, input)
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
@@ -146,9 +154,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
-	_, err := e.client.ChangeResourceRecordSetsRequest(
-		resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionDelete),
-	).Send(ctx)
+	_, err := e.client.ChangeResourceRecordSets(ctx,
+		resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53types.ChangeActionDelete),
+	)
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.

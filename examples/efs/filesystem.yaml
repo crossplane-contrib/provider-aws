@@ -1,0 +1,9 @@
+apiVersion: efs.aws.crossplane.io/v1alpha1
+kind: FileSystem
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+  providerConfigRef:
+    name: example

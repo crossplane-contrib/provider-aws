@@ -1,0 +1,18 @@
+# You need to pull, tag & push hello-world:latest image to an ECR repository
+# in your account. It doesn't pull from public sources.
+apiVersion: lambda.aws.crossplane.io/v1alpha1
+kind: Function
+metadata:
+  name: test-function
+spec:
+  forProvider:
+    packageType: Image
+    code:
+      imageURI: 609897127049.dkr.ecr.us-east-1.amazonaws.com/example:latest
+    roleRef:
+      name: somerole
+    region: us-east-1
+    tags:
+      myKey: myValue
+  providerConfigRef:
+    name: example

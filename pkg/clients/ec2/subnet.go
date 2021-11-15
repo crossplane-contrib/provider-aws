@@ -1,9 +1,13 @@
 package ec2
 
 import (
+	"context"
+	"errors"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -16,50 +20,42 @@ const (
 
 // SubnetClient is the external client used for Subnet Custom Resource
 type SubnetClient interface {
-	CreateSubnetRequest(input *ec2.CreateSubnetInput) ec2.CreateSubnetRequest
-	DescribeSubnetsRequest(input *ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
-	DeleteSubnetRequest(input *ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
-	ModifySubnetAttributeRequest(input *ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest
-	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	CreateSubnet(ctx context.Context, input *ec2.CreateSubnetInput, opts ...func(*ec2.Options)) (*ec2.CreateSubnetOutput, error)
+	DescribeSubnets(ctx context.Context, input *ec2.DescribeSubnetsInput, opts ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
+	DeleteSubnet(ctx context.Context, input *ec2.DeleteSubnetInput, opts ...func(*ec2.Options)) (*ec2.DeleteSubnetOutput, error)
+	ModifySubnetAttribute(ctx context.Context, input *ec2.ModifySubnetAttributeInput, opts ...func(*ec2.Options)) (*ec2.ModifySubnetAttributeOutput, error)
+	CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
 // NewSubnetClient returns a new client using AWS credentials as JSON encoded data.
 func NewSubnetClient(cfg aws.Config) SubnetClient {
-	return ec2.New(cfg)
+	return ec2.NewFromConfig(cfg)
 }
 
 // IsSubnetNotFoundErr returns true if the error is because the item doesn't exist
 func IsSubnetNotFoundErr(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == SubnetIDNotFound {
-			return true
-		}
-	}
-
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == SubnetIDNotFound
 }
 
 // GenerateSubnetObservation is used to produce v1beta1.SubnetExternalStatus from
-// ec2.Subnet
-func GenerateSubnetObservation(subnet ec2.Subnet) v1beta1.SubnetObservation {
+// ec2types.Subnet
+func GenerateSubnetObservation(subnet ec2types.Subnet) v1beta1.SubnetObservation {
 	o := v1beta1.SubnetObservation{
-		AvailableIPAddressCount: aws.Int64Value(subnet.AvailableIpAddressCount),
-		DefaultForAZ:            aws.BoolValue(subnet.DefaultForAz),
-		SubnetID:                aws.StringValue(subnet.SubnetId),
+		AvailableIPAddressCount: aws.ToInt32(subnet.AvailableIpAddressCount),
+		DefaultForAZ:            aws.ToBool(subnet.DefaultForAz),
+		SubnetID:                aws.ToString(subnet.SubnetId),
 		SubnetState:             string(subnet.State),
 	}
 
-	v, err := subnet.State.MarshalValue()
-	if err != nil {
-		o.SubnetState = v
-	}
+	o.SubnetState = string(subnet.State)
 
 	return o
 }
 
 // LateInitializeSubnet fills the empty fields in *v1beta1.SubnetParameters with
-// the values seen in ec2.Subnet.
-func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // nolint:gocyclo
+// the values seen in ec2types.Subnet.
+func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) { // nolint:gocyclo
 	if s == nil {
 		return
 	}
@@ -71,7 +67,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 	in.MapPublicIPOnLaunch = awsclients.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, s.VpcId)
 
-	if s.Ipv6CidrBlockAssociationSet != nil {
+	if s.Ipv6CidrBlockAssociationSet != nil && len(s.Ipv6CidrBlockAssociationSet) > 0 {
 		in.IPv6CIDRBlock = awsclients.LateInitializeStringPtr(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
 
@@ -81,14 +77,12 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 }
 
 // IsSubnetUpToDate checks whether there is a change in any of the modifiable fields.
-func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2.Subnet) bool {
-	if p.MapPublicIPOnLaunch != nil && (*p.MapPublicIPOnLaunch != *s.MapPublicIpOnLaunch) {
+func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2types.Subnet) bool {
+	if aws.ToBool(p.MapPublicIPOnLaunch) != aws.ToBool(s.MapPublicIpOnLaunch) {
 		return false
 	}
-
-	if p.AssignIPv6AddressOnCreation != nil && (*p.AssignIPv6AddressOnCreation != *s.AssignIpv6AddressOnCreation) {
+	if aws.ToBool(p.AssignIPv6AddressOnCreation) != aws.ToBool(s.AssignIpv6AddressOnCreation) {
 		return false
 	}
-
 	return v1beta1.CompareTags(p.Tags, s.Tags)
 }

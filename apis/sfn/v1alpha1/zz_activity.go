@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ type ActivityObservation struct {
 // ActivityStatus defines the observed state of Activity.
 type ActivityStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ActivityObservation `json:"atProvider"`
+	AtProvider          ActivityObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -94,7 +94,7 @@ type ActivityStatus struct {
 type Activity struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ActivitySpec   `json:"spec,omitempty"`
+	Spec              ActivitySpec   `json:"spec"`
 	Status            ActivityStatus `json:"status,omitempty"`
 }
 

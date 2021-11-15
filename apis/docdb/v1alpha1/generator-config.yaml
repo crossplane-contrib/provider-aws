@@ -1,0 +1,31 @@
+ignore:
+  field_paths:
+    - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName
+    - CreateDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - ModifyDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DescribeDBSubnetGroupsInput.DBSubnetGroupName
+    - ModifyDBSubnetGroupInput.DBSubnetGroupName
+    - ModifyDBSubnetGroupInput.SubnetIds
+    - CreateDBSubnetGroupInput.DBSubnetGroupName
+    - CreateDBSubnetGroupInput.SubnetIds
+    - DeleteDBSubnetGroupInput.DBSubnetGroupName
+    - DescribeDBInstancesOutput.DBInstanceIdentifier
+    - ModifyDBInstanceInput.DBInstanceIdentifier
+    - CreateDBInstanceInput.DBInstanceIdentifier
+    - CreateDBInstanceInput.DBClusterIdentifier
+    - DeleteDBInstanceInput.DBInstanceIdentifier
+    - DescribeDBClustersInput.DBClusterIdentifier
+    - ModifyDBClusterInput.DBClusterIdentifier
+    - CreateDBClusterInput.DBClusterIdentifier
+    - DeleteDBClusterInput.DBClusterIdentifier
+    - DescribeDBClustersInput.MasterUserPassword
+    - ModifyDBClusterInput.MasterUserPassword
+    - CreateDBClusterInput.MasterUserPassword
+    - DeleteDBClusterInput.MasterUserPassword
+    - DescribeDBClustersOutput.MasterUserPassword
+    - ModifyDBClusterOutput.MasterUserPassword
+    - CreateDBClusterOutput.MasterUserPassword
+    - DeleteDBClusterOutput.MasterUserPassword
+  resource_names:
+    - DBClusterSnapshot

@@ -18,18 +18,22 @@ package iamuser
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -51,16 +55,20 @@ const (
 )
 
 // SetupIAMUser adds a controller that reconciles Users.
-func SetupIAMUser(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMUserGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.IAMUser{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMUserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -89,9 +97,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.GetUserRequest(&awsiam.GetUserInput{
+	observed, err := e.client.GetUser(ctx, &awsiam.GetUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
@@ -113,13 +121,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMUserObservation{
-		ARN:    aws.StringValue(user.Arn),
-		UserID: aws.StringValue(user.UserId),
+		ARN:    aws.ToString(user.Arn),
+		UserID: aws.ToString(user.UserId),
 	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: aws.StringValue(cr.Spec.ForProvider.Path) == aws.StringValue(user.Path),
+		ResourceUpToDate: aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path),
 	}, nil
 }
 
@@ -131,12 +139,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	_, err := e.client.CreateUserRequest(&awsiam.CreateUserInput{
+	_, err := e.client.CreateUser(ctx, &awsiam.CreateUserInput{
 		Path:                cr.Spec.ForProvider.Path,
 		PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
 		Tags:                iam.BuildIAMTags(cr.Spec.ForProvider.Tags),
 		UserName:            aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
@@ -146,10 +154,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateUserRequest(&awsiam.UpdateUserInput{
+	_, err := e.client.UpdateUser(ctx, &awsiam.UpdateUserInput{
 		NewPath:  cr.Spec.ForProvider.Path,
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -162,9 +170,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteUserRequest(&awsiam.DeleteUserInput{
+	_, err := e.client.DeleteUser(ctx, &awsiam.DeleteUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

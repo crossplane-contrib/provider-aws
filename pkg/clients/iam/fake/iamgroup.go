@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,28 +29,28 @@ var _ clientset.GroupClient = (*MockGroupClient)(nil)
 
 // MockGroupClient is a type that implements all the methods for RoleClient interface
 type MockGroupClient struct {
-	MockGetGroup    func(*iam.GetGroupInput) iam.GetGroupRequest
-	MockCreateGroup func(*iam.CreateGroupInput) iam.CreateGroupRequest
-	MockDeleteGroup func(*iam.DeleteGroupInput) iam.DeleteGroupRequest
-	MockUpdateGroup func(*iam.UpdateGroupInput) iam.UpdateGroupRequest
+	MockGetGroup    func(ctx context.Context, input *iam.GetGroupInput, opts []func(*iam.Options)) (*iam.GetGroupOutput, error)
+	MockCreateGroup func(ctx context.Context, input *iam.CreateGroupInput, opts []func(*iam.Options)) (*iam.CreateGroupOutput, error)
+	MockDeleteGroup func(ctx context.Context, input *iam.DeleteGroupInput, opts []func(*iam.Options)) (*iam.DeleteGroupOutput, error)
+	MockUpdateGroup func(ctx context.Context, input *iam.UpdateGroupInput, opts []func(*iam.Options)) (*iam.UpdateGroupOutput, error)
 }
 
-// GetGroupRequest mocks GetGroupRequest method
-func (m *MockGroupClient) GetGroupRequest(input *iam.GetGroupInput) iam.GetGroupRequest {
-	return m.MockGetGroup(input)
+// GetGroup mocks GetGroup method
+func (m *MockGroupClient) GetGroup(ctx context.Context, input *iam.GetGroupInput, opts ...func(*iam.Options)) (*iam.GetGroupOutput, error) {
+	return m.MockGetGroup(ctx, input, opts)
 }
 
-// CreateGroupRequest mocks CreateGroupRequest method
-func (m *MockGroupClient) CreateGroupRequest(input *iam.CreateGroupInput) iam.CreateGroupRequest {
-	return m.MockCreateGroup(input)
+// CreateGroup mocks CreateGroup method
+func (m *MockGroupClient) CreateGroup(ctx context.Context, input *iam.CreateGroupInput, opts ...func(*iam.Options)) (*iam.CreateGroupOutput, error) {
+	return m.MockCreateGroup(ctx, input, opts)
 }
 
-// DeleteGroupRequest mocks DeleteGroupRequest method
-func (m *MockGroupClient) DeleteGroupRequest(input *iam.DeleteGroupInput) iam.DeleteGroupRequest {
-	return m.MockDeleteGroup(input)
+// DeleteGroup mocks DeleteGroup method
+func (m *MockGroupClient) DeleteGroup(ctx context.Context, input *iam.DeleteGroupInput, opts ...func(*iam.Options)) (*iam.DeleteGroupOutput, error) {
+	return m.MockDeleteGroup(ctx, input, opts)
 }
 
-// UpdateGroupRequest mocks UpdateGroupRequest method
-func (m *MockGroupClient) UpdateGroupRequest(input *iam.UpdateGroupInput) iam.UpdateGroupRequest {
-	return m.MockUpdateGroup(input)
+// UpdateGroup mocks UpdateGroup method
+func (m *MockGroupClient) UpdateGroup(ctx context.Context, input *iam.UpdateGroupInput, opts ...func(*iam.Options)) (*iam.UpdateGroupOutput, error) {
+	return m.MockUpdateGroup(ctx, input, opts)
 }

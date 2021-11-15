@@ -19,18 +19,23 @@ package repository
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
+	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -58,10 +63,13 @@ const (
 )
 
 // SetupRepository adds a controller that reconciles ECR.
-func SetupRepository(mgr ctrl.Manager, l logging.Logger) error {
+func SetupRepository(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.RepositoryGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1alpha1.Repository{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.RepositoryGroupVersionKind),
@@ -69,6 +77,7 @@ func SetupRepository(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -86,7 +95,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: awsecr.New(*cfg), kube: c.kube}, nil
+	return &external{client: awsecr.NewFromConfig(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
@@ -106,9 +115,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeRepositoriesRequest(&awsecr.DescribeRepositoriesInput{
+	response, err := e.client.DescribeRepositories(ctx, &awsecr.DescribeRepositoriesInput{
 		RepositoryNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
 	}
@@ -119,9 +128,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed := response.Repositories[0]
-	tagsResp, err := e.client.ListTagsForResourceRequest(&awsecr.ListTagsForResourceInput{
+	tagsResp, err := e.client.ListTagsForResource(ctx, &awsecr.ListTagsForResourceInput{
 		ResourceArn: observed.RepositoryArn,
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errListTags)
 	}
@@ -155,7 +164,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	_, err := e.client.CreateRepositoryRequest(ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -173,9 +182,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, err
 	}
 
-	response, err := e.client.DescribeRepositoriesRequest(&awsecr.DescribeRepositoriesInput{
+	response, err := e.client.DescribeRepositories(ctx, &awsecr.DescribeRepositoriesInput{
 		RepositoryNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
 	}
@@ -193,22 +202,22 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if patch.ImageTagMutability != nil {
-		_, err := e.client.PutImageTagMutabilityRequest(&awsecr.PutImageTagMutabilityInput{
+		_, err := e.client.PutImageTagMutability(ctx, &awsecr.PutImageTagMutabilityInput{
 			RepositoryName:     awsclient.String(meta.GetExternalName(cr)),
-			ImageTagMutability: awsecr.ImageTagMutability(aws.StringValue(patch.ImageTagMutability)),
-		}).Send(ctx)
+			ImageTagMutability: awsecrtypes.ImageTagMutability(aws.ToString(patch.ImageTagMutability)),
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateMutability)
 		}
 	}
 
 	if patch.ImageScanningConfiguration != nil {
-		_, err := e.client.PutImageScanningConfigurationRequest(&awsecr.PutImageScanningConfigurationInput{
+		_, err := e.client.PutImageScanningConfiguration(ctx, &awsecr.PutImageScanningConfigurationInput{
 			RepositoryName: awsclient.String(meta.GetExternalName(cr)),
-			ImageScanningConfiguration: &awsecr.ImageScanningConfiguration{
-				ScanOnPush: &patch.ImageScanningConfiguration.ScanOnPush,
+			ImageScanningConfiguration: &awsecrtypes.ImageScanningConfiguration{
+				ScanOnPush: patch.ImageScanningConfiguration.ScanOnPush,
 			},
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateScan)
 		}
@@ -224,10 +233,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
-	_, err := e.client.DeleteRepositoryRequest(&awsecr.DeleteRepositoryInput{
+	_, err := e.client.DeleteRepository(ctx, &awsecr.DeleteRepositoryInput{
 		RepositoryName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
-
+		Force:          aws.ToBool(cr.Spec.ForProvider.ForceDelete),
+	})
 	return awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDelete)
 }
 
@@ -260,26 +269,18 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 }
 
 func (e *external) updateTags(ctx context.Context, repo *v1alpha1.Repository) error {
-	resp, err := e.client.ListTagsForResourceRequest(&awsecr.ListTagsForResourceInput{
-		ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
-	}).Send(ctx)
+	resp, err := e.client.ListTagsForResource(ctx, &awsecr.ListTagsForResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn})
 	if err != nil {
 		return awsclient.Wrap(err, errListTags)
 	}
 	add, remove := ecr.DiffTags(repo.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
-		if _, err := e.client.UntagResourceRequest(&awsecr.UntagResourceInput{
-			ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
-			TagKeys:     remove},
-		).Send(ctx); err != nil {
+		if _, err := e.client.UntagResource(ctx, &awsecr.UntagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, TagKeys: remove}); err != nil {
 			return awsclient.Wrap(err, errRemoveTags)
 		}
 	}
 	if len(add) != 0 {
-		if _, err := e.client.TagResourceRequest(&awsecr.TagResourceInput{
-			ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
-			Tags:        add,
-		}).Send(ctx); err != nil {
+		if _, err := e.client.TagResource(ctx, &awsecr.TagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, Tags: add}); err != nil {
 			return awsclient.Wrap(err, errCreateTags)
 		}
 	}

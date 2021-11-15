@@ -61,7 +61,7 @@ type RedirectAllRequestsTo struct {
 	// Protocol to use when redirecting requests. The default is the protocol that
 	// is used in the original request.
 	// +kubebuilder:validation:Enum=http;https
-	Protocol string `json:"protocol"`
+	Protocol string `json:"protocol,omitempty"`
 }
 
 // RoutingRule specifies the redirect behavior and when a redirect is applied.
@@ -114,7 +114,7 @@ type Redirect struct {
 
 	// Protocol to use when redirecting requests. The default is the protocol that
 	// is used in the original request.
-	Protocol string `json:"protocol"`
+	Protocol string `json:"protocol,omitempty"`
 
 	// The object key prefix to use in the redirect request. For example, to redirect
 	// requests for all pages with prefix docs/ (objects in the docs/ folder) to

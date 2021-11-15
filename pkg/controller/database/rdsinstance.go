@@ -20,18 +20,23 @@ import (
 	"context"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/password"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -54,17 +59,21 @@ const (
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
-func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
+func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&v1beta1.RDSInstance{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -79,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +109,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
-	req := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	rsp, err := req.Send(ctx)
+	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
@@ -120,7 +128,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
-	case v1beta1.RDSInstanceStateAvailable:
+	case v1beta1.RDSInstanceStateAvailable, v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateBackingUp, v1beta1.RDSInstanceStateConfiguringEnhancedMonitoring:
 		cr.Status.SetConditions(xpv1.Available())
 	case v1beta1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(xpv1.Creating())
@@ -150,7 +158,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	pw, _, err := rds.GetPassword(ctx, e.kube, cr)
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -161,8 +169,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
-	_, err = req.Send(ctx)
+	_, err = e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 	}
@@ -170,7 +177,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		xpv1.ResourceCredentialsSecretPasswordKey: []byte(pw),
 	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
-		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
+		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
@@ -189,8 +196,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// and the current state. Since the DBInstance is not fully mirrored in status,
 	// we lose the current state after a change is made to spec, which forces us
 	// to make a DescribeDBInstancesRequest to get the current state.
-	describe := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	rsp, err := describe.Send(ctx)
+	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
@@ -201,7 +207,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
 	var conn managed.ConnectionDetails
 
-	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr)
+	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -212,18 +218,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		modify.MasterUserPassword = aws.String(pwd)
 	}
 
-	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
+	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
 	}
 	if len(patch.Tags) > 0 {
-		tags := make([]awsrds.Tag, len(patch.Tags))
+		tags := make([]awsrdstypes.Tag, len(patch.Tags))
 		for i, t := range patch.Tags {
-			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+			tags[i] = awsrdstypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
-		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+		_, err = e.client.AddTagsToResource(ctx, &awsrds.AddTagsToResourceInput{
 			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
 			Tags:         tags,
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
@@ -253,10 +259,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier:      aws.String(meta.GetExternalName(cr)),
-		SkipFinalSnapshot:         cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
+		SkipFinalSnapshot:         aws.ToBool(cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion),
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
-	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
+	_, err = e.client.DeleteDBInstance(ctx, &input)
 	return awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }
 

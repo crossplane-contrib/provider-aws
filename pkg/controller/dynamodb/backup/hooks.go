@@ -18,14 +18,18 @@ package backup
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -34,7 +38,7 @@ import (
 )
 
 // SetupBackup adds a controller that reconciles Backup.
-func SetupBackup(mgr ctrl.Manager, l logging.Logger) error {
+func SetupBackup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.BackupGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -47,11 +51,15 @@ func SetupBackup(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Backup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BackupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -86,11 +94,10 @@ func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBa
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.BackupDetails.BackupArn))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) (bool, error) {
 	obj.BackupArn = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

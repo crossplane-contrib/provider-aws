@@ -18,12 +18,15 @@ package securitygroup
 
 import (
 	"context"
-	"net/http"
 	"testing"
+
+	"github.com/aws/smithy-go/document"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -40,8 +43,8 @@ import (
 
 var (
 	sgID              = "some sgID"
-	port80      int64 = 80
-	port100     int64 = 100
+	port80      int32 = 80
+	port100     int32 = 100
 	cidr              = "192.168.0.0/32"
 	tcpProtocol       = "tcp"
 
@@ -59,8 +62,8 @@ type sgModifier func(*v1beta1.SecurityGroup)
 func specPermissions() []v1beta1.IPPermission {
 	return []v1beta1.IPPermission{
 		{
-			FromPort: aws.Int64(port80),
-			ToPort:   aws.Int64(80),
+			FromPort: &port80,
+			ToPort:   &port80,
 			IPRanges: []v1beta1.IPRange{
 				{CIDRIP: cidr},
 			},
@@ -69,13 +72,13 @@ func specPermissions() []v1beta1.IPPermission {
 	}
 }
 
-func sgPersmissions() []awsec2.IpPermission {
-	return []awsec2.IpPermission{
+func sgPersmissions() []awsec2types.IpPermission {
+	return []awsec2types.IpPermission{
 		{
-			FromPort:   aws.Int64(port100),
-			ToPort:     aws.Int64(port100),
+			FromPort:   &port100,
+			ToPort:     &port100,
 			IpProtocol: aws.String(tcpProtocol),
-			IpRanges: []awsec2.IpRange{{
+			IpRanges: []awsec2types.IpRange{{
 				CidrIp: aws.String(cidr),
 			}},
 		},
@@ -123,12 +126,10 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{}},
-							}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{}},
+						}, nil
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
@@ -148,12 +149,10 @@ func TestObserve(t *testing.T) {
 		"MultipleSGs": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{}, {}},
-							}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{}, {}},
+						}, nil
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
@@ -172,10 +171,8 @@ func TestObserve(t *testing.T) {
 		"DescribeFailure": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
@@ -230,17 +227,13 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
-					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-						return awsec2.CreateSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSecurityGroupOutput{
-								GroupId: aws.String(sgID),
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
+						return &awsec2.CreateSecurityGroupOutput{
+							GroupId: aws.String(sgID),
+						}, nil
 					},
-					MockRevokeEgress: func(input *awsec2.RevokeSecurityGroupEgressInput) awsec2.RevokeSecurityGroupEgressRequest {
-						return awsec2.RevokeSecurityGroupEgressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RevokeSecurityGroupEgressOutput{}},
-						}
+					MockRevokeEgress: func(ctx context.Context, input *awsec2.RevokeSecurityGroupEgressInput, opts []func(*awsec2.Options)) (*awsec2.RevokeSecurityGroupEgressOutput, error) {
+						return &awsec2.RevokeSecurityGroupEgressOutput{}, nil
 					},
 				},
 				cr: sg(),
@@ -257,10 +250,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
-					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-						return awsec2.CreateSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: sg(),
@@ -278,17 +269,13 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
-					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-						return awsec2.CreateSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSecurityGroupOutput{
-								GroupId: aws.String(sgID),
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
+						return &awsec2.CreateSecurityGroupOutput{
+							GroupId: aws.String(sgID),
+						}, nil
 					},
-					MockRevokeEgress: func(input *awsec2.RevokeSecurityGroupEgressInput) awsec2.RevokeSecurityGroupEgressRequest {
-						return awsec2.RevokeSecurityGroupEgressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockRevokeEgress: func(ctx context.Context, input *awsec2.RevokeSecurityGroupEgressInput, opts []func(*awsec2.Options)) (*awsec2.RevokeSecurityGroupEgressOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: sg(),
@@ -333,25 +320,19 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{
-									IpPermissions:       sgPersmissions(),
-									IpPermissionsEgress: sgPersmissions(),
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								IpPermissions:       sgPersmissions(),
+								IpPermissionsEgress: sgPersmissions(),
 							}},
-						}
+						}, nil
 					},
-					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
-						return awsec2.AuthorizeSecurityGroupIngressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
-						}
+					MockAuthorizeIngress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupIngressOutput, error) {
+						return &awsec2.AuthorizeSecurityGroupIngressOutput{}, nil
 					},
-					MockAuthorizeEgress: func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
-						return awsec2.AuthorizeSecurityGroupEgressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
-						}
+					MockAuthorizeEgress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupEgressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupEgressOutput, error) {
+						return &awsec2.AuthorizeSecurityGroupEgressOutput{}, nil
 					},
 				},
 				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
@@ -375,20 +356,16 @@ func TestUpdate(t *testing.T) {
 		"IngressFail": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{
-									IpPermissions:       sgPersmissions(),
-									IpPermissionsEgress: sgPersmissions(),
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								IpPermissions:       sgPersmissions(),
+								IpPermissionsEgress: sgPersmissions(),
 							}},
-						}
+						}, nil
 					},
-					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
-						return awsec2.AuthorizeSecurityGroupIngressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockAuthorizeIngress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupIngressOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
@@ -430,6 +407,220 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+func compareTags(a awsec2types.Tag, b awsec2types.Tag) bool {
+	return awsclient.StringValue(a.Key) < awsclient.StringValue(b.Key)
+}
+
+func TestUpdateTags(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.SecurityGroup
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Same": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{
+									{
+										Key:   aws.String("k1"),
+										Value: aws.String("v1"),
+									}, {
+										Key:   aws.String("k2"),
+										Value: aws.String("v2"),
+									},
+								},
+
+								IpPermissions:       sgPersmissions(),
+								IpPermissionsEgress: sgPersmissions(),
+							}},
+						}, nil
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+					}}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+		},
+		"Change": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{
+									{
+										Key:   aws.String("k1"),
+										Value: aws.String("v1"),
+									},
+									{
+										Key:   aws.String("k2"),
+										Value: aws.String("vx"),
+									},
+									{
+										Key:   aws.String("k4"),
+										Value: aws.String("v4"),
+									},
+								},
+							}},
+						}, nil
+					},
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						if diff := cmp.Diff(input.Tags, []awsec2types.Tag{
+							{
+								Key:   aws.String("k2"),
+								Value: aws.String("v2"),
+							}, {
+								Key:   aws.String("k3"),
+								Value: aws.String("v3"),
+							},
+						}, cmpopts.SortSlices(compareTags), cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+							t.Errorf("r: -want, +got:\n%s", diff)
+						}
+
+						return &awsec2.CreateTagsOutput{}, nil
+					},
+					MockDeleteTags: func(ctx context.Context, input *awsec2.DeleteTagsInput, opts []func(*awsec2.Options)) (*awsec2.DeleteTagsOutput, error) {
+						if diff := cmp.Diff(input.Tags, []awsec2types.Tag{{Key: aws.String("k4")}}, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+							t.Errorf("r: -want, +got:\n%s", diff)
+						}
+
+						return &awsec2.DeleteTagsOutput{}, nil
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+						{
+							Key:   "k3",
+							Value: "v3",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+						{
+							Key:   "k3",
+							Value: "v3",
+						},
+					}}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+		},
+		"TagsFail": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{},
+							}},
+						}, nil
+					},
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, errBoom
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+				err: awsclient.Wrap(errBoom, errCreateTags),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	type want struct {
 		cr  *v1beta1.SecurityGroup
@@ -443,10 +634,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.DeleteSecurityGroupOutput, error) {
+						return &awsec2.DeleteSecurityGroupOutput{}, nil
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
@@ -462,10 +651,8 @@ func TestDelete(t *testing.T) {
 		"InvalidSgId": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.DeleteSecurityGroupOutput, error) {
+						return &awsec2.DeleteSecurityGroupOutput{}, nil
 					},
 				},
 				cr: sg(),
@@ -477,10 +664,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailure": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.DeleteSecurityGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{

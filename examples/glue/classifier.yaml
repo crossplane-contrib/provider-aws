@@ -1,0 +1,55 @@
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Classifier
+metadata:
+  name: glue-classifier-xml
+spec:
+  forProvider:
+    region: us-east-1
+    xmlClassifier:
+      rowTag: "timestamp"
+      classification: "xml"
+  providerConfigRef:
+    name: example
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Classifier
+metadata:
+  name: glue-classifier-csv
+spec:
+  forProvider:
+    region: us-east-1
+    csvClassifier:
+      delimiter: ","
+      quoteSymbol: "\""
+      containsHeader: "PRESENT"
+      disableValueTrimming: true 
+      allowSingleColumn: false
+  providerConfigRef:
+    name: example
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Classifier
+metadata:
+  name: glue-classifier-json
+spec:
+  forProvider:
+    region: us-east-1
+    jsonClassifier: 
+      jsonPath: "[<timestampe>]"
+  providerConfigRef:
+    name: example
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Classifier
+metadata:
+  name: glue-classifier-grok
+spec:
+  forProvider:
+    region: us-east-1
+    grokClassifier: 
+      classification: "timestamp"
+      grokPattern: "%{MY_TIMESTAMP} "
+      customPatterns: "MY_TIMESTAMP (%{USERNAME:test}[,]%{YEAR:year}[-]%{MONTHNUM:mm}[-]%{MONTHDAY:dd} %{TIME:time})"
+  providerConfigRef:
+    name: example

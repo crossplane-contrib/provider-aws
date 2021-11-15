@@ -18,14 +18,18 @@ package activity
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -34,23 +38,37 @@ import (
 )
 
 // SetupActivity adds a controller that reconciles Activity.
-func SetupActivity(mgr ctrl.Manager, l logging.Logger) error {
+func SetupActivity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
 		For(&svcapitypes.Activity{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ActivityGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Activity) error {
+func preObserve(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) error {
+	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,55 +76,15 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svc
 	return obs, err
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Activity) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.ActivityArn))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Activity) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Activity, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.ActivityParameters, *svcsdk.DescribeActivityOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.Activity, *svcsdk.DescribeActivityOutput) bool {
-	return true
-}
-
-func preGenerateDescribeActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
-	return obj
-}
-
-func postGenerateDescribeActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
+func preDelete(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) (bool, error) {
 	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateActivityInput(_ *svcapitypes.Activity, obj *svcsdk.CreateActivityInput) *svcsdk.CreateActivityInput {
-	return obj
-}
-
-func postGenerateCreateActivityInput(_ *svcapitypes.Activity, obj *svcsdk.CreateActivityInput) *svcsdk.CreateActivityInput {
-	return obj
-}
-func preGenerateDeleteActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
-	return obj
-}
-
-func postGenerateDeleteActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
-	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
-	return obj
+	return false, nil
 }

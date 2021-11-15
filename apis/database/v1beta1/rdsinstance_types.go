@@ -768,6 +768,10 @@ const (
 	RDSInstanceStateDeleting = "deleting"
 	// The instance is being modified.
 	RDSInstanceStateModifying = "modifying"
+	// The instance is being backed up, but is available
+	RDSInstanceStateBackingUp = "backing-up"
+	// The instance is being backed up, but is available
+	RDSInstanceStateConfiguringEnhancedMonitoring = "configuring-enhanced-monitoring"
 	// The instance has failed and Amazon RDS can't recover it. Perform a point-in-time restore to the latest restorable time of the instance to recover the data.
 	RDSInstanceStateFailed = "failed"
 )
