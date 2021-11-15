@@ -649,6 +649,15 @@ func LateInitializeBoolPtr(in *bool, from *bool) *bool {
 	return from
 }
 
+// CompactJSON removes space characters from a JSON string.
+func CompactJSON(s string) (string, error) {
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, []byte(s)); err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
+}
+
 // CompactAndEscapeJSON removes space characters and URL-encodes the JSON string.
 func CompactAndEscapeJSON(s string) (string, error) {
 	buffer := new(bytes.Buffer)

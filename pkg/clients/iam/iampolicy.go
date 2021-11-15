@@ -3,6 +3,8 @@ package iam
 import (
 	"context"
 	"net/url"
+	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -45,14 +47,44 @@ func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iamtypes.PolicyVer
 		return false, nil
 	}
 
-	compactIAMPolicy, err := awsclients.CompactAndEscapeJSON(unescapedPolicy)
+	// Compact
+	compactIn, err := awsclients.CompactJSON(in.Document)
 	if err != nil {
 		return false, err
 	}
-	compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(in.Document)
+	compactExternal, err := awsclients.CompactJSON(unescapedPolicy)
+	if err != nil {
+		return false, err
+	}
+	// Normalize
+	normalizedIn := replaceActionArray(compactIn)
+	normalizedExternal := replaceActionArray(compactExternal)
+	// Escape
+	compactIAMPolicy, err := awsclients.CompactAndEscapeJSON(normalizedExternal)
+	if err != nil {
+		return false, err
+	}
+	compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(normalizedIn)
 	if err != nil {
 		return false, err
 	}
 
 	return cmp.Equal(compactIAMPolicy, compactSpecPolicy), nil
+}
+
+// replaceActionArray converts Actions with a single item from an array to a string
+func replaceActionArray(compactJSON string) string {
+	// Ex.  Convert "Action": ["sts:AssumeRole"] -> "Action": "sts:AssumeRole"
+	// But ignore "Action": ["sts:AssumeRole", "sts:GetFederationToken" ] since there are multiple actions
+	r := regexp.MustCompile("\"Action\":\\[(\\S*?)\\]")
+	matches := r.FindStringSubmatch(compactJSON)
+	if len(matches) > 0 {
+		action := matches[1]
+		if !strings.Contains(action, ",") {
+			startingBracket := strings.ReplaceAll(matches[0], "[", "")
+			endingBracket := strings.ReplaceAll(startingBracket, "]", "")
+			return r.ReplaceAllString(compactJSON, endingBracket)
+		}
+	}
+	return compactJSON
 }
