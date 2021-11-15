@@ -25,7 +25,6 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -156,15 +155,15 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		in.AttributeDefinitions = buildAttributeDefinitions(t.Table.AttributeDefinitions)
 	}
 
-	if len(in.GlobalSecondaryIndexes) == 0 && len(t.Table.GlobalSecondaryIndexes) != 0 {
+	if in.GlobalSecondaryIndexes == nil && len(t.Table.GlobalSecondaryIndexes) != 0 {
 		in.GlobalSecondaryIndexes = buildGlobalIndexes(t.Table.GlobalSecondaryIndexes)
 	}
 
-	if len(in.LocalSecondaryIndexes) == 0 && len(t.Table.LocalSecondaryIndexes) != 0 {
+	if in.LocalSecondaryIndexes == nil && len(t.Table.LocalSecondaryIndexes) != 0 {
 		in.LocalSecondaryIndexes = buildLocalIndexes(t.Table.LocalSecondaryIndexes)
 	}
 
-	if len(in.KeySchema) == 0 && len(t.Table.KeySchema) != 0 {
+	if in.KeySchema == nil && len(t.Table.KeySchema) != 0 {
 		in.KeySchema = buildAlphaKeyElements(t.Table.KeySchema)
 	}
 
@@ -309,9 +308,20 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 		return false, err
 	}
 
-	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters")), nil
+	// At least one of ProvisionedThroughput, BillingMode, UpdateStreamEnabled,
+	// GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is
+	// required.
+	switch {
+	case patch.ProvisionedThroughput != nil:
+		return false, nil
+	case patch.BillingMode != nil:
+		return false, nil
+	case patch.StreamSpecification != nil:
+		return false, nil
+	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
+		return false, nil
+	}
+	return true, nil
 }
 
 type updateClient struct {
@@ -320,7 +330,10 @@ type updateClient struct {
 
 func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 
-	filtered := &svcsdk.UpdateTableInput{TableName: aws.String(meta.GetExternalName(cr))}
+	filtered := &svcsdk.UpdateTableInput{
+		TableName:            aws.String(meta.GetExternalName(cr)),
+		AttributeDefinitions: u.AttributeDefinitions,
+	}
 
 	// The AWS API requires us to do one kind of update at a time per
 	// https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
@@ -343,8 +356,7 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	if err != nil {
 		return err
 	}
-
-	// TODO(muvaf): Implement ReplicaUpdates and GlobalSecondaryIndexUpdates.
+	gsiUpdates := diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), out.Table.GlobalSecondaryIndexes)
 	switch {
 	case p.ProvisionedThroughput != nil:
 		filtered.ProvisionedThroughput = u.ProvisionedThroughput
@@ -364,9 +376,140 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		}
 	case p.BillingMode != nil:
 		filtered.BillingMode = u.BillingMode
+	case len(gsiUpdates) != 0:
+		filtered.SetGlobalSecondaryIndexUpdates(gsiUpdates)
 	}
 
 	*u = *filtered
-
 	return nil
+}
+
+func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, obs []*svcsdk.GlobalSecondaryIndexDescription) []*svcsdk.GlobalSecondaryIndexUpdate { //nolint:gocyclo
+	// Linter is disabled because there isn't an easy good way to reduce the cyclo
+	// complexity here.
+	desired := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
+	desiredKeys := make([]string, len(spec))
+	for i, gsi := range spec {
+		desired[aws.StringValue(gsi.IndexName)] = gsi
+		desiredKeys[i] = aws.StringValue(gsi.IndexName)
+	}
+	existing := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
+	existingKeys := make([]string, len(obs))
+	for i, gsi := range obs {
+		existing[aws.StringValue(gsi.IndexName)] = gsi
+		existingKeys[i] = aws.StringValue(gsi.IndexName)
+	}
+	sort.Strings(desiredKeys)
+	sort.Strings(existingKeys)
+	// NOTE(muvaf): AWS API supports only a single deletion or creation at once,
+	// i.e. we can create or delete only one GlobalSecondaryIndex with a single
+	// UpdateTable call. However, we can make multiple updates.
+	var updates []*svcsdk.GlobalSecondaryIndexUpdate
+	for _, k := range desiredKeys {
+		existingGSI, ok := existing[k]
+		if !ok {
+			gsi := []*svcsdk.GlobalSecondaryIndexUpdate{
+				{
+					Create: &svcsdk.CreateGlobalSecondaryIndexAction{
+						IndexName:  desired[k].IndexName,
+						KeySchema:  desired[k].KeySchema,
+						Projection: desired[k].Projection,
+					},
+				},
+			}
+			if desired[k].ProvisionedThroughput != nil {
+				gsi[0].Create.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
+					ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+					WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+				}
+			}
+			return gsi
+		}
+		if desired[k].ProvisionedThroughput != nil {
+			if aws.Int64Value(desired[k].ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.WriteCapacityUnits) ||
+				aws.Int64Value(desired[k].ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.ReadCapacityUnits) {
+				u := &svcsdk.GlobalSecondaryIndexUpdate{
+					Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
+						IndexName: desired[k].IndexName,
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+							ReadCapacityUnits:  desired[k].ProvisionedThroughput.ReadCapacityUnits,
+							WriteCapacityUnits: desired[k].ProvisionedThroughput.WriteCapacityUnits,
+						},
+					},
+				}
+				updates = append(updates, u)
+			}
+		}
+	}
+	if len(updates) != 0 {
+		return updates
+	}
+	// At this point, we handled all creations and updates. The last thing to check
+	// is whether there is a removal.
+	for _, k := range existingKeys {
+		if _, ok := desired[k]; !ok {
+			return []*svcsdk.GlobalSecondaryIndexUpdate{
+				{
+					Delete: &svcsdk.DeleteGlobalSecondaryIndexAction{
+						IndexName: existing[k].IndexName,
+					},
+				},
+			}
+		}
+	}
+	return nil
+}
+
+// GenerateGlobalSecondaryIndexDescriptions generates an array of GlobalSecondaryIndexDescriptions.
+func GenerateGlobalSecondaryIndexDescriptions(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndexDescription { // nolint:gocyclo
+	// Linter is disabled because this is a copy-paste from generated code and
+	// very simple.
+	result := make([]*svcsdk.GlobalSecondaryIndexDescription, len(p))
+	for i, desiredGSI := range p {
+		gsi := &svcsdk.GlobalSecondaryIndexDescription{}
+		if desiredGSI.IndexName != nil {
+			gsi.SetIndexName(*desiredGSI.IndexName)
+		}
+		if desiredGSI.KeySchema != nil {
+			var keySchemaList []*svcsdk.KeySchemaElement
+			for _, keySchemaIter := range desiredGSI.KeySchema {
+				keySchema := &svcsdk.KeySchemaElement{}
+				if keySchemaIter.AttributeName != nil {
+					keySchema.SetAttributeName(*keySchemaIter.AttributeName)
+				}
+				if keySchemaIter.KeyType != nil {
+					keySchema.SetKeyType(*keySchemaIter.KeyType)
+				}
+				keySchemaList = append(keySchemaList, keySchema)
+			}
+			gsi.SetKeySchema(keySchemaList)
+		}
+		if desiredGSI.Projection != nil {
+			projection := &svcsdk.Projection{}
+			if desiredGSI.Projection.NonKeyAttributes != nil {
+				var nonKeyAttrList []*string
+				for _, nonKeyAttrIter := range desiredGSI.Projection.NonKeyAttributes {
+					nonKeyAttr := *nonKeyAttrIter
+					nonKeyAttrList = append(nonKeyAttrList, &nonKeyAttr)
+				}
+				projection.SetNonKeyAttributes(nonKeyAttrList)
+			}
+			if desiredGSI.Projection.ProjectionType != nil {
+				projection.SetProjectionType(*desiredGSI.Projection.ProjectionType)
+			}
+			gsi.SetProjection(projection)
+		}
+		if desiredGSI.ProvisionedThroughput != nil {
+			provisionedThroughput := &svcsdk.ProvisionedThroughputDescription{}
+			if desiredGSI.ProvisionedThroughput.ReadCapacityUnits != nil {
+				provisionedThroughput.SetReadCapacityUnits(*desiredGSI.ProvisionedThroughput.ReadCapacityUnits)
+			}
+			if desiredGSI.ProvisionedThroughput.WriteCapacityUnits != nil {
+				provisionedThroughput.SetWriteCapacityUnits(*desiredGSI.ProvisionedThroughput.WriteCapacityUnits)
+			}
+			gsi.SetProvisionedThroughput(provisionedThroughput)
+		}
+		result[i] = gsi
+	}
+	return result
 }

@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -777,6 +778,12 @@ func Wrap(err error, msg string) error {
 	var awsErr smithy.APIError
 	if errors.As(err, &awsErr) {
 		return errors.Wrap(awsErr, msg)
+	}
+	// AWS SDK v1 uses different interfaces than v2 and it doesn't unwrap to
+	// the underlying error. So, we need to strip off the unique request ID
+	// manually.
+	if v1RequestError, ok := err.(awserr.RequestFailure); ok {
+		return errors.Wrap(errors.New(strings.ReplaceAll(err.Error(), v1RequestError.RequestID(), "")), msg)
 	}
 	return errors.Wrap(err, msg)
 }
