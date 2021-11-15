@@ -18,10 +18,12 @@ package bucket
 
 import (
 	"context"
+	"sort"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -54,22 +56,77 @@ func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *
 		return NeedsUpdate, awsclient.Wrap(err, notificationGetFailed)
 	}
 
-	config := bucket.Spec.ForProvider.NotificationConfiguration
-	status := bucketStatus(config, external)
-	switch status { // nolint:exhaustive
-	case Updated, NeedsDeletion:
-		return status, nil
+	return IsNotificationConfigurationUpToDate(bucket.Spec.ForProvider.NotificationConfiguration, external)
+}
+
+// IsNotificationConfigurationUpToDate determines whether a notification configuration needs to be updated
+func IsNotificationConfigurationUpToDate(cr *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationOutput) (ResourceStatus, error) { // nolint:gocyclo
+	// Note - aws API treats nil configuration different than empty configuration
+	// As such, we can't prealloc this due to the API
+	// If no configuration is defined but there is one in aws, we must delete it
+	if cr == nil && (len(external.QueueConfigurations) != 0 || len(external.LambdaFunctionConfigurations) != 0 || len(external.TopicConfigurations) != 0) {
+		return NeedsDeletion, nil
+	}
+	// We can't prealloc this for the API but we can to make comparison easier
+	if cr == nil {
+		cr = &v1beta1.NotificationConfiguration{
+			LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{},
+			QueueConfigurations:          []v1beta1.QueueConfiguration{},
+			TopicConfigurations:          []v1beta1.TopicConfiguration{},
+		}
+	}
+	// If any of the lengths in aws are different then there is something to delete
+	if len(cr.LambdaFunctionConfigurations) < len(external.LambdaFunctionConfigurations) || len(cr.QueueConfigurations) < len(external.QueueConfigurations) || len(cr.TopicConfigurations) < len(external.TopicConfigurations) {
+		return NeedsDeletion, nil
 	}
 
-	generated := GenerateConfiguration(config)
+	// Convert to a comparable object
+	generated := GenerateConfiguration(cr)
 
-	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) &&
-		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) &&
-		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) {
+	// Sort everything
+	sortLambda(generated.LambdaFunctionConfigurations)
+	sortLambda(external.LambdaFunctionConfigurations)
+
+	sortQueue(generated.QueueConfigurations)
+	sortQueue(external.QueueConfigurations)
+
+	sortTopic(generated.TopicConfigurations)
+	sortTopic(external.TopicConfigurations)
+
+	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.LambdaFunctionConfiguration{}.Id), cmpopts.EquateEmpty()) &&
+		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.QueueConfiguration{}.Id), cmpopts.EquateEmpty()) &&
+		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.TopicConfiguration{}.Id), cmpopts.EquateEmpty()) {
 		return Updated, nil
 	}
 
 	return NeedsUpdate, nil
+}
+
+func sortLambda(configs []types.LambdaFunctionConfiguration) {
+	sort.Slice(configs, func(i, j int) bool {
+		if a, b := configs[i].LambdaFunctionArn, configs[j].LambdaFunctionArn; a != b {
+			return aws.ToString(a) < aws.ToString(b)
+		}
+		return true
+	})
+}
+
+func sortQueue(configs []types.QueueConfiguration) {
+	sort.Slice(configs, func(i, j int) bool {
+		if a, b := configs[i].QueueArn, configs[j].QueueArn; a != b {
+			return aws.ToString(a) < aws.ToString(b)
+		}
+		return true
+	})
+}
+
+func sortTopic(configs []types.TopicConfiguration) {
+	sort.Slice(configs, func(i, j int) bool {
+		if a, b := configs[i].TopicArn, configs[j].TopicArn; a != b {
+			return aws.ToString(a) < aws.ToString(b)
+		}
+		return true
+	})
 }
 
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
@@ -327,13 +384,4 @@ func LateInitializeTopic(external []types.TopicConfiguration, local []v1beta1.To
 
 func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationOutput) bool {
 	return (external == nil) || (len(external.TopicConfigurations) == 0 && len(external.QueueConfigurations) == 0 && len(external.LambdaFunctionConfigurations) == 0)
-}
-
-func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationOutput) ResourceStatus { // nolint:gocyclo
-	if config == nil && len(external.QueueConfigurations) == 0 && len(external.LambdaFunctionConfigurations) == 0 && len(external.TopicConfigurations) == 0 {
-		return Updated
-	} else if config == nil && (len(external.QueueConfigurations) != 0 || len(external.LambdaFunctionConfigurations) != 0 || len(external.TopicConfigurations) != 0) {
-		return NeedsDeletion
-	}
-	return NeedsUpdate
 }
