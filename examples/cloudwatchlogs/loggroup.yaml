@@ -1,0 +1,13 @@
+apiVersion: cloudwatchlogs.aws.crossplane.io/v1alpha1
+kind: LogGroup
+metadata:
+  name: sample-loggroup
+spec:
+  forProvider:
+    logGroupName: /aws/eks/sample-cluster/cluster
+    region: us-east-1
+    retentionInDays: 1
+    tags:
+      exampletagkey: "exampletagval"
+  providerConfigRef:
+    name: example

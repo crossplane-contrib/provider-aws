@@ -696,3 +696,96 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 		})
 	}
 }
+
+func TestDiffTagsMapPtr(t *testing.T) {
+	type args struct {
+		cr  map[string]*string
+		obj map[string]*string
+	}
+	type want struct {
+		addTags    map[string]*string
+		removeTags []*string
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"AddNewTag": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("only_in_cr"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+				}},
+			want: want{
+				addTags: map[string]*string{
+					"k2": String("only_in_cr"),
+				},
+				removeTags: []*string{},
+			},
+		},
+		"RemoveExistingTag": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("only_in_aws"),
+				}},
+			want: want{
+				addTags: map[string]*string{},
+				removeTags: []*string{
+					String("k2"),
+				}},
+		},
+		"AddAndRemoveWhenKeyChanges": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("same_key_different_value_1"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("same_key_different_value_2"),
+				}},
+			want: want{
+				addTags: map[string]*string{
+					"k2": String("same_key_different_value_1"),
+				},
+				removeTags: []*string{
+					String("k2"),
+				}},
+		},
+		"NoChange": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+				}},
+			want: want{
+				addTags:    map[string]*string{},
+				removeTags: []*string{},
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			// Act
+			addTags, removeTags := DiffTagsMapPtr(tc.args.cr, tc.args.obj)
+
+			// Assert
+			if diff := cmp.Diff(tc.want.addTags, addTags, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.removeTags, removeTags, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

@@ -787,3 +787,22 @@ func Wrap(err error, msg string) error {
 	}
 	return errors.Wrap(err, msg)
 }
+
+// DiffTagsMapPtr returns which AWS Tags exist in the resource tags and which are outdated and should be removed
+func DiffTagsMapPtr(spec map[string]*string, current map[string]*string) (map[string]*string, []*string) {
+	addMap := make(map[string]*string, len(spec))
+	removeTags := make([]*string, 0)
+	for k, v := range current {
+		if StringValue(spec[k]) == StringValue(v) {
+			continue
+		}
+		removeTags = append(removeTags, String(k))
+	}
+	for k, v := range spec {
+		if StringValue(current[k]) == StringValue(v) {
+			continue
+		}
+		addMap[k] = v
+	}
+	return addMap, removeTags
+}
