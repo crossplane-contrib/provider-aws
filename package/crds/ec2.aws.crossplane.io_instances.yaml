@@ -345,9 +345,6 @@ spec:
                       name:
                         description: The name of the instance profile.
                         type: string
-                    required:
-                    - arn
-                    - name
                     type: object
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch
