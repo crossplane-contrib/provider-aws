@@ -46,5 +46,44 @@ spec:
             prefix: "ola/"
           expiration:
             days: 15
+    replicationConfiguration:
+      roleRef:
+        name: somerole
+      rules:
+        - destination:
+            storageClass: STANDARD
+            bucketRef:
+              name: repl-dest
+          deleteMarkerReplication:
+            status: Disabled
+          filter:
+            prefix: ""
+          priority: 0
+          id: rule-1
+          status: Enabled
+  providerConfigRef:
+    name: example
+---
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: repl-dest
+  annotations:
+    # This will be the actual bucket name. It must be globally unique, so you
+    # probably want to change it before trying to apply this example.
+    crossplane.io/external-name: crossplane-example-repl-dest
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    acl: private
+    locationConstraint: us-east-1
+    paymentConfiguration:
+      payer: BucketOwner
+    serverSideEncryptionConfiguration:
+      rules:
+        - applyServerSideEncryptionByDefault:
+            sseAlgorithm: AES256
+    versioningConfiguration:
+      status: Enabled
   providerConfigRef:
     name: example

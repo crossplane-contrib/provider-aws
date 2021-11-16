@@ -908,7 +908,7 @@ spec:
                                 S3 handled replication of delete markers differently.
                                 For more information, see Backward Compatibility (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-backward-compat-considerations)."
                               properties:
-                                Status:
+                                status:
                                   description: Indicates whether to replicate delete
                                     markers. In the current implementation, Amazon
                                     S3 doesn't replicate the delete markers. The status
@@ -917,7 +917,7 @@ spec:
                                   - Disabled
                                   type: string
                               required:
-                              - Status
+                              - status
                               type: object
                             destination:
                               description: "A container for information about the

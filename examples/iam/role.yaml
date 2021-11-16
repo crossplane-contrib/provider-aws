@@ -16,7 +16,8 @@ spec:
                         "ec2.amazonaws.com",
                         "eks.amazonaws.com",
                         "eks-fargate-pods.amazonaws.com",
-                        "lambda.amazonaws.com"
+                        "lambda.amazonaws.com",
+                        "s3.amazonaws.com"
                     ]
                 },
                 "Action": [

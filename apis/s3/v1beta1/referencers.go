@@ -40,6 +40,17 @@ func SNSTopicARN() reference.ExtractValueFn {
 	}
 }
 
+// BucketARN returns a function that returns the ARN of the given S3 Bucket
+func BucketARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*Bucket)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
+
 // ResolveReferences of this Bucket
 func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error { // nolint:gocyclo
 	r := reference.NewAPIResolver(c, mg)
@@ -103,7 +114,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 				Reference:    v.Destination.BucketRef,
 				Selector:     v.Destination.BucketSelector,
 				To:           reference.To{Managed: &Bucket{}, List: &BucketList{}},
-				Extract:      reference.ExternalName(),
+				Extract:      BucketARN(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "spec.forProvider.replicationConfiguration.rules[%d].bucket", i)

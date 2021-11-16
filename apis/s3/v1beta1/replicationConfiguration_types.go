@@ -126,7 +126,7 @@ type DeleteMarkerReplication struct {
 	// In the current implementation, Amazon S3 doesn't replicate the delete markers.
 	// The status must be "Disabled".
 	// +kubebuilder:validation:Enum=Disabled
-	Status string `json:"Status"`
+	Status string `json:"status"`
 }
 
 // Destination specifies information about where to publish analysis or configuration results
