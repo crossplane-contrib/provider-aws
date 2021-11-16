@@ -1,0 +1,6 @@
+ignore:
+  resource_names:
+    - LogStream
+    - ExportTask
+  field_paths:
+    - CreateLogGroupInput.KmsKeyId

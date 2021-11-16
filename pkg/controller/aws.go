@@ -44,6 +44,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -219,6 +220,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		glueclassifier.SetupClassifier,
 		mqbroker.SetupBroker,
 		mquser.SetupUser,
+		cwloggroup.SetupLogGroup,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

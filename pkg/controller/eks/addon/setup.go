@@ -141,7 +141,7 @@ func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput)
 	if err != nil {
 		return false, errors.Wrap(err, errListTags)
 	}
-	add, remove := diffTags(cr.Spec.ForProvider.Tags, tags.Tags)
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
 	return len(add) == 0 && len(remove) == 0, nil
 }
@@ -162,7 +162,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *v1alpha1.Addon, resp *awseks
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errListTags)
 	}
-	add, remove := diffTags(cr.Spec.ForProvider.Tags, tags.Tags)
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
@@ -222,24 +222,4 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
-}
-
-// diffTags returns tags that should be added or removed.
-func diffTags(spec map[string]*string, current map[string]*string) (addMap map[string]*string, remove []*string) {
-	addMap = make(map[string]*string, len(spec))
-	for k, v := range spec {
-		addMap[k] = v
-	}
-	removeMap := map[string]struct{}{}
-	for k, v := range current {
-		if awsclients.StringValue(addMap[k]) == awsclients.StringValue(v) {
-			delete(addMap, k)
-			continue
-		}
-		removeMap[k] = struct{}{}
-	}
-	for k := range removeMap {
-		remove = append(remove, awsclients.String(k))
-	}
-	return
 }
