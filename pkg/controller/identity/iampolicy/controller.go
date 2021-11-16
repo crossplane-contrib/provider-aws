@@ -51,9 +51,10 @@ const (
 	errCreate        = "failed to create the IAM Policy"
 	errDelete        = "failed to delete the IAM Policy"
 	errUpdate        = "failed to update the IAM Policy"
+	errExternalName  = "failed to update the IAM Policy external-name"
 	errEmptyPolicy   = "empty IAM Policy received from IAM API"
 	errPolicyVersion = "No version for policy received from IAM API"
-	errUpToDate      = "cannt check if policy is up to date"
+	errUpToDate      = "cannot check if policy is up to date"
 )
 
 // SetupIAMPolicy adds a controller that reconciles IAM Policy.
@@ -105,9 +106,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if meta.GetExternalName(cr) == "" {
 		// If external name not set there is still a change it may already exist
 		// Try to get the policy by name
-		policyArn, _ := e.getPolicyArnByNameAndPath(ctx, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Path)
-		if policyArn == nil {
-			return managed.ExternalObservation{}, nil
+		policyArn, policyErr := e.getPolicyArnByNameAndPath(ctx, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Path)
+		if policyArn == nil || policyErr != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(policyErr, errExternalName)
 		}
 		meta.SetExternalName(cr, aws.ToString(policyArn))
 		_ = e.kube.Update(ctx, cr)
