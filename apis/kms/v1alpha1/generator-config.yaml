@@ -2,18 +2,12 @@ ignore:
   resource_names:
     - CustomKeyStore
     - Grant
-  field_paths:
-    - CreateAliasInput.TargetKeyId
+    - Alias
 resources:
   Key:
     exceptions:
       errors:
         # In the API this is a 400 error, but we have to define a 404 error here,
         # so the IsNotFound() function is generated correctly
-        404:
-          code: NotFoundException
-  Alias:
-    exceptions:
-      errors:
         404:
           code: NotFoundException
