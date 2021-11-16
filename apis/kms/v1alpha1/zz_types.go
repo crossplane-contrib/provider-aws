@@ -30,8 +30,6 @@ var (
 type AliasListEntry struct {
 	AliasARN *string `json:"aliasARN,omitempty"`
 
-	AliasName *string `json:"aliasName,omitempty"`
-
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`

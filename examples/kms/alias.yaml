@@ -5,8 +5,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    aliasName: alias/dev-key
-    targetKeyIDRef:
+    targetKeyIdRef:
       name: dev-key
   providerConfigRef:
     name: example
