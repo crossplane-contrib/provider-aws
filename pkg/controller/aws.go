@@ -93,6 +93,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
+	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
@@ -190,6 +191,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		backup.SetupBackup,
 		globaltable.SetupGlobalTable,
 		key.SetupKey,
+		alias.SetupAlias,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
 		dbclusterparametergroup.SetupDBClusterParameterGroup,
