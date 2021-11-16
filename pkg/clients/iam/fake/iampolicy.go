@@ -20,23 +20,34 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 // this ensures that the mock implements the client interface
 var _ clientset.PolicyClient = (*MockPolicyClient)(nil)
+var _ clientset.STSClient = (*MockSTSClient)(nil)
 
 // MockPolicyClient is a type that implements all the methods for PolicyClient interface
 type MockPolicyClient struct {
 	MockGetPolicy           func(ctx context.Context, input *iam.GetPolicyInput, opts []func(*iam.Options)) (*iam.GetPolicyOutput, error)
 	MockCreatePolicy        func(ctx context.Context, input *iam.CreatePolicyInput, opts []func(*iam.Options)) (*iam.CreatePolicyOutput, error)
 	MockDeletePolicy        func(ctx context.Context, input *iam.DeletePolicyInput, opts []func(*iam.Options)) (*iam.DeletePolicyOutput, error)
-	MockListPolicies        func(ctx context.Context, input *iam.ListPoliciesInput, opts []func(*iam.Options)) (*iam.ListPoliciesOutput, error)
 	MockGetPolicyVersion    func(ctx context.Context, input *iam.GetPolicyVersionInput, opts []func(*iam.Options)) (*iam.GetPolicyVersionOutput, error)
 	MockCreatePolicyVersion func(ctx context.Context, input *iam.CreatePolicyVersionInput, opts []func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
 	MockListPolicyVersions  func(ctx context.Context, input *iam.ListPolicyVersionsInput, opts []func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
 	MockDeletePolicyVersion func(ctx context.Context, input *iam.DeletePolicyVersionInput, opts []func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
+}
+
+// MockSTSClient mock sts client
+type MockSTSClient struct {
+	MockGetCallerIdentity func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
+}
+
+// GetCallerIdentity calls the underlying MockGetCallerIdentity method.
+func (c *MockSTSClient) GetCallerIdentity(ctx context.Context, input *sts.GetCallerIdentityInput, opts ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+	return c.MockGetCallerIdentity(ctx, input, opts)
 }
 
 // GetPolicy mocks GetPolicy method
@@ -52,11 +63,6 @@ func (m *MockPolicyClient) CreatePolicy(ctx context.Context, input *iam.CreatePo
 // DeletePolicy mocks DeletePolicy method
 func (m *MockPolicyClient) DeletePolicy(ctx context.Context, input *iam.DeletePolicyInput, opts ...func(*iam.Options)) (*iam.DeletePolicyOutput, error) {
 	return m.MockDeletePolicy(ctx, input, opts)
-}
-
-// ListPolicies mocks ListPolicies method
-func (m *MockPolicyClient) ListPolicies(ctx context.Context, input *iam.ListPoliciesInput, opts ...func(*iam.Options)) (*iam.ListPoliciesOutput, error) {
-	return m.MockListPolicies(ctx, input, opts)
 }
 
 // GetPolicyVersion mocks GetPolicyVersion method

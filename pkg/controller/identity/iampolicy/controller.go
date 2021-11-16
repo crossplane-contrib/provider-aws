@@ -21,8 +21,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -66,7 +68,7 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 		For(&v1alpha1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMPolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -75,8 +77,9 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 }
 
 type connector struct {
-	kube        client.Client
-	newClientFn func(config aws.Config) iam.PolicyClient
+	kube           client.Client
+	newClientFn    func(config aws.Config) iam.PolicyClient
+	newSTSClientFn func(config aws.Config) iam.STSClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -84,11 +87,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
+	return &external{client: c.newClientFn(*cfg), sts: c.newSTSClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
 	client iam.PolicyClient
+	sts    iam.STSClient
 	kube   client.Client
 }
 
@@ -218,6 +222,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
+func (e *external) getCallerIdentityArn(ctx context.Context) (arn.ARN, error) {
+	resp, err := e.sts.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return arn.ARN{}, err
+	}
+	return arn.Parse(aws.ToString(resp.Arn))
+}
+
 func (e *external) listPolicyVersions(ctx context.Context, policyArn string) ([]awsiamtypes.PolicyVersion, error) {
 	resp, err := e.client.ListPolicyVersions(ctx, &awsiam.ListPolicyVersionsInput{
 		PolicyArn: aws.String(policyArn),
@@ -283,43 +295,21 @@ func (e *external) deleteNonDefaultVersions(ctx context.Context, policyArn strin
 	return nil
 }
 
-// ListPoliciesPages paginates ListPolicies
-func (e *external) ListPoliciesPages(ctx context.Context, input *awsiam.ListPoliciesInput, fn func(*awsiam.ListPoliciesOutput, bool) bool) error {
-	for {
-		output, err := e.client.ListPolicies(ctx, input)
-		if err != nil {
-			return err
-		}
-		lastPage := awsclient.StringValue(output.Marker) == ""
-		if !fn(output, lastPage) || lastPage {
-			break
-		}
-		input.Marker = output.Marker
-	}
-	return nil
-}
-
-// getPolicyArnByName will paginate through all policies to retrieve by name instead of arn
+// getPolicyArnByName will attempt to determine the arn for a policy using the current caller identity
 func (e *external) getPolicyArnByName(ctx context.Context, policyName string) (*string, error) {
 
-	input := &awsiam.ListPoliciesInput{Scope: awsiamtypes.PolicyScopeTypeLocal}
-
-	policyArn := awsclient.String("")
-	err := e.ListPoliciesPages(ctx, input, func(page *awsiam.ListPoliciesOutput, lastPage bool) bool {
-		if page == nil {
-			return !lastPage
-		}
-		// Set the ARN and return if found
-		for _, policy := range page.Policies {
-			if policyName == awsclient.StringValue(policy.PolicyName) {
-				policyArn = policy.Arn
-				return lastPage
-			}
-		}
-		return !lastPage
-	})
+	// Get the ARN of the current identity
+	identityArn, err := e.getCallerIdentityArn(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return policyArn, nil
+
+	// Use it to construct an arn for the policy
+	policyArn := arn.ARN{Partition: identityArn.Partition,
+		Service:   "iam",
+		Region:    identityArn.Region,
+		AccountID: identityArn.AccountID,
+		Resource:  "policy/" + policyName}
+
+	return aws.String(policyArn.String()), nil
 }
