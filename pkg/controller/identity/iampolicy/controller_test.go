@@ -91,6 +91,12 @@ func withSpec(spec v1alpha1.IAMPolicyParameters) policyModifier {
 	}
 }
 
+func withPath(path string) policyModifier {
+	return func(r *v1alpha1.IAMPolicy) {
+		r.Spec.ForProvider.Path = awsclient.String(path)
+	}
+}
+
 func policy(m ...policyModifier) *v1alpha1.IAMPolicy {
 	cr := &v1alpha1.IAMPolicy{}
 	cr.Spec.ForProvider.Name = name
@@ -219,6 +225,36 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: policy(withExternalName(policyArn)),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"EmptyExternalNameAndEntityDoesNotExistForPolicyWithPath": {
+			args: args{
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil, func(obj client.Object) error { return nil })},
+				sts: &fake.MockSTSClient{MockGetCallerIdentity: func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+					return getCallerIdentityOutput, nil
+				},
+				},
+				iam: &fake.MockPolicyClient{
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, &awsiamtypes.NoSuchEntityException{}
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExternalName(""), withPath("/org-unit/")),
+			},
+			want: want{
+				cr: policy(withExternalName("arn:aws:iam::123456789012:policy/org-unit/policy-name"), withPath("/org-unit/")),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
 				},

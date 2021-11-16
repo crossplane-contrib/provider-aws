@@ -105,7 +105,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if meta.GetExternalName(cr) == "" {
 		// If external name not set there is still a change it may already exist
 		// Try to get the policy by name
-		policyArn, _ := e.getPolicyArnByName(ctx, cr.Spec.ForProvider.Name)
+		policyArn, _ := e.getPolicyArnByNameAndPath(ctx, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Path)
 		if policyArn == nil {
 			return managed.ExternalObservation{}, nil
 		}
@@ -295,8 +295,8 @@ func (e *external) deleteNonDefaultVersions(ctx context.Context, policyArn strin
 	return nil
 }
 
-// getPolicyArnByName will attempt to determine the arn for a policy using the current caller identity
-func (e *external) getPolicyArnByName(ctx context.Context, policyName string) (*string, error) {
+// getPolicyArnByNameAndPath will attempt to determine the arn for a policy using the current caller identity
+func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName string, policyPath *string) (*string, error) {
 
 	// Get the ARN of the current identity
 	identityArn, err := e.getCallerIdentityArn(ctx)
@@ -304,12 +304,22 @@ func (e *external) getPolicyArnByName(ctx context.Context, policyName string) (*
 		return nil, err
 	}
 
+	// Per the aws docs
+	// This parameter is optional. If it is not included, it defaults to a slash (/).
+	// This parameter allows (through its regex pattern ) a string of characters consisting
+	// of either a forward slash (/) by itself or a string that must begin and end with forward
+	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
+	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
+	if policyPath == nil {
+		policyPath = awsclient.String("/")
+	}
+
 	// Use it to construct an arn for the policy
 	policyArn := arn.ARN{Partition: identityArn.Partition,
 		Service:   "iam",
 		Region:    identityArn.Region,
 		AccountID: identityArn.AccountID,
-		Resource:  "policy/" + policyName}
+		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
 }
