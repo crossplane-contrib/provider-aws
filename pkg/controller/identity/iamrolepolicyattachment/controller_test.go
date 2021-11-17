@@ -194,8 +194,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withConditions(xpv1.Creating())),
+					withSpecPolicyArn(&specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -219,8 +218,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withConditions(xpv1.Creating())),
+					withSpecPolicyArn(&specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -319,8 +317,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withConditions(xpv1.Deleting())),
+					withSpecPolicyArn(&specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -344,8 +341,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withConditions(xpv1.Deleting())),
+					withSpecPolicyArn(&specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
@@ -359,7 +355,7 @@ func TestDelete(t *testing.T) {
 				cr: rolePolicy(),
 			},
 			want: want{
-				cr: rolePolicy(withConditions(xpv1.Deleting())),
+				cr: rolePolicy(),
 			},
 		},
 	}
