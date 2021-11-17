@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// NOTE(muvaf): This code ported from ACK-generated code. See details here:
+// https://github.com/crossplane/provider-aws/pull/950#issue-1055573793
+
 package alias
 
 import (

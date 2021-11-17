@@ -1,7 +1,7 @@
 apiVersion: kms.aws.crossplane.io/v1alpha1
 kind: Alias
 metadata:
-  name: dev-key
+  name: dev-alias
 spec:
   forProvider:
     region: us-east-1

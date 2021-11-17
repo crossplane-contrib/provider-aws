@@ -44,6 +44,7 @@ func SetupAlias(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimite
 			e.preCreate = preCreate
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
+			e.filterList = filterList
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -58,6 +59,18 @@ func SetupAlias(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimite
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+func filterList(cr *svcapitypes.Alias, list *svcsdk.ListAliasesOutput) *svcsdk.ListAliasesOutput {
+	for i := range list.Aliases {
+		if awsclients.StringValue(list.Aliases[i].AliasName) == "alias/"+meta.GetExternalName(cr) {
+			return &svcsdk.ListAliasesOutput{
+				Aliases: []*svcsdk.AliasListEntry{
+					list.Aliases[i],
+				}}
+		}
+	}
+	return &svcsdk.ListAliasesOutput{}
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliasesInput) error {
