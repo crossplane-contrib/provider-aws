@@ -15,7 +15,6 @@ package alias
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -40,57 +39,66 @@ func SetupAlias(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimite
 	name := managed.ControllerName(svcapitypes.AliasGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.postCreate = postCreate
+			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
+			e.preUpdate = preUpdate
+			e.preDelete = preDelete
+			e.filterList = filterList
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
+			RateLimiter: ratelimiter.NewController(limiter),
 		}).
 		For(&svcapitypes.Alias{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.AliasGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
+func filterList(cr *svcapitypes.Alias, list *svcsdk.ListAliasesOutput) *svcsdk.ListAliasesOutput {
+	for i := range list.Aliases {
+		if awsclients.StringValue(list.Aliases[i].AliasName) == "alias/"+meta.GetExternalName(cr) {
+			return &svcsdk.ListAliasesOutput{
+				Aliases: []*svcsdk.AliasListEntry{
+					list.Aliases[i],
+				}}
+		}
+	}
+	return &svcsdk.ListAliasesOutput{}
+}
+
+func preObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliasesInput) error {
+	obj.KeyId = cr.Spec.ForProvider.TargetKeyID
+	return nil
+}
+
 func preCreate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.CreateAliasInput) error {
+	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.CreateAliasOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	// CreateAliasOutput is empty
-	meta.SetExternalName(cr, *cr.Spec.ForProvider.AliasName)
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+func preUpdate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.UpdateAliasInput) error {
+	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
+	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
+	return nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliasesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func preDelete(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.DeleteAliasInput) (bool, error) {
+	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
+	return false, nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.Alias, _ *svcsdk.ListAliasesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-
-	// get all alias
-	for i := range obj.Aliases {
-		if awsclients.StringValue(obj.Aliases[i].AliasName) == awsclients.StringValue(cr.Spec.ForProvider.AliasName) {
-			// obj.Aliases[i].TargetKeyId is in ListAliasesOutput the KMSKey.ARN
-			if strings.Contains(awsclients.StringValue(cr.Spec.ForProvider.TargetKeyID), awsclients.StringValue(obj.Aliases[i].TargetKeyId)) {
-				// alias found and TargetKeyId included
-				cr.SetConditions(xpv1.Available())
-				return obs, nil
-			}
-		}
-	}
-
-	cr.SetConditions(xpv1.Unavailable())
-	return managed.ExternalObservation{}, err
+	cr.SetConditions(xpv1.Available())
+	return obs, nil
 }
