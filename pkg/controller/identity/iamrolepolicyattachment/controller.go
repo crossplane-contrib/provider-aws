@@ -46,8 +46,6 @@ const (
 	errGet              = "failed to get IAMRolePolicyAttachments for role with name"
 	errAttach           = "failed to attach the policy to role"
 	errDetach           = "failed to detach the policy to role"
-
-	errKubeUpdateFailed = "cannot late initialize IAMRolePolicyAttachment"
 )
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles

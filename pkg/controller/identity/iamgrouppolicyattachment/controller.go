@@ -130,11 +130,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	cr.SetConditions(xpv1.Available())
-
 	cr.Status.AtProvider = v1alpha1.IAMGroupPolicyAttachmentObservation{
 		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
