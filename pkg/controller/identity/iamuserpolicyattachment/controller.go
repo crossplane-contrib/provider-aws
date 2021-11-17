@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -48,8 +47,6 @@ const (
 	errGet    = "failed to get UserPolicyAttachments for user"
 	errAttach = "failed to attach the policy to user"
 	errDetach = "failed to detach the policy to user"
-
-	errKubeUpdateFailed = "cannot late initialize UserPolicyAttachment"
 )
 
 // SetupIAMUserPolicyAttachment adds a controller that reconciles
@@ -117,21 +114,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			ResourceExists: false,
 		}, nil
 	}
-
-	current := cr.Spec.ForProvider.DeepCopy()
-	iam.LateInitializeUserPolicy(&cr.Spec.ForProvider, attachedPolicyObject)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
-
 	cr.SetConditions(xpv1.Available())
-
 	cr.Status.AtProvider = v1alpha1.IAMUserPolicyAttachmentObservation{
 		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
@@ -143,8 +129,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
-	cr.SetConditions(xpv1.Creating())
 
 	_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
@@ -166,8 +150,6 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-
-	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),

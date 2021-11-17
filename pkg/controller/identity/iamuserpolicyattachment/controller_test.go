@@ -195,8 +195,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: userPolicy(
 					withUserName(userName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+					withSpecPolicyArn(policyArn)),
 			},
 		},
 		"InValidInput": {
@@ -220,8 +219,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+					withSpecPolicyArn(policyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -269,8 +267,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: userPolicy(
 					withUserName(userName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Deleting())),
+					withSpecPolicyArn(policyArn)),
 			},
 		},
 		"InValidInput": {
@@ -294,8 +291,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Deleting())),
+					withSpecPolicyArn(policyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
@@ -309,7 +305,7 @@ func TestDelete(t *testing.T) {
 				cr: userPolicy(),
 			},
 			want: want{
-				cr: userPolicy(withConditions(xpv1.Deleting())),
+				cr: userPolicy(),
 			},
 		},
 	}

@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -47,8 +46,6 @@ const (
 	errGet              = "failed to get IAMRolePolicyAttachments for role with name"
 	errAttach           = "failed to attach the policy to role"
 	errDetach           = "failed to detach the policy to role"
-
-	errKubeUpdateFailed = "cannot late initialize IAMRolePolicyAttachment"
 )
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
@@ -110,25 +107,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			break
 		}
 	}
-
 	if attachedPolicyObject == nil {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
-
-	current := cr.Spec.ForProvider.DeepCopy()
-	iam.LateInitializePolicy(&cr.Spec.ForProvider, attachedPolicyObject)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
-
 	cr.SetConditions(xpv1.Available())
-
-	cr.Status.AtProvider = iam.GenerateRolePolicyObservation(*attachedPolicyObject)
-
+	cr.Status.AtProvider.AttachedPolicyARN = awsclient.StringValue(attachedPolicyObject.PolicyArn)
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
@@ -140,14 +123,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
-	cr.SetConditions(xpv1.Creating())
-
 	_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
 	})
-
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
 
@@ -161,17 +140,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-
-	cr.Status.SetConditions(xpv1.Deleting())
-
 	_, err := e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
 	})
-
-	if iam.IsErrorNotFound(err) {
-		return nil
-	}
-
-	return awsclient.Wrap(err, errDetach)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }
