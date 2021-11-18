@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudfront
+package cachepolicy
 
 import (
 	"encoding/json"
@@ -306,6 +306,14 @@ func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFiel
 
 	return crKeepField, nil
 }
+
+// TODO(negz): I believe handleSlice attempts to late init slices under the
+// assumption that the actual and desired elements will be in the same order,
+// which is often not the case (e.g. for CloudFront Distributions). It also
+// appears to append actual elements to the desired slice when the actual slice
+// is longer than the desired slice, which would prevent us from removing
+// elements from the desired slice (since they'd be late-init-ed right back in
+// during Observe, resetting the desired state).
 
 // nolint:gocyclo
 func handleSlice(cName string, crFieldInitialized bool, crFieldValue, responseFieldValue reflect.Value,

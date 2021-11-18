@@ -633,6 +633,26 @@ func LateInitializeInt64(in int64, from int64) int64 {
 	return from
 }
 
+// LateInitializeStringPtrSlice returns in if it's non-nil or from is zero
+// length, otherwise it returns from.
+func LateInitializeStringPtrSlice(in []*string, from []*string) []*string {
+	if in != nil || len(from) == 0 {
+		return in
+	}
+
+	return from
+}
+
+// LateInitializeInt64PtrSlice returns in if it's non-nil or from is zero
+// length, otherwise it returns from.
+func LateInitializeInt64PtrSlice(in []*int64, from []*int64) []*int64 {
+	if in != nil || len(from) == 0 {
+		return in
+	}
+
+	return from
+}
+
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {

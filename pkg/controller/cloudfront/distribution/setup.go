@@ -20,6 +20,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
@@ -36,11 +38,13 @@ import (
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/controller/cloudfront"
 )
 
-// TODO: isn't this defined as an API constant somewhere in aws-sdk-go? Generated zz_enums.go seems not to contain it either
-const stateDeployed = "Deployed"
+// TODO: Aren't these defined as an API constant somewhere in aws-sdk-go?
+// Generated zz_enums.go seems not to contain it either
+const (
+	stateDeployed = "Deployed"
+)
 
 // SetupDistribution adds a controller that reconciles Distribution.
 func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
@@ -100,25 +104,47 @@ func preObserve(_ context.Context, cr *svcapitypes.Distribution, gdi *svcsdk.Get
 	return nil
 }
 
-var mappingOptions = []cloudfront.LateInitOption{
-	cloudfront.Replacer("ID", "Id"),
-	cloudfront.Replacer("ARN", "Arn"),
-	cloudfront.MapReplacer(map[string]string{
-		"HTTPVersion":        "HttpVersion",
-		"OriginSSLProtocols": "OriginSslProtocols",
-	})}
-
-func lateInitialize(in *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistributionOutput) error {
-	inConfig, respConfig := in.DistributionConfig, gdo.Distribution.DistributionConfig
-
-	_, err := cloudfront.LateInitializeFromResponse("", inConfig, respConfig,
-		mappingOptions...)
-	return err
-}
-
 func isUpToDate(cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput) (bool, error) {
-	return cloudfront.IsUpToDate(gdo.Distribution.DistributionConfig, cr.Spec.ForProvider.DistributionConfig,
-		mappingOptions...)
+	// We can only update a Distribution that's in state 'Deployed' so we
+	// temporarily consider it 'up to date' until it is since updating it
+	// wouldn't work.
+	if awsclients.StringValue(cr.Status.AtProvider.Distribution.Status) != stateDeployed {
+		return true, nil
+	}
+
+	// NOTE(negz): As far as I can tell we can't use the typical CreatePatch
+	// pattern, because this type has a bunch of nested, updatable fields.
+	// It's not possible to cmpopts.IgnoreField a specific 'leaf' field
+	// because cmp still considers the parent field being non-nil in the
+	// patch to mean there's a diff, and we obviously don't want to ignore
+	// the entire parent field because then we'd never be able to detect
+	// when an update was needed.
+
+	currentParams := &svcapitypes.DistributionParameters{}
+	_ = lateInitialize(currentParams, gdo)
+
+	return cmp.Equal(*currentParams, cr.Spec.ForProvider,
+		// We don't late init region - it's not in the output.
+		cmpopts.IgnoreFields(svcapitypes.DistributionParameters{}, "Region"),
+
+		// This appears to always be nil in GetDistributionOutput, which
+		// causes false positives for IsUpToDate.
+		cmpopts.IgnoreFields(svcapitypes.ViewerCertificate{}, "CloudFrontDefaultCertificate"),
+
+		// There's quite a few slices of *string and *int64 in this API
+		// that we want to consider equal regardless of order.
+		cmpopts.SortSlices(func(x, y *string) bool { return awsclients.StringValue(x) > awsclients.StringValue(y) }),
+		cmpopts.SortSlices(func(x, y *int64) bool { return awsclients.Int64Value(x) > awsclients.Int64Value(y) }),
+
+		// TODO(negz): Do we need to do something like this for all the
+		// other 'Items' slices with struct elements in this API? I've
+		// observed that the API doesn't return Origins.Items in the
+		// same order it's supplied (at a glance it seems to be returned
+		// ordered lexicographically by ID).
+		cmpopts.SortSlices(func(x, y *svcapitypes.Origin) bool {
+			return awsclients.StringValue(x.ID) > awsclients.StringValue(y.ID)
+		}),
+	), nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput,
@@ -152,6 +178,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.Upda
 	udi.DistributionConfig.CallerReference = awsclients.String(string(cr.UID))
 	udi.DistributionConfig.Origins.Quantity =
 		awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
+
 	return nil
 }
 
