@@ -80,7 +80,7 @@ spec:
                     type: string
                   tags:
                     items:
-                      description: Tag represents a tag attached to a v1alpha1.User
+                      description: Tag represents a tag attached to AWS IAM Policy  
                       properties:
                         key:
                           description: The key name that can be used to look up or
