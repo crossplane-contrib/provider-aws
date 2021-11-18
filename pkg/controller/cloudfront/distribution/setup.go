@@ -117,8 +117,8 @@ func isUpToDate(cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput)
 	// It's not possible to cmpopts.IgnoreField a specific 'leaf' field
 	// because cmp still considers the parent field being non-nil in the
 	// patch to mean there's a diff, and we obviously don't want to ignore
-	// the entire parent field because then we'd never be able detect when
-	// an update was needed.
+	// the entire parent field because then we'd never be able to detect
+	// when an update was needed.
 
 	currentParams := &svcapitypes.DistributionParameters{}
 	_ = lateInitialize(currentParams, gdo)

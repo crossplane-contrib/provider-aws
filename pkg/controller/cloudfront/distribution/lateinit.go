@@ -284,15 +284,15 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 
 		in.AllowedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
 		in.AllowedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.Quantity, from.AllowedMethods.Quantity)
-	}
 
-	if from.AllowedMethods.CachedMethods != nil {
-		if in.AllowedMethods.CachedMethods == nil {
-			in.AllowedMethods.CachedMethods = &svcapitypes.CachedMethods{}
+		if from.AllowedMethods.CachedMethods != nil {
+			if in.AllowedMethods.CachedMethods == nil {
+				in.AllowedMethods.CachedMethods = &svcapitypes.CachedMethods{}
+			}
+
+			in.AllowedMethods.CachedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
+			in.AllowedMethods.CachedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.CachedMethods.Quantity, from.AllowedMethods.CachedMethods.Quantity)
 		}
-
-		in.AllowedMethods.CachedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
-		in.AllowedMethods.CachedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.CachedMethods.Quantity, from.AllowedMethods.CachedMethods.Quantity)
 	}
 
 	in.CachePolicyID = awsclients.LateInitializeStringPtr(in.CachePolicyID, from.CachePolicyId)
@@ -428,10 +428,10 @@ func lateInitOriginGroup(in *svcapitypes.OriginGroup, from *svcsdk.OriginGroup) 
 			if in.FailoverCriteria.StatusCodes == nil {
 				in.FailoverCriteria.StatusCodes = &svcapitypes.StatusCodes{}
 			}
-		}
 
-		in.FailoverCriteria.StatusCodes.Items = awsclients.LateInitializeInt64PtrSlice(in.FailoverCriteria.StatusCodes.Items, from.FailoverCriteria.StatusCodes.Items)
-		in.FailoverCriteria.StatusCodes.Quantity = awsclients.LateInitializeInt64Ptr(in.FailoverCriteria.StatusCodes.Quantity, from.FailoverCriteria.StatusCodes.Quantity)
+			in.FailoverCriteria.StatusCodes.Items = awsclients.LateInitializeInt64PtrSlice(in.FailoverCriteria.StatusCodes.Items, from.FailoverCriteria.StatusCodes.Items)
+			in.FailoverCriteria.StatusCodes.Quantity = awsclients.LateInitializeInt64Ptr(in.FailoverCriteria.StatusCodes.Quantity, from.FailoverCriteria.StatusCodes.Quantity)
+		}
 	}
 
 	in.ID = awsclients.LateInitializeStringPtr(in.ID, from.Id)
@@ -502,7 +502,7 @@ func lateInitOrigins(in *svcapitypes.Origins, from *svcsdk.Origins) {
 	}
 
 	// If we have some origins we need to late init each one from its
-	// corresponding origin in the API API (if any).
+	// corresponding origin in the API (if any).
 	existing := make(map[string]*svcsdk.Origin)
 	for i := range from.Items {
 		o := from.Items[i]
