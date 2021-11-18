@@ -45,6 +45,96 @@ func TestLateInitialize(t *testing.T) {
 				gdo: &svcsdk.GetDistributionOutput{Distribution: &svcsdk.Distribution{}},
 			},
 		},
+		// TODO(negz): Exhaustive tests for nil handling would be ideal.
+		"NilDistributionConfigFields": {
+			args: args{
+				gdo: &svcsdk.GetDistributionOutput{Distribution: &svcsdk.Distribution{
+					DistributionConfig: &svcsdk.DistributionConfig{},
+				}},
+				dp: &svcapitypes.DistributionParameters{
+					DistributionConfig: &svcapitypes.DistributionConfig{},
+				},
+			},
+			want: &svcapitypes.DistributionParameters{
+				DistributionConfig: &svcapitypes.DistributionConfig{},
+			},
+		},
+		"NilDistributionConfigChildrenFields": {
+			args: args{
+				gdo: &svcsdk.GetDistributionOutput{Distribution: &svcsdk.Distribution{
+					DistributionConfig: &svcsdk.DistributionConfig{
+						Aliases:              &svcsdk.Aliases{},
+						CacheBehaviors:       &svcsdk.CacheBehaviors{},
+						CustomErrorResponses: &svcsdk.CustomErrorResponses{},
+						DefaultCacheBehavior: &svcsdk.DefaultCacheBehavior{},
+						Logging:              &svcsdk.LoggingConfig{},
+						OriginGroups:         &svcsdk.OriginGroups{},
+						Origins:              &svcsdk.Origins{},
+						Restrictions:         &svcsdk.Restrictions{},
+						ViewerCertificate:    &svcsdk.ViewerCertificate{},
+					},
+				}},
+				dp: &svcapitypes.DistributionParameters{
+					DistributionConfig: &svcapitypes.DistributionConfig{},
+				},
+			},
+			want: &svcapitypes.DistributionParameters{
+				DistributionConfig: &svcapitypes.DistributionConfig{
+					Aliases:              &svcapitypes.Aliases{},
+					CacheBehaviors:       &svcapitypes.CacheBehaviors{},
+					CustomErrorResponses: &svcapitypes.CustomErrorResponses{},
+					DefaultCacheBehavior: &svcapitypes.DefaultCacheBehavior{},
+					Logging:              &svcapitypes.LoggingConfig{},
+					OriginGroups:         &svcapitypes.OriginGroups{},
+					Origins:              &svcapitypes.Origins{},
+					Restrictions:         &svcapitypes.Restrictions{},
+					ViewerCertificate:    &svcapitypes.ViewerCertificate{},
+				},
+			},
+		},
+		"NilDistributionConfigGrandchildrenFields": {
+			args: args{
+				gdo: &svcsdk.GetDistributionOutput{Distribution: &svcsdk.Distribution{
+					DistributionConfig: &svcsdk.DistributionConfig{
+						CacheBehaviors: &svcsdk.CacheBehaviors{
+							Items: []*svcsdk.CacheBehavior{{}},
+						},
+						CustomErrorResponses: &svcsdk.CustomErrorResponses{
+							Items: []*svcsdk.CustomErrorResponse{{}},
+						},
+						OriginGroups: &svcsdk.OriginGroups{
+							Items: []*svcsdk.OriginGroup{{}},
+						},
+						Origins: &svcsdk.Origins{
+							Items: []*svcsdk.Origin{{}},
+						},
+						Restrictions: &svcsdk.Restrictions{
+							GeoRestriction: &svcsdk.GeoRestriction{},
+						},
+					},
+				}},
+				dp: &svcapitypes.DistributionParameters{},
+			},
+			want: &svcapitypes.DistributionParameters{
+				DistributionConfig: &svcapitypes.DistributionConfig{
+					CacheBehaviors: &svcapitypes.CacheBehaviors{
+						Items: []*svcapitypes.CacheBehavior{{}},
+					},
+					CustomErrorResponses: &svcapitypes.CustomErrorResponses{
+						Items: []*svcapitypes.CustomErrorResponse{{}},
+					},
+					OriginGroups: &svcapitypes.OriginGroups{
+						Items: []*svcapitypes.OriginGroup{{}},
+					},
+					Origins: &svcapitypes.Origins{
+						Items: []*svcapitypes.Origin{{}},
+					},
+					Restrictions: &svcapitypes.Restrictions{
+						GeoRestriction: &svcapitypes.GeoRestriction{},
+					},
+				},
+			},
+		},
 		"LateInitAllFields": {
 			args: args{
 				dp: &svcapitypes.DistributionParameters{},
