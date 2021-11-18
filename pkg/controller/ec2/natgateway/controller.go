@@ -136,8 +136,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	nat, err := e.client.CreateNatGateway(ctx, &awsec2.CreateNatGatewayInput{
-		AllocationId: cr.Spec.ForProvider.AllocationID,
-		SubnetId:     cr.Spec.ForProvider.SubnetID,
+		ConnectivityType: awsec2types.ConnectivityType(cr.Spec.ForProvider.ConnectivityType),
+		AllocationId:     cr.Spec.ForProvider.AllocationID,
+		SubnetId:         cr.Spec.ForProvider.SubnetID,
 		TagSpecifications: []awsec2types.TagSpecification{
 			{
 				ResourceType: "natgateway",
