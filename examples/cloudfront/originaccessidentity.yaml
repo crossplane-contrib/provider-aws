@@ -1,0 +1,12 @@
+apiVersion: cloudfront.aws.crossplane.io/v1alpha1
+kind: CloudFrontOriginAccessIDentity
+metadata:
+  name: example-origin-access-identity
+spec:
+  providerConfigRef:
+    name: example
+  forProvider:
+    region: us-east-1
+    cloudFrontOriginAccessIDentityConfig:
+      callerReference: "example-reference"
+      comment: "example-comment"
