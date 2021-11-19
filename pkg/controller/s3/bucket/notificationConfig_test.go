@@ -28,7 +28,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -134,7 +134,7 @@ func TestNotificationObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return nil, errBoom
@@ -148,7 +148,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"UpdateNeededFull": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -162,7 +162,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"UpdateNeededPartial": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -179,7 +179,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -193,7 +193,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -240,7 +240,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return nil, errBoom
@@ -253,7 +253,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return &s3.PutBucketNotificationConfigurationOutput{}, nil
@@ -266,7 +266,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return &s3.PutBucketNotificationConfigurationOutput{}, nil
@@ -306,7 +306,7 @@ func TestNotifLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, errBoom
@@ -315,12 +315,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, notificationGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -329,12 +329,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -347,12 +347,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -361,7 +361,7 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 			},
 		},
 	}
