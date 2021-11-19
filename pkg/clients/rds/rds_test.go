@@ -103,34 +103,135 @@ func TestCreatePatch(t *testing.T) {
 		args
 		want
 	}{
-		"SameFields": {
+		// "SameFields": {
+		// 	args: args{
+		// 		db: &rdstypes.DBInstance{
+		// 			AllocatedStorage: allocatedStorage,
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 		p: &v1beta1.RDSInstanceParameters{
+		// 			AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 	},
+		// 	want: want{
+		// 		patch: &v1beta1.RDSInstanceParameters{},
+		// 	},
+		// },
+		// "DifferentFields": {
+		// 	args: args{
+		// 		db: &rdstypes.DBInstance{
+		// 			AllocatedStorage: allocatedStorage,
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 		p: &v1beta1.RDSInstanceParameters{
+		// 			AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 	},
+		// 	want: want{
+		// 		patch: &v1beta1.RDSInstanceParameters{
+		// 			AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+		// 		},
+		// 	},
+		// },
+
+		// This passes, but should fail
+		"PubliclyAccessibleIsIncludedEvenWhenItHasNotChangedAndIsFalse": {
 			args: args{
 				db: &rdstypes.DBInstance{
 					AllocatedStorage: allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
-				},
-				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
-					CharacterSetName: &characterSetName,
-					DBName:           &dbName,
-				},
-			},
-			want: want{
-				patch: &v1beta1.RDSInstanceParameters{},
-			},
-		},
-		"DifferentFields": {
-			args: args{
-				db: &rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
-					CharacterSetName: &characterSetName,
-					DBName:           &dbName,
+					PubliclyAccessible: false,
 				},
 				p: &v1beta1.RDSInstanceParameters{
 					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
+					PubliclyAccessible: pointToBool(false),
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					/*
+					Based on the comment on the CreatePatch method, this field (PubliclyAccessible) should not be in the patch
+					
+					This was false in both the rdstypes.DBInstance struct and the v1beta1.RDSInstanceParameters struct
+					*/
+					PubliclyAccessible: pointToBool(false),
+				},
+			},
+		},
+
+		// This fails, but should pass
+		"PubliclyAccessibleIsNotIncludedWhenItHasNotChangedAndIsFalse": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					AllocatedStorage: allocatedStorage,
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: false,
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: pointToBool(false),
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{
+					// This is the only value that has changed
+					// PubliclyAccessible is also included in the patch
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+				},
+			},
+		},
+
+		// This passes (expected)
+		"PubliclyAccessibleIsIncludedEvenWhenItHasNotChangedAndIsTrue": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					AllocatedStorage: allocatedStorage,
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: false,
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: pointToBool(true),
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					PubliclyAccessible: pointToBool(true),
+				},
+			},
+		},
+
+		// This passes (expected)
+		"PubliclyAccessibleIsNotIncludedWhenItHasNotChangedAndIsTrue": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					AllocatedStorage: allocatedStorage,
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: true,
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+					PubliclyAccessible: pointToBool(true),
 				},
 			},
 			want: want{
@@ -151,8 +252,12 @@ func TestCreatePatch(t *testing.T) {
 	}
 }
 
+func pointToBool(b bool) *bool {
+	return &b
+}
+
 func TestIsUpToDate(t *testing.T) {
-	dbSubnetGroupName := "example-subnet"
+	// dbSubnetGroupName := "example-subnet"
 
 	type args struct {
 		db   rdstypes.DBInstance
@@ -164,162 +269,240 @@ func TestIsUpToDate(t *testing.T) {
 		args args
 		want bool
 	}{
-		"SameFields": {
+		// "SameFields": {
+		// 	args: args{
+		// 		db: rdstypes.DBInstance{
+		// 			AllocatedStorage: allocatedStorage,
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 		r: v1beta1.RDSInstance{
+		// 			Spec: v1beta1.RDSInstanceSpec{
+		// 				ForProvider: v1beta1.RDSInstanceParameters{
+		// 					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
+		// 					CharacterSetName: &characterSetName,
+		// 					DBName:           &dbName,
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	want: true,
+		// },
+
+		/*
+		PubliclyAccessible is false in the rdstypes.DBInstance struct and the v1beta1.RDSInstanceSpec struct
+
+		IsUpToDate should return true, but doesn't. I think this is what is causing the provider to request updates to rds instances when no values have changed.
+		*/
+		"PubliclyAccessibleForcesChangesWhenFalseInAWSAndCRD": {
 			args: args{
 				db: rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
-					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
+					PubliclyAccessible: false,
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
-							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
+							PubliclyAccessible: pointToBool(false),
 						},
 					},
 				},
 			},
-			want: true,
+			want: true, // This fails; it gets false
 		},
-		"DifferentFields": {
+
+		"IsUpToDateWhenPubliclyAccessibleIsTrueInAWSButFalseInCRD": { //This passes
 			args: args{
 				db: rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
-					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
+					PubliclyAccessible: true,
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
-							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
+							PubliclyAccessible: pointToBool(false),
 						},
 					},
 				},
 			},
-			want: false,
+			want: false, // This passes
 		},
-		"IgnoresRefs": {
+
+		"IsUpToDateWhenPubliclyAccessibleIsFalseInAWSButTrueInCRD": { //This passes
 			args: args{
 				db: rdstypes.DBInstance{
-					DBName:        &dbName,
-					DBSubnetGroup: &rdstypes.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
+					DBName:           &dbName,
+					PubliclyAccessible: false,
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName:               &dbName,
-							DBSubnetGroupName:    &dbSubnetGroupName,
-							DBSubnetGroupNameRef: &xpv1.Reference{Name: "coolgroup"},
+							DBName:           &dbName,
+							PubliclyAccessible: pointToBool(true),
 						},
 					},
 				},
 			},
-			want: true,
+			want: false, // This passes
 		},
-		"SamePassword": {
+
+		"IsUpToDateWhenPubliclyAccessibleIsTrueInAWSAndCRD": { //This passes
 			args: args{
 				db: rdstypes.DBInstance{
-					DBName: &dbName,
+					DBName:           &dbName,
+					PubliclyAccessible: true,
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
+							DBName:           &dbName,
+							PubliclyAccessible: pointToBool(true),
 						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
-					},
-				},
-				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
-						switch key.Name {
-						case connectionSecretName:
-							secret := corev1.Secret{
-								Data: map[string][]byte{},
-							}
-							secret.Data[connectionSecretKey] = []byte(connectionCredData)
-							secret.DeepCopyInto(obj.(*corev1.Secret))
-							return nil
-						case outputSecretName:
-							secret := corev1.Secret{
-								Data: map[string][]byte{},
-							}
-							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
-							secret.DeepCopyInto(obj.(*corev1.Secret))
-							return nil
-						default:
-							return nil
-						}
 					},
 				},
 			},
-			want: true,
+			want: true, // This passes
 		},
-		"DifferentPassword": {
-			args: args{
-				db: rdstypes.DBInstance{
-					DBName: &dbName,
-				},
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
-						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
-					},
-				},
-				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
-						switch key.Name {
-						case connectionSecretName:
-							secret := corev1.Secret{
-								Data: map[string][]byte{},
-							}
-							secret.Data[connectionSecretKey] = []byte(connectionCredData)
-							secret.DeepCopyInto(obj.(*corev1.Secret))
-							return nil
-						case outputSecretName:
-							secret := corev1.Secret{
-								Data: map[string][]byte{},
-							}
-							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
-							secret.DeepCopyInto(obj.(*corev1.Secret))
-							return nil
-						default:
-							return nil
-						}
-					},
-				},
-			},
-			want: false,
-		},
+		
+		// "DifferentFields": {
+		// 	args: args{
+		// 		db: rdstypes.DBInstance{
+		// 			AllocatedStorage: allocatedStorage,
+		// 			CharacterSetName: &characterSetName,
+		// 			DBName:           &dbName,
+		// 		},
+		// 		r: v1beta1.RDSInstance{
+		// 			Spec: v1beta1.RDSInstanceSpec{
+		// 				ForProvider: v1beta1.RDSInstanceParameters{
+		// 					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+		// 					CharacterSetName: &characterSetName,
+		// 					DBName:           &dbName,
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	want: false,
+		// },
+		// "IgnoresRefs": {
+		// 	args: args{
+		// 		db: rdstypes.DBInstance{
+		// 			DBName:        &dbName,
+		// 			DBSubnetGroup: &rdstypes.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
+		// 		},
+		// 		r: v1beta1.RDSInstance{
+		// 			Spec: v1beta1.RDSInstanceSpec{
+		// 				ForProvider: v1beta1.RDSInstanceParameters{
+		// 					DBName:               &dbName,
+		// 					DBSubnetGroupName:    &dbSubnetGroupName,
+		// 					DBSubnetGroupNameRef: &xpv1.Reference{Name: "coolgroup"},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	want: true,
+		// },
+		// "SamePassword": {
+		// 	args: args{
+		// 		db: rdstypes.DBInstance{
+		// 			DBName: &dbName,
+		// 		},
+		// 		r: v1beta1.RDSInstance{
+		// 			Spec: v1beta1.RDSInstanceSpec{
+		// 				ForProvider: v1beta1.RDSInstanceParameters{
+		// 					DBName: &dbName,
+		// 					MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+		// 						SecretReference: xpv1.SecretReference{
+		// 							Name:      connectionSecretName,
+		// 							Namespace: secretNamespace,
+		// 						},
+		// 						Key: connectionSecretKey,
+		// 					},
+		// 				},
+		// 				ResourceSpec: xpv1.ResourceSpec{
+		// 					WriteConnectionSecretToReference: &xpv1.SecretReference{
+		// 						Name:      outputSecretName,
+		// 						Namespace: secretNamespace,
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 		kube: &test.MockClient{
+		// 			MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
+		// 				switch key.Name {
+		// 				case connectionSecretName:
+		// 					secret := corev1.Secret{
+		// 						Data: map[string][]byte{},
+		// 					}
+		// 					secret.Data[connectionSecretKey] = []byte(connectionCredData)
+		// 					secret.DeepCopyInto(obj.(*corev1.Secret))
+		// 					return nil
+		// 				case outputSecretName:
+		// 					secret := corev1.Secret{
+		// 						Data: map[string][]byte{},
+		// 					}
+		// 					secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
+		// 					secret.DeepCopyInto(obj.(*corev1.Secret))
+		// 					return nil
+		// 				default:
+		// 					return nil
+		// 				}
+		// 			},
+		// 		},
+		// 	},
+		// 	want: true,
+		// },
+		// "DifferentPassword": {
+		// 	args: args{
+		// 		db: rdstypes.DBInstance{
+		// 			DBName: &dbName,
+		// 		},
+		// 		r: v1beta1.RDSInstance{
+		// 			Spec: v1beta1.RDSInstanceSpec{
+		// 				ForProvider: v1beta1.RDSInstanceParameters{
+		// 					DBName: &dbName,
+		// 					MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+		// 						SecretReference: xpv1.SecretReference{
+		// 							Name:      connectionSecretName,
+		// 							Namespace: secretNamespace,
+		// 						},
+		// 						Key: connectionSecretKey,
+		// 					},
+		// 				},
+		// 				ResourceSpec: xpv1.ResourceSpec{
+		// 					WriteConnectionSecretToReference: &xpv1.SecretReference{
+		// 						Name:      outputSecretName,
+		// 						Namespace: secretNamespace,
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 		kube: &test.MockClient{
+		// 			MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
+		// 				switch key.Name {
+		// 				case connectionSecretName:
+		// 					secret := corev1.Secret{
+		// 						Data: map[string][]byte{},
+		// 					}
+		// 					secret.Data[connectionSecretKey] = []byte(connectionCredData)
+		// 					secret.DeepCopyInto(obj.(*corev1.Secret))
+		// 					return nil
+		// 				case outputSecretName:
+		// 					secret := corev1.Secret{
+		// 						Data: map[string][]byte{},
+		// 					}
+		// 					secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+		// 					secret.DeepCopyInto(obj.(*corev1.Secret))
+		// 					return nil
+		// 				default:
+		// 					return nil
+		// 				}
+		// 			},
+		// 		},
+		// 	},
+		// 	want: false,
+		// },
 	}
 
 	for name, tc := range cases {
