@@ -24,7 +24,6 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	. "github.com/onsi/gomega"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -388,6 +387,7 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 
 	type want struct {
 		isUpToDate ResourceStatus
+		err        error
 	}
 	cases := map[string]struct {
 		args
@@ -601,10 +601,11 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			g := NewGomegaWithT(t)
 			actual, err := IsNotificationConfigurationUpToDate(tc.args.cr, tc.args.b)
-			g.Expect(err).NotTo(HaveOccurred())
 
+			if diff := cmp.Diff(tc.want.err, err, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want error, +got error:\n%s", diff)
+			}
 			if diff := cmp.Diff(tc.want.isUpToDate, actual, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
