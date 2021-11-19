@@ -357,6 +357,10 @@ spec:
                   arn:
                     description: The Amazon Resource Name (ARN) of the cluster.
                     type: string
+                  certificateAuthorityData:
+                    description: The Base64-encoded certificate data required to communicate
+                      with your cluster.
+                    type: string
                   createdAt:
                     description: The Unix epoch timestamp in seconds for when the
                       cluster was created.
