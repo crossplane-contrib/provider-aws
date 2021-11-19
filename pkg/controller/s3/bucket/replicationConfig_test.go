@@ -30,7 +30,7 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -130,7 +130,7 @@ func TestReplicationObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -144,7 +144,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -158,7 +158,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -172,7 +172,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
@@ -186,7 +186,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -200,7 +200,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -243,7 +243,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -256,7 +256,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return &s3.PutBucketReplicationOutput{}, nil
@@ -269,7 +269,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return &s3.PutBucketReplicationOutput{}, nil
@@ -308,7 +308,7 @@ func TestReplicationDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -321,7 +321,7 @@ func TestReplicationDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
 						return &s3.DeleteBucketReplicationOutput{}, nil
@@ -361,7 +361,7 @@ func TestReplicationLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, errBoom
@@ -370,12 +370,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, replicationGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"ErrorReplicationConfigurationNotFound": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
@@ -384,12 +384,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitNil": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, nil
@@ -398,12 +398,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -412,12 +412,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -426,12 +426,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{
@@ -442,7 +442,7 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 			},
 		},
 	}
