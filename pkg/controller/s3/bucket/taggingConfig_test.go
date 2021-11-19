@@ -31,7 +31,7 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -93,7 +93,7 @@ func TestTaggingObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return nil, errBoom
@@ -107,7 +107,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
@@ -121,7 +121,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(nil)),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: generateAWSTagging().TagSet}, nil
@@ -135,7 +135,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(nil)),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clientss3.TaggingNotFoundErrCode}
@@ -149,7 +149,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(nil)),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
@@ -163,7 +163,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: generateAWSTagging().TagSet}, nil
@@ -177,7 +177,7 @@ func TestTaggingObserve(t *testing.T) {
 		},
 		"NoUpdateExistsOrder": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: []types.Tag{awsTag2, awsTag, awsTag1}}, nil
@@ -220,7 +220,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return nil, errBoom
@@ -233,7 +233,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return &s3.PutBucketTaggingOutput{}, nil
@@ -246,7 +246,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return &s3.PutBucketTaggingOutput{}, nil
@@ -285,7 +285,7 @@ func TestTaggingDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketTagging: func(ctx context.Context, input *s3.DeleteBucketTaggingInput, opts []func(*s3.Options)) (*s3.DeleteBucketTaggingOutput, error) {
 						return nil, errBoom
@@ -298,7 +298,7 @@ func TestTaggingDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketTagging: func(ctx context.Context, input *s3.DeleteBucketTaggingInput, opts []func(*s3.Options)) (*s3.DeleteBucketTaggingOutput, error) {
 						return &s3.DeleteBucketTaggingOutput{}, nil
@@ -338,7 +338,7 @@ func TestTaggingLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return nil, errBoom
@@ -347,12 +347,12 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, taggingGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"ErrorTaggingNotFound": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clientss3.TaggingNotFoundErrCode}
@@ -361,12 +361,12 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitNil": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
@@ -375,12 +375,12 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: []types.Tag{}}, nil
@@ -389,12 +389,12 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(nil)),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: generateAWSTagging().TagSet}, nil
@@ -403,12 +403,12 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				cr:  s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
 						return &s3.GetBucketTaggingOutput{TagSet: []types.Tag{}}, nil
@@ -417,7 +417,7 @@ func TestTaggingLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				cr:  s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
 			},
 		},
 	}

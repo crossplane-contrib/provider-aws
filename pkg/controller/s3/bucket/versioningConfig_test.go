@@ -28,7 +28,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -67,7 +67,7 @@ func TestVersioningObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return nil, errBoom
@@ -81,7 +81,7 @@ func TestVersioningObserve(t *testing.T) {
 		},
 		"UpdateNeededFull": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{}, nil
@@ -95,7 +95,7 @@ func TestVersioningObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(nil)),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{}, nil
@@ -109,7 +109,7 @@ func TestVersioningObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{
@@ -155,7 +155,7 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockPutBucketVersioning: func(ctx context.Context, input *s3.PutBucketVersioningInput, opts []func(*s3.Options)) (*s3.PutBucketVersioningOutput, error) {
 						return nil, errBoom
@@ -168,7 +168,7 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockPutBucketVersioning: func(ctx context.Context, input *s3.PutBucketVersioningInput, opts []func(*s3.Options)) (*s3.PutBucketVersioningOutput, error) {
 						return &s3.PutBucketVersioningOutput{}, nil
@@ -181,7 +181,7 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockPutBucketVersioning: func(ctx context.Context, input *s3.PutBucketVersioningInput, opts []func(*s3.Options)) (*s3.PutBucketVersioningOutput, error) {
 						return &s3.PutBucketVersioningOutput{}, nil
@@ -221,7 +221,7 @@ func TestVersioningLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{}, errBoom
@@ -230,12 +230,12 @@ func TestVersioningLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, versioningGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitNil": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{}, nil
@@ -244,12 +244,12 @@ func TestVersioningLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(nil)),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{
@@ -261,12 +261,12 @@ func TestVersioningLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				cr:  s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				b: s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
 					MockGetBucketVersioning: func(ctx context.Context, input *s3.GetBucketVersioningInput, opts []func(*s3.Options)) (*s3.GetBucketVersioningOutput, error) {
 						return &s3.GetBucketVersioningOutput{
@@ -278,7 +278,7 @@ func TestVersioningLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
+				cr:  s3testing.Bucket(s3testing.WithVersioningConfig(generateVersioningConfig())),
 			},
 		},
 	}
