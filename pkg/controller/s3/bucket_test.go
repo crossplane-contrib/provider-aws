@@ -179,11 +179,17 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
+					s3Testing.WithConditions(xpv1.Available()),
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						xpv1.ResourceCredentialsSecretEndpointKey:  []byte(s3Testing.BucketName),
+						v1beta1.ResourceCredentialsSecretRegionKey: []byte(s3Testing.Region),
+					},
+					ResourceLateInitialized: false,
 				},
 			},
 		},
