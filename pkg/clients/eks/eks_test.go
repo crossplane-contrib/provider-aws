@@ -341,6 +341,7 @@ func TestGenerateObservation(t *testing.T) {
 	createTime := time.Now()
 	clusterArn := "my:arn"
 	endpoint := "https://my-endpoint.com"
+	caData := "Y2VydGlmaWNhdGUtYXV0aG9yaXR5LWRhdGE="
 	oidcIssuer := "secret-issuer"
 	platformVersion := "eks1.0"
 	securityGrp := "sg-1234"
@@ -355,6 +356,9 @@ func TestGenerateObservation(t *testing.T) {
 				Arn:       &clusterArn,
 				CreatedAt: &createTime,
 				Endpoint:  &endpoint,
+				CertificateAuthority: &ekstypes.Certificate{
+					Data: &caData,
+				},
 				Identity: &ekstypes.Identity{
 					Oidc: &ekstypes.OIDC{
 						Issuer: &oidcIssuer,
@@ -368,9 +372,10 @@ func TestGenerateObservation(t *testing.T) {
 				Status: ekstypes.ClusterStatusActive,
 			},
 			want: v1beta1.ClusterObservation{
-				Arn:       clusterArn,
-				CreatedAt: &metav1.Time{Time: createTime},
-				Endpoint:  endpoint,
+				Arn:                      clusterArn,
+				CreatedAt:                &metav1.Time{Time: createTime},
+				Endpoint:                 endpoint,
+				CertificateAuthorityData: caData,
 				Identity: v1beta1.Identity{
 					OIDC: v1beta1.OIDC{
 						Issuer: oidcIssuer,

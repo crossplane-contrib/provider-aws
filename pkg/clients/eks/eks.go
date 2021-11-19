@@ -240,6 +240,10 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 			VpcID:                  awsclients.StringValue(cluster.ResourcesVpcConfig.VpcId),
 		}
 	}
+
+	if cluster.CertificateAuthority != nil {
+		o.CertificateAuthorityData = awsclients.StringValue(cluster.CertificateAuthority.Data)
+	}
 	return o
 }
 
