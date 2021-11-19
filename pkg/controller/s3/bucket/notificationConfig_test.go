@@ -24,6 +24,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	. "github.com/onsi/gomega"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -373,6 +374,238 @@ func TestNotifLateInit(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsNotificationConfigurationUpToDate(t *testing.T) {
+	type args struct {
+		cr *v1beta1.NotificationConfiguration
+		b  *s3.GetBucketNotificationConfigurationOutput
+	}
+
+	type want struct {
+		isUpToDate ResourceStatus
+	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"IsUpToDate": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					}},
+					QueueConfigurations: []v1beta1.QueueConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       &id,
+						QueueArn: queueArn,
+					}},
+					TopicConfigurations: []v1beta1.TopicConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       &id,
+						TopicArn: &topicArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+					QueueConfigurations: []s3types.QueueConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       &id,
+						QueueArn: &queueArn,
+					}},
+					TopicConfigurations: []s3types.TopicConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       &id,
+						TopicArn: &topicArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateIgnoreIds": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                awsclient.String("lambda-id-1"),
+						LambdaFunctionArn: lambdaArn,
+					}},
+					QueueConfigurations: []v1beta1.QueueConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       awsclient.String("queue-id-1"),
+						QueueArn: queueArn,
+					}},
+					TopicConfigurations: []v1beta1.TopicConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       awsclient.String("topic-id-1"),
+						TopicArn: &topicArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                awsclient.String("lambda-id-2"),
+						LambdaFunctionArn: &lambdaArn,
+					}},
+					QueueConfigurations: []s3types.QueueConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       awsclient.String("queue-id-2"),
+						QueueArn: &queueArn,
+					}},
+					TopicConfigurations: []s3types.TopicConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       awsclient.String("topic-id-2"),
+						TopicArn: &topicArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateRulesOutOfOrder": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					},
+						{
+							Events:            generateNotificationEvents(),
+							Filter:            generateNotificationFilter(),
+							ID:                awsclient.String("test-id-2"),
+							LambdaFunctionArn: "lambda:321",
+						}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{
+						{
+							Events:            generateNotificationAWSEvents(),
+							Filter:            generateAWSNotificationFilter(),
+							Id:                awsclient.String("test-id-2"),
+							LambdaFunctionArn: awsclient.String("lambda:321"),
+						},
+						{
+							Events:            generateNotificationAWSEvents(),
+							Filter:            generateAWSNotificationFilter(),
+							Id:                &id,
+							LambdaFunctionArn: &lambdaArn,
+						}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateEmpty": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{},
+					QueueConfigurations:          []s3types.QueueConfiguration{},
+					TopicConfigurations:          []s3types.TopicConfiguration{},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateNilInput": {
+			args: args{
+				cr: nil,
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{},
+					QueueConfigurations:          []s3types.QueueConfiguration{},
+					TopicConfigurations:          []s3types.TopicConfiguration{},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateNilInputNeedsDelete": {
+			args: args{
+				cr: nil,
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 2,
+			},
+		},
+		"IsUpToDateFalseMissing": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{},
+			},
+			want: want{
+				isUpToDate: 1,
+			},
+		},
+		"IsUpToDateExtraNeedsDeletion": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 2,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+			actual, err := IsNotificationConfigurationUpToDate(tc.args.cr, tc.args.b)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			if diff := cmp.Diff(tc.want.isUpToDate, actual, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
