@@ -910,10 +910,9 @@ spec:
                               properties:
                                 status:
                                   description: Indicates whether to replicate delete
-                                    markers. In the current implementation, Amazon
-                                    S3 doesn't replicate the delete markers. The status
-                                    must be "Disabled".
+                                    markers. Valid values are "Enabled" or "Disabled"
                                   enum:
+                                  - Enabled
                                   - Disabled
                                   type: string
                               required:
