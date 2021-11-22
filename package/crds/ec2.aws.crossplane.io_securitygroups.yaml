@@ -210,6 +210,32 @@ spec:
                               groupId:
                                 description: The ID of the security group.
                                 type: string
+                              groupIdRef:
+                                description: GroupIDRef reference a security group
+                                  to retrieve its GroupID
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              groupIdSelector:
+                                description: GroupIDSelector selects reference to
+                                  a security group to retrieve its GroupID
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object
+                                      with the same controller reference as the selecting
+                                      object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with
+                                      matching labels is selected.
+                                    type: object
+                                type: object
                               groupName:
                                 description: "The name of the security group. In a
                                   request, use this parameter for a security group
@@ -384,6 +410,32 @@ spec:
                               groupId:
                                 description: The ID of the security group.
                                 type: string
+                              groupIdRef:
+                                description: GroupIDRef reference a security group
+                                  to retrieve its GroupID
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              groupIdSelector:
+                                description: GroupIDSelector selects reference to
+                                  a security group to retrieve its GroupID
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object
+                                      with the same controller reference as the selecting
+                                      object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with
+                                      matching labels is selected.
+                                    type: object
+                                type: object
                               groupName:
                                 description: "The name of the security group. In a
                                   request, use this parameter for a security group
