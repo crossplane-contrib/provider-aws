@@ -179,14 +179,27 @@ func TestDiffPermissions(t *testing.T) {
 		},
 	}
 
+	ipPermissionCmp := func(a, b ec2types.IpPermission) bool {
+		return aws.ToString(a.IpProtocol) < aws.ToString(b.IpProtocol) && aws.ToInt32(a.FromPort) < aws.ToInt32(b.FromPort)
+	}
+	ipRangeCmp := func(a, b ec2types.IpRange) bool {
+		return aws.ToString(a.CidrIp) < aws.ToString(b.CidrIp)
+	}
+
+	opts := cmp.Options{
+		cmpopts.SortSlices(ipPermissionCmp),
+		cmpopts.SortSlices(ipRangeCmp),
+		cmpopts.IgnoreTypes(document.NoSerde{}),
+	}
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			add, remove := DiffPermissions(tc.want, tc.have)
 
-			if diff := cmp.Diff(tc.add, add, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+			if diff := cmp.Diff(tc.add, add, opts); diff != "" {
 				t.Errorf("r add: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.remove, remove, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+			if diff := cmp.Diff(tc.remove, remove, opts); diff != "" {
 				t.Errorf("r remove: -want, +got:\n%s", diff)
 			}
 		})
