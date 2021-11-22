@@ -72,7 +72,7 @@ func LateInitializeAddress(in *v1beta1.AddressParameters, a *ec2types.Address) {
 
 // IsAddressUpToDate checks whether there is a change in any of the modifiable fields.
 func IsAddressUpToDate(e v1beta1.AddressParameters, a ec2types.Address) bool {
-	return CompareTags(e.Tags, a.Tags)
+	return TagsMatch(e.Tags, a.Tags)
 }
 
 // IsStandardDomain checks whether it is set for standard domain
@@ -102,8 +102,8 @@ func BuildFromEC2Tags(tags []ec2types.Tag) []v1beta1.Tag {
 	return res
 }
 
-// CompareTags compares arrays of v1beta1.Tag and ec2types.Tag
-func CompareTags(tags []v1beta1.Tag, ec2Tags []ec2types.Tag) bool {
+// TagsMatch returns true if the supplied arrays of tags are equal.
+func TagsMatch(tags []v1beta1.Tag, ec2Tags []ec2types.Tag) bool {
 	if len(tags) != len(ec2Tags) {
 		return false
 	}

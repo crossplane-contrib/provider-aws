@@ -52,13 +52,58 @@ func IsRuleAlreadyExistsErr(err error) bool {
 	return errors.As(err, &awsErr) && awsErr.ErrorCode() == InvalidPermissionDuplicate
 }
 
-// GenerateEC2Permissions converts object Permissions to ec2 format
-func GenerateEC2Permissions(objectPerms []v1beta1.IPPermission) []ec2types.IpPermission {
-	if len(objectPerms) == 0 {
+// BuildFromEC2Permissions converts ec2 Permissions to our API's format.
+func BuildFromEC2Permissions(in []ec2types.IpPermission) []v1beta1.IPPermission {
+	if len(in) == 0 {
 		return nil
 	}
-	permissions := make([]ec2types.IpPermission, len(objectPerms))
-	for i, p := range objectPerms {
+	permissions := make([]v1beta1.IPPermission, len(in))
+	for i, p := range in {
+		ipPerm := v1beta1.IPPermission{
+			FromPort:   p.FromPort,
+			IPProtocol: aws.StringValue(p.IpProtocol),
+			ToPort:     p.ToPort,
+		}
+		for _, c := range p.IpRanges {
+			ipPerm.IPRanges = append(ipPerm.IPRanges, v1beta1.IPRange{
+				CIDRIP:      aws.StringValue(c.CidrIp),
+				Description: c.Description,
+			})
+		}
+		for _, c := range p.Ipv6Ranges {
+			ipPerm.IPv6Ranges = append(ipPerm.IPv6Ranges, v1beta1.IPv6Range{
+				CIDRIPv6:    aws.StringValue(c.CidrIpv6),
+				Description: c.Description,
+			})
+		}
+		for _, c := range p.PrefixListIds {
+			ipPerm.PrefixListIDs = append(ipPerm.PrefixListIDs, v1beta1.PrefixListID{
+				Description:  c.Description,
+				PrefixListID: aws.StringValue(c.PrefixListId),
+			})
+		}
+		for _, c := range p.UserIdGroupPairs {
+			ipPerm.UserIDGroupPairs = append(ipPerm.UserIDGroupPairs, v1beta1.UserIDGroupPair{
+				Description:            c.Description,
+				GroupID:                c.GroupId,
+				GroupName:              c.GroupName,
+				UserID:                 c.UserId,
+				VPCID:                  c.VpcId,
+				VPCPeeringConnectionID: c.VpcPeeringConnectionId,
+			})
+		}
+		permissions[i] = ipPerm
+	}
+	return permissions
+}
+
+// GenerateEC2Permissions converts object Permissions to ec2 format
+func GenerateEC2Permissions(in []v1beta1.IPPermission) []ec2types.IpPermission {
+	if len(in) == 0 {
+		return nil
+	}
+	permissions := make([]ec2types.IpPermission, len(in))
+	for i, p := range in {
 		ipPerm := ec2types.IpPermission{
 			FromPort:   p.FromPort,
 			IpProtocol: aws.String(p.IPProtocol),
@@ -108,7 +153,7 @@ func GenerateSGObservation(sg ec2types.SecurityGroup) v1beta1.SecurityGroupObser
 
 // LateInitializeSG fills the empty fields in *v1beta1.SecurityGroupParameters with
 // the values seen in ec2types.SecurityGroup.
-func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.SecurityGroup) { // nolint:gocyclo
+func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.SecurityGroup) {
 	if sg == nil {
 		return
 	}
@@ -117,7 +162,15 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.Security
 	in.GroupName = awsclients.LateInitializeString(in.GroupName, sg.GroupName)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, sg.VpcId)
 
-	// We cannot safely late init egress/ingress rules because they are keyless arrays
+	// We cannot safely late init egress/ingress rules because they are
+	// keyless arrays, so we follow the typical pattern of only late
+	// initializing if our desired rules are zero length.
+	if len(in.Ingress) == 0 && len(sg.IpPermissions) != 0 {
+		in.Ingress = BuildFromEC2Permissions(sg.IpPermissions)
+	}
+	if len(in.Egress) == 0 && len(sg.IpPermissionsEgress) != 0 {
+		in.Egress = BuildFromEC2Permissions(sg.IpPermissionsEgress)
+	}
 
 	if len(in.Tags) == 0 && len(sg.Tags) != 0 {
 		in.Tags = v1beta1.BuildFromEC2Tags(sg.Tags)
@@ -126,7 +179,7 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.Security
 
 // IsSGUpToDate checks if the observed security group is up to equal to the desired state
 func IsSGUpToDate(sg v1beta1.SecurityGroupParameters, observed ec2types.SecurityGroup) bool {
-	if !CompareTags(sg.Tags, observed.Tags) {
+	if !TagsMatch(sg.Tags, observed.Tags) {
 		return false
 	}
 
