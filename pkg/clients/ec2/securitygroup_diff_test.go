@@ -113,51 +113,49 @@ func TestDiffPermissions(t *testing.T) {
 			remove: sgPermissions(port100, cidr),
 		},
 		{
-			name:   "Add block",
+			name:   "AddBlock",
 			want:   sgPermissions(port100, cidr, "192.168.0.1/32"),
 			have:   sgPermissions(port100, cidr),
 			add:    sgPermissions(port100, "192.168.0.1/32"),
 			remove: nil,
 		},
 		{
-			name:   "Remove block",
+			name:   "RemoveBlock",
 			want:   sgPermissions(port100, cidr),
 			have:   sgPermissions(port100, cidr, "192.168.0.1/32"),
 			add:    nil,
 			remove: sgPermissions(port100, "192.168.0.1/32"),
 		},
 		{
-			name:   "Replace block",
+			name:   "ReplaceBlock",
 			want:   sgPermissions(port100, cidr, "172.240.1.1/32", "192.168.0.1/32"),
 			have:   sgPermissions(port100, cidr, "172.240.2.2/32", "192.168.0.1/32"),
 			add:    sgPermissions(port100, "172.240.1.1/32"),
 			remove: sgPermissions(port100, "172.240.2.2/32"),
 		},
-		/*
-			{
-				name:   "Dedupe want",
-				want:   append(sgPersmissions(port100, cidr, "172.240.1.1/32", "172.240.1.1/32", "192.168.0.1/32"), sgPersmissions(port100, cidr, "172.240.1.1/32", "172.240.1.1/32", "192.168.0.1/32")...),
-				have:   sgPersmissions(port100, cidr, "172.240.2.2/32", "192.168.0.1/32"),
-				add:    sgPersmissions(port100, "172.240.1.1/32"),
-				remove: sgPersmissions(port100, "172.240.2.2/32"),
-			},
-		*/
 		{
-			name:   "Merge want",
+			name:   "DedupeWant",
+			want:   append(sgPermissions(port100, cidr, "172.240.1.1/32", "172.240.1.1/32", "192.168.0.1/32"), sgPermissions(port100, cidr, "172.240.1.1/32", "172.240.1.1/32", "192.168.0.1/32")...),
+			have:   sgPermissions(port100, cidr, "172.240.2.2/32", "192.168.0.1/32"),
+			add:    sgPermissions(port100, "172.240.1.1/32"),
+			remove: sgPermissions(port100, "172.240.2.2/32"),
+		},
+		{
+			name:   "MergeWant",
 			want:   append(sgPermissions(port100, "192.168.0.1/32"), sgPermissions(port100, "172.240.1.1/32")...),
 			have:   nil,
 			add:    sgPermissions(port100, "192.168.0.1/32", "172.240.1.1/32"),
 			remove: nil,
 		},
 		{
-			name:   "Ignore order",
+			name:   "IgnoreOrder",
 			want:   append(sgUserIDGroupPair(port100, "sg-2", "sg-1"), sgPermissions(port100, "172.240.1.1/32", "192.168.0.1/32", cidr)...),
 			have:   append(sgUserIDGroupPair(port100, "sg-1", "sg-2"), sgPermissions(port100, "192.168.0.1/32", cidr, "172.240.1.1/32")...),
 			add:    nil,
 			remove: nil,
 		},
 		{
-			name: "Ignore protocol case",
+			name: "IgnoreProtocolCase",
 			want: []ec2types.IpPermission{
 				{
 					IpProtocol: aws.String("TCP"),
