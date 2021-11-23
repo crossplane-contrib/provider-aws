@@ -37,7 +37,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront"
 )
 
-// SetupCloudFrontOriginAccessIDentity  adds a controller that reconciles CloudFrontOriginAccessIDentity .
+// SetupCloudFrontOriginAccessIDentity adds a controller that reconciles CloudFrontOriginAccessIDentity .
 func SetupCloudFrontOriginAccessIDentity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIDentityGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
