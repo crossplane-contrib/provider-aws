@@ -79,8 +79,11 @@ spec:
                     description: The path to the policy.
                     type: string
                   tags:
+                    description: Tags. For more information about tagging, see Tagging
+                      IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+                      in the IAM User Guide.
                     items:
-                      description: Tag represents a tag attached to AWS IAM Policy  
+                      description: Tag represents a tag attached to a v1alpha1.User
                       properties:
                         key:
                           description: The key name that can be used to look up or
