@@ -55,6 +55,7 @@ var (
 	description             = "testDescription"
 	domain                  = "domain"
 	engine                  = "5.6.41"
+	falseFlag               = false
 	instanceClass           = "class"
 	kmsID                   = "kms"
 	monitoring              = 3
@@ -908,7 +909,15 @@ func TestLateInitialize(t *testing.T) {
 			},
 			params: v1beta1.RDSInstanceParameters{},
 			want: v1beta1.RDSInstanceParameters{
-				DBSubnetGroupName: subnetGroup.DBSubnetGroupName,
+				DBSubnetGroupName:               subnetGroup.DBSubnetGroupName,
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"SubnetGroupNameNotOverwritten": {
@@ -919,7 +928,15 @@ func TestLateInitialize(t *testing.T) {
 				DBSubnetGroupName: &existingName,
 			},
 			want: v1beta1.RDSInstanceParameters{
-				DBSubnetGroupName: &existingName,
+				DBSubnetGroupName:               &existingName,
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"SecurityGroupNotOverwritten": {
@@ -931,6 +948,15 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: v1beta1.RDSInstanceParameters{
 				DBSecurityGroups: []string{"newGroup"},
+
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"CloudwatchExportsNotOverwritten": {
@@ -942,6 +968,15 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: v1beta1.RDSInstanceParameters{
 				EnableCloudwatchLogsExports: []string{"newExport"},
+
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"ProcessorFeaturesNotOverwritten": {
@@ -962,6 +997,15 @@ func TestLateInitialize(t *testing.T) {
 					Name:  existingName,
 					Value: existingName,
 				}},
+
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"VPCSecurityGroupIdsNotOverwritten": {
@@ -982,6 +1026,15 @@ func TestLateInitialize(t *testing.T) {
 					Name:  existingName,
 					Value: existingName,
 				}},
+
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"EngineVersion": {
@@ -993,12 +1046,30 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: v1beta1.RDSInstanceParameters{
 				EngineVersion: &engine,
+
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"EmptyInstance": {
 			rds:    rdstypes.DBInstance{},
 			params: v1beta1.RDSInstanceParameters{},
-			want:   v1beta1.RDSInstanceParameters{},
+			want: v1beta1.RDSInstanceParameters{
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
+			},
 		},
 	}
 

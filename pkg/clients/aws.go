@@ -744,7 +744,7 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 // LateInitializeIntFrom32Ptr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 // This function considered that nil and 0 values are same. However, for a *int32, nil and 0 values must be different
-// because if the external Azure resource has a field with 0 value, during late initialization setting this value
+// because if the external AWS resource has a field with 0 value, during late initialization setting this value
 // in CR must be allowed. Please see the LateInitializeIntFromInt32Ptr func.
 // Deprecated: Please use LateInitializeIntFromInt32Ptr instead.
 func LateInitializeIntFrom32Ptr(in *int, from *int32) *int {

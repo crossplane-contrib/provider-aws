@@ -126,7 +126,21 @@ func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 }
 
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
-	cr := &v1beta1.RDSInstance{}
+	falseFlag := false
+	cr := &v1beta1.RDSInstance{
+		Spec: v1beta1.RDSInstanceSpec{
+			ForProvider: v1beta1.RDSInstanceParameters{
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
+			},
+		},
+	}
 	for _, f := range m {
 		f(cr)
 	}
