@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
+	"strings"
 	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
@@ -52,6 +53,7 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 			e.postObserve = postObserve
 			e.preCreate = preCreate
 			e.preDelete = preDelete
+			e.postDelete = postDelete
 			e.lateInitialize = lateInitialize
 			e.isUpToDate = isUpToDate
 			u := &updateClient{client: e.client}
@@ -87,6 +89,20 @@ func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTable
 func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
 	obj.TableName = aws.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func postDelete(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DeleteTableOutput, err error) error {
+	if err == nil {
+		return nil
+	}
+	// The DynamoDB API returns this error when you try to delete a table
+	// that is already being deleted. Unfortunately we're passed a v1 SDK
+	// error that has been munged by aws.Wrap, so we can't use errors.As to
+	// identify it and must fall back to string matching.
+	if strings.Contains(err.Error(), "ResourceInUseException") {
+		return nil
+	}
+	return err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -144,8 +160,6 @@ func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	return errors.Wrap(e.kube.Update(ctx, cr), "cannot update Table Spec")
 }
 
-// NOTE(muvaf): The rest is taken from manually written controller.
-
 func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutput) error { // nolint:gocyclo,unparam
 	if t == nil {
 		return nil
@@ -166,7 +180,20 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 	if in.KeySchema == nil && len(t.Table.KeySchema) != 0 {
 		in.KeySchema = buildAlphaKeyElements(t.Table.KeySchema)
 	}
-
+	if in.BillingMode == nil {
+		// NOTE(negz): As far as I can tell DescribeTableOutput only
+		// includes a BillingModeSummary when the billing mode is set to
+		// PAY_PER_REQUEST. PROVISIONED seems to be he implied default.
+		// Late initializing a value that the API only implies is
+		// perhaps a bit of a violation, but it avoids a false positive
+		// in our IsUpToDate logic which would otherwise detect a diff
+		// between our desired state (PROVISIONED) and the actual state
+		// (unspecified).
+		in.BillingMode = aws.String(svcsdk.BillingModeProvisioned)
+		if t.Table.BillingModeSummary != nil {
+			in.BillingMode = t.Table.BillingModeSummary.BillingMode
+		}
+	}
 	if in.ProvisionedThroughput == nil && t.Table.ProvisionedThroughput != nil {
 		in.ProvisionedThroughput = &svcapitypes.ProvisionedThroughput{
 			ReadCapacityUnits:  t.Table.ProvisionedThroughput.ReadCapacityUnits,
@@ -187,15 +214,18 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			in.SSESpecification.SSEType = t.Table.SSEDescription.SSEType
 		}
 	}
-	if in.StreamSpecification == nil && t.Table.StreamSpecification != nil {
-		in.StreamSpecification = &svcapitypes.StreamSpecification{
-			StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
-			StreamViewType: t.Table.StreamSpecification.StreamViewType,
+	if in.StreamSpecification == nil {
+		// NOTE(negz): We late initialize StreamEnabled to false to
+		// avoid IsUpToDate thinking it needs to explicitly make an
+		// update to set StreamEnabled to false. DescribeTableOutput
+		// omits StreamSpecification entirely when it's not enabled.
+		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false, aws.FieldRequired)}
+		if t.Table.StreamSpecification != nil {
+			in.StreamSpecification = &svcapitypes.StreamSpecification{
+				StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
+				StreamViewType: t.Table.StreamSpecification.StreamViewType,
+			}
 		}
-	}
-
-	if in.BillingMode == nil && t.Table.BillingModeSummary != nil {
-		in.BillingMode = t.Table.BillingModeSummary.BillingMode
 	}
 
 	return nil
@@ -290,10 +320,11 @@ func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 }
 
 func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
-	// A table that's currently updating or creating can't be updated, so we
-	// temporarily consider it to be up-to-date no matter what.
+	// A table that's currently creating, deleting, or updating can't be
+	// updated, so we temporarily consider it to be up-to-date no matter
+	// what.
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
-	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING), string(svcapitypes.TableStatus_SDK_DELETING):
 		return true, nil
 	}
 
@@ -308,13 +339,24 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 		return false, err
 	}
 
+	// TODO(negz): Support updating tags if possible.
+	// https://github.com/crossplane/provider-aws/issues/945
+
 	// At least one of ProvisionedThroughput, BillingMode, UpdateStreamEnabled,
 	// GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is
 	// required.
 	switch {
-	case patch.ProvisionedThroughput != nil:
-		return false, nil
 	case patch.BillingMode != nil:
+		return false, nil
+	case patch.ProvisionedThroughput != nil:
+		// TODO(negz): DescribeTableOutput appears to report that
+		// ProvisionedThroughput is 0 when the billing mode is set to
+		// PAY_PER_REQUEST. This means that if the billing mode is
+		// changed from PROVISIONED to PAY_PER_REQUEST the provisioned
+		// throughput must be set to 0 read and write or Crossplane will
+		// think an update is needed and the update will fail because
+		// you can't set provisioned throughput when the billing mode is
+		// set to PAY_PER_REQUEST.
 		return false, nil
 	case patch.StreamSpecification != nil:
 		return false, nil
@@ -329,7 +371,6 @@ type updateClient struct {
 }
 
 func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
-
 	filtered := &svcsdk.UpdateTableInput{
 		TableName:            aws.String(meta.GetExternalName(cr)),
 		AttributeDefinitions: u.AttributeDefinitions,
@@ -358,7 +399,17 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	}
 	gsiUpdates := diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), out.Table.GlobalSecondaryIndexes)
 	switch {
+	case p.BillingMode != nil:
+		filtered.BillingMode = u.BillingMode
+
+		// NOTE(negz): You must include provisioned throughput when
+		// updating the billing mode to PROVISIONED.
+		if aws.StringValue(u.BillingMode) == string(svcapitypes.BillingMode_PROVISIONED) {
+			filtered.ProvisionedThroughput = u.ProvisionedThroughput
+		}
 	case p.ProvisionedThroughput != nil:
+		// NOTE(negz): You may only included provisioned throughput when
+		// the billing mode is PROVISIONED.
 		filtered.ProvisionedThroughput = u.ProvisionedThroughput
 	case p.StreamSpecification != nil:
 		// NOTE(muvaf): Unless StreamEnabled is changed, updating stream
@@ -374,8 +425,6 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		if p.SSESpecification.KMSMasterKeyID != nil {
 			filtered.SSESpecification.KMSMasterKeyId = u.SSESpecification.KMSMasterKeyId
 		}
-	case p.BillingMode != nil:
-		filtered.BillingMode = u.BillingMode
 	case len(gsiUpdates) != 0:
 		filtered.SetGlobalSecondaryIndexUpdates(gsiUpdates)
 	}
