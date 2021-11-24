@@ -24,41 +24,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
 )
 
 var (
 	readCapacityUnits  = 1
 	writeCapacityUnits = 1
-
-	arn = "some arn"
 )
-
-func tableParams(m ...func(*v1alpha1.TableParameters)) *v1alpha1.TableParameters {
-	o := &v1alpha1.TableParameters{
-		ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits)),
-			WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits)),
-		},
-	}
-
-	for _, f := range m {
-		f(o)
-	}
-
-	return o
-}
-
-func table(m ...func(*svcsdk.TableDescription)) *svcsdk.TableDescription {
-	o := &svcsdk.TableDescription{
-		TableArn: &arn,
-	}
-
-	for _, f := range m {
-		f(o)
-	}
-
-	return o
-}
 
 func TestCreatePatch(t *testing.T) {
 	type args struct {
@@ -215,62 +187,218 @@ func TestIsUpToDate(t *testing.T) {
 
 func TestLateInitialize(t *testing.T) {
 	type args struct {
-		spec *v1alpha1.TableParameters
-		in   *svcsdk.DescribeTableOutput
+		p  *v1alpha1.TableParameters
+		in *svcsdk.DescribeTableOutput
 	}
 	type want struct {
-		spec *v1alpha1.TableParameters
-		err  error
+		p   *v1alpha1.TableParameters
+		err error
 	}
 	cases := map[string]struct {
 		args args
 		want want
 	}{
-		"AllFilledNoDiff": {
+		"NilOutput": {
 			args: args{
-				spec: tableParams(),
-				in: &svcsdk.DescribeTableOutput{
-					Table: table(),
-				},
+				p: &v1alpha1.TableParameters{},
 			},
-			want: want{spec: tableParams()},
+			want: want{
+				p: &v1alpha1.TableParameters{},
+			},
 		},
-		"AllFilledExternalDiff": {
+		"ImpliedBillingModeProvisioned": {
 			args: args{
-				spec: tableParams(),
+				p: &v1alpha1.TableParameters{},
 				in: &svcsdk.DescribeTableOutput{
-					Table: table(func(t *svcsdk.TableDescription) {
-						t.ItemCount = aws.Int64(1)
-					}),
+					Table: &svcsdk.TableDescription{},
 				},
 			},
-			want: want{spec: tableParams()},
+			want: want{
+				p: &v1alpha1.TableParameters{
+					BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+				},
+			},
 		},
-		"PartialFilled": {
+		"EmptyParams": {
 			args: args{
-				spec: tableParams(func(p *v1alpha1.TableParameters) {
-					p.ProvisionedThroughput = nil
-				}),
+				p: &v1alpha1.TableParameters{},
 				in: &svcsdk.DescribeTableOutput{
-					Table: table(func(t *svcsdk.TableDescription) {
-						t.ProvisionedThroughput = &svcsdk.ProvisionedThroughputDescription{
-							ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits)),
-							WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits)),
-						}
-					}),
+					Table: &svcsdk.TableDescription{
+						AttributeDefinitions: []*svcsdk.AttributeDefinition{{
+							AttributeName: aws.String("N"),
+							AttributeType: aws.String("T"),
+						}},
+						GlobalSecondaryIndexes: []*svcsdk.GlobalSecondaryIndexDescription{{
+							IndexName: aws.String("cool-index"),
+						}},
+						LocalSecondaryIndexes: []*svcsdk.LocalSecondaryIndexDescription{{
+							IndexName: aws.String("cool-index"),
+						}},
+						KeySchema: []*svcsdk.KeySchemaElement{{
+							AttributeName: aws.String("N"),
+							KeyType:       aws.String("T"),
+						}},
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(42),
+							WriteCapacityUnits: aws.Int64(42),
+						},
+						SSEDescription: &svcsdk.SSEDescription{
+							Status:          aws.String(string(svcapitypes.SSEStatus_ENABLED)),
+							KMSMasterKeyArn: aws.String("some-arn"),
+							SSEType:         aws.String("very-secure"),
+						},
+						StreamSpecification: &svcsdk.StreamSpecification{
+							StreamEnabled:  aws.Bool(true),
+							StreamViewType: aws.String("the-good-type"),
+						},
+						BillingModeSummary: &svcsdk.BillingModeSummary{
+							BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+						},
+					},
 				},
 			},
-			want: want{spec: tableParams()},
+			want: want{
+				p: &v1alpha1.TableParameters{
+					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
+						AttributeName: aws.String("N"),
+						AttributeType: aws.String("T"),
+					}},
+					GlobalSecondaryIndexes: []*svcapitypes.GlobalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					LocalSecondaryIndexes: []*svcapitypes.LocalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					KeySchema: []*svcapitypes.KeySchemaElement{{
+						AttributeName: aws.String("N"),
+						KeyType:       aws.String("T"),
+					}},
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(42),
+						WriteCapacityUnits: aws.Int64(42),
+					},
+					SSESpecification: &svcapitypes.SSESpecification{
+						Enabled:        aws.Bool(true),
+						KMSMasterKeyID: aws.String("some-arn"),
+						SSEType:        aws.String("very-secure"),
+					},
+					StreamSpecification: &svcapitypes.StreamSpecification{
+						StreamEnabled:  aws.Bool(true),
+						StreamViewType: aws.String("the-good-type"),
+					},
+				},
+			},
+		},
+		"ExistingParams": {
+			args: args{
+				p: &v1alpha1.TableParameters{
+					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
+						AttributeName: aws.String("N"),
+						AttributeType: aws.String("T"),
+					}},
+					GlobalSecondaryIndexes: []*svcapitypes.GlobalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					LocalSecondaryIndexes: []*svcapitypes.LocalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					KeySchema: []*svcapitypes.KeySchemaElement{{
+						AttributeName: aws.String("N"),
+						KeyType:       aws.String("T"),
+					}},
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(42),
+						WriteCapacityUnits: aws.Int64(42),
+					},
+					SSESpecification: &svcapitypes.SSESpecification{
+						Enabled:        aws.Bool(true),
+						KMSMasterKeyID: aws.String("some-arn"),
+						SSEType:        aws.String("very-secure"),
+					},
+					StreamSpecification: &svcapitypes.StreamSpecification{
+						StreamEnabled:  aws.Bool(true),
+						StreamViewType: aws.String("the-good-type"),
+					},
+				},
+				in: &svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						AttributeDefinitions: []*svcsdk.AttributeDefinition{{
+							AttributeName: aws.String("X"),
+							AttributeType: aws.String("Y"),
+						}},
+						GlobalSecondaryIndexes: []*svcsdk.GlobalSecondaryIndexDescription{{
+							IndexName: aws.String("cooler-index"),
+						}},
+						LocalSecondaryIndexes: []*svcsdk.LocalSecondaryIndexDescription{{
+							IndexName: aws.String("cooler-index"),
+						}},
+						KeySchema: []*svcsdk.KeySchemaElement{{
+							AttributeName: aws.String("X"),
+							KeyType:       aws.String("Y"),
+						}},
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(24),
+							WriteCapacityUnits: aws.Int64(24),
+						},
+						SSEDescription: &svcsdk.SSEDescription{
+							Status:          aws.String(string(svcapitypes.SSEStatus_DISABLED)),
+							KMSMasterKeyArn: aws.String("some-other-arn"),
+							SSEType:         aws.String("kinda-secure"),
+						},
+						StreamSpecification: &svcsdk.StreamSpecification{
+							StreamEnabled:  aws.Bool(false),
+							StreamViewType: aws.String("the-other-type"),
+						},
+						BillingModeSummary: &svcsdk.BillingModeSummary{
+							BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+						},
+					},
+				},
+			},
+			want: want{
+				p: &v1alpha1.TableParameters{
+					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
+						AttributeName: aws.String("N"),
+						AttributeType: aws.String("T"),
+					}},
+					GlobalSecondaryIndexes: []*svcapitypes.GlobalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					LocalSecondaryIndexes: []*svcapitypes.LocalSecondaryIndex{{
+						IndexName: aws.String("cool-index"),
+					}},
+					KeySchema: []*svcapitypes.KeySchemaElement{{
+						AttributeName: aws.String("N"),
+						KeyType:       aws.String("T"),
+					}},
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(42),
+						WriteCapacityUnits: aws.Int64(42),
+					},
+					SSESpecification: &svcapitypes.SSESpecification{
+						Enabled:        aws.Bool(true),
+						KMSMasterKeyID: aws.String("some-arn"),
+						SSEType:        aws.String("very-secure"),
+					},
+					StreamSpecification: &svcapitypes.StreamSpecification{
+						StreamEnabled:  aws.Bool(true),
+						StreamViewType: aws.String("the-good-type"),
+					},
+				},
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := lateInitialize(tc.args.spec, tc.args.in)
-			if diff := cmp.Diff(err, tc.want.err); diff != "" {
+			err := lateInitialize(tc.args.p, tc.args.in)
+			if diff := cmp.Diff(tc.want.err, err); diff != "" {
 				t.Errorf("lateInitialize(...): -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.args.spec, tc.want.spec); diff != "" {
+			if diff := cmp.Diff(tc.want.p, tc.args.p); diff != "" {
 				t.Errorf("lateInitialize(...): -want, +got:\n%s", diff)
 			}
 		})

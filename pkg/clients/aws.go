@@ -803,6 +803,10 @@ func Wrap(err error, msg string) error {
 	// the underlying error. So, we need to strip off the unique request ID
 	// manually.
 	if v1RequestError, ok := err.(awserr.RequestFailure); ok {
+		// TODO(negz): This loses context about the underlying error
+		// type, preventing us from using errors.As to figure out what
+		// kind of error it is. Could we do this without losing
+		// context?
 		return errors.Wrap(errors.New(strings.ReplaceAll(err.Error(), v1RequestError.RequestID(), "")), msg)
 	}
 	return errors.Wrap(err, msg)
