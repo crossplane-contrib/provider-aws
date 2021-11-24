@@ -214,10 +214,17 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			in.SSESpecification.SSEType = t.Table.SSEDescription.SSEType
 		}
 	}
-	if in.StreamSpecification == nil && t.Table.StreamSpecification != nil {
-		in.StreamSpecification = &svcapitypes.StreamSpecification{
-			StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
-			StreamViewType: t.Table.StreamSpecification.StreamViewType,
+	if in.StreamSpecification == nil {
+		// NOTE(negz): We late initialize StreamEnabled to false to
+		// avoid IsUpToDate thinking it needs to explicitly make an
+		// update to set StreamEnabled to false. DescribeTableOutput
+		// omits StreamSpecification entirely when it's not enabled.
+		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false, aws.FieldRequired)}
+		if t.Table.StreamSpecification != nil {
+			in.StreamSpecification = &svcapitypes.StreamSpecification{
+				StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
+				StreamViewType: t.Table.StreamSpecification.StreamViewType,
+			}
 		}
 	}
 

@@ -206,7 +206,7 @@ func TestLateInitialize(t *testing.T) {
 				p: &v1alpha1.TableParameters{},
 			},
 		},
-		"ImpliedBillingModeProvisioned": {
+		"ImpliedValues": {
 			args: args{
 				p: &v1alpha1.TableParameters{},
 				in: &svcsdk.DescribeTableOutput{
@@ -215,7 +215,8 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: want{
 				p: &v1alpha1.TableParameters{
-					BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+					BillingMode:         aws.String(svcsdk.BillingModeProvisioned),
+					StreamSpecification: &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false)},
 				},
 			},
 		},
