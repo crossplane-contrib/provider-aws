@@ -36,6 +36,8 @@ type MockPolicyClient struct {
 	MockCreatePolicyVersion func(ctx context.Context, input *iam.CreatePolicyVersionInput, opts []func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
 	MockListPolicyVersions  func(ctx context.Context, input *iam.ListPolicyVersionsInput, opts []func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
 	MockDeletePolicyVersion func(ctx context.Context, input *iam.DeletePolicyVersionInput, opts []func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
+	MockTagPolicy           func(ctx context.Context, input *iam.TagPolicyInput, opts []func(*iam.Options)) (*iam.TagPolicyOutput, error)
+	MockUntagPolicy         func(ctx context.Context, input *iam.UntagPolicyInput, opts []func(*iam.Options)) (*iam.UntagPolicyOutput, error)
 }
 
 // GetPolicy mocks GetPolicy method
@@ -71,4 +73,14 @@ func (m *MockPolicyClient) ListPolicyVersions(ctx context.Context, input *iam.Li
 // DeletePolicyVersion mocks DeletePolicyVersion method
 func (m *MockPolicyClient) DeletePolicyVersion(ctx context.Context, input *iam.DeletePolicyVersionInput, opts ...func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error) {
 	return m.MockDeletePolicyVersion(ctx, input, opts)
+}
+
+// TagPolicy mocks TagPolicy method
+func (m *MockPolicyClient) TagPolicy(ctx context.Context, input *iam.TagPolicyInput, opts ...func(*iam.Options)) (*iam.TagPolicyOutput, error) {
+	return m.MockTagPolicy(ctx, input, opts)
+}
+
+// UntagPolicy mocks UnTagPolicy method
+func (m *MockPolicyClient) UntagPolicy(ctx context.Context, input *iam.UntagPolicyInput, opts ...func(*iam.Options)) (*iam.UntagPolicyOutput, error) {
+	return m.MockUntagPolicy(ctx, input, opts)
 }

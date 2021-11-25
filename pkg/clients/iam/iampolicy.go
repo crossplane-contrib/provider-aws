@@ -22,6 +22,8 @@ type PolicyClient interface {
 	CreatePolicyVersion(ctx context.Context, input *iam.CreatePolicyVersionInput, opts ...func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
 	ListPolicyVersions(ctx context.Context, input *iam.ListPolicyVersionsInput, opts ...func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
 	DeletePolicyVersion(ctx context.Context, input *iam.DeletePolicyVersionInput, opts ...func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
+	TagPolicy(ctx context.Context, input *iam.TagPolicyInput, opts ...func(*iam.Options)) (*iam.TagPolicyOutput, error)
+	UntagPolicy(ctx context.Context, input *iam.UntagPolicyInput, opts ...func(*iam.Options)) (*iam.UntagPolicyOutput, error)
 }
 
 // NewPolicyClient returns a new client using AWS credentials as JSON encoded data.
@@ -31,7 +33,7 @@ func NewPolicyClient(cfg aws.Config) PolicyClient {
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
 func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
-	// The AWS API reutrns Policy Document as an escaped string.
+	// The AWS API returns Policy Document as an escaped string.
 	// Due to differences in the methods to escape a string, the comparison result between
 	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).
 	// Escaping with a common method and then comparing is a safe way.
