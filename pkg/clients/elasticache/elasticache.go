@@ -23,13 +23,17 @@ import (
 	"strings"
 
 	"github.com/aws/smithy-go/document"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -40,7 +44,10 @@ import (
 	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
-const errCheckUpToDate = "unable to determine if external resource is up to date"
+const (
+	errCheckUpToDate           = "unable to determine if external resource is up to date"
+	errGetPasswordSecretFailed = "cannot get password secret"
+)
 
 // A Client handles CRUD operations for ElastiCache resources.
 type Client interface {
@@ -809,4 +816,39 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 	GenerateCluster(name, *in, desired)
 
 	return cmp.Equal(desired, observed, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(document.NoSerde{})), nil
+}
+
+// GetPassword fetches the referenced input password for an ElastiCacheUser CRD and determines whether it has changed or not
+func GetPassword(ctx context.Context, kube client.Client, in *xpv1.SecretKeySelector, out *xpv1.SecretReference) (newPwd string, changed bool, err error) {
+	if in == nil {
+		return "", false, nil
+	}
+
+	nn := types.NamespacedName{
+		Name:      in.Name,
+		Namespace: in.Namespace,
+	}
+	s := &corev1.Secret{}
+	if err := kube.Get(ctx, nn, s); err != nil {
+		return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
+	}
+	newPwd = string(s.Data[in.Key])
+
+	if out != nil {
+		nn = types.NamespacedName{
+			Name:      out.Name,
+			Namespace: out.Namespace,
+		}
+		s = &corev1.Secret{}
+		// the output secret may not exist yet, so we can skip returning an
+		// error if the error is NotFound
+		if err := kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
+			return "", false, err
+		}
+		// if newPwd was set to some value, compare value in output secret with
+		// newPwd
+		changed = newPwd != "" && newPwd != string(s.Data[xpv1.ResourceCredentialsSecretPasswordKey])
+	}
+
+	return newPwd, changed, nil
 }

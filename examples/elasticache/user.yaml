@@ -1,14 +1,29 @@
 apiVersion: elasticache.aws.crossplane.io/v1alpha1
 kind: User
 metadata:
-  name: userelasticache
+  name: example
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
+    userName: example-user
     accessString: "on"
     engine: redis
-    userID: "exampleID"
-    userName: exampleUser
-    noPasswordRequired: true
+    noPasswordRequired: false
+    passwordSecretRef:
+      name: example-elasticache
+      key: password
+      namespace: crossplane-system
+  writeConnectionSecretToRef:
+    name: example-elasticache
+    namespace: default
   providerConfigRef:
-    name: default
+    name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-elasticache
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

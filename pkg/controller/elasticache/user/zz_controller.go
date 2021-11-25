@@ -120,6 +120,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ARN != nil {
 		cr.Status.AtProvider.ARN = resp.ARN
+	} else {
+		cr.Status.AtProvider.ARN = nil
 	}
 	if resp.Authentication != nil {
 		f2 := &svcapitypes.Authentication{}
@@ -130,9 +132,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f2.Type = resp.Authentication.Type
 		}
 		cr.Status.AtProvider.Authentication = f2
+	} else {
+		cr.Status.AtProvider.Authentication = nil
 	}
 	if resp.Status != nil {
 		cr.Status.AtProvider.Status = resp.Status
+	} else {
+		cr.Status.AtProvider.Status = nil
 	}
 	if resp.UserGroupIds != nil {
 		f5 := []*string{}
@@ -142,6 +148,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f5 = append(f5, &f5elem)
 		}
 		cr.Status.AtProvider.UserGroupIDs = f5
+	} else {
+		cr.Status.AtProvider.UserGroupIDs = nil
+	}
+	if resp.UserId != nil {
+		cr.Status.AtProvider.UserID = resp.UserId
+	} else {
+		cr.Status.AtProvider.UserID = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -157,10 +170,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyUserWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {

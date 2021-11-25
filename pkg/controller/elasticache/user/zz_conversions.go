@@ -36,8 +36,8 @@ func GenerateDescribeUsersInput(cr *svcapitypes.User) *svcsdk.DescribeUsersInput
 	if cr.Spec.ForProvider.Engine != nil {
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
 	}
-	if cr.Spec.ForProvider.UserID != nil {
-		res.SetUserId(*cr.Spec.ForProvider.UserID)
+	if cr.Status.AtProvider.UserID != nil {
+		res.SetUserId(*cr.Status.AtProvider.UserID)
 	}
 
 	return res
@@ -51,9 +51,13 @@ func GenerateUser(resp *svcsdk.DescribeUsersOutput) *svcapitypes.User {
 	for _, elem := range resp.Users {
 		if elem.ARN != nil {
 			cr.Status.AtProvider.ARN = elem.ARN
+		} else {
+			cr.Status.AtProvider.ARN = nil
 		}
 		if elem.AccessString != nil {
 			cr.Spec.ForProvider.AccessString = elem.AccessString
+		} else {
+			cr.Spec.ForProvider.AccessString = nil
 		}
 		if elem.Authentication != nil {
 			f2 := &svcapitypes.Authentication{}
@@ -64,12 +68,18 @@ func GenerateUser(resp *svcsdk.DescribeUsersOutput) *svcapitypes.User {
 				f2.Type = elem.Authentication.Type
 			}
 			cr.Status.AtProvider.Authentication = f2
+		} else {
+			cr.Status.AtProvider.Authentication = nil
 		}
 		if elem.Engine != nil {
 			cr.Spec.ForProvider.Engine = elem.Engine
+		} else {
+			cr.Spec.ForProvider.Engine = nil
 		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
+		} else {
+			cr.Status.AtProvider.Status = nil
 		}
 		if elem.UserGroupIds != nil {
 			f5 := []*string{}
@@ -79,12 +89,18 @@ func GenerateUser(resp *svcsdk.DescribeUsersOutput) *svcapitypes.User {
 				f5 = append(f5, &f5elem)
 			}
 			cr.Status.AtProvider.UserGroupIDs = f5
+		} else {
+			cr.Status.AtProvider.UserGroupIDs = nil
 		}
 		if elem.UserId != nil {
-			cr.Spec.ForProvider.UserID = elem.UserId
+			cr.Status.AtProvider.UserID = elem.UserId
+		} else {
+			cr.Status.AtProvider.UserID = nil
 		}
 		if elem.UserName != nil {
 			cr.Spec.ForProvider.UserName = elem.UserName
+		} else {
+			cr.Spec.ForProvider.UserName = nil
 		}
 		found = true
 		break
@@ -109,18 +125,6 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 	if cr.Spec.ForProvider.NoPasswordRequired != nil {
 		res.SetNoPasswordRequired(*cr.Spec.ForProvider.NoPasswordRequired)
 	}
-	if cr.Spec.ForProvider.Passwords != nil {
-		f3 := []*string{}
-		for _, f3iter := range cr.Spec.ForProvider.Passwords {
-			var f3elem string
-			f3elem = *f3iter
-			f3 = append(f3, &f3elem)
-		}
-		res.SetPasswords(f3)
-	}
-	if cr.Spec.ForProvider.UserID != nil {
-		res.SetUserId(*cr.Spec.ForProvider.UserID)
-	}
 	if cr.Spec.ForProvider.UserName != nil {
 		res.SetUserName(*cr.Spec.ForProvider.UserName)
 	}
@@ -138,17 +142,8 @@ func GenerateModifyUserInput(cr *svcapitypes.User) *svcsdk.ModifyUserInput {
 	if cr.Spec.ForProvider.NoPasswordRequired != nil {
 		res.SetNoPasswordRequired(*cr.Spec.ForProvider.NoPasswordRequired)
 	}
-	if cr.Spec.ForProvider.Passwords != nil {
-		f3 := []*string{}
-		for _, f3iter := range cr.Spec.ForProvider.Passwords {
-			var f3elem string
-			f3elem = *f3iter
-			f3 = append(f3, &f3elem)
-		}
-		res.SetPasswords(f3)
-	}
-	if cr.Spec.ForProvider.UserID != nil {
-		res.SetUserId(*cr.Spec.ForProvider.UserID)
+	if cr.Status.AtProvider.UserID != nil {
+		res.SetUserId(*cr.Status.AtProvider.UserID)
 	}
 
 	return res
@@ -158,8 +153,8 @@ func GenerateModifyUserInput(cr *svcapitypes.User) *svcsdk.ModifyUserInput {
 func GenerateDeleteUserInput(cr *svcapitypes.User) *svcsdk.DeleteUserInput {
 	res := &svcsdk.DeleteUserInput{}
 
-	if cr.Spec.ForProvider.UserID != nil {
-		res.SetUserId(*cr.Spec.ForProvider.UserID)
+	if cr.Status.AtProvider.UserID != nil {
+		res.SetUserId(*cr.Status.AtProvider.UserID)
 	}
 
 	return res

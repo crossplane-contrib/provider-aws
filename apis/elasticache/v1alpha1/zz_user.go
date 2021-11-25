@@ -37,12 +37,6 @@ type UserParameters struct {
 	Engine *string `json:"engine"`
 	// Indicates a password is not required for this user.
 	NoPasswordRequired *bool `json:"noPasswordRequired,omitempty"`
-	// Passwords used for this user. You can create up to two passwords for each
-	// user.
-	Passwords []*string `json:"passwords,omitempty"`
-	// The ID of the user.
-	// +kubebuilder:validation:Required
-	UserID *string `json:"userID"`
 	// The username of the user.
 	// +kubebuilder:validation:Required
 	UserName             *string `json:"userName"`
@@ -65,12 +59,14 @@ type UserObservation struct {
 	Status *string `json:"status,omitempty"`
 	// Returns a list of the user group IDs the user belongs to.
 	UserGroupIDs []*string `json:"userGroupIDs,omitempty"`
+	// The ID of the user.
+	UserID *string `json:"userID,omitempty"`
 }
 
 // UserStatus defines the observed state of User.
 type UserStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          UserObservation `json:"atProvider"`
+	AtProvider          UserObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -84,7 +80,7 @@ type UserStatus struct {
 type User struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              UserSpec   `json:"spec,omitempty"`
+	Spec              UserSpec   `json:"spec"`
 	Status            UserStatus `json:"status,omitempty"`
 }
 

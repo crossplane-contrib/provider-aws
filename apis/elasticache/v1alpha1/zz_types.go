@@ -19,6 +19,9 @@ limitations under the License.
 package v1alpha1
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 88b52363 (feat(elasticache-cache): #585 added elasticache user)
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,6 +31,7 @@ var (
 	_ = &metav1.Time{}
 )
 
+<<<<<<< HEAD
 // +kubebuilder:skipversion
 type Authentication struct {
 	PasswordCount *int64 `json:"passwordCount,omitempty"`
@@ -35,6 +39,8 @@ type Authentication struct {
 
 // +kubebuilder:skipversion
 =======
+=======
+>>>>>>> 88b52363 (feat(elasticache-cache): #585 added elasticache user)
 type Authentication struct {
 	PasswordCount *int64 `json:"passwordCount,omitempty"`
 

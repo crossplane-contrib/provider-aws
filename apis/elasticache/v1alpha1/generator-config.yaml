@@ -1,4 +1,7 @@
 ignore:
+  field_paths:
+    - CreateUserInput.UserId
+    - CreateUserInput.Passwords
   resource_names:
     - CacheCluster
     - CacheParameterGroup

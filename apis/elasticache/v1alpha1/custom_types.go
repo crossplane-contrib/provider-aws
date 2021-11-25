@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1alpha1
 
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
 // CustomCacheParameterGroupParameters includes the custom fields.
 type CustomCacheParameterGroupParameters struct {
 	// A list of parameters to associate with this DB parameter group
@@ -24,4 +26,6 @@ type CustomCacheParameterGroupParameters struct {
 }
 
 // CustomUserParameters contains the addtionals fields for UserParameters
-type CustomUserParameters struct{}
+type CustomUserParameters struct {
+	PasswordSecretRef xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
+}
