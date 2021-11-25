@@ -120,11 +120,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(e.kube.Update(ctx, cr), errKubeUpdateFailed)
-		}
-	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
@@ -143,9 +138,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ResourceUpToDate:  upToDate,
-		ConnectionDetails: rds.GetConnectionDetails(*cr),
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
+		ConnectionDetails:       rds.GetConnectionDetails(*cr),
 	}, nil
 }
 
