@@ -22,6 +22,8 @@ import (
 
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go/middleware"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,8 +43,8 @@ import (
 
 var (
 	unexpectedItem resource.Managed
-	arn            = "arn:aws:iam::aws:policy/aws-service-role/AccessAnalyzerServiceRolePolicy"
-	name           = "policy name"
+	policyArn      = "arn:aws:iam::123456789012:policy/policy-name"
+	name           = "policy-name"
 	document       = `{
 		"Version": "2012-10-17",
 		"Statement": [
@@ -57,17 +59,25 @@ var (
 	boolFalse = false
 
 	errBoom = errors.New("boom")
+
+	getCallerIdentityOutput = &sts.GetCallerIdentityOutput{
+		Account:        awsclient.String("123456789012"),
+		Arn:            awsclient.String("arn:aws:iam::123456789012:user/DevAdmin"),
+		UserId:         awsclient.String("AIDASAMPLEUSERID"),
+		ResultMetadata: middleware.Metadata{},
+	}
 )
 
 type args struct {
 	kube client.Client
 	iam  iam.PolicyClient
+	sts  iam.STSClient
 	cr   resource.Managed
 }
 
 type policyModifier func(*v1alpha1.IAMPolicy)
 
-func withExterName(s string) policyModifier {
+func withExternalName(s string) policyModifier {
 	return func(r *v1alpha1.IAMPolicy) { meta.SetExternalName(r, s) }
 }
 
@@ -81,8 +91,15 @@ func withSpec(spec v1alpha1.IAMPolicyParameters) policyModifier {
 	}
 }
 
+func withPath(path string) policyModifier {
+	return func(r *v1alpha1.IAMPolicy) {
+		r.Spec.ForProvider.Path = awsclient.String(path)
+	}
+}
+
 func policy(m ...policyModifier) *v1alpha1.IAMPolicy {
 	cr := &v1alpha1.IAMPolicy{}
+	cr.Spec.ForProvider.Name = name
 	for _, f := range m {
 		f(cr)
 	}
@@ -120,13 +137,13 @@ func TestObserve(t *testing.T) {
 				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
 					Name:     name,
-				}), withExterName(arn)),
+				}), withExternalName(policyArn)),
 			},
 			want: want{
 				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
 					Name:     name,
-				}), withExterName(arn),
+				}), withExternalName(policyArn),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -150,10 +167,10 @@ func TestObserve(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr:  policy(withExterName(arn)),
+				cr:  policy(withExternalName(policyArn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -173,10 +190,101 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withExterName(arn),
+				cr: policy(withExternalName(policyArn),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists: true,
+				},
+			},
+		},
+		"EmptyExternalNameAndEntityDoesNotExist": {
+			args: args{
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil, func(obj client.Object) error { return nil })},
+				sts: &fake.MockSTSClient{MockGetCallerIdentity: func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+					return getCallerIdentityOutput, nil
+				},
+				},
+				iam: &fake.MockPolicyClient{
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, &awsiamtypes.NoSuchEntityException{}
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExternalName("")),
+			},
+			want: want{
+				cr: policy(withExternalName(policyArn)),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"EmptyExternalNameAndEntityDoesNotExistForPolicyWithPath": {
+			args: args{
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil, func(obj client.Object) error { return nil })},
+				sts: &fake.MockSTSClient{MockGetCallerIdentity: func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+					return getCallerIdentityOutput, nil
+				},
+				},
+				iam: &fake.MockPolicyClient{
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, &awsiamtypes.NoSuchEntityException{}
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExternalName(""), withPath("/org-unit/")),
+			},
+			want: want{
+				cr: policy(withExternalName("arn:aws:iam::123456789012:policy/org-unit/policy-name"), withPath("/org-unit/")),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"EmptyExternalNameAndEntityAlreadyExists": {
+			args: args{
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil, func(obj client.Object) error { return nil })},
+				sts: &fake.MockSTSClient{MockGetCallerIdentity: func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+					return getCallerIdentityOutput, nil
+				},
+				},
+				iam: &fake.MockPolicyClient{
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, nil
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withExternalName("")),
+			},
+			want: want{
+				cr: policy(withExternalName(policyArn),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
@@ -187,7 +295,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.iam}
+			e := &external{client: tc.iam, sts: tc.sts, kube: tc.kube}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -224,7 +332,7 @@ func TestCreate(t *testing.T) {
 					MockCreatePolicy: func(ctx context.Context, input *awsiam.CreatePolicyInput, opts []func(*awsiam.Options)) (*awsiam.CreatePolicyOutput, error) {
 						return &awsiam.CreatePolicyOutput{
 							Policy: &awsiamtypes.Policy{
-								Arn: &arn,
+								Arn: &policyArn,
 							},
 						}, nil
 					},
@@ -240,7 +348,7 @@ func TestCreate(t *testing.T) {
 						Document: document,
 						Name:     name,
 					}),
-					withExterName(arn)),
+					withExternalName(policyArn)),
 				result: managed.ExternalCreation{},
 			},
 		},
@@ -317,10 +425,10 @@ func TestUpdate(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 		},
 		"InValidInput": {
@@ -339,10 +447,10 @@ func TestUpdate(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr:  policy(withExterName(arn)),
+				cr:  policy(withExternalName(policyArn)),
 				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -359,10 +467,10 @@ func TestUpdate(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr:  policy(withExterName(arn)),
+				cr:  policy(withExternalName(policyArn)),
 				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -410,10 +518,10 @@ func TestDelete(t *testing.T) {
 						return &awsiam.DeletePolicyOutput{}, nil
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withExterName(arn),
+				cr: policy(withExternalName(policyArn),
 					withConditions(xpv1.Deleting())),
 			},
 		},
@@ -442,10 +550,10 @@ func TestDelete(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr:  policy(withExterName(arn)),
+				cr:  policy(withExternalName(policyArn)),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
@@ -462,10 +570,10 @@ func TestDelete(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: policy(withExterName(arn)),
+				cr: policy(withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withExterName(arn),
+				cr: policy(withExternalName(policyArn),
 					withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},

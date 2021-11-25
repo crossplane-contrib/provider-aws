@@ -20,12 +20,14 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 // this ensures that the mock implements the client interface
 var _ clientset.PolicyClient = (*MockPolicyClient)(nil)
+var _ clientset.STSClient = (*MockSTSClient)(nil)
 
 // MockPolicyClient is a type that implements all the methods for PolicyClient interface
 type MockPolicyClient struct {
@@ -38,6 +40,16 @@ type MockPolicyClient struct {
 	MockDeletePolicyVersion func(ctx context.Context, input *iam.DeletePolicyVersionInput, opts []func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
 	MockTagPolicy           func(ctx context.Context, input *iam.TagPolicyInput, opts []func(*iam.Options)) (*iam.TagPolicyOutput, error)
 	MockUntagPolicy         func(ctx context.Context, input *iam.UntagPolicyInput, opts []func(*iam.Options)) (*iam.UntagPolicyOutput, error)
+}
+
+// MockSTSClient mock sts client
+type MockSTSClient struct {
+	MockGetCallerIdentity func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
+}
+
+// GetCallerIdentity calls the underlying MockGetCallerIdentity method.
+func (c *MockSTSClient) GetCallerIdentity(ctx context.Context, input *sts.GetCallerIdentityInput, opts ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
+	return c.MockGetCallerIdentity(ctx, input, opts)
 }
 
 // GetPolicy mocks GetPolicy method

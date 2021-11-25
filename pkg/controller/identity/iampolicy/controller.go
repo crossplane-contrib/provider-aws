@@ -21,8 +21,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,9 +51,10 @@ const (
 	errCreate        = "failed to create the IAM Policy"
 	errDelete        = "failed to delete the IAM Policy"
 	errUpdate        = "failed to update the IAM Policy"
+	errExternalName  = "failed to update the IAM Policy external-name"
 	errEmptyPolicy   = "empty IAM Policy received from IAM API"
 	errPolicyVersion = "No version for policy received from IAM API"
-	errUpToDate      = "cannt check if policy is up to date"
+	errUpToDate      = "cannot check if policy is up to date"
 )
 
 // SetupIAMPolicy adds a controller that reconciles IAM Policy.
@@ -66,7 +69,7 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 		For(&v1alpha1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMPolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -75,8 +78,9 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 }
 
 type connector struct {
-	kube        client.Client
-	newClientFn func(config aws.Config) iam.PolicyClient
+	kube           client.Client
+	newClientFn    func(config aws.Config) iam.PolicyClient
+	newSTSClientFn func(config aws.Config) iam.STSClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -84,11 +88,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
+	return &external{client: c.newClientFn(*cfg), sts: c.newSTSClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
 	client iam.PolicyClient
+	sts    iam.STSClient
 	kube   client.Client
 }
 
@@ -99,7 +104,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{}, nil
+		// If external name not set there is still a change it may already exist
+		// Try to get the policy by name
+		policyArn, policyErr := e.getPolicyArnByNameAndPath(ctx, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Path)
+		if policyArn == nil || policyErr != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(policyErr, errExternalName)
+		}
+		meta.SetExternalName(cr, aws.ToString(policyArn))
+		_ = e.kube.Update(ctx, cr)
 	}
 
 	policyResp, err := e.client.GetPolicy(ctx, &awsiam.GetPolicyInput{
@@ -264,6 +276,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
+func (e *external) getCallerIdentityArn(ctx context.Context) (arn.ARN, error) {
+	resp, err := e.sts.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return arn.ARN{}, err
+	}
+	return arn.Parse(aws.ToString(resp.Arn))
+}
+
 func (e *external) listPolicyVersions(ctx context.Context, policyArn string) ([]awsiamtypes.PolicyVersion, error) {
 	resp, err := e.client.ListPolicyVersions(ctx, &awsiam.ListPolicyVersionsInput{
 		PolicyArn: aws.String(policyArn),
@@ -327,4 +347,33 @@ func (e *external) deleteNonDefaultVersions(ctx context.Context, policyArn strin
 	}
 
 	return nil
+}
+
+// getPolicyArnByNameAndPath will attempt to determine the arn for a policy using the current caller identity
+func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName string, policyPath *string) (*string, error) {
+
+	// Get the ARN of the current identity
+	identityArn, err := e.getCallerIdentityArn(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Per the aws docs
+	// This parameter is optional. If it is not included, it defaults to a slash (/).
+	// This parameter allows (through its regex pattern ) a string of characters consisting
+	// of either a forward slash (/) by itself or a string that must begin and end with forward
+	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
+	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
+	if policyPath == nil {
+		policyPath = awsclient.String("/")
+	}
+
+	// Use it to construct an arn for the policy
+	policyArn := arn.ARN{Partition: identityArn.Partition,
+		Service:   "iam",
+		Region:    identityArn.Region,
+		AccountID: identityArn.AccountID,
+		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
+
+	return aws.String(policyArn.String()), nil
 }

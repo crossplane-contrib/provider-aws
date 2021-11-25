@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -26,9 +27,19 @@ type PolicyClient interface {
 	UntagPolicy(ctx context.Context, input *iam.UntagPolicyInput, opts ...func(*iam.Options)) (*iam.UntagPolicyOutput, error)
 }
 
+// STSClient is the external client used for STS
+type STSClient interface {
+	GetCallerIdentity(ctx context.Context, input *sts.GetCallerIdentityInput, opts ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
+}
+
 // NewPolicyClient returns a new client using AWS credentials as JSON encoded data.
 func NewPolicyClient(cfg aws.Config) PolicyClient {
 	return iam.NewFromConfig(cfg)
+}
+
+// NewSTSClient creates a new STS Client.
+func NewSTSClient(cfg aws.Config) STSClient {
+	return sts.NewFromConfig(cfg)
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
