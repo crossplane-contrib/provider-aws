@@ -42,10 +42,18 @@ type NodeGroupParameters struct {
 	// Region is the region you'd like  the NodeGroup to be created in.
 	Region string `json:"region"`
 
-	// The AMI type for your node group. GPU instance types should use the AL2_x86_64_GPU
-	// AMI type, which uses the Amazon EKS-optimized Linux AMI with GPU support.
-	// Non-GPU instances should use the AL2_x86_64 AMI type, which uses the Amazon
-	// EKS-optimized Linux AMI.
+	// The AMI type for your node group.
+	// GPU instance can use
+	// AL2_x86_64_GPU AMI type,
+	// which uses the Amazon EKS-optimized Linux AMI with GPU support.
+	// Non-GPU instances can use
+	// AL2_x86_64 (default) AMI type,
+	// which uses the Amazon EKS-optimized Linux AMI or,
+	// BOTTLEROCKET_ARM_64 AMI type,
+	// which uses the Amazon Bottlerocket AMI for ARM instances, or
+	// BOTTLEROCKET_x86_64 AMI type,
+	// which uses the Amazon Bottlerocket AMI fir x86_64 instances.
+	//
 	// +immutable
 	// +optional
 	AMIType *string `json:"amiType,omitempty"`
