@@ -90,6 +90,19 @@ func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.DBSubnetGroupName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.DBSubnetGroupNameRef = rsp.ResolvedReference
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBClusterParameterGroupName),
+		Reference:    mg.Spec.ForProvider.DBClusterParameterGroupNameRef,
+		Selector:     mg.Spec.ForProvider.DBClusterParameterGroupNameSelector,
+		To:           reference.To{List: &DBClusterParameterGroupList{}, Managed: &DBClusterParameterGroup{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.dbClusterParameterGroupName")
+	}
+	mg.Spec.ForProvider.DBClusterParameterGroupName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBClusterParameterGroupNameRef = rsp.ResolvedReference
+
 	return nil
 }
 
@@ -173,6 +186,19 @@ func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) er
 	}
 	mg.Spec.ForProvider.MonitoringRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.MonitoringRoleARNRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBParameterGroupName),
+		Reference:    mg.Spec.ForProvider.DBParameterGroupNameRef,
+		Selector:     mg.Spec.ForProvider.DBParameterGroupNameSelector,
+		To:           reference.To{List: &DBParameterGroupList{}, Managed: &DBParameterGroup{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.dbParameterGroupName")
+	}
+	mg.Spec.ForProvider.DBParameterGroupName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBParameterGroupNameRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.vpcSecurityGroupIDs
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{

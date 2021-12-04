@@ -212,6 +212,31 @@ spec:
                       or hyphens. \n    * First character must be a letter \n    *
                       Can't end with a hyphen or contain two consecutive hyphens"
                     type: string
+                  dbParameterGroupNameRef:
+                    description: DBParameterGroupNameRef is a reference to a DBParameterGroup
+                      used to set DBParameterGroupName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  dbParameterGroupNameSelector:
+                    description: DBParameterGroupNameSelector selects a reference
+                      to a DBParameterGroup used to set DBParameterGroupName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   dbSecurityGroups:
                     description: A list of database security groups to associate with
                       this DB instance

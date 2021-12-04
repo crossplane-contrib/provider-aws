@@ -112,6 +112,16 @@ type CustomDBClusterParameters struct {
 	// +immutable
 	// +optional
 	SkipFinalSnapshot bool `json:"skipFinalSnapshot,omitempty"`
+
+	// DBClusterParameterGroupNameRef is a reference to a DBClusterParameterGroup used to set
+	// DBClusterParameterGroupName.
+	// +optional
+	DBClusterParameterGroupNameRef *xpv1.Reference `json:"dbClusterParameterGroupNameRef,omitempty"`
+
+	// DBClusterParameterGroupNameSelector selects a reference to a DBClusterParameterGroup used to
+	// set DBClusterParameterGroupName.
+	// +optional
+	DBClusterParameterGroupNameSelector *xpv1.Selector `json:"dbClusterParameterGroupNameSelector,omitempty"`
 }
 
 // CustomGlobalClusterParameters are custom parameters for a GlobalCluster
@@ -227,4 +237,14 @@ type CustomDBInstanceParameters struct {
 	// to set the VPCSecurityGroupIDs.
 	// +optional
 	VPCSecurityGroupIDSelector *xpv1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
+
+	// DBParameterGroupNameRef is a reference to a DBParameterGroup used to set
+	// DBParameterGroupName.
+	// +optional
+	DBParameterGroupNameRef *xpv1.Reference `json:"dbParameterGroupNameRef,omitempty"`
+
+	// DBParameterGroupNameSelector selects a reference to a DBParameterGroup used to
+	// set DBParameterGroupName.
+	// +optional
+	DBParameterGroupNameSelector *xpv1.Selector `json:"dbParameterGroupNameSelector,omitempty"`
 }
