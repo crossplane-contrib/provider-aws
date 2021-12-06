@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manualv1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -84,35 +84,25 @@ type VPCCIDRBlockSpec struct {
 // VPCCIDRBlockObservation keeps the state for the external resource
 type VPCCIDRBlockObservation struct {
 	// The association ID for the CIDR block.
-	AssociationID *string `json:"associationId,omitempty"`
+	AssociationID string `json:"associationId,omitempty"`
 
 	// The IPv4 CIDR block.
-	CIDRBlock *string `json:"cidrBlock,omitempty"`
+	CIDRBlock string `json:"cidrBlock,omitempty"`
 
 	// The IPv6 CIDR block.
-	IPv6CIDRBlock *string `json:"ipv6CidrBlock,omitempty"`
+	IPv6CIDRBlock string `json:"ipv6CidrBlock,omitempty"`
 
 	// Information about the state of the CIDR block.
-	IPv6CIDRBlockState *VPCCIDRBlockState `json:"ipv6CidrrBlockState,omitempty"`
+	IPv6CIDRBlockState VPCCIDRBlockState `json:"ipv6CidrrBlockState,omitempty"`
 
 	// The ID of the IPv6 address pool from which the IPv6 CIDR block is allocated.
-	IPv6Pool *string `json:"ipv6Pool,omitempty"`
+	IPv6Pool string `json:"ipv6Pool,omitempty"`
 
 	// The name of the location from which we advertise the IPV6 CIDR block.
-	NetworkBorderGroup *string `json:"networkBorderGroup,omitempty"`
+	NetworkBorderGroup string `json:"networkBorderGroup,omitempty"`
 
 	// Information about the state of the CIDR block.
-	CIDRBlockState *VPCCIDRBlockState `json:"cidrBlockState,omitempty"`
-}
-
-// VPCCIDRBlockState represents the state of a CIDR Block
-type VPCCIDRBlockState struct {
-
-	// The state of the CIDR block.
-	State *string `json:"state,omitempty"`
-
-	// A message about the status of the CIDR block, if applicable.
-	StatusMessage *string `json:"statusMessage,omitempty"`
+	CIDRBlockState VPCCIDRBlockState `json:"cidrBlockState,omitempty"`
 }
 
 // A VPCCIDRBlockStatus represents the observed state of a ElasticIP.
@@ -122,6 +112,7 @@ type VPCCIDRBlockStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 
 // A VPCCIDRBlock is a managed resource that represents an secondary CIDR block for a VPC
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
@@ -132,8 +123,6 @@ type VPCCIDRBlockStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type VPCCIDRBlock struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
