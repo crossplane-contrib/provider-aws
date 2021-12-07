@@ -42,7 +42,6 @@ func SetupCrawler(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preDelete = preDelete
-			e.postCreate = postCreate
 			e.preCreate = preCreate
 		},
 	}
@@ -71,7 +70,7 @@ func preObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCrawl
 	return nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCrawlerOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func postObserve(_ context.Context, cr *svcapitypes.Crawler, _ *svcsdk.GetCrawlerOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -79,16 +78,9 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCraw
 	return obs, nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, cr.Name)
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
-}
-
 func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerInput) error {
-	obj.Name = &cr.Name
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	obj.Role = &cr.Spec.ForProvider.RoleArn
+	obj.Schedule = cr.Spec.ForProvider.Schedule
 	return nil
 }
