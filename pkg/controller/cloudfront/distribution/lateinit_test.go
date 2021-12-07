@@ -542,7 +542,7 @@ func TestLateInitialize(t *testing.T) {
 								OriginShieldRegion: awsclients.String("us-east-1"),
 							},
 							S3OriginConfig: &svcapitypes.S3OriginConfig{
-								OriginAccessIDentity: awsclients.String("cool-guy"),
+								OriginAccessIdentity: awsclients.String("cool-guy"),
 							},
 						}},
 					},

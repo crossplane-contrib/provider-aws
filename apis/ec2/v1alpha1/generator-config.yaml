@@ -57,6 +57,8 @@ ignore:
     - VpnConnection
     - VpnGateway
     - Volume
+  shape_names:
+    - Instance
   field_paths:
     - CreateVpcPeeringConnectionInput.DryRun
     - DeleteVpcPeeringConnectionInput.DryRun
