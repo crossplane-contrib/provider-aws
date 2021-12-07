@@ -1253,11 +1253,6 @@ func (in *Crawler_SDK) DeepCopyInto(out *Crawler_SDK) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.Schedule != nil {
-		in, out := &in.Schedule, &out.Schedule
-		*out = new(Schedule)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.SchemaChangePolicy != nil {
 		in, out := &in.SchemaChangePolicy, &out.SchemaChangePolicy
 		*out = new(SchemaChangePolicy)
@@ -4249,11 +4244,6 @@ func (in *Schedule) DeepCopyInto(out *Schedule) {
 	*out = *in
 	if in.ScheduleExpression != nil {
 		in, out := &in.ScheduleExpression, &out.ScheduleExpression
-		*out = new(string)
-		**out = **in
-	}
-	if in.State != nil {
-		in, out := &in.State, &out.State
 		*out = new(string)
 		**out = **in
 	}
