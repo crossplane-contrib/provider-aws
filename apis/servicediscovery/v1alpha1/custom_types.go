@@ -1,8 +1,8 @@
 package v1alpha1
 
 import (
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
