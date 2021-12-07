@@ -81,6 +81,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.CreateFu
 			SubnetIds:        cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs,
 		}
 	}
+	obj.Layers = cr.Spec.ForProvider.Layers
 	return nil
 }
 
