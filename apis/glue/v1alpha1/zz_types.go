@@ -220,8 +220,6 @@ type Crawler_SDK struct {
 	RecrawlPolicy *RecrawlPolicy `json:"recrawlPolicy,omitempty"`
 
 	Role *string `json:"role,omitempty"`
-	// A scheduling object using a cron statement to schedule an event.
-	Schedule *Schedule `json:"schedule,omitempty"`
 	// A policy that specifies update and deletion behaviors for the crawler.
 	SchemaChangePolicy *SchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
 
@@ -787,8 +785,6 @@ type S3Target struct {
 
 type Schedule struct {
 	ScheduleExpression *string `json:"scheduleExpression,omitempty"`
-
-	State *string `json:"state,omitempty"`
 }
 
 type SchemaChangePolicy struct {

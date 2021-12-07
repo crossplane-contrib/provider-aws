@@ -241,29 +241,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f30 := &svcapitypes.VPCConfigResponse{}
+		f29 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f30f0 := []*string{}
-			for _, f30f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f30f0elem string
-				f30f0elem = *f30f0iter
-				f30f0 = append(f30f0, &f30f0elem)
+			f29f0 := []*string{}
+			for _, f29f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f29f0elem string
+				f29f0elem = *f29f0iter
+				f29f0 = append(f29f0, &f29f0elem)
 			}
-			f30.SecurityGroupIDs = f30f0
+			f29.SecurityGroupIDs = f29f0
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f30f1 := []*string{}
-			for _, f30f1iter := range resp.VpcConfig.SubnetIds {
-				var f30f1elem string
-				f30f1elem = *f30f1iter
-				f30f1 = append(f30f1, &f30f1elem)
+			f29f1 := []*string{}
+			for _, f29f1iter := range resp.VpcConfig.SubnetIds {
+				var f29f1elem string
+				f29f1elem = *f29f1iter
+				f29f1 = append(f29f1, &f29f1elem)
 			}
-			f30.SubnetIDs = f30f1
+			f29.SubnetIDs = f29f1
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f30.VPCID = resp.VpcConfig.VpcId
+			f29.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f30
+		cr.Status.AtProvider.VPCConfig = f29
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

@@ -24,6 +24,8 @@ ignore:
     - CreateClassifierInput.JsonClassifier
     - CreateClassifierInput.GrokClassifier
     - CreateConnectionInput.ConnectionInput
+    # See https://github.com/aws-controllers-k8s/community/issues/1078
+    - Crawler.Schedule
 
 resources:
   Job:
