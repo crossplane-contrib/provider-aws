@@ -3,7 +3,7 @@ module github.com/crossplane/provider-aws
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.37.4
+	github.com/aws/aws-sdk-go v1.37.10
 	github.com/aws/aws-sdk-go-v2 v1.11.0
 	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.0

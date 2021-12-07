@@ -578,7 +578,7 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 			in.S3OriginConfig = &svcapitypes.S3OriginConfig{}
 		}
 
-		in.S3OriginConfig.OriginAccessIDentity = awsclients.LateInitializeStringPtr(in.S3OriginConfig.OriginAccessIDentity, from.S3OriginConfig.OriginAccessIdentity)
+		in.S3OriginConfig.OriginAccessIdentity = awsclients.LateInitializeStringPtr(in.S3OriginConfig.OriginAccessIdentity, from.S3OriginConfig.OriginAccessIdentity)
 	}
 }
 
