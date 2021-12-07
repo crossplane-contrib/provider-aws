@@ -123,13 +123,19 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	}
 }
 
+type awsEndpointResolverAdaptorWithOptions func(service, region string, options interface{}) (aws.Endpoint, error)
+
+func (a awsEndpointResolverAdaptorWithOptions) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
+	return a(service, region, options)
+}
+
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
 func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // nolint:gocyclo
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
-	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+	cfg.EndpointResolverWithOptions = awsEndpointResolverAdaptorWithOptions(func(service, region string, options interface{}) (aws.Endpoint, error) {
 		fullURL := ""
 		switch pc.Spec.Endpoint.URL.Type {
 		case URLConfigTypeStatic:

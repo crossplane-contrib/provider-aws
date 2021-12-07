@@ -681,7 +681,7 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 
 			// If no endpointConfig was provided the returned endpointResolver should be nil
 			if tc.args.endpointConfig != nil {
-				actual, endpointError := config.EndpointResolver.ResolveEndpoint(tc.args.service, tc.args.region)
+				actual, endpointError := config.EndpointResolverWithOptions.ResolveEndpoint(tc.args.service, tc.args.region, nil)
 				if tc.want.error != nil {
 					g.Expect(endpointError).To(HaveOccurred())
 				} else {
@@ -690,8 +690,8 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 						t.Errorf("add: -want, +got:\n%s", diff)
 					}
 				}
-			} else if config.EndpointResolver != nil {
-				t.Errorf("Expected config.EndpointResolver to be nil")
+			} else if config.EndpointResolverWithOptions != nil {
+				t.Errorf("Expected config.EndpointResolverWithOptions to be nil")
 			}
 		})
 	}
