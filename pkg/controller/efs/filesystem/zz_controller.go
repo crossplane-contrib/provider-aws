@@ -129,6 +129,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CreationToken = nil
 	}
+	if resp.Encrypted != nil {
+		cr.Spec.ForProvider.Encrypted = resp.Encrypted
+	} else {
+		cr.Spec.ForProvider.Encrypted = nil
+	}
 	if resp.FileSystemArn != nil {
 		cr.Status.AtProvider.FileSystemARN = resp.FileSystemArn
 	} else {
@@ -138,6 +143,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.FileSystemID = resp.FileSystemId
 	} else {
 		cr.Status.AtProvider.FileSystemID = nil
+	}
+	if resp.KmsKeyId != nil {
+		cr.Spec.ForProvider.KMSKeyID = resp.KmsKeyId
+	} else {
+		cr.Spec.ForProvider.KMSKeyID = nil
 	}
 	if resp.LifeCycleState != nil {
 		cr.Status.AtProvider.LifeCycleState = resp.LifeCycleState
@@ -159,6 +169,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.OwnerID = nil
 	}
+	if resp.PerformanceMode != nil {
+		cr.Spec.ForProvider.PerformanceMode = resp.PerformanceMode
+	} else {
+		cr.Spec.ForProvider.PerformanceMode = nil
+	}
 	if resp.SizeInBytes != nil {
 		f11 := &svcapitypes.FileSystemSize{}
 		if resp.SizeInBytes.Timestamp != nil {
@@ -176,6 +191,27 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.SizeInBytes = f11
 	} else {
 		cr.Status.AtProvider.SizeInBytes = nil
+	}
+	if resp.Tags != nil {
+		f12 := []*svcapitypes.Tag{}
+		for _, f12iter := range resp.Tags {
+			f12elem := &svcapitypes.Tag{}
+			if f12iter.Key != nil {
+				f12elem.Key = f12iter.Key
+			}
+			if f12iter.Value != nil {
+				f12elem.Value = f12iter.Value
+			}
+			f12 = append(f12, f12elem)
+		}
+		cr.Spec.ForProvider.Tags = f12
+	} else {
+		cr.Spec.ForProvider.Tags = nil
+	}
+	if resp.ThroughputMode != nil {
+		cr.Spec.ForProvider.ThroughputMode = resp.ThroughputMode
+	} else {
+		cr.Spec.ForProvider.ThroughputMode = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

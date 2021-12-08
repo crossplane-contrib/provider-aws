@@ -44,10 +44,30 @@ func GenerateGetModelInput(cr *svcapitypes.Model) *svcsdk.GetModelInput {
 func GenerateModel(resp *svcsdk.GetModelOutput) *svcapitypes.Model {
 	cr := &svcapitypes.Model{}
 
+	if resp.ContentType != nil {
+		cr.Spec.ForProvider.ContentType = resp.ContentType
+	} else {
+		cr.Spec.ForProvider.ContentType = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
 	} else {
 		cr.Status.AtProvider.ModelID = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
+	if resp.Schema != nil {
+		cr.Spec.ForProvider.Schema = resp.Schema
+	} else {
+		cr.Spec.ForProvider.Schema = nil
 	}
 
 	return cr

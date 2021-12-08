@@ -45,6 +45,32 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 	} else {
 		cr.Status.AtProvider.ARN = nil
 	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
+	if resp.KmsKeyId != nil {
+		cr.Spec.ForProvider.KMSKeyID = resp.KmsKeyId
+	} else {
+		cr.Spec.ForProvider.KMSKeyID = nil
+	}
+	if resp.Tags != nil {
+		f12 := []*svcapitypes.Tag{}
+		for _, f12iter := range resp.Tags {
+			f12elem := &svcapitypes.Tag{}
+			if f12iter.Key != nil {
+				f12elem.Key = f12iter.Key
+			}
+			if f12iter.Value != nil {
+				f12elem.Value = f12iter.Value
+			}
+			f12 = append(f12, f12elem)
+		}
+		cr.Spec.ForProvider.Tags = f12
+	} else {
+		cr.Spec.ForProvider.Tags = nil
+	}
 
 	return cr
 }

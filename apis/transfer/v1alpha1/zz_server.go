@@ -86,14 +86,14 @@ type ServerParameters struct {
 	// containing all of the information required to call a customer-supplied authentication
 	// API, including the API Gateway URL. Not required when IdentityProviderType
 	// is set to SERVICE_MANAGED.
-	IDentityProviderDetails *IDentityProviderDetails `json:"identityProviderDetails,omitempty"`
+	IdentityProviderDetails *IdentityProviderDetails `json:"identityProviderDetails,omitempty"`
 	// Specifies the mode of authentication for a server. The default value is SERVICE_MANAGED,
 	// which allows you to store and access user credentials within the AWS Transfer
 	// Family service. Use the API_GATEWAY value to integrate with an identity provider
 	// of your choosing. The API_GATEWAY setting requires you to provide an API
 	// Gateway endpoint URL to call for authentication using the IdentityProviderDetails
 	// parameter.
-	IDentityProviderType *string `json:"identityProviderType,omitempty"`
+	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 	// Allows the service to write your users' activity to your Amazon CloudWatch
 	// logs for monitoring and auditing purposes.
 	LoggingRole *string `json:"loggingRole,omitempty"`

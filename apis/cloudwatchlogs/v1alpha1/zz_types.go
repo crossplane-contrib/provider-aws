@@ -27,12 +27,14 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type Destination struct {
 	ARN *string `json:"arn,omitempty"`
 
 	CreationTime *int64 `json:"creationTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ExportTask struct {
 	From *int64 `json:"from,omitempty"`
 
@@ -41,22 +43,26 @@ type ExportTask struct {
 	To *int64 `json:"to,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ExportTaskExecutionInfo struct {
 	CompletionTime *int64 `json:"completionTime,omitempty"`
 
 	CreationTime *int64 `json:"creationTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FilteredLogEvent struct {
 	IngestionTime *int64 `json:"ingestionTime,omitempty"`
 
 	Timestamp *int64 `json:"timestamp,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InputLogEvent struct {
 	Timestamp *int64 `json:"timestamp,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LogGroup_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -78,6 +84,7 @@ type LogGroup_SDK struct {
 	StoredBytes *int64 `json:"storedBytes,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LogStream struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -92,32 +99,38 @@ type LogStream struct {
 	StoredBytes *int64 `json:"storedBytes,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MetricFilter struct {
 	CreationTime *int64 `json:"creationTime,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OutputLogEvent struct {
 	IngestionTime *int64 `json:"ingestionTime,omitempty"`
 
 	Timestamp *int64 `json:"timestamp,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryDefinition struct {
 	LastModified *int64 `json:"lastModified,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryInfo struct {
 	CreateTime *int64 `json:"createTime,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResourcePolicy struct {
 	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SubscriptionFilter struct {
 	CreationTime *int64 `json:"creationTime,omitempty"`
 

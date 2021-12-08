@@ -27,6 +27,7 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type Action struct {
 	Arguments map[string]*string `json:"arguments,omitempty"`
 
@@ -41,20 +42,24 @@ type Action struct {
 	Timeout *int64 `json:"timeout,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BatchStopJobRunError struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BatchStopJobRunSuccessfulSubmission struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CatalogEntry struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	TableName *string `json:"tableName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CatalogImportStatus struct {
 	ImportCompleted *bool `json:"importCompleted,omitempty"`
 
@@ -63,12 +68,14 @@ type CatalogImportStatus struct {
 	ImportedBy *string `json:"importedBy,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CatalogTarget struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Tables []*string `json:"tables,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Classifier_SDK struct {
 	// A classifier for custom CSV content.
 	CsvClassifier *CsvClassifier `json:"csvClassifier,omitempty"`
@@ -80,42 +87,50 @@ type Classifier_SDK struct {
 	XMLClassifier *XMLClassifier `json:"xmlClassifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CloudWatchEncryption struct {
 	CloudWatchEncryptionMode *string `json:"cloudWatchEncryptionMode,omitempty"`
 
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CodeGenNodeArg struct {
 	Param *bool `json:"param,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Column struct {
 	Name *string `json:"name,omitempty"`
 
 	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ColumnError struct {
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ColumnImportance struct {
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ColumnStatistics struct {
 	AnalyzedTime *metav1.Time `json:"analyzedTime,omitempty"`
 
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Condition struct {
 	CrawlerName *string `json:"crawlerName,omitempty"`
 
 	JobName *string `json:"jobName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConnectionInput struct {
 	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
 
@@ -130,12 +145,14 @@ type ConnectionInput struct {
 	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConnectionPasswordEncryption struct {
 	AWSKMSKeyID *string `json:"awsKMSKeyID,omitempty"`
 
 	ReturnConnectionPasswordEncrypted *bool `json:"returnConnectionPasswordEncrypted,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Connection_SDK struct {
 	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
 
@@ -156,10 +173,12 @@ type Connection_SDK struct {
 	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConnectionsList struct {
 	Connections []*string `json:"connections,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Crawl struct {
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
 
@@ -172,12 +191,14 @@ type Crawl struct {
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CrawlerMetrics struct {
 	CrawlerName *string `json:"crawlerName,omitempty"`
 
 	StillEstimating *bool `json:"stillEstimating,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CrawlerTargets struct {
 	CatalogTargets []*CatalogTarget `json:"catalogTargets,omitempty"`
 
@@ -190,6 +211,7 @@ type CrawlerTargets struct {
 	S3Targets []*S3Target `json:"s3Targets,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Crawler_SDK struct {
 	Classifiers []*string `json:"classifiers,omitempty"`
 
@@ -232,6 +254,7 @@ type Crawler_SDK struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CreateCsvClassifierRequest struct {
 	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
 
@@ -248,6 +271,7 @@ type CreateCsvClassifierRequest struct {
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CreateGrokClassifierRequest struct {
 	Classification *string `json:"classification,omitempty"`
 
@@ -258,12 +282,14 @@ type CreateGrokClassifierRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CreateJSONClassifierRequest struct {
 	JSONPath *string `json:"jsonPath,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CreateXMLClassifierRequest struct {
 	Classification *string `json:"classification,omitempty"`
 
@@ -272,6 +298,7 @@ type CreateXMLClassifierRequest struct {
 	RowTag *string `json:"rowTag,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CsvClassifier struct {
 	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
 
@@ -294,16 +321,19 @@ type CsvClassifier struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DataLakePrincipal struct {
 	DataLakePrincipalIdentifier *string `json:"dataLakePrincipalIdentifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DatabaseIdentifier struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
 	DatabaseName *string `json:"databaseName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DatabaseInput struct {
 	CreateTableDefaultPermissions []*PrincipalPermissions `json:"createTableDefaultPermissions,omitempty"`
 
@@ -318,6 +348,7 @@ type DatabaseInput struct {
 	TargetDatabase *DatabaseIdentifier `json:"targetDatabase,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Database_SDK struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -336,12 +367,14 @@ type Database_SDK struct {
 	TargetDatabase *DatabaseIdentifier `json:"targetDatabase,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DateColumnStatisticsData struct {
 	MaximumValue *metav1.Time `json:"maximumValue,omitempty"`
 
 	MinimumValue *metav1.Time `json:"minimumValue,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DevEndpoint struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
@@ -386,12 +419,14 @@ type DevEndpoint struct {
 	ZeppelinRemoteSparkInterpreterPort *int64 `json:"zeppelinRemoteSparkInterpreterPort,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DevEndpointCustomLibraries struct {
 	ExtraJarsS3Path *string `json:"extraJarsS3Path,omitempty"`
 
 	ExtraPythonLibsS3Path *string `json:"extraPythonLibsS3Path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DynamoDBTarget struct {
 	Path *string `json:"path,omitempty"`
 
@@ -400,16 +435,19 @@ type DynamoDBTarget struct {
 	ScanRate *float64 `json:"scanRate,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Edge struct {
 	DestinationID *string `json:"destinationID,omitempty"`
 
 	SourceID *string `json:"sourceID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionAtRest struct {
 	SSEAWSKMSKeyID *string `json:"sseAWSKMSKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionConfiguration struct {
 	// Specifies how Amazon CloudWatch data should be encrypted.
 	CloudWatchEncryption *CloudWatchEncryption `json:"cloudWatchEncryption,omitempty"`
@@ -419,40 +457,48 @@ type EncryptionConfiguration struct {
 	S3Encryption []*S3Encryption `json:"s3Encryption,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ErrorDetail struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ExecutionProperty struct {
 	MaxConcurrentRuns *int64 `json:"maxConcurrentRuns,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ExportLabelsTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FindMatchesParameters struct {
 	EnforceProvidedLabels *bool `json:"enforceProvidedLabels,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FindMatchesTaskRunProperties struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GetConnectionsFilter struct {
 	ConnectionType *string `json:"connectionType,omitempty"`
 
 	MatchCriteria []*string `json:"matchCriteria,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GluePolicy struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
 	UpdateTime *metav1.Time `json:"updateTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GrokClassifier struct {
 	Classification *string `json:"classification,omitempty"`
 
@@ -469,10 +515,12 @@ type GrokClassifier struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ImportLabelsTaskRunProperties struct {
 	InputS3Path *string `json:"inputS3Path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JSONClassifier struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
@@ -485,6 +533,7 @@ type JSONClassifier struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JdbcTarget struct {
 	ConnectionName *string `json:"connectionName,omitempty"`
 
@@ -493,6 +542,7 @@ type JdbcTarget struct {
 	Path *string `json:"path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JobBookmarkEntry struct {
 	Attempt *int64 `json:"attempt,omitempty"`
 
@@ -501,12 +551,14 @@ type JobBookmarkEntry struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JobBookmarksEncryption struct {
 	JobBookmarksEncryptionMode *string `json:"jobBookmarksEncryptionMode,omitempty"`
 
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JobCommand struct {
 	Name *string `json:"name,omitempty"`
 
@@ -515,6 +567,7 @@ type JobCommand struct {
 	ScriptLocation *string `json:"scriptLocation,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JobRun struct {
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
 
@@ -547,6 +600,7 @@ type JobRun struct {
 	WorkerType *string `json:"workerType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JobUpdate struct {
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
 	// Specifies code executed when a job is run.
@@ -583,6 +637,7 @@ type JobUpdate struct {
 	WorkerType *string `json:"workerType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Job_SDK struct {
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
 	// Specifies code executed when a job is run.
@@ -625,14 +680,17 @@ type Job_SDK struct {
 	WorkerType *string `json:"workerType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeySchemaElement struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LabelingSetGenerationTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LastCrawlInfo struct {
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 
@@ -647,10 +705,12 @@ type LastCrawlInfo struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LineageConfiguration struct {
 	CrawlerLineageSettings *string `json:"crawlerLineageSettings,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MLTransform struct {
 	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
 
@@ -675,10 +735,12 @@ type MLTransform struct {
 	WorkerType *string `json:"workerType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MLUserDataEncryption struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MongoDBTarget struct {
 	ConnectionName *string `json:"connectionName,omitempty"`
 
@@ -687,20 +749,24 @@ type MongoDBTarget struct {
 	ScanAll *bool `json:"scanAll,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Node struct {
 	Name *string `json:"name,omitempty"`
 
 	UniqueID *string `json:"uniqueID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type NotificationProperty struct {
 	NotifyDelayAfter *int64 `json:"notifyDelayAfter,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Order struct {
 	Column *string `json:"column,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Partition struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -717,14 +783,17 @@ type Partition struct {
 	TableName *string `json:"tableName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PartitionIndex struct {
 	IndexName *string `json:"indexName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PartitionIndexDescriptor struct {
 	IndexName *string `json:"indexName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PartitionInput struct {
 	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
 
@@ -733,6 +802,7 @@ type PartitionInput struct {
 	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PhysicalConnectionRequirements struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
@@ -741,40 +811,48 @@ type PhysicalConnectionRequirements struct {
 	SubnetID *string `json:"subnetID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Predecessor struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PrincipalPermissions struct {
 	Permissions []*string `json:"permissions,omitempty"`
 	// The AWS Lake Formation principal.
 	Principal *DataLakePrincipal `json:"principal,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PropertyPredicate struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RecrawlPolicy struct {
 	RecrawlBehavior *string `json:"recrawlBehavior,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RegistryListItem struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResourceURI struct {
 	URI *string `json:"uri,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type S3Encryption struct {
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 
 	S3EncryptionMode *string `json:"s3EncryptionMode,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type S3Target struct {
 	ConnectionName *string `json:"connectionName,omitempty"`
 
@@ -783,20 +861,24 @@ type S3Target struct {
 	Path *string `json:"path,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Schedule struct {
 	ScheduleExpression *string `json:"scheduleExpression,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SchemaChangePolicy struct {
 	DeleteBehavior *string `json:"deleteBehavior,omitempty"`
 
 	UpdateBehavior *string `json:"updateBehavior,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SchemaListItem struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SecurityConfiguration_SDK struct {
 	CreatedTimeStamp *metav1.Time `json:"createdTimeStamp,omitempty"`
 	// Specifies an encryption configuration.
@@ -805,6 +887,7 @@ type SecurityConfiguration_SDK struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SerDeInfo struct {
 	Name *string `json:"name,omitempty"`
 
@@ -813,10 +896,12 @@ type SerDeInfo struct {
 	SerializationLibrary *string `json:"serializationLibrary,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SortCriterion struct {
 	FieldName *string `json:"fieldName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StorageDescriptor struct {
 	Compressed *bool `json:"compressed,omitempty"`
 
@@ -825,6 +910,7 @@ type StorageDescriptor struct {
 	StoredAsSubDirectories *bool `json:"storedAsSubDirectories,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Table struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -835,6 +921,7 @@ type Table struct {
 	TableName *string `json:"tableName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TableData struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -861,10 +948,12 @@ type TableData struct {
 	UpdateTime *metav1.Time `json:"updateTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TableError struct {
 	TableName *string `json:"tableName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TableIdentifier struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -873,6 +962,7 @@ type TableIdentifier struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TableInput struct {
 	Description *string `json:"description,omitempty"`
 
@@ -887,10 +977,12 @@ type TableInput struct {
 	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TableVersionError struct {
 	TableName *string `json:"tableName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TaskRun struct {
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
 
@@ -903,16 +995,19 @@ type TaskRun struct {
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TaskRunFilterCriteria struct {
 	StartedAfter *metav1.Time `json:"startedAfter,omitempty"`
 
 	StartedBefore *metav1.Time `json:"startedBefore,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TransformEncryption struct {
 	TaskRunSecurityConfigurationName *string `json:"taskRunSecurityConfigurationName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TransformFilterCriteria struct {
 	CreatedAfter *metav1.Time `json:"createdAfter,omitempty"`
 
@@ -927,6 +1022,7 @@ type TransformFilterCriteria struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Trigger struct {
 	Description *string `json:"description,omitempty"`
 
@@ -937,6 +1033,7 @@ type Trigger struct {
 	WorkflowName *string `json:"workflowName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TriggerUpdate struct {
 	Description *string `json:"description,omitempty"`
 
@@ -945,6 +1042,7 @@ type TriggerUpdate struct {
 	Schedule *string `json:"schedule,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpdateCsvClassifierRequest struct {
 	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
 
@@ -961,6 +1059,7 @@ type UpdateCsvClassifierRequest struct {
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpdateGrokClassifierRequest struct {
 	Classification *string `json:"classification,omitempty"`
 
@@ -971,12 +1070,14 @@ type UpdateGrokClassifierRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpdateJSONClassifierRequest struct {
 	JSONPath *string `json:"jsonPath,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpdateXMLClassifierRequest struct {
 	Classification *string `json:"classification,omitempty"`
 
@@ -985,6 +1086,7 @@ type UpdateXMLClassifierRequest struct {
 	RowTag *string `json:"rowTag,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserDefinedFunction struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -999,6 +1101,7 @@ type UserDefinedFunction struct {
 	OwnerName *string `json:"ownerName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserDefinedFunctionInput struct {
 	ClassName *string `json:"className,omitempty"`
 
@@ -1007,6 +1110,7 @@ type UserDefinedFunctionInput struct {
 	OwnerName *string `json:"ownerName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Workflow struct {
 	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
 
@@ -1019,6 +1123,7 @@ type Workflow struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type WorkflowRun struct {
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
 
@@ -1027,6 +1132,7 @@ type WorkflowRun struct {
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type WorkflowRunStatistics struct {
 	FailedActions *int64 `json:"failedActions,omitempty"`
 
@@ -1041,6 +1147,7 @@ type WorkflowRunStatistics struct {
 	TotalActions *int64 `json:"totalActions,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type XMLClassifier struct {
 	Classification *string `json:"classification,omitempty"`
 

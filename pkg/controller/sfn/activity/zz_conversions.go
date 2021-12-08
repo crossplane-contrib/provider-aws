@@ -55,6 +55,11 @@ func GenerateActivity(resp *svcsdk.DescribeActivityOutput) *svcapitypes.Activity
 	} else {
 		cr.Status.AtProvider.CreationDate = nil
 	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
 
 	return cr
 }

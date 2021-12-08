@@ -34,6 +34,12 @@ import (
 func GenerateDescribeVpcPeeringConnectionsInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.DescribeVpcPeeringConnectionsInput {
 	res := &svcsdk.DescribeVpcPeeringConnectionsInput{}
 
+	if cr.Status.AtProvider.VPCPeeringConnectionID != nil {
+		f4 := []*string{}
+		f4 = append(f4, cr.Status.AtProvider.VPCPeeringConnectionID)
+		res.SetVpcPeeringConnectionIds(f4)
+	}
+
 	return res
 }
 

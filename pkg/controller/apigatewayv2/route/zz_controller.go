@@ -119,10 +119,85 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
+	if resp.ApiKeyRequired != nil {
+		cr.Spec.ForProvider.APIKeyRequired = resp.ApiKeyRequired
+	} else {
+		cr.Spec.ForProvider.APIKeyRequired = nil
+	}
+	if resp.AuthorizationScopes != nil {
+		f2 := []*string{}
+		for _, f2iter := range resp.AuthorizationScopes {
+			var f2elem string
+			f2elem = *f2iter
+			f2 = append(f2, &f2elem)
+		}
+		cr.Spec.ForProvider.AuthorizationScopes = f2
+	} else {
+		cr.Spec.ForProvider.AuthorizationScopes = nil
+	}
+	if resp.AuthorizationType != nil {
+		cr.Spec.ForProvider.AuthorizationType = resp.AuthorizationType
+	} else {
+		cr.Spec.ForProvider.AuthorizationType = nil
+	}
+	if resp.AuthorizerId != nil {
+		cr.Spec.ForProvider.AuthorizerID = resp.AuthorizerId
+	} else {
+		cr.Spec.ForProvider.AuthorizerID = nil
+	}
+	if resp.ModelSelectionExpression != nil {
+		cr.Spec.ForProvider.ModelSelectionExpression = resp.ModelSelectionExpression
+	} else {
+		cr.Spec.ForProvider.ModelSelectionExpression = nil
+	}
+	if resp.OperationName != nil {
+		cr.Spec.ForProvider.OperationName = resp.OperationName
+	} else {
+		cr.Spec.ForProvider.OperationName = nil
+	}
+	if resp.RequestModels != nil {
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range resp.RequestModels {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
+		}
+		cr.Spec.ForProvider.RequestModels = f7
+	} else {
+		cr.Spec.ForProvider.RequestModels = nil
+	}
+	if resp.RequestParameters != nil {
+		f8 := map[string]*svcapitypes.ParameterConstraints{}
+		for f8key, f8valiter := range resp.RequestParameters {
+			f8val := &svcapitypes.ParameterConstraints{}
+			if f8valiter.Required != nil {
+				f8val.Required = f8valiter.Required
+			}
+			f8[f8key] = f8val
+		}
+		cr.Spec.ForProvider.RequestParameters = f8
+	} else {
+		cr.Spec.ForProvider.RequestParameters = nil
+	}
 	if resp.RouteId != nil {
 		cr.Status.AtProvider.RouteID = resp.RouteId
 	} else {
 		cr.Status.AtProvider.RouteID = nil
+	}
+	if resp.RouteKey != nil {
+		cr.Spec.ForProvider.RouteKey = resp.RouteKey
+	} else {
+		cr.Spec.ForProvider.RouteKey = nil
+	}
+	if resp.RouteResponseSelectionExpression != nil {
+		cr.Spec.ForProvider.RouteResponseSelectionExpression = resp.RouteResponseSelectionExpression
+	} else {
+		cr.Spec.ForProvider.RouteResponseSelectionExpression = nil
+	}
+	if resp.Target != nil {
+		cr.Spec.ForProvider.Target = resp.Target
+	} else {
+		cr.Spec.ForProvider.Target = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

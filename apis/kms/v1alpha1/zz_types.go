@@ -27,6 +27,7 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type AliasListEntry struct {
 	AliasARN *string `json:"aliasARN,omitempty"`
 
@@ -37,6 +38,7 @@ type AliasListEntry struct {
 	TargetKeyID *string `json:"targetKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomKeyStoresListEntry struct {
 	CloudHsmClusterID *string `json:"cloudHsmClusterID,omitempty"`
 
@@ -45,18 +47,21 @@ type CustomKeyStoresListEntry struct {
 	CustomKeyStoreID *string `json:"customKeyStoreID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GrantListEntry struct {
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 
 	KeyID *string `json:"keyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyListEntry struct {
 	KeyARN *string `json:"keyARN,omitempty"`
 
 	KeyID *string `json:"keyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyMetadata struct {
 	AWSAccountID *string `json:"awsAccountID,omitempty"`
 
@@ -95,6 +100,7 @@ type KeyMetadata struct {
 	ValidTo *metav1.Time `json:"validTo,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	TagKey *string `json:"tagKey,omitempty"`
 

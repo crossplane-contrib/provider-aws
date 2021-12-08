@@ -27,10 +27,12 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type DescribedSecurityPolicy struct {
 	SecurityPolicyName *string `json:"securityPolicyName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DescribedServer struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -50,14 +52,14 @@ type DescribedServer struct {
 	// Returns information related to the type of user authentication that is in
 	// use for a file transfer protocol-enabled server's users. A server can have
 	// only one method of authentication.
-	IDentityProviderDetails *IDentityProviderDetails `json:"identityProviderDetails,omitempty"`
+	IdentityProviderDetails *IdentityProviderDetails `json:"identityProviderDetails,omitempty"`
 	// Returns information related to the type of user authentication that is in
 	// use for a file transfer protocol-enabled server's users. For SERVICE_MANAGED
 	// authentication, the Secure Shell (SSH) public keys are stored with a user
 	// on the server instance. For API_GATEWAY authentication, your custom authentication
 	// method is implemented by using an API call. The server can have only one
 	// method of authentication.
-	IDentityProviderType *string `json:"identityProviderType,omitempty"`
+	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 
 	LoggingRole *string `json:"loggingRole,omitempty"`
 
@@ -83,6 +85,7 @@ type DescribedServer struct {
 	UserCount *int64 `json:"userCount,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DescribedUser struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -105,6 +108,7 @@ type DescribedUser struct {
 	UserName *string `json:"userName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EndpointDetails struct {
 	AddressAllocationIDs []*string `json:"addressAllocationIDs,omitempty"`
 
@@ -117,18 +121,21 @@ type EndpointDetails struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type HomeDirectoryMapEntry struct {
 	Entry *string `json:"entry,omitempty"`
 
 	Target *string `json:"target,omitempty"`
 }
 
-type IDentityProviderDetails struct {
+// +kubebuilder:skipversion
+type IdentityProviderDetails struct {
 	InvocationRole *string `json:"invocationRole,omitempty"`
 
 	URL *string `json:"url,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ListedServer struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -141,7 +148,7 @@ type ListedServer struct {
 	// on the server instance. For API_GATEWAY authentication, your custom authentication
 	// method is implemented by using an API call. The server can have only one
 	// method of authentication.
-	IDentityProviderType *string `json:"identityProviderType,omitempty"`
+	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 
 	LoggingRole *string `json:"loggingRole,omitempty"`
 
@@ -161,6 +168,7 @@ type ListedServer struct {
 	UserCount *int64 `json:"userCount,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ListedUser struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -175,6 +183,7 @@ type ListedUser struct {
 	UserName *string `json:"userName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PosixProfile struct {
 	Gid *int64 `json:"gid,omitempty"`
 
@@ -183,6 +192,7 @@ type PosixProfile struct {
 	Uid *int64 `json:"uid,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SshPublicKey struct {
 	DateImported *metav1.Time `json:"dateImported,omitempty"`
 
@@ -191,6 +201,7 @@ type SshPublicKey struct {
 	SshPublicKeyID *string `json:"sshPublicKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 
