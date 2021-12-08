@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
+
 	"github.com/aws/smithy-go/document"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -13,7 +15,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -26,20 +27,20 @@ var (
 	registryID      = "123"
 	repositoryARN   = "arn"
 	repositoryURI   = "testuri"
-	imageScanConfig = v1alpha1.ImageScanningConfiguration{
+	imageScanConfig = v1beta1.ImageScanningConfiguration{
 		ScanOnPush: true,
 	}
 	awsImageScanConfig = ecrtypes.ImageScanningConfiguration{
 		ScanOnPush: imageScanConfig.ScanOnPush,
 	}
 	ecrTag    = ecrtypes.Tag{Key: &testKey, Value: &testValue}
-	alpha1Tag = v1alpha1.Tag{Key: testKey, Value: testValue}
+	alpha1Tag = v1beta1.Tag{Key: testKey, Value: testValue}
 )
 
 func TestGenerateRepositoryObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ecrtypes.Repository
-		out v1alpha1.RepositoryObservation
+		out v1beta1.RepositoryObservation
 	}{
 		"AllFilled": {
 			in: ecrtypes.Repository{
@@ -51,7 +52,7 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 				RepositoryArn:              aws.String(repositoryARN),
 				RepositoryUri:              aws.String(repositoryURI),
 			},
-			out: v1alpha1.RepositoryObservation{
+			out: v1beta1.RepositoryObservation{
 				CreatedAt:      &metav1.Time{Time: createTime},
 				RegistryID:     registryID,
 				RepositoryName: repositoryName,
@@ -74,7 +75,7 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 func TestIsRepositoryUpToDate(t *testing.T) {
 	type args struct {
 		ecrTags []ecrtypes.Tag
-		e       v1alpha1.RepositoryParameters
+		e       v1beta1.RepositoryParameters
 		repo    ecrtypes.Repository
 	}
 
@@ -85,10 +86,10 @@ func TestIsRepositoryUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				ecrTags: []ecrtypes.Tag{ecrTag},
-				e: v1alpha1.RepositoryParameters{
+				e: v1beta1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfig,
 					ImageTagMutability:         &tagMutability,
-					Tags:                       []v1alpha1.Tag{alpha1Tag},
+					Tags:                       []v1beta1.Tag{alpha1Tag},
 				},
 				repo: ecrtypes.Repository{
 					ImageScanningConfiguration: &awsImageScanConfig,
@@ -100,8 +101,8 @@ func TestIsRepositoryUpToDate(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				ecrTags: []ecrtypes.Tag{},
-				e: v1alpha1.RepositoryParameters{
-					Tags: []v1alpha1.Tag{alpha1Tag},
+				e: v1beta1.RepositoryParameters{
+					Tags: []v1beta1.Tag{alpha1Tag},
 				},
 				repo: ecrtypes.Repository{
 					ImageScanningConfiguration: &awsImageScanConfig,
@@ -125,7 +126,7 @@ func TestIsRepositoryUpToDate(t *testing.T) {
 func TestGenerateCreateRepositoryInput(t *testing.T) {
 	type args struct {
 		name string
-		p    *v1alpha1.RepositoryParameters
+		p    *v1beta1.RepositoryParameters
 	}
 
 	cases := map[string]struct {
@@ -135,8 +136,8 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 		"AllFields": {
 			args: args{
 				name: repositoryName,
-				p: &v1alpha1.RepositoryParameters{
-					Tags:                       []v1alpha1.Tag{alpha1Tag},
+				p: &v1beta1.RepositoryParameters{
+					Tags:                       []v1beta1.Tag{alpha1Tag},
 					ImageScanningConfiguration: &imageScanConfig,
 					ImageTagMutability:         &tagMutability,
 				},
@@ -150,8 +151,8 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 		"SomeFields": {
 			args: args{
 				name: repositoryName,
-				p: &v1alpha1.RepositoryParameters{
-					Tags:               []v1alpha1.Tag{alpha1Tag},
+				p: &v1beta1.RepositoryParameters{
+					Tags:               []v1beta1.Tag{alpha1Tag},
 					ImageTagMutability: &tagMutability,
 				},
 			},
@@ -174,35 +175,35 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 
 func TestLateInitialize(t *testing.T) {
 	cases := map[string]struct {
-		parameters *v1alpha1.RepositoryParameters
+		parameters *v1beta1.RepositoryParameters
 		repository *ecrtypes.Repository
-		want       *v1alpha1.RepositoryParameters
+		want       *v1beta1.RepositoryParameters
 	}{
 		"AllOptionalFields": {
-			parameters: &v1alpha1.RepositoryParameters{},
+			parameters: &v1beta1.RepositoryParameters{},
 			repository: &ecrtypes.Repository{
 				ImageScanningConfiguration: &awsImageScanConfig,
 				ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 			},
-			want: &v1alpha1.RepositoryParameters{
+			want: &v1beta1.RepositoryParameters{
 				ImageScanningConfiguration: &imageScanConfig,
 				ImageTagMutability:         &tagMutability,
 			},
 		},
 		"SomeFieldsDontOverwrite": {
-			parameters: &v1alpha1.RepositoryParameters{
+			parameters: &v1beta1.RepositoryParameters{
 				ImageScanningConfiguration: &imageScanConfig,
 				ImageTagMutability:         &tagMutability,
-				Tags:                       []v1alpha1.Tag{alpha1Tag},
+				Tags:                       []v1beta1.Tag{alpha1Tag},
 			},
 			repository: &ecrtypes.Repository{
 				ImageScanningConfiguration: &awsImageScanConfig,
 				ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 			},
-			want: &v1alpha1.RepositoryParameters{
+			want: &v1beta1.RepositoryParameters{
 				ImageScanningConfiguration: &imageScanConfig,
 				ImageTagMutability:         &tagMutability,
-				Tags:                       []v1alpha1.Tag{alpha1Tag},
+				Tags:                       []v1beta1.Tag{alpha1Tag},
 			},
 		},
 	}
@@ -219,7 +220,7 @@ func TestLateInitialize(t *testing.T) {
 
 func TestDiffTags(t *testing.T) {
 	type args struct {
-		local  []v1alpha1.Tag
+		local  []v1beta1.Tag
 		remote []ecrtypes.Tag
 	}
 	type want struct {
@@ -232,7 +233,7 @@ func TestDiffTags(t *testing.T) {
 	}{
 		"AllNew": {
 			args: args{
-				local: []v1alpha1.Tag{
+				local: []v1beta1.Tag{
 					{Key: "key", Value: "val"},
 				},
 			},
@@ -244,7 +245,7 @@ func TestDiffTags(t *testing.T) {
 		},
 		"SomeNew": {
 			args: args{
-				local: []v1alpha1.Tag{
+				local: []v1beta1.Tag{
 					{Key: "key", Value: "val"},
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},
@@ -262,7 +263,7 @@ func TestDiffTags(t *testing.T) {
 		},
 		"Update": {
 			args: args{
-				local: []v1alpha1.Tag{
+				local: []v1beta1.Tag{
 					{Key: "key", Value: "different"},
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},

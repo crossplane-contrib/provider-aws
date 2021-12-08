@@ -25,6 +25,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
@@ -39,7 +40,7 @@ func (mg *RepositoryPolicy) ResolveReferences(ctx context.Context, c client.Read
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RepositoryName),
 		Reference:    mg.Spec.ForProvider.RepositoryNameRef,
 		Selector:     mg.Spec.ForProvider.RepositoryNameSelector,
-		To:           reference.To{Managed: &Repository{}, List: &RepositoryList{}},
+		To:           reference.To{Managed: &v1beta1.Repository{}, List: &v1beta1.RepositoryList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {

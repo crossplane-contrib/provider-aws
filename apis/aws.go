@@ -34,6 +34,7 @@ import (
 	ec2v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	ecrv1alpha1 "github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	ecrv1beta1 "github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	efsv1alpha1 "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
 	eksmanualv1alpha1 "github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
@@ -89,6 +90,7 @@ func init() {
 		redshiftv1alpha1.SchemeBuilder.AddToScheme,
 		eksmanualv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
+		ecrv1beta1.SchemeBuilder.AddToScheme,
 		apigatewayv2.SchemeBuilder.AddToScheme,
 		sfnv1alpha1.SchemeBuilder.AddToScheme,
 		dynamodbv1alpha1.SchemeBuilder.AddToScheme,
