@@ -40,10 +40,130 @@ func GenerateGetJobInput(cr *svcapitypes.Job) *svcsdk.GetJobInput {
 func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 	cr := &svcapitypes.Job{}
 
+	if resp.Job.AllocatedCapacity != nil {
+		cr.Spec.ForProvider.AllocatedCapacity = resp.Job.AllocatedCapacity
+	} else {
+		cr.Spec.ForProvider.AllocatedCapacity = nil
+	}
+	if resp.Job.Command != nil {
+		f1 := &svcapitypes.JobCommand{}
+		if resp.Job.Command.Name != nil {
+			f1.Name = resp.Job.Command.Name
+		}
+		if resp.Job.Command.PythonVersion != nil {
+			f1.PythonVersion = resp.Job.Command.PythonVersion
+		}
+		if resp.Job.Command.ScriptLocation != nil {
+			f1.ScriptLocation = resp.Job.Command.ScriptLocation
+		}
+		cr.Spec.ForProvider.Command = f1
+	} else {
+		cr.Spec.ForProvider.Command = nil
+	}
+	if resp.Job.Connections != nil {
+		f2 := &svcapitypes.ConnectionsList{}
+		if resp.Job.Connections.Connections != nil {
+			f2f0 := []*string{}
+			for _, f2f0iter := range resp.Job.Connections.Connections {
+				var f2f0elem string
+				f2f0elem = *f2f0iter
+				f2f0 = append(f2f0, &f2f0elem)
+			}
+			f2.Connections = f2f0
+		}
+		cr.Spec.ForProvider.Connections = f2
+	} else {
+		cr.Spec.ForProvider.Connections = nil
+	}
+	if resp.Job.DefaultArguments != nil {
+		f4 := map[string]*string{}
+		for f4key, f4valiter := range resp.Job.DefaultArguments {
+			var f4val string
+			f4val = *f4valiter
+			f4[f4key] = &f4val
+		}
+		cr.Spec.ForProvider.DefaultArguments = f4
+	} else {
+		cr.Spec.ForProvider.DefaultArguments = nil
+	}
+	if resp.Job.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Job.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
+	if resp.Job.ExecutionProperty != nil {
+		f6 := &svcapitypes.ExecutionProperty{}
+		if resp.Job.ExecutionProperty.MaxConcurrentRuns != nil {
+			f6.MaxConcurrentRuns = resp.Job.ExecutionProperty.MaxConcurrentRuns
+		}
+		cr.Spec.ForProvider.ExecutionProperty = f6
+	} else {
+		cr.Spec.ForProvider.ExecutionProperty = nil
+	}
+	if resp.Job.GlueVersion != nil {
+		cr.Spec.ForProvider.GlueVersion = resp.Job.GlueVersion
+	} else {
+		cr.Spec.ForProvider.GlueVersion = nil
+	}
+	if resp.Job.LogUri != nil {
+		cr.Spec.ForProvider.LogURI = resp.Job.LogUri
+	} else {
+		cr.Spec.ForProvider.LogURI = nil
+	}
+	if resp.Job.MaxCapacity != nil {
+		cr.Spec.ForProvider.MaxCapacity = resp.Job.MaxCapacity
+	} else {
+		cr.Spec.ForProvider.MaxCapacity = nil
+	}
+	if resp.Job.MaxRetries != nil {
+		cr.Spec.ForProvider.MaxRetries = resp.Job.MaxRetries
+	} else {
+		cr.Spec.ForProvider.MaxRetries = nil
+	}
 	if resp.Job.Name != nil {
 		cr.Status.AtProvider.Name = resp.Job.Name
 	} else {
 		cr.Status.AtProvider.Name = nil
+	}
+	if resp.Job.NonOverridableArguments != nil {
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range resp.Job.NonOverridableArguments {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
+		}
+		cr.Spec.ForProvider.NonOverridableArguments = f13
+	} else {
+		cr.Spec.ForProvider.NonOverridableArguments = nil
+	}
+	if resp.Job.NotificationProperty != nil {
+		f14 := &svcapitypes.NotificationProperty{}
+		if resp.Job.NotificationProperty.NotifyDelayAfter != nil {
+			f14.NotifyDelayAfter = resp.Job.NotificationProperty.NotifyDelayAfter
+		}
+		cr.Spec.ForProvider.NotificationProperty = f14
+	} else {
+		cr.Spec.ForProvider.NotificationProperty = nil
+	}
+	if resp.Job.NumberOfWorkers != nil {
+		cr.Spec.ForProvider.NumberOfWorkers = resp.Job.NumberOfWorkers
+	} else {
+		cr.Spec.ForProvider.NumberOfWorkers = nil
+	}
+	if resp.Job.SecurityConfiguration != nil {
+		cr.Spec.ForProvider.SecurityConfiguration = resp.Job.SecurityConfiguration
+	} else {
+		cr.Spec.ForProvider.SecurityConfiguration = nil
+	}
+	if resp.Job.Timeout != nil {
+		cr.Spec.ForProvider.Timeout = resp.Job.Timeout
+	} else {
+		cr.Spec.ForProvider.Timeout = nil
+	}
+	if resp.Job.WorkerType != nil {
+		cr.Spec.ForProvider.WorkerType = resp.Job.WorkerType
+	} else {
+		cr.Spec.ForProvider.WorkerType = nil
 	}
 
 	return cr

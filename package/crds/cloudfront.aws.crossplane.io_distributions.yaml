@@ -717,7 +717,7 @@ spec:
                                     as a website endpoint, use the CustomOriginConfig
                                     element instead.
                                   properties:
-                                    originAccessIDentity:
+                                    originAccessIdentity:
                                       type: string
                                   type: object
                               type: object
@@ -1606,7 +1606,7 @@ spec:
                                         configured as a website endpoint, use the
                                         CustomOriginConfig element instead.
                                       properties:
-                                        originAccessIDentity:
+                                        originAccessIdentity:
                                           type: string
                                       type: object
                                   type: object

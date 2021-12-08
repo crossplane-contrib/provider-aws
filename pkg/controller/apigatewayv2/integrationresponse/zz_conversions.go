@@ -44,10 +44,47 @@ func GenerateGetIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *s
 func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponseOutput) *svcapitypes.IntegrationResponse {
 	cr := &svcapitypes.IntegrationResponse{}
 
+	if resp.ContentHandlingStrategy != nil {
+		cr.Spec.ForProvider.ContentHandlingStrategy = resp.ContentHandlingStrategy
+	} else {
+		cr.Spec.ForProvider.ContentHandlingStrategy = nil
+	}
 	if resp.IntegrationResponseId != nil {
 		cr.Status.AtProvider.IntegrationResponseID = resp.IntegrationResponseId
 	} else {
 		cr.Status.AtProvider.IntegrationResponseID = nil
+	}
+	if resp.IntegrationResponseKey != nil {
+		cr.Spec.ForProvider.IntegrationResponseKey = resp.IntegrationResponseKey
+	} else {
+		cr.Spec.ForProvider.IntegrationResponseKey = nil
+	}
+	if resp.ResponseParameters != nil {
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range resp.ResponseParameters {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
+		}
+		cr.Spec.ForProvider.ResponseParameters = f3
+	} else {
+		cr.Spec.ForProvider.ResponseParameters = nil
+	}
+	if resp.ResponseTemplates != nil {
+		f4 := map[string]*string{}
+		for f4key, f4valiter := range resp.ResponseTemplates {
+			var f4val string
+			f4val = *f4valiter
+			f4[f4key] = &f4val
+		}
+		cr.Spec.ForProvider.ResponseTemplates = f4
+	} else {
+		cr.Spec.ForProvider.ResponseTemplates = nil
+	}
+	if resp.TemplateSelectionExpression != nil {
+		cr.Spec.ForProvider.TemplateSelectionExpression = resp.TemplateSelectionExpression
+	} else {
+		cr.Spec.ForProvider.TemplateSelectionExpression = nil
 	}
 
 	return cr

@@ -27,6 +27,7 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type ActiveTrustedKeyGroups struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -35,6 +36,7 @@ type ActiveTrustedKeyGroups struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ActiveTrustedSigners struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -43,18 +45,21 @@ type ActiveTrustedSigners struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AliasICPRecordal struct {
 	CNAME *string `json:"cNAME,omitempty"`
 
 	ICPRecordalStatus *string `json:"iCPRecordalStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Aliases struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AllowedMethods struct {
 	// A complex type that controls whether CloudFront caches the response to requests
 	// using the specified HTTP methods. There are two choices:
@@ -73,6 +78,7 @@ type AllowedMethods struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CacheBehavior struct {
 	// A complex type that controls which HTTP methods CloudFront processes and
 	// forwards to your Amazon S3 bucket or your custom origin. There are three
@@ -149,12 +155,14 @@ type CacheBehavior struct {
 	ViewerProtocolPolicy *string `json:"viewerProtocolPolicy,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CacheBehaviors struct {
 	Items []*CacheBehavior `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicyConfig struct {
 	Comment *string `json:"comment,omitempty"`
 
@@ -178,18 +186,21 @@ type CachePolicyConfig struct {
 	ParametersInCacheKeyAndForwardedToOrigin *ParametersInCacheKeyAndForwardedToOrigin `json:"parametersInCacheKeyAndForwardedToOrigin,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicyCookiesConfig struct {
 	CookieBehavior *string `json:"cookieBehavior,omitempty"`
 	// Contains a list of cookie names.
 	Cookies *CookieNames `json:"cookies,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicyHeadersConfig struct {
 	HeaderBehavior *string `json:"headerBehavior,omitempty"`
 	// Contains a list of HTTP header names.
 	Headers *Headers `json:"headers,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicyList_SDK struct {
 	Items []*CachePolicySummary `json:"items,omitempty"`
 
@@ -200,12 +211,14 @@ type CachePolicyList_SDK struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicyQueryStringsConfig struct {
 	QueryStringBehavior *string `json:"queryStringBehavior,omitempty"`
 	// Contains a list of query string names.
 	QueryStrings *QueryStringNames `json:"queryStrings,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicySummary struct {
 	// A cache policy.
 	//
@@ -230,6 +243,7 @@ type CachePolicySummary struct {
 	Type *string `json:"type_,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachePolicy_SDK struct {
 	// A cache policy configuration.
 	//
@@ -255,38 +269,45 @@ type CachePolicy_SDK struct {
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CachedMethods struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ContentTypeProfile struct {
 	ContentType *string `json:"contentType,omitempty"`
 
 	ProfileID *string `json:"profileID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ContentTypeProfileConfig struct {
 	ForwardWhenContentTypeIsUnknown *bool `json:"forwardWhenContentTypeIsUnknown,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ContentTypeProfiles struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CookieNames struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CookiePreference struct {
 	Forward *string `json:"forward,omitempty"`
 	// Contains a list of cookie names.
 	WhitelistedNames *CookieNames `json:"whitelistedNames,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomErrorResponse struct {
 	ErrorCachingMinTTL *int64 `json:"errorCachingMinTTL,omitempty"`
 
@@ -297,18 +318,21 @@ type CustomErrorResponse struct {
 	ResponsePagePath *string `json:"responsePagePath,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomErrorResponses struct {
 	Items []*CustomErrorResponse `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomHeaders struct {
 	Items []*OriginCustomHeader `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomOriginConfig struct {
 	HTTPPort *int64 `json:"httpPort,omitempty"`
 
@@ -324,6 +348,7 @@ type CustomOriginConfig struct {
 	OriginSSLProtocols *OriginSSLProtocols `json:"originSSLProtocols,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DefaultCacheBehavior struct {
 	// A complex type that controls which HTTP methods CloudFront processes and
 	// forwards to your Amazon S3 bucket or your custom origin. There are three
@@ -398,6 +423,7 @@ type DefaultCacheBehavior struct {
 	ViewerProtocolPolicy *string `json:"viewerProtocolPolicy,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DistributionConfig struct {
 	// A complex type that contains information about CNAMEs (alternate domain names),
 	// if any, for this distribution.
@@ -486,11 +512,13 @@ type DistributionConfig struct {
 	WebACLID *string `json:"webACLID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DistributionConfigWithTags struct {
 	// A distribution configuration.
 	DistributionConfig *DistributionConfig `json:"distributionConfig,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DistributionIDList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
@@ -503,6 +531,7 @@ type DistributionIDList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DistributionList_SDK struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
@@ -517,6 +546,7 @@ type DistributionList_SDK struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DistributionSummary struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -612,6 +642,7 @@ type DistributionSummary struct {
 	WebACLID *string `json:"webACLID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Distribution_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 	// A list of key groups, and the public keys in each key group, that CloudFront
@@ -637,32 +668,38 @@ type Distribution_SDK struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionEntities struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionEntity struct {
 	ProviderID *string `json:"providerID,omitempty"`
 
 	PublicKeyID *string `json:"publicKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EndPoint struct {
 	StreamType *string `json:"streamType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryption struct {
 	ID *string `json:"id,omitempty"`
 
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionConfig struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 
 	Comment *string `json:"comment,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionList struct {
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
@@ -671,12 +708,14 @@ type FieldLevelEncryptionList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionProfile struct {
 	ID *string `json:"id,omitempty"`
 
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionProfileConfig struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 
@@ -685,6 +724,7 @@ type FieldLevelEncryptionProfileConfig struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionProfileList struct {
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
@@ -693,6 +733,7 @@ type FieldLevelEncryptionProfileList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionProfileSummary struct {
 	Comment *string `json:"comment,omitempty"`
 
@@ -703,6 +744,7 @@ type FieldLevelEncryptionProfileSummary struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldLevelEncryptionSummary struct {
 	Comment *string `json:"comment,omitempty"`
 
@@ -711,10 +753,12 @@ type FieldLevelEncryptionSummary struct {
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type FieldPatterns struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ForwardedValues struct {
 	// This field is deprecated. We recommend that you use a cache policy or an
 	// origin request policy instead of this field.
@@ -748,6 +792,7 @@ type ForwardedValues struct {
 	QueryStringCacheKeys *QueryStringCacheKeys `json:"queryStringCacheKeys,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GeoRestriction struct {
 	Items []*string `json:"items,omitempty"`
 
@@ -756,12 +801,14 @@ type GeoRestriction struct {
 	RestrictionType *string `json:"restrictionType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Headers struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Invalidation struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
@@ -770,10 +817,12 @@ type Invalidation struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InvalidationBatch struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InvalidationList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
@@ -786,6 +835,7 @@ type InvalidationList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InvalidationSummary struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
@@ -794,24 +844,28 @@ type InvalidationSummary struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KGKeyPairIDs struct {
 	KeyGroupID *string `json:"keyGroupID,omitempty"`
 	// A list of CloudFront key pair identifiers.
 	KeyPairIDs *KeyPairIDs `json:"keyPairIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyGroup struct {
 	ID *string `json:"id,omitempty"`
 
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyGroupConfig struct {
 	Comment *string `json:"comment,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyGroupList struct {
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
@@ -820,18 +874,21 @@ type KeyGroupList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KeyPairIDs struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KinesisStreamConfig struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	StreamARN *string `json:"streamARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LambdaFunctionAssociation struct {
 	EventType *string `json:"eventType,omitempty"`
 
@@ -840,12 +897,14 @@ type LambdaFunctionAssociation struct {
 	LambdaFunctionARN *string `json:"lambdaFunctionARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LambdaFunctionAssociations struct {
 	Items []*LambdaFunctionAssociation `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LoggingConfig struct {
 	Bucket *string `json:"bucket,omitempty"`
 
@@ -856,6 +915,7 @@ type LoggingConfig struct {
 	Prefix *string `json:"prefix,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Origin struct {
 	ConnectionAttempts *int64 `json:"connectionAttempts,omitempty"`
 
@@ -885,19 +945,22 @@ type Origin struct {
 	S3OriginConfig *S3OriginConfig `json:"s3OriginConfig,omitempty"`
 }
 
-type OriginAccessIDentity struct {
+// +kubebuilder:skipversion
+type OriginAccessIdentity struct {
 	ID *string `json:"id,omitempty"`
 
 	S3CanonicalUserID *string `json:"s3CanonicalUserID,omitempty"`
 }
 
-type OriginAccessIDentityConfig struct {
+// +kubebuilder:skipversion
+type OriginAccessIdentityConfig struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 
 	Comment *string `json:"comment,omitempty"`
 }
 
-type OriginAccessIDentityList struct {
+// +kubebuilder:skipversion
+type OriginAccessIdentityList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
@@ -909,7 +972,8 @@ type OriginAccessIDentityList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
-type OriginAccessIDentitySummary struct {
+// +kubebuilder:skipversion
+type OriginAccessIdentitySummary struct {
 	Comment *string `json:"comment,omitempty"`
 
 	ID *string `json:"id,omitempty"`
@@ -917,12 +981,14 @@ type OriginAccessIDentitySummary struct {
 	S3CanonicalUserID *string `json:"s3CanonicalUserID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginCustomHeader struct {
 	HeaderName *string `json:"headerName,omitempty"`
 
 	HeaderValue *string `json:"headerValue,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginGroup struct {
 	// A complex data type that includes information about the failover criteria
 	// for an origin group, including the status codes for which CloudFront will
@@ -934,16 +1000,19 @@ type OriginGroup struct {
 	Members *OriginGroupMembers `json:"members,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginGroupFailoverCriteria struct {
 	// A complex data type for the status codes that you specify that, when returned
 	// by a primary origin, trigger CloudFront to failover to a second origin.
 	StatusCodes *StatusCodes `json:"statusCodes,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginGroupMember struct {
 	OriginID *string `json:"originID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginGroupMembers struct {
 	// List of origins in an origin group.
 	Items []*OriginGroupMember `json:"items,omitempty"`
@@ -951,6 +1020,7 @@ type OriginGroupMembers struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginGroups struct {
 	// List of origin groups for a distribution.
 	Items []*OriginGroup `json:"items,omitempty"`
@@ -958,28 +1028,33 @@ type OriginGroups struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicy struct {
 	ID *string `json:"id,omitempty"`
 
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicyConfig struct {
 	Comment *string `json:"comment,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicyCookiesConfig struct {
 	// Contains a list of cookie names.
 	Cookies *CookieNames `json:"cookies,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicyHeadersConfig struct {
 	// Contains a list of HTTP header names.
 	Headers *Headers `json:"headers,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicyList struct {
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
@@ -988,27 +1063,32 @@ type OriginRequestPolicyList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginRequestPolicyQueryStringsConfig struct {
 	// Contains a list of query string names.
 	QueryStrings *QueryStringNames `json:"queryStrings,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginSSLProtocols struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OriginShield struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	OriginShieldRegion *string `json:"originShieldRegion,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Origins struct {
 	Items []*Origin `json:"items,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ParametersInCacheKeyAndForwardedToOrigin struct {
 	// An object that determines whether any cookies in viewer requests (and if
 	// so, which cookies) are included in the cache key and automatically included
@@ -1028,16 +1108,19 @@ type ParametersInCacheKeyAndForwardedToOrigin struct {
 	QueryStringsConfig *CachePolicyQueryStringsConfig `json:"queryStringsConfig,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Paths struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PublicKey struct {
 	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
 
 	ID *string `json:"id,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PublicKeyConfig struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 
@@ -1048,6 +1131,7 @@ type PublicKeyConfig struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PublicKeyList struct {
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
@@ -1056,6 +1140,7 @@ type PublicKeyList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PublicKeySummary struct {
 	Comment *string `json:"comment,omitempty"`
 
@@ -1068,32 +1153,38 @@ type PublicKeySummary struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryArgProfile struct {
 	ProfileID *string `json:"profileID,omitempty"`
 
 	QueryArg *string `json:"queryArg,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryArgProfileConfig struct {
 	ForwardWhenQueryArgProfileIsUnknown *bool `json:"forwardWhenQueryArgProfileIsUnknown,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryArgProfiles struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryStringCacheKeys struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type QueryStringNames struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RealtimeLogConfig struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -1102,6 +1193,7 @@ type RealtimeLogConfig struct {
 	SamplingRate *int64 `json:"samplingRate,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RealtimeLogConfigs struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
@@ -1112,28 +1204,33 @@ type RealtimeLogConfigs struct {
 	NextMarker *string `json:"nextMarker,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Restrictions struct {
 	// A complex type that controls the countries in which your content is distributed.
 	// CloudFront determines the location of your users using MaxMind GeoIP databases.
 	GeoRestriction *GeoRestriction `json:"geoRestriction,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type S3Origin struct {
 	DomainName *string `json:"domainName,omitempty"`
 
-	OriginAccessIDentity *string `json:"originAccessIDentity,omitempty"`
+	OriginAccessIdentity *string `json:"originAccessIdentity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type S3OriginConfig struct {
-	OriginAccessIDentity *string `json:"originAccessIDentity,omitempty"`
+	OriginAccessIdentity *string `json:"originAccessIdentity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Signer struct {
 	AWSAccountNumber *string `json:"awsAccountNumber,omitempty"`
 	// A list of CloudFront key pair identifiers.
 	KeyPairIDs *KeyPairIDs `json:"keyPairIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StatusCodes struct {
 	// List of status codes for origin failover.
 	Items []*int64 `json:"items,omitempty"`
@@ -1141,6 +1238,7 @@ type StatusCodes struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StreamingDistribution struct {
 	ARN *string `json:"arn,omitempty"`
 	// A list of AWS accounts and the active CloudFront key pairs in each account
@@ -1157,6 +1255,7 @@ type StreamingDistribution struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StreamingDistributionConfig struct {
 	// A complex type that contains information about CNAMEs (alternate domain names),
 	// if any, for this distribution.
@@ -1174,6 +1273,7 @@ type StreamingDistributionConfig struct {
 	TrustedSigners *TrustedSigners `json:"trustedSigners,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StreamingDistributionList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
@@ -1186,6 +1286,7 @@ type StreamingDistributionList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StreamingDistributionSummary struct {
 	ARN *string `json:"arn,omitempty"`
 	// A complex type that contains information about CNAMEs (alternate domain names),
@@ -1210,6 +1311,7 @@ type StreamingDistributionSummary struct {
 	TrustedSigners *TrustedSigners `json:"trustedSigners,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StreamingLoggingConfig struct {
 	Bucket *string `json:"bucket,omitempty"`
 
@@ -1218,6 +1320,7 @@ type StreamingLoggingConfig struct {
 	Prefix *string `json:"prefix,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TrustedKeyGroups struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -1226,6 +1329,7 @@ type TrustedKeyGroups struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TrustedSigners struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -1234,6 +1338,7 @@ type TrustedSigners struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ViewerCertificate struct {
 	ACMCertificateARN *string `json:"aCMCertificateARN,omitempty"`
 

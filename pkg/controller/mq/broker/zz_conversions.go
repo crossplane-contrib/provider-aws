@@ -44,6 +44,16 @@ func GenerateDescribeBrokerInput(cr *svcapitypes.Broker) *svcsdk.DescribeBrokerI
 func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 	cr := &svcapitypes.Broker{}
 
+	if resp.AuthenticationStrategy != nil {
+		cr.Spec.ForProvider.AuthenticationStrategy = resp.AuthenticationStrategy
+	} else {
+		cr.Spec.ForProvider.AuthenticationStrategy = nil
+	}
+	if resp.AutoMinorVersionUpgrade != nil {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = resp.AutoMinorVersionUpgrade
+	} else {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = nil
+	}
 	if resp.BrokerArn != nil {
 		cr.Status.AtProvider.BrokerARN = resp.BrokerArn
 	} else {
@@ -53,6 +63,150 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Status.AtProvider.BrokerID = resp.BrokerId
 	} else {
 		cr.Status.AtProvider.BrokerID = nil
+	}
+	if resp.DeploymentMode != nil {
+		cr.Spec.ForProvider.DeploymentMode = resp.DeploymentMode
+	} else {
+		cr.Spec.ForProvider.DeploymentMode = nil
+	}
+	if resp.EncryptionOptions != nil {
+		f10 := &svcapitypes.EncryptionOptions{}
+		if resp.EncryptionOptions.KmsKeyId != nil {
+			f10.KMSKeyID = resp.EncryptionOptions.KmsKeyId
+		}
+		if resp.EncryptionOptions.UseAwsOwnedKey != nil {
+			f10.UseAWSOwnedKey = resp.EncryptionOptions.UseAwsOwnedKey
+		}
+		cr.Spec.ForProvider.EncryptionOptions = f10
+	} else {
+		cr.Spec.ForProvider.EncryptionOptions = nil
+	}
+	if resp.EngineType != nil {
+		cr.Spec.ForProvider.EngineType = resp.EngineType
+	} else {
+		cr.Spec.ForProvider.EngineType = nil
+	}
+	if resp.EngineVersion != nil {
+		cr.Spec.ForProvider.EngineVersion = resp.EngineVersion
+	} else {
+		cr.Spec.ForProvider.EngineVersion = nil
+	}
+	if resp.HostInstanceType != nil {
+		cr.Spec.ForProvider.HostInstanceType = resp.HostInstanceType
+	} else {
+		cr.Spec.ForProvider.HostInstanceType = nil
+	}
+	if resp.LdapServerMetadata != nil {
+		f14 := &svcapitypes.LDAPServerMetadataInput{}
+		if resp.LdapServerMetadata.Hosts != nil {
+			f14f0 := []*string{}
+			for _, f14f0iter := range resp.LdapServerMetadata.Hosts {
+				var f14f0elem string
+				f14f0elem = *f14f0iter
+				f14f0 = append(f14f0, &f14f0elem)
+			}
+			f14.Hosts = f14f0
+		}
+		if resp.LdapServerMetadata.RoleBase != nil {
+			f14.RoleBase = resp.LdapServerMetadata.RoleBase
+		}
+		if resp.LdapServerMetadata.RoleName != nil {
+			f14.RoleName = resp.LdapServerMetadata.RoleName
+		}
+		if resp.LdapServerMetadata.RoleSearchMatching != nil {
+			f14.RoleSearchMatching = resp.LdapServerMetadata.RoleSearchMatching
+		}
+		if resp.LdapServerMetadata.RoleSearchSubtree != nil {
+			f14.RoleSearchSubtree = resp.LdapServerMetadata.RoleSearchSubtree
+		}
+		if resp.LdapServerMetadata.ServiceAccountUsername != nil {
+			f14.ServiceAccountUsername = resp.LdapServerMetadata.ServiceAccountUsername
+		}
+		if resp.LdapServerMetadata.UserBase != nil {
+			f14.UserBase = resp.LdapServerMetadata.UserBase
+		}
+		if resp.LdapServerMetadata.UserRoleName != nil {
+			f14.UserRoleName = resp.LdapServerMetadata.UserRoleName
+		}
+		if resp.LdapServerMetadata.UserSearchMatching != nil {
+			f14.UserSearchMatching = resp.LdapServerMetadata.UserSearchMatching
+		}
+		if resp.LdapServerMetadata.UserSearchSubtree != nil {
+			f14.UserSearchSubtree = resp.LdapServerMetadata.UserSearchSubtree
+		}
+		cr.Spec.ForProvider.LDAPServerMetadata = f14
+	} else {
+		cr.Spec.ForProvider.LDAPServerMetadata = nil
+	}
+	if resp.Logs != nil {
+		f15 := &svcapitypes.Logs{}
+		if resp.Logs.Audit != nil {
+			f15.Audit = resp.Logs.Audit
+		}
+		if resp.Logs.General != nil {
+			f15.General = resp.Logs.General
+		}
+		cr.Spec.ForProvider.Logs = f15
+	} else {
+		cr.Spec.ForProvider.Logs = nil
+	}
+	if resp.MaintenanceWindowStartTime != nil {
+		f16 := &svcapitypes.WeeklyStartTime{}
+		if resp.MaintenanceWindowStartTime.DayOfWeek != nil {
+			f16.DayOfWeek = resp.MaintenanceWindowStartTime.DayOfWeek
+		}
+		if resp.MaintenanceWindowStartTime.TimeOfDay != nil {
+			f16.TimeOfDay = resp.MaintenanceWindowStartTime.TimeOfDay
+		}
+		if resp.MaintenanceWindowStartTime.TimeZone != nil {
+			f16.TimeZone = resp.MaintenanceWindowStartTime.TimeZone
+		}
+		cr.Spec.ForProvider.MaintenanceWindowStartTime = f16
+	} else {
+		cr.Spec.ForProvider.MaintenanceWindowStartTime = nil
+	}
+	if resp.PubliclyAccessible != nil {
+		cr.Spec.ForProvider.PubliclyAccessible = resp.PubliclyAccessible
+	} else {
+		cr.Spec.ForProvider.PubliclyAccessible = nil
+	}
+	if resp.SecurityGroups != nil {
+		f23 := []*string{}
+		for _, f23iter := range resp.SecurityGroups {
+			var f23elem string
+			f23elem = *f23iter
+			f23 = append(f23, &f23elem)
+		}
+		cr.Spec.ForProvider.SecurityGroups = f23
+	} else {
+		cr.Spec.ForProvider.SecurityGroups = nil
+	}
+	if resp.StorageType != nil {
+		cr.Spec.ForProvider.StorageType = resp.StorageType
+	} else {
+		cr.Spec.ForProvider.StorageType = nil
+	}
+	if resp.SubnetIds != nil {
+		f25 := []*string{}
+		for _, f25iter := range resp.SubnetIds {
+			var f25elem string
+			f25elem = *f25iter
+			f25 = append(f25, &f25elem)
+		}
+		cr.Spec.ForProvider.SubnetIDs = f25
+	} else {
+		cr.Spec.ForProvider.SubnetIDs = nil
+	}
+	if resp.Tags != nil {
+		f26 := map[string]*string{}
+		for f26key, f26valiter := range resp.Tags {
+			var f26val string
+			f26val = *f26valiter
+			f26[f26key] = &f26val
+		}
+		cr.Spec.ForProvider.Tags = f26
+	} else {
+		cr.Spec.ForProvider.Tags = nil
 	}
 
 	return cr

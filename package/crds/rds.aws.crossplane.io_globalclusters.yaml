@@ -170,6 +170,20 @@ spec:
                 description: GlobalClusterObservation defines the observed state of
                   GlobalCluster
                 properties:
+                  failoverState:
+                    description: A data object containing all properties for the current
+                      state of an in-process or pending failover process for this
+                      Aurora global database. This object is empty unless the FailoverGlobalCluster
+                      API operation has been called on this Aurora global database
+                      (GlobalCluster).
+                    properties:
+                      fromDBClusterARN:
+                        type: string
+                      status:
+                        type: string
+                      toDBClusterARN:
+                        type: string
+                    type: object
                   globalClusterARN:
                     description: The Amazon Resource Name (ARN) for the global database
                       cluster.

@@ -124,6 +124,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.APIMappingID = nil
 	}
+	if resp.ApiMappingKey != nil {
+		cr.Spec.ForProvider.APIMappingKey = resp.ApiMappingKey
+	} else {
+		cr.Spec.ForProvider.APIMappingKey = nil
+	}
 	if resp.Stage != nil {
 		cr.Status.AtProvider.Stage = resp.Stage
 	} else {

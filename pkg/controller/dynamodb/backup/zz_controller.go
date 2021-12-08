@@ -130,6 +130,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.BackupExpiryDateTime = nil
 	}
+	if resp.BackupDetails.BackupName != nil {
+		cr.Spec.ForProvider.BackupName = resp.BackupDetails.BackupName
+	} else {
+		cr.Spec.ForProvider.BackupName = nil
+	}
 	if resp.BackupDetails.BackupSizeBytes != nil {
 		cr.Status.AtProvider.BackupSizeBytes = resp.BackupDetails.BackupSizeBytes
 	} else {
