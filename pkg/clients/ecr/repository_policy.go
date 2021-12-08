@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -26,7 +26,7 @@ type RepositoryPolicyClient interface {
 }
 
 // GenerateSetRepositoryPolicyInput Generates the CreateRepositoryInput from the RepositoryPolicyParameters
-func GenerateSetRepositoryPolicyInput(params *v1alpha1.RepositoryPolicyParameters, policy *string) *ecr.SetRepositoryPolicyInput {
+func GenerateSetRepositoryPolicyInput(params *v1beta1.RepositoryPolicyParameters, policy *string) *ecr.SetRepositoryPolicyInput {
 	c := &ecr.SetRepositoryPolicyInput{
 		RepositoryName: params.RepositoryName,
 		RegistryId:     params.RegistryID,
@@ -39,7 +39,7 @@ func GenerateSetRepositoryPolicyInput(params *v1alpha1.RepositoryPolicyParameter
 
 // LateInitializeRepositoryPolicy fills the empty fields in *v1alpha1.RepositoryPolicyParameters with
 // the values seen in ecr.GetRepositoryPolicyResponse.
-func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyOutput) { // nolint:gocyclo
+func LateInitializeRepositoryPolicy(in *v1beta1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyOutput) { // nolint:gocyclo
 	if r == nil {
 		return
 	}
@@ -53,7 +53,7 @@ func IsPolicyNotFoundErr(err error) bool {
 }
 
 // Serialize is the custom marshaller for the RepositoryPolicyBody
-func Serialize(p *v1alpha1.RepositoryPolicyBody) (interface{}, error) {
+func Serialize(p *v1beta1.RepositoryPolicyBody) (interface{}, error) {
 	m := make(map[string]interface{})
 	m["Version"] = p.Version
 	if p.ID != nil && *p.ID != "" {
@@ -72,7 +72,7 @@ func Serialize(p *v1alpha1.RepositoryPolicyBody) (interface{}, error) {
 }
 
 // SerializeRepositoryPolicyStatement is the custom marshaller for the RepositoryPolicyStatement
-func SerializeRepositoryPolicyStatement(p v1alpha1.RepositoryPolicyStatement) (interface{}, error) { // nolint:gocyclo
+func SerializeRepositoryPolicyStatement(p v1beta1.RepositoryPolicyStatement) (interface{}, error) { // nolint:gocyclo
 	m := make(map[string]interface{})
 	if p.Principal != nil {
 		principal, err := SerializeRepositoryPrincipal(p.Principal)
@@ -115,7 +115,7 @@ func SerializeRepositoryPolicyStatement(p v1alpha1.RepositoryPolicyStatement) (i
 }
 
 // SerializeRepositoryPrincipal is the custom serializer for the RepositoryPrincipal
-func SerializeRepositoryPrincipal(p *v1alpha1.RepositoryPrincipal) (interface{}, error) {
+func SerializeRepositoryPrincipal(p *v1beta1.RepositoryPrincipal) (interface{}, error) {
 	all := "*"
 	if awsclient.BoolValue(p.AllowAnon) {
 		return all, nil
@@ -138,7 +138,7 @@ func SerializeRepositoryPrincipal(p *v1alpha1.RepositoryPrincipal) (interface{},
 }
 
 // SerializeAWSPrincipal converts an AWSPrincipal to a string
-func SerializeAWSPrincipal(p v1alpha1.AWSPrincipal) *string {
+func SerializeAWSPrincipal(p v1beta1.AWSPrincipal) *string {
 	switch {
 	case p.AWSAccountID != nil:
 		// Note: AWS Docs say you can specify the account ID either
@@ -163,7 +163,7 @@ func SerializeAWSPrincipal(p v1alpha1.AWSPrincipal) *string {
 
 // SerializeRepositoryCondition converts the string -> Condition map
 // into a serialized version
-func SerializeRepositoryCondition(p []v1alpha1.Condition) (interface{}, error) {
+func SerializeRepositoryCondition(p []v1beta1.Condition) (interface{}, error) {
 	m := make(map[string]interface{})
 	for _, v := range p {
 		subMap := make(map[string]interface{})
@@ -200,7 +200,7 @@ func tryFirst(slc []string) interface{} {
 }
 
 // RawPolicyData parses and formats the RepositoryPolicy struct
-func RawPolicyData(original *v1alpha1.RepositoryPolicy) (string, error) {
+func RawPolicyData(original *v1beta1.RepositoryPolicy) (string, error) {
 	if original == nil {
 		return "", errors.New(errNotSpecified)
 	}

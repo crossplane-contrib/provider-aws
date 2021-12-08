@@ -128,6 +128,8 @@ type Repository struct {
 // +kubebuilder:object:root=true
 
 // RepositoryList contains a list of ECRs
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

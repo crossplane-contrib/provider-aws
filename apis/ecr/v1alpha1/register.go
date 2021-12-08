@@ -22,8 +22,6 @@ package v1alpha1
 import (
 	"reflect"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
@@ -44,7 +42,7 @@ var (
 
 // Repository type metadata.
 var (
-	RepositoryKind             = reflect.TypeOf(v1beta1.Repository{}).Name()
+	RepositoryKind             = reflect.TypeOf(Repository{}).Name()
 	RepositoryGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryKind}.String()
 	RepositoryKindAPIVersion   = RepositoryKind + "." + SchemeGroupVersion.String()
 	RepositoryGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryKind)
@@ -59,6 +57,6 @@ var (
 )
 
 func init() {
-	SchemeBuilder.Register(&v1beta1.Repository{}, &v1beta1.RepositoryList{})
+	SchemeBuilder.Register(&Repository{}, &RepositoryList{})
 	SchemeBuilder.Register(&RepositoryPolicy{}, &RepositoryPolicyList{})
 }

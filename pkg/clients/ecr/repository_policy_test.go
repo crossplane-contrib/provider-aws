@@ -9,7 +9,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -20,13 +20,13 @@ var (
 	boolCheck   = true
 	testID      = "id"
 	policy      = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
-	params      = v1alpha1.RepositoryPolicyParameters{
-		Policy: &v1alpha1.RepositoryPolicyBody{
+	params      = v1beta1.RepositoryPolicyParameters{
+		Policy: &v1beta1.RepositoryPolicyBody{
 			Version: "2012-10-17",
-			Statements: []v1alpha1.RepositoryPolicyStatement{
+			Statements: []v1beta1.RepositoryPolicyStatement{
 				{
 					Effect: "Allow",
-					Principal: &v1alpha1.RepositoryPrincipal{
+					Principal: &v1beta1.RepositoryPrincipal{
 						AllowAnon: &boolCheck,
 					},
 					Action: []string{"ecr:ListImages"},
@@ -36,28 +36,28 @@ var (
 	}
 )
 
-type statementModifier func(statement *v1alpha1.RepositoryPolicyStatement)
+type statementModifier func(statement *v1beta1.RepositoryPolicyStatement)
 
-func withPrincipal(s *v1alpha1.RepositoryPrincipal) statementModifier {
-	return func(statement *v1alpha1.RepositoryPolicyStatement) {
+func withPrincipal(s *v1beta1.RepositoryPrincipal) statementModifier {
+	return func(statement *v1beta1.RepositoryPolicyStatement) {
 		statement.Principal = s
 	}
 }
 
 func withPolicyAction(s []string) statementModifier {
-	return func(statement *v1alpha1.RepositoryPolicyStatement) {
+	return func(statement *v1beta1.RepositoryPolicyStatement) {
 		statement.Action = s
 	}
 }
 
-func withConditionBlock(m []v1alpha1.Condition) statementModifier {
-	return func(statement *v1alpha1.RepositoryPolicyStatement) {
+func withConditionBlock(m []v1beta1.Condition) statementModifier {
+	return func(statement *v1beta1.RepositoryPolicyStatement) {
 		statement.Condition = m
 	}
 }
 
-func policyStatement(m ...statementModifier) *v1alpha1.RepositoryPolicyStatement {
-	cr := &v1alpha1.RepositoryPolicyStatement{
+func policyStatement(m ...statementModifier) *v1beta1.RepositoryPolicyStatement {
+	cr := &v1beta1.RepositoryPolicyStatement{
 		SID:    statementID,
 		Effect: effect,
 	}
@@ -67,19 +67,19 @@ func policyStatement(m ...statementModifier) *v1alpha1.RepositoryPolicyStatement
 	return cr
 }
 
-type repositoryPolicyModifier func(policy *v1alpha1.RepositoryPolicy)
+type repositoryPolicyModifier func(policy *v1beta1.RepositoryPolicy)
 
-func withPolicy(s *v1alpha1.RepositoryPolicyParameters) repositoryPolicyModifier {
-	return func(r *v1alpha1.RepositoryPolicy) { r.Spec.ForProvider = *s }
+func withPolicy(s *v1beta1.RepositoryPolicyParameters) repositoryPolicyModifier {
+	return func(r *v1beta1.RepositoryPolicy) { r.Spec.ForProvider = *s }
 }
 
-func repositoryPolicy(m ...repositoryPolicyModifier) *v1alpha1.RepositoryPolicy {
-	cr := &v1alpha1.RepositoryPolicy{
-		Spec: v1alpha1.RepositoryPolicySpec{
-			ForProvider: v1alpha1.RepositoryPolicyParameters{
+func repositoryPolicy(m ...repositoryPolicyModifier) *v1beta1.RepositoryPolicy {
+	cr := &v1beta1.RepositoryPolicy{
+		Spec: v1beta1.RepositoryPolicySpec{
+			ForProvider: v1beta1.RepositoryPolicyParameters{
 				RepositoryName: &repositoryName,
-				Policy: &v1alpha1.RepositoryPolicyBody{
-					Statements: make([]v1alpha1.RepositoryPolicyStatement, 0),
+				Policy: &v1beta1.RepositoryPolicyBody{
+					Statements: make([]v1beta1.RepositoryPolicyStatement, 0),
 				},
 			},
 		},
@@ -92,7 +92,7 @@ func repositoryPolicy(m ...repositoryPolicyModifier) *v1alpha1.RepositoryPolicy 
 
 func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.RepositoryPolicyStatement
+		in  v1beta1.RepositoryPolicyStatement
 		out string
 		err error
 	}{
@@ -102,7 +102,7 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 		},
 		"ValidInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha1.RepositoryPrincipal{
+				withPrincipal(&v1beta1.RepositoryPrincipal{
 					AllowAnon: &boolCheck,
 				}),
 				withPolicyAction([]string{"ecr:DescribeRepositories"}),
@@ -111,8 +111,8 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 		},
 		"ComplexInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha1.RepositoryPrincipal{
-					AWSPrincipals: []v1alpha1.AWSPrincipal{
+				withPrincipal(&v1beta1.RepositoryPrincipal{
+					AWSPrincipals: []v1beta1.AWSPrincipal{
 						{
 							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
@@ -127,10 +127,10 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 					},
 				}),
 				withPolicyAction([]string{"ecr:DescribeRepositories"}),
-				withConditionBlock([]v1alpha1.Condition{
+				withConditionBlock([]v1beta1.Condition{
 					{
 						OperatorKey: "test",
-						Conditions: []v1alpha1.ConditionPair{
+						Conditions: []v1beta1.ConditionPair{
 							{
 								ConditionKey:         "test",
 								ConditionStringValue: aws.String("testKey"),
@@ -172,16 +172,16 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 
 func TestLateInitializePolicy(t *testing.T) {
 	cases := map[string]struct {
-		parameters   *v1alpha1.RepositoryPolicyParameters
+		parameters   *v1beta1.RepositoryPolicyParameters
 		policyOutput *ecr.GetRepositoryPolicyOutput
-		want         *v1alpha1.RepositoryPolicyParameters
+		want         *v1beta1.RepositoryPolicyParameters
 	}{
 		"AllOptionalFields": {
-			parameters: &v1alpha1.RepositoryPolicyParameters{},
+			parameters: &v1beta1.RepositoryPolicyParameters{},
 			policyOutput: &ecr.GetRepositoryPolicyOutput{
 				RegistryId: &testID,
 			},
-			want: &v1alpha1.RepositoryPolicyParameters{
+			want: &v1beta1.RepositoryPolicyParameters{
 				RegistryID: &testID,
 			},
 		},
@@ -199,7 +199,7 @@ func TestLateInitializePolicy(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 	type formatarg struct {
-		cr *v1alpha1.RepositoryPolicy
+		cr *v1beta1.RepositoryPolicy
 	}
 	type want struct {
 		str string
@@ -228,7 +228,7 @@ func TestFormat(t *testing.T) {
 		},
 		"StringPolicy": {
 			args: formatarg{
-				cr: repositoryPolicy(withPolicy(&v1alpha1.RepositoryPolicyParameters{
+				cr: repositoryPolicy(withPolicy(&v1beta1.RepositoryPolicyParameters{
 					RawPolicy: &policy,
 				})),
 			},
@@ -238,7 +238,7 @@ func TestFormat(t *testing.T) {
 		},
 		"NoPolicy": {
 			args: formatarg{
-				cr: repositoryPolicy(withPolicy(&v1alpha1.RepositoryPolicyParameters{})),
+				cr: repositoryPolicy(withPolicy(&v1beta1.RepositoryPolicyParameters{})),
 			},
 			want: want{
 				err: errors.New(errNotSpecified),
