@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
@@ -75,7 +77,14 @@ func withStatus(s v1beta1.FargateProfileStatusType) fargateProfileModifier {
 }
 
 func fargateProfile(m ...fargateProfileModifier) *v1beta1.FargateProfile {
-	cr := &v1beta1.FargateProfile{}
+	cr := &v1beta1.FargateProfile{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "FargateProfile",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "name",
+		},
+	}
 	for _, f := range m {
 		f(cr)
 	}

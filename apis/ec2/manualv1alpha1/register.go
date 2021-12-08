@@ -40,6 +40,14 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
+// VPCCIDRBlock type metadata.
+var (
+	VPCCIDRBlockKind             = reflect.TypeOf(VPCCIDRBlock{}).Name()
+	VPCCIDRBlockGroupKind        = schema.GroupKind{Group: Group, Kind: VPCCIDRBlockKind}.String()
+	VPCCIDRBlockKindAPIVersion   = VPCCIDRBlockKind + "." + SchemeGroupVersion.String()
+	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
+)
+
 // Instance type metadata.
 var (
 	InstanceKind             = reflect.TypeOf(Instance{}).Name()
@@ -49,5 +57,6 @@ var (
 )
 
 func init() {
+	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
 	SchemeBuilder.Register(&Instance{}, &InstanceList{})
 }

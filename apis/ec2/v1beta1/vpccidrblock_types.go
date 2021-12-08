@@ -64,6 +64,7 @@ type VPCCIDRBlockParameters struct {
 
 	// VPCID is the ID of the VPC.
 	// +optional
+	// +crossplane:generate:reference:type=VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
