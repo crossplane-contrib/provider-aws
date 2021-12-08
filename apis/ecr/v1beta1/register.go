@@ -58,4 +58,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&Repository{}, &RepositoryList{})
+	SchemeBuilder.Register(&RepositoryPolicy{}, &RepositoryPolicyList{})
 }

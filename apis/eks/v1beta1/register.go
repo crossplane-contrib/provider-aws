@@ -43,8 +43,14 @@ var (
 	ClusterGroupKind        = schema.GroupKind{Group: Group, Kind: ClusterKind}.String()
 	ClusterKindAPIVersion   = ClusterKind + "." + SchemeGroupVersion.String()
 	ClusterGroupVersionKind = SchemeGroupVersion.WithKind(ClusterKind)
+
+	FargateProfileKind             = reflect.TypeOf(FargateProfile{}).Name()
+	FargateProfileGroupKind        = schema.GroupKind{Group: Group, Kind: FargateProfileKind}.String()
+	FargateProfileKindAPIVersion   = FargateProfileKind + "." + SchemeGroupVersion.String()
+	FargateProfileGroupVersionKind = SchemeGroupVersion.WithKind(FargateProfileKind)
 )
 
 func init() {
 	SchemeBuilder.Register(&Cluster{}, &ClusterList{})
+	SchemeBuilder.Register(&FargateProfile{}, &FargateProfileList{})
 }
