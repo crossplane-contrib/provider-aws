@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +27,7 @@ type IAMAccessKeyParameters struct {
 	// IAMUsername contains the name of the IAMUser.
 	// +optional
 	// +immutable
+	// +crossplane:generate:reference:type=IAMUser
 	IAMUsername string `json:"userName,omitempty"`
 
 	// IAMUsernameRef references to an IAMUser to retrieve its userName

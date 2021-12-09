@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -57,32 +57,32 @@ type args struct {
 	kube client.Client
 }
 
-type accessModifier func(*v1alpha1.IAMAccessKey)
+type accessModifier func(*v1beta1.IAMAccessKey)
 
 func withConditions(c ...xpv1.Condition) accessModifier {
-	return func(r *v1alpha1.IAMAccessKey) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMAccessKey) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withUsername(username string) accessModifier {
-	return func(r *v1alpha1.IAMAccessKey) {
+	return func(r *v1beta1.IAMAccessKey) {
 		r.Spec.ForProvider.IAMUsername = username
 	}
 }
 
 func withStatus(status string) accessModifier {
-	return func(r *v1alpha1.IAMAccessKey) {
+	return func(r *v1beta1.IAMAccessKey) {
 		r.Spec.ForProvider.Status = status
 	}
 }
 
 func withAccessKey(keyid string) accessModifier {
-	return func(r *v1alpha1.IAMAccessKey) {
+	return func(r *v1beta1.IAMAccessKey) {
 		meta.SetExternalName(r, keyid)
 	}
 }
 
-func accesskey(m ...accessModifier) *v1alpha1.IAMAccessKey {
-	cr := &v1alpha1.IAMAccessKey{}
+func accesskey(m ...accessModifier) *v1beta1.IAMAccessKey {
+	cr := &v1beta1.IAMAccessKey{}
 	for _, f := range m {
 		f(cr)
 	}

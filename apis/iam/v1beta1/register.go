@@ -56,7 +56,79 @@ var (
 	IAMRolePolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMRolePolicyAttachmentKind)
 )
 
+// IAMUser type metadata.
+var (
+	IAMUserKind             = reflect.TypeOf(IAMUser{}).Name()
+	IAMUserGroupKind        = schema.GroupKind{Group: Group, Kind: IAMUserKind}.String()
+	IAMUserKindAPIVersion   = IAMUserKind + "." + SchemeGroupVersion.String()
+	IAMUserGroupVersionKind = SchemeGroupVersion.WithKind(IAMUserKind)
+)
+
+// IAMUserPolicyAttachment type metadata.
+var (
+	IAMUserPolicyAttachmentKind             = reflect.TypeOf(IAMUserPolicyAttachment{}).Name()
+	IAMUserPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMUserPolicyAttachmentKind}.String()
+	IAMUserPolicyAttachmentKindAPIVersion   = IAMUserPolicyAttachmentKind + "." + SchemeGroupVersion.String()
+	IAMUserPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMUserPolicyAttachmentKind)
+)
+
+// IAMPolicy type metadata.
+var (
+	IAMPolicyKind             = reflect.TypeOf(IAMPolicy{}).Name()
+	IAMPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMPolicyKind}.String()
+	IAMPolicyKindAPIVersion   = IAMPolicyKind + "." + SchemeGroupVersion.String()
+	IAMPolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
+)
+
+// IAMGroup type metadata
+var (
+	IAMGroupKind             = reflect.TypeOf(IAMGroup{}).Name()
+	IAMGroupGroupKind        = schema.GroupKind{Group: Group, Kind: IAMGroupKind}.String()
+	IAMGroupKindAPIVersion   = IAMGroupKind + "." + SchemeGroupVersion.String()
+	IAMGroupGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupKind)
+)
+
+// IAMGroupUserMembership type metadata.
+var (
+	IAMGroupUserMembershipKind             = reflect.TypeOf(IAMGroupUserMembership{}).Name()
+	IAMGroupUserMembershipGroupKind        = schema.GroupKind{Group: Group, Kind: IAMGroupUserMembershipKind}.String()
+	IAMGroupUserMembershipKindAPIVersion   = IAMGroupUserMembershipKind + "." + SchemeGroupVersion.String()
+	IAMGroupUserMembershipGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupUserMembershipKind)
+)
+
+// IAMGroupPolicyAttachment type metadata.
+var (
+	IAMGroupPolicyAttachmentKind             = reflect.TypeOf(IAMGroupPolicyAttachment{}).Name()
+	IAMGroupPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMGroupPolicyAttachmentKind}.String()
+	IAMGroupPolicyAttachmentKindAPIVersion   = IAMGroupPolicyAttachmentKind + "." + SchemeGroupVersion.String()
+	IAMGroupPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupPolicyAttachmentKind)
+)
+
+// IAMAccessKey type metadata.
+var (
+	IAMAccessKeyKind             = reflect.TypeOf(IAMAccessKey{}).Name()
+	IAMAccessKeyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMAccessKeyKind}.String()
+	IAMAccessKeyKindAPIVersion   = IAMAccessKeyKind + "." + SchemeGroupVersion.String()
+	IAMAccessKeyGroupVersionKind = SchemeGroupVersion.WithKind(IAMAccessKeyKind)
+)
+
+// OpenIDConnectProvider type metadata.
+var (
+	OpenIDConnectProviderKind             = "OpenIDConnectProvider"
+	OpenIDConnectProviderGroupKind        = schema.GroupKind{Group: Group, Kind: OpenIDConnectProviderKind}.String()
+	OpenIDConnectProviderKindAPIVersion   = OpenIDConnectProviderKind + "." + SchemeGroupVersion.String()
+	OpenIDConnectProviderGroupVersionKind = SchemeGroupVersion.WithKind(OpenIDConnectProviderKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&IAMRole{}, &IAMRoleList{})
 	SchemeBuilder.Register(&IAMRolePolicyAttachment{}, &IAMRolePolicyAttachmentList{})
+	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
+	SchemeBuilder.Register(&IAMPolicy{}, &IAMPolicyList{})
+	SchemeBuilder.Register(&IAMUserPolicyAttachment{}, &IAMUserPolicyAttachmentList{})
+	SchemeBuilder.Register(&IAMGroup{}, &IAMGroupList{})
+	SchemeBuilder.Register(&IAMGroupUserMembership{}, &IAMGroupUserMembershipList{})
+	SchemeBuilder.Register(&IAMGroupPolicyAttachment{}, &IAMGroupPolicyAttachmentList{})
+	SchemeBuilder.Register(&IAMAccessKey{}, &IAMAccessKeyList{})
+	SchemeBuilder.Register(&OpenIDConnectProvider{}, &OpenIDConnectProviderList{})
 }

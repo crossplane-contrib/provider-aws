@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
@@ -30,7 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -49,26 +50,26 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userPolicyModifier func(*v1alpha1.IAMUserPolicyAttachment)
+type userPolicyModifier func(*v1beta1.IAMUserPolicyAttachment)
 
 func withConditions(c ...xpv1.Condition) userPolicyModifier {
-	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withUserName(s string) userPolicyModifier {
-	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
 }
 
 func withSpecPolicyArn(s string) userPolicyModifier {
-	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) userPolicyModifier {
-	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
 }
 
-func userPolicy(m ...userPolicyModifier) *v1alpha1.IAMUserPolicyAttachment {
-	cr := &v1alpha1.IAMUserPolicyAttachment{}
+func userPolicy(m ...userPolicyModifier) *v1beta1.IAMUserPolicyAttachment {
+	cr := &v1beta1.IAMUserPolicyAttachment{}
 	for _, f := range m {
 		f(cr)
 	}

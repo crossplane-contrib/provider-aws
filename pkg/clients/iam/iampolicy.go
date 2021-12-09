@@ -4,13 +4,14 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -43,7 +44,7 @@ func NewSTSClient(cfg aws.Config) STSClient {
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
+func IsPolicyUpToDate(in v1beta1.IAMPolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
 	// The AWS API returns Policy Document as an escaped string.
 	// Due to differences in the methods to escape a string, the comparison result between
 	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).

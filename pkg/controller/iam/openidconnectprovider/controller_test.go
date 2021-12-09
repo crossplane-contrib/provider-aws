@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -34,7 +36,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"

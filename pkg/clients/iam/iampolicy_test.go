@@ -3,10 +3,10 @@ package iam
 import (
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 )
 
 var (
@@ -39,7 +39,7 @@ var (
 
 func TestIsPolicyUpToDate(t *testing.T) {
 	type args struct {
-		p       v1alpha1.IAMPolicyParameters
+		p       v1beta1.IAMPolicyParameters
 		version iamtypes.PolicyVersion
 	}
 
@@ -49,7 +49,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				p: v1alpha1.IAMPolicyParameters{
+				p: v1beta1.IAMPolicyParameters{
 					Document: document1,
 				},
 				version: iamtypes.PolicyVersion{
@@ -60,7 +60,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				p: v1alpha1.IAMPolicyParameters{
+				p: v1beta1.IAMPolicyParameters{
 					Document: document1,
 				},
 				version: iamtypes.PolicyVersion{
@@ -71,7 +71,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		},
 		"EmptyPolicy": {
 			args: args{
-				p: v1alpha1.IAMPolicyParameters{},
+				p: v1beta1.IAMPolicyParameters{},
 				version: iamtypes.PolicyVersion{
 					Document: &document2,
 				},

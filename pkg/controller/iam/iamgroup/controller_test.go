@@ -26,14 +26,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -55,22 +54,22 @@ type args struct {
 	cr  resource.Managed
 }
 
-type groupModifier func(*v1alpha1.IAMGroup)
+type groupModifier func(*v1beta1.IAMGroup)
 
 func withConditions(c ...xpv1.Condition) groupModifier {
-	return func(r *v1alpha1.IAMGroup) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withExternalName(name string) groupModifier {
-	return func(r *v1alpha1.IAMGroup) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.IAMGroup) { meta.SetExternalName(r, name) }
 }
 
 func withGroupPath(groupPath string) groupModifier {
-	return func(r *v1alpha1.IAMGroup) { r.Spec.ForProvider.Path = &groupPath }
+	return func(r *v1beta1.IAMGroup) { r.Spec.ForProvider.Path = &groupPath }
 }
 
-func group(m ...groupModifier) *v1alpha1.IAMGroup {
-	cr := &v1alpha1.IAMGroup{}
+func group(m ...groupModifier) *v1beta1.IAMGroup {
+	cr := &v1beta1.IAMGroup{}
 	for _, f := range m {
 		f(cr)
 	}

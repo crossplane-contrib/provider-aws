@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +28,7 @@ type IAMGroupUserMembershipParameters struct {
 	// GroupName is the Amazon IAM Group Name (IAMGroup) of the IAM group you want to
 	// add User to.
 	// +immutable
+	// +crossplane:generate:reference:type=IAMGroup
 	GroupName string `json:"groupName,omitempty"`
 
 	// GroupNameRef references to an IAMGroup to retrieve its groupName
@@ -41,6 +42,7 @@ type IAMGroupUserMembershipParameters struct {
 
 	// UserName presents the name of the IAMUser.
 	// +immutable
+	// +crossplane:generate:reference:type=IAMUser
 	UserName string `json:"userName,omitempty"`
 
 	// UserNameRef references to an IAMUser to retrieve its userName

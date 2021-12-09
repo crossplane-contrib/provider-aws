@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -35,7 +37,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -75,30 +76,30 @@ type args struct {
 	cr   resource.Managed
 }
 
-type policyModifier func(*v1alpha1.IAMPolicy)
+type policyModifier func(*v1beta1.IAMPolicy)
 
 func withExternalName(s string) policyModifier {
-	return func(r *v1alpha1.IAMPolicy) { meta.SetExternalName(r, s) }
+	return func(r *v1beta1.IAMPolicy) { meta.SetExternalName(r, s) }
 }
 
 func withConditions(c ...xpv1.Condition) policyModifier {
-	return func(r *v1alpha1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(spec v1alpha1.IAMPolicyParameters) policyModifier {
-	return func(r *v1alpha1.IAMPolicy) {
+func withSpec(spec v1beta1.IAMPolicyParameters) policyModifier {
+	return func(r *v1beta1.IAMPolicy) {
 		r.Spec.ForProvider = spec
 	}
 }
 
 func withPath(path string) policyModifier {
-	return func(r *v1alpha1.IAMPolicy) {
+	return func(r *v1beta1.IAMPolicy) {
 		r.Spec.ForProvider.Path = awsclient.String(path)
 	}
 }
 
-func policy(m ...policyModifier) *v1alpha1.IAMPolicy {
-	cr := &v1alpha1.IAMPolicy{}
+func policy(m ...policyModifier) *v1beta1.IAMPolicy {
+	cr := &v1beta1.IAMPolicy{}
 	cr.Spec.ForProvider.Name = name
 	for _, f := range m {
 		f(cr)
@@ -134,13 +135,13 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
 					Document: document,
 					Name:     name,
 				}), withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
 					Document: document,
 					Name:     name,
 				}), withExternalName(policyArn),
@@ -337,14 +338,14 @@ func TestCreate(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
 					Document: document,
 					Name:     name,
 				})),
 			},
 			want: want{
 				cr: policy(
-					withSpec(v1alpha1.IAMPolicyParameters{
+					withSpec(v1beta1.IAMPolicyParameters{
 						Document: document,
 						Name:     name,
 					}),

@@ -25,8 +25,6 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
-	iamv1alpha1 "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
@@ -77,8 +75,8 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMUserARN),
 			Reference:    principal.AWSPrincipals[i].IAMUserARNRef,
 			Selector:     principal.AWSPrincipals[i].IAMUserARNSelector,
-			To:           reference.To{Managed: &v1alpha1.IAMUser{}, List: &v1alpha1.IAMUserList{}},
-			Extract:      iamv1alpha1.IAMUserARN(),
+			To:           reference.To{Managed: &iamv1beta1.IAMUser{}, List: &iamv1beta1.IAMUserList{}},
+			Extract:      iamv1beta1.IAMUserARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statements[%d].principal.awsPrincipals[%d].iamUserArn", statementIndex, i))

@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 )
 
 var (
@@ -15,8 +15,8 @@ var (
 	userID = "some id"
 )
 
-func userParams(m ...func(*v1alpha1.IAMUserParameters)) *v1alpha1.IAMUserParameters {
-	o := &v1alpha1.IAMUserParameters{
+func userParams(m ...func(*v1beta1.IAMUserParameters)) *v1beta1.IAMUserParameters {
+	o := &v1beta1.IAMUserParameters{
 		Path: &path,
 	}
 
@@ -42,12 +42,12 @@ func user(m ...func(*iamtypes.User)) *iamtypes.User {
 
 func TestLateInitializeUser(t *testing.T) {
 	type args struct {
-		spec *v1alpha1.IAMUserParameters
+		spec *v1beta1.IAMUserParameters
 		in   iamtypes.User
 	}
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.IAMUserParameters
+		want *v1beta1.IAMUserParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
@@ -67,12 +67,12 @@ func TestLateInitializeUser(t *testing.T) {
 		},
 		"PartialFilled": {
 			args: args{
-				spec: userParams(func(p *v1alpha1.IAMUserParameters) {
+				spec: userParams(func(p *v1beta1.IAMUserParameters) {
 					p.Path = nil
 				}),
 				in: *user(),
 			},
-			want: userParams(func(p *v1alpha1.IAMUserParameters) {
+			want: userParams(func(p *v1beta1.IAMUserParameters) {
 				p.Path = &path
 			}),
 		},

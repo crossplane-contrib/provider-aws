@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
@@ -31,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -50,30 +51,30 @@ type args struct {
 	cr  resource.Managed
 }
 
-type groupPolicyModifier func(*v1alpha1.IAMGroupPolicyAttachment)
+type groupPolicyModifier func(*v1beta1.IAMGroupPolicyAttachment)
 
 func withExternalName(name string) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.IAMGroupPolicyAttachment) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withSpecGroupName(s string) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
+	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
 }
 
 func withSpecPolicyArn(s string) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
 }
 
-func groupPolicy(m ...groupPolicyModifier) *v1alpha1.IAMGroupPolicyAttachment {
-	cr := &v1alpha1.IAMGroupPolicyAttachment{}
+func groupPolicy(m ...groupPolicyModifier) *v1beta1.IAMGroupPolicyAttachment {
+	cr := &v1beta1.IAMGroupPolicyAttachment{}
 	for _, f := range m {
 		f(cr)
 	}

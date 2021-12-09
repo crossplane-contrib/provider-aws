@@ -39,7 +39,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
@@ -59,16 +59,16 @@ const (
 
 // SetupIAMPolicy adds a controller that reconciles IAM Policy.
 func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.IAMPolicyGroupKind)
+	name := managed.ControllerName(v1beta1.IAMPolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.IAMPolicy{}).
+		For(&v1beta1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.IAMPolicyGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -98,7 +98,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.IAMPolicy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -129,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(xpv1.Available())
 
-	cr.Status.AtProvider = v1alpha1.IAMPolicyObservation{
+	cr.Status.AtProvider = v1beta1.IAMPolicyObservation{
 		ARN:                           aws.ToString(policy.Arn),
 		AttachmentCount:               aws.ToInt32(policy.AttachmentCount),
 		DefaultVersionID:              aws.ToString(policy.DefaultVersionId),
@@ -166,7 +166,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.IAMPolicy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -198,7 +198,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.IAMPolicy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -258,7 +258,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.IAMPolicy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

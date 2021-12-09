@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -27,7 +26,7 @@ func NewUserClient(cfg aws.Config) UserClient {
 
 // LateInitializeUser fills the empty fields in *v1alpha1.User with
 // the values seen in iam.User.
-func LateInitializeUser(in *v1alpha1.IAMUserParameters, user *iamtypes.User) {
+func LateInitializeUser(in *v1beta1.IAMUserParameters, user *iamtypes.User) {
 	if user == nil {
 		return
 	}
@@ -39,7 +38,7 @@ func LateInitializeUser(in *v1alpha1.IAMUserParameters, user *iamtypes.User) {
 
 	if in.Tags == nil && user.Tags != nil {
 		for _, tag := range user.Tags {
-			in.Tags = append(in.Tags, v1alpha1.Tag{Key: *tag.Key, Value: *tag.Value})
+			in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
 		}
 	}
 }

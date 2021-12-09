@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
@@ -31,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -50,30 +51,30 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userGroupModifier func(*v1alpha1.IAMGroupUserMembership)
+type userGroupModifier func(*v1beta1.IAMGroupUserMembership)
 
 func withExternalName(name string) userGroupModifier {
-	return func(r *v1alpha1.IAMGroupUserMembership) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.IAMGroupUserMembership) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) userGroupModifier {
-	return func(r *v1alpha1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withSpecGroupName(s string) userGroupModifier {
-	return func(r *v1alpha1.IAMGroupUserMembership) { r.Spec.ForProvider.GroupName = s }
+	return func(r *v1beta1.IAMGroupUserMembership) { r.Spec.ForProvider.GroupName = s }
 }
 
 func withSpecUserName(s string) userGroupModifier {
-	return func(r *v1alpha1.IAMGroupUserMembership) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1beta1.IAMGroupUserMembership) { r.Spec.ForProvider.UserName = s }
 }
 
 func withStatusGroupArn(s string) userGroupModifier {
-	return func(r *v1alpha1.IAMGroupUserMembership) { r.Status.AtProvider.AttachedGroupARN = s }
+	return func(r *v1beta1.IAMGroupUserMembership) { r.Status.AtProvider.AttachedGroupARN = s }
 }
 
-func userGroup(m ...userGroupModifier) *v1alpha1.IAMGroupUserMembership {
-	cr := &v1alpha1.IAMGroupUserMembership{}
+func userGroup(m ...userGroupModifier) *v1beta1.IAMGroupUserMembership {
+	cr := &v1beta1.IAMGroupUserMembership{}
 	for _, f := range m {
 		f(cr)
 	}

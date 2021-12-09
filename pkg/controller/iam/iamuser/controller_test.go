@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
@@ -32,7 +34,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -50,18 +51,18 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userModifier func(*v1alpha1.IAMUser)
+type userModifier func(*v1beta1.IAMUser)
 
 func withConditions(c ...xpv1.Condition) userModifier {
-	return func(r *v1alpha1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withExternalName(name string) userModifier {
-	return func(r *v1alpha1.IAMUser) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.IAMUser) { meta.SetExternalName(r, name) }
 }
 
-func user(m ...userModifier) *v1alpha1.IAMUser {
-	cr := &v1alpha1.IAMUser{}
+func user(m ...userModifier) *v1beta1.IAMUser {
+	cr := &v1beta1.IAMUser{}
 	for _, f := range m {
 		f(cr)
 	}

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,12 +22,14 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMUserPolicyAttachmentParameters define the desired state of an AWS IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentParameters struct {
+// IAMGroupPolicyAttachmentParameters define the desired state of an AWS IAMGroupPolicyAttachment.
+type IAMGroupPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
+	// +crossplane:generate:reference:type=IAMPolicy
+	// +crossplane:generate:reference:extractor=IAMPolicyARN()
 	PolicyARN string `json:"policyArn,omitempty"`
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
@@ -39,64 +41,65 @@ type IAMUserPolicyAttachmentParameters struct {
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
-	// UserName presents the name of the IAMUser.
+	// GroupName presents the name of the IAMGroup.
 	// +immutable
-	UserName string `json:"userName,omitempty"`
+	// +crossplane:generate:reference:type=IAMGroup
+	GroupName string `json:"groupName,omitempty"`
 
-	// UserNameRef references to an IAMUser to retrieve its userName
+	// GroupNameRef references to an IAMGroup to retrieve its groupName
 	// +optional
-	UserNameRef *xpv1.Reference `json:"userNameRef,omitempty"`
+	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
-	// UserNameSelector selects a reference to an IAMUser to retrieve its userName
+	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
 	// +optional
-	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
+	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 }
 
-// An IAMUserPolicyAttachmentSpec defines the desired state of an
-// IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentSpec struct {
+// An IAMGroupPolicyAttachmentSpec defines the desired state of an
+// IAMGroupPolicyAttachment.
+type IAMGroupPolicyAttachmentSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMUserPolicyAttachmentParameters `json:"forProvider"`
+	ForProvider       IAMGroupPolicyAttachmentParameters `json:"forProvider"`
 }
 
-// IAMUserPolicyAttachmentObservation keeps the state for the external resource
-type IAMUserPolicyAttachmentObservation struct {
+// IAMGroupPolicyAttachmentObservation keeps the state for the external resource
+type IAMGroupPolicyAttachmentObservation struct {
 	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
 	// is not yet attached
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An IAMUserPolicyAttachmentStatus represents the observed state of an
-// IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentStatus struct {
+// An IAMGroupPolicyAttachmentStatus represents the observed state of an
+// IAMGroupPolicyAttachment.
+type IAMGroupPolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMUserPolicyAttachmentObservation `json:"atProvider,omitempty"`
+	AtProvider          IAMGroupPolicyAttachmentObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMUserPolicyAttachment is a managed resource that represents an AWS IAM
-// User policy attachment.
-// +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
+// An IAMGroupPolicyAttachment is a managed resource that represents an AWS IAM
+// Group policy attachment.
+// +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMUserPolicyAttachment struct {
+type IAMGroupPolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMUserPolicyAttachmentSpec   `json:"spec"`
-	Status IAMUserPolicyAttachmentStatus `json:"status,omitempty"`
+	Spec   IAMGroupPolicyAttachmentSpec   `json:"spec"`
+	Status IAMGroupPolicyAttachmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMUserPolicyAttachmentList contains a list of IAMUserPolicyAttachments
-type IAMUserPolicyAttachmentList struct {
+// IAMGroupPolicyAttachmentList contains a list of IAMGroupPolicyAttachments
+type IAMGroupPolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMUserPolicyAttachment `json:"items"`
+	Items           []IAMGroupPolicyAttachment `json:"items"`
 }

@@ -38,7 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
@@ -54,16 +54,16 @@ const (
 // SetupIAMGroupPolicyAttachment adds a controller that reconciles
 // IAMGroupPolicyAttachments.
 func SetupIAMGroupPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.IAMGroupPolicyAttachmentGroupKind)
+	name := managed.ControllerName(v1beta1.IAMGroupPolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.IAMGroupPolicyAttachment{}).
+		For(&v1beta1.IAMGroupPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.IAMGroupPolicyAttachmentGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMGroupPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -92,7 +92,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.IAMGroupPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMGroupPolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -130,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider = v1alpha1.IAMGroupPolicyAttachmentObservation{
+	cr.Status.AtProvider = v1beta1.IAMGroupPolicyAttachmentObservation{
 		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
 	return managed.ExternalObservation{
@@ -140,7 +140,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.IAMGroupPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMGroupPolicyAttachment)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -169,7 +169,7 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.IAMGroupPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMGroupPolicyAttachment)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

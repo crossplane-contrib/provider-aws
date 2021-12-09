@@ -39,7 +39,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
@@ -58,15 +58,15 @@ const (
 
 // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
 func SetupOpenIDConnectProvider(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(svcapitypes.OpenIDConnectProviderGroupKind)
+	name := managed.ControllerName(v1beta1.OpenIDConnectProviderGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&svcapitypes.OpenIDConnectProvider{}).
+		For(&v1beta1.OpenIDConnectProvider{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.OpenIDConnectProviderGroupVersionKind),
+			resource.ManagedKind(v1beta1.OpenIDConnectProviderGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewOpenIDConnectProviderClient}),
 			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
@@ -96,7 +96,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*svcapitypes.OpenIDConnectProvider)
+	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -129,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*svcapitypes.OpenIDConnectProvider)
+	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -148,7 +148,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*svcapitypes.OpenIDConnectProvider)
+	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -198,7 +198,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.OpenIDConnectProvider)
+	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

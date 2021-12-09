@@ -21,7 +21,7 @@ package v1beta1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
-	v1alpha1 "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	v1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,12 +35,12 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
-		Extract:      v1alpha1.IAMPolicyARN(),
+		Extract:      v1beta1.IAMPolicyARN(),
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,
 		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
 		To: reference.To{
-			List:    &v1alpha1.IAMPolicyList{},
-			Managed: &v1alpha1.IAMPolicy{},
+			List:    &v1beta1.IAMPolicyList{},
+			Managed: &v1beta1.IAMPolicy{},
 		},
 	})
 	if err != nil {

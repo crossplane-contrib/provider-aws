@@ -37,7 +37,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
@@ -56,16 +56,16 @@ const (
 
 // SetupIAMUser adds a controller that reconciles Users.
 func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.IAMUserGroupKind)
+	name := managed.ControllerName(v1beta1.IAMUserGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.IAMUser{}).
+		For(&v1beta1.IAMUser{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.IAMUserGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMUserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -92,7 +92,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.IAMUser)
+	cr, ok := mgd.(*v1beta1.IAMUser)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -120,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(xpv1.Available())
 
-	cr.Status.AtProvider = v1alpha1.IAMUserObservation{
+	cr.Status.AtProvider = v1beta1.IAMUserObservation{
 		ARN:    aws.ToString(user.Arn),
 		UserID: aws.ToString(user.UserId),
 	}
@@ -132,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.IAMUser)
+	cr, ok := mgd.(*v1beta1.IAMUser)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -149,7 +149,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.IAMUser)
+	cr, ok := mgd.(*v1beta1.IAMUser)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -163,7 +163,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.IAMUser)
+	cr, ok := mgd.(*v1beta1.IAMUser)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

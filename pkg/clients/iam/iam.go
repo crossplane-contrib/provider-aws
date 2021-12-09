@@ -3,10 +3,10 @@ package iam
 import (
 	"errors"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-
-	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 )
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found
@@ -30,7 +30,7 @@ type StatementEntry struct {
 }
 
 // BuildIAMTags build a tag array with type that IAM client expects.
-func BuildIAMTags(tags []v1alpha1.Tag) []iamtypes.Tag {
+func BuildIAMTags(tags []v1beta1.Tag) []iamtypes.Tag {
 	res := make([]iamtypes.Tag, len(tags))
 	for i, t := range tags {
 		res[i] = iamtypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
