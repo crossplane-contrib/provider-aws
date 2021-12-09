@@ -35,8 +35,7 @@ spec:
       name: AGE
       type: date
     deprecated: true
-    deprecationWarning: Please use v1beta1 version of this resource that has identical
-      schema.
+    deprecationWarning: Please use v1beta1 version of this resource.
     name: v1alpha1
     schema:
       openAPIV3Schema:

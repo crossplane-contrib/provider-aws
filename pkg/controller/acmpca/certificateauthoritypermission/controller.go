@@ -38,7 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
@@ -52,16 +52,16 @@ const (
 
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.CertificateAuthorityPermissionGroupKind)
+	name := managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.CertificateAuthorityPermission{}).
+		For(&v1beta1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.CertificateAuthorityPermissionGroupVersionKind),
+			resource.ManagedKind(v1beta1.CertificateAuthorityPermissionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewCAPermissionClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -77,7 +77,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.CertificateAuthorityPermission)
+	cr, ok := mg.(*v1beta1.CertificateAuthorityPermission)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -94,7 +94,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.CertificateAuthorityPermission)
+	cr, ok := mgd.(*v1beta1.CertificateAuthorityPermission)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -139,20 +139,21 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.CertificateAuthorityPermission)
+	cr, ok := mgd.(*v1beta1.CertificateAuthorityPermission)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.CreatePermission(ctx, &awsacmpca.CreatePermissionInput{
-		Actions: []awsacmpcatypes.ActionType{
-			awsacmpcatypes.ActionTypeIssueCertificate,
-			awsacmpcatypes.ActionTypeGetCertificate,
-			awsacmpcatypes.ActionTypeListPermissions,
-		},
+	in := &awsacmpca.CreatePermissionInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 		Principal:               aws.String(cr.Spec.ForProvider.Principal),
-	})
+	}
+	in.Actions = make([]awsacmpcatypes.ActionType, len(cr.Spec.ForProvider.Actions))
+	for i := range cr.Spec.ForProvider.Actions {
+		in.Actions[i] = awsacmpcatypes.ActionType(cr.Spec.ForProvider.Actions[i])
+	}
+
+	_, err := e.client.CreatePermission(ctx, in)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -171,7 +172,7 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.CertificateAuthorityPermission)
+	cr, ok := mgd.(*v1beta1.CertificateAuthorityPermission)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
