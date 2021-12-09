@@ -17,7 +17,6 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -56,15 +55,15 @@ type CertificateExternalStatus struct {
 
 	// Flag to check eligibility for renewal status
 	// +kubebuilder:validation:Enum=ELIGIBLE;INELIGIBLE
-	RenewalEligibility types.RenewalEligibility `json:"renewalEligibility,omitempty"`
+	RenewalEligibility string `json:"renewalEligibility,omitempty"`
 
 	// Status of the certificate
 	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
-	Status types.CertificateStatus `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
 
 	// Type of the certificate
 	// +kubebuilder:validation:Enum=IMPORTED;AMAZON_ISSUED;PRIVATE
-	Type types.CertificateType `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 
 	// Contains the CNAME record that you add to your DNS database for domain
 	// validation. For more information, see Use DNS to Validate Domain Ownership
@@ -125,10 +124,14 @@ type CertificateParameters struct {
 	// +immutable
 	DomainValidationOptions []*DomainValidationOption `json:"domainValidationOptions,omitempty"`
 
-	// Parameter add the certificate to a certificate transparency log.
-	// +optional
-	// +kubebuilder:validation:Enum=ENABLED;DISABLED
-	CertificateTransparencyLoggingPreference *types.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
+	// Currently, you can use this parameter to specify whether to add the certificate
+	// to a certificate transparency log. Certificate transparency makes it possible to
+	// detect SSL/TLS certificates that have been mistakenly or maliciously issued.
+	// Certificates that have not been logged typically produce an error message in a
+	// browser. For more information, see Opting Out of Certificate Transparency
+	// Logging
+	// (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
+	Options *CertificateOptions `json:"options,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
@@ -141,7 +144,22 @@ type CertificateParameters struct {
 	// Method to validate certificate.
 	// +optional
 	// +kubebuilder:validation:Enum=DNS;EMAIL
-	ValidationMethod *types.ValidationMethod `json:"validationMethod,omitempty"`
+	ValidationMethod string `json:"validationMethod,omitempty"`
+}
+
+// CertificateOptions contains options for your certificate. Currently, you can use
+// this only to specify whether to opt in to or out of certificate transparency
+// logging. Some browsers require that public certificates issued for your domain
+// be recorded in a log. Certificates that are not logged typically generate a
+// browser error. Transparency makes it possible for you to detect SSL/TLS
+// certificates that have been mistakenly or maliciously issued for your domain.
+// For general information, see Certificate Transparency Logging
+// (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+type CertificateOptions struct {
+	// You can opt out of certificate transparency logging by specifying the DISABLED
+	// option. Opt in by specifying ENABLED.
+	// +kubebuilder:validation:Enum=ENABLED;DISABLED
+	CertificateTransparencyLoggingPreference string `json:"certificateTransparencyLoggingPreference"`
 }
 
 // +kubebuilder:object:root=true

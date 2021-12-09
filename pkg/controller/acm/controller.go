@@ -53,11 +53,9 @@ const (
 
 	errKubeUpdateFailed = "cannot late initialize Certificate"
 
-	errAddTagsFailed        = "cannot add tags to Certificate"
-	errListTagsFailed       = "failed to list tags for Certificate"
-	errRemoveTagsFailed     = "failed to remove tags for Certificate"
-	errRenewalFailed        = "failed to renew Certificate"
-	errIneligibleForRenewal = "ineligible to renew Certificate"
+	errAddTagsFailed    = "cannot add tags to Certificate"
+	errListTagsFailed   = "failed to list tags for Certificate"
+	errRemoveTagsFailed = "failed to remove tags for Certificate"
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
@@ -158,7 +156,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	response, err := e.client.RequestCertificate(ctx, acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	response, err := e.client.RequestCertificate(ctx, acm.GenerateCreateCertificateInput(cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -198,15 +196,15 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// the UpdateCertificateOptions command is not permitted for private certificates.
-	if cr.Status.AtProvider.Type != awsacmtypes.CertificateTypePrivate {
-		// Update the Certificate Option
-		if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-			if _, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
-				CertificateArn: aws.String(meta.GetExternalName(cr)),
-				Options:        &awsacmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-			}); err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-			}
+	if cr.Status.AtProvider.Type != string(awsacmtypes.CertificateTypePrivate) &&
+		cr.Spec.ForProvider.Options != nil {
+		if _, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
+			CertificateArn: aws.String(meta.GetExternalName(cr)),
+			Options: &awsacmtypes.CertificateOptions{
+				CertificateTransparencyLoggingPreference: awsacmtypes.CertificateTransparencyLoggingPreference(cr.Spec.ForProvider.Options.CertificateTransparencyLoggingPreference),
+			},
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
 	return managed.ExternalUpdate{}, nil

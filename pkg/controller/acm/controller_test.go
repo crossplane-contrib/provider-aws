@@ -20,8 +20,6 @@ import (
 	"context"
 	"testing"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
 	awsacmtype "github.com/aws/aws-sdk-go-v2/service/acm/types"
@@ -34,8 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
+	"github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	acm "github.com/crossplane/provider-aws/pkg/clients/acm"
+	"github.com/crossplane/provider-aws/pkg/clients/acm"
 	"github.com/crossplane/provider-aws/pkg/clients/acm/fake"
 )
 
@@ -53,31 +52,33 @@ type args struct {
 	cr  resource.Managed
 }
 
-type certificateModifier func(*v1alpha1.Certificate)
+type certificateModifier func(*v1beta1.Certificate)
 
 func withConditions(c ...xpv1.Condition) certificateModifier {
-	return func(r *v1alpha1.Certificate) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.Certificate) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withDomainName() certificateModifier {
-	return func(r *v1alpha1.Certificate) {
+	return func(r *v1beta1.Certificate) {
 		r.Spec.ForProvider.DomainName = domainName
 		meta.SetExternalName(r, certificateArn)
 	}
 }
 
 func withCertificateTransparencyLoggingPreference() certificateModifier {
-	certificateTransparencyLoggingPreference := awsacmtype.CertificateTransparencyLoggingPreferenceDisabled
+	certificateTransparencyLoggingPreference := string(awsacmtype.CertificateTransparencyLoggingPreferenceDisabled)
 
-	return func(r *v1alpha1.Certificate) {
-		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = &certificateTransparencyLoggingPreference
+	return func(r *v1beta1.Certificate) {
+		r.Spec.ForProvider.Options = &v1beta1.CertificateOptions{
+			CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
+		}
 		meta.SetExternalName(r, certificateArn)
 	}
 }
 
 func withTags() certificateModifier {
-	return func(r *v1alpha1.Certificate) {
-		r.Spec.ForProvider.Tags = append(r.Spec.ForProvider.Tags, v1alpha1.Tag{
+	return func(r *v1beta1.Certificate) {
+		r.Spec.ForProvider.Tags = append(r.Spec.ForProvider.Tags, v1beta1.Tag{
 			Key:   "Name",
 			Value: "somename",
 		})
@@ -86,23 +87,25 @@ func withTags() certificateModifier {
 }
 
 func withCertificateArn() certificateModifier {
-	return func(r *v1alpha1.Certificate) {
-		certificateTransparencyLoggingPreference := awsacmtype.CertificateTransparencyLoggingPreferenceDisabled
+	return func(r *v1beta1.Certificate) {
+		certificateTransparencyLoggingPreference := string(awsacmtype.CertificateTransparencyLoggingPreferenceDisabled)
 
 		r.Status.AtProvider.CertificateARN = certificateArn
-		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = &certificateTransparencyLoggingPreference
+		r.Spec.ForProvider.Options = &v1beta1.CertificateOptions{
+			CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
+		}
 		meta.SetExternalName(r, certificateArn)
 	}
 }
 
-func withStatus(status awsacmtype.CertificateStatus) certificateModifier {
-	return func(r *v1alpha1.Certificate) {
+func withStatus(status string) certificateModifier {
+	return func(r *v1beta1.Certificate) {
 		r.Status.AtProvider.Status = status
 	}
 }
 
-func certificate(m ...certificateModifier) *v1alpha1.Certificate {
-	cr := &v1alpha1.Certificate{}
+func certificate(m ...certificateModifier) *v1beta1.Certificate {
+	cr := &v1beta1.Certificate{}
 	meta.SetExternalName(cr, certificateArn)
 	for _, f := range m {
 		f(cr)
@@ -143,10 +146,11 @@ func TestObserve(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr: certificate(withCertificateArn(), withStatus(awsacmtype.CertificateStatusIssued), withConditions(xpv1.Available())),
+				cr: certificate(withCertificateArn(), withStatus(string(awsacmtype.CertificateStatusIssued)), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
 				},
 			},
 		},
@@ -319,9 +323,6 @@ func TestUpdate(t *testing.T) {
 					MockAddTagsToCertificate: func(ctx context.Context, input *awsacm.AddTagsToCertificateInput, opts []func(*awsacm.Options)) (*awsacm.AddTagsToCertificateOutput, error) {
 						return &awsacm.AddTagsToCertificateOutput{}, nil
 					},
-					MockRenewCertificate: func(ctx context.Context, input *awsacm.RenewCertificateInput, opts []func(*awsacm.Options)) (*awsacm.RenewCertificateOutput, error) {
-						return &awsacm.RenewCertificateOutput{}, nil
-					},
 				},
 				cr: certificate(),
 			},
@@ -356,9 +357,6 @@ func TestUpdate(t *testing.T) {
 					MockAddTagsToCertificate: func(ctx context.Context, input *awsacm.AddTagsToCertificateInput, opts []func(*awsacm.Options)) (*awsacm.AddTagsToCertificateOutput, error) {
 						return &awsacm.AddTagsToCertificateOutput{}, nil
 					},
-					MockRenewCertificate: func(ctx context.Context, input *awsacm.RenewCertificateInput, opts []func(*awsacm.Options)) (*awsacm.RenewCertificateOutput, error) {
-						return &awsacm.RenewCertificateOutput{}, nil
-					},
 				},
 				cr: certificate(withCertificateTransparencyLoggingPreference()),
 			},
@@ -384,9 +382,6 @@ func TestUpdate(t *testing.T) {
 					},
 					MockAddTagsToCertificate: func(ctx context.Context, input *awsacm.AddTagsToCertificateInput, opts []func(*awsacm.Options)) (*awsacm.AddTagsToCertificateOutput, error) {
 						return nil, errBoom
-					},
-					MockRenewCertificate: func(ctx context.Context, input *awsacm.RenewCertificateInput, opts []func(*awsacm.Options)) (*awsacm.RenewCertificateOutput, error) {
-						return &awsacm.RenewCertificateOutput{}, nil
 					},
 				},
 				cr: certificate(withTags()),
@@ -437,8 +432,7 @@ func TestDelete(t *testing.T) {
 				cr: certificate(withCertificateTransparencyLoggingPreference()),
 			},
 			want: want{
-				cr: certificate(withCertificateTransparencyLoggingPreference(),
-					withConditions(xpv1.Deleting())),
+				cr: certificate(withCertificateTransparencyLoggingPreference()),
 			},
 		},
 		"InValidInput": {
@@ -460,7 +454,7 @@ func TestDelete(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr:  certificate(withConditions(xpv1.Deleting())),
+				cr:  certificate(),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
@@ -474,7 +468,7 @@ func TestDelete(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr: certificate(withConditions(xpv1.Deleting())),
+				cr: certificate(),
 			},
 		},
 	}

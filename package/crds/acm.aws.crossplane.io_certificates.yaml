@@ -396,13 +396,6 @@ spec:
                           is selected.
                         type: object
                     type: object
-                  certificateTransparencyLoggingPreference:
-                    description: Parameter add the certificate to a certificate transparency
-                      log.
-                    enum:
-                    - ENABLED
-                    - DISABLED
-                    type: string
                   domainName:
                     description: Fully qualified domain name (FQDN),that to secure
                       with an ACM certificate.
@@ -425,6 +418,26 @@ spec:
                       - validationDomain
                       type: object
                     type: array
+                  options:
+                    description: Currently, you can use this parameter to specify
+                      whether to add the certificate to a certificate transparency
+                      log. Certificate transparency makes it possible to detect SSL/TLS
+                      certificates that have been mistakenly or maliciously issued.
+                      Certificates that have not been logged typically produce an
+                      error message in a browser. For more information, see Opting
+                      Out of Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
+                    properties:
+                      certificateTransparencyLoggingPreference:
+                        description: You can opt out of certificate transparency logging
+                          by specifying the DISABLED option. Opt in by specifying
+                          ENABLED.
+                        enum:
+                        - ENABLED
+                        - DISABLED
+                        type: string
+                    required:
+                    - certificateTransparencyLoggingPreference
+                    type: object
                   region:
                     description: Region is the region you'd like your Certificate
                       to be created in.
