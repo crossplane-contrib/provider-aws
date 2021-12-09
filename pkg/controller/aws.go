@@ -82,7 +82,7 @@ import (
 	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
 	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/iamaccesskey"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgrouppolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgroupusermembership"
@@ -145,7 +145,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
-		iamaccesskey.SetupIAMAccessKey,
+		accesskey.SetupAccessKey,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,

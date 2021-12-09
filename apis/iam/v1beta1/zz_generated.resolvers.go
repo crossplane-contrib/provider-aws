@@ -25,28 +25,28 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ResolveReferences of this IAMAccessKey.
-func (mg *IAMAccessKey) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this AccessKey.
+func (mg *AccessKey) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse
 	var err error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.IAMUsername,
+		CurrentValue: mg.Spec.ForProvider.Username,
 		Extract:      reference.ExternalName(),
-		Reference:    mg.Spec.ForProvider.IAMUsernameRef,
-		Selector:     mg.Spec.ForProvider.IAMUsernameSelector,
+		Reference:    mg.Spec.ForProvider.UsernameRef,
+		Selector:     mg.Spec.ForProvider.UsernameSelector,
 		To: reference.To{
 			List:    &IAMUserList{},
 			Managed: &IAMUser{},
 		},
 	})
 	if err != nil {
-		return errors.Wrap(err, "mg.Spec.ForProvider.IAMUsername")
+		return errors.Wrap(err, "mg.Spec.ForProvider.Username")
 	}
-	mg.Spec.ForProvider.IAMUsername = rsp.ResolvedValue
-	mg.Spec.ForProvider.IAMUsernameRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.Username = rsp.ResolvedValue
+	mg.Spec.ForProvider.UsernameRef = rsp.ResolvedReference
 
 	return nil
 }

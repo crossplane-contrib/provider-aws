@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamaccesskey
+package accesskey
 
 import (
 	"context"
@@ -57,32 +57,32 @@ type args struct {
 	kube client.Client
 }
 
-type accessModifier func(*v1beta1.IAMAccessKey)
+type accessModifier func(*v1beta1.AccessKey)
 
 func withConditions(c ...xpv1.Condition) accessModifier {
-	return func(r *v1beta1.IAMAccessKey) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.AccessKey) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withUsername(username string) accessModifier {
-	return func(r *v1beta1.IAMAccessKey) {
-		r.Spec.ForProvider.IAMUsername = username
+	return func(r *v1beta1.AccessKey) {
+		r.Spec.ForProvider.Username = username
 	}
 }
 
 func withStatus(status string) accessModifier {
-	return func(r *v1beta1.IAMAccessKey) {
+	return func(r *v1beta1.AccessKey) {
 		r.Spec.ForProvider.Status = status
 	}
 }
 
 func withAccessKey(keyid string) accessModifier {
-	return func(r *v1beta1.IAMAccessKey) {
+	return func(r *v1beta1.AccessKey) {
 		meta.SetExternalName(r, keyid)
 	}
 }
 
-func accesskey(m ...accessModifier) *v1beta1.IAMAccessKey {
-	cr := &v1beta1.IAMAccessKey{}
+func accesskey(m ...accessModifier) *v1beta1.AccessKey {
+	cr := &v1beta1.AccessKey{}
 	for _, f := range m {
 		f(cr)
 	}

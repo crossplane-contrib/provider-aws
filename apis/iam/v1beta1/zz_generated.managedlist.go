@@ -20,8 +20,8 @@ package v1beta1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-// GetItems of this IAMAccessKeyList.
-func (l *IAMAccessKeyList) GetItems() []resource.Managed {
+// GetItems of this AccessKeyList.
+func (l *AccessKeyList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

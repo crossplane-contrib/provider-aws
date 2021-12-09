@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 )
 
-// AccessClient is the external client used for IAMAccessKey Custom Resource
+// AccessClient is the external client used for AccessKey Custom Resource
 type AccessClient interface {
 	CreateAccessKey(ctx context.Context, input *iam.CreateAccessKeyInput, opts ...func(*iam.Options)) (*iam.CreateAccessKeyOutput, error)
 	DeleteAccessKey(ctx context.Context, input *iam.DeleteAccessKeyInput, opts ...func(*iam.Options)) (*iam.DeleteAccessKeyOutput, error)

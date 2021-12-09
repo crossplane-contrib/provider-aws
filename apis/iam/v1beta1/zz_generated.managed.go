@@ -20,59 +20,59 @@ package v1beta1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-// GetCondition of this IAMAccessKey.
-func (mg *IAMAccessKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this AccessKey.
+func (mg *AccessKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this IAMAccessKey.
-func (mg *IAMAccessKey) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this AccessKey.
+func (mg *AccessKey) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this IAMAccessKey.
-func (mg *IAMAccessKey) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this AccessKey.
+func (mg *AccessKey) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this IAMAccessKey.
+GetProviderReference of this AccessKey.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *IAMAccessKey) GetProviderReference() *xpv1.Reference {
+func (mg *AccessKey) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this IAMAccessKey.
-func (mg *IAMAccessKey) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this AccessKey.
+func (mg *AccessKey) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this IAMAccessKey.
-func (mg *IAMAccessKey) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this AccessKey.
+func (mg *AccessKey) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this IAMAccessKey.
-func (mg *IAMAccessKey) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this AccessKey.
+func (mg *AccessKey) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this IAMAccessKey.
-func (mg *IAMAccessKey) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this AccessKey.
+func (mg *AccessKey) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this IAMAccessKey.
+SetProviderReference of this AccessKey.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *IAMAccessKey) SetProviderReference(r *xpv1.Reference) {
+func (mg *AccessKey) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this IAMAccessKey.
-func (mg *IAMAccessKey) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this AccessKey.
+func (mg *AccessKey) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

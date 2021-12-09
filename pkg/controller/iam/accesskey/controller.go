@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamaccesskey
+package accesskey
 
 import (
 	"context"
@@ -43,25 +43,25 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an IAMAccessKey resource"
-	errList             = "failed to list IAMAccessKeys"
-	errCreate           = "failed to create the IAMAccessKey resource"
-	errDelete           = "failed to delete the IAMAccessKey resource"
-	errUpdate           = "failed to update the IAMAccessKey resource"
+	errUnexpectedObject = "The managed resource is not an AccessKey resource"
+	errList             = "failed to list AccessKeys"
+	errCreate           = "failed to create the AccessKey resource"
+	errDelete           = "failed to delete the AccessKey resource"
+	errUpdate           = "failed to update the AccessKey resource"
 )
 
-// SetupIAMAccessKey adds a controller that reconciles IAMAccessKeys.
-func SetupIAMAccessKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMAccessKeyGroupKind)
+// SetupAccessKey adds a controller that reconciles AccessKeys.
+func SetupAccessKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.AccessKeyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMAccessKey{}).
+		For(&v1beta1.AccessKey{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMAccessKeyGroupVersionKind),
+			resource.ManagedKind(v1beta1.AccessKeyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewAccessClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithPollInterval(poll),
@@ -88,7 +88,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.IAMAccessKey)
+	cr, ok := mgd.(*v1beta1.AccessKey)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -97,7 +97,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, nil
 	}
 
-	keys, err := e.client.ListAccessKeys(ctx, &awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)})
+	keys, err := e.client.ListAccessKeys(ctx, &awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.Username)})
 	if err != nil || len(keys.AccessKeyMetadata) == 0 {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
 	}
@@ -128,12 +128,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMAccessKey)
+	cr, ok := mgd.(*v1beta1.AccessKey)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.CreateAccessKey(ctx, &awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)})
+	response, err := e.client.CreateAccessKey(ctx, &awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.Username)})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -150,7 +150,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.IAMAccessKey)
+	cr, ok := mgd.(*v1beta1.AccessKey)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -158,14 +158,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	_, err := e.client.UpdateAccessKey(ctx, &awsiam.UpdateAccessKeyInput{
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
 		Status:      awsiamtypes.StatusType(cr.Spec.ForProvider.Status),
-		UserName:    aws.String(cr.Spec.ForProvider.IAMUsername),
+		UserName:    aws.String(cr.Spec.ForProvider.Username),
 	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMAccessKey)
+	cr, ok := mgd.(*v1beta1.AccessKey)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -173,7 +173,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteAccessKey(ctx, &awsiam.DeleteAccessKeyInput{
-		UserName:    aws.String(cr.Spec.ForProvider.IAMUsername),
+		UserName:    aws.String(cr.Spec.ForProvider.Username),
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
 	})
 
