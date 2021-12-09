@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
 	awsacmtype "github.com/aws/aws-sdk-go-v2/service/acm/types"
@@ -32,7 +34,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	acm "github.com/crossplane/provider-aws/pkg/clients/acm"
 	"github.com/crossplane/provider-aws/pkg/clients/acm/fake"

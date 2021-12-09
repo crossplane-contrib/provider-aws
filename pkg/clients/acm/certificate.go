@@ -5,12 +5,13 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/crossplane/provider-aws/apis/acm/v1beta1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 
-	"github.com/crossplane/provider-aws/apis/acm/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -33,7 +34,7 @@ func NewClient(conf aws.Config) Client {
 }
 
 // GenerateCreateCertificateInput from CertificateSpec
-func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
+func GenerateCreateCertificateInput(name string, p *v1beta1.CertificateParameters) *acm.RequestCertificateInput {
 
 	m := &acm.RequestCertificateInput{
 		DomainName:              aws.String(p.DomainName),
@@ -76,15 +77,15 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 }
 
 // GenerateCertificateStatus is used to produce CertificateExternalStatus from acm.certificateStatus
-func GenerateCertificateStatus(certificate types.CertificateDetail) v1alpha1.CertificateExternalStatus {
+func GenerateCertificateStatus(certificate types.CertificateDetail) v1beta1.CertificateExternalStatus {
 	if certificate.Type == acmtypes.CertificateTypeAmazonIssued && len(certificate.DomainValidationOptions) > 0 {
 		if certificate.DomainValidationOptions[0].ResourceRecord != nil {
-			return v1alpha1.CertificateExternalStatus{
+			return v1beta1.CertificateExternalStatus{
 				CertificateARN:     aws.ToString(certificate.CertificateArn),
 				RenewalEligibility: certificate.RenewalEligibility,
 				Status:             certificate.Status,
 				Type:               certificate.Type,
-				ResourceRecord: &v1alpha1.ResourceRecord{
+				ResourceRecord: &v1beta1.ResourceRecord{
 					Name:  certificate.DomainValidationOptions[0].ResourceRecord.Name,
 					Value: certificate.DomainValidationOptions[0].ResourceRecord.Value,
 					Type:  (*string)(&certificate.DomainValidationOptions[0].ResourceRecord.Type),
@@ -93,7 +94,7 @@ func GenerateCertificateStatus(certificate types.CertificateDetail) v1alpha1.Cer
 		}
 	}
 
-	return v1alpha1.CertificateExternalStatus{
+	return v1beta1.CertificateExternalStatus{
 		CertificateARN:     aws.ToString(certificate.CertificateArn),
 		RenewalEligibility: certificate.RenewalEligibility,
 		Status:             certificate.Status,
@@ -103,7 +104,7 @@ func GenerateCertificateStatus(certificate types.CertificateDetail) v1alpha1.Cer
 
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
 // the values seen in iam.Certificate.
-func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *types.CertificateDetail) { // nolint:gocyclo
+func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *types.CertificateDetail) { // nolint:gocyclo
 	if certificate == nil {
 		return
 	}
@@ -128,9 +129,9 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 	}
 
 	if len(in.DomainValidationOptions) == 0 && len(certificate.DomainValidationOptions) != 0 {
-		in.DomainValidationOptions = make([]*v1alpha1.DomainValidationOption, len(certificate.DomainValidationOptions))
+		in.DomainValidationOptions = make([]*v1beta1.DomainValidationOption, len(certificate.DomainValidationOptions))
 		for i, val := range certificate.DomainValidationOptions {
-			in.DomainValidationOptions[i] = &v1alpha1.DomainValidationOption{
+			in.DomainValidationOptions[i] = &v1beta1.DomainValidationOption{
 				DomainName:       awsclients.StringValue(val.DomainName),
 				ValidationDomain: awsclients.StringValue(val.ValidationDomain),
 			}
@@ -139,7 +140,7 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 }
 
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
-func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd types.CertificateDetail, tags []types.Tag) bool { // nolint:gocyclo
+func IsCertificateUpToDate(p v1beta1.CertificateParameters, cd types.CertificateDetail, tags []types.Tag) bool { // nolint:gocyclo
 
 	if *p.CertificateTransparencyLoggingPreference != cd.Options.CertificateTransparencyLoggingPreference {
 		return false
