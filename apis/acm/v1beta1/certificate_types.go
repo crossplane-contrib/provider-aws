@@ -142,10 +142,6 @@ type CertificateParameters struct {
 	// +optional
 	// +kubebuilder:validation:Enum=DNS;EMAIL
 	ValidationMethod *types.ValidationMethod `json:"validationMethod,omitempty"`
-
-	// Flag to renew the certificate
-	// +optional
-	RenewCertificate *bool `json:"renewCertificate,omitempty"`
 }
 
 // +kubebuilder:object:root=true

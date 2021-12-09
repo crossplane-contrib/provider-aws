@@ -18,13 +18,13 @@ import (
 // Client defines the CertificateManager operations
 type Client interface {
 	// GetCertificate(*acm.GetCertificateInput) acm.GetCertificate
+	GetCertificate(context.Context, *acm.GetCertificateInput, ...func(*acm.Options)) (*acm.GetCertificateOutput, error)
 	DescribeCertificate(context.Context, *acm.DescribeCertificateInput, ...func(*acm.Options)) (*acm.DescribeCertificateOutput, error)
 	RequestCertificate(context.Context, *acm.RequestCertificateInput, ...func(*acm.Options)) (*acm.RequestCertificateOutput, error)
 	DeleteCertificate(context.Context, *acm.DeleteCertificateInput, ...func(*acm.Options)) (*acm.DeleteCertificateOutput, error)
 	UpdateCertificateOptions(context.Context, *acm.UpdateCertificateOptionsInput, ...func(*acm.Options)) (*acm.UpdateCertificateOptionsOutput, error)
 	ListTagsForCertificate(context.Context, *acm.ListTagsForCertificateInput, ...func(*acm.Options)) (*acm.ListTagsForCertificateOutput, error)
 	AddTagsToCertificate(context.Context, *acm.AddTagsToCertificateInput, ...func(*acm.Options)) (*acm.AddTagsToCertificateOutput, error)
-	RenewCertificate(context.Context, *acm.RenewCertificateInput, ...func(*acm.Options)) (*acm.RenewCertificateOutput, error)
 	RemoveTagsFromCertificate(context.Context, *acm.RemoveTagsFromCertificateInput, ...func(*acm.Options)) (*acm.RemoveTagsFromCertificateOutput, error)
 }
 
@@ -168,4 +168,27 @@ func IsCertificateUpToDate(p v1beta1.CertificateParameters, cd types.Certificate
 func IsErrorNotFound(err error) bool {
 	var notFoundError *acmtypes.ResourceNotFoundException
 	return errors.As(err, &notFoundError)
+}
+
+// DiffTags returns tags that should be added or removed.
+func DiffTags(spec []v1beta1.Tag, current []acmtypes.Tag) (addTags []acmtypes.Tag, remove []acmtypes.Tag) {
+	addMap := make(map[string]string, len(spec))
+	for _, t := range spec {
+		addMap[t.Key] = t.Value
+	}
+	removeMap := map[string]string{}
+	for _, t := range current {
+		if addMap[aws.ToString(t.Key)] == aws.ToString(t.Value) {
+			delete(addMap, aws.ToString(t.Key))
+			continue
+		}
+		removeMap[aws.ToString(t.Key)] = aws.ToString(t.Value)
+	}
+	for k, v := range addMap {
+		addTags = append(addTags, acmtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	for k, v := range removeMap {
+		remove = append(remove, acmtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	return
 }

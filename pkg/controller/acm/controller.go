@@ -76,7 +76,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -130,11 +130,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	certificate := *response.Certificate
 	current := cr.Spec.ForProvider.DeepCopy()
 	acm.LateInitializeCertificate(&cr.Spec.ForProvider, &certificate)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 	if certificate.Status == awsacmtypes.CertificateStatusIssued {
 		cr.SetConditions(xpv1.Available())
 	}
@@ -148,19 +143,21 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 	}
 
+	// TODO(muvaf): We can possibly call `GetCertificate` and publish the actual
+	// certificate in connection details.
+
 	return managed.ExternalObservation{
-		ResourceUpToDate: acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate, tags.Tags),
-		ResourceExists:   true,
+		ResourceUpToDate:        acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate, tags.Tags),
+		ResourceExists:          true,
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-
 	cr, ok := mgd.(*v1beta1.Certificate)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
 	response, err := e.client.RequestCertificate(ctx, acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
@@ -171,42 +168,31 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
-
 	cr, ok := mgd.(*v1beta1.Certificate)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
+	currentTags, err := e.client.ListTagsForCertificate(ctx, &awsacm.ListTagsForCertificateInput{
+		CertificateArn: aws.String(meta.GetExternalName(cr)),
+	})
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+	}
 
-	// Update Certificate tags
-	if len(cr.Spec.ForProvider.Tags) > 0 {
-
-		desiredTags := make([]awsacmtypes.Tag, len(cr.Spec.ForProvider.Tags))
-		for i, t := range cr.Spec.ForProvider.Tags {
-			desiredTags[i] = awsacmtypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
-		}
-
-		currentTags, err := e.client.ListTagsForCertificate(ctx, &awsacm.ListTagsForCertificateInput{
+	add, remove := acm.DiffTags(cr.Spec.ForProvider.Tags, currentTags.Tags)
+	if len(remove) != 0 {
+		if _, err := e.client.RemoveTagsFromCertificate(ctx, &awsacm.RemoveTagsFromCertificateInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
-		})
-
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+			Tags:           remove,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
 		}
-
-		if len(desiredTags) != len(currentTags.Tags) {
-			_, err := e.client.RemoveTagsFromCertificate(ctx, &awsacm.RemoveTagsFromCertificateInput{
-				CertificateArn: aws.String(meta.GetExternalName(cr)),
-				Tags:           currentTags.Tags,
-			})
-			if err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
-			}
-		}
-		_, err = e.client.AddTagsToCertificate(ctx, &awsacm.AddTagsToCertificateInput{
+	}
+	if len(add) != 0 {
+		if _, err = e.client.AddTagsToCertificate(ctx, &awsacm.AddTagsToCertificateInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Tags:           desiredTags,
-		})
-		if err != nil {
+			Tags:           add,
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
@@ -215,32 +201,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Status.AtProvider.Type != awsacmtypes.CertificateTypePrivate {
 		// Update the Certificate Option
 		if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-			_, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
+			if _, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
 				Options:        &awsacmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-			})
-
-			if err != nil {
+			}); err != nil {
 				return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 			}
 		}
 	}
-
-	// Renew the certificate if request for RenewCertificate and Certificate is eligible
-	if aws.ToBool(cr.Spec.ForProvider.RenewCertificate) {
-		if cr.Status.AtProvider.RenewalEligibility == awsacmtypes.RenewalEligibilityEligible {
-			_, err := e.client.RenewCertificate(ctx, &awsacm.RenewCertificateInput{
-				CertificateArn: aws.String(meta.GetExternalName(cr)),
-			})
-
-			if err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRenewalFailed)
-			}
-		}
-		cr.Spec.ForProvider.RenewCertificate = aws.Bool(false)
-		return managed.ExternalUpdate{}, errors.New(errIneligibleForRenewal)
-	}
-
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -250,11 +218,35 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(xpv1.Deleting())
-
 	_, err := e.client.DeleteCertificate(ctx, &awsacm.DeleteCertificateInput{
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	})
 
 	return awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.Certificate)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	added := false
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		if tagMap[k] != v {
+			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+			added = true
+		}
+	}
+	if !added {
+		return nil
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
