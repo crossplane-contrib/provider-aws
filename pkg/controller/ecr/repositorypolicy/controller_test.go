@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
+
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -32,7 +34,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane/provider-aws/pkg/clients/ecr/fake"
@@ -46,13 +47,13 @@ var (
 	needUpdatePolicy = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"blah"}],"Version":"2012-10-17"}`
 	boolCheck        = true
 
-	params = v1alpha1.RepositoryPolicyParameters{
-		Policy: &v1alpha1.RepositoryPolicyBody{
+	params = v1beta1.RepositoryPolicyParameters{
+		Policy: &v1beta1.RepositoryPolicyBody{
 			Version: "2012-10-17",
-			Statements: []v1alpha1.RepositoryPolicyStatement{
+			Statements: []v1beta1.RepositoryPolicyStatement{
 				{
 					Effect: "Allow",
-					Principal: &v1alpha1.RepositoryPrincipal{
+					Principal: &v1beta1.RepositoryPrincipal{
 						AllowAnon: &boolCheck,
 					},
 					Action: []string{"ecr:ListImages"},
@@ -70,23 +71,23 @@ type args struct {
 	cr   resource.Managed
 }
 
-type repositoryPolicyModifier func(policy *v1alpha1.RepositoryPolicy)
+type repositoryPolicyModifier func(policy *v1beta1.RepositoryPolicy)
 
 func withConditions(c ...xpv1.Condition) repositoryPolicyModifier {
-	return func(r *v1alpha1.RepositoryPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.RepositoryPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withPolicy(s *v1alpha1.RepositoryPolicyParameters) repositoryPolicyModifier {
-	return func(r *v1alpha1.RepositoryPolicy) { r.Spec.ForProvider = *s }
+func withPolicy(s *v1beta1.RepositoryPolicyParameters) repositoryPolicyModifier {
+	return func(r *v1beta1.RepositoryPolicy) { r.Spec.ForProvider = *s }
 }
 
-func repositoryPolicy(m ...repositoryPolicyModifier) *v1alpha1.RepositoryPolicy {
-	cr := &v1alpha1.RepositoryPolicy{
-		Spec: v1alpha1.RepositoryPolicySpec{
-			ForProvider: v1alpha1.RepositoryPolicyParameters{
+func repositoryPolicy(m ...repositoryPolicyModifier) *v1beta1.RepositoryPolicy {
+	cr := &v1beta1.RepositoryPolicy{
+		Spec: v1beta1.RepositoryPolicySpec{
+			ForProvider: v1beta1.RepositoryPolicyParameters{
 				RepositoryName: &repositoryName,
-				Policy: &v1alpha1.RepositoryPolicyBody{
-					Statements: make([]v1alpha1.RepositoryPolicyStatement, 0),
+				Policy: &v1beta1.RepositoryPolicyBody{
+					Statements: make([]v1beta1.RepositoryPolicyStatement, 0),
 				},
 			},
 		},

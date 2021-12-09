@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -107,6 +107,7 @@ type RepositoryStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 
 // A Repository is a managed resource that represents an Elastic Container Repository
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
@@ -115,8 +116,6 @@ type RepositoryStatus struct {
 // +kubebuilder:printcolumn:name="URI",type="string",JSONPath=".status.atProvider.repositoryUri"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type Repository struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -128,8 +127,6 @@ type Repository struct {
 // +kubebuilder:object:root=true
 
 // RepositoryList contains a list of ECRs
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

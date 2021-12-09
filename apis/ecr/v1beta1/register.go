@@ -13,6 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+// +kubebuilder:object:generate=true
+// +groupName=ecr.aws.crossplane.io
+// +versionName=v1beta1
 
 package v1beta1
 
@@ -25,7 +28,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "eks.aws.crossplane.io"
+	Group   = "ecr.aws.crossplane.io"
 	Version = "v1beta1"
 )
 
@@ -37,20 +40,23 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// Cluster type metadata.
+// Repository type metadata.
 var (
-	ClusterKind             = reflect.TypeOf(Cluster{}).Name()
-	ClusterGroupKind        = schema.GroupKind{Group: Group, Kind: ClusterKind}.String()
-	ClusterKindAPIVersion   = ClusterKind + "." + SchemeGroupVersion.String()
-	ClusterGroupVersionKind = SchemeGroupVersion.WithKind(ClusterKind)
+	RepositoryKind             = reflect.TypeOf(Repository{}).Name()
+	RepositoryGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryKind}.String()
+	RepositoryKindAPIVersion   = RepositoryKind + "." + SchemeGroupVersion.String()
+	RepositoryGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryKind)
+)
 
-	FargateProfileKind             = reflect.TypeOf(FargateProfile{}).Name()
-	FargateProfileGroupKind        = schema.GroupKind{Group: Group, Kind: FargateProfileKind}.String()
-	FargateProfileKindAPIVersion   = FargateProfileKind + "." + SchemeGroupVersion.String()
-	FargateProfileGroupVersionKind = SchemeGroupVersion.WithKind(FargateProfileKind)
+// RepositoryPolicy type metadata.
+var (
+	RepositoryPolicyKind             = reflect.TypeOf(RepositoryPolicy{}).Name()
+	RepositoryPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryPolicyKind}.String()
+	RepositoryPolicyKindAPIVersion   = RepositoryPolicyKind + "." + SchemeGroupVersion.String()
+	RepositoryPolicyGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryPolicyKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&Cluster{}, &ClusterList{})
-	SchemeBuilder.Register(&FargateProfile{}, &FargateProfileList{})
+	SchemeBuilder.Register(&Repository{}, &RepositoryList{})
+	SchemeBuilder.Register(&RepositoryPolicy{}, &RepositoryPolicyList{})
 }

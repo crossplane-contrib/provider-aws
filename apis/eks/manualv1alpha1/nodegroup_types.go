@@ -62,6 +62,7 @@ type NodeGroupParameters struct {
 	//
 	// ClusterName is a required field
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/eks/v1beta1.Cluster
 	ClusterName string `json:"clusterName,omitempty"`
 
 	// ClusterNameRef is a reference to a Cluster used to set
@@ -115,6 +116,8 @@ type NodeGroupParameters struct {
 	//
 	// NodeRole is a required field
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRole
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRoleARN()
 	NodeRole string `json:"nodeRole,omitempty"`
 
 	// NodeRoleRef is a reference to a Cluster used to set the NodeRole.
@@ -153,6 +156,9 @@ type NodeGroupParameters struct {
 	//
 	// Subnets is a required field
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetSelector
 	Subnets []string `json:"subnets,omitempty"`
 
 	// SubnetRefs are references to Subnets used to set the Subnets.
@@ -240,6 +246,9 @@ type RemoteAccessConfig struct {
 	// Groups for Your VPC (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html)
 	// in the Amazon Virtual Private Cloud User Guide.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SourceSecurityGroupRefs
+	// +crossplane:generate:reference:selectorFieldName=SourceSecurityGroupSelector
 	SourceSecurityGroups []string `json:"sourceSecurityGroups,omitempty"`
 
 	// SourceSecurityGroupRefs are references to SecurityGroups used to set

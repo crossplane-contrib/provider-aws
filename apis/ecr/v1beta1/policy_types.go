@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -244,6 +244,7 @@ type RepositoryPolicyStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 
 // A RepositoryPolicy is a managed resource that represents an Elastic Container Repository Policy
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
@@ -251,8 +252,6 @@ type RepositoryPolicyStatus struct {
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -264,8 +263,6 @@ type RepositoryPolicy struct {
 // +kubebuilder:object:root=true
 
 // RepositoryPolicyList contains a list of RepositoryPolicies
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

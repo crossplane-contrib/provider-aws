@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manualv1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,6 +71,7 @@ type FargateProfileParameters struct {
 	//
 	// ClusterName is a required field
 	// +immutable
+	// +crossplane:generate:reference:type=Cluster
 	ClusterName string `json:"clusterName,omitempty"`
 
 	// ClusterNameRef is a reference to a Cluster used to set
@@ -94,6 +95,8 @@ type FargateProfileParameters struct {
 	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRole
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRoleARN()
 	PodExecutionRoleArn string `json:"podExecutionRoleArn,omitempty"`
 
 	// PodExecutionRoleArnRef is a reference to an IAMRole used to set
@@ -120,6 +123,9 @@ type FargateProfileParameters struct {
 	// no direct route to an Internet Gateway) are accepted for this parameter.
 	// +optional
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetSelector
 	Subnets []string `json:"subnets,omitempty"`
 
 	// SubnetRefs are references to Subnets used to set the Subnets.
@@ -153,6 +159,7 @@ type FargateProfileStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 
 // A FargateProfile is a managed resource that represents an AWS Elastic Kubernetes
 // Service FargateProfile.
@@ -162,8 +169,6 @@ type FargateProfileStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type FargateProfile struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -175,8 +180,6 @@ type FargateProfile struct {
 // +kubebuilder:object:root=true
 
 // FargateProfileList contains a list of FargateProfile items
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type FargateProfileList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

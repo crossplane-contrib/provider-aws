@@ -23,12 +23,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // GenerateCreateFargateProfileInput from FargateProfileInputParameters.
-func GenerateCreateFargateProfileInput(name string, p manualv1alpha1.FargateProfileParameters) *eks.CreateFargateProfileInput {
+func GenerateCreateFargateProfileInput(name string, p v1beta1.FargateProfileParameters) *eks.CreateFargateProfileInput {
 	c := &eks.CreateFargateProfileInput{
 		FargateProfileName:  &name,
 		ClusterName:         &p.ClusterName,
@@ -48,15 +48,15 @@ func GenerateCreateFargateProfileInput(name string, p manualv1alpha1.FargateProf
 	return c
 }
 
-// GenerateFargateProfileObservation is used to produce manualv1alpha1.FargateProfileObservation
+// GenerateFargateProfileObservation is used to produce FargateProfileObservation
 // from eks.FargateProfile.
-func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) manualv1alpha1.FargateProfileObservation { // nolint:gocyclo
+func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1beta1.FargateProfileObservation { // nolint:gocyclo
 	if fp == nil {
-		return manualv1alpha1.FargateProfileObservation{}
+		return v1beta1.FargateProfileObservation{}
 	}
-	o := manualv1alpha1.FargateProfileObservation{
+	o := v1beta1.FargateProfileObservation{
 		FargateProfileArn: awsclients.StringValue(fp.FargateProfileArn),
-		Status:            manualv1alpha1.FargateProfileStatusType(fp.Status),
+		Status:            v1beta1.FargateProfileStatusType(fp.Status),
 	}
 	if fp.CreatedAt != nil {
 		o.CreatedAt = &metav1.Time{Time: *fp.CreatedAt}
@@ -64,9 +64,9 @@ func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) manualv1alph
 	return o
 }
 
-// LateInitializeFargateProfile fills the empty fields in *manualv1alpha1.FargateProfileParameters with the
+// LateInitializeFargateProfile fills the empty fields in *FargateProfileParameters with the
 // values seen in eks.FargateProfile.
-func LateInitializeFargateProfile(in *manualv1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) { // nolint:gocyclo
+func LateInitializeFargateProfile(in *v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) { // nolint:gocyclo
 	if fp == nil {
 		return
 	}
@@ -84,6 +84,6 @@ func LateInitializeFargateProfile(in *manualv1alpha1.FargateProfileParameters, f
 
 // IsFargateProfileUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsFargateProfileUpToDate(p manualv1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool { // nolint:gocyclo
+func IsFargateProfileUpToDate(p v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool { // nolint:gocyclo
 	return cmp.Equal(p.Tags, fp.Tags, cmpopts.EquateEmpty())
 }
