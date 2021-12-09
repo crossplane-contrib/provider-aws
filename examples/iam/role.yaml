@@ -1,5 +1,5 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMRole
 metadata:
   name: somerole
@@ -33,7 +33,7 @@ spec:
     name: example
 
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMRole
 metadata:
   name: somenoderole
@@ -62,7 +62,7 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMRole
 metadata:
   name: glue-role

@@ -1,5 +1,5 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMPolicy
 metadata:
   name: somepolicy  
@@ -21,7 +21,7 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMPolicy
 metadata:
   name: somepolicywithpath
@@ -44,7 +44,7 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMPolicy
 metadata:
   name: glue-policy

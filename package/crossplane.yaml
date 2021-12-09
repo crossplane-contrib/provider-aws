@@ -35,7 +35,7 @@ metadata:
     friendly-group-name.meta.crossplane.io/efs.aws.crossplane.io: Elastic Filesystem
     friendly-group-name.meta.crossplane.io/eks.aws.crossplane.io: Elastic Kubernetes
     friendly-group-name.meta.crossplane.io/elasticloadbalancing.aws.crossplane.io: Elastic Load Balancing
-    friendly-group-name.meta.crossplane.io/identity.aws.crossplane.io: IAM
+    friendly-group-name.meta.crossplane.io/iam.aws.crossplane.io: IAM
     friendly-group-name.meta.crossplane.io/kms.aws.crossplane.io: Key Managment Service
     friendly-group-name.meta.crossplane.io/notification.aws.crossplane.io: SNS
     friendly-group-name.meta.crossplane.io/rds.aws.crossplane.io: RDS
@@ -72,15 +72,15 @@ metadata:
     friendly-kind-name.meta.crossplane.io/filesystem.efs.aws.crossplane.io: Filesystem
     friendly-kind-name.meta.crossplane.io/globaltable.dynamodb.aws.crossplane.io: Global Table
     friendly-kind-name.meta.crossplane.io/hostedzone.route53.aws.crossplane.io: Hosted Zone
-    friendly-kind-name.meta.crossplane.io/iamaccesskey.identity.aws.crossplane.io: IAM Access Key
-    friendly-kind-name.meta.crossplane.io/iamgrouppolicyattachment.identity.aws.crossplane.io: IAM Group Policy Attachment
-    friendly-kind-name.meta.crossplane.io/iamgroup.identity.aws.crossplane.io: IAM Group
-    friendly-kind-name.meta.crossplane.io/iamgroupusermembership.identity.aws.crossplane.io: IAM Group User Membership
-    friendly-kind-name.meta.crossplane.io/iampolicy.identity.aws.crossplane.io: IAM Policy
-    friendly-kind-name.meta.crossplane.io/iamrolepolicyattachment.identity.aws.crossplane.io: IAM Role Policy Attachment
-    friendly-kind-name.meta.crossplane.io/iamrole.identity.aws.crossplane.io: IAM Role
-    friendly-kind-name.meta.crossplane.io/iamuserpolicyattachment.identity.aws.crossplane.io: IAM User Policy Attachment
-    friendly-kind-name.meta.crossplane.io/iamuser.identity.aws.crossplane.io: IAM User
+    friendly-kind-name.meta.crossplane.io/iamaccesskey.iam.aws.crossplane.io: IAM Access Key
+    friendly-kind-name.meta.crossplane.io/iamgrouppolicyattachment.iam.aws.crossplane.io: IAM Group Policy Attachment
+    friendly-kind-name.meta.crossplane.io/iamgroup.iam.aws.crossplane.io: IAM Group
+    friendly-kind-name.meta.crossplane.io/iamgroupusermembership.iam.aws.crossplane.io: IAM Group User Membership
+    friendly-kind-name.meta.crossplane.io/iampolicy.iam.aws.crossplane.io: IAM Policy
+    friendly-kind-name.meta.crossplane.io/iamrolepolicyattachment.iam.aws.crossplane.io: IAM Role Policy Attachment
+    friendly-kind-name.meta.crossplane.io/iamrole.iam.aws.crossplane.io: IAM Role
+    friendly-kind-name.meta.crossplane.io/iamuserpolicyattachment.iam.aws.crossplane.io: IAM User Policy Attachment
+    friendly-kind-name.meta.crossplane.io/iamuser.iam.aws.crossplane.io: IAM User
     friendly-kind-name.meta.crossplane.io/integrationresponse.apigatewayv2.aws.crossplane.io: Integration Response
     friendly-kind-name.meta.crossplane.io/integration.apigatewayv2.aws.crossplane.io: Integration
     friendly-kind-name.meta.crossplane.io/internetgateway.ec2.aws.crossplane.io: Internet Gateway

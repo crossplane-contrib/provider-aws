@@ -1,5 +1,5 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
+apiVersion: iam.aws.crossplane.io/v1beta1
 kind: IAMGroupUserMembership
 metadata:
   name: fake-group-user-membership
