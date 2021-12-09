@@ -21,7 +21,7 @@ package v1beta1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	v1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,8 +39,8 @@ func (mg *Certificate) ResolveReferences(ctx context.Context, c client.Reader) e
 		Reference:    mg.Spec.ForProvider.CertificateAuthorityARNRef,
 		Selector:     mg.Spec.ForProvider.CertificateAuthorityARNSelector,
 		To: reference.To{
-			List:    &v1alpha1.CertificateAuthorityList{},
-			Managed: &v1alpha1.CertificateAuthority{},
+			List:    &v1beta1.CertificateAuthorityList{},
+			Managed: &v1beta1.CertificateAuthority{},
 		},
 	})
 	if err != nil {

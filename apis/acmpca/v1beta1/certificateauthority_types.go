@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
@@ -190,6 +190,7 @@ type CertificateAuthorityStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 
 // CertificateAuthority is a managed resource that represents an AWS CertificateAuthority Manager.
 // +kubebuilder:printcolumn:name="TYPE",type="string",JSONPath=".spec.forProvider.type"
@@ -199,8 +200,6 @@ type CertificateAuthorityStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type CertificateAuthority struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -212,8 +211,6 @@ type CertificateAuthority struct {
 // +kubebuilder:object:root=true
 
 // CertificateAuthorityList contains a list of CertificateAuthority
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type CertificateAuthorityList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

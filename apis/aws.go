@@ -23,6 +23,7 @@ import (
 	acmv1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
 	acmv1beta1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	acmpcav1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	apigatewayv2 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
@@ -86,6 +87,7 @@ func init() {
 		secretsmanagerv1alpha1.SchemeBuilder.AddToScheme,
 		servicediscoveryv1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
+		acmpcav1beta1.SchemeBuilder.AddToScheme,
 		eksv1alpha1.SchemeBuilder.AddToScheme,
 		eksv1beta1.SchemeBuilder.AddToScheme,
 		sqsv1beta1.SchemeBuilder.AddToScheme,
