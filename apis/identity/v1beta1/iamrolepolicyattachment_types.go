@@ -29,6 +29,8 @@ type IAMRolePolicyAttachmentParameters struct {
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1alpha1.IAMPolicy
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1alpha1.IAMPolicyARN()
 	PolicyARN string `json:"policyArn,omitempty"`
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
@@ -42,6 +44,7 @@ type IAMRolePolicyAttachmentParameters struct {
 
 	// RoleName presents the name of the IAM role.
 	// +immutable
+	// +crossplane:generate:reference:type=IAMRole
 	RoleName string `json:"roleName,omitempty"`
 
 	// RoleNameRef references an IAMRole to retrieve its Name
@@ -85,6 +88,8 @@ type IAMRolePolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="IAMRolePolicyAttachment in identity group has been renamed to RolePolicyAttachment in iam group with identical schema. Please migrate to RolePolicyAttachment as soon as possible."
+// Deprecated: Please use RolePolicyAttachment in iam group.
 type IAMRolePolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -96,6 +101,8 @@ type IAMRolePolicyAttachment struct {
 // +kubebuilder:object:root=true
 
 // IAMRolePolicyAttachmentList contains a list of IAMRolePolicyAttachments
+// +kubebuilder:deprecatedversion:warning="IAMRolePolicyAttachment in identity group has been renamed to RolePolicyAttachment in iam group with identical schema. Please migrate to RolePolicyAttachment as soon as possible."
+// Deprecated: Please use RolePolicyAttachment in iam group.
 type IAMRolePolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

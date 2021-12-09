@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this DBSubnetGroup

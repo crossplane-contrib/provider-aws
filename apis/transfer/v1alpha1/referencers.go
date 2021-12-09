@@ -25,7 +25,7 @@ import (
 
 	acm "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this User

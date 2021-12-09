@@ -25,9 +25,9 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	iamv1alpha1 "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this RepositoryPolicy
@@ -78,7 +78,7 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 			Reference:    principal.AWSPrincipals[i].IAMUserARNRef,
 			Selector:     principal.AWSPrincipals[i].IAMUserARNSelector,
 			To:           reference.To{Managed: &v1alpha1.IAMUser{}, List: &v1alpha1.IAMUserList{}},
-			Extract:      identityv1alpha1.IAMUserARN(),
+			Extract:      iamv1alpha1.IAMUserARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statements[%d].principal.awsPrincipals[%d].iamUserArn", statementIndex, i))
@@ -90,8 +90,8 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMRoleARN),
 			Reference:    principal.AWSPrincipals[i].IAMRoleARNRef,
 			Selector:     principal.AWSPrincipals[i].IAMRoleARNSelector,
-			To:           reference.To{Managed: &identityv1beta1.IAMRole{}, List: &identityv1beta1.IAMRoleList{}},
-			Extract:      identityv1beta1.IAMRoleARN(),
+			To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+			Extract:      iamv1beta1.IAMRoleARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMRoleArn", statementIndex, i))

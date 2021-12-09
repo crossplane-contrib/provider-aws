@@ -115,6 +115,8 @@ type IAMRoleStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="IAMRole in identity group has been renamed to Role in iam group with identical schema. Please migrate to Role as soon as possible."
+// Deprecated: Please use Role in iam group.
 type IAMRole struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -126,6 +128,8 @@ type IAMRole struct {
 // +kubebuilder:object:root=true
 
 // IAMRoleList contains a list of IAMRoles
+// +kubebuilder:deprecatedversion:warning="IAMRole in identity group has been renamed to Role in iam group with identical schema. Please migrate to Role as soon as possible."
+// Deprecated: Please use Role in iam group.
 type IAMRoleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -21,7 +21,7 @@ import (
 
 	database "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"

@@ -95,8 +95,8 @@ type FargateProfileParameters struct {
 	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRole
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/identity/v1beta1.IAMRoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.IAMRole
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.IAMRoleARN()
 	PodExecutionRoleArn string `json:"podExecutionRoleArn,omitempty"`
 
 	// PodExecutionRoleArnRef is a reference to an IAMRole used to set

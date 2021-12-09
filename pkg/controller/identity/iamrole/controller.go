@@ -39,7 +39,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
+	iam "github.com/crossplane/provider-aws/pkg/clients/identity"
 )
 
 const (

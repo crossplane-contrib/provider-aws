@@ -82,16 +82,18 @@ import (
 	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
 	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroupusermembership"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamaccesskey"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgroup"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgrouppolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgroupusermembership"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iampolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamrole"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamrolepolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamuser"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/iamuserpolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
+	identityiamrole "github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
+	identityiamrolepolicyattachment "github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
@@ -148,10 +150,12 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
 		iamrole.SetupIAMRole,
+		identityiamrole.SetupIAMRole,
 		iamgroupusermembership.SetupIAMGroupUserMembership,
 		iamuserpolicyattachment.SetupIAMUserPolicyAttachment,
 		iamgrouppolicyattachment.SetupIAMGroupPolicyAttachment,
 		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
+		identityiamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,

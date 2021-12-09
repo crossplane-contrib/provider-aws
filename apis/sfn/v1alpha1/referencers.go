@@ -24,7 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this StateMachine

@@ -25,7 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 )
 
 // NewOpenIDConnectProviderClient returns a new client using AWS credentials as JSON encoded data.

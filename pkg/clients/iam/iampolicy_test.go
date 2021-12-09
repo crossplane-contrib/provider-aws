@@ -6,7 +6,7 @@ import (
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 )
 
 var (

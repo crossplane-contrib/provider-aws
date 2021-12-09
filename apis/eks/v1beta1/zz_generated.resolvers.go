@@ -22,7 +22,7 @@ import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	v1beta11 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	v1beta11 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )

@@ -28,10 +28,14 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    deprecated: true
+    deprecationWarning: IAMRole in identity group has been renamed to Role in iam
+      group with identical schema. Please migrate to Role as soon as possible.
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An IAMRole is a managed resource that represents an AWS IAM Role.
+        description: 'An IAMRole is a managed resource that represents an AWS IAM
+          Role. Deprecated: Please use Role in iam group.'
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

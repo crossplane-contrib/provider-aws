@@ -24,8 +24,8 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1alpha1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
@@ -90,8 +90,8 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMRoleARN),
 				Reference:    principal.AWSPrincipals[i].IAMRoleARNRef,
 				Selector:     principal.AWSPrincipals[i].IAMRoleARNSelector,
-				To:           reference.To{Managed: &identityv1beta1.IAMRole{}, List: &identityv1beta1.IAMRoleList{}},
-				Extract:      identityv1beta1.IAMRoleARN(),
+				To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+				Extract:      iamv1beta1.IAMRoleARN(),
 			})
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMRoleArn", statementIndex, i))

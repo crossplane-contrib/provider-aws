@@ -34,11 +34,16 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    deprecated: true
+    deprecationWarning: IAMRolePolicyAttachment in identity group has been renamed
+      to RolePolicyAttachment in iam group with identical schema. Please migrate to
+      RolePolicyAttachment as soon as possible.
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An IAMRolePolicyAttachment is a managed resource that represents
-          an AWS IAM Role policy attachment.
+        description: 'An IAMRolePolicyAttachment is a managed resource that represents
+          an AWS IAM Role policy attachment. Deprecated: Please use RolePolicyAttachment
+          in iam group.'
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

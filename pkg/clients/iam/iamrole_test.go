@@ -13,7 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
