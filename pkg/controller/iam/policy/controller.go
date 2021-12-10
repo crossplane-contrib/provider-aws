@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iampolicy
+package policy
 
 import (
 	"context"
@@ -45,7 +45,7 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not a IAMPolicy resource"
+	errUnexpectedObject = "The managed resource is not a Policy resource"
 
 	errGet           = "failed to get IAM Policy"
 	errCreate        = "failed to create the IAM Policy"
@@ -57,18 +57,18 @@ const (
 	errUpToDate      = "cannot check if policy is up to date"
 )
 
-// SetupIAMPolicy adds a controller that reconciles IAM Policy.
-func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMPolicyGroupKind)
+// SetupPolicy adds a controller that reconciles IAM Policy.
+func SetupPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.PolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMPolicy{}).
+		For(&v1beta1.Policy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMPolicyGroupVersionKind),
+			resource.ManagedKind(v1beta1.PolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -98,7 +98,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1beta1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.Policy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -129,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(xpv1.Available())
 
-	cr.Status.AtProvider = v1beta1.IAMPolicyObservation{
+	cr.Status.AtProvider = v1beta1.PolicyObservation{
 		ARN:                           aws.ToString(policy.Arn),
 		AttachmentCount:               aws.ToInt32(policy.AttachmentCount),
 		DefaultVersionID:              aws.ToString(policy.DefaultVersionId),
@@ -166,7 +166,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.Policy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -198,7 +198,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.Policy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -258,7 +258,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMPolicy)
+	cr, ok := mgd.(*v1beta1.Policy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

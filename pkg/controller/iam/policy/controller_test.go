@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iampolicy
+package policy
 
 import (
 	"context"
@@ -76,30 +76,30 @@ type args struct {
 	cr   resource.Managed
 }
 
-type policyModifier func(*v1beta1.IAMPolicy)
+type policyModifier func(*v1beta1.Policy)
 
 func withExternalName(s string) policyModifier {
-	return func(r *v1beta1.IAMPolicy) { meta.SetExternalName(r, s) }
+	return func(r *v1beta1.Policy) { meta.SetExternalName(r, s) }
 }
 
 func withConditions(c ...xpv1.Condition) policyModifier {
-	return func(r *v1beta1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.Policy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(spec v1beta1.IAMPolicyParameters) policyModifier {
-	return func(r *v1beta1.IAMPolicy) {
+func withSpec(spec v1beta1.PolicyParameters) policyModifier {
+	return func(r *v1beta1.Policy) {
 		r.Spec.ForProvider = spec
 	}
 }
 
 func withPath(path string) policyModifier {
-	return func(r *v1beta1.IAMPolicy) {
+	return func(r *v1beta1.Policy) {
 		r.Spec.ForProvider.Path = awsclient.String(path)
 	}
 }
 
-func policy(m ...policyModifier) *v1beta1.IAMPolicy {
-	cr := &v1beta1.IAMPolicy{}
+func policy(m ...policyModifier) *v1beta1.Policy {
+	cr := &v1beta1.Policy{}
 	cr.Spec.ForProvider.Name = name
 	for _, f := range m {
 		f(cr)
@@ -135,13 +135,13 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.PolicyParameters{
 					Document: document,
 					Name:     name,
 				}), withExternalName(policyArn)),
 			},
 			want: want{
-				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.PolicyParameters{
 					Document: document,
 					Name:     name,
 				}), withExternalName(policyArn),
@@ -338,14 +338,14 @@ func TestCreate(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: policy(withSpec(v1beta1.IAMPolicyParameters{
+				cr: policy(withSpec(v1beta1.PolicyParameters{
 					Document: document,
 					Name:     name,
 				})),
 			},
 			want: want{
 				cr: policy(
-					withSpec(v1beta1.IAMPolicyParameters{
+					withSpec(v1beta1.PolicyParameters{
 						Document: document,
 						Name:     name,
 					}),

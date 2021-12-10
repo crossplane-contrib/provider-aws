@@ -15,7 +15,7 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// PolicyClient is the external client used for IAMPolicy Custom Resource
+// PolicyClient is the external client used for Policy Custom Resource
 type PolicyClient interface {
 	GetPolicy(ctx context.Context, input *iam.GetPolicyInput, opts ...func(*iam.Options)) (*iam.GetPolicyOutput, error)
 	CreatePolicy(ctx context.Context, input *iam.CreatePolicyInput, opts ...func(*iam.Options)) (*iam.CreatePolicyOutput, error)
@@ -44,7 +44,7 @@ func NewSTSClient(cfg aws.Config) STSClient {
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1beta1.IAMPolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
+func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
 	// The AWS API returns Policy Document as an escaped string.
 	// Due to differences in the methods to escape a string, the comparison result between
 	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).
@@ -59,7 +59,7 @@ func IsPolicyUpToDate(in v1beta1.IAMPolicyParameters, policy iamtypes.PolicyVers
 		return false, nil
 	}
 
-	compactIAMPolicy, err := awsclients.CompactAndEscapeJSON(unescapedPolicy)
+	compactPolicy, err := awsclients.CompactAndEscapeJSON(unescapedPolicy)
 	if err != nil {
 		return false, err
 	}
@@ -68,5 +68,5 @@ func IsPolicyUpToDate(in v1beta1.IAMPolicyParameters, policy iamtypes.PolicyVers
 		return false, err
 	}
 
-	return cmp.Equal(compactIAMPolicy, compactSpecPolicy), nil
+	return cmp.Equal(compactPolicy, compactSpecPolicy), nil
 }

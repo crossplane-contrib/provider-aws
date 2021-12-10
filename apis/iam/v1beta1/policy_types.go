@@ -22,8 +22,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMPolicyParameters define the desired state of an AWS IAM Policy.
-type IAMPolicyParameters struct {
+// PolicyParameters define the desired state of an AWS IAM Policy.
+type PolicyParameters struct {
 	// A description of the policy.
 	// +optional
 	Description *string `json:"description,omitempty"`
@@ -46,14 +46,14 @@ type IAMPolicyParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// An IAMPolicySpec defines the desired state of an IAMPolicy.
-type IAMPolicySpec struct {
+// An PolicySpec defines the desired state of an Policy.
+type PolicySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMPolicyParameters `json:"forProvider"`
+	ForProvider       PolicyParameters `json:"forProvider"`
 }
 
-// IAMPolicyObservation keeps the state for the external resource
-type IAMPolicyObservation struct {
+// PolicyObservation keeps the state for the external resource
+type PolicyObservation struct {
 	// The Amazon PolicyObservation Name (ARN) of the policy
 	ARN string `json:"arn,omitempty"`
 
@@ -75,34 +75,34 @@ type IAMPolicyObservation struct {
 	PolicyID string `json:"policyId,omitempty"`
 }
 
-// An IAMPolicyStatus represents the observed state of an IAMPolicy.
-type IAMPolicyStatus struct {
+// An PolicyStatus represents the observed state of an Policy.
+type PolicyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMPolicyObservation `json:"atProvider,omitempty"`
+	AtProvider          PolicyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMPolicy is a managed resource that represents an AWS IAM IAMPolicy.
+// An Policy is a managed resource that represents an AWS IAM Policy.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMPolicy struct {
+type Policy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMPolicySpec   `json:"spec"`
-	Status IAMPolicyStatus `json:"status,omitempty"`
+	Spec   PolicySpec   `json:"spec"`
+	Status PolicyStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMPolicyList contains a list of Policies
-type IAMPolicyList struct {
+// PolicyList contains a list of Policies
+type PolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMPolicy `json:"items"`
+	Items           []Policy `json:"items"`
 }

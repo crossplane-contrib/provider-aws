@@ -1,6 +1,6 @@
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMPolicy
+kind: Policy
 metadata:
   name: somepolicy  
 spec:
@@ -22,7 +22,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMPolicy
+kind: Policy
 metadata:
   name: somepolicywithpath
 spec:
@@ -45,7 +45,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMPolicy
+kind: Policy
 metadata:
   name: glue-policy
 spec:

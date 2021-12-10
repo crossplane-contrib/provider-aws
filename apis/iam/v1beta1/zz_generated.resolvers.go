@@ -60,12 +60,12 @@ func (mg *GroupPolicyAttachment) ResolveReferences(ctx context.Context, c client
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
-		Extract:      IAMPolicyARN(),
+		Extract:      PolicyARN(),
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,
 		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
 		To: reference.To{
-			List:    &IAMPolicyList{},
-			Managed: &IAMPolicy{},
+			List:    &PolicyList{},
+			Managed: &Policy{},
 		},
 	})
 	if err != nil {
@@ -144,12 +144,12 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
-		Extract:      IAMPolicyARN(),
+		Extract:      PolicyARN(),
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,
 		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
 		To: reference.To{
-			List:    &IAMPolicyList{},
-			Managed: &IAMPolicy{},
+			List:    &PolicyList{},
+			Managed: &Policy{},
 		},
 	})
 	if err != nil {
@@ -186,12 +186,12 @@ func (mg *UserPolicyAttachment) ResolveReferences(ctx context.Context, c client.
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
-		Extract:      IAMPolicyARN(),
+		Extract:      PolicyARN(),
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,
 		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
 		To: reference.To{
-			List:    &IAMPolicyList{},
-			Managed: &IAMPolicy{},
+			List:    &PolicyList{},
+			Managed: &Policy{},
 		},
 	})
 	if err != nil {

@@ -39,7 +39,7 @@ var (
 
 func TestIsPolicyUpToDate(t *testing.T) {
 	type args struct {
-		p       v1beta1.IAMPolicyParameters
+		p       v1beta1.PolicyParameters
 		version iamtypes.PolicyVersion
 	}
 
@@ -49,7 +49,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				p: v1beta1.IAMPolicyParameters{
+				p: v1beta1.PolicyParameters{
 					Document: document1,
 				},
 				version: iamtypes.PolicyVersion{
@@ -60,7 +60,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				p: v1beta1.IAMPolicyParameters{
+				p: v1beta1.PolicyParameters{
 					Document: document1,
 				},
 				version: iamtypes.PolicyVersion{
@@ -71,7 +71,7 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		},
 		"EmptyPolicy": {
 			args: args{
-				p: v1beta1.IAMPolicyParameters{},
+				p: v1beta1.PolicyParameters{},
 				version: iamtypes.PolicyVersion{
 					Document: &document2,
 				},

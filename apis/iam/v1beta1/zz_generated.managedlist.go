@@ -56,15 +56,6 @@ func (l *GroupUserMembershipList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetItems of this IAMPolicyList.
-func (l *IAMPolicyList) GetItems() []resource.Managed {
-	items := make([]resource.Managed, len(l.Items))
-	for i := range l.Items {
-		items[i] = &l.Items[i]
-	}
-	return items
-}
-
 // GetItems of this IAMRolePolicyAttachmentList.
 func (l *IAMRolePolicyAttachmentList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -76,6 +67,15 @@ func (l *IAMRolePolicyAttachmentList) GetItems() []resource.Managed {
 
 // GetItems of this OpenIDConnectProviderList.
 func (l *OpenIDConnectProviderList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this PolicyList.
+func (l *PolicyList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

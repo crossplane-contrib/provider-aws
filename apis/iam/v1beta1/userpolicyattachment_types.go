@@ -28,15 +28,15 @@ type UserPolicyAttachmentParameters struct {
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
-	// +crossplane:generate:reference:type=IAMPolicy
-	// +crossplane:generate:reference:extractor=IAMPolicyARN()
+	// +crossplane:generate:reference:type=Policy
+	// +crossplane:generate:reference:extractor=PolicyARN()
 	PolicyARN string `json:"policyArn,omitempty"`
 
-	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
+	// PolicyARNRef references an Policy to retrieve its Policy ARN.
 	// +optional
 	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
-	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
+	// PolicyARNSelector selects a reference to an Policy to retrieve its
 	// Policy ARN
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`

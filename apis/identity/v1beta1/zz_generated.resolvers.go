@@ -35,12 +35,12 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
-		Extract:      v1beta1.IAMPolicyARN(),
+		Extract:      v1beta1.PolicyARN(),
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,
 		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
 		To: reference.To{
-			List:    &v1beta1.IAMPolicyList{},
-			Managed: &v1beta1.IAMPolicy{},
+			List:    &v1beta1.PolicyList{},
+			Managed: &v1beta1.Policy{},
 		},
 	})
 	if err != nil {

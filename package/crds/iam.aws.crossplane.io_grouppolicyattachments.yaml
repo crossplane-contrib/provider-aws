@@ -102,8 +102,8 @@ spec:
                       IAM policy you want to attach.
                     type: string
                   policyArnRef:
-                    description: PolicyARNRef references an IAMPolicy to retrieve
-                      its Policy ARN.
+                    description: PolicyARNRef references an Policy to retrieve its
+                      Policy ARN.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -112,7 +112,7 @@ spec:
                     - name
                     type: object
                   policyArnSelector:
-                    description: PolicyARNSelector selects a reference to an IAMPolicy
+                    description: PolicyARNSelector selects a reference to an Policy
                       to retrieve its Policy ARN
                     properties:
                       matchControllerRef:

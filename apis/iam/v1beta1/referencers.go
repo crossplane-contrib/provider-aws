@@ -33,10 +33,10 @@ func RoleARN() reference.ExtractValueFn {
 	}
 }
 
-// IAMPolicyARN returns a function that returns the ARN of the given policy.
-func IAMPolicyARN() reference.ExtractValueFn {
+// PolicyARN returns a function that returns the ARN of the given policy.
+func PolicyARN() reference.ExtractValueFn {
 	return func(mg resource.Managed) string {
-		r, ok := mg.(*IAMPolicy)
+		r, ok := mg.(*Policy)
 		if !ok {
 			return ""
 		}

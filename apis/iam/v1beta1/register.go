@@ -72,12 +72,12 @@ var (
 	UserPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(UserPolicyAttachmentKind)
 )
 
-// IAMPolicy type metadata.
+// Policy type metadata.
 var (
-	IAMPolicyKind             = reflect.TypeOf(IAMPolicy{}).Name()
-	IAMPolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IAMPolicyKind}.String()
-	IAMPolicyKindAPIVersion   = IAMPolicyKind + "." + SchemeGroupVersion.String()
-	IAMPolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
+	PolicyKind             = reflect.TypeOf(Policy{}).Name()
+	PolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: PolicyKind}.String()
+	PolicyKindAPIVersion   = PolicyKind + "." + SchemeGroupVersion.String()
+	PolicyGroupVersionKind = SchemeGroupVersion.WithKind(PolicyKind)
 )
 
 // Group type metadata
@@ -124,7 +124,7 @@ func init() {
 	SchemeBuilder.Register(&Role{}, &RoleList{})
 	SchemeBuilder.Register(&IAMRolePolicyAttachment{}, &IAMRolePolicyAttachmentList{})
 	SchemeBuilder.Register(&User{}, &UserList{})
-	SchemeBuilder.Register(&IAMPolicy{}, &IAMPolicyList{})
+	SchemeBuilder.Register(&Policy{}, &PolicyList{})
 	SchemeBuilder.Register(&UserPolicyAttachment{}, &UserPolicyAttachmentList{})
 	SchemeBuilder.Register(&Group{}, &GroupList{})
 	SchemeBuilder.Register(&GroupUserMembership{}, &GroupUserMembershipList{})
