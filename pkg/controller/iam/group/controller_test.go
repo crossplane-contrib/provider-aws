@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamgroup
+package group
 
 import (
 	"context"
@@ -54,22 +54,22 @@ type args struct {
 	cr  resource.Managed
 }
 
-type groupModifier func(*v1beta1.IAMGroup)
+type groupModifier func(*v1beta1.Group)
 
 func withConditions(c ...xpv1.Condition) groupModifier {
-	return func(r *v1beta1.IAMGroup) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.Group) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withExternalName(name string) groupModifier {
-	return func(r *v1beta1.IAMGroup) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.Group) { meta.SetExternalName(r, name) }
 }
 
 func withGroupPath(groupPath string) groupModifier {
-	return func(r *v1beta1.IAMGroup) { r.Spec.ForProvider.Path = &groupPath }
+	return func(r *v1beta1.Group) { r.Spec.ForProvider.Path = &groupPath }
 }
 
-func group(m ...groupModifier) *v1beta1.IAMGroup {
-	cr := &v1beta1.IAMGroup{}
+func group(m ...groupModifier) *v1beta1.Group {
+	cr := &v1beta1.Group{}
 	for _, f := range m {
 		f(cr)
 	}

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamgroup
+package group
 
 import (
 	"context"
@@ -52,18 +52,18 @@ const (
 	errKubeUpdateFailed = "cannot late initialize IAM Group"
 )
 
-// SetupIAMGroup adds a controller that reconciles Groups.
-func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMGroupGroupKind)
+// SetupGroup adds a controller that reconciles Groups.
+func SetupGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.GroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMGroup{}).
+		For(&v1beta1.Group{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMGroupGroupVersionKind),
+			resource.ManagedKind(v1beta1.GroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -90,7 +90,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.IAMGroup)
+	cr, ok := mgd.(*v1beta1.Group)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -120,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(xpv1.Available())
 
-	cr.Status.AtProvider = v1beta1.IAMGroupObservation{
+	cr.Status.AtProvider = v1beta1.GroupObservation{
 		ARN:     aws.ToString(group.Arn),
 		GroupID: aws.ToString(group.GroupId),
 	}
@@ -133,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMGroup)
+	cr, ok := mgd.(*v1beta1.Group)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -147,7 +147,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.IAMGroup)
+	cr, ok := mgd.(*v1beta1.Group)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -161,7 +161,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMGroup)
+	cr, ok := mgd.(*v1beta1.Group)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

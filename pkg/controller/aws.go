@@ -83,9 +83,9 @@ import (
 	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/iampolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
@@ -147,7 +147,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		bucketpolicy.SetupBucketPolicy,
 		accesskey.SetupAccessKey,
 		user.SetupUser,
-		iamgroup.SetupIAMGroup,
+		group.SetupGroup,
 		iampolicy.SetupIAMPolicy,
 		role.SetupRole,
 		identityiamrole.SetupIAMRole,

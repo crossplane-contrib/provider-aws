@@ -70,12 +70,12 @@ spec:
                   of an AWS GroupUserMembership.
                 properties:
                   groupName:
-                    description: GroupName is the Amazon IAM Group Name (IAMGroup)
-                      of the IAM group you want to add User to.
+                    description: GroupName is the Amazon IAM Group Name (Group) of
+                      the IAM group you want to add User to.
                     type: string
                   groupNameRef:
-                    description: GroupNameRef references to an IAMGroup to retrieve
-                      its groupName
+                    description: GroupNameRef references to an Group to retrieve its
+                      groupName
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -84,7 +84,7 @@ spec:
                     - name
                     type: object
                   groupNameSelector:
-                    description: GroupNameSelector selects a reference to an IAMGroup
+                    description: GroupNameSelector selects a reference to an Group
                       to retrieve its groupName
                     properties:
                       matchControllerRef:

@@ -29,6 +29,15 @@ func (l *AccessKeyList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this GroupList.
+func (l *GroupList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this GroupPolicyAttachmentList.
 func (l *GroupPolicyAttachmentList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -40,15 +49,6 @@ func (l *GroupPolicyAttachmentList) GetItems() []resource.Managed {
 
 // GetItems of this GroupUserMembershipList.
 func (l *GroupUserMembershipList) GetItems() []resource.Managed {
-	items := make([]resource.Managed, len(l.Items))
-	for i := range l.Items {
-		items[i] = &l.Items[i]
-	}
-	return items
-}
-
-// GetItems of this IAMGroupList.
-func (l *IAMGroupList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

@@ -22,21 +22,21 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMGroupParameters define the desired state of an AWS IAM Group.
-type IAMGroupParameters struct {
+// GroupParameters define the desired state of an AWS IAM Group.
+type GroupParameters struct {
 	// The path for the group name.
 	// +optional
 	Path *string `json:"path,omitempty"`
 }
 
-// An IAMGroupSpec defines the desired state of an IAM Group.
-type IAMGroupSpec struct {
+// An GroupSpec defines the desired state of an IAM Group.
+type GroupSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMGroupParameters `json:"forProvider,omitempty"`
+	ForProvider       GroupParameters `json:"forProvider,omitempty"`
 }
 
-// IAMGroupObservation keeps the state for the external resource
-type IAMGroupObservation struct {
+// GroupObservation keeps the state for the external resource
+type GroupObservation struct {
 	// The Amazon Resource Name (ARN) that identifies the group.
 	ARN string `json:"arn,omitempty"`
 
@@ -44,15 +44,15 @@ type IAMGroupObservation struct {
 	GroupID string `json:"groupId,omitempty"`
 }
 
-// An IAMGroupStatus represents the observed state of an IAM Group.
-type IAMGroupStatus struct {
+// An GroupStatus represents the observed state of an IAM Group.
+type GroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMGroupObservation `json:"atProvider,omitempty"`
+	AtProvider          GroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMGroup is a managed resource that represents an AWS IAM IAMGroup.
+// An Group is a managed resource that represents an AWS IAM Group.
 // An User is a managed resource that represents an AWS IAM User.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.groupId"
@@ -61,20 +61,20 @@ type IAMGroupStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMGroup struct {
+type Group struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec IAMGroupSpec `json:"spec"`
+	Spec GroupSpec `json:"spec"`
 
-	Status IAMGroupStatus `json:"status,omitempty"`
+	Status GroupStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMGroupList contains a list of IAM Groups
-type IAMGroupList struct {
+// GroupList contains a list of IAM Groups
+type GroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMGroup `json:"items"`
+	Items           []Group `json:"items"`
 }

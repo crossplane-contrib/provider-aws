@@ -41,16 +41,16 @@ type GroupPolicyAttachmentParameters struct {
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
-	// GroupName presents the name of the IAMGroup.
+	// GroupName presents the name of the Group.
 	// +immutable
-	// +crossplane:generate:reference:type=IAMGroup
+	// +crossplane:generate:reference:type=Group
 	GroupName string `json:"groupName,omitempty"`
 
-	// GroupNameRef references to an IAMGroup to retrieve its groupName
+	// GroupNameRef references to an Group to retrieve its groupName
 	// +optional
 	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
-	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
+	// GroupNameSelector selects a reference to an Group to retrieve its groupName
 	// +optional
 	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 }

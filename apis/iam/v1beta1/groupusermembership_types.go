@@ -25,18 +25,18 @@ import (
 // GroupUserMembershipParameters define the desired state of an AWS GroupUserMembership.
 type GroupUserMembershipParameters struct {
 
-	// GroupName is the Amazon IAM Group Name (IAMGroup) of the IAM group you want to
+	// GroupName is the Amazon IAM Group Name (Group) of the IAM group you want to
 	// add User to.
 	// +immutable
-	// +crossplane:generate:reference:type=IAMGroup
+	// +crossplane:generate:reference:type=Group
 	GroupName string `json:"groupName,omitempty"`
 
-	// GroupNameRef references to an IAMGroup to retrieve its groupName
+	// GroupNameRef references to an Group to retrieve its groupName
 	// +optional
 	// +immutable
 	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
-	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
+	// GroupNameSelector selects a reference to an Group to retrieve its groupName
 	// +optional
 	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 

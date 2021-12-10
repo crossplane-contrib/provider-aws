@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 )
 
-// GroupClient is the external client used for IAMGroup Custom Resource
+// GroupClient is the external client used for Group Custom Resource
 type GroupClient interface {
 	GetGroup(ctx context.Context, input *iam.GetGroupInput, opts ...func(*iam.Options)) (*iam.GetGroupOutput, error)
 	CreateGroup(ctx context.Context, input *iam.CreateGroupInput, opts ...func(*iam.Options)) (*iam.CreateGroupOutput, error)

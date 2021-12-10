@@ -70,11 +70,11 @@ spec:
                   of an AWS GroupPolicyAttachment.
                 properties:
                   groupName:
-                    description: GroupName presents the name of the IAMGroup.
+                    description: GroupName presents the name of the Group.
                     type: string
                   groupNameRef:
-                    description: GroupNameRef references to an IAMGroup to retrieve
-                      its groupName
+                    description: GroupNameRef references to an Group to retrieve its
+                      groupName
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -83,7 +83,7 @@ spec:
                     - name
                     type: object
                   groupNameSelector:
-                    description: GroupNameSelector selects a reference to an IAMGroup
+                    description: GroupNameSelector selects a reference to an Group
                       to retrieve its groupName
                     properties:
                       matchControllerRef:

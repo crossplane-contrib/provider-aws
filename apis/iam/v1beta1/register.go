@@ -28,13 +28,13 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "iam.aws.crossplane.io"
-	Version = "v1beta1"
+	CRDGroup   = "iam.aws.crossplane.io"
+	CRDVersion = "v1beta1"
 )
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
+	SchemeGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
@@ -43,7 +43,7 @@ var (
 // Role type metadata.
 var (
 	RoleKind             = reflect.TypeOf(Role{}).Name()
-	RoleGroupKind        = schema.GroupKind{Group: Group, Kind: RoleKind}.String()
+	RoleGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RoleKind}.String()
 	RoleKindAPIVersion   = RoleKind + "." + SchemeGroupVersion.String()
 	RoleGroupVersionKind = SchemeGroupVersion.WithKind(RoleKind)
 )
@@ -51,7 +51,7 @@ var (
 // IAMRolePolicyAttachment type metadata.
 var (
 	IAMRolePolicyAttachmentKind             = reflect.TypeOf(IAMRolePolicyAttachment{}).Name()
-	IAMRolePolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMRolePolicyAttachmentKind}.String()
+	IAMRolePolicyAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IAMRolePolicyAttachmentKind}.String()
 	IAMRolePolicyAttachmentKindAPIVersion   = IAMRolePolicyAttachmentKind + "." + SchemeGroupVersion.String()
 	IAMRolePolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMRolePolicyAttachmentKind)
 )
@@ -59,7 +59,7 @@ var (
 // User type metadata.
 var (
 	UserKind             = reflect.TypeOf(User{}).Name()
-	UserGroupKind        = schema.GroupKind{Group: Group, Kind: UserKind}.String()
+	UserGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: UserKind}.String()
 	UserKindAPIVersion   = UserKind + "." + SchemeGroupVersion.String()
 	UserGroupVersionKind = SchemeGroupVersion.WithKind(UserKind)
 )
@@ -67,7 +67,7 @@ var (
 // UserPolicyAttachment type metadata.
 var (
 	UserPolicyAttachmentKind             = reflect.TypeOf(UserPolicyAttachment{}).Name()
-	UserPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: UserPolicyAttachmentKind}.String()
+	UserPolicyAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: UserPolicyAttachmentKind}.String()
 	UserPolicyAttachmentKindAPIVersion   = UserPolicyAttachmentKind + "." + SchemeGroupVersion.String()
 	UserPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(UserPolicyAttachmentKind)
 )
@@ -75,23 +75,23 @@ var (
 // IAMPolicy type metadata.
 var (
 	IAMPolicyKind             = reflect.TypeOf(IAMPolicy{}).Name()
-	IAMPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMPolicyKind}.String()
+	IAMPolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IAMPolicyKind}.String()
 	IAMPolicyKindAPIVersion   = IAMPolicyKind + "." + SchemeGroupVersion.String()
 	IAMPolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
 )
 
-// IAMGroup type metadata
+// Group type metadata
 var (
-	IAMGroupKind             = reflect.TypeOf(IAMGroup{}).Name()
-	IAMGroupGroupKind        = schema.GroupKind{Group: Group, Kind: IAMGroupKind}.String()
-	IAMGroupKindAPIVersion   = IAMGroupKind + "." + SchemeGroupVersion.String()
-	IAMGroupGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupKind)
+	GroupKind             = reflect.TypeOf(Group{}).Name()
+	GroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GroupKind}.String()
+	GroupKindAPIVersion   = GroupKind + "." + SchemeGroupVersion.String()
+	GroupGroupVersionKind = SchemeGroupVersion.WithKind(GroupKind)
 )
 
 // GroupUserMembership type metadata.
 var (
 	GroupUserMembershipKind             = reflect.TypeOf(GroupUserMembership{}).Name()
-	GroupUserMembershipGroupKind        = schema.GroupKind{Group: Group, Kind: GroupUserMembershipKind}.String()
+	GroupUserMembershipGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GroupUserMembershipKind}.String()
 	GroupUserMembershipKindAPIVersion   = GroupUserMembershipKind + "." + SchemeGroupVersion.String()
 	GroupUserMembershipGroupVersionKind = SchemeGroupVersion.WithKind(GroupUserMembershipKind)
 )
@@ -99,7 +99,7 @@ var (
 // GroupPolicyAttachment type metadata.
 var (
 	GroupPolicyAttachmentKind             = reflect.TypeOf(GroupPolicyAttachment{}).Name()
-	GroupPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: GroupPolicyAttachmentKind}.String()
+	GroupPolicyAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GroupPolicyAttachmentKind}.String()
 	GroupPolicyAttachmentKindAPIVersion   = GroupPolicyAttachmentKind + "." + SchemeGroupVersion.String()
 	GroupPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(GroupPolicyAttachmentKind)
 )
@@ -107,7 +107,7 @@ var (
 // AccessKey type metadata.
 var (
 	AccessKeyKind             = reflect.TypeOf(AccessKey{}).Name()
-	AccessKeyGroupKind        = schema.GroupKind{Group: Group, Kind: AccessKeyKind}.String()
+	AccessKeyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: AccessKeyKind}.String()
 	AccessKeyKindAPIVersion   = AccessKeyKind + "." + SchemeGroupVersion.String()
 	AccessKeyGroupVersionKind = SchemeGroupVersion.WithKind(AccessKeyKind)
 )
@@ -115,7 +115,7 @@ var (
 // OpenIDConnectProvider type metadata.
 var (
 	OpenIDConnectProviderKind             = "OpenIDConnectProvider"
-	OpenIDConnectProviderGroupKind        = schema.GroupKind{Group: Group, Kind: OpenIDConnectProviderKind}.String()
+	OpenIDConnectProviderGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: OpenIDConnectProviderKind}.String()
 	OpenIDConnectProviderKindAPIVersion   = OpenIDConnectProviderKind + "." + SchemeGroupVersion.String()
 	OpenIDConnectProviderGroupVersionKind = SchemeGroupVersion.WithKind(OpenIDConnectProviderKind)
 )
@@ -126,7 +126,7 @@ func init() {
 	SchemeBuilder.Register(&User{}, &UserList{})
 	SchemeBuilder.Register(&IAMPolicy{}, &IAMPolicyList{})
 	SchemeBuilder.Register(&UserPolicyAttachment{}, &UserPolicyAttachmentList{})
-	SchemeBuilder.Register(&IAMGroup{}, &IAMGroupList{})
+	SchemeBuilder.Register(&Group{}, &GroupList{})
 	SchemeBuilder.Register(&GroupUserMembership{}, &GroupUserMembershipList{})
 	SchemeBuilder.Register(&GroupPolicyAttachment{}, &GroupPolicyAttachmentList{})
 	SchemeBuilder.Register(&AccessKey{}, &AccessKeyList{})
