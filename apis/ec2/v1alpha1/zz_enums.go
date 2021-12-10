@@ -34,6 +34,12 @@ const (
 	ActivityStatus_fulfilled           ActivityStatus = "fulfilled"
 )
 
+type AddressAttributeName string
+
+const (
+	AddressAttributeName_domain_name AddressAttributeName = "domain-name"
+)
+
 type Affinity string
 
 const (
@@ -483,6 +489,14 @@ const (
 	EBSOptimizedSupport_default     EBSOptimizedSupport = "default"
 )
 
+type ENASupport string
+
+const (
+	ENASupport_unsupported ENASupport = "unsupported"
+	ENASupport_supported   ENASupport = "supported"
+	ENASupport_required    ENASupport = "required"
+)
+
 type ElasticGPUState string
 
 const (
@@ -494,14 +508,6 @@ type ElasticGPUStatus string
 const (
 	ElasticGPUStatus_OK       ElasticGPUStatus = "OK"
 	ElasticGPUStatus_IMPAIRED ElasticGPUStatus = "IMPAIRED"
-)
-
-type EnaSupport string
-
-const (
-	EnaSupport_unsupported EnaSupport = "unsupported"
-	EnaSupport_supported   EnaSupport = "supported"
-	EnaSupport_required    EnaSupport = "required"
 )
 
 type EndDateType string
@@ -1364,14 +1370,14 @@ const (
 	MulticastSupportValue_disable MulticastSupportValue = "disable"
 )
 
-type NatGatewayState string
+type NATGatewayState string
 
 const (
-	NatGatewayState_pending   NatGatewayState = "pending"
-	NatGatewayState_failed    NatGatewayState = "failed"
-	NatGatewayState_available NatGatewayState = "available"
-	NatGatewayState_deleting  NatGatewayState = "deleting"
-	NatGatewayState_deleted   NatGatewayState = "deleted"
+	NATGatewayState_pending   NATGatewayState = "pending"
+	NATGatewayState_failed    NATGatewayState = "failed"
+	NATGatewayState_available NATGatewayState = "available"
+	NATGatewayState_deleting  NATGatewayState = "deleting"
+	NATGatewayState_deleted   NATGatewayState = "deleted"
 )
 
 type NetworkInterfaceAttribute string
@@ -2145,11 +2151,11 @@ const (
 	VPCTenancy_default VPCTenancy = "default"
 )
 
-type VPNEcmpSupportValue string
+type VPNECMPSupportValue string
 
 const (
-	VPNEcmpSupportValue_enable  VPNEcmpSupportValue = "enable"
-	VPNEcmpSupportValue_disable VPNEcmpSupportValue = "disable"
+	VPNECMPSupportValue_enable  VPNECMPSupportValue = "enable"
+	VPNECMPSupportValue_disable VPNECMPSupportValue = "disable"
 )
 
 type VPNProtocol string

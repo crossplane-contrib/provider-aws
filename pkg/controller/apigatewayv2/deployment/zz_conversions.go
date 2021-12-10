@@ -70,6 +70,11 @@ func GenerateDeployment(resp *svcsdk.GetDeploymentOutput) *svcapitypes.Deploymen
 	} else {
 		cr.Status.AtProvider.DeploymentStatusMessage = nil
 	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
 
 	return cr
 }

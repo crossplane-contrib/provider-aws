@@ -114,10 +114,44 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.ModelSelectionExpression != nil {
+		cr.Spec.ForProvider.ModelSelectionExpression = resp.ModelSelectionExpression
+	} else {
+		cr.Spec.ForProvider.ModelSelectionExpression = nil
+	}
+	if resp.ResponseModels != nil {
+		f1 := map[string]*string{}
+		for f1key, f1valiter := range resp.ResponseModels {
+			var f1val string
+			f1val = *f1valiter
+			f1[f1key] = &f1val
+		}
+		cr.Spec.ForProvider.ResponseModels = f1
+	} else {
+		cr.Spec.ForProvider.ResponseModels = nil
+	}
+	if resp.ResponseParameters != nil {
+		f2 := map[string]*svcapitypes.ParameterConstraints{}
+		for f2key, f2valiter := range resp.ResponseParameters {
+			f2val := &svcapitypes.ParameterConstraints{}
+			if f2valiter.Required != nil {
+				f2val.Required = f2valiter.Required
+			}
+			f2[f2key] = f2val
+		}
+		cr.Spec.ForProvider.ResponseParameters = f2
+	} else {
+		cr.Spec.ForProvider.ResponseParameters = nil
+	}
 	if resp.RouteResponseId != nil {
 		cr.Status.AtProvider.RouteResponseID = resp.RouteResponseId
 	} else {
 		cr.Status.AtProvider.RouteResponseID = nil
+	}
+	if resp.RouteResponseKey != nil {
+		cr.Spec.ForProvider.RouteResponseKey = resp.RouteResponseKey
+	} else {
+		cr.Spec.ForProvider.RouteResponseKey = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

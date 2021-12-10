@@ -40,11 +40,11 @@ const (
 	HomeDirectoryType_LOGICAL HomeDirectoryType = "LOGICAL"
 )
 
-type IDentityProviderType string
+type IdentityProviderType string
 
 const (
-	IDentityProviderType_SERVICE_MANAGED IDentityProviderType = "SERVICE_MANAGED"
-	IDentityProviderType_API_GATEWAY     IDentityProviderType = "API_GATEWAY"
+	IdentityProviderType_SERVICE_MANAGED IdentityProviderType = "SERVICE_MANAGED"
+	IdentityProviderType_API_GATEWAY     IdentityProviderType = "API_GATEWAY"
 )
 
 type Protocol string

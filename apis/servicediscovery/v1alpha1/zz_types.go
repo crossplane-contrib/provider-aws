@@ -27,46 +27,56 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type HTTPInstanceSummary struct {
 	NamespaceName *string `json:"namespaceName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type HTTPProperties struct {
 	HTTPName *string `json:"httpName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Namespace struct {
 	Description *string `json:"description,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type NamespaceSummary struct {
 	Description *string `json:"description,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Operation struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OperationSummary struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Service struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ServiceChange struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ServiceSummary struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 

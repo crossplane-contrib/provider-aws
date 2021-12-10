@@ -135,10 +135,25 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CreationDate = nil
 	}
+	if resp.KeyMetadata.CustomKeyStoreId != nil {
+		cr.Spec.ForProvider.CustomKeyStoreID = resp.KeyMetadata.CustomKeyStoreId
+	} else {
+		cr.Spec.ForProvider.CustomKeyStoreID = nil
+	}
+	if resp.KeyMetadata.CustomerMasterKeySpec != nil {
+		cr.Spec.ForProvider.CustomerMasterKeySpec = resp.KeyMetadata.CustomerMasterKeySpec
+	} else {
+		cr.Spec.ForProvider.CustomerMasterKeySpec = nil
+	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		cr.Status.AtProvider.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
 	} else {
 		cr.Status.AtProvider.DeletionDate = nil
+	}
+	if resp.KeyMetadata.Description != nil {
+		cr.Spec.ForProvider.Description = resp.KeyMetadata.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
 	}
 	if resp.KeyMetadata.Enabled != nil {
 		cr.Status.AtProvider.Enabled = resp.KeyMetadata.Enabled
@@ -175,6 +190,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.KeyState = resp.KeyMetadata.KeyState
 	} else {
 		cr.Status.AtProvider.KeyState = nil
+	}
+	if resp.KeyMetadata.KeyUsage != nil {
+		cr.Spec.ForProvider.KeyUsage = resp.KeyMetadata.KeyUsage
+	} else {
+		cr.Spec.ForProvider.KeyUsage = nil
+	}
+	if resp.KeyMetadata.Origin != nil {
+		cr.Spec.ForProvider.Origin = resp.KeyMetadata.Origin
+	} else {
+		cr.Spec.ForProvider.Origin = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f16 := []*string{}

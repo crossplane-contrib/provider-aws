@@ -60,6 +60,22 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	} else {
 		cr.Status.AtProvider.ArchivalSummary = nil
 	}
+	if resp.Table.AttributeDefinitions != nil {
+		f1 := []*svcapitypes.AttributeDefinition{}
+		for _, f1iter := range resp.Table.AttributeDefinitions {
+			f1elem := &svcapitypes.AttributeDefinition{}
+			if f1iter.AttributeName != nil {
+				f1elem.AttributeName = f1iter.AttributeName
+			}
+			if f1iter.AttributeType != nil {
+				f1elem.AttributeType = f1iter.AttributeType
+			}
+			f1 = append(f1, f1elem)
+		}
+		cr.Spec.ForProvider.AttributeDefinitions = f1
+	} else {
+		cr.Spec.ForProvider.AttributeDefinitions = nil
+	}
 	if resp.Table.BillingModeSummary != nil {
 		f2 := &svcapitypes.BillingModeSummary{}
 		if resp.Table.BillingModeSummary.BillingMode != nil {
@@ -77,6 +93,59 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	} else {
 		cr.Status.AtProvider.CreationDateTime = nil
 	}
+	if resp.Table.GlobalSecondaryIndexes != nil {
+		f4 := []*svcapitypes.GlobalSecondaryIndex{}
+		for _, f4iter := range resp.Table.GlobalSecondaryIndexes {
+			f4elem := &svcapitypes.GlobalSecondaryIndex{}
+			if f4iter.IndexName != nil {
+				f4elem.IndexName = f4iter.IndexName
+			}
+			if f4iter.KeySchema != nil {
+				f4elemf6 := []*svcapitypes.KeySchemaElement{}
+				for _, f4elemf6iter := range f4iter.KeySchema {
+					f4elemf6elem := &svcapitypes.KeySchemaElement{}
+					if f4elemf6iter.AttributeName != nil {
+						f4elemf6elem.AttributeName = f4elemf6iter.AttributeName
+					}
+					if f4elemf6iter.KeyType != nil {
+						f4elemf6elem.KeyType = f4elemf6iter.KeyType
+					}
+					f4elemf6 = append(f4elemf6, f4elemf6elem)
+				}
+				f4elem.KeySchema = f4elemf6
+			}
+			if f4iter.Projection != nil {
+				f4elemf7 := &svcapitypes.Projection{}
+				if f4iter.Projection.NonKeyAttributes != nil {
+					f4elemf7f0 := []*string{}
+					for _, f4elemf7f0iter := range f4iter.Projection.NonKeyAttributes {
+						var f4elemf7f0elem string
+						f4elemf7f0elem = *f4elemf7f0iter
+						f4elemf7f0 = append(f4elemf7f0, &f4elemf7f0elem)
+					}
+					f4elemf7.NonKeyAttributes = f4elemf7f0
+				}
+				if f4iter.Projection.ProjectionType != nil {
+					f4elemf7.ProjectionType = f4iter.Projection.ProjectionType
+				}
+				f4elem.Projection = f4elemf7
+			}
+			if f4iter.ProvisionedThroughput != nil {
+				f4elemf8 := &svcapitypes.ProvisionedThroughput{}
+				if f4iter.ProvisionedThroughput.ReadCapacityUnits != nil {
+					f4elemf8.ReadCapacityUnits = f4iter.ProvisionedThroughput.ReadCapacityUnits
+				}
+				if f4iter.ProvisionedThroughput.WriteCapacityUnits != nil {
+					f4elemf8.WriteCapacityUnits = f4iter.ProvisionedThroughput.WriteCapacityUnits
+				}
+				f4elem.ProvisionedThroughput = f4elemf8
+			}
+			f4 = append(f4, f4elem)
+		}
+		cr.Spec.ForProvider.GlobalSecondaryIndexes = f4
+	} else {
+		cr.Spec.ForProvider.GlobalSecondaryIndexes = nil
+	}
 	if resp.Table.GlobalTableVersion != nil {
 		cr.Status.AtProvider.GlobalTableVersion = resp.Table.GlobalTableVersion
 	} else {
@@ -87,6 +156,22 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	} else {
 		cr.Status.AtProvider.ItemCount = nil
 	}
+	if resp.Table.KeySchema != nil {
+		f7 := []*svcapitypes.KeySchemaElement{}
+		for _, f7iter := range resp.Table.KeySchema {
+			f7elem := &svcapitypes.KeySchemaElement{}
+			if f7iter.AttributeName != nil {
+				f7elem.AttributeName = f7iter.AttributeName
+			}
+			if f7iter.KeyType != nil {
+				f7elem.KeyType = f7iter.KeyType
+			}
+			f7 = append(f7, f7elem)
+		}
+		cr.Spec.ForProvider.KeySchema = f7
+	} else {
+		cr.Spec.ForProvider.KeySchema = nil
+	}
 	if resp.Table.LatestStreamArn != nil {
 		cr.Status.AtProvider.LatestStreamARN = resp.Table.LatestStreamArn
 	} else {
@@ -96,6 +181,61 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.LatestStreamLabel = resp.Table.LatestStreamLabel
 	} else {
 		cr.Status.AtProvider.LatestStreamLabel = nil
+	}
+	if resp.Table.LocalSecondaryIndexes != nil {
+		f10 := []*svcapitypes.LocalSecondaryIndex{}
+		for _, f10iter := range resp.Table.LocalSecondaryIndexes {
+			f10elem := &svcapitypes.LocalSecondaryIndex{}
+			if f10iter.IndexName != nil {
+				f10elem.IndexName = f10iter.IndexName
+			}
+			if f10iter.KeySchema != nil {
+				f10elemf4 := []*svcapitypes.KeySchemaElement{}
+				for _, f10elemf4iter := range f10iter.KeySchema {
+					f10elemf4elem := &svcapitypes.KeySchemaElement{}
+					if f10elemf4iter.AttributeName != nil {
+						f10elemf4elem.AttributeName = f10elemf4iter.AttributeName
+					}
+					if f10elemf4iter.KeyType != nil {
+						f10elemf4elem.KeyType = f10elemf4iter.KeyType
+					}
+					f10elemf4 = append(f10elemf4, f10elemf4elem)
+				}
+				f10elem.KeySchema = f10elemf4
+			}
+			if f10iter.Projection != nil {
+				f10elemf5 := &svcapitypes.Projection{}
+				if f10iter.Projection.NonKeyAttributes != nil {
+					f10elemf5f0 := []*string{}
+					for _, f10elemf5f0iter := range f10iter.Projection.NonKeyAttributes {
+						var f10elemf5f0elem string
+						f10elemf5f0elem = *f10elemf5f0iter
+						f10elemf5f0 = append(f10elemf5f0, &f10elemf5f0elem)
+					}
+					f10elemf5.NonKeyAttributes = f10elemf5f0
+				}
+				if f10iter.Projection.ProjectionType != nil {
+					f10elemf5.ProjectionType = f10iter.Projection.ProjectionType
+				}
+				f10elem.Projection = f10elemf5
+			}
+			f10 = append(f10, f10elem)
+		}
+		cr.Spec.ForProvider.LocalSecondaryIndexes = f10
+	} else {
+		cr.Spec.ForProvider.LocalSecondaryIndexes = nil
+	}
+	if resp.Table.ProvisionedThroughput != nil {
+		f11 := &svcapitypes.ProvisionedThroughput{}
+		if resp.Table.ProvisionedThroughput.ReadCapacityUnits != nil {
+			f11.ReadCapacityUnits = resp.Table.ProvisionedThroughput.ReadCapacityUnits
+		}
+		if resp.Table.ProvisionedThroughput.WriteCapacityUnits != nil {
+			f11.WriteCapacityUnits = resp.Table.ProvisionedThroughput.WriteCapacityUnits
+		}
+		cr.Spec.ForProvider.ProvisionedThroughput = f11
+	} else {
+		cr.Spec.ForProvider.ProvisionedThroughput = nil
 	}
 	if resp.Table.Replicas != nil {
 		f12 := []*svcapitypes.ReplicaDescription{}
@@ -185,6 +325,18 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.SSEDescription = f14
 	} else {
 		cr.Status.AtProvider.SSEDescription = nil
+	}
+	if resp.Table.StreamSpecification != nil {
+		f15 := &svcapitypes.StreamSpecification{}
+		if resp.Table.StreamSpecification.StreamEnabled != nil {
+			f15.StreamEnabled = resp.Table.StreamSpecification.StreamEnabled
+		}
+		if resp.Table.StreamSpecification.StreamViewType != nil {
+			f15.StreamViewType = resp.Table.StreamSpecification.StreamViewType
+		}
+		cr.Spec.ForProvider.StreamSpecification = f15
+	} else {
+		cr.Spec.ForProvider.StreamSpecification = nil
 	}
 	if resp.Table.TableArn != nil {
 		cr.Status.AtProvider.TableARN = resp.Table.TableArn

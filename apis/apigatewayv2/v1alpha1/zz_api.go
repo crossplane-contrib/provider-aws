@@ -32,7 +32,7 @@ type APIParameters struct {
 
 	APIKeySelectionExpression *string `json:"apiKeySelectionExpression,omitempty"`
 
-	CorsConfiguration *Cors `json:"corsConfiguration,omitempty"`
+	CORSConfiguration *CORS `json:"corsConfiguration,omitempty"`
 
 	CredentialsARN *string `json:"credentialsARN,omitempty"`
 

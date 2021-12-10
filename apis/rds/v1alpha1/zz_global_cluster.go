@@ -56,6 +56,11 @@ type GlobalClusterSpec struct {
 
 // GlobalClusterObservation defines the observed state of GlobalCluster
 type GlobalClusterObservation struct {
+	// A data object containing all properties for the current state of an in-process
+	// or pending failover process for this Aurora global database. This object
+	// is empty unless the FailoverGlobalCluster API operation has been called on
+	// this Aurora global database (GlobalCluster).
+	FailoverState *FailoverState `json:"failoverState,omitempty"`
 	// The Amazon Resource Name (ARN) for the global database cluster.
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
 	// Contains a user-supplied global database cluster identifier. This identifier

@@ -119,6 +119,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.DBInstance.AllocatedStorage != nil {
+		cr.Spec.ForProvider.AllocatedStorage = resp.DBInstance.AllocatedStorage
+	} else {
+		cr.Spec.ForProvider.AllocatedStorage = nil
+	}
 	if resp.DBInstance.AssociatedRoles != nil {
 		f1 := []*svcapitypes.DBInstanceRole{}
 		for _, f1iter := range resp.DBInstance.AssociatedRoles {
@@ -138,15 +143,45 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.AssociatedRoles = nil
 	}
+	if resp.DBInstance.AutoMinorVersionUpgrade != nil {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = resp.DBInstance.AutoMinorVersionUpgrade
+	} else {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = nil
+	}
+	if resp.DBInstance.AvailabilityZone != nil {
+		cr.Spec.ForProvider.AvailabilityZone = resp.DBInstance.AvailabilityZone
+	} else {
+		cr.Spec.ForProvider.AvailabilityZone = nil
+	}
+	if resp.DBInstance.BackupRetentionPeriod != nil {
+		cr.Spec.ForProvider.BackupRetentionPeriod = resp.DBInstance.BackupRetentionPeriod
+	} else {
+		cr.Spec.ForProvider.BackupRetentionPeriod = nil
+	}
 	if resp.DBInstance.CACertificateIdentifier != nil {
 		cr.Status.AtProvider.CACertificateIdentifier = resp.DBInstance.CACertificateIdentifier
 	} else {
 		cr.Status.AtProvider.CACertificateIdentifier = nil
 	}
+	if resp.DBInstance.CharacterSetName != nil {
+		cr.Spec.ForProvider.CharacterSetName = resp.DBInstance.CharacterSetName
+	} else {
+		cr.Spec.ForProvider.CharacterSetName = nil
+	}
+	if resp.DBInstance.CopyTagsToSnapshot != nil {
+		cr.Spec.ForProvider.CopyTagsToSnapshot = resp.DBInstance.CopyTagsToSnapshot
+	} else {
+		cr.Spec.ForProvider.CopyTagsToSnapshot = nil
+	}
 	if resp.DBInstance.CustomerOwnedIpEnabled != nil {
 		cr.Status.AtProvider.CustomerOwnedIPEnabled = resp.DBInstance.CustomerOwnedIpEnabled
 	} else {
 		cr.Status.AtProvider.CustomerOwnedIPEnabled = nil
+	}
+	if resp.DBInstance.DBClusterIdentifier != nil {
+		cr.Spec.ForProvider.DBClusterIdentifier = resp.DBInstance.DBClusterIdentifier
+	} else {
+		cr.Spec.ForProvider.DBClusterIdentifier = nil
 	}
 	if resp.DBInstance.DBInstanceArn != nil {
 		cr.Status.AtProvider.DBInstanceARN = resp.DBInstance.DBInstanceArn
@@ -166,6 +201,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBInstanceAutomatedBackupsReplications = nil
 	}
+	if resp.DBInstance.DBInstanceClass != nil {
+		cr.Spec.ForProvider.DBInstanceClass = resp.DBInstance.DBInstanceClass
+	} else {
+		cr.Spec.ForProvider.DBInstanceClass = nil
+	}
 	if resp.DBInstance.DBInstanceIdentifier != nil {
 		cr.Status.AtProvider.DBInstanceIdentifier = resp.DBInstance.DBInstanceIdentifier
 	} else {
@@ -175,6 +215,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DBInstanceStatus = resp.DBInstance.DBInstanceStatus
 	} else {
 		cr.Status.AtProvider.DBInstanceStatus = nil
+	}
+	if resp.DBInstance.DBName != nil {
+		cr.Spec.ForProvider.DBName = resp.DBInstance.DBName
+	} else {
+		cr.Spec.ForProvider.DBName = nil
 	}
 	if resp.DBInstance.DBParameterGroups != nil {
 		f16 := []*svcapitypes.DBParameterGroupStatus_SDK{}
@@ -267,6 +312,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBIResourceID = nil
 	}
+	if resp.DBInstance.DeletionProtection != nil {
+		cr.Spec.ForProvider.DeletionProtection = resp.DBInstance.DeletionProtection
+	} else {
+		cr.Spec.ForProvider.DeletionProtection = nil
+	}
 	if resp.DBInstance.DomainMemberships != nil {
 		f22 := []*svcapitypes.DomainMembership{}
 		for _, f22iter := range resp.DBInstance.DomainMemberships {
@@ -315,6 +365,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.Endpoint = nil
 	}
+	if resp.DBInstance.Engine != nil {
+		cr.Spec.ForProvider.Engine = resp.DBInstance.Engine
+	} else {
+		cr.Spec.ForProvider.Engine = nil
+	}
+	if resp.DBInstance.EngineVersion != nil {
+		cr.Spec.ForProvider.EngineVersion = resp.DBInstance.EngineVersion
+	} else {
+		cr.Spec.ForProvider.EngineVersion = nil
+	}
 	if resp.DBInstance.EnhancedMonitoringResourceArn != nil {
 		cr.Status.AtProvider.EnhancedMonitoringResourceARN = resp.DBInstance.EnhancedMonitoringResourceArn
 	} else {
@@ -330,10 +390,25 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.InstanceCreateTime = nil
 	}
+	if resp.DBInstance.Iops != nil {
+		cr.Spec.ForProvider.IOPS = resp.DBInstance.Iops
+	} else {
+		cr.Spec.ForProvider.IOPS = nil
+	}
+	if resp.DBInstance.KmsKeyId != nil {
+		cr.Spec.ForProvider.KMSKeyID = resp.DBInstance.KmsKeyId
+	} else {
+		cr.Spec.ForProvider.KMSKeyID = nil
+	}
 	if resp.DBInstance.LatestRestorableTime != nil {
 		cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*resp.DBInstance.LatestRestorableTime}
 	} else {
 		cr.Status.AtProvider.LatestRestorableTime = nil
+	}
+	if resp.DBInstance.LicenseModel != nil {
+		cr.Spec.ForProvider.LicenseModel = resp.DBInstance.LicenseModel
+	} else {
+		cr.Spec.ForProvider.LicenseModel = nil
 	}
 	if resp.DBInstance.ListenerEndpoint != nil {
 		f34 := &svcapitypes.Endpoint{}
@@ -349,6 +424,36 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.ListenerEndpoint = f34
 	} else {
 		cr.Status.AtProvider.ListenerEndpoint = nil
+	}
+	if resp.DBInstance.MasterUsername != nil {
+		cr.Spec.ForProvider.MasterUsername = resp.DBInstance.MasterUsername
+	} else {
+		cr.Spec.ForProvider.MasterUsername = nil
+	}
+	if resp.DBInstance.MaxAllocatedStorage != nil {
+		cr.Spec.ForProvider.MaxAllocatedStorage = resp.DBInstance.MaxAllocatedStorage
+	} else {
+		cr.Spec.ForProvider.MaxAllocatedStorage = nil
+	}
+	if resp.DBInstance.MonitoringInterval != nil {
+		cr.Spec.ForProvider.MonitoringInterval = resp.DBInstance.MonitoringInterval
+	} else {
+		cr.Spec.ForProvider.MonitoringInterval = nil
+	}
+	if resp.DBInstance.MonitoringRoleArn != nil {
+		cr.Spec.ForProvider.MonitoringRoleARN = resp.DBInstance.MonitoringRoleArn
+	} else {
+		cr.Spec.ForProvider.MonitoringRoleARN = nil
+	}
+	if resp.DBInstance.MultiAZ != nil {
+		cr.Spec.ForProvider.MultiAZ = resp.DBInstance.MultiAZ
+	} else {
+		cr.Spec.ForProvider.MultiAZ = nil
+	}
+	if resp.DBInstance.NcharCharacterSetName != nil {
+		cr.Spec.ForProvider.NcharCharacterSetName = resp.DBInstance.NcharCharacterSetName
+	} else {
+		cr.Spec.ForProvider.NcharCharacterSetName = nil
 	}
 	if resp.DBInstance.OptionGroupMemberships != nil {
 		f41 := []*svcapitypes.OptionGroupMembership{}
@@ -455,6 +560,52 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.PerformanceInsightsEnabled = nil
 	}
+	if resp.DBInstance.PerformanceInsightsKMSKeyId != nil {
+		cr.Spec.ForProvider.PerformanceInsightsKMSKeyID = resp.DBInstance.PerformanceInsightsKMSKeyId
+	} else {
+		cr.Spec.ForProvider.PerformanceInsightsKMSKeyID = nil
+	}
+	if resp.DBInstance.PerformanceInsightsRetentionPeriod != nil {
+		cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod = resp.DBInstance.PerformanceInsightsRetentionPeriod
+	} else {
+		cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod = nil
+	}
+	if resp.DBInstance.PreferredBackupWindow != nil {
+		cr.Spec.ForProvider.PreferredBackupWindow = resp.DBInstance.PreferredBackupWindow
+	} else {
+		cr.Spec.ForProvider.PreferredBackupWindow = nil
+	}
+	if resp.DBInstance.PreferredMaintenanceWindow != nil {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = resp.DBInstance.PreferredMaintenanceWindow
+	} else {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
+	}
+	if resp.DBInstance.ProcessorFeatures != nil {
+		f48 := []*svcapitypes.ProcessorFeature{}
+		for _, f48iter := range resp.DBInstance.ProcessorFeatures {
+			f48elem := &svcapitypes.ProcessorFeature{}
+			if f48iter.Name != nil {
+				f48elem.Name = f48iter.Name
+			}
+			if f48iter.Value != nil {
+				f48elem.Value = f48iter.Value
+			}
+			f48 = append(f48, f48elem)
+		}
+		cr.Spec.ForProvider.ProcessorFeatures = f48
+	} else {
+		cr.Spec.ForProvider.ProcessorFeatures = nil
+	}
+	if resp.DBInstance.PromotionTier != nil {
+		cr.Spec.ForProvider.PromotionTier = resp.DBInstance.PromotionTier
+	} else {
+		cr.Spec.ForProvider.PromotionTier = nil
+	}
+	if resp.DBInstance.PubliclyAccessible != nil {
+		cr.Spec.ForProvider.PubliclyAccessible = resp.DBInstance.PubliclyAccessible
+	} else {
+		cr.Spec.ForProvider.PubliclyAccessible = nil
+	}
 	if resp.DBInstance.ReadReplicaDBClusterIdentifiers != nil {
 		f51 := []*string{}
 		for _, f51iter := range resp.DBInstance.ReadReplicaDBClusterIdentifiers {
@@ -514,6 +665,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.StatusInfos = nil
 	}
+	if resp.DBInstance.StorageEncrypted != nil {
+		cr.Spec.ForProvider.StorageEncrypted = resp.DBInstance.StorageEncrypted
+	} else {
+		cr.Spec.ForProvider.StorageEncrypted = nil
+	}
+	if resp.DBInstance.StorageType != nil {
+		cr.Spec.ForProvider.StorageType = resp.DBInstance.StorageType
+	} else {
+		cr.Spec.ForProvider.StorageType = nil
+	}
 	if resp.DBInstance.TagList != nil {
 		f59 := []*svcapitypes.Tag{}
 		for _, f59iter := range resp.DBInstance.TagList {
@@ -529,6 +690,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.TagList = f59
 	} else {
 		cr.Status.AtProvider.TagList = nil
+	}
+	if resp.DBInstance.TdeCredentialArn != nil {
+		cr.Spec.ForProvider.TDECredentialARN = resp.DBInstance.TdeCredentialArn
+	} else {
+		cr.Spec.ForProvider.TDECredentialARN = nil
+	}
+	if resp.DBInstance.Timezone != nil {
+		cr.Spec.ForProvider.Timezone = resp.DBInstance.Timezone
+	} else {
+		cr.Spec.ForProvider.Timezone = nil
 	}
 	if resp.DBInstance.VpcSecurityGroups != nil {
 		f62 := []*svcapitypes.VPCSecurityGroupMembership{}

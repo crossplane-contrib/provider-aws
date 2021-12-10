@@ -40,6 +40,23 @@ func GenerateDescribeUserInput(cr *svcapitypes.User) *svcsdk.DescribeUserInput {
 func GenerateUser(resp *svcsdk.DescribeUserResponse) *svcapitypes.User {
 	cr := &svcapitypes.User{}
 
+	if resp.ConsoleAccess != nil {
+		cr.Spec.ForProvider.ConsoleAccess = resp.ConsoleAccess
+	} else {
+		cr.Spec.ForProvider.ConsoleAccess = nil
+	}
+	if resp.Groups != nil {
+		f2 := []*string{}
+		for _, f2iter := range resp.Groups {
+			var f2elem string
+			f2elem = *f2iter
+			f2 = append(f2, &f2elem)
+		}
+		cr.Spec.ForProvider.Groups = f2
+	} else {
+		cr.Spec.ForProvider.Groups = nil
+	}
+
 	return cr
 }
 

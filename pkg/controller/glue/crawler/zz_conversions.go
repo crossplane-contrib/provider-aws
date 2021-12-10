@@ -40,6 +40,179 @@ func GenerateGetCrawlerInput(cr *svcapitypes.Crawler) *svcsdk.GetCrawlerInput {
 func GenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 	cr := &svcapitypes.Crawler{}
 
+	if resp.Crawler.Classifiers != nil {
+		f0 := []*string{}
+		for _, f0iter := range resp.Crawler.Classifiers {
+			var f0elem string
+			f0elem = *f0iter
+			f0 = append(f0, &f0elem)
+		}
+		cr.Spec.ForProvider.Classifiers = f0
+	} else {
+		cr.Spec.ForProvider.Classifiers = nil
+	}
+	if resp.Crawler.Configuration != nil {
+		cr.Spec.ForProvider.Configuration = resp.Crawler.Configuration
+	} else {
+		cr.Spec.ForProvider.Configuration = nil
+	}
+	if resp.Crawler.CrawlerSecurityConfiguration != nil {
+		cr.Spec.ForProvider.CrawlerSecurityConfiguration = resp.Crawler.CrawlerSecurityConfiguration
+	} else {
+		cr.Spec.ForProvider.CrawlerSecurityConfiguration = nil
+	}
+	if resp.Crawler.DatabaseName != nil {
+		cr.Spec.ForProvider.DatabaseName = resp.Crawler.DatabaseName
+	} else {
+		cr.Spec.ForProvider.DatabaseName = nil
+	}
+	if resp.Crawler.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Crawler.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
+	if resp.Crawler.LineageConfiguration != nil {
+		f9 := &svcapitypes.LineageConfiguration{}
+		if resp.Crawler.LineageConfiguration.CrawlerLineageSettings != nil {
+			f9.CrawlerLineageSettings = resp.Crawler.LineageConfiguration.CrawlerLineageSettings
+		}
+		cr.Spec.ForProvider.LineageConfiguration = f9
+	} else {
+		cr.Spec.ForProvider.LineageConfiguration = nil
+	}
+	if resp.Crawler.RecrawlPolicy != nil {
+		f11 := &svcapitypes.RecrawlPolicy{}
+		if resp.Crawler.RecrawlPolicy.RecrawlBehavior != nil {
+			f11.RecrawlBehavior = resp.Crawler.RecrawlPolicy.RecrawlBehavior
+		}
+		cr.Spec.ForProvider.RecrawlPolicy = f11
+	} else {
+		cr.Spec.ForProvider.RecrawlPolicy = nil
+	}
+	if resp.Crawler.SchemaChangePolicy != nil {
+		f13 := &svcapitypes.SchemaChangePolicy{}
+		if resp.Crawler.SchemaChangePolicy.DeleteBehavior != nil {
+			f13.DeleteBehavior = resp.Crawler.SchemaChangePolicy.DeleteBehavior
+		}
+		if resp.Crawler.SchemaChangePolicy.UpdateBehavior != nil {
+			f13.UpdateBehavior = resp.Crawler.SchemaChangePolicy.UpdateBehavior
+		}
+		cr.Spec.ForProvider.SchemaChangePolicy = f13
+	} else {
+		cr.Spec.ForProvider.SchemaChangePolicy = nil
+	}
+	if resp.Crawler.TablePrefix != nil {
+		cr.Spec.ForProvider.TablePrefix = resp.Crawler.TablePrefix
+	} else {
+		cr.Spec.ForProvider.TablePrefix = nil
+	}
+	if resp.Crawler.Targets != nil {
+		f16 := &svcapitypes.CrawlerTargets{}
+		if resp.Crawler.Targets.CatalogTargets != nil {
+			f16f0 := []*svcapitypes.CatalogTarget{}
+			for _, f16f0iter := range resp.Crawler.Targets.CatalogTargets {
+				f16f0elem := &svcapitypes.CatalogTarget{}
+				if f16f0iter.DatabaseName != nil {
+					f16f0elem.DatabaseName = f16f0iter.DatabaseName
+				}
+				if f16f0iter.Tables != nil {
+					f16f0elemf1 := []*string{}
+					for _, f16f0elemf1iter := range f16f0iter.Tables {
+						var f16f0elemf1elem string
+						f16f0elemf1elem = *f16f0elemf1iter
+						f16f0elemf1 = append(f16f0elemf1, &f16f0elemf1elem)
+					}
+					f16f0elem.Tables = f16f0elemf1
+				}
+				f16f0 = append(f16f0, f16f0elem)
+			}
+			f16.CatalogTargets = f16f0
+		}
+		if resp.Crawler.Targets.DynamoDBTargets != nil {
+			f16f1 := []*svcapitypes.DynamoDBTarget{}
+			for _, f16f1iter := range resp.Crawler.Targets.DynamoDBTargets {
+				f16f1elem := &svcapitypes.DynamoDBTarget{}
+				if f16f1iter.Path != nil {
+					f16f1elem.Path = f16f1iter.Path
+				}
+				if f16f1iter.ScanAll != nil {
+					f16f1elem.ScanAll = f16f1iter.ScanAll
+				}
+				if f16f1iter.ScanRate != nil {
+					f16f1elem.ScanRate = f16f1iter.ScanRate
+				}
+				f16f1 = append(f16f1, f16f1elem)
+			}
+			f16.DynamoDBTargets = f16f1
+		}
+		if resp.Crawler.Targets.JdbcTargets != nil {
+			f16f2 := []*svcapitypes.JdbcTarget{}
+			for _, f16f2iter := range resp.Crawler.Targets.JdbcTargets {
+				f16f2elem := &svcapitypes.JdbcTarget{}
+				if f16f2iter.ConnectionName != nil {
+					f16f2elem.ConnectionName = f16f2iter.ConnectionName
+				}
+				if f16f2iter.Exclusions != nil {
+					f16f2elemf1 := []*string{}
+					for _, f16f2elemf1iter := range f16f2iter.Exclusions {
+						var f16f2elemf1elem string
+						f16f2elemf1elem = *f16f2elemf1iter
+						f16f2elemf1 = append(f16f2elemf1, &f16f2elemf1elem)
+					}
+					f16f2elem.Exclusions = f16f2elemf1
+				}
+				if f16f2iter.Path != nil {
+					f16f2elem.Path = f16f2iter.Path
+				}
+				f16f2 = append(f16f2, f16f2elem)
+			}
+			f16.JdbcTargets = f16f2
+		}
+		if resp.Crawler.Targets.MongoDBTargets != nil {
+			f16f3 := []*svcapitypes.MongoDBTarget{}
+			for _, f16f3iter := range resp.Crawler.Targets.MongoDBTargets {
+				f16f3elem := &svcapitypes.MongoDBTarget{}
+				if f16f3iter.ConnectionName != nil {
+					f16f3elem.ConnectionName = f16f3iter.ConnectionName
+				}
+				if f16f3iter.Path != nil {
+					f16f3elem.Path = f16f3iter.Path
+				}
+				if f16f3iter.ScanAll != nil {
+					f16f3elem.ScanAll = f16f3iter.ScanAll
+				}
+				f16f3 = append(f16f3, f16f3elem)
+			}
+			f16.MongoDBTargets = f16f3
+		}
+		if resp.Crawler.Targets.S3Targets != nil {
+			f16f4 := []*svcapitypes.S3Target{}
+			for _, f16f4iter := range resp.Crawler.Targets.S3Targets {
+				f16f4elem := &svcapitypes.S3Target{}
+				if f16f4iter.ConnectionName != nil {
+					f16f4elem.ConnectionName = f16f4iter.ConnectionName
+				}
+				if f16f4iter.Exclusions != nil {
+					f16f4elemf1 := []*string{}
+					for _, f16f4elemf1iter := range f16f4iter.Exclusions {
+						var f16f4elemf1elem string
+						f16f4elemf1elem = *f16f4elemf1iter
+						f16f4elemf1 = append(f16f4elemf1, &f16f4elemf1elem)
+					}
+					f16f4elem.Exclusions = f16f4elemf1
+				}
+				if f16f4iter.Path != nil {
+					f16f4elem.Path = f16f4iter.Path
+				}
+				f16f4 = append(f16f4, f16f4elem)
+			}
+			f16.S3Targets = f16f4
+		}
+		cr.Spec.ForProvider.Targets = f16
+	} else {
+		cr.Spec.ForProvider.Targets = nil
+	}
+
 	return cr
 }
 
