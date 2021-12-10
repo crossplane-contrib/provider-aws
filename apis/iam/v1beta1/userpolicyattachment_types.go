@@ -22,8 +22,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMUserPolicyAttachmentParameters define the desired state of an AWS IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentParameters struct {
+// UserPolicyAttachmentParameters define the desired state of an AWS UserPolicyAttachment.
+type UserPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
@@ -55,30 +55,30 @@ type IAMUserPolicyAttachmentParameters struct {
 	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
-// An IAMUserPolicyAttachmentSpec defines the desired state of an
-// IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentSpec struct {
+// An UserPolicyAttachmentSpec defines the desired state of an
+// UserPolicyAttachment.
+type UserPolicyAttachmentSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMUserPolicyAttachmentParameters `json:"forProvider"`
+	ForProvider       UserPolicyAttachmentParameters `json:"forProvider"`
 }
 
-// IAMUserPolicyAttachmentObservation keeps the state for the external resource
-type IAMUserPolicyAttachmentObservation struct {
+// UserPolicyAttachmentObservation keeps the state for the external resource
+type UserPolicyAttachmentObservation struct {
 	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
 	// is not yet attached
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An IAMUserPolicyAttachmentStatus represents the observed state of an
-// IAMUserPolicyAttachment.
-type IAMUserPolicyAttachmentStatus struct {
+// An UserPolicyAttachmentStatus represents the observed state of an
+// UserPolicyAttachment.
+type UserPolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMUserPolicyAttachmentObservation `json:"atProvider,omitempty"`
+	AtProvider          UserPolicyAttachmentObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMUserPolicyAttachment is a managed resource that represents an AWS IAM
+// An UserPolicyAttachment is a managed resource that represents an AWS IAM
 // User policy attachment.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
@@ -87,19 +87,19 @@ type IAMUserPolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMUserPolicyAttachment struct {
+type UserPolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMUserPolicyAttachmentSpec   `json:"spec"`
-	Status IAMUserPolicyAttachmentStatus `json:"status,omitempty"`
+	Spec   UserPolicyAttachmentSpec   `json:"spec"`
+	Status UserPolicyAttachmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMUserPolicyAttachmentList contains a list of IAMUserPolicyAttachments
-type IAMUserPolicyAttachmentList struct {
+// UserPolicyAttachmentList contains a list of UserPolicyAttachments
+type UserPolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMUserPolicyAttachment `json:"items"`
+	Items           []UserPolicyAttachment `json:"items"`
 }

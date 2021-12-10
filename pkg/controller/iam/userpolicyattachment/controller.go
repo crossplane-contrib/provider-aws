@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamuserpolicyattachment
+package userpolicyattachment
 
 import (
 	"context"
@@ -49,19 +49,19 @@ const (
 	errDetach = "failed to detach the policy to user"
 )
 
-// SetupIAMUserPolicyAttachment adds a controller that reconciles
-// IAMUserPolicyAttachments.
-func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMUserPolicyAttachmentGroupKind)
+// SetupUserPolicyAttachment adds a controller that reconciles
+// UserPolicyAttachments.
+func SetupUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.UserPolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMUserPolicyAttachment{}).
+		For(&v1beta1.UserPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMUserPolicyAttachmentGroupVersionKind),
+			resource.ManagedKind(v1beta1.UserPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -89,7 +89,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.IAMUserPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.UserPolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -115,7 +115,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider = v1beta1.IAMUserPolicyAttachmentObservation{
+	cr.Status.AtProvider = v1beta1.UserPolicyAttachmentObservation{
 		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
 	return managed.ExternalObservation{
@@ -125,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMUserPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.UserPolicyAttachment)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -141,12 +141,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
 	// Updating any field will create a new User-Policy attachment in AWS, which will be
 	// irrelevant/out-of-sync to the original defined attachment.
-	// It is encouraged to instead create a new IAMUserPolicyAttachment resource.
+	// It is encouraged to instead create a new UserPolicyAttachment resource.
 	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMUserPolicyAttachment)
+	cr, ok := mgd.(*v1beta1.UserPolicyAttachment)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

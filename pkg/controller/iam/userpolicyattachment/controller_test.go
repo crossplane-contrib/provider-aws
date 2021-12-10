@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamuserpolicyattachment
+package userpolicyattachment
 
 import (
 	"context"
@@ -50,26 +50,26 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userPolicyModifier func(*v1beta1.IAMUserPolicyAttachment)
+type userPolicyModifier func(*v1beta1.UserPolicyAttachment)
 
 func withConditions(c ...xpv1.Condition) userPolicyModifier {
-	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withUserName(s string) userPolicyModifier {
-	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
 }
 
 func withSpecPolicyArn(s string) userPolicyModifier {
-	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) userPolicyModifier {
-	return func(r *v1beta1.IAMUserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
 }
 
-func userPolicy(m ...userPolicyModifier) *v1beta1.IAMUserPolicyAttachment {
-	cr := &v1beta1.IAMUserPolicyAttachment{}
+func userPolicy(m ...userPolicyModifier) *v1beta1.UserPolicyAttachment {
+	cr := &v1beta1.UserPolicyAttachment{}
 	for _, f := range m {
 		f(cr)
 	}

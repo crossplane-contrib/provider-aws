@@ -177,8 +177,8 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	return nil
 }
 
-// ResolveReferences of this IAMUserPolicyAttachment.
-func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this UserPolicyAttachment.
+func (mg *UserPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse
