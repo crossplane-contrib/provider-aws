@@ -93,8 +93,8 @@ func (mg *GroupPolicyAttachment) ResolveReferences(ctx context.Context, c client
 	return nil
 }
 
-// ResolveReferences of this IAMGroupUserMembership.
-func (mg *IAMGroupUserMembership) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this GroupUserMembership.
+func (mg *GroupUserMembership) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse

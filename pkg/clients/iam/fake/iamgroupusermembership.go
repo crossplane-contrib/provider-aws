@@ -27,7 +27,7 @@ import (
 // this ensures that the mock implements the client interface
 var _ clientset.GroupUserMembershipClient = (*MockGroupUserMembershipClient)(nil)
 
-// MockGroupUserMembershipClient is a type that implements all the methods for IAMGroupUserMembershipClient interface
+// MockGroupUserMembershipClient is a type that implements all the methods for GroupUserMembershipClient interface
 type MockGroupUserMembershipClient struct {
 	MockAddUserToGroup      func(ctx context.Context, input *iam.AddUserToGroupInput, opts []func(*iam.Options)) (*iam.AddUserToGroupOutput, error)
 	MockRemoveUserFromGroup func(ctx context.Context, input *iam.RemoveUserFromGroupInput, opts []func(*iam.Options)) (*iam.RemoveUserFromGroupOutput, error)

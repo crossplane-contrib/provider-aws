@@ -22,8 +22,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMGroupUserMembershipParameters define the desired state of an AWS IAMGroupUserMembership.
-type IAMGroupUserMembershipParameters struct {
+// GroupUserMembershipParameters define the desired state of an AWS GroupUserMembership.
+type GroupUserMembershipParameters struct {
 
 	// GroupName is the Amazon IAM Group Name (IAMGroup) of the IAM group you want to
 	// add User to.
@@ -55,30 +55,30 @@ type IAMGroupUserMembershipParameters struct {
 	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
-// An IAMGroupUserMembershipSpec defines the desired state of an
-// IAMGroupUserMembership.
-type IAMGroupUserMembershipSpec struct {
+// An GroupUserMembershipSpec defines the desired state of an
+// GroupUserMembership.
+type GroupUserMembershipSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMGroupUserMembershipParameters `json:"forProvider"`
+	ForProvider       GroupUserMembershipParameters `json:"forProvider"`
 }
 
-// IAMGroupUserMembershipObservation keeps the state for the external resource
-type IAMGroupUserMembershipObservation struct {
+// GroupUserMembershipObservation keeps the state for the external resource
+type GroupUserMembershipObservation struct {
 	// AttachedGroupARN is the arn for the attached group. If nil, the group
 	// is not yet attached
 	AttachedGroupARN string `json:"attachedGroupArn"`
 }
 
-// An IAMGroupUserMembershipStatus represents the observed state of an
-// IAMGroupUserMembership.
-type IAMGroupUserMembershipStatus struct {
+// An GroupUserMembershipStatus represents the observed state of an
+// GroupUserMembership.
+type GroupUserMembershipStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMGroupUserMembershipObservation `json:"atProvider,omitempty"`
+	AtProvider          GroupUserMembershipObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMGroupUserMembership is a managed resource that represents an AWS IAM
+// An GroupUserMembership is a managed resource that represents an AWS IAM
 // User group membership.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
@@ -87,19 +87,19 @@ type IAMGroupUserMembershipStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMGroupUserMembership struct {
+type GroupUserMembership struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMGroupUserMembershipSpec   `json:"spec"`
-	Status IAMGroupUserMembershipStatus `json:"status,omitempty"`
+	Spec   GroupUserMembershipSpec   `json:"spec"`
+	Status GroupUserMembershipStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMGroupUserMembershipList contains a list of IAMGroupUserMemberships
-type IAMGroupUserMembershipList struct {
+// GroupUserMembershipList contains a list of GroupUserMemberships
+type GroupUserMembershipList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMGroupUserMembership `json:"items"`
+	Items           []GroupUserMembership `json:"items"`
 }

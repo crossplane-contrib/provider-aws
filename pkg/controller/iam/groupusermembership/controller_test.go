@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamgroupusermembership
+package groupusermembership
 
 import (
 	"context"
@@ -51,30 +51,30 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userGroupModifier func(*v1beta1.IAMGroupUserMembership)
+type userGroupModifier func(*v1beta1.GroupUserMembership)
 
 func withExternalName(name string) userGroupModifier {
-	return func(r *v1beta1.IAMGroupUserMembership) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.GroupUserMembership) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) userGroupModifier {
-	return func(r *v1beta1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.GroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withSpecGroupName(s string) userGroupModifier {
-	return func(r *v1beta1.IAMGroupUserMembership) { r.Spec.ForProvider.GroupName = s }
+	return func(r *v1beta1.GroupUserMembership) { r.Spec.ForProvider.GroupName = s }
 }
 
 func withSpecUserName(s string) userGroupModifier {
-	return func(r *v1beta1.IAMGroupUserMembership) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1beta1.GroupUserMembership) { r.Spec.ForProvider.UserName = s }
 }
 
 func withStatusGroupArn(s string) userGroupModifier {
-	return func(r *v1beta1.IAMGroupUserMembership) { r.Status.AtProvider.AttachedGroupARN = s }
+	return func(r *v1beta1.GroupUserMembership) { r.Status.AtProvider.AttachedGroupARN = s }
 }
 
-func userGroup(m ...userGroupModifier) *v1beta1.IAMGroupUserMembership {
-	cr := &v1beta1.IAMGroupUserMembership{}
+func userGroup(m ...userGroupModifier) *v1beta1.GroupUserMembership {
+	cr := &v1beta1.GroupUserMembership{}
 	for _, f := range m {
 		f(cr)
 	}
