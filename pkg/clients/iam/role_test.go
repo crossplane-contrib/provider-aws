@@ -53,8 +53,8 @@ var (
 	tagValue = "value"
 )
 
-func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameters {
-	o := &v1beta1.IAMRoleParameters{
+func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
+	o := &v1beta1.RoleParameters{
 		Description:              &description,
 		AssumeRolePolicyDocument: assumeRolePolicyDocument,
 		MaxSessionDuration:       aws.Int32(1),
@@ -94,8 +94,8 @@ func addRoleOutputFields(r *iamtypes.Role) {
 	r.RoleId = aws.String(roleID)
 }
 
-func roleObservation(m ...func(*v1beta1.IAMRoleExternalStatus)) *v1beta1.IAMRoleExternalStatus {
-	o := &v1beta1.IAMRoleExternalStatus{
+func roleObservation(m ...func(*v1beta1.RoleExternalStatus)) *v1beta1.RoleExternalStatus {
+	o := &v1beta1.RoleExternalStatus{
 		ARN:    roleARN,
 		RoleID: roleID,
 	}
@@ -109,7 +109,7 @@ func roleObservation(m ...func(*v1beta1.IAMRoleExternalStatus)) *v1beta1.IAMRole
 
 func TestGenerateCreateRoleInput(t *testing.T) {
 	cases := map[string]struct {
-		in  v1beta1.IAMRoleParameters
+		in  v1beta1.RoleParameters
 		out iam.CreateRoleInput
 	}{
 		"FilledInput": {
@@ -136,7 +136,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 func TestGenerateRoleObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  iamtypes.Role
-		out v1beta1.IAMRoleExternalStatus
+		out v1beta1.RoleExternalStatus
 	}{
 		"AllFilled": {
 			in:  *role(addRoleOutputFields),
@@ -146,7 +146,7 @@ func TestGenerateRoleObservation(t *testing.T) {
 			in: *role(addRoleOutputFields, func(r *iamtypes.Role) {
 				r.RoleId = nil
 			}),
-			out: *roleObservation(func(o *v1beta1.IAMRoleExternalStatus) {
+			out: *roleObservation(func(o *v1beta1.RoleExternalStatus) {
 				o.RoleID = ""
 			}),
 		},
@@ -164,12 +164,12 @@ func TestGenerateRoleObservation(t *testing.T) {
 
 func TestLateInitializeRole(t *testing.T) {
 	type args struct {
-		spec *v1beta1.IAMRoleParameters
+		spec *v1beta1.RoleParameters
 		in   iamtypes.Role
 	}
 	cases := map[string]struct {
 		args args
-		want *v1beta1.IAMRoleParameters
+		want *v1beta1.RoleParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
@@ -189,12 +189,12 @@ func TestLateInitializeRole(t *testing.T) {
 		},
 		"PartialFilled": {
 			args: args{
-				spec: roleParams(func(p *v1beta1.IAMRoleParameters) {
+				spec: roleParams(func(p *v1beta1.RoleParameters) {
 					p.Description = nil
 				}),
 				in: *role(),
 			},
-			want: roleParams(func(p *v1beta1.IAMRoleParameters) {
+			want: roleParams(func(p *v1beta1.RoleParameters) {
 				p.Description = &description
 			}),
 		},
@@ -213,7 +213,7 @@ func TestLateInitializeRole(t *testing.T) {
 					}
 				}),
 			},
-			want: roleParams(func(p *v1beta1.IAMRoleParameters) {
+			want: roleParams(func(p *v1beta1.RoleParameters) {
 				p.Tags = []v1beta1.Tag{
 					{
 						Key:   tagKey,
@@ -238,7 +238,7 @@ func TestLateInitializeRole(t *testing.T) {
 func TestIsRoleUpToDate(t *testing.T) {
 	type args struct {
 		role iamtypes.Role
-		p    v1beta1.IAMRoleParameters
+		p    v1beta1.RoleParameters
 	}
 
 	cases := map[string]struct {
@@ -258,7 +258,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 						Value: aws.String("value1"),
 					}},
 				},
-				p: v1beta1.IAMRoleParameters{
+				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
 					MaxSessionDuration:       aws.Int32(1),
@@ -280,7 +280,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 				},
-				p: v1beta1.IAMRoleParameters{
+				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
 					MaxSessionDuration:       aws.Int32(1),
@@ -305,7 +305,7 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 						Value: aws.String("value1"),
 					}},
 				},
-				p: v1beta1.IAMRoleParameters{
+				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
 					MaxSessionDuration:       aws.Int32(1),

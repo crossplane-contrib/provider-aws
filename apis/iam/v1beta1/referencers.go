@@ -21,10 +21,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
-// IAMRoleARN returns the status.atProvider.ARN of an IAMRole.
-func IAMRoleARN() reference.ExtractValueFn {
+// RoleARN returns the status.atProvider.ARN of a Role.
+func RoleARN() reference.ExtractValueFn {
 	return func(mg resource.Managed) string {
-		r, ok := mg.(*IAMRole)
+		r, ok := mg.(*Role)
 		if !ok {
 			return ""
 		}

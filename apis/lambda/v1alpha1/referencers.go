@@ -39,8 +39,8 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Role),
 		Reference:    mg.Spec.ForProvider.RoleRef,
 		Selector:     mg.Spec.ForProvider.RoleSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.role")

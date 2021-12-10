@@ -96,8 +96,8 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ReplicationConfiguration.Role),
 			Reference:    mg.Spec.ForProvider.ReplicationConfiguration.RoleRef,
 			Selector:     mg.Spec.ForProvider.ReplicationConfiguration.RoleSelector,
-			To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
-			Extract:      v1beta1.IAMRoleARN(),
+			To:           reference.To{Managed: &v1beta1.Role{}, List: &v1beta1.RoleList{}},
+			Extract:      v1beta1.RoleARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, "spec.forProvider.replicationConfiguration.role")

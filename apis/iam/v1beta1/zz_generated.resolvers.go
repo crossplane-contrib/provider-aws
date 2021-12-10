@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -164,8 +164,8 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		Reference:    mg.Spec.ForProvider.RoleNameRef,
 		Selector:     mg.Spec.ForProvider.RoleNameSelector,
 		To: reference.To{
-			List:    &IAMRoleList{},
-			Managed: &IAMRole{},
+			List:    &RoleList{},
+			Managed: &Role{},
 		},
 	})
 	if err != nil {

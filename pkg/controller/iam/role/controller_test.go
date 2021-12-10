@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamrole
+package role
 
 import (
 	"context"
@@ -64,18 +64,18 @@ type args struct {
 	cr  resource.Managed
 }
 
-type roleModifier func(*v1beta1.IAMRole)
+type roleModifier func(*v1beta1.Role)
 
 func withConditions(c ...xpv1.Condition) roleModifier {
-	return func(r *v1beta1.IAMRole) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.Role) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withRoleName(s *string) roleModifier {
-	return func(r *v1beta1.IAMRole) { meta.SetExternalName(r, *s) }
+	return func(r *v1beta1.Role) { meta.SetExternalName(r, *s) }
 }
 
 func withPolicy() roleModifier {
-	return func(r *v1beta1.IAMRole) {
+	return func(r *v1beta1.Role) {
 		p, err := awsclient.CompactAndEscapeJSON(policy)
 		if err != nil {
 			return
@@ -85,13 +85,13 @@ func withPolicy() roleModifier {
 }
 
 func withDescription() roleModifier {
-	return func(r *v1beta1.IAMRole) {
+	return func(r *v1beta1.Role) {
 		r.Spec.ForProvider.Description = aws.String(description)
 	}
 }
 
-func role(m ...roleModifier) *v1beta1.IAMRole {
-	cr := &v1beta1.IAMRole{}
+func role(m ...roleModifier) *v1beta1.Role {
+	cr := &v1beta1.Role{}
 	for _, f := range m {
 		f(cr)
 	}

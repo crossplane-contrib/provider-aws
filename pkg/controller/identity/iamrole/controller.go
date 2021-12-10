@@ -43,15 +43,15 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an IAMRole resource"
-	errGet              = "failed to get IAMRole with name"
-	errCreate           = "failed to create the IAMRole resource"
-	errDelete           = "failed to delete the IAMRole resource"
-	errUpdate           = "failed to update the IAMRole resource"
-	errSDK              = "empty IAMRole received from IAM API"
+	errUnexpectedObject = "The managed resource is not an Role resource"
+	errGet              = "failed to get Role with name"
+	errCreate           = "failed to create the Role resource"
+	errDelete           = "failed to delete the Role resource"
+	errUpdate           = "failed to update the Role resource"
+	errSDK              = "empty Role received from IAM API"
 	errCreatePatch      = "failed to create patch object for comparison"
 
-	errKubeUpdateFailed = "cannot late initialize IAMRole"
+	errKubeUpdateFailed = "cannot late initialize Role"
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 

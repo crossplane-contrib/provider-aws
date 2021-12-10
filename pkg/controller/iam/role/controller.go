@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamrole
+package role
 
 import (
 	"context"
@@ -43,30 +43,30 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an IAMRole resource"
-	errGet              = "failed to get IAMRole with name"
-	errCreate           = "failed to create the IAMRole resource"
-	errDelete           = "failed to delete the IAMRole resource"
-	errUpdate           = "failed to update the IAMRole resource"
-	errSDK              = "empty IAMRole received from IAM API"
+	errUnexpectedObject = "The managed resource is not an Role resource"
+	errGet              = "failed to get Role with name"
+	errCreate           = "failed to create the Role resource"
+	errDelete           = "failed to delete the Role resource"
+	errUpdate           = "failed to update the Role resource"
+	errSDK              = "empty Role received from IAM API"
 	errCreatePatch      = "failed to create patch object for comparison"
 
-	errKubeUpdateFailed = "cannot late initialize IAMRole"
+	errKubeUpdateFailed = "cannot late initialize Role"
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
-// SetupIAMRole adds a controller that reconciles IAMRoles.
-func SetupIAMRole(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMRoleGroupKind)
+// SetupRole adds a controller that reconciles Roles.
+func SetupRole(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.RoleGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMRole{}).
+		For(&v1beta1.Role{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMRoleGroupVersionKind),
+			resource.ManagedKind(v1beta1.RoleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRoleClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -94,7 +94,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.IAMRole)
+	cr, ok := mgd.(*v1beta1.Role)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -137,7 +137,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMRole)
+	cr, ok := mgd.(*v1beta1.Role)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -149,7 +149,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1beta1.IAMRole)
+	cr, ok := mgd.(*v1beta1.Role)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -218,7 +218,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMRole)
+	cr, ok := mgd.(*v1beta1.Role)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

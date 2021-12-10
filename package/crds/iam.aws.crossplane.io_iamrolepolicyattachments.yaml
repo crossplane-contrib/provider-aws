@@ -102,8 +102,7 @@ spec:
                     description: RoleName presents the name of the IAM role.
                     type: string
                   roleNameRef:
-                    description: RoleNameRef references an IAMRole to retrieve its
-                      Name
+                    description: RoleNameRef references an Role to retrieve its Name
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -112,8 +111,8 @@ spec:
                     - name
                     type: object
                   roleNameSelector:
-                    description: RoleNameSelector selects a reference to an IAMRole
-                      to retrieve its Name
+                    description: RoleNameSelector selects a reference to an Role to
+                      retrieve its Name
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the

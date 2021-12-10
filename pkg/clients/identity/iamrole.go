@@ -26,7 +26,7 @@ const (
 	errPolicyJSONUnescape = "malformed AssumeRolePolicyDocument escaping"
 )
 
-// RoleClient is the external client used for IAMRole Custom Resource
+// RoleClient is the external client used for Role Custom Resource
 type RoleClient interface {
 	GetRole(ctx context.Context, input *iam.GetRoleInput, opts ...func(*iam.Options)) (*iam.GetRoleOutput, error)
 	CreateRole(ctx context.Context, input *iam.CreateRoleInput, opts ...func(*iam.Options)) (*iam.CreateRoleOutput, error)

@@ -69,12 +69,12 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.RoleArn,
-		Extract:      v1beta11.IAMRoleARN(),
+		Extract:      v1beta11.RoleARN(),
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
 		To: reference.To{
-			List:    &v1beta11.IAMRoleList{},
-			Managed: &v1beta11.IAMRole{},
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
 		},
 	})
 	if err != nil {
@@ -112,12 +112,12 @@ func (mg *FargateProfile) ResolveReferences(ctx context.Context, c client.Reader
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PodExecutionRoleArn,
-		Extract:      v1beta11.IAMRoleARN(),
+		Extract:      v1beta11.RoleARN(),
 		Reference:    mg.Spec.ForProvider.PodExecutionRoleArnRef,
 		Selector:     mg.Spec.ForProvider.PodExecutionRoleArnSelector,
 		To: reference.To{
-			List:    &v1beta11.IAMRoleList{},
-			Managed: &v1beta11.IAMRole{},
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
 		},
 	})
 	if err != nil {

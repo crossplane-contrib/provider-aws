@@ -44,14 +44,14 @@ type IAMRolePolicyAttachmentParameters struct {
 
 	// RoleName presents the name of the IAM role.
 	// +immutable
-	// +crossplane:generate:reference:type=IAMRole
+	// +crossplane:generate:reference:type=Role
 	RoleName string `json:"roleName,omitempty"`
 
-	// RoleNameRef references an IAMRole to retrieve its Name
+	// RoleNameRef references an Role to retrieve its Name
 	// +optional
 	RoleNameRef *xpv1.Reference `json:"roleNameRef,omitempty"`
 
-	// RoleNameSelector selects a reference to an IAMRole to retrieve its Name
+	// RoleNameSelector selects a reference to an Role to retrieve its Name
 	// +optional
 	RoleNameSelector *xpv1.Selector `json:"roleNameSelector,omitempty"`
 }

@@ -64,7 +64,7 @@ func (mg *RepositoryPolicy) ResolveReferences(ctx context.Context, c client.Read
 	return nil
 }
 
-// ResolvePrincipal resolves all the IAMUser and IAMRole references in a RepositoryPrincipal
+// ResolvePrincipal resolves all the IAMUser and Role references in a RepositoryPrincipal
 func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *RepositoryPrincipal, statementIndex int) error {
 	if principal == nil {
 		return nil
@@ -88,8 +88,8 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMRoleARN),
 			Reference:    principal.AWSPrincipals[i].IAMRoleARNRef,
 			Selector:     principal.AWSPrincipals[i].IAMRoleARNSelector,
-			To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-			Extract:      iamv1beta1.IAMRoleARN(),
+			To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+			Extract:      iamv1beta1.RoleARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMRoleArn", statementIndex, i))

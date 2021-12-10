@@ -45,8 +45,8 @@ type Tag struct {
 	Value string `json:"value,omitempty"`
 }
 
-// IAMRoleParameters define the desired state of an AWS IAM Role.
-type IAMRoleParameters struct {
+// RoleParameters define the desired state of an AWS IAM Role.
+type RoleParameters struct {
 
 	// AssumeRolePolicyDocument is the the trust relationship policy document
 	// that grants an entity permission to assume the role.
@@ -82,14 +82,14 @@ type IAMRoleParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// An IAMRoleSpec defines the desired state of an IAMRole.
-type IAMRoleSpec struct {
+// An RoleSpec defines the desired state of an Role.
+type RoleSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMRoleParameters `json:"forProvider"`
+	ForProvider       RoleParameters `json:"forProvider"`
 }
 
-// IAMRoleExternalStatus keeps the state for the external resource
-type IAMRoleExternalStatus struct {
+// RoleExternalStatus keeps the state for the external resource
+type RoleExternalStatus struct {
 	// ARN is the Amazon Resource Name (ARN) specifying the role. For more information
 	// about ARNs and how to use them in policies, see IAM Identifiers (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
 	// in the IAM User Guide guide.
@@ -101,33 +101,33 @@ type IAMRoleExternalStatus struct {
 	RoleID string `json:"roleID"`
 }
 
-// An IAMRoleStatus represents the observed state of an IAMRole.
-type IAMRoleStatus struct {
+// An RoleStatus represents the observed state of an Role.
+type RoleStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMRoleExternalStatus `json:"atProvider,omitempty"`
+	AtProvider          RoleExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMRole is a managed resource that represents an AWS IAM Role.
+// An Role is a managed resource that represents an AWS IAM Role.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMRole struct {
+type Role struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMRoleSpec   `json:"spec"`
-	Status IAMRoleStatus `json:"status,omitempty"`
+	Spec   RoleSpec   `json:"spec"`
+	Status RoleStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMRoleList contains a list of IAMRoles
-type IAMRoleList struct {
+// RoleList contains a list of Roles
+type RoleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMRole `json:"items"`
+	Items           []Role `json:"items"`
 }

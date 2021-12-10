@@ -27,7 +27,7 @@ const (
 	errPolicyJSONUnescape = "malformed AssumeRolePolicyDocument escaping"
 )
 
-// RoleClient is the external client used for IAMRole Custom Resource
+// RoleClient is the external client used for Role Custom Resource
 type RoleClient interface {
 	GetRole(ctx context.Context, input *iam.GetRoleInput, opts ...func(*iam.Options)) (*iam.GetRoleOutput, error)
 	CreateRole(ctx context.Context, input *iam.CreateRoleInput, opts ...func(*iam.Options)) (*iam.CreateRoleOutput, error)
@@ -43,8 +43,8 @@ func NewRoleClient(conf aws.Config) RoleClient {
 	return iam.NewFromConfig(conf)
 }
 
-// GenerateCreateRoleInput from IAMRoleSpec
-func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.CreateRoleInput {
+// GenerateCreateRoleInput from RoleSpec
+func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.CreateRoleInput {
 	m := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
 		AssumeRolePolicyDocument: aws.String(p.AssumeRolePolicyDocument),
@@ -67,16 +67,16 @@ func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.Cre
 	return m
 }
 
-// GenerateRoleObservation is used to produce IAMRoleExternalStatus from iamtypes.Role
-func GenerateRoleObservation(role iamtypes.Role) v1beta1.IAMRoleExternalStatus {
-	return v1beta1.IAMRoleExternalStatus{
+// GenerateRoleObservation is used to produce RoleExternalStatus from iamtypes.Role
+func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
+	return v1beta1.RoleExternalStatus{
 		ARN:    aws.ToString(role.Arn),
 		RoleID: aws.ToString(role.RoleId),
 	}
 }
 
 // GenerateIAMRole assigns the in IAMRoleParamters to role.
-func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iamtypes.Role) error {
+func GenerateIAMRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 
 	if in.AssumeRolePolicyDocument != "" {
 		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
@@ -102,9 +102,9 @@ func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iamtypes.Role) error {
 	return nil
 }
 
-// LateInitializeRole fills the empty fields in *v1beta1.IAMRoleParameters with
+// LateInitializeRole fills the empty fields in *v1beta1.RoleParameters with
 // the values seen in iamtypes.Role.
-func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iamtypes.Role) {
+func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
@@ -124,18 +124,18 @@ func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iamtypes.Role) {
 	}
 }
 
-// CreatePatch creates a *v1beta1.IAMRoleParameters that has only the changed
-// values between the target *v1beta1.IAMRoleParameters and the current
+// CreatePatch creates a *v1beta1.RoleParameters that has only the changed
+// values between the target *v1beta1.RoleParameters and the current
 // *iamtypes.Role
-func CreatePatch(in *iamtypes.Role, target *v1beta1.IAMRoleParameters) (*v1beta1.IAMRoleParameters, error) {
-	currentParams := &v1beta1.IAMRoleParameters{}
+func CreatePatch(in *iamtypes.Role, target *v1beta1.RoleParameters) (*v1beta1.RoleParameters, error) {
+	currentParams := &v1beta1.RoleParameters{}
 	LateInitializeRole(currentParams, in)
 
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
-	patch := &v1beta1.IAMRoleParameters{}
+	patch := &v1beta1.RoleParameters{}
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
-func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iamtypes.Role) (bool, string, error) {
+func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, string, error) {
 	generated, err := copystructure.Copy(&observed)
 	if err != nil {
 		return true, "", errors.Wrap(err, errCheckUpToDate)

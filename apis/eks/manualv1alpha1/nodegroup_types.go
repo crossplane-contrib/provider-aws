@@ -116,8 +116,8 @@ type NodeGroupParameters struct {
 	//
 	// NodeRole is a required field
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.IAMRole
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.IAMRoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	NodeRole string `json:"nodeRole,omitempty"`
 
 	// NodeRoleRef is a reference to a Cluster used to set the NodeRole.

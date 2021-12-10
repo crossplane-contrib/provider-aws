@@ -1,6 +1,6 @@
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRole
+kind: Role
 metadata:
   name: somerole
 spec:
@@ -34,7 +34,7 @@ spec:
 
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRole
+kind: Role
 metadata:
   name: somenoderole
 spec:

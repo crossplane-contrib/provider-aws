@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -65,15 +65,6 @@ func (l *IAMPolicyList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetItems of this IAMRoleList.
-func (l *IAMRoleList) GetItems() []resource.Managed {
-	items := make([]resource.Managed, len(l.Items))
-	for i := range l.Items {
-		items[i] = &l.Items[i]
-	}
-	return items
-}
-
 // GetItems of this IAMRolePolicyAttachmentList.
 func (l *IAMRolePolicyAttachmentList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -103,6 +94,15 @@ func (l *IAMUserPolicyAttachmentList) GetItems() []resource.Managed {
 
 // GetItems of this OpenIDConnectProviderList.
 func (l *OpenIDConnectProviderList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this RoleList.
+func (l *RoleList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]
