@@ -112,7 +112,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		UserName: &userName,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedGroupObject *awsiamtypes.Group

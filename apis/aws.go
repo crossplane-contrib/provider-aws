@@ -44,7 +44,6 @@ import (
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	gluev1alpha1 "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
@@ -74,7 +73,6 @@ func init() {
 		docdbv1alpha1.AddToScheme,
 		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 		iamv1beta1.SchemeBuilder.AddToScheme,
-		identityv1beta1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
 		notificationv1alpha3.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,

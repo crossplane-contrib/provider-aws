@@ -92,8 +92,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/user"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
-	identityiamrole "github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
-	identityiamrolepolicyattachment "github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
@@ -150,12 +148,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		group.SetupGroup,
 		policy.SetupPolicy,
 		role.SetupRole,
-		identityiamrole.SetupIAMRole,
 		groupusermembership.SetupGroupUserMembership,
 		userpolicyattachment.SetupUserPolicyAttachment,
 		grouppolicyattachment.SetupGroupPolicyAttachment,
 		rolepolicyattachment.SetupRolePolicyAttachment,
-		identityiamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,

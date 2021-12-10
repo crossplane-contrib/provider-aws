@@ -75,8 +75,8 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 	}
 }
 
-// GenerateIAMRole assigns the in IAMRoleParamters to role.
-func GenerateIAMRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
+// GenerateRole assigns the in RoleParamters to role.
+func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 
 	if in.AssumeRolePolicyDocument != "" {
 		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
@@ -171,7 +171,7 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return true, "", errors.New(errCheckUpToDate)
 	}
 
-	if err = GenerateIAMRole(in, desired); err != nil {
+	if err = GenerateRole(in, desired); err != nil {
 		return false, "", err
 	}
 

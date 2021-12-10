@@ -13,7 +13,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: sample-s3-replication-policy
 spec:
@@ -26,7 +26,7 @@ spec:
 
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: sample-rolemanagedpolicyattachment
 spec:
@@ -39,7 +39,7 @@ spec:
 
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment1
 spec:
@@ -51,7 +51,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment2
 spec:
@@ -63,7 +63,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment3
 spec:
@@ -75,7 +75,7 @@ spec:
     name: example
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+kind: RolePolicyAttachment
 metadata:
   name: glue-rolepolicyattachment
 spec:
