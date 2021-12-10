@@ -122,6 +122,22 @@ type CustomDBClusterParameters struct {
 	// set DBClusterParameterGroupName.
 	// +optional
 	DBClusterParameterGroupNameSelector *xpv1.Selector `json:"dbClusterParameterGroupNameSelector,omitempty"`
+
+	// A value that indicates whether the modifications in this request and any
+	// pending modifications are asynchronously applied as soon as possible, regardless
+	// of the PreferredMaintenanceWindow setting for the DB cluster. If this parameter
+	// is disabled, changes to the DB cluster are applied during the next maintenance
+	// window.
+	//
+	// The ApplyImmediately parameter only affects the EnableIAMDatabaseAuthentication,
+	// MasterUserPassword values. If the ApplyImmediately
+	// parameter is disabled, then changes to the EnableIAMDatabaseAuthentication,
+	// MasterUserPassword values are applied during
+	// the next maintenance window. All other changes are applied immediately, regardless
+	// of the value of the ApplyImmediately parameter.
+	//
+	// By default, this parameter is disabled.
+	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 }
 
 // CustomGlobalClusterParameters are custom parameters for a GlobalCluster
@@ -247,4 +263,18 @@ type CustomDBInstanceParameters struct {
 	// set DBParameterGroupName.
 	// +optional
 	DBParameterGroupNameSelector *xpv1.Selector `json:"dbParameterGroupNameSelector,omitempty"`
+
+	// A value that indicates whether the modifications in this request and any
+	// pending modifications are asynchronously applied as soon as possible, regardless
+	// of the PreferredMaintenanceWindow setting for the DB instance. By default,
+	// this parameter is disabled.
+	//
+	// If this parameter is disabled, changes to the DB instance are applied during
+	// the next maintenance window. Some parameter changes can cause an outage and
+	// are applied on the next call to RebootDBInstance, or the next failure reboot.
+	// Review the table of parameters in Modifying a DB Instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
+	// in the Amazon RDS User Guide. to see the impact of enabling or disabling
+	// ApplyImmediately for each modified parameter and to determine when the changes
+	// are applied.
+	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 }

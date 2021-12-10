@@ -14,6 +14,7 @@ spec:
     databaseName: auroradb
     skipFinalSnapshot: true
     dbClusterParameterGroupName: example-clusterparametergroup
+    applyImmediately: true
   writeConnectionSecretToRef:
     name: example-aurora-mysql-cluster
     namespace: default

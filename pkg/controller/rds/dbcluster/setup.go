@@ -33,6 +33,8 @@ func SetupDBCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			c := &custom{client: e.client, kube: e.kube}
+			e.isUpToDate = isUpToDate
+			e.preUpdate = preUpdate
 			e.preCreate = c.preCreate
 			e.postCreate = c.postCreate
 			e.preDelete = preDelete
@@ -67,7 +69,7 @@ func postObserve(_ context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.Desc
 		return managed.ExternalObservation{}, err
 	}
 	switch aws.StringValue(resp.DBClusters[0].Status) {
-	case "available":
+	case "available", "modifying":
 		cr.SetConditions(xpv1.Available())
 	case "deleting", "stopped", "stopping":
 		cr.SetConditions(xpv1.Unavailable())
@@ -114,6 +116,26 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, _ *s
 	return managed.ExternalCreation{
 		ConnectionDetails: conn,
 	}, nil
+}
+
+func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) {
+	status := aws.StringValue(out.DBClusters[0].Status)
+	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" {
+		return true, nil
+	}
+
+	if aws.BoolValue(cr.Spec.ForProvider.EnableIAMDatabaseAuthentication) != aws.BoolValue(out.DBClusters[0].IAMDatabaseAuthenticationEnabled) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
+	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
+	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
+
+	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterInput) (bool, error) {
