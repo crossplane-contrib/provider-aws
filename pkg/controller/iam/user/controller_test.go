@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamuser
+package user
 
 import (
 	"context"
@@ -51,18 +51,18 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userModifier func(*v1beta1.IAMUser)
+type userModifier func(*v1beta1.User)
 
 func withConditions(c ...xpv1.Condition) userModifier {
-	return func(r *v1beta1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.User) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withExternalName(name string) userModifier {
-	return func(r *v1beta1.IAMUser) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.User) { meta.SetExternalName(r, name) }
 }
 
-func user(m ...userModifier) *v1beta1.IAMUser {
-	cr := &v1beta1.IAMUser{}
+func user(m ...userModifier) *v1beta1.User {
+	cr := &v1beta1.User{}
 	for _, f := range m {
 		f(cr)
 	}

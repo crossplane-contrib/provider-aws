@@ -38,8 +38,8 @@ func (mg *AccessKey) ResolveReferences(ctx context.Context, c client.Reader) err
 		Reference:    mg.Spec.ForProvider.UsernameRef,
 		Selector:     mg.Spec.ForProvider.UsernameSelector,
 		To: reference.To{
-			List:    &IAMUserList{},
-			Managed: &IAMUser{},
+			List:    &UserList{},
+			Managed: &User{},
 		},
 	})
 	if err != nil {
@@ -122,8 +122,8 @@ func (mg *GroupUserMembership) ResolveReferences(ctx context.Context, c client.R
 		Reference:    mg.Spec.ForProvider.UserNameRef,
 		Selector:     mg.Spec.ForProvider.UserNameSelector,
 		To: reference.To{
-			List:    &IAMUserList{},
-			Managed: &IAMUser{},
+			List:    &UserList{},
+			Managed: &User{},
 		},
 	})
 	if err != nil {
@@ -206,8 +206,8 @@ func (mg *UserPolicyAttachment) ResolveReferences(ctx context.Context, c client.
 		Reference:    mg.Spec.ForProvider.UserNameRef,
 		Selector:     mg.Spec.ForProvider.UserNameSelector,
 		To: reference.To{
-			List:    &IAMUserList{},
-			Managed: &IAMUser{},
+			List:    &UserList{},
+			Managed: &User{},
 		},
 	})
 	if err != nil {

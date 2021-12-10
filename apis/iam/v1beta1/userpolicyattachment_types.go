@@ -41,16 +41,16 @@ type UserPolicyAttachmentParameters struct {
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
-	// UserName presents the name of the IAMUser.
+	// UserName presents the name of the User.
 	// +immutable
-	// +crossplane:generate:reference:type=IAMUser
+	// +crossplane:generate:reference:type=User
 	UserName string `json:"userName,omitempty"`
 
-	// UserNameRef references to an IAMUser to retrieve its userName
+	// UserNameRef references to an User to retrieve its userName
 	// +optional
 	UserNameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
-	// UserNameSelector selects a reference to an IAMUser to retrieve its userName
+	// UserNameSelector selects a reference to an User to retrieve its userName
 	// +optional
 	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }

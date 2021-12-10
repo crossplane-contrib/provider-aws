@@ -44,10 +44,10 @@ func IAMPolicyARN() reference.ExtractValueFn {
 	}
 }
 
-// IAMUserARN returns a function that returns the ARN of the given policy.
-func IAMUserARN() reference.ExtractValueFn {
+// UserARN returns a function that returns the ARN of the given policy.
+func UserARN() reference.ExtractValueFn {
 	return func(mg resource.Managed) string {
-		r, ok := mg.(*IAMUser)
+		r, ok := mg.(*User)
 		if !ok {
 			return ""
 		}

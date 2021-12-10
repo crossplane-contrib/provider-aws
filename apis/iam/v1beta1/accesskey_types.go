@@ -24,17 +24,17 @@ import (
 
 // AccessKeyParameters define the desired state of an AWS IAM Access Key.
 type AccessKeyParameters struct {
-	// Username contains the name of the IAMUser.
+	// Username contains the name of the User.
 	// +optional
 	// +immutable
-	// +crossplane:generate:reference:type=IAMUser
+	// +crossplane:generate:reference:type=User
 	Username string `json:"userName,omitempty"`
 
-	// UsernameRef references to an IAMUser to retrieve its userName
+	// UsernameRef references to an User to retrieve its userName
 	// +optional
 	UsernameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
-	// UsernameSelector selects a reference to an IAMUser to retrieve its userName
+	// UsernameSelector selects a reference to an User to retrieve its userName
 	// +optional
 	UsernameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 

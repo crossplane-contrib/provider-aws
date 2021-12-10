@@ -99,11 +99,11 @@ spec:
                         type: object
                     type: object
                   userName:
-                    description: UserName presents the name of the IAMUser.
+                    description: UserName presents the name of the User.
                     type: string
                   userNameRef:
-                    description: UserNameRef references to an IAMUser to retrieve
-                      its userName
+                    description: UserNameRef references to an User to retrieve its
+                      userName
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -112,8 +112,8 @@ spec:
                     - name
                     type: object
                   userNameSelector:
-                    description: UserNameSelector selects a reference to an IAMUser
-                      to retrieve its userName
+                    description: UserNameSelector selects a reference to an User to
+                      retrieve its userName
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the

@@ -64,7 +64,7 @@ func (mg *RepositoryPolicy) ResolveReferences(ctx context.Context, c client.Read
 	return nil
 }
 
-// ResolvePrincipal resolves all the IAMUser and Role references in a RepositoryPrincipal
+// ResolvePrincipal resolves all the User and Role references in a RepositoryPrincipal
 func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *RepositoryPrincipal, statementIndex int) error {
 	if principal == nil {
 		return nil
@@ -72,17 +72,17 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 	for i := range principal.AWSPrincipals {
 
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMUserARN),
-			Reference:    principal.AWSPrincipals[i].IAMUserARNRef,
-			Selector:     principal.AWSPrincipals[i].IAMUserARNSelector,
-			To:           reference.To{Managed: &iamv1beta1.IAMUser{}, List: &iamv1beta1.IAMUserList{}},
-			Extract:      iamv1beta1.IAMUserARN(),
+			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].UserARN),
+			Reference:    principal.AWSPrincipals[i].UserARNRef,
+			Selector:     principal.AWSPrincipals[i].UserARNSelector,
+			To:           reference.To{Managed: &iamv1beta1.User{}, List: &iamv1beta1.UserList{}},
+			Extract:      iamv1beta1.UserARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statements[%d].principal.awsPrincipals[%d].iamUserArn", statementIndex, i))
 		}
-		principal.AWSPrincipals[i].IAMUserARN = reference.ToPtrValue(rsp.ResolvedValue)
-		principal.AWSPrincipals[i].IAMUserARNRef = rsp.ResolvedReference
+		principal.AWSPrincipals[i].UserARN = reference.ToPtrValue(rsp.ResolvedValue)
+		principal.AWSPrincipals[i].UserARNRef = rsp.ResolvedReference
 
 		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMRoleARN),

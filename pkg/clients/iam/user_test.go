@@ -15,8 +15,8 @@ var (
 	userID = "some id"
 )
 
-func userParams(m ...func(*v1beta1.IAMUserParameters)) *v1beta1.IAMUserParameters {
-	o := &v1beta1.IAMUserParameters{
+func userParams(m ...func(*v1beta1.UserParameters)) *v1beta1.UserParameters {
+	o := &v1beta1.UserParameters{
 		Path: &path,
 	}
 
@@ -42,12 +42,12 @@ func user(m ...func(*iamtypes.User)) *iamtypes.User {
 
 func TestLateInitializeUser(t *testing.T) {
 	type args struct {
-		spec *v1beta1.IAMUserParameters
+		spec *v1beta1.UserParameters
 		in   iamtypes.User
 	}
 	cases := map[string]struct {
 		args args
-		want *v1beta1.IAMUserParameters
+		want *v1beta1.UserParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
@@ -67,12 +67,12 @@ func TestLateInitializeUser(t *testing.T) {
 		},
 		"PartialFilled": {
 			args: args{
-				spec: userParams(func(p *v1beta1.IAMUserParameters) {
+				spec: userParams(func(p *v1beta1.UserParameters) {
 					p.Path = nil
 				}),
 				in: *user(),
 			},
-			want: userParams(func(p *v1beta1.IAMUserParameters) {
+			want: userParams(func(p *v1beta1.UserParameters) {
 				p.Path = &path
 			}),
 		},

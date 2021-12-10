@@ -63,25 +63,25 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 	return nil
 }
 
-// ResolvePrincipal resolves all the IAMUser and Role references in a BucketPrincipal
+// ResolvePrincipal resolves all the User and Role references in a BucketPrincipal
 func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *BucketPrincipal, statementIndex int) error {
 	if principal == nil {
 		return nil
 	}
 	for i := range principal.AWSPrincipals {
-		if principal.AWSPrincipals[i].IAMUserARNRef != nil || principal.AWSPrincipals[i].IAMUserARNSelector != nil {
+		if principal.AWSPrincipals[i].UserARNRef != nil || principal.AWSPrincipals[i].UserARNSelector != nil {
 			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMUserARN),
-				Reference:    principal.AWSPrincipals[i].IAMUserARNRef,
-				Selector:     principal.AWSPrincipals[i].IAMUserARNSelector,
-				To:           reference.To{Managed: &iamv1beta1.IAMUser{}, List: &iamv1beta1.IAMUserList{}},
-				Extract:      iamv1beta1.IAMUserARN(),
+				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].UserARN),
+				Reference:    principal.AWSPrincipals[i].UserARNRef,
+				Selector:     principal.AWSPrincipals[i].UserARNSelector,
+				To:           reference.To{Managed: &iamv1beta1.User{}, List: &iamv1beta1.UserList{}},
+				Extract:      iamv1beta1.UserARN(),
 			})
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMUserARN", statementIndex, i))
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].UserARN", statementIndex, i))
 			}
-			principal.AWSPrincipals[i].IAMUserARN = reference.ToPtrValue(rsp.ResolvedValue)
-			principal.AWSPrincipals[i].IAMUserARNRef = rsp.ResolvedReference
+			principal.AWSPrincipals[i].UserARN = reference.ToPtrValue(rsp.ResolvedValue)
+			principal.AWSPrincipals[i].UserARNRef = rsp.ResolvedReference
 		}
 
 		if principal.AWSPrincipals[i].IAMRoleARNRef != nil || principal.AWSPrincipals[i].IAMRoleARNSelector != nil {

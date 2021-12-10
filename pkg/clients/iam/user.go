@@ -26,7 +26,7 @@ func NewUserClient(cfg aws.Config) UserClient {
 
 // LateInitializeUser fills the empty fields in *v1alpha1.User with
 // the values seen in iam.User.
-func LateInitializeUser(in *v1beta1.IAMUserParameters, user *iamtypes.User) {
+func LateInitializeUser(in *v1beta1.UserParameters, user *iamtypes.User) {
 	if user == nil {
 		return
 	}

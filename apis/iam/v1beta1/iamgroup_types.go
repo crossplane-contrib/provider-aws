@@ -53,7 +53,7 @@ type IAMGroupStatus struct {
 // +kubebuilder:object:root=true
 
 // An IAMGroup is a managed resource that represents an AWS IAM IAMGroup.
-// An IAMUser is a managed resource that represents an AWS IAM IAMUser.
+// An User is a managed resource that represents an AWS IAM User.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.groupId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

@@ -38,7 +38,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: An IAMGroup is a managed resource that represents an AWS IAM
-          IAMGroup. An IAMUser is a managed resource that represents an AWS IAM IAMUser.
+          IAMGroup. An User is a managed resource that represents an AWS IAM User.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

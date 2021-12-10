@@ -245,12 +245,12 @@ spec:
                                             type: object
                                         type: object
                                       iamUserArn:
-                                        description: IAMUserARN contains the ARN of
-                                          an IAM user
+                                        description: UserARN contains the ARN of an
+                                          IAM user
                                         type: string
                                       iamUserArnRef:
-                                        description: IAMUserARNRef contains the reference
-                                          to an IAMUser
+                                        description: UserARNRef contains the reference
+                                          to an User
                                         properties:
                                           name:
                                             description: Name of the referenced object.
@@ -259,8 +259,8 @@ spec:
                                         - name
                                         type: object
                                       iamUserArnSelector:
-                                        description: IAMUserARNSelector queries for
-                                          an IAMUser to retrieve its userName
+                                        description: UserARNSelector queries for an
+                                          User to retrieve its userName
                                         properties:
                                           matchControllerRef:
                                             description: MatchControllerRef ensures
@@ -344,12 +344,12 @@ spec:
                                             type: object
                                         type: object
                                       iamUserArn:
-                                        description: IAMUserARN contains the ARN of
-                                          an IAM user
+                                        description: UserARN contains the ARN of an
+                                          IAM user
                                         type: string
                                       iamUserArnRef:
-                                        description: IAMUserARNRef contains the reference
-                                          to an IAMUser
+                                        description: UserARNRef contains the reference
+                                          to an User
                                         properties:
                                           name:
                                             description: Name of the referenced object.
@@ -358,8 +358,8 @@ spec:
                                         - name
                                         type: object
                                       iamUserArnSelector:
-                                        description: IAMUserARNSelector queries for
-                                          an IAMUser to retrieve its userName
+                                        description: UserARNSelector queries for an
+                                          User to retrieve its userName
                                         properties:
                                           matchControllerRef:
                                             description: MatchControllerRef ensures

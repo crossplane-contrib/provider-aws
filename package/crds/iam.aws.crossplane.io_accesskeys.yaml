@@ -74,11 +74,11 @@ spec:
                     - Inactive
                     type: string
                   userName:
-                    description: Username contains the name of the IAMUser.
+                    description: Username contains the name of the User.
                     type: string
                   userNameRef:
-                    description: UsernameRef references to an IAMUser to retrieve
-                      its userName
+                    description: UsernameRef references to an User to retrieve its
+                      userName
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -87,8 +87,8 @@ spec:
                     - name
                     type: object
                   userNameSelector:
-                    description: UsernameSelector selects a reference to an IAMUser
-                      to retrieve its userName
+                    description: UsernameSelector selects a reference to an User to
+                      retrieve its userName
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the

@@ -22,8 +22,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMUserParameters define the desired state of an AWS IAM User.
-type IAMUserParameters struct {
+// UserParameters define the desired state of an AWS IAM User.
+type UserParameters struct {
 	// The path for the user name.
 	// +optional
 	Path *string `json:"path,omitempty"`
@@ -38,14 +38,14 @@ type IAMUserParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// An IAMUserSpec defines the desired state of an IAM User.
-type IAMUserSpec struct {
+// An UserSpec defines the desired state of an IAM User.
+type UserSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMUserParameters `json:"forProvider"`
+	ForProvider       UserParameters `json:"forProvider"`
 }
 
-// IAMUserObservation keeps the state for the external resource
-type IAMUserObservation struct {
+// UserObservation keeps the state for the external resource
+type UserObservation struct {
 	// The Amazon Resource Name (ARN) that identifies the user.
 	ARN string `json:"arn,omitempty"`
 
@@ -53,15 +53,15 @@ type IAMUserObservation struct {
 	UserID string `json:"userId,omitempty"`
 }
 
-// An IAMUserStatus represents the observed state of an IAM User.
-type IAMUserStatus struct {
+// An UserStatus represents the observed state of an IAM User.
+type UserStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMUserObservation `json:"atProvider,omitempty"`
+	AtProvider          UserObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMUser is a managed resource that represents an AWS IAM IAMUser.
+// An User is a managed resource that represents an AWS IAM User.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.userId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
@@ -69,19 +69,19 @@ type IAMUserStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMUser struct {
+type User struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMUserSpec   `json:"spec"`
-	Status IAMUserStatus `json:"status,omitempty"`
+	Spec   UserSpec   `json:"spec"`
+	Status UserStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMUserList contains a list of IAM Users
-type IAMUserList struct {
+// UserList contains a list of IAM Users
+type UserList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMUser `json:"items"`
+	Items           []User `json:"items"`
 }
