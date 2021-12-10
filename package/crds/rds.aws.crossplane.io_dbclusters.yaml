@@ -60,6 +60,20 @@ spec:
               forProvider:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
+                  applyImmediately:
+                    description: "A value that indicates whether the modifications
+                      in this request and any pending modifications are asynchronously
+                      applied as soon as possible, regardless of the PreferredMaintenanceWindow
+                      setting for the DB cluster. If this parameter is disabled, changes
+                      to the DB cluster are applied during the next maintenance window.
+                      \n The ApplyImmediately parameter only affects the EnableIAMDatabaseAuthentication,
+                      MasterUserPassword values. If the ApplyImmediately parameter
+                      is disabled, then changes to the EnableIAMDatabaseAuthentication,
+                      MasterUserPassword values are applied during the next maintenance
+                      window. All other changes are applied immediately, regardless
+                      of the value of the ApplyImmediately parameter. \n By default,
+                      this parameter is disabled."
+                    type: boolean
                   availabilityZones:
                     description: A list of Availability Zones (AZs) where instances
                       in the DB cluster can be created. For information on AWS Regions
