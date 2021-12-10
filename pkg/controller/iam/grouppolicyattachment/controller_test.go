@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamgrouppolicyattachment
+package grouppolicyattachment
 
 import (
 	"context"
@@ -51,30 +51,30 @@ type args struct {
 	cr  resource.Managed
 }
 
-type groupPolicyModifier func(*v1beta1.IAMGroupPolicyAttachment)
+type groupPolicyModifier func(*v1beta1.GroupPolicyAttachment)
 
 func withExternalName(name string) groupPolicyModifier {
-	return func(r *v1beta1.IAMGroupPolicyAttachment) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.GroupPolicyAttachment) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) groupPolicyModifier {
-	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withSpecGroupName(s string) groupPolicyModifier {
-	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
 }
 
 func withSpecPolicyArn(s string) groupPolicyModifier {
-	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) groupPolicyModifier {
-	return func(r *v1beta1.IAMGroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
 }
 
-func groupPolicy(m ...groupPolicyModifier) *v1beta1.IAMGroupPolicyAttachment {
-	cr := &v1beta1.IAMGroupPolicyAttachment{}
+func groupPolicy(m ...groupPolicyModifier) *v1beta1.GroupPolicyAttachment {
+	cr := &v1beta1.GroupPolicyAttachment{}
 	for _, f := range m {
 		f(cr)
 	}

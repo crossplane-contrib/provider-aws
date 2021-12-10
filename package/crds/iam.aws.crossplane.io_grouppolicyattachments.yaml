@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: iamgrouppolicyattachments.iam.aws.crossplane.io
+  name: grouppolicyattachments.iam.aws.crossplane.io
 spec:
   group: iam.aws.crossplane.io
   names:
@@ -12,10 +12,10 @@ spec:
     - crossplane
     - managed
     - aws
-    kind: IAMGroupPolicyAttachment
-    listKind: IAMGroupPolicyAttachmentList
-    plural: iamgrouppolicyattachments
-    singular: iamgrouppolicyattachment
+    kind: GroupPolicyAttachment
+    listKind: GroupPolicyAttachmentList
+    plural: grouppolicyattachments
+    singular: grouppolicyattachment
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -37,7 +37,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An IAMGroupPolicyAttachment is a managed resource that represents
+        description: An GroupPolicyAttachment is a managed resource that represents
           an AWS IAM Group policy attachment.
         properties:
           apiVersion:
@@ -53,8 +53,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: An IAMGroupPolicyAttachmentSpec defines the desired state
-              of an IAMGroupPolicyAttachment.
+            description: An GroupPolicyAttachmentSpec defines the desired state of
+              an GroupPolicyAttachment.
             properties:
               deletionPolicy:
                 default: Delete
@@ -66,8 +66,8 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: IAMGroupPolicyAttachmentParameters define the desired
-                  state of an AWS IAMGroupPolicyAttachment.
+                description: GroupPolicyAttachmentParameters define the desired state
+                  of an AWS GroupPolicyAttachment.
                 properties:
                   groupName:
                     description: GroupName presents the name of the IAMGroup.
@@ -172,11 +172,11 @@ spec:
             - forProvider
             type: object
           status:
-            description: An IAMGroupPolicyAttachmentStatus represents the observed
-              state of an IAMGroupPolicyAttachment.
+            description: An GroupPolicyAttachmentStatus represents the observed state
+              of an GroupPolicyAttachment.
             properties:
               atProvider:
-                description: IAMGroupPolicyAttachmentObservation keeps the state for
+                description: GroupPolicyAttachmentObservation keeps the state for
                   the external resource
                 properties:
                   attachedPolicyArn:

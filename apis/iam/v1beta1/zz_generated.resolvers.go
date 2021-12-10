@@ -51,8 +51,8 @@ func (mg *AccessKey) ResolveReferences(ctx context.Context, c client.Reader) err
 	return nil
 }
 
-// ResolveReferences of this IAMGroupPolicyAttachment.
-func (mg *IAMGroupPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this GroupPolicyAttachment.
+func (mg *GroupPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse

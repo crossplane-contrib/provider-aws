@@ -96,12 +96,12 @@ var (
 	IAMGroupUserMembershipGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupUserMembershipKind)
 )
 
-// IAMGroupPolicyAttachment type metadata.
+// GroupPolicyAttachment type metadata.
 var (
-	IAMGroupPolicyAttachmentKind             = reflect.TypeOf(IAMGroupPolicyAttachment{}).Name()
-	IAMGroupPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMGroupPolicyAttachmentKind}.String()
-	IAMGroupPolicyAttachmentKindAPIVersion   = IAMGroupPolicyAttachmentKind + "." + SchemeGroupVersion.String()
-	IAMGroupPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupPolicyAttachmentKind)
+	GroupPolicyAttachmentKind             = reflect.TypeOf(GroupPolicyAttachment{}).Name()
+	GroupPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: GroupPolicyAttachmentKind}.String()
+	GroupPolicyAttachmentKindAPIVersion   = GroupPolicyAttachmentKind + "." + SchemeGroupVersion.String()
+	GroupPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(GroupPolicyAttachmentKind)
 )
 
 // AccessKey type metadata.
@@ -128,7 +128,7 @@ func init() {
 	SchemeBuilder.Register(&IAMUserPolicyAttachment{}, &IAMUserPolicyAttachmentList{})
 	SchemeBuilder.Register(&IAMGroup{}, &IAMGroupList{})
 	SchemeBuilder.Register(&IAMGroupUserMembership{}, &IAMGroupUserMembershipList{})
-	SchemeBuilder.Register(&IAMGroupPolicyAttachment{}, &IAMGroupPolicyAttachmentList{})
+	SchemeBuilder.Register(&GroupPolicyAttachment{}, &GroupPolicyAttachmentList{})
 	SchemeBuilder.Register(&AccessKey{}, &AccessKeyList{})
 	SchemeBuilder.Register(&OpenIDConnectProvider{}, &OpenIDConnectProviderList{})
 }
