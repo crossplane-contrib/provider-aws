@@ -86,10 +86,10 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/policy"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/role"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/user"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
 	identityiamrole "github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
@@ -154,7 +154,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		groupusermembership.SetupGroupUserMembership,
 		userpolicyattachment.SetupUserPolicyAttachment,
 		grouppolicyattachment.SetupGroupPolicyAttachment,
-		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
+		rolepolicyattachment.SetupRolePolicyAttachment,
 		identityiamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,

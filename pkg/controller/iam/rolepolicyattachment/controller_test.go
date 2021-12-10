@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamrolepolicyattachment
+package rolepolicyattachment
 
 import (
 	"context"
@@ -50,26 +50,26 @@ type args struct {
 	cr  resource.Managed
 }
 
-type rolePolicyModifier func(*v1beta1.IAMRolePolicyAttachment)
+type rolePolicyModifier func(*v1beta1.RolePolicyAttachment)
 
 func withConditions(c ...xpv1.Condition) rolePolicyModifier {
-	return func(r *v1beta1.IAMRolePolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withRoleName(s *string) rolePolicyModifier {
-	return func(r *v1beta1.IAMRolePolicyAttachment) { r.Spec.ForProvider.RoleName = *s }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.RoleName = *s }
 }
 
 func withSpecPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.IAMRolePolicyAttachment) { r.Spec.ForProvider.PolicyARN = *s }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARN = *s }
 }
 
 func withStatusPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.IAMRolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = *s }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = *s }
 }
 
-func rolePolicy(m ...rolePolicyModifier) *v1beta1.IAMRolePolicyAttachment {
-	cr := &v1beta1.IAMRolePolicyAttachment{}
+func rolePolicy(m ...rolePolicyModifier) *v1beta1.RolePolicyAttachment {
+	cr := &v1beta1.RolePolicyAttachment{}
 	for _, f := range m {
 		f(cr)
 	}

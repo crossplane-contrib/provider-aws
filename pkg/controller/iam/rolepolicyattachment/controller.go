@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package iamrolepolicyattachment
+package rolepolicyattachment
 
 import (
 	"context"
@@ -42,25 +42,25 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
-	errGet              = "failed to get IAMRolePolicyAttachments for role with name"
+	errUnexpectedObject = "The managed resource is not an RolePolicyAttachment resource"
+	errGet              = "failed to get RolePolicyAttachments for role with name"
 	errAttach           = "failed to attach the policy to role"
 	errDetach           = "failed to detach the policy to role"
 )
 
-// SetupIAMRolePolicyAttachment adds a controller that reconciles
-// IAMRolePolicyAttachments.
-func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1beta1.IAMRolePolicyAttachmentGroupKind)
+// SetupRolePolicyAttachment adds a controller that reconciles
+// RolePolicyAttachments.
+func SetupRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1beta1.IAMRolePolicyAttachment{}).
+		For(&v1beta1.RolePolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.IAMRolePolicyAttachmentGroupVersionKind),
+			resource.ManagedKind(v1beta1.RolePolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -88,7 +88,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.RolePolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -119,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.RolePolicyAttachment)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -136,7 +136,7 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.RolePolicyAttachment)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

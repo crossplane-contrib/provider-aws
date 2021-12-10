@@ -135,8 +135,8 @@ func (mg *GroupUserMembership) ResolveReferences(ctx context.Context, c client.R
 	return nil
 }
 
-// ResolveReferences of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this RolePolicyAttachment.
+func (mg *RolePolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse

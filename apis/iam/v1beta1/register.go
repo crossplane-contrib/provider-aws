@@ -48,12 +48,12 @@ var (
 	RoleGroupVersionKind = SchemeGroupVersion.WithKind(RoleKind)
 )
 
-// IAMRolePolicyAttachment type metadata.
+// RolePolicyAttachment type metadata.
 var (
-	IAMRolePolicyAttachmentKind             = reflect.TypeOf(IAMRolePolicyAttachment{}).Name()
-	IAMRolePolicyAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IAMRolePolicyAttachmentKind}.String()
-	IAMRolePolicyAttachmentKindAPIVersion   = IAMRolePolicyAttachmentKind + "." + SchemeGroupVersion.String()
-	IAMRolePolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMRolePolicyAttachmentKind)
+	RolePolicyAttachmentKind             = reflect.TypeOf(RolePolicyAttachment{}).Name()
+	RolePolicyAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RolePolicyAttachmentKind}.String()
+	RolePolicyAttachmentKindAPIVersion   = RolePolicyAttachmentKind + "." + SchemeGroupVersion.String()
+	RolePolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(RolePolicyAttachmentKind)
 )
 
 // User type metadata.
@@ -122,7 +122,7 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&Role{}, &RoleList{})
-	SchemeBuilder.Register(&IAMRolePolicyAttachment{}, &IAMRolePolicyAttachmentList{})
+	SchemeBuilder.Register(&RolePolicyAttachment{}, &RolePolicyAttachmentList{})
 	SchemeBuilder.Register(&User{}, &UserList{})
 	SchemeBuilder.Register(&Policy{}, &PolicyList{})
 	SchemeBuilder.Register(&UserPolicyAttachment{}, &UserPolicyAttachmentList{})

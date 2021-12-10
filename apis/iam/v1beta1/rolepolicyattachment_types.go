@@ -22,9 +22,9 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
+// RolePolicyAttachmentParameters define the desired state of an AWS IAM
 // Role policy attachment.
-type IAMRolePolicyAttachmentParameters struct {
+type RolePolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
@@ -56,30 +56,30 @@ type IAMRolePolicyAttachmentParameters struct {
 	RoleNameSelector *xpv1.Selector `json:"roleNameSelector,omitempty"`
 }
 
-// An IAMRolePolicyAttachmentSpec defines the desired state of an
-// IAMRolePolicyAttachment.
-type IAMRolePolicyAttachmentSpec struct {
+// An RolePolicyAttachmentSpec defines the desired state of an
+// RolePolicyAttachment.
+type RolePolicyAttachmentSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       IAMRolePolicyAttachmentParameters `json:"forProvider"`
+	ForProvider       RolePolicyAttachmentParameters `json:"forProvider"`
 }
 
-// IAMRolePolicyAttachmentExternalStatus keeps the state for the external resource
-type IAMRolePolicyAttachmentExternalStatus struct {
+// RolePolicyAttachmentExternalStatus keeps the state for the external resource
+type RolePolicyAttachmentExternalStatus struct {
 	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
 	// is not yet attached
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An IAMRolePolicyAttachmentStatus represents the observed state of an
-// IAMRolePolicyAttachment.
-type IAMRolePolicyAttachmentStatus struct {
+// An RolePolicyAttachmentStatus represents the observed state of an
+// RolePolicyAttachment.
+type RolePolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMRolePolicyAttachmentExternalStatus `json:"atProvider,omitempty"`
+	AtProvider          RolePolicyAttachmentExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// An IAMRolePolicyAttachment is a managed resource that represents an AWS IAM
+// An RolePolicyAttachment is a managed resource that represents an AWS IAM
 // Role policy attachment.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
@@ -88,19 +88,19 @@ type IAMRolePolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type IAMRolePolicyAttachment struct {
+type RolePolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMRolePolicyAttachmentSpec   `json:"spec"`
-	Status IAMRolePolicyAttachmentStatus `json:"status,omitempty"`
+	Spec   RolePolicyAttachmentSpec   `json:"spec"`
+	Status RolePolicyAttachmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// IAMRolePolicyAttachmentList contains a list of IAMRolePolicyAttachments
-type IAMRolePolicyAttachmentList struct {
+// RolePolicyAttachmentList contains a list of RolePolicyAttachments
+type RolePolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []IAMRolePolicyAttachment `json:"items"`
+	Items           []RolePolicyAttachment `json:"items"`
 }
