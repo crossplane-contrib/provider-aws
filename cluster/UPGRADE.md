@@ -21,40 +21,12 @@ kubectl patch provider.pkg <provider object name> -p '{"spec":{"package": "cross
 
 At this point, there is no controller reconciling your existing IAM custom resources.
 We will create new CRs that correspond to those old IAM CRs but have new type,
-and then clean up the old CRs
+and then clean up the old CRs.
 
-## Using Composition
-
-< TO BE FILLED >
-
-```bash
-# The number of old CRs in identity group.
-kubectl get aws -o name | grep 'identity.aws.crossplane.io' | wc -l
-# The number of new CRs in iam group. This number should be equal to the number
-# of old CRs from identity group.
-kubectl get aws -o name | grep 'iam.aws.crossplane.io' | wc -l
-```
-
-Now, we can delete old CRs:
-```bash
-kubectl get aws -o name \
-  | grep 'identity.aws.crossplane.io' \
-  | xargs kubectl delete
-# Since no controller is reconciling them, we need to remove the finalizer to
-# unblock deletion.
-kubectl get aws -o name \
-  | grep 'identity.aws.crossplane.io' \
-  | xargs -I {} kubectl patch {} -p '{"metadata":{"finalizers": []}}' --type=merge
-```
-
-Done!
-
-## Without Composition
-
-If you don't use composition to deploy the managed resources, then you'll need
-to do the re-creation part manually.
+## Create using new CRDs
 
 Create new custom resources (CR) with the new metadata:
+
 ```bash
 # IAMUser
 kubectl get iamuser.identity.aws.crossplane.io -ojson \
@@ -135,7 +107,103 @@ kubectl get aws -o name | grep 'identity.aws.crossplane.io' | wc -l
 kubectl get aws -o name | grep 'iam.aws.crossplane.io' | wc -l
 ```
 
-Now, we can delete old CRs:
+## Update Composition References
+
+If you didn't use `Composition` to deploy these resources, you can skip this step and
+continue with the clean up.
+
+We need to edit each and every composite resource (XR) that references to the old ojects
+to make them point to the new CRs we just created. In addition, we'll also need to
+update `Composition` objects so that future creations use the new CRDs.
+
+Since Crossplane is actively reconciling the composite resource and `Composition`, we
+need to scale it down so that it doesn't create duplicate CRs while we're doing the
+changes.
+
+```bash
+# Make sure to check the namespace.
+kubectl -n crossplane-system scale deployment crossplane --replicas=0
+```
+
+We will first edit the `Composition` objects to use the new CRD `apiVersion` and `kind`s.
+Find all `Composition`s to see which of them uses IAM resources:
+```bash
+kubectl get composition
+```
+
+In each element of the `spec.resources` array, make sure all IAM resources have the new
+`apiVersion` and `kind`.
+
+```yaml
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xpostgresqlinstances.aws.database.example.org
+spec:
+  ...
+  resources:
+    - name: user
+      base:
+        apiVersion: identity.aws.crossplane.io/v1alpha1 # <--- change this to the new group, iam.aws.crossplane.io/v1beta1
+        kind: IAMUser # <--- change this to the new kind, i.e. "User" in this case.
+        spec:
+          ...
+```
+
+
+You will now need to edit composite resources that has composed resources with the old
+CRDs. Get the list of all composite resources:
+```bash
+kubectl get composite
+```
+
+```yaml
+# Assuming the composite type is XPostgreSQLInstance
+kubectl edit XPostgreSQLInstance resource-wfmfp
+```
+
+The changes you need to make are as following:
+```yaml
+spec:
+  ...
+  resourceRefs:
+  - apiVersion: identity.aws.crossplane.io/v1alpha1 # <--- change this to the new group, iam.aws.crossplane.io/v1beta1
+    kind: IAMAccessKey # <--- change type to the new name, i.e. AccessKey in this case.
+    name: platform-ref-aws-cluster-mwx8t-5j9hv # <--- make sure there is a resource with this name whose kind is AccessKey
+  # Make the changes described above for every entry in this array.
+  - apiVersion: identity.aws.crossplane.io/v1alpha1
+    kind: IAMUser
+    name: platform-ref-aws-cluster-mwx8t-klb7w
+  - apiVersion: identity.aws.crossplane.io/v1beta1
+    kind: IAMRole
+    name: platform-ref-aws-cluster
+  writeConnectionSecretToRef:
+  ...
+```
+
+At this point, everything looks like they were created with these `apiVersion` and `kind`
+in the first place. Before scaling Crossplane up again, let's check how many `identity` resources
+exist in the cluster at this point so that we can be sure no duplicate is created
+by composition controller:
+```bash
+kubectl get aws -o name | grep 'identity.aws.crossplane.io' | wc -l
+```
+
+We can bring back Crossplane:
+```bash
+kubectl -n crossplane-system scale deployment crossplane --replicas=1
+```
+
+After it's up and running check how many resources are there now and compare with the initial number:
+```bash
+kubectl get aws -o name | grep 'identity.aws.crossplane.io' | wc -l
+```
+
+All good if the numbers match!
+
+## Clean up the old CRs
+
+Now that the new ones took place of the old ones, we can delete the old ones:
 ```bash
 # Since no controller is reconciling them, we need to remove the finalizer to
 # unblock deletion.

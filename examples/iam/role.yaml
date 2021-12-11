@@ -31,7 +31,6 @@ spec:
         value: v1
   providerConfigRef:
     name: example
-
 ---
 apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Role
