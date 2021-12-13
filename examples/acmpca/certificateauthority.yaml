@@ -1,7 +1,7 @@
 ---
 # You need to install a CA root certificate manually via console because how to
 # issue a root certificate for a CA with the right CSR is not well documented.
-apiVersion: acmpca.aws.crossplane.io/v1alpha1
+apiVersion: acmpca.aws.crossplane.io/v1beta1
 kind: CertificateAuthority
 metadata:
   name: example

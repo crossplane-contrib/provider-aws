@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2019 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the certificatemanager v1alpha1 API group
+// Package v1beta1 contains API Schema definitions for the acm v1alpha1 API group
 // +kubebuilder:object:generate=true
-// +groupName=acmpca.aws.crossplane.io
-// +versionName=v1alpha1
-package v1alpha1
+// +groupName=acm.aws.crossplane.io
+// +versionName=v1beta1
+package v1beta1

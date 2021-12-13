@@ -19,14 +19,13 @@ package acmpca
 import (
 	"testing"
 
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -52,16 +51,16 @@ var (
 
 func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 	cases := map[string]struct {
-		in  *v1alpha1.CertificateAuthorityParameters
+		in  *v1beta1.CertificateAuthorityParameters
 		out *acmpca.CreateCertificateAuthorityInput
 	}{
 		"Filled_Input": {
-			in: &v1alpha1.CertificateAuthorityParameters{
+			in: &v1beta1.CertificateAuthorityParameters{
 				Type: types.CertificateAuthorityTypeRoot,
-				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
+				CertificateAuthorityConfiguration: v1beta1.CertificateAuthorityConfiguration{
 					SigningAlgorithm: types.SigningAlgorithmSha256withecdsa,
 					KeyAlgorithm:     types.KeyAlgorithmRsa2048,
-					Subject: v1alpha1.Subject{
+					Subject: v1beta1.Subject{
 						CommonName:                 commonName,
 						Country:                    country,
 						DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
@@ -78,7 +77,7 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 						Title:                      aws.String(title),
 					},
 				},
-				Tags: []v1alpha1.Tag{{
+				Tags: []v1beta1.Tag{{
 					Key:   "key1",
 					Value: "value1",
 				}},
@@ -125,14 +124,14 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 
 func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.CertificateAuthorityConfiguration
+		in  v1beta1.CertificateAuthorityConfiguration
 		out *types.CertificateAuthorityConfiguration
 	}{
 		"Filled_Input": {
-			in: v1alpha1.CertificateAuthorityConfiguration{
+			in: v1beta1.CertificateAuthorityConfiguration{
 				SigningAlgorithm: types.SigningAlgorithmSha256withecdsa,
 				KeyAlgorithm:     types.KeyAlgorithmRsa2048,
-				Subject: v1alpha1.Subject{
+				Subject: v1beta1.Subject{
 					CommonName:                 commonName,
 					Country:                    country,
 					DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
@@ -184,11 +183,11 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 
 func TestGenerateRevocationConfiguration(t *testing.T) {
 	cases := map[string]struct {
-		in  *v1alpha1.RevocationConfiguration
+		in  *v1beta1.RevocationConfiguration
 		out *types.RevocationConfiguration
 	}{
 		"Filled_Input": {
-			in: &v1alpha1.RevocationConfiguration{
+			in: &v1beta1.RevocationConfiguration{
 				CustomCname:  aws.String(customCname),
 				Enabled:      revocationConfigurationEnabled,
 				S3BucketName: aws.String(s3BucketName),
@@ -218,16 +217,16 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 	status := "ACTIVE"
 
 	type args struct {
-		spec *v1alpha1.CertificateAuthorityParameters
+		spec *v1beta1.CertificateAuthorityParameters
 		in   *types.CertificateAuthority
 	}
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.CertificateAuthorityParameters
+		want *v1beta1.CertificateAuthorityParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
-				spec: &v1alpha1.CertificateAuthorityParameters{
+				spec: &v1beta1.CertificateAuthorityParameters{
 					Type: types.CertificateAuthorityTypeRoot,
 				},
 				in: &types.CertificateAuthority{
@@ -245,11 +244,11 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 					},
 				},
 			},
-			want: &v1alpha1.CertificateAuthorityParameters{
+			want: &v1beta1.CertificateAuthorityParameters{
 				Type:   types.CertificateAuthorityTypeRoot,
 				Status: &status,
-				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
-					Subject: v1alpha1.Subject{
+				CertificateAuthorityConfiguration: v1beta1.CertificateAuthorityConfiguration{
+					Subject: v1beta1.Subject{
 						SerialNumber: aws.String(serialNumber),
 					},
 				},
@@ -270,7 +269,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 	status := "ACTIVE"
 	type args struct {
-		p    *v1alpha1.CertificateAuthority
+		p    *v1beta1.CertificateAuthority
 		cd   types.CertificateAuthority
 		tags []types.Tag
 	}
@@ -291,15 +290,15 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 					},
 					Status: types.CertificateAuthorityStatus(status),
 				},
-				p: &v1alpha1.CertificateAuthority{
-					Spec: v1alpha1.CertificateAuthoritySpec{
-						ForProvider: v1alpha1.CertificateAuthorityParameters{
-							RevocationConfiguration: &v1alpha1.RevocationConfiguration{
+				p: &v1beta1.CertificateAuthority{
+					Spec: v1beta1.CertificateAuthoritySpec{
+						ForProvider: v1beta1.CertificateAuthorityParameters{
+							RevocationConfiguration: &v1beta1.RevocationConfiguration{
 								CustomCname:  aws.String(customCname),
 								S3BucketName: aws.String(s3BucketName),
 								Enabled:      true,
 							},
-							Tags: []v1alpha1.Tag{{
+							Tags: []v1beta1.Tag{{
 								Key:   "key1",
 								Value: "value1",
 							}},
@@ -324,10 +323,10 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 						},
 					},
 				},
-				p: &v1alpha1.CertificateAuthority{
-					Spec: v1alpha1.CertificateAuthoritySpec{
-						ForProvider: v1alpha1.CertificateAuthorityParameters{
-							RevocationConfiguration: &v1alpha1.RevocationConfiguration{
+				p: &v1beta1.CertificateAuthority{
+					Spec: v1beta1.CertificateAuthoritySpec{
+						ForProvider: v1beta1.CertificateAuthorityParameters{
+							RevocationConfiguration: &v1beta1.RevocationConfiguration{
 								CustomCname:  aws.String(customCname),
 								S3BucketName: aws.String(s3BucketName),
 							},

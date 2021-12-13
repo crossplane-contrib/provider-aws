@@ -35,7 +35,6 @@ type MockCertificateClient struct {
 	MockDeleteCertificate         func(context.Context, *acm.DeleteCertificateInput, []func(*acm.Options)) (*acm.DeleteCertificateOutput, error)
 	MockUpdateCertificateOptions  func(context.Context, *acm.UpdateCertificateOptionsInput, []func(*acm.Options)) (*acm.UpdateCertificateOptionsOutput, error)
 	MockListTagsForCertificate    func(context.Context, *acm.ListTagsForCertificateInput, []func(*acm.Options)) (*acm.ListTagsForCertificateOutput, error)
-	MockRenewCertificate          func(context.Context, *acm.RenewCertificateInput, []func(*acm.Options)) (*acm.RenewCertificateOutput, error)
 	MockRemoveTagsFromCertificate func(context.Context, *acm.RemoveTagsFromCertificateInput, []func(*acm.Options)) (*acm.RemoveTagsFromCertificateOutput, error)
 }
 
@@ -62,11 +61,6 @@ func (m *MockCertificateClient) UpdateCertificateOptions(ctx context.Context, in
 // ListTagsForCertificate mocks ListTagsForCertificate method
 func (m *MockCertificateClient) ListTagsForCertificate(ctx context.Context, input *acm.ListTagsForCertificateInput, opts ...func(*acm.Options)) (*acm.ListTagsForCertificateOutput, error) {
 	return m.MockListTagsForCertificate(ctx, input, opts)
-}
-
-// RenewCertificate mocks RenewCertificate method
-func (m *MockCertificateClient) RenewCertificate(ctx context.Context, input *acm.RenewCertificateInput, opts ...func(*acm.Options)) (*acm.RenewCertificateOutput, error) {
-	return m.MockRenewCertificate(ctx, input, opts)
 }
 
 // RemoveTagsFromCertificate mocks RemoveTagsFromCertificate method

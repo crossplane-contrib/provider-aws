@@ -19,13 +19,13 @@ package v1alpha1
 import (
 	"context"
 
-	acm "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
-	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
-
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	acm "github.com/crossplane/provider-aws/apis/acm/v1beta1"
+	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 )
 
 // ResolveReferences of this User
