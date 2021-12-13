@@ -947,6 +947,10 @@ type Origin struct {
 
 // +kubebuilder:skipversion
 type OriginAccessIdentity struct {
+	// Origin access identity configuration. Send a GET request to the /CloudFront
+	// API version/CloudFront/identity ID/config resource.
+	CloudFrontOriginAccessIdentityConfig *OriginAccessIdentityConfig `json:"cloudFrontOriginAccessIdentityConfig,omitempty"`
+
 	ID *string `json:"id,omitempty"`
 
 	S3CanonicalUserID *string `json:"s3CanonicalUserID,omitempty"`
@@ -954,8 +958,6 @@ type OriginAccessIdentity struct {
 
 // +kubebuilder:skipversion
 type OriginAccessIdentityConfig struct {
-	CallerReference *string `json:"callerReference,omitempty"`
-
 	Comment *string `json:"comment,omitempty"`
 }
 
@@ -963,7 +965,7 @@ type OriginAccessIdentityConfig struct {
 type OriginAccessIdentityList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
-	Items []*OriginAccessIDentitySummary `json:"items,omitempty"`
+	Items []*OriginAccessIdentitySummary `json:"items,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
 
