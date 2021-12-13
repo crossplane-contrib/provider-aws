@@ -118,9 +118,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		f0 := &svcapitypes.OriginAccessIDentity{}
 		if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig != nil {
 			f0f0 := &svcapitypes.OriginAccessIDentityConfig{}
-			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.CallerReference != nil {
-				f0f0.CallerReference = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.CallerReference
-			}
 			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment != nil {
 				f0f0.Comment = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment
 			}

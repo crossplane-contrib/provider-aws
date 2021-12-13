@@ -66,8 +66,6 @@ spec:
                   cloudFrontOriginAccessIDentityConfig:
                     description: The current configuration information for the identity.
                     properties:
-                      callerReference:
-                        type: string
                       comment:
                         type: string
                     type: object
@@ -139,8 +137,6 @@ spec:
                           GET request to the /CloudFront API version/CloudFront/identity
                           ID/config resource.
                         properties:
-                          callerReference:
-                            type: string
                           comment:
                             type: string
                         type: object

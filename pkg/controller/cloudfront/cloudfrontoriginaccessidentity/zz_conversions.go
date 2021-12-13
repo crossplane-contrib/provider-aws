@@ -44,9 +44,6 @@ func GenerateCloudFrontOriginAccessIDentity(resp *svcsdk.GetCloudFrontOriginAcce
 		f0 := &svcapitypes.OriginAccessIDentity{}
 		if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig != nil {
 			f0f0 := &svcapitypes.OriginAccessIDentityConfig{}
-			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.CallerReference != nil {
-				f0f0.CallerReference = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.CallerReference
-			}
 			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment != nil {
 				f0f0.Comment = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment
 			}
@@ -77,9 +74,6 @@ func GenerateCreateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFron
 
 	if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig != nil {
 		f0 := &svcsdk.OriginAccessIdentityConfig{}
-		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.CallerReference != nil {
-			f0.SetCallerReference(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.CallerReference)
-		}
 		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment != nil {
 			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment)
 		}
@@ -95,9 +89,6 @@ func GenerateUpdateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFron
 
 	if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig != nil {
 		f0 := &svcsdk.OriginAccessIdentityConfig{}
-		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.CallerReference != nil {
-			f0.SetCallerReference(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.CallerReference)
-		}
 		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment != nil {
 			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment)
 		}

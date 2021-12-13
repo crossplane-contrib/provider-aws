@@ -8,5 +8,4 @@ spec:
   forProvider:
     region: us-east-1
     cloudFrontOriginAccessIDentityConfig:
-      callerReference: "example-reference"
       comment: "example-comment"

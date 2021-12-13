@@ -28,13 +28,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/controller/cloudfront"
 )
 
 // SetupCloudFrontOriginAccessIDentity adds a controller that reconciles CloudFrontOriginAccessIDentity .
@@ -54,6 +54,7 @@ func SetupCloudFrontOriginAccessIDentity(mgr ctrl.Manager, l logging.Logger, rl 
 					func(e *external) {
 						e.preObserve = preObserve
 						e.postObserve = postObserve
+						e.preCreate = preCreate
 						e.postCreate = postCreate
 						e.lateInitialize = lateInitialize
 						e.preUpdate = preUpdate
@@ -65,6 +66,11 @@ func SetupCloudFrontOriginAccessIDentity(mgr ctrl.Manager, l logging.Logger, rl 
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.CloudFrontOriginAccessIDentity, cdi *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
+	cdi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cr.UID))
+	return nil
 }
 
 func postCreate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, cpo *svcsdk.CreateCloudFrontOriginAccessIdentityOutput,
@@ -92,6 +98,7 @@ func postObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDenti
 }
 
 func preUpdate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, upi *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
+	upi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cp.UID))
 	upi.Id = awsclients.String(meta.GetExternalName(cp))
 	upi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
 	return nil
@@ -103,15 +110,11 @@ func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity
 	return false, nil
 }
 
-var mappingOptions = []cloudfront.LateInitOption{cloudfront.Replacer("ID", "Id")}
-
 func lateInitialize(in *svcapitypes.CloudFrontOriginAccessIDentityParameters, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
-	_, err := cloudfront.LateInitializeFromResponse("",
-		in.CloudFrontOriginAccessIDentityConfig, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig, mappingOptions...)
-	return err
+	// we only set the Comment for an OriginAccessIdentity
+	return nil
 }
 
 func isUpToDate(cp *svcapitypes.CloudFrontOriginAccessIDentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
-	return cloudfront.IsUpToDate(gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig, cp.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig,
-		mappingOptions...)
+	return cmp.Equal(cp.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment), nil
 }

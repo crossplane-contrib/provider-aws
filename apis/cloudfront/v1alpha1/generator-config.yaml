@@ -12,3 +12,4 @@ ignore:
   field_paths:
     - DistributionConfig.CallerReference
     - Origins.Quantity
+    - OriginAccessIdentityConfig.CallerReference
