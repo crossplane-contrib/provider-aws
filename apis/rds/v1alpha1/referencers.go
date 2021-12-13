@@ -21,7 +21,7 @@ import (
 
 	database "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -39,7 +39,7 @@ func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) err
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),
 		Reference:    mg.Spec.ForProvider.DomainIAMRoleNameRef,
 		Selector:     mg.Spec.ForProvider.DomainIAMRoleNameSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -127,7 +127,7 @@ func (mg *GlobalCluster) ResolveReferences(ctx context.Context, c client.Reader)
 	return nil
 }
 
-// DBClusterARN returns the status.atProvider.ARN of an IAMRole.
+// DBClusterARN returns the status.atProvider.ARN of an Role.
 func DBClusterARN() reference.ExtractValueFn {
 	return func(mg resource.Managed) string {
 		r, ok := mg.(*DBCluster)
@@ -164,7 +164,7 @@ func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),
 		Reference:    mg.Spec.ForProvider.DomainIAMRoleNameRef,
 		Selector:     mg.Spec.ForProvider.DomainIAMRoleNameSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -178,8 +178,8 @@ func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.MonitoringRoleARN),
 		Reference:    mg.Spec.ForProvider.MonitoringRoleARNRef,
 		Selector:     mg.Spec.ForProvider.MonitoringRoleARNSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.monitoringRoleArn")

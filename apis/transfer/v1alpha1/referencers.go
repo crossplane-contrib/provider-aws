@@ -25,7 +25,7 @@ import (
 
 	acm "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this User
@@ -51,8 +51,8 @@ func (mg *User) ResolveReferences(ctx context.Context, c client.Reader) error {
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Role),
 		Reference:    mg.Spec.ForProvider.RoleRef,
 		Selector:     mg.Spec.ForProvider.RoleSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.role")
@@ -127,7 +127,7 @@ func (mg *Server) ResolveReferences(ctx context.Context, c client.Reader) error 
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LoggingRole),
 		Reference:    mg.Spec.ForProvider.LoggingRoleRef,
 		Selector:     mg.Spec.ForProvider.LoggingRoleSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {

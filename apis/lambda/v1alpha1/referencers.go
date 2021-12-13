@@ -22,7 +22,7 @@ import (
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
 
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -39,8 +39,8 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Role),
 		Reference:    mg.Spec.ForProvider.RoleRef,
 		Selector:     mg.Spec.ForProvider.RoleSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.role")

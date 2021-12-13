@@ -26,7 +26,7 @@ import (
 	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 )
 
@@ -39,8 +39,8 @@ func (mg *Job) ResolveReferences(ctx context.Context, c client.Reader) error {
 		CurrentValue: mg.Spec.ForProvider.RoleArn,
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.roleArn")
@@ -60,8 +60,8 @@ func (mg *Crawler) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValue: mg.Spec.ForProvider.RoleArn,
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.roleArn")

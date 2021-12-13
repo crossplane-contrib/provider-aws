@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this DBSubnetGroup
@@ -72,7 +72,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),
 		Reference:    mg.Spec.ForProvider.DomainIAMRoleNameRef,
 		Selector:     mg.Spec.ForProvider.DomainIAMRoleNameSelector,
-		To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
+		To:           reference.To{Managed: &v1beta1.Role{}, List: &v1beta1.RoleList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -86,8 +86,8 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.MonitoringRoleARN),
 		Reference:    mg.Spec.ForProvider.MonitoringRoleARNRef,
 		Selector:     mg.Spec.ForProvider.MonitoringRoleARNSelector,
-		To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
-		Extract:      v1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &v1beta1.Role{}, List: &v1beta1.RoleList{}},
+		Extract:      v1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.monitoringRoleArn")

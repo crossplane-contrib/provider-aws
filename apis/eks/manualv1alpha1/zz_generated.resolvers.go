@@ -23,7 +23,7 @@ import (
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	v1beta12 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	v1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
-	v1beta11 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	v1beta11 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -80,12 +80,12 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.NodeRole,
-		Extract:      v1beta11.IAMRoleARN(),
+		Extract:      v1beta11.RoleARN(),
 		Reference:    mg.Spec.ForProvider.NodeRoleRef,
 		Selector:     mg.Spec.ForProvider.NodeRoleSelector,
 		To: reference.To{
-			List:    &v1beta11.IAMRoleList{},
-			Managed: &v1beta11.IAMRole{},
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
 		},
 	})
 	if err != nil {

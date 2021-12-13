@@ -1,6 +1,6 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-rolepolicyattachment
 spec:
@@ -12,8 +12,8 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-s3-replication-policy
 spec:
@@ -25,8 +25,8 @@ spec:
     name: example
 
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-rolemanagedpolicyattachment
 spec:
@@ -38,8 +38,8 @@ spec:
     name: example
 
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment1
 spec:
@@ -50,8 +50,8 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment2
 spec:
@@ -62,8 +62,8 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: sample-noderolemanagedpolicyattachment3
 spec:
@@ -74,8 +74,8 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRolePolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
 metadata:
   name: glue-rolepolicyattachment
 spec:

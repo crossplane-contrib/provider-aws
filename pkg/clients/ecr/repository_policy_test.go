@@ -114,7 +114,7 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 				withPrincipal(&v1beta1.RepositoryPrincipal{
 					AWSPrincipals: []v1beta1.AWSPrincipal{
 						{
-							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
 						{
 							// Note: should be converted to full ARN when serialized

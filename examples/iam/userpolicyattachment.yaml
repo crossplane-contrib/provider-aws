@@ -1,6 +1,6 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMUserPolicyAttachment
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: UserPolicyAttachment
 metadata:
   name: sample-userpolicyattachment
 spec:
