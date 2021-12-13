@@ -28,7 +28,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
@@ -92,7 +94,7 @@ func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region
 }
 
 // UseProviderConfig to produce a config that can be used to authenticate to AWS.
-func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
+func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) { // nolint:gocyclo
 	pc := &v1beta1.ProviderConfig{}
 	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
 		return nil, errors.Wrap(err, "cannot get referenced Provider")
@@ -105,6 +107,13 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
+		if pc.Spec.AssumeRoleARN != nil {
+			cfg, err := UsePodServiceAccountAssumeRole(ctx, []byte{}, DefaultSection, region, pc)
+			if err != nil {
+				return nil, err
+			}
+			return SetResolver(pc, cfg), nil
+		}
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 		if err != nil {
 			return nil, err
@@ -114,6 +123,13 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
+		}
+		if pc.Spec.AssumeRoleARN != nil {
+			cfg, err := UseProviderSecretAssumeRole(ctx, data, DefaultSection, region, pc)
+			if err != nil {
+				return nil, err
+			}
+			return SetResolver(pc, cfg), nil
 		}
 		cfg, err := UseProviderSecret(ctx, data, DefaultSection, region)
 		if err != nil {
@@ -268,6 +284,50 @@ func UseProviderSecret(ctx context.Context, data []byte, profile, region string)
 	return &config, err
 }
 
+// UseProviderSecretAssumeRole - AWS configuration which can be used to issue requests against AWS API
+// assume Cross account IAM roles
+func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
+	creds, err := CredentialsIDSecret(data, profile)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot parse credentials secret")
+	}
+
+	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+		Value: creds,
+	}))
+
+	stsSvc := sts.NewFromConfig(config)
+	stsAssume := stscreds.NewAssumeRoleProvider(stsSvc, StringValue(pc.Spec.AssumeRoleARN))
+	config.Credentials = aws.NewCredentialsCache(stsAssume)
+
+	return &config, err
+}
+
+// UsePodServiceAccountAssumeRole assumes an IAM role configured via a ServiceAccount
+// assume Cross account IAM roles
+// https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
+func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+	stsclient := sts.NewFromConfig(cfg)
+	cnf, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(aws.NewCredentialsCache(
+			stscreds.NewAssumeRoleProvider(
+				stsclient,
+				StringValue(pc.Spec.AssumeRoleARN),
+			)),
+		),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
+	}
+	return &cnf, err
+}
+
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
@@ -301,6 +361,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
+		if pc.Spec.AssumeRoleARN != nil {
+			cfg, err := UsePodServiceAccountV1AssumeRole(ctx, []byte{}, pc, DefaultSection, region)
+			if err != nil {
+				return nil, errors.Wrap(err, "cannot use pod service account to assume role")
+			}
+			return session.NewSession(cfg)
+		}
 		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
@@ -311,12 +378,52 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
+
+		if pc.Spec.AssumeRoleARN != nil {
+			cfg, err := UseProviderSecretV1AssumeRole(ctx, data, pc, DefaultSection, region)
+			if err != nil {
+				return nil, errors.Wrap(err, "cannot use secret")
+			}
+			return session.NewSession(cfg)
+		}
 		cfg, err := UseProviderSecretV1(ctx, data, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
 		return session.NewSession(cfg)
 	}
+}
+
+// UseProviderSecretV1AssumeRole - AWS v1 configuration which can be used to issue requests against AWS API
+// assume Cross account IAM roles
+func UseProviderSecretV1AssumeRole(ctx context.Context, data []byte, pc *v1beta1.ProviderConfig, profile, region string) (*awsv1.Config, error) {
+	creds, err := CredentialsIDSecret(data, profile)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot parse credentials secret")
+	}
+
+	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+		Value: creds,
+	}))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load credentials")
+	}
+
+	stsSvc := sts.NewFromConfig(config)
+	stsAssume := stscreds.NewAssumeRoleProvider(stsSvc, StringValue(pc.Spec.AssumeRoleARN))
+	config.Credentials = aws.NewCredentialsCache(stsAssume)
+
+	v2creds, err := config.Credentials.Retrieve(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+
+	v1creds := credentialsv1.NewStaticCredentials(
+		v2creds.AccessKeyID,
+		v2creds.SecretAccessKey,
+		v2creds.SessionToken)
+
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
 // UseProviderSecretV1 retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from
@@ -349,6 +456,39 @@ func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderCon
 
 	creds := credentialsv1.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
 	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+}
+
+// UsePodServiceAccountV1AssumeRole assumes an IAM role configured via a ServiceAccount and
+// assume Cross account IAM role
+// https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
+func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+	stsclient := sts.NewFromConfig(cfg)
+	cnf, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(aws.NewCredentialsCache(
+			stscreds.NewAssumeRoleProvider(
+				stsclient,
+				StringValue(pc.Spec.AssumeRoleARN),
+			)),
+		),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
+	}
+	v2creds, err := cnf.Credentials.Retrieve(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+	v1creds := credentialsv1.NewStaticCredentials(
+		v2creds.AccessKeyID,
+		v2creds.SecretAccessKey,
+		v2creds.SessionToken)
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
