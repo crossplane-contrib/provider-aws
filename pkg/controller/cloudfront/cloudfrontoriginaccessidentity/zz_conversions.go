@@ -30,24 +30,24 @@ import (
 
 // GenerateGetCloudFrontOriginAccessIdentityInput returns input for read
 // operation.
-func GenerateGetCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIDentity) *svcsdk.GetCloudFrontOriginAccessIdentityInput {
+func GenerateGetCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIdentity) *svcsdk.GetCloudFrontOriginAccessIdentityInput {
 	res := &svcsdk.GetCloudFrontOriginAccessIdentityInput{}
 
 	return res
 }
 
-// GenerateCloudFrontOriginAccessIDentity returns the current state in the form of *svcapitypes.CloudFrontOriginAccessIDentity.
-func GenerateCloudFrontOriginAccessIDentity(resp *svcsdk.GetCloudFrontOriginAccessIdentityOutput) *svcapitypes.CloudFrontOriginAccessIDentity {
-	cr := &svcapitypes.CloudFrontOriginAccessIDentity{}
+// GenerateCloudFrontOriginAccessIdentity returns the current state in the form of *svcapitypes.CloudFrontOriginAccessIdentity.
+func GenerateCloudFrontOriginAccessIdentity(resp *svcsdk.GetCloudFrontOriginAccessIdentityOutput) *svcapitypes.CloudFrontOriginAccessIdentity {
+	cr := &svcapitypes.CloudFrontOriginAccessIdentity{}
 
 	if resp.CloudFrontOriginAccessIdentity != nil {
-		f0 := &svcapitypes.OriginAccessIDentity{}
+		f0 := &svcapitypes.OriginAccessIdentity{}
 		if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig != nil {
-			f0f0 := &svcapitypes.OriginAccessIDentityConfig{}
+			f0f0 := &svcapitypes.OriginAccessIdentityConfig{}
 			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment != nil {
 				f0f0.Comment = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment
 			}
-			f0.CloudFrontOriginAccessIDentityConfig = f0f0
+			f0.CloudFrontOriginAccessIdentityConfig = f0f0
 		}
 		if resp.CloudFrontOriginAccessIdentity.Id != nil {
 			f0.ID = resp.CloudFrontOriginAccessIdentity.Id
@@ -55,9 +55,9 @@ func GenerateCloudFrontOriginAccessIDentity(resp *svcsdk.GetCloudFrontOriginAcce
 		if resp.CloudFrontOriginAccessIdentity.S3CanonicalUserId != nil {
 			f0.S3CanonicalUserID = resp.CloudFrontOriginAccessIdentity.S3CanonicalUserId
 		}
-		cr.Status.AtProvider.CloudFrontOriginAccessIDentity = f0
+		cr.Status.AtProvider.CloudFrontOriginAccessIdentity = f0
 	} else {
-		cr.Status.AtProvider.CloudFrontOriginAccessIDentity = nil
+		cr.Status.AtProvider.CloudFrontOriginAccessIdentity = nil
 	}
 	if resp.ETag != nil {
 		cr.Status.AtProvider.ETag = resp.ETag
@@ -69,13 +69,13 @@ func GenerateCloudFrontOriginAccessIDentity(resp *svcsdk.GetCloudFrontOriginAcce
 }
 
 // GenerateCreateCloudFrontOriginAccessIdentityInput returns a create input.
-func GenerateCreateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIDentity) *svcsdk.CreateCloudFrontOriginAccessIdentityInput {
+func GenerateCreateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIdentity) *svcsdk.CreateCloudFrontOriginAccessIdentityInput {
 	res := &svcsdk.CreateCloudFrontOriginAccessIdentityInput{}
 
-	if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig != nil {
+	if cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig != nil {
 		f0 := &svcsdk.OriginAccessIdentityConfig{}
-		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment != nil {
-			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment)
+		if cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment != nil {
+			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment)
 		}
 		res.SetCloudFrontOriginAccessIdentityConfig(f0)
 	}
@@ -84,13 +84,13 @@ func GenerateCreateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFron
 }
 
 // GenerateUpdateCloudFrontOriginAccessIdentityInput returns an update input.
-func GenerateUpdateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIDentity) *svcsdk.UpdateCloudFrontOriginAccessIdentityInput {
+func GenerateUpdateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIdentity) *svcsdk.UpdateCloudFrontOriginAccessIdentityInput {
 	res := &svcsdk.UpdateCloudFrontOriginAccessIdentityInput{}
 
-	if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig != nil {
+	if cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig != nil {
 		f0 := &svcsdk.OriginAccessIdentityConfig{}
-		if cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment != nil {
-			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment)
+		if cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment != nil {
+			f0.SetComment(*cr.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment)
 		}
 		res.SetCloudFrontOriginAccessIdentityConfig(f0)
 	}
@@ -99,7 +99,7 @@ func GenerateUpdateCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFron
 }
 
 // GenerateDeleteCloudFrontOriginAccessIdentityInput returns a deletion input.
-func GenerateDeleteCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIDentity) *svcsdk.DeleteCloudFrontOriginAccessIdentityInput {
+func GenerateDeleteCloudFrontOriginAccessIdentityInput(cr *svcapitypes.CloudFrontOriginAccessIdentity) *svcsdk.DeleteCloudFrontOriginAccessIdentityInput {
 	res := &svcsdk.DeleteCloudFrontOriginAccessIdentityInput{}
 
 	return res

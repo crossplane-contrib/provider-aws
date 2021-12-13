@@ -76,59 +76,59 @@ func (mg *CachePolicy) SetWriteConnectionSecretToReference(r *xpv1.SecretReferen
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
-// GetCondition of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this CloudFrontOriginAccessIDentity.
+GetProviderReference of this CloudFrontOriginAccessIdentity.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *CloudFrontOriginAccessIDentity) GetProviderReference() *xpv1.Reference {
+func (mg *CloudFrontOriginAccessIdentity) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this CloudFrontOriginAccessIDentity.
+SetProviderReference of this CloudFrontOriginAccessIdentity.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *CloudFrontOriginAccessIDentity) SetProviderReference(r *xpv1.Reference) {
+func (mg *CloudFrontOriginAccessIdentity) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this CloudFrontOriginAccessIDentity.
-func (mg *CloudFrontOriginAccessIDentity) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

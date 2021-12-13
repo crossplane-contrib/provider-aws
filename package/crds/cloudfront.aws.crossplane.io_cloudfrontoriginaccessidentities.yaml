@@ -12,8 +12,8 @@ spec:
     - crossplane
     - managed
     - aws
-    kind: CloudFrontOriginAccessIDentity
-    listKind: CloudFrontOriginAccessIDentityList
+    kind: CloudFrontOriginAccessIdentity
+    listKind: CloudFrontOriginAccessIdentityList
     plural: cloudfrontoriginaccessidentities
     singular: cloudfrontoriginaccessidentity
   scope: Cluster
@@ -31,7 +31,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CloudFrontOriginAccessIDentity is the Schema for the CloudFrontOriginAccessIDentities
+        description: CloudFrontOriginAccessIdentity is the Schema for the CloudFrontOriginAccessIdentities
           API
         properties:
           apiVersion:
@@ -47,8 +47,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: CloudFrontOriginAccessIDentitySpec defines the desired state
-              of CloudFrontOriginAccessIDentity
+            description: CloudFrontOriginAccessIdentitySpec defines the desired state
+              of CloudFrontOriginAccessIdentity
             properties:
               deletionPolicy:
                 default: Delete
@@ -60,21 +60,21 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: CloudFrontOriginAccessIDentityParameters defines the
-                  desired state of CloudFrontOriginAccessIDentity
+                description: CloudFrontOriginAccessIdentityParameters defines the
+                  desired state of CloudFrontOriginAccessIdentity
                 properties:
-                  cloudFrontOriginAccessIDentityConfig:
+                  cloudFrontOriginAccessIdentityConfig:
                     description: The current configuration information for the identity.
                     properties:
                       comment:
                         type: string
                     type: object
                   region:
-                    description: Region is which region the CloudFrontOriginAccessIDentity
+                    description: Region is which region the CloudFrontOriginAccessIdentity
                       will be created.
                     type: string
                 required:
-                - cloudFrontOriginAccessIDentityConfig
+                - cloudFrontOriginAccessIdentityConfig
                 - region
                 type: object
               providerConfigRef:
@@ -122,17 +122,17 @@ spec:
             - forProvider
             type: object
           status:
-            description: CloudFrontOriginAccessIDentityStatus defines the observed
-              state of CloudFrontOriginAccessIDentity.
+            description: CloudFrontOriginAccessIdentityStatus defines the observed
+              state of CloudFrontOriginAccessIdentity.
             properties:
               atProvider:
-                description: CloudFrontOriginAccessIDentityObservation defines the
-                  observed state of CloudFrontOriginAccessIDentity
+                description: CloudFrontOriginAccessIdentityObservation defines the
+                  observed state of CloudFrontOriginAccessIdentity
                 properties:
-                  cloudFrontOriginAccessIDentity:
+                  cloudFrontOriginAccessIdentity:
                     description: The origin access identity's information.
                     properties:
-                      cloudFrontOriginAccessIDentityConfig:
+                      cloudFrontOriginAccessIdentityConfig:
                         description: Origin access identity configuration. Send a
                           GET request to the /CloudFront API version/CloudFront/identity
                           ID/config resource.

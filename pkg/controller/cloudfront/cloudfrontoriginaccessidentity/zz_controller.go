@@ -38,13 +38,13 @@ import (
 )
 
 const (
-	errUnexpectedObject = "managed resource is not an CloudFrontOriginAccessIDentity resource"
+	errUnexpectedObject = "managed resource is not an CloudFrontOriginAccessIdentity resource"
 
 	errCreateSession = "cannot create a new session"
-	errCreate        = "cannot create CloudFrontOriginAccessIDentity in AWS"
-	errUpdate        = "cannot update CloudFrontOriginAccessIDentity in AWS"
-	errDescribe      = "failed to describe CloudFrontOriginAccessIDentity"
-	errDelete        = "failed to delete CloudFrontOriginAccessIDentity"
+	errCreate        = "cannot create CloudFrontOriginAccessIdentity in AWS"
+	errUpdate        = "cannot update CloudFrontOriginAccessIdentity in AWS"
+	errDescribe      = "failed to describe CloudFrontOriginAccessIdentity"
+	errDelete        = "failed to delete CloudFrontOriginAccessIdentity"
 )
 
 type connector struct {
@@ -53,7 +53,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIDentity)
+	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIdentity)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -65,7 +65,7 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 }
 
 func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIDentity)
+	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIdentity)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -86,7 +86,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
-	GenerateCloudFrontOriginAccessIDentity(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+	GenerateCloudFrontOriginAccessIdentity(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
 	upToDate, err := e.isUpToDate(cr, resp)
 	if err != nil {
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 }
 
 func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIDentity)
+	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIdentity)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -115,13 +115,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 
 	if resp.CloudFrontOriginAccessIdentity != nil {
-		f0 := &svcapitypes.OriginAccessIDentity{}
+		f0 := &svcapitypes.OriginAccessIdentity{}
 		if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig != nil {
-			f0f0 := &svcapitypes.OriginAccessIDentityConfig{}
+			f0f0 := &svcapitypes.OriginAccessIdentityConfig{}
 			if resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment != nil {
 				f0f0.Comment = resp.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment
 			}
-			f0.CloudFrontOriginAccessIDentityConfig = f0f0
+			f0.CloudFrontOriginAccessIdentityConfig = f0f0
 		}
 		if resp.CloudFrontOriginAccessIdentity.Id != nil {
 			f0.ID = resp.CloudFrontOriginAccessIdentity.Id
@@ -129,9 +129,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.CloudFrontOriginAccessIdentity.S3CanonicalUserId != nil {
 			f0.S3CanonicalUserID = resp.CloudFrontOriginAccessIdentity.S3CanonicalUserId
 		}
-		cr.Status.AtProvider.CloudFrontOriginAccessIDentity = f0
+		cr.Status.AtProvider.CloudFrontOriginAccessIdentity = f0
 	} else {
-		cr.Status.AtProvider.CloudFrontOriginAccessIDentity = nil
+		cr.Status.AtProvider.CloudFrontOriginAccessIdentity = nil
 	}
 	if resp.ETag != nil {
 		cr.Status.AtProvider.ETag = resp.ETag
@@ -148,7 +148,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIDentity)
+	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIdentity)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -161,7 +161,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIDentity)
+	cr, ok := mg.(*svcapitypes.CloudFrontOriginAccessIdentity)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -204,47 +204,47 @@ func newExternal(kube client.Client, client svcsdkapi.CloudFrontAPI, opts []opti
 type external struct {
 	kube           client.Client
 	client         svcsdkapi.CloudFrontAPI
-	preObserve     func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.GetCloudFrontOriginAccessIdentityInput) error
-	postObserve    func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
-	lateInitialize func(*svcapitypes.CloudFrontOriginAccessIDentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error
-	isUpToDate     func(*svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error)
-	preCreate      func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error
-	postCreate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.CreateCloudFrontOriginAccessIdentityOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityOutput, error) error
-	preUpdate      func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error
-	postUpdate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
+	preObserve     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityInput) error
+	postObserve    func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
+	lateInitialize func(*svcapitypes.CloudFrontOriginAccessIdentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error
+	isUpToDate     func(*svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error)
+	preCreate      func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error
+	postCreate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
+	preDelete      func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityOutput, error) error
+	preUpdate      func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error
+	postUpdate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
-func nopPreObserve(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.GetCloudFrontOriginAccessIdentityInput) error {
+func nopPreObserve(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityInput) error {
 	return nil
 }
 
-func nopPostObserve(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIDentity, _ *svcsdk.GetCloudFrontOriginAccessIdentityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func nopPostObserve(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIdentity, _ *svcsdk.GetCloudFrontOriginAccessIdentityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	return obs, err
 }
-func nopLateInitialize(*svcapitypes.CloudFrontOriginAccessIDentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
+func nopLateInitialize(*svcapitypes.CloudFrontOriginAccessIdentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
+func alwaysUpToDate(*svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
 	return true, nil
 }
 
-func nopPreCreate(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
+func nopPreCreate(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
 	return nil
 }
-func nopPostCreate(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIDentity, _ *svcsdk.CreateCloudFrontOriginAccessIdentityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func nopPostCreate(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIdentity, _ *svcsdk.CreateCloudFrontOriginAccessIdentityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error) {
+func nopPreDelete(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIDentity, _ *svcsdk.DeleteCloudFrontOriginAccessIdentityOutput, err error) error {
+func nopPostDelete(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIdentity, _ *svcsdk.DeleteCloudFrontOriginAccessIdentityOutput, err error) error {
 	return err
 }
-func nopPreUpdate(context.Context, *svcapitypes.CloudFrontOriginAccessIDentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
+func nopPreUpdate(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
 	return nil
 }
-func nopPostUpdate(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIDentity, _ *svcsdk.UpdateCloudFrontOriginAccessIdentityOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+func nopPostUpdate(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIdentity, _ *svcsdk.UpdateCloudFrontOriginAccessIdentityOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }

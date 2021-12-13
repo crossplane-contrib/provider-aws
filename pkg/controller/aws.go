@@ -207,7 +207,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
-		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIDentity,
+		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,

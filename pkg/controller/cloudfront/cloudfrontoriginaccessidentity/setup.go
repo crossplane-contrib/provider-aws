@@ -37,17 +37,17 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// SetupCloudFrontOriginAccessIDentity adds a controller that reconciles CloudFrontOriginAccessIDentity .
-func SetupCloudFrontOriginAccessIDentity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIDentityGroupKind)
+// SetupCloudFrontOriginAccessIdentity adds a controller that reconciles CloudFrontOriginAccessIdentity .
+func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIdentityGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&svcapitypes.CloudFrontOriginAccessIDentity{}).
+		For(&svcapitypes.CloudFrontOriginAccessIdentity{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.CloudFrontOriginAccessIDentityGroupVersionKind),
+			resource.ManagedKind(svcapitypes.CloudFrontOriginAccessIdentityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
 				kube: mgr.GetClient(),
 				opts: []option{
@@ -68,12 +68,12 @@ func SetupCloudFrontOriginAccessIDentity(mgr ctrl.Manager, l logging.Logger, rl 
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func preCreate(_ context.Context, cr *svcapitypes.CloudFrontOriginAccessIDentity, cdi *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
+func preCreate(_ context.Context, cr *svcapitypes.CloudFrontOriginAccessIdentity, cdi *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
 	cdi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cr.UID))
 	return nil
 }
 
-func postCreate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, cpo *svcsdk.CreateCloudFrontOriginAccessIdentityOutput,
+func postCreate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, cpo *svcsdk.CreateCloudFrontOriginAccessIdentityOutput,
 	ec managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
@@ -83,12 +83,12 @@ func postCreate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentit
 	return ec, nil
 }
 
-func preObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, gpi *svcsdk.GetCloudFrontOriginAccessIdentityInput) error {
+func preObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, gpi *svcsdk.GetCloudFrontOriginAccessIdentityInput) error {
 	gpi.Id = awsclients.String(meta.GetExternalName(cp))
 	return nil
 }
 
-func postObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, _ *svcsdk.GetCloudFrontOriginAccessIdentityOutput,
+func postObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, _ *svcsdk.GetCloudFrontOriginAccessIdentityOutput,
 	eo managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
@@ -97,24 +97,24 @@ func postObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDenti
 	return eo, nil
 }
 
-func preUpdate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, upi *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
+func preUpdate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, upi *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
 	upi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cp.UID))
 	upi.Id = awsclients.String(meta.GetExternalName(cp))
 	upi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
 	return nil
 }
 
-func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIDentity, dpi *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error) {
+func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, dpi *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error) {
 	dpi.Id = awsclients.String(meta.GetExternalName(cp))
 	dpi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
 	return false, nil
 }
 
-func lateInitialize(in *svcapitypes.CloudFrontOriginAccessIDentityParameters, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
+func lateInitialize(in *svcapitypes.CloudFrontOriginAccessIdentityParameters, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
 	// we only set the Comment for an OriginAccessIdentity
 	return nil
 }
 
-func isUpToDate(cp *svcapitypes.CloudFrontOriginAccessIDentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
-	return cmp.Equal(cp.Spec.ForProvider.CloudFrontOriginAccessIDentityConfig.Comment, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment), nil
+func isUpToDate(cp *svcapitypes.CloudFrontOriginAccessIdentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
+	return cmp.Equal(cp.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment), nil
 }
