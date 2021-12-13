@@ -1,0 +1,23 @@
+apiVersion: cloudsearch.aws.crossplane.io/v1alpha1
+kind: Domain
+metadata:
+  name: cloudsearch-test-domain
+spec:
+  forProvider:
+    domainName: cloudsearch-test-domain
+    region: us-west-1
+    accessPolicies: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "*"
+            },
+            "Action": "cloudsearch:*"
+          }
+        ]
+      }
+  providerConfigRef:
+    name: default

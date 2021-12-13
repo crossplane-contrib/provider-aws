@@ -1,0 +1,14 @@
+apiVersion: cloudsearch.aws.crossplane.io/v1alpha1
+kind: Domain
+metadata:
+  name: cloudsearch-test-domain
+spec:
+  forProvider:
+    domainName: cloudsearch-test-domain
+    region: us-west-1
+    desiredReplicationCount: 4
+  providerConfigRef:
+    name: default
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: cloudsearch-secret

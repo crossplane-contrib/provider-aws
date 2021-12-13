@@ -30,6 +30,7 @@ import (
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	cloudfrontv1alpha1 "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
+	cloudsearchv1alpha1 "github.com/crossplane/provider-aws/apis/cloudsearch/v1alpha1"
 	cloudwatchlogsv1alpha1 "github.com/crossplane/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	docdbv1alpha1 "github.com/crossplane/provider-aws/apis/docdb/v1alpha1"
@@ -137,6 +138,7 @@ func init() {
 		neptunev1alpha1.SchemeBuilder.AddToScheme,
 		snsv1beta1.SchemeBuilder.AddToScheme,
 		prometheusservice.SchemeBuilder.AddToScheme,
+		cloudsearchv1alpha1.AddToScheme,
 	)
 }
 

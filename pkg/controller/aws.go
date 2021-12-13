@@ -46,6 +46,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	domain "github.com/crossplane/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
@@ -159,6 +160,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		cacheparametergroup.SetupCacheParameterGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
+		domain.SetupDomain,
 		docdbinstance.SetupDBInstance,
 		docdbcluster.SetupDBCluster,
 		docdbclusterparametergroup.SetupDBClusterParameterGroup,
