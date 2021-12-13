@@ -56,7 +56,6 @@ func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, l logging.Logger, rl 
 						e.postObserve = postObserve
 						e.preCreate = preCreate
 						e.postCreate = postCreate
-						e.lateInitialize = lateInitialize
 						e.preUpdate = preUpdate
 						e.isUpToDate = isUpToDate
 						e.preDelete = preDelete
@@ -108,11 +107,6 @@ func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity
 	dpi.Id = awsclients.String(meta.GetExternalName(cp))
 	dpi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
 	return false, nil
-}
-
-func lateInitialize(in *svcapitypes.CloudFrontOriginAccessIdentityParameters, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
-	// we only set the Comment for an OriginAccessIdentity
-	return nil
 }
 
 func isUpToDate(cp *svcapitypes.CloudFrontOriginAccessIdentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
