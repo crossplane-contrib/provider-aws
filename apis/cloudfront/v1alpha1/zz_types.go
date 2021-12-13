@@ -963,6 +963,8 @@ type OriginAccessIdentityConfig struct {
 type OriginAccessIdentityList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
+	Items []*OriginAccessIDentitySummary `json:"items,omitempty"`
+
 	Marker *string `json:"marker,omitempty"`
 
 	MaxItems *int64 `json:"maxItems,omitempty"`
