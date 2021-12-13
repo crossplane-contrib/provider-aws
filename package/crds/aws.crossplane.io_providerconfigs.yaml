@@ -47,6 +47,9 @@ spec:
           spec:
             description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
             properties:
+              assumeRoleARN:
+                description: AssumeRoleARN to assume with provider credentials
+                type: string
               credentials:
                 description: Credentials required to authenticate to this provider.
                 properties:

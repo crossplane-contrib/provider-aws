@@ -148,6 +148,11 @@ func (in *ProviderConfigList) DeepCopyObject() runtime.Object {
 func (in *ProviderConfigSpec) DeepCopyInto(out *ProviderConfigSpec) {
 	*out = *in
 	in.Credentials.DeepCopyInto(&out.Credentials)
+	if in.AssumeRoleARN != nil {
+		in, out := &in.AssumeRoleARN, &out.AssumeRoleARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.Endpoint != nil {
 		in, out := &in.Endpoint, &out.Endpoint
 		*out = new(EndpointConfig)
