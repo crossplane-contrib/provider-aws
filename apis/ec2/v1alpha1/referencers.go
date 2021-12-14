@@ -19,11 +19,11 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this VPCPeeringConnection
