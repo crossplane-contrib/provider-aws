@@ -409,8 +409,8 @@ the controller image, the other one has package metadata and CRDs. We need to ch
 controller image before building metadata image. Then we'll start the build process.
 
 Pre-requisites: 
-* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.1/reference/install.html).
-* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.1/getting-started/install-configure.html#install-crossplane-cli). 
+* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.5/reference/install.html).
+* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.5/getting-started/install-configure.html#install-crossplane-cli). 
 * Docker hub account with your own public repository.
 
 Follow the steps below to get set-up for in-cluster testing:

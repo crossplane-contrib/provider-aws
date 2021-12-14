@@ -5,7 +5,7 @@ AWS API. This can be done in one of two ways:
 
 1. Base64 encoding static credentials in a Kubernetes `Secret`. This is
    described in detail
-   [here](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#select-provider).
+   [here](https://crossplane.io/docs/v1.5/getting-started/install-configure.html#get-aws-account-keyfile).
 2. Authenticating using IAM Roles for Kubernetes `ServiceAccounts`. This
    functionality is only available when running Crossplane on EKS, and the
    feature has been
@@ -51,7 +51,7 @@ helm install crossplane --namespace crossplane-system crossplane-stable/crosspla
 ```
 
 `provider-aws` can be installed with the [Crossplane
-CLI](https://crossplane.io/docs/v1.0/getting-started/install-configure.html#install-crossplane-cli),
+CLI](https://crossplane.io/docs/v1.5/getting-started/install-configure.html#install-crossplane-cli),
 but we will do so manually so that we can also create and reference a
 `ControllerConfig`:
 
