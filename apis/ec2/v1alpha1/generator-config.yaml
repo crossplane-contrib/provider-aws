@@ -46,8 +46,6 @@ ignore:
     - TransitGatewayPrefixListReference
     - TransitGatewayRouteTable
     - TransitGatewayRoute
-    - TransitGatewayVpcAttachment
-    - TransitGateway
     - VpcEndpointConnectionNotification
     - VpcEndpointServiceConfiguration
     - VpcEndpoint
@@ -73,6 +71,22 @@ ignore:
     - AcceptVpcPeeringConnectionInput.PeerVPCID
     - CreateVolumeInput.DryRun
     - CreateVolumeInput.KmsKeyId
+    - CreateTransitGatewayInput.DryRun
+    - DeleteTransitGatewayInput.DryRun
+    - DescribeTransitGatewaysInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.DryRun
+    - DeleteTransitGatewayVpcAttachmentInput.DryRun
+    - DescribeTransitGatewayVpcAttachmentsInput.DryRun
+    - RejectTransitGatewayVpcAttachmentInput.DryRun
+    - AcceptTransitGatewayVpcAttachmentInput.DryRun
+    - ModifyTransitGatewayVpcAttachmentInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.VpcId
+    - CreateTransitGatewayVpcAttachmentInput.SubnetIds
+    - CreateTransitGatewayVpcAttachmentInput.TransitGatewayId
+    - ModifyTransitGatewayOptions.PropagationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AssociationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AddTransitGatewayCidrBlocks
+    - ModifyTransitGatewayOptions.RemoveTransitGatewayCidrBlocks
 resources:
   Volume:
     exceptions:

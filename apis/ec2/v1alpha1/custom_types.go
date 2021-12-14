@@ -60,6 +60,7 @@ type CustomVolumeParameters struct {
 // CustomVPCPeeringConnectionParameters are custom parameters for VPCPeeringConnection
 type CustomVPCPeeringConnectionParameters struct {
 	// The ID of the requester VPC. You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
 	VPCID *string `json:"vpcID,omitempty"`
 	// VPCIDRef is a reference to an API used to set
 	// the VPCID.
@@ -84,4 +85,68 @@ type CustomVPCPeeringConnectionParameters struct {
 	// will be created, but will be in pending-acceptance state. This will only lead to an active
 	// connection if both VPCs are in the same tenant.
 	AcceptRequest bool `json:"acceptRequest,omitempty"`
+}
+
+// CustomTransitGatewayParameters are custom parameters for TransitGateway
+type CustomTransitGatewayParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+}
+
+// CustomTransitGatewayVPCAttachmentParameters are custom parameters for TransitGatewayVPCAttachment
+type CustomTransitGatewayVPCAttachmentParameters struct {
+	// The ID of the VPC.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// VPCIDRef is a reference to an API used to set
+	// the VPCID.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects references to API used
+	// to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
+
+	// The IDs of one or more subnets. You can specify only one subnet per Availability
+	// Zone. You must specify at least one subnet, but we recommend that you specify
+	// two subnets for better availability. The transit gateway uses one IP address
+	// from each specified subnet.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
+	SubnetIDs []*string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a list of references to SubnetIDs used to set
+	// the SubnetIDs.
+	// +optional
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDSelector selects references to SubnetIDs used
+	// to set the SubnetIDs.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+
+	// The ID of the transit gateway.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGateway
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// TransitGatewayIDRef is a reference to an API used to set
+	// the TransitGatewayID.
+	// +optional
+	TransitGatewayIDRef *xpv1.Reference `json:"transitGatewayIdRef,omitempty"`
+
+	// TransitGatewayIDSelector selects references to API used
+	// to set the TransitGatewayID.
+	// +optional
+	TransitGatewayIDSelector *xpv1.Selector `json:"transitGatewayIdSelector,omitempty"`
+
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 }

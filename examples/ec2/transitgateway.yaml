@@ -1,0 +1,9 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: TransitGateway
+metadata:
+  name: tgw
+spec:
+  forProvider:
+    region: us-east-1
+  providerConfigRef:
+    name: example
