@@ -1,0 +1,31 @@
+ignore:
+  resource_names:
+    - AuditSuppression
+    - Authorizer
+    - BillingGroup
+    - CertificateFromCsr
+    - CustomMetric
+    - Dimension
+    - DomainConfiguration
+    - DynamicThingGroup
+    - Job
+    - KeysAndCertificate
+    - MitigationAction
+    - OTAUpdate
+    - PolicyVersion
+    - ProvisioningClaim
+    - ProvisioningTemplate
+    - ProvisioningTemplateVersion
+    - RoleAlias
+    - ScheduledAudit
+    - SecurityProfile
+    - Stream
+    - ThingGroup
+    - ThingType
+    - TopicRule
+    - TopicRuleDestination
+  field_paths:
+    - CreatePolicyInput.PolicyName
+    - CreatePolicyOutput.PolicyName
+    - CreateThingInput.ThingName
+    - CreateThingOutput.ThingName
