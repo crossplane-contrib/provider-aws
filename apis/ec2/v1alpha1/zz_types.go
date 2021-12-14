@@ -607,6 +607,15 @@ type CreateFleetError struct {
 }
 
 // +kubebuilder:skipversion
+type CreateTransitGatewayVPCAttachmentRequestOptions struct {
+	ApplianceModeSupport *string `json:"applianceModeSupport,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	IPv6Support *string `json:"ipv6Support,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CreateVolumePermission struct {
 	UserID *string `json:"userID,omitempty"`
 }
@@ -1101,6 +1110,8 @@ type FleetLaunchTemplateOverridesRequest struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	MaxPrice *string `json:"maxPrice,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1435,6 +1446,8 @@ type ImportInstanceLaunchSpecification struct {
 	Monitoring *bool `json:"monitoring,omitempty"`
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1899,6 +1912,8 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1922,6 +1937,8 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2155,6 +2172,28 @@ type ManagedPrefixList struct {
 	Tags []*Tag `json:"tags,omitempty"`
 
 	Version *int64 `json:"version,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ModifyTransitGatewayOptions struct {
+	AutoAcceptSharedAttachments *string `json:"autoAcceptSharedAttachments,omitempty"`
+
+	DefaultRouteTableAssociation *string `json:"defaultRouteTableAssociation,omitempty"`
+
+	DefaultRouteTablePropagation *string `json:"defaultRouteTablePropagation,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	VPNECMPSupport *string `json:"vpnECMPSupport,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ModifyTransitGatewayVPCAttachmentRequestOptions struct {
+	ApplianceModeSupport *string `json:"applianceModeSupport,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	IPv6Support *string `json:"ipv6Support,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2741,6 +2780,8 @@ type RequestSpotLaunchSpecification struct {
 
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
+	SubnetID *string `json:"subnetID,omitempty"`
+
 	UserData *string `json:"userData,omitempty"`
 }
 
@@ -3054,6 +3095,8 @@ type ScheduledInstancesLaunchSpecification struct {
 
 	InstanceType *string `json:"instanceType,omitempty"`
 
+	SubnetID *string `json:"subnetID,omitempty"`
+
 	UserData *string `json:"userData,omitempty"`
 }
 
@@ -3077,6 +3120,8 @@ type ScheduledInstancesNetworkInterface struct {
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3671,23 +3716,10 @@ type TrafficMirrorTarget struct {
 }
 
 // +kubebuilder:skipversion
-type TransitGateway struct {
-	CreationTime *metav1.Time `json:"creationTime,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	OwnerID *string `json:"ownerID,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	TransitGatewayARN *string `json:"transitGatewayARN,omitempty"`
-
-	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type TransitGatewayAssociation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3697,6 +3729,8 @@ type TransitGatewayAttachment struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	State *string `json:"state,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
@@ -3732,7 +3766,15 @@ type TransitGatewayAttachmentPropagation struct {
 type TransitGatewayConnect struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
+	State *string `json:"state,omitempty"`
+
 	Tags []*Tag `json:"tags,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+
+	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
+
+	TransportTransitGatewayAttachmentID *string `json:"transportTransitGatewayAttachmentID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3740,6 +3782,8 @@ type TransitGatewayConnectPeer struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3850,14 +3894,28 @@ type TransitGatewayOptions struct {
 
 	AssociationDefaultRouteTableID *string `json:"associationDefaultRouteTableID,omitempty"`
 
+	AutoAcceptSharedAttachments *string `json:"autoAcceptSharedAttachments,omitempty"`
+
+	DefaultRouteTableAssociation *string `json:"defaultRouteTableAssociation,omitempty"`
+
+	DefaultRouteTablePropagation *string `json:"defaultRouteTablePropagation,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	MulticastSupport *string `json:"multicastSupport,omitempty"`
+
 	PropagationDefaultRouteTableID *string `json:"propagationDefaultRouteTableID,omitempty"`
 
 	TransitGatewayCIDRBlocks []*string `json:"transitGatewayCIDRBlocks,omitempty"`
+
+	VPNECMPSupport *string `json:"vpnECMPSupport,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TransitGatewayPeeringAttachment struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	State *string `json:"state,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
@@ -3867,6 +3925,8 @@ type TransitGatewayPeeringAttachment struct {
 // +kubebuilder:skipversion
 type TransitGatewayPrefixListAttachment struct {
 	ResourceID *string `json:"resourceID,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3880,12 +3940,28 @@ type TransitGatewayPrefixListReference struct {
 type TransitGatewayPropagation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+
 	TransitGatewayRouteTableID *string `json:"transitGatewayRouteTableID,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TransitGatewayRequestOptions struct {
 	AmazonSideASN *int64 `json:"amazonSideASN,omitempty"`
+
+	AutoAcceptSharedAttachments *string `json:"autoAcceptSharedAttachments,omitempty"`
+
+	DefaultRouteTableAssociation *string `json:"defaultRouteTableAssociation,omitempty"`
+
+	DefaultRouteTablePropagation *string `json:"defaultRouteTablePropagation,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	MulticastSupport *string `json:"multicastSupport,omitempty"`
+
+	TransitGatewayCIDRBlocks []*string `json:"transitGatewayCIDRBlocks,omitempty"`
+
+	VPNECMPSupport *string `json:"vpnECMPSupport,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3930,8 +4006,21 @@ type TransitGatewayRouteTablePropagation struct {
 }
 
 // +kubebuilder:skipversion
-type TransitGatewayVPCAttachment struct {
+type TransitGatewayVPCAttachmentOptions struct {
+	ApplianceModeSupport *string `json:"applianceModeSupport,omitempty"`
+
+	DNSSupport *string `json:"dnsSupport,omitempty"`
+
+	IPv6Support *string `json:"ipv6Support,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TransitGatewayVPCAttachment_SDK struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// Describes the VPC attachment options.
+	Options *TransitGatewayVPCAttachmentOptions `json:"options,omitempty"`
+
+	State *string `json:"state,omitempty"`
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
@@ -3944,6 +4033,25 @@ type TransitGatewayVPCAttachment struct {
 	VPCID *string `json:"vpcID,omitempty"`
 
 	VPCOwnerID *string `json:"vpcOwnerID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TransitGateway_SDK struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+	// Describes the options for a transit gateway.
+	Options *TransitGatewayOptions `json:"options,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	TransitGatewayARN *string `json:"transitGatewayARN,omitempty"`
+
+	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
 }
 
 // +kubebuilder:skipversion

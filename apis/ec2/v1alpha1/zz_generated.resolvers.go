@@ -21,10 +21,96 @@ package v1alpha1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
+	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	v1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// ResolveReferences of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.VPCIDRef = rsp.ResolvedReference
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDRefs,
+		Selector:      mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDSelector,
+		To: reference.To{
+			List:    &v1beta1.SubnetList{},
+			Managed: &v1beta1.Subnet{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDs")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.SubnetIDRefs = mrsp.ResolvedReferences
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayList{},
+			Managed: &TransitGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayID")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTransitGatewayVPCAttachmentParameters.TransitGatewayIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef = rsp.ResolvedReference
+
+	return nil
+}
 
 // ResolveReferences of this Volume.
 func (mg *Volume) ResolveReferences(ctx context.Context, c client.Reader) error {

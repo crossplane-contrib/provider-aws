@@ -20,6 +20,118 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+// GetCondition of this TransitGateway.
+func (mg *TransitGateway) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TransitGateway.
+func (mg *TransitGateway) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this TransitGateway.
+func (mg *TransitGateway) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this TransitGateway.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *TransitGateway) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this TransitGateway.
+func (mg *TransitGateway) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TransitGateway.
+func (mg *TransitGateway) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TransitGateway.
+func (mg *TransitGateway) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this TransitGateway.
+func (mg *TransitGateway) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this TransitGateway.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *TransitGateway) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this TransitGateway.
+func (mg *TransitGateway) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this TransitGatewayVPCAttachment.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *TransitGatewayVPCAttachment) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this TransitGatewayVPCAttachment.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *TransitGatewayVPCAttachment) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this TransitGatewayVPCAttachment.
+func (mg *TransitGatewayVPCAttachment) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this VPCPeeringConnection.
 func (mg *VPCPeeringConnection) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)

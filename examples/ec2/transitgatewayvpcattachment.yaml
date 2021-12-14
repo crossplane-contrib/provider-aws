@@ -1,0 +1,16 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+  name: tgw-vpc-attach
+spec:
+  forProvider:
+    region: us-east-1
+    subnetIdRefs:
+      - name: sample-subnet1
+      - name: sample-subnet2
+    transitGatewayIdRef:
+      name: tgw
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
