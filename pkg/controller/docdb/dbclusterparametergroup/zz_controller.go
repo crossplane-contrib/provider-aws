@@ -128,6 +128,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBClusterParameterGroupName = nil
 	}
+	if resp.DBClusterParameterGroup.DBParameterGroupFamily != nil {
+		cr.Spec.ForProvider.DBParameterGroupFamily = resp.DBClusterParameterGroup.DBParameterGroupFamily
+	} else {
+		cr.Spec.ForProvider.DBParameterGroupFamily = nil
+	}
+	if resp.DBClusterParameterGroup.Description != nil {
+		cr.Spec.ForProvider.Description = resp.DBClusterParameterGroup.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

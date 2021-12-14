@@ -123,6 +123,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBSubnetGroupARN = nil
 	}
+	if resp.DBSubnetGroup.DBSubnetGroupDescription != nil {
+		cr.Spec.ForProvider.DBSubnetGroupDescription = resp.DBSubnetGroup.DBSubnetGroupDescription
+	} else {
+		cr.Spec.ForProvider.DBSubnetGroupDescription = nil
+	}
 	if resp.DBSubnetGroup.DBSubnetGroupName != nil {
 		cr.Status.AtProvider.DBSubnetGroupName = resp.DBSubnetGroup.DBSubnetGroupName
 	} else {

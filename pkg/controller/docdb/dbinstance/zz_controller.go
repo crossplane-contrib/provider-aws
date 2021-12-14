@@ -119,6 +119,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.DBInstance.AutoMinorVersionUpgrade != nil {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = resp.DBInstance.AutoMinorVersionUpgrade
+	} else {
+		cr.Spec.ForProvider.AutoMinorVersionUpgrade = nil
+	}
+	if resp.DBInstance.AvailabilityZone != nil {
+		cr.Spec.ForProvider.AvailabilityZone = resp.DBInstance.AvailabilityZone
+	} else {
+		cr.Spec.ForProvider.AvailabilityZone = nil
+	}
 	if resp.DBInstance.BackupRetentionPeriod != nil {
 		cr.Status.AtProvider.BackupRetentionPeriod = resp.DBInstance.BackupRetentionPeriod
 	} else {
@@ -138,6 +148,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DBInstanceARN = resp.DBInstance.DBInstanceArn
 	} else {
 		cr.Status.AtProvider.DBInstanceARN = nil
+	}
+	if resp.DBInstance.DBInstanceClass != nil {
+		cr.Spec.ForProvider.DBInstanceClass = resp.DBInstance.DBInstanceClass
+	} else {
+		cr.Spec.ForProvider.DBInstanceClass = nil
 	}
 	if resp.DBInstance.DBInstanceIdentifier != nil {
 		cr.Status.AtProvider.DBInstanceIdentifier = resp.DBInstance.DBInstanceIdentifier
@@ -221,6 +236,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Endpoint = f12
 	} else {
 		cr.Status.AtProvider.Endpoint = nil
+	}
+	if resp.DBInstance.Engine != nil {
+		cr.Spec.ForProvider.Engine = resp.DBInstance.Engine
+	} else {
+		cr.Spec.ForProvider.Engine = nil
 	}
 	if resp.DBInstance.EngineVersion != nil {
 		cr.Status.AtProvider.EngineVersion = resp.DBInstance.EngineVersion
@@ -313,6 +333,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.PreferredBackupWindow = resp.DBInstance.PreferredBackupWindow
 	} else {
 		cr.Status.AtProvider.PreferredBackupWindow = nil
+	}
+	if resp.DBInstance.PreferredMaintenanceWindow != nil {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = resp.DBInstance.PreferredMaintenanceWindow
+	} else {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
+	}
+	if resp.DBInstance.PromotionTier != nil {
+		cr.Spec.ForProvider.PromotionTier = resp.DBInstance.PromotionTier
+	} else {
+		cr.Spec.ForProvider.PromotionTier = nil
 	}
 	if resp.DBInstance.PubliclyAccessible != nil {
 		cr.Status.AtProvider.PubliclyAccessible = resp.DBInstance.PubliclyAccessible
