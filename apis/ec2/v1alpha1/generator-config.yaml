@@ -56,7 +56,6 @@ ignore:
     - VpnConnectionRoute
     - VpnConnection
     - VpnGateway
-    - Volume
   shape_names:
     - Instance
   field_paths:
@@ -72,3 +71,11 @@ ignore:
     - DeleteVpcPeeringConnectionInput.PeerVPCID
     - RejectVpcPeeringConnectionInput.PeerVPCID
     - AcceptVpcPeeringConnectionInput.PeerVPCID
+    - CreateVolumeInput.DryRun
+    - CreateVolumeInput.KmsKeyId
+resources:
+  Volume:
+    exceptions:
+      errors:
+        404:
+          code: InvalidVolume.NotFound

@@ -63,6 +63,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/volume"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
@@ -225,6 +226,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		mqbroker.SetupBroker,
 		mquser.SetupUser,
 		cwloggroup.SetupLogGroup,
+		volume.SetupVolume,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
