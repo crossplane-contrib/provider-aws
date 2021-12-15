@@ -7,7 +7,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_COMMIT ?= 285d87b66b62fbfb859986ddf74c9f9b6ae743fb
-GENERATED_SERVICES="apigatewayv2,cloudfront,cloudwatchlogs,dynamodb,ec2,efs,glue,iot,kafka,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer"
+GENERATED_SERVICES="apigatewayv2,cloudfront,cloudwatchlogs,dynamodb,ec2,efs,eks,glue,iot,kafka,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer"
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1

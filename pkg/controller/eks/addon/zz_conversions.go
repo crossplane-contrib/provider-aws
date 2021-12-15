@@ -50,6 +50,16 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 	} else {
 		cr.Status.AtProvider.AddonARN = nil
 	}
+	if resp.Addon.AddonName != nil {
+		cr.Spec.ForProvider.AddonName = resp.Addon.AddonName
+	} else {
+		cr.Spec.ForProvider.AddonName = nil
+	}
+	if resp.Addon.AddonVersion != nil {
+		cr.Spec.ForProvider.AddonVersion = resp.Addon.AddonVersion
+	} else {
+		cr.Spec.ForProvider.AddonVersion = nil
+	}
 	if resp.Addon.ClusterName != nil {
 		cr.Status.AtProvider.ClusterName = resp.Addon.ClusterName
 	} else {
@@ -94,10 +104,26 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 	} else {
 		cr.Status.AtProvider.ModifiedAt = nil
 	}
+	if resp.Addon.ServiceAccountRoleArn != nil {
+		cr.Spec.ForProvider.ServiceAccountRoleARN = resp.Addon.ServiceAccountRoleArn
+	} else {
+		cr.Spec.ForProvider.ServiceAccountRoleARN = nil
+	}
 	if resp.Addon.Status != nil {
 		cr.Status.AtProvider.Status = resp.Addon.Status
 	} else {
 		cr.Status.AtProvider.Status = nil
+	}
+	if resp.Addon.Tags != nil {
+		f9 := map[string]*string{}
+		for f9key, f9valiter := range resp.Addon.Tags {
+			var f9val string
+			f9val = *f9valiter
+			f9[f9key] = &f9val
+		}
+		cr.Spec.ForProvider.Tags = f9
+	} else {
+		cr.Spec.ForProvider.Tags = nil
 	}
 
 	return cr

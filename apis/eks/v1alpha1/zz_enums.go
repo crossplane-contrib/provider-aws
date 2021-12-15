@@ -65,6 +65,14 @@ const (
 	ClusterStatus_UPDATING ClusterStatus = "UPDATING"
 )
 
+type ConfigStatus string
+
+const (
+	ConfigStatus_CREATING ConfigStatus = "CREATING"
+	ConfigStatus_DELETING ConfigStatus = "DELETING"
+	ConfigStatus_ACTIVE   ConfigStatus = "ACTIVE"
+)
+
 type ErrorCode string
 
 const (
@@ -149,21 +157,22 @@ const (
 type UpdateParamType string
 
 const (
-	UpdateParamType_Version               UpdateParamType = "Version"
-	UpdateParamType_PlatformVersion       UpdateParamType = "PlatformVersion"
-	UpdateParamType_EndpointPrivateAccess UpdateParamType = "EndpointPrivateAccess"
-	UpdateParamType_EndpointPublicAccess  UpdateParamType = "EndpointPublicAccess"
-	UpdateParamType_ClusterLogging        UpdateParamType = "ClusterLogging"
-	UpdateParamType_DesiredSize           UpdateParamType = "DesiredSize"
-	UpdateParamType_LabelsToAdd           UpdateParamType = "LabelsToAdd"
-	UpdateParamType_LabelsToRemove        UpdateParamType = "LabelsToRemove"
-	UpdateParamType_MaxSize               UpdateParamType = "MaxSize"
-	UpdateParamType_MinSize               UpdateParamType = "MinSize"
-	UpdateParamType_ReleaseVersion        UpdateParamType = "ReleaseVersion"
-	UpdateParamType_PublicAccessCidrs     UpdateParamType = "PublicAccessCidrs"
-	UpdateParamType_AddonVersion          UpdateParamType = "AddonVersion"
-	UpdateParamType_ServiceAccountRoleArn UpdateParamType = "ServiceAccountRoleArn"
-	UpdateParamType_ResolveConflicts      UpdateParamType = "ResolveConflicts"
+	UpdateParamType_Version                UpdateParamType = "Version"
+	UpdateParamType_PlatformVersion        UpdateParamType = "PlatformVersion"
+	UpdateParamType_EndpointPrivateAccess  UpdateParamType = "EndpointPrivateAccess"
+	UpdateParamType_EndpointPublicAccess   UpdateParamType = "EndpointPublicAccess"
+	UpdateParamType_ClusterLogging         UpdateParamType = "ClusterLogging"
+	UpdateParamType_DesiredSize            UpdateParamType = "DesiredSize"
+	UpdateParamType_LabelsToAdd            UpdateParamType = "LabelsToAdd"
+	UpdateParamType_LabelsToRemove         UpdateParamType = "LabelsToRemove"
+	UpdateParamType_MaxSize                UpdateParamType = "MaxSize"
+	UpdateParamType_MinSize                UpdateParamType = "MinSize"
+	UpdateParamType_ReleaseVersion         UpdateParamType = "ReleaseVersion"
+	UpdateParamType_PublicAccessCidrs      UpdateParamType = "PublicAccessCidrs"
+	UpdateParamType_IdentityProviderConfig UpdateParamType = "IdentityProviderConfig"
+	UpdateParamType_AddonVersion           UpdateParamType = "AddonVersion"
+	UpdateParamType_ServiceAccountRoleArn  UpdateParamType = "ServiceAccountRoleArn"
+	UpdateParamType_ResolveConflicts       UpdateParamType = "ResolveConflicts"
 )
 
 type UpdateStatus string
@@ -178,9 +187,11 @@ const (
 type UpdateType string
 
 const (
-	UpdateType_VersionUpdate        UpdateType = "VersionUpdate"
-	UpdateType_EndpointAccessUpdate UpdateType = "EndpointAccessUpdate"
-	UpdateType_LoggingUpdate        UpdateType = "LoggingUpdate"
-	UpdateType_ConfigUpdate         UpdateType = "ConfigUpdate"
-	UpdateType_AddonUpdate          UpdateType = "AddonUpdate"
+	UpdateType_VersionUpdate                      UpdateType = "VersionUpdate"
+	UpdateType_EndpointAccessUpdate               UpdateType = "EndpointAccessUpdate"
+	UpdateType_LoggingUpdate                      UpdateType = "LoggingUpdate"
+	UpdateType_ConfigUpdate                       UpdateType = "ConfigUpdate"
+	UpdateType_AssociateIdentityProviderConfig    UpdateType = "AssociateIdentityProviderConfig"
+	UpdateType_DisassociateIdentityProviderConfig UpdateType = "DisassociateIdentityProviderConfig"
+	UpdateType_AddonUpdate                        UpdateType = "AddonUpdate"
 )

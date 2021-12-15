@@ -27,16 +27,19 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type AddonHealth struct {
 	Issues []*AddonIssue `json:"issues,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AddonInfo struct {
 	AddonName *string `json:"addonName,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AddonIssue struct {
 	Code *string `json:"code,omitempty"`
 
@@ -45,12 +48,14 @@ type AddonIssue struct {
 	ResourceIDs []*string `json:"resourceIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AddonVersionInfo struct {
 	AddonVersion *string `json:"addonVersion,omitempty"`
 
 	Architecture []*string `json:"architecture,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Addon_SDK struct {
 	AddonARN *string `json:"addonARN,omitempty"`
 
@@ -73,45 +78,29 @@ type Addon_SDK struct {
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AutoScalingGroup struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Certificate struct {
 	Data *string `json:"data,omitempty"`
 }
 
-// Disable to avoid generating a v1alpha1 version
-// type Cluster struct {
-// 	ARN *string `json:"arn,omitempty"`
-
-// 	ClientRequestToken *string `json:"clientRequestToken,omitempty"`
-
-// 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-
-// 	Endpoint *string `json:"endpoint,omitempty"`
-
-// 	Name *string `json:"name,omitempty"`
-
-// 	PlatformVersion *string `json:"platformVersion,omitempty"`
-
-// 	RoleARN *string `json:"roleARN,omitempty"`
-
-// 	Tags map[string]*string `json:"tags,omitempty"`
-
-// 	Version *string `json:"version,omitempty"`
-// }
-
+// +kubebuilder:skipversion
 type Compatibility struct {
 	ClusterVersion *string `json:"clusterVersion,omitempty"`
 
 	PlatformVersions []*string `json:"platformVersions,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionConfig struct {
 	Resources []*string `json:"resources,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ErrorDetail struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
@@ -120,41 +109,29 @@ type ErrorDetail struct {
 	ResourceIDs []*string `json:"resourceIDs,omitempty"`
 }
 
-// Disable to avoid generating a v1alpha1 version
-// type FargateProfile struct {
-// 	ClusterName *string `json:"clusterName,omitempty"`
-
-// 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-
-// 	FargateProfileARN *string `json:"fargateProfileARN,omitempty"`
-
-// 	FargateProfileName *string `json:"fargateProfileName,omitempty"`
-
-// 	PodExecutionRoleARN *string `json:"podExecutionRoleARN,omitempty"`
-
-// 	Subnets []*string `json:"subnets,omitempty"`
-
-// 	Tags map[string]*string `json:"tags,omitempty"`
-// }
-
+// +kubebuilder:skipversion
 type FargateProfileSelector struct {
 	Namespace *string `json:"namespace,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Issue struct {
 	Message *string `json:"message,omitempty"`
 
 	ResourceIDs []*string `json:"resourceIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KubernetesNetworkConfigRequest struct {
 	ServiceIPv4CIDR *string `json:"serviceIPv4CIDR,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KubernetesNetworkConfigResponse struct {
 	ServiceIPv4CIDR *string `json:"serviceIPv4CIDR,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LaunchTemplateSpecification struct {
 	ID *string `json:"id,omitempty"`
 
@@ -163,49 +140,69 @@ type LaunchTemplateSpecification struct {
 	Version *string `json:"version,omitempty"`
 }
 
-// Disable to avoid generating a v1alpha1 version
-// type Nodegroup struct {
-// 	ClusterName *string `json:"clusterName,omitempty"`
-
-// 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-
-// 	InstanceTypes []*string `json:"instanceTypes,omitempty"`
-
-// 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
-
-// 	NodeRole *string `json:"nodeRole,omitempty"`
-
-// 	NodegroupARN *string `json:"nodegroupARN,omitempty"`
-
-// 	NodegroupName *string `json:"nodegroupName,omitempty"`
-
-// 	ReleaseVersion *string `json:"releaseVersion,omitempty"`
-
-// 	Subnets []*string `json:"subnets,omitempty"`
-
-// 	Tags map[string]*string `json:"tags,omitempty"`
-
-// 	Version *string `json:"version,omitempty"`
-// }
-
+// +kubebuilder:skipversion
 type NodegroupResources struct {
 	RemoteAccessSecurityGroup *string `json:"remoteAccessSecurityGroup,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OIDC struct {
 	Issuer *string `json:"issuer,omitempty"`
 }
 
+// +kubebuilder:skipversion
+type OIDCIdentityProviderConfig struct {
+	ClientID *string `json:"clientID,omitempty"`
+
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	GroupsClaim *string `json:"groupsClaim,omitempty"`
+
+	GroupsPrefix *string `json:"groupsPrefix,omitempty"`
+
+	IdentityProviderConfigARN *string `json:"identityProviderConfigARN,omitempty"`
+
+	IdentityProviderConfigName *string `json:"identityProviderConfigName,omitempty"`
+
+	IssuerURL *string `json:"issuerURL,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+
+	UsernameClaim *string `json:"usernameClaim,omitempty"`
+
+	UsernamePrefix *string `json:"usernamePrefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OIDCIdentityProviderConfigRequest struct {
+	ClientID *string `json:"clientID,omitempty"`
+
+	GroupsClaim *string `json:"groupsClaim,omitempty"`
+
+	GroupsPrefix *string `json:"groupsPrefix,omitempty"`
+
+	IdentityProviderConfigName *string `json:"identityProviderConfigName,omitempty"`
+
+	IssuerURL *string `json:"issuerURL,omitempty"`
+
+	UsernameClaim *string `json:"usernameClaim,omitempty"`
+
+	UsernamePrefix *string `json:"usernamePrefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Provider struct {
 	KeyARN *string `json:"keyARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RemoteAccessConfig struct {
 	EC2SshKey *string `json:"ec2SshKey,omitempty"`
 
 	SourceSecurityGroups []*string `json:"sourceSecurityGroups,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Update struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
@@ -220,12 +217,14 @@ type Update struct {
 	Type *string `json:"type_,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpdateParam struct {
 	Type *string `json:"type_,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type VPCConfigRequest struct {
 	PublicAccessCIDRs []*string `json:"publicAccessCIDRs,omitempty"`
 
@@ -234,6 +233,7 @@ type VPCConfigRequest struct {
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type VPCConfigResponse struct {
 	ClusterSecurityGroupID *string `json:"clusterSecurityGroupID,omitempty"`
 
