@@ -207,6 +207,9 @@ spec:
                 required:
                 - url
                 type: object
+              externalID:
+                description: ExternalID is the external ID used when assuming role.
+                type: string
             required:
             - credentials
             type: object
