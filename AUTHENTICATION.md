@@ -11,13 +11,17 @@ AWS API. This can be done in one of two ways:
    feature has been
    [enabled](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
    in the cluster.
+3. Authenticating using [kube2iam](https://github.com/jtblin/kube2iam). This solution allows
+   to avoid using static credentials with non-EKS cluster.
+
+## Using IAM Roles for Service Accounts
 
 Using IAM Roles for Service Accounts requires some additional setup for the
 time-being. The steps for enabling are described below. Many of the steps can
 also be found in the [AWS
 docs](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html).
 
-## Steps
+### Steps
 
 These steps assume you already have a running EKS cluster with a sufficiently
 large node pool.
@@ -197,3 +201,74 @@ kubectl apply -f provider-config.yaml
 
 You can now reference this `ProviderConfig` to provision any `provider-aws`
 resources.
+
+## Using kube2iam
+
+This guide assumes that you already have :
+
+- created a policy with the minimum permissions required to provision your resources 
+- created an IAM role that AWS Provider will assume to interact with AWS
+- associated the policy to the IAM role
+
+Please refer to the previous section for details about these prerequisites.
+
+Let's say the role you created is : `infra/k8s/crossplane`
+
+### Steps
+
+1. Deploy a ControllerConfig
+
+Crossplane provides a `ControllerConfig` type that allows you to customize the deployment of a provider’s controller Pod. 
+
+A `ControllerConfig` can be created and referenced by any number of Provider objects that wish to use its configuration.
+
+*Note: the kube2iam annotation must be under `spec.metadata.annotations` that will be added to the AWS provider pod.*
+
+```bash
+cat > controller-config.yaml <<EOF
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: aws-config
+spec:
+  metadata:
+    annotations:
+      # kube2iam annotation that will be added to the aws-provider defined in the next section
+      iam.amazonaws.com/role: cdsf/k8s/kube2iam-crossplane-integration
+  podSecurityContext:
+    fsGroup: 2000
+EOF
+
+kubectl apply -f controller-config.yaml
+```
+  
+2. Deploy the `Provider` and a `ProviderConfig` 
+
+The AWS Provider is referencing the `ControllerConfig` we deployed in the previous step.
+The `ProviderConfig` configures how AWS controllers will connect to AWS API. 
+
+```bash
+cat > provider-config.yaml <<EOF
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: aws-provider
+spec:
+  package: crossplane/provider-aws:master
+  controllerConfigRef:
+    name: aws-config
+---
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+  spec:
+  credentials:
+    # Set source to 'InjectedIdentity' to be compliant with kube2iam behavior
+    source: InjectedIdentity
+EOF
+
+kubectl apply -f provider-config.yaml
+```
+
+*Note: Because the name of the `ProviderConfig` is `default` it will be used by any managed resources that do not explicitly reference a `ProviderConfig`.*
