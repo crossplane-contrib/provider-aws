@@ -54,7 +54,6 @@ func SetupConnection(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 		For(&svcapitypes.Connection{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ConnectionGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -91,7 +90,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil && cr.Spec.ForProvider.CustomConnectionInput.CustomPhysicalConnectionRequirements != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 &cr.Name,
+			Name:                 awsclients.String(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
 			ConnectionType:       cr.Spec.ForProvider.CustomConnectionInput.ConnectionType,
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,

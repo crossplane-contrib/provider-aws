@@ -55,7 +55,6 @@ func SetupJob(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter,
 		For(&svcapitypes.Job{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.JobGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -89,7 +88,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.CreateJobOut
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.CreateJobInput) error {
-	obj.Name = &cr.Name
-	obj.Role = &cr.Spec.ForProvider.RoleArn
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Role = awsclients.String(cr.Spec.ForProvider.RoleArn)
 	return nil
 }
