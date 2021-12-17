@@ -54,7 +54,6 @@ func SetupDatabase(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLim
 		For(&svcapitypes.Database{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DatabaseGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -91,11 +90,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 
 	if cr.Spec.ForProvider.CustomDatabaseInput == nil {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name: &cr.Name,
+			Name: awsclients.String(meta.GetExternalName(cr)),
 		}
 	} else {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name:        &cr.Name,
+			Name:        awsclients.String(meta.GetExternalName(cr)),
 			Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
 			LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
 			Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
