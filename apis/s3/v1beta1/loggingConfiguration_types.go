@@ -26,6 +26,7 @@ type LoggingConfiguration struct {
 	// At least one of targetBucket, targetBucketRef or targetBucketSelector is
 	// required.
 	// +optional
+	// +crossplane:generate:reference:type=Bucket
 	TargetBucket *string `json:"targetBucket,omitempty"`
 
 	// TargetBucketRef references an S3Bucket to retrieve its name
