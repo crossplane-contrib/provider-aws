@@ -4,24 +4,24 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.37.10
-	github.com/aws/aws-sdk-go-v2 v1.11.0
-	github.com/aws/aws-sdk-go-v2/config v1.10.0
-	github.com/aws/aws-sdk-go-v2/credentials v1.6.0
-	github.com/aws/aws-sdk-go-v2/service/acm v1.8.0
-	github.com/aws/aws-sdk-go-v2/service/acmpca v1.10.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.21.0
-	github.com/aws/aws-sdk-go-v2/service/ecr v1.9.0
-	github.com/aws/aws-sdk-go-v2/service/eks v1.12.0
-	github.com/aws/aws-sdk-go-v2/service/elasticache v1.13.0
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.8.0
-	github.com/aws/aws-sdk-go-v2/service/iam v1.12.0
-	github.com/aws/aws-sdk-go-v2/service/rds v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/redshift v1.13.0
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.13.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.18.0
-	github.com/aws/aws-sdk-go-v2/service/sns v1.10.0
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.9.0
+	github.com/aws/aws-sdk-go-v2 v1.11.2
+	github.com/aws/aws-sdk-go-v2/config v1.11.0
+	github.com/aws/aws-sdk-go-v2/credentials v1.6.4
+	github.com/aws/aws-sdk-go-v2/service/acm v1.9.2
+	github.com/aws/aws-sdk-go-v2/service/acmpca v1.11.2
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.25.0
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.11.1
+	github.com/aws/aws-sdk-go-v2/service/eks v1.15.1
+	github.com/aws/aws-sdk-go-v2/service/elasticache v1.15.1
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.9.2
+	github.com/aws/aws-sdk-go-v2/service/iam v1.13.2
+	github.com/aws/aws-sdk-go-v2/service/rds v1.13.1
+	github.com/aws/aws-sdk-go-v2/service/redshift v1.16.1
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.14.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.21.0
+	github.com/aws/aws-sdk-go-v2/service/sns v1.12.1
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.13.1
+	github.com/aws/aws-sdk-go-v2/service/sts v1.11.1
 	github.com/aws/smithy-go v1.9.0
 	github.com/crossplane/crossplane-runtime v0.15.1-0.20210930095326-d5661210733b
 	github.com/crossplane/crossplane-tools v0.0.0-20210916125540-071de511ae8e
