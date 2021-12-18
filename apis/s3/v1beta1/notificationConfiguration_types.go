@@ -135,7 +135,16 @@ type QueueConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	//
 	// QueueArn is a required field
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/sqs/v1beta1.Queue
 	QueueArn string `json:"queueArn"`
+
+	// QueueArnRef references an Queue to retrieve its ARN
+	// +optional
+	QueueArnRef *xpv1.Reference `json:"queueArnRef,omitempty"`
+
+	// QueueArnSelector selects a reference to an Queue to retrieve its ARN
+	// +optional
+	QueueArnSelector *xpv1.Selector `json:"queueArnSelector,omitempty"`
 }
 
 // TopicConfiguration specifies the configuration for publication of messages
@@ -165,6 +174,8 @@ type TopicConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	// At least one of topicArn, topicArnRef or topicSelector is required.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/notification/v1alpha1.SNSTopic
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/notification/v1alpha1.SNSTopicARN()
 	TopicArn *string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn
