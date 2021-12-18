@@ -23,7 +23,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 )
+
+// SNSTopicARN returns a function that returns the ARN of the given SNS Topic.
+func SNSTopicARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*SNSTopic)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
 
 // ResolveReferences for SNS Subscription managed type
 func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reader) error {

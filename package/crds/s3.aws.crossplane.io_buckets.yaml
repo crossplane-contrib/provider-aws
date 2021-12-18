@@ -669,6 +669,32 @@ spec:
                                 when it detects events of the specified type. \n QueueArn
                                 is a required field"
                               type: string
+                            queueArnRef:
+                              description: QueueArnRef references an Queue to retrieve
+                                its ARN
+                              properties:
+                                name:
+                                  description: Name of the referenced object.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            queueArnSelector:
+                              description: QueueArnSelector selects a reference to
+                                an Queue to retrieve its ARN
+                              properties:
+                                matchControllerRef:
+                                  description: MatchControllerRef ensures an object
+                                    with the same controller reference as the selecting
+                                    object is selected.
+                                  type: boolean
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: MatchLabels ensures an object with
+                                    matching labels is selected.
+                                  type: object
+                              type: object
                           required:
                           - events
                           - queueArn
@@ -1005,6 +1031,32 @@ spec:
                                         in the AWS Key Management Service Developer
                                         Guide.
                                       type: string
+                                    replicaKmsKeyIdRef:
+                                      description: ReplicaKmsKeyIDRef references an
+                                        KMSKey to retrieve its ID
+                                      properties:
+                                        name:
+                                          description: Name of the referenced object.
+                                          type: string
+                                      required:
+                                      - name
+                                      type: object
+                                    replicaKmsKeyIdSelector:
+                                      description: ReplicaKmsKeyIDSelector selects
+                                        a reference to an KMSKey to retrieve its ID
+                                      properties:
+                                        matchControllerRef:
+                                          description: MatchControllerRef ensures
+                                            an object with the same controller reference
+                                            as the selecting object is selected.
+                                          type: boolean
+                                        matchLabels:
+                                          additionalProperties:
+                                            type: string
+                                          description: MatchLabels ensures an object
+                                            with matching labels is selected.
+                                          type: object
+                                      type: object
                                   required:
                                   - replicaKmsKeyId
                                   type: object
@@ -1279,6 +1331,32 @@ spec:
                                     Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
                                     in the AWS Key Management Service Developer Guide."
                                   type: string
+                                kmsMasterKeyIdRef:
+                                  description: KMSMasterKeyIDRef references an KMSKey
+                                    to retrieve its ID
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                kmsMasterKeyIdSelector:
+                                  description: KMSMasterKeyIDSelector selects a reference
+                                    to an KMSKey to retrieve its ID
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object
+                                        with the same controller reference as the
+                                        selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with
+                                        matching labels is selected.
+                                      type: object
+                                  type: object
                                 sseAlgorithm:
                                   description: Server-side encryption algorithm to
                                     use for the default encryption. Options are AES256

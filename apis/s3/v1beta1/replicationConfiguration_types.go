@@ -30,6 +30,8 @@ type ReplicationConfiguration struct {
 	//
 	// At least one of role, roleRef or roleSelector fields is required.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	Role *string `json:"role,omitempty"`
 
 	// RoleRef references an IAMRole to retrieve its Name
@@ -151,6 +153,8 @@ type Destination struct {
 	// store the results.
 	// At least one of bucket, bucketRef or bucketSelector is required.
 	// +optional
+	// +crossplane:generate:reference:type=Bucket
+	// +crossplane:generate:reference:extractor=BucketARN()
 	Bucket *string `json:"bucket,omitempty"`
 
 	// BucketRef references a Bucket to retrieve its Name
@@ -205,7 +209,16 @@ type EncryptionConfiguration struct {
 	// supports symmetric customer managed CMKs. For more information, see Using
 	// Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 	// in the AWS Key Management Service Developer Guide.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
 	ReplicaKmsKeyID *string `json:"replicaKmsKeyId"`
+
+	// ReplicaKmsKeyIDRef references an KMSKey to retrieve its ID
+	// +optional
+	ReplicaKmsKeyIDRef *xpv1.Reference `json:"replicaKmsKeyIdRef,omitempty"`
+
+	// ReplicaKmsKeyIDSelector selects a reference to an KMSKey to retrieve its ID
+	// +optional
+	ReplicaKmsKeyIDSelector *xpv1.Selector `json:"replicaKmsKeyIdSelector,omitempty"`
 }
 
 // Metrics specifies replication metrics-related settings enabling metrics
