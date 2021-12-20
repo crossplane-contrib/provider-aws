@@ -24,12 +24,10 @@ import (
 	svcapi "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -65,64 +63,7 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 }
 
 func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.Route)
-
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
-
-	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
-
-	input := svcsdk.DescribeRouteTablesInput{
-		RouteTableIds: []*string{cr.Spec.ForProvider.RouteTableID},
-	}
-
-	resp, errr := e.client.DescribeRouteTables(&input)
-	if errr != nil {
-		return managed.ExternalObservation{}, errors.New(errDescribe)
-	}
-
-	if len(resp.RouteTables) != 1 {
-		return managed.ExternalObservation{}, errors.New(errDescribe)
-	}
-
-	observed := resp.RouteTables[0]
-
-	obsRoutes := observed.Routes
-	current := cr.Spec.ForProvider.DeepCopy()
-	for _, route := range obsRoutes {
-		if derefString(route.DestinationCidrBlock) == derefString(cr.Spec.ForProvider.DestinationCIDRBlock) &&
-			derefString(route.VpcPeeringConnectionId) == derefString(cr.Spec.ForProvider.VPCPeeringConnectionID) &&
-			derefString(route.GatewayId) == derefString(cr.Spec.ForProvider.GatewayID) &&
-			derefString(route.LocalGatewayId) == derefString(cr.Spec.ForProvider.LocalGatewayID) &&
-			derefString(route.NatGatewayId) == derefString(cr.Spec.ForProvider.NatGatewayID) &&
-			derefString(route.NetworkInterfaceId) == derefString(cr.Spec.ForProvider.NetworkInterfaceID) &&
-			derefString(route.TransitGatewayId) == derefString(cr.Spec.ForProvider.TransitGatewayID) &&
-			derefString(route.InstanceId) == derefString(cr.Spec.ForProvider.InstanceID) {
-			cr.SetConditions(xpv1.Available())
-
-			return managed.ExternalObservation{
-				ResourceExists:          true,
-				ResourceUpToDate:        true,
-				ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
-			}, nil
-		} else {
-			cr.SetConditions(xpv1.Unavailable())
-		}
-	}
 	return e.observe(ctx, mg)
-}
-
-func derefString(s *string) string {
-	if s != nil {
-		return *s
-	}
-
-	return ""
 }
 
 func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {

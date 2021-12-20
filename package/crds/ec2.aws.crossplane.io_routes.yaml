@@ -79,53 +79,175 @@ spec:
                     description: The ID of a prefix list used for the destination
                       match.
                     type: string
-                  dryRun:
-                    description: Checks whether you have the required permissions
-                      for the action, without actually making the request, and provides
-                      an error response. If you have the required permissions, the
-                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-                    type: boolean
                   egressOnlyInternetGatewayID:
                     description: '[IPv6 traffic only] The ID of an egress-only internet
                       gateway.'
                     type: string
-                  gatewayID:
-                    description: The ID of an internet gateway or virtual private
-                      gateway attached to your VPC.
+                  gatewayId:
+                    description: The ID of an internet gateway attached to your VPC.
                     type: string
-                  instanceID:
+                  gatewayIdRef:
+                    description: GatewayIDRef is a reference to an API used to set
+                      the GatewayID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  gatewayIdSelector:
+                    description: GatewayIDSelector selects references to API used
+                      to set the GatewayID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  instanceId:
                     description: The ID of a NAT instance in your VPC. The operation
                       fails if you specify an instance ID unless exactly one network
                       interface is attached.
                     type: string
+                  instanceIdRef:
+                    description: InstanceIDRef is a reference to an API used to set
+                      the InstanceID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  instanceIdSelector:
+                    description: InstanceIDSelector selects references to API used
+                      to set the InstanceID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   localGatewayID:
                     description: The ID of the local gateway.
                     type: string
-                  natGatewayID:
+                  natGatewayId:
                     description: '[IPv4 traffic only] The ID of a NAT gateway.'
                     type: string
+                  natGatewayIdRef:
+                    description: NATGatewayIDRef is a reference to an API used to
+                      set the NATGatewayID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  natGatewayIdSelector:
+                    description: NATGatewayIDSelector selects references to API used
+                      to set the NATGatewayID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   networkInterfaceID:
                     description: The ID of a network interface.
                     type: string
                   region:
                     description: Region is which region the Route will be created.
                     type: string
-                  routeTableID:
-                    description: The ID of the route table for the route.
+                  routeTableId:
+                    description: The ID of the route table for the route. provider-aws
+                      currently provides both a standalone Route resource and a RouteTable
+                      resource with routes defined in-line. At this time you cannot
+                      use a Route Table with in-line routes in conjunction with any
+                      Route resources. Doing so will cause a conflict of rule settings
+                      and will overwrite rules.
                     type: string
-                  transitGatewayID:
+                  transitGatewayId:
                     description: The ID of a transit gateway.
                     type: string
+                  transitGatewayIdRef:
+                    description: TransitGatewayIDRef is a reference to an API used
+                      to set the TransitGatewayID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  transitGatewayIdSelector:
+                    description: TransitGatewayIDSelector selects references to API
+                      used to set the TransitGatewayID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   vpcEndpointID:
                     description: The ID of a VPC endpoint. Supported for Gateway Load
                       Balancer endpoints only.
                     type: string
-                  vpcPeeringConnectionID:
+                  vpcPeeringConnectionId:
                     description: The ID of a VPC peering connection.
                     type: string
+                  vpcPeeringConnectionIdRef:
+                    description: VPCPeeringConnectionIDRef is a reference to an API
+                      used to set the VPCPeeringConnectionID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  vpcPeeringConnectionIdSelector:
+                    description: VPCPeeringConnectionIDSelector selects references
+                      to API used to set the VPCPeeringConnectionID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                 required:
                 - region
-                - routeTableID
                 type: object
               providerConfigRef:
                 default:
@@ -223,97 +345,6 @@ spec:
     storage: true
     subresources:
       status: {}
-  - name: v1beta1
-    schema:
-      openAPIV3Schema:
-        description: Route describes a route in a route table.
-        properties:
-          destinationCidrBlock:
-            description: The IPv4 CIDR address block used for the destination match.
-              Routing decisions are based on the most specific match.
-            type: string
-          destinationIpv6CidrBlock:
-            description: The IPv6 CIDR address block used for the destination match.
-              Routing decisions are based on the most specific match.
-            type: string
-          egressOnlyInternetGatewayId:
-            description: '[IPv6 traffic only] The ID of an egress-only internet gateway.'
-            type: string
-          gatewayId:
-            description: The ID of an internet gateway or virtual private gateway
-              attached to your VPC.
-            type: string
-          gatewayIdRef:
-            description: A referencer to retrieve the ID of a gateway
-            properties:
-              name:
-                description: Name of the referenced object.
-                type: string
-            required:
-            - name
-            type: object
-          gatewayIdSelector:
-            description: A selector to select a referencer to retrieve the ID of a
-              gateway
-            properties:
-              matchControllerRef:
-                description: MatchControllerRef ensures an object with the same controller
-                  reference as the selecting object is selected.
-                type: boolean
-              matchLabels:
-                additionalProperties:
-                  type: string
-                description: MatchLabels ensures an object with matching labels is
-                  selected.
-                type: object
-            type: object
-          instanceId:
-            description: The ID of a NAT instance in your VPC. The operation fails
-              if you specify an instance ID unless exactly one network interface is
-              attached.
-            type: string
-          localGatewayId:
-            description: The ID of the local gateway.
-            type: string
-          natGatewayId:
-            description: '[IPv4 traffic only] The ID of a NAT gateway.'
-            type: string
-          natGatewayIdRef:
-            description: A referencer to retrieve the ID of a NAT gateway
-            properties:
-              name:
-                description: Name of the referenced object.
-                type: string
-            required:
-            - name
-            type: object
-          natGatewayIdSelector:
-            description: A selector to select a referencer to retrieve the ID of a
-              NAT gateway
-            properties:
-              matchControllerRef:
-                description: MatchControllerRef ensures an object with the same controller
-                  reference as the selecting object is selected.
-                type: boolean
-              matchLabels:
-                additionalProperties:
-                  type: string
-                description: MatchLabels ensures an object with matching labels is
-                  selected.
-                type: object
-            type: object
-          networkInterfaceId:
-            description: The ID of a network interface.
-            type: string
-          transitGatewayId:
-            description: The ID of a transit gateway.
-            type: string
-          vpcPeeringConnectionId:
-            description: The ID of a VPC peering connection.
-            type: string
-        type: object
-    served: true
-    storage: false
 status:
   acceptedNames:
     kind: ""

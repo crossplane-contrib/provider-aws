@@ -44,35 +44,15 @@ type RouteParameters struct {
 	DestinationIPv6CIDRBlock *string `json:"destinationIPv6CIDRBlock,omitempty"`
 	// The ID of a prefix list used for the destination match.
 	DestinationPrefixListID *string `json:"destinationPrefixListID,omitempty"`
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `json:"dryRun,omitempty"`
 	// [IPv6 traffic only] The ID of an egress-only internet gateway.
 	EgressOnlyInternetGatewayID *string `json:"egressOnlyInternetGatewayID,omitempty"`
-	// The ID of an internet gateway or virtual private gateway attached to your
-	// VPC.
-	GatewayID *string `json:"gatewayID,omitempty"`
-	// The ID of a NAT instance in your VPC. The operation fails if you specify
-	// an instance ID unless exactly one network interface is attached.
-	InstanceID *string `json:"instanceID,omitempty"`
 	// The ID of the local gateway.
 	LocalGatewayID *string `json:"localGatewayID,omitempty"`
-	// [IPv4 traffic only] The ID of a NAT gateway.
-	NatGatewayID *string `json:"natGatewayID,omitempty"`
 	// The ID of a network interface.
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
-	// The ID of the route table for the route.
-	// +kubebuilder:validation:Required
-	RouteTableID *string `json:"routeTableID"`
-	// The ID of a transit gateway.
-	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
 	// The ID of a VPC endpoint. Supported for Gateway Load Balancer endpoints only.
-	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
-	// The ID of a VPC peering connection.
-	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
-	CustomRouteParameters  `json:",inline"`
+	VPCEndpointID         *string `json:"vpcEndpointID,omitempty"`
+	CustomRouteParameters `json:",inline"`
 }
 
 // RouteSpec defines the desired state of Route
@@ -101,7 +81,6 @@ type RouteStatus struct {
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:storageversion
 type Route struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

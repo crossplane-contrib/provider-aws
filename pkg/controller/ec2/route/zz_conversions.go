@@ -44,38 +44,17 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 	if cr.Spec.ForProvider.DestinationPrefixListID != nil {
 		res.SetDestinationPrefixListId(*cr.Spec.ForProvider.DestinationPrefixListID)
 	}
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
 	if cr.Spec.ForProvider.EgressOnlyInternetGatewayID != nil {
 		res.SetEgressOnlyInternetGatewayId(*cr.Spec.ForProvider.EgressOnlyInternetGatewayID)
-	}
-	if cr.Spec.ForProvider.GatewayID != nil {
-		res.SetGatewayId(*cr.Spec.ForProvider.GatewayID)
-	}
-	if cr.Spec.ForProvider.InstanceID != nil {
-		res.SetInstanceId(*cr.Spec.ForProvider.InstanceID)
 	}
 	if cr.Spec.ForProvider.LocalGatewayID != nil {
 		res.SetLocalGatewayId(*cr.Spec.ForProvider.LocalGatewayID)
 	}
-	if cr.Spec.ForProvider.NatGatewayID != nil {
-		res.SetNatGatewayId(*cr.Spec.ForProvider.NatGatewayID)
-	}
 	if cr.Spec.ForProvider.NetworkInterfaceID != nil {
 		res.SetNetworkInterfaceId(*cr.Spec.ForProvider.NetworkInterfaceID)
 	}
-	if cr.Spec.ForProvider.RouteTableID != nil {
-		res.SetRouteTableId(*cr.Spec.ForProvider.RouteTableID)
-	}
-	if cr.Spec.ForProvider.TransitGatewayID != nil {
-		res.SetTransitGatewayId(*cr.Spec.ForProvider.TransitGatewayID)
-	}
 	if cr.Spec.ForProvider.VPCEndpointID != nil {
 		res.SetVpcEndpointId(*cr.Spec.ForProvider.VPCEndpointID)
-	}
-	if cr.Spec.ForProvider.VPCPeeringConnectionID != nil {
-		res.SetVpcPeeringConnectionId(*cr.Spec.ForProvider.VPCPeeringConnectionID)
 	}
 
 	return res
@@ -93,12 +72,6 @@ func GenerateDeleteRouteInput(cr *svcapitypes.Route) *svcsdk.DeleteRouteInput {
 	}
 	if cr.Spec.ForProvider.DestinationPrefixListID != nil {
 		res.SetDestinationPrefixListId(*cr.Spec.ForProvider.DestinationPrefixListID)
-	}
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
-	if cr.Spec.ForProvider.RouteTableID != nil {
-		res.SetRouteTableId(*cr.Spec.ForProvider.RouteTableID)
 	}
 
 	return res

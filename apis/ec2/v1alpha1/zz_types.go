@@ -1530,8 +1530,6 @@ type InstanceCreditSpecification struct {
 // +kubebuilder:skipversion
 type InstanceCreditSpecificationRequest struct {
 	CPUCredits *string `json:"cpuCredits,omitempty"`
-
-	InstanceID *string `json:"instanceID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1655,8 +1653,6 @@ type InstancePrivateIPAddress struct {
 // +kubebuilder:skipversion
 type InstanceSpecification struct {
 	ExcludeBootVolume *bool `json:"excludeBootVolume,omitempty"`
-
-	InstanceID *string `json:"instanceID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1913,13 +1909,11 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 
 	InterfaceType *string `json:"interfaceType,omitempty"`
 
-<<<<<<< HEAD
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
-=======
+
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
@@ -1942,13 +1936,11 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 
 	InterfaceType *string `json:"interfaceType,omitempty"`
 
-<<<<<<< HEAD
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
-=======
+
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
@@ -2930,37 +2922,7 @@ type ResponseLaunchTemplateData struct {
 	UserData *string `json:"userData,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type Route struct {
-	DestinationCIDRBlock *string `json:"destinationCIDRBlock,omitempty"`
-
-	DestinationIPv6CIDRBlock *string `json:"destinationIPv6CIDRBlock,omitempty"`
-
-	DestinationPrefixListID *string `json:"destinationPrefixListID,omitempty"`
-
-	EgressOnlyInternetGatewayID *string `json:"egressOnlyInternetGatewayID,omitempty"`
-
-	GatewayID *string `json:"gatewayID,omitempty"`
-
-	InstanceID *string `json:"instanceID,omitempty"`
-
-	InstanceOwnerID *string `json:"instanceOwnerID,omitempty"`
-
-	LocalGatewayID *string `json:"localGatewayID,omitempty"`
-
-	NATGatewayID *string `json:"natGatewayID,omitempty"`
-
-	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
-
-	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
-
-	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-=======
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 type RouteTable struct {
 	OwnerID *string `json:"ownerID,omitempty"`
 
@@ -2989,9 +2951,7 @@ type RouteTableAssociationState struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
 type Route_SDK struct {
 	CarrierGatewayID *string `json:"carrierGatewayID,omitempty"`
 
@@ -3011,7 +2971,7 @@ type Route_SDK struct {
 
 	LocalGatewayID *string `json:"localGatewayID,omitempty"`
 
-	NatGatewayID *string `json:"natGatewayID,omitempty"`
+	NATGatewayID *string `json:"natGatewayID,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
@@ -3020,7 +2980,7 @@ type Route_SDK struct {
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
 }
 
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
+// +kubebuilder:skipversion
 type RunInstancesMonitoringEnabled struct {
 	Enabled *bool `json:"enabled,omitempty"`
 }
@@ -3171,13 +3131,11 @@ type ScheduledInstancesNetworkInterface struct {
 
 	Description *string `json:"description,omitempty"`
 
-<<<<<<< HEAD
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
 
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
-=======
+
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
@@ -3446,8 +3404,6 @@ type SpotInstanceRequest struct {
 	BlockDurationMinutes *int64 `json:"blockDurationMinutes,omitempty"`
 
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
-
-	InstanceID *string `json:"instanceID,omitempty"`
 
 	LaunchGroup *string `json:"launchGroup,omitempty"`
 
@@ -3834,15 +3790,11 @@ type TransitGatewayConnect struct {
 
 	Tags []*Tag `json:"tags,omitempty"`
 
-<<<<<<< HEAD
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 
 	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
 
 	TransportTransitGatewayAttachmentID *string `json:"transportTransitGatewayAttachmentID,omitempty"`
-=======
-	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 }
 
 // +kubebuilder:skipversion

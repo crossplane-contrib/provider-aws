@@ -281,7 +281,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						GatewayID: aws.String(igID),
 					}},
 					Associations: []v1beta1.Association{{
@@ -294,7 +294,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						GatewayID: aws.String(igID),
 					}},
 					Associations: []v1beta1.Association{{
@@ -577,7 +577,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					},
@@ -592,7 +592,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					},
@@ -630,7 +630,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
@@ -651,7 +651,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
@@ -684,7 +684,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
@@ -694,7 +694,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
@@ -728,7 +728,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
@@ -749,7 +749,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+					Routes: []v1beta1.RouteBeta{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},

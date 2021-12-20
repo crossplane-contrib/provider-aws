@@ -20,20 +20,6 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-<<<<<<< HEAD
-// GetCondition of this TransitGateway.
-func (mg *TransitGateway) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
-	return mg.Status.GetCondition(ct)
-}
-
-// GetDeletionPolicy of this TransitGateway.
-func (mg *TransitGateway) GetDeletionPolicy() xpv1.DeletionPolicy {
-	return mg.Spec.DeletionPolicy
-}
-
-// GetProviderConfigReference of this TransitGateway.
-func (mg *TransitGateway) GetProviderConfigReference() *xpv1.Reference {
-=======
 // GetCondition of this Route.
 func (mg *Route) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
@@ -46,37 +32,10 @@ func (mg *Route) GetDeletionPolicy() xpv1.DeletionPolicy {
 
 // GetProviderConfigReference of this Route.
 func (mg *Route) GetProviderConfigReference() *xpv1.Reference {
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-<<<<<<< HEAD
-GetProviderReference of this TransitGateway.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *TransitGateway) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
-// GetWriteConnectionSecretToReference of this TransitGateway.
-func (mg *TransitGateway) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
-	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetConditions of this TransitGateway.
-func (mg *TransitGateway) SetConditions(c ...xpv1.Condition) {
-	mg.Status.SetConditions(c...)
-}
-
-// SetDeletionPolicy of this TransitGateway.
-func (mg *TransitGateway) SetDeletionPolicy(r xpv1.DeletionPolicy) {
-	mg.Spec.DeletionPolicy = r
-}
-
-// SetProviderConfigReference of this TransitGateway.
-func (mg *TransitGateway) SetProviderConfigReference(r *xpv1.Reference) {
-=======
 GetProviderReference of this Route.
 Deprecated: Use GetProviderConfigReference.
 */
@@ -101,12 +60,66 @@ func (mg *Route) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 
 // SetProviderConfigReference of this Route.
 func (mg *Route) SetProviderConfigReference(r *xpv1.Reference) {
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-<<<<<<< HEAD
+SetProviderReference of this Route.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *Route) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this Route.
+func (mg *Route) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this TransitGateway.
+func (mg *TransitGateway) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TransitGateway.
+func (mg *TransitGateway) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this TransitGateway.
+func (mg *TransitGateway) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this TransitGateway.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *TransitGateway) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this TransitGateway.
+func (mg *TransitGateway) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TransitGateway.
+func (mg *TransitGateway) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TransitGateway.
+func (mg *TransitGateway) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this TransitGateway.
+func (mg *TransitGateway) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
 SetProviderReference of this TransitGateway.
 Deprecated: Use SetProviderConfigReference.
 */
@@ -172,17 +185,6 @@ func (mg *TransitGatewayVPCAttachment) SetProviderReference(r *xpv1.Reference) {
 
 // SetWriteConnectionSecretToReference of this TransitGatewayVPCAttachment.
 func (mg *TransitGatewayVPCAttachment) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
-=======
-SetProviderReference of this Route.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *Route) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
-}
-
-// SetWriteConnectionSecretToReference of this Route.
-func (mg *Route) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

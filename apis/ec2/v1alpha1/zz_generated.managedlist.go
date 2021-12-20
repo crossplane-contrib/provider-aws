@@ -20,7 +20,15 @@ package v1alpha1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-<<<<<<< HEAD
+// GetItems of this RouteList.
+func (l *RouteList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this TransitGatewayList.
 func (l *TransitGatewayList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -32,10 +40,6 @@ func (l *TransitGatewayList) GetItems() []resource.Managed {
 
 // GetItems of this TransitGatewayVPCAttachmentList.
 func (l *TransitGatewayVPCAttachmentList) GetItems() []resource.Managed {
-=======
-// GetItems of this RouteList.
-func (l *RouteList) GetItems() []resource.Managed {
->>>>>>> 0b84dcc9 (add ec2 route api & controller)
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

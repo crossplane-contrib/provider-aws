@@ -87,6 +87,13 @@ ignore:
     - ModifyTransitGatewayOptions.AssociationDefaultRouteTableId
     - ModifyTransitGatewayOptions.AddTransitGatewayCidrBlocks
     - ModifyTransitGatewayOptions.RemoveTransitGatewayCidrBlocks
+    - CreateRouteInput.DryRun
+    - CreateRouteInput.NatGatewayId
+    - CreateRouteInput.TransitGatewayId
+    - CreateRouteInput.VpcPeeringConnectionId
+    - CreateRouteInput.RouteTableId
+    - CreateRouteInput.InstanceId
+    - CreateRouteInput.GatewayId
 resources:
   Volume:
     exceptions:

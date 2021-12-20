@@ -4,9 +4,10 @@ metadata:
   name: example
 spec:
   forProvider:
-    destinationCIDRBlock: 10.10.10.0/24
-    region: eu-central-1
-    routeTableID: rtb-00000000000000001
-    vpcPeeringConnectionID: pcx-00000000000000001
+    region: us-east-1
+    routeTableId: rtb-0bcc5f92178fcaaa3
+    destinationCIDRBlock: 172.16.0.0/12
+    transitGatewayIdRef:
+      name: tgw
   providerConfigRef:
     name: example
