@@ -22,7 +22,7 @@ per-service basis. For example, `rds` is a service that contains `DBInstance`,
 `DBCluster` and many other related resources. The first thing to do is to figure
 out which service the resource we'd like to generate belongs to.
 
-Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.4/models/apis)
+Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.10/models/apis)
 and make note of the service name. For example, in order to generate Lambda
 resources, you need to use `lambda` as service name. Once you figure that out,
 the following is the command you need to run to generate CRDs and controllers:
