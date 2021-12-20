@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/routeresponse"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/vpclink"
+	athenaworkgroup "github.com/crossplane/provider-aws/pkg/controller/athena/workgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
@@ -237,6 +238,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		thing.SetupThing,
 		iotpolicy.SetupPolicy,
 		ec2route.SetupRoute,
+		athenaworkgroup.SetupWorkGroup,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
