@@ -20,8 +20,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// +kubebuilder:storageversion
-
 // CustomVolumeParameters contains the additional fields for VolumeParameters.
 type CustomVolumeParameters struct {
 	// The identifier of the AWS Key Management Service (AWS KMS) customer master
@@ -149,4 +147,91 @@ type CustomTransitGatewayVPCAttachmentParameters struct {
 	// Metadata tagging key value pairs
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
+}
+
+// CustomRouteParameters are custom parameters for Route
+type CustomRouteParameters struct {
+	// The ID of a transit gateway.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGateway
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// TransitGatewayIDRef is a reference to an API used to set
+	// the TransitGatewayID.
+	// +optional
+	TransitGatewayIDRef *xpv1.Reference `json:"transitGatewayIdRef,omitempty"`
+
+	// TransitGatewayIDSelector selects references to API used
+	// to set the TransitGatewayID.
+	// +optional
+	TransitGatewayIDSelector *xpv1.Selector `json:"transitGatewayIdSelector,omitempty"`
+
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.NATGateway
+	NATGatewayID *string `json:"natGatewayId,omitempty"`
+
+	// NATGatewayIDRef is a reference to an API used to set
+	// the NATGatewayID.
+	// +optional
+	NATGatewayIDRef *xpv1.Reference `json:"natGatewayIdRef,omitempty"`
+
+	// NATGatewayIDSelector selects references to API used
+	// to set the NATGatewayID.
+	// +optional
+	NATGatewayIDSelector *xpv1.Selector `json:"natGatewayIdSelector,omitempty"`
+
+	// The ID of a VPC peering connection.
+	// +crossplane:generate:reference:type=VPCPeeringConnection
+	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`
+
+	// VPCPeeringConnectionIDRef is a reference to an API used to set
+	// the VPCPeeringConnectionID.
+	// +optional
+	VPCPeeringConnectionIDRef *xpv1.Reference `json:"vpcPeeringConnectionIdRef,omitempty"`
+
+	// VPCPeeringConnectionIDSelector selects references to API used
+	// to set the VPCPeeringConnectionID.
+	// +optional
+	VPCPeeringConnectionIDSelector *xpv1.Selector `json:"vpcPeeringConnectionIdSelector,omitempty"`
+
+	// The ID of the route table for the route.
+	// provider-aws currently provides both a standalone Route resource
+	// and a RouteTable resource with routes defined in-line.
+	// At this time you cannot use a Route Table with in-line routes
+	// in conjunction with any Route resources.
+	// Doing so will cause a conflict of rule settings and will overwrite rules.
+	// +optional
+	RouteTableID *string `json:"routeTableId,omitempty"`
+
+	// The ID of a NAT instance in your VPC. The operation fails if you specify
+	// an instance ID unless exactly one network interface is attached.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1.Instance
+	InstanceID *string `json:"instanceId,omitempty"`
+
+	// InstanceIDRef is a reference to an API used to set
+	// the InstanceID.
+	// +optional
+	InstanceIDRef *xpv1.Reference `json:"instanceIdRef,omitempty"`
+
+	// InstanceIDSelector selects references to API used
+	// to set the InstanceID.
+	// +optional
+	InstanceIDSelector *xpv1.Selector `json:"instanceIdSelector,omitempty"`
+
+	// The ID of an internet gateway attached to your VPC.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.InternetGateway
+	GatewayID *string `json:"gatewayId,omitempty"`
+
+	// GatewayIDRef is a reference to an API used to set
+	// the GatewayID.
+	// +optional
+	GatewayIDRef *xpv1.Reference `json:"gatewayIdRef,omitempty"`
+
+	// GatewayIDSelector selects references to API used
+	// to set the GatewayID.
+	// +optional
+	GatewayIDSelector *xpv1.Selector `json:"gatewayIdSelector,omitempty"`
 }

@@ -60,6 +60,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
+	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
@@ -235,6 +236,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
 		thing.SetupThing,
 		iotpolicy.SetupPolicy,
+		ec2route.SetupRoute,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

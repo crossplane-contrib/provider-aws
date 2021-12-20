@@ -21,11 +21,102 @@ package v1alpha1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
+	manualv1alpha1 "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	v1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// ResolveReferences of this Route.
+func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayList{},
+			Managed: &TransitGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.TransitGatewayIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.NATGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.NATGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.NATGatewayIDSelector,
+		To: reference.To{
+			List:    &v1beta1.NATGatewayList{},
+			Managed: &v1beta1.NATGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.NATGatewayID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.NATGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.NATGatewayIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDSelector,
+		To: reference.To{
+			List:    &VPCPeeringConnectionList{},
+			Managed: &VPCPeeringConnection{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.InstanceID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.InstanceIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.InstanceIDSelector,
+		To: reference.To{
+			List:    &manualv1alpha1.InstanceList{},
+			Managed: &manualv1alpha1.Instance{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.InstanceID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.InstanceID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.InstanceIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.GatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.GatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.GatewayIDSelector,
+		To: reference.To{
+			List:    &v1beta1.InternetGatewayList{},
+			Managed: &v1beta1.InternetGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.GatewayID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.GatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.GatewayIDRef = rsp.ResolvedReference
+
+	return nil
+}
 
 // ResolveReferences of this TransitGatewayVPCAttachment.
 func (mg *TransitGatewayVPCAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {

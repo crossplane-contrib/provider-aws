@@ -5,6 +5,7 @@ ignore:
     - CarrierGateway
     - ClientVpnEndpoint
     - ClientVpnRoute
+    - CoipPool
     - CustomerGateway
     - DefaultSubnet
     - DefaultVpc
@@ -30,7 +31,6 @@ ignore:
     - PlacementGroup
     - ReservedInstancesListing
     - RouteTable
-    - Route
     - SecurityGroup
     - Snapshot
     - SpotDatafeedSubscription
@@ -87,6 +87,13 @@ ignore:
     - ModifyTransitGatewayOptions.AssociationDefaultRouteTableId
     - ModifyTransitGatewayOptions.AddTransitGatewayCidrBlocks
     - ModifyTransitGatewayOptions.RemoveTransitGatewayCidrBlocks
+    - CreateRouteInput.DryRun
+    - CreateRouteInput.NatGatewayId
+    - CreateRouteInput.TransitGatewayId
+    - CreateRouteInput.VpcPeeringConnectionId
+    - CreateRouteInput.RouteTableId
+    - CreateRouteInput.InstanceId
+    - CreateRouteInput.GatewayId
 resources:
   Volume:
     exceptions:
