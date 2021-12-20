@@ -25,6 +25,7 @@ import (
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	acmpcav1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	apigatewayv2 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	athenav1alpha1 "github.com/crossplane/provider-aws/apis/athena/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	cloudfrontv1alpha1 "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
@@ -111,6 +112,7 @@ func init() {
 		mqv1alpha1.SchemeBuilder.AddToScheme,
 		cloudwatchlogsv1alpha1.SchemeBuilder.AddToScheme,
 		iotv1alpha1.SchemeBuilder.AddToScheme,
+		athenav1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
