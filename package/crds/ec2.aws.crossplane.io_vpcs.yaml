@@ -94,6 +94,10 @@ spec:
                       must also specify Ipv6Pool in the request. To let Amazon choose
                       the IPv6 CIDR block for you, omit this parameter.
                     type: string
+                  ipv6Pool:
+                    description: The ID of an IPv6 address pool from which to allocate
+                      the IPv6 CIDR block.
+                    type: string
                   region:
                     description: Region is the region you'd like your VPC to be created
                       in.
