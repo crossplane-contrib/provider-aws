@@ -41,6 +41,8 @@ type OpenIDConnectProviderClient interface {
 	RemoveClientIDFromOpenIDConnectProvider(ctx context.Context, input *iam.RemoveClientIDFromOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.RemoveClientIDFromOpenIDConnectProviderOutput, error)
 	UpdateOpenIDConnectProviderThumbprint(ctx context.Context, input *iam.UpdateOpenIDConnectProviderThumbprintInput, opts ...func(*iam.Options)) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error)
 	DeleteOpenIDConnectProvider(ctx context.Context, input *iam.DeleteOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error)
+	TagOpenIDConnectProvider(ctx context.Context, input *iam.TagOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.TagOpenIDConnectProviderOutput, error)
+	UntagOpenIDConnectProvider(ctx context.Context, input *iam.UntagOpenIDConnectProviderInput, optFns ...func(*iam.Options)) (*iam.UntagOpenIDConnectProviderOutput, error)
 }
 
 // GenerateOIDCProviderObservation is used to produce v1alpha1.OpenIDConnectProvider
@@ -59,13 +61,25 @@ func IsOIDCProviderUpToDate(in svcapitypes.OpenIDConnectProviderParameters, obse
 	sortSlicesOpt := cmpopts.SortSlices(func(x, y string) bool {
 		return x < y
 	})
+	sortSliceTags := cmpopts.SortSlices(func(x, y svcapitypes.Tag) bool {
+		return x.Key < y.Key
+	})
 	if !cmp.Equal(in.ClientIDList, observed.ClientIDList, sortSlicesOpt, cmpopts.EquateEmpty()) {
 		return false
 	}
 	if !cmp.Equal(in.ThumbprintList, observed.ThumbprintList, sortSlicesOpt, cmpopts.EquateEmpty()) {
 		return false
 	}
-	return true
+
+	nTags := len(observed.Tags)
+	if nTags == 0 {
+		return true
+	}
+	cmpTags := make([]svcapitypes.Tag, nTags)
+	for i := range observed.Tags {
+		cmpTags[i] = svcapitypes.Tag{Key: *observed.Tags[i].Key, Value: *observed.Tags[i].Value}
+	}
+	return cmp.Equal(in.Tags, cmpTags, sortSliceTags, cmpopts.EquateEmpty())
 }
 
 // SliceDifference returns the elements to added and removed between the

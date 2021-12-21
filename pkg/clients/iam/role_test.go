@@ -1,7 +1,6 @@
 package iam
 
 import (
-	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -340,107 +339,6 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 				if !strings.Contains(testDiff, tc.wantDiff) {
 					t.Errorf("r: -want, +got:\n%s", testDiff)
 				}
-			}
-		})
-	}
-}
-
-func TestDiffIAMTags(t *testing.T) {
-	type args struct {
-		local  []v1beta1.Tag
-		remote []iamtypes.Tag
-	}
-	type want struct {
-		add    []iamtypes.Tag
-		remove []string
-	}
-	cases := map[string]struct {
-		args args
-		want want
-	}{
-		"AllNew": {
-			args: args{
-				local: []v1beta1.Tag{
-					{Key: "key", Value: "val"},
-				},
-			},
-			want: want{
-				add: []iamtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-				},
-			},
-		},
-		"SomeNew": {
-			args: args{
-				local: []v1beta1.Tag{
-					{Key: "key", Value: "val"},
-					{Key: "key1", Value: "val1"},
-					{Key: "key2", Value: "val2"},
-				},
-				remote: []iamtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-				},
-			},
-			want: want{
-				add: []iamtypes.Tag{
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
-				},
-			},
-		},
-		"Update": {
-			args: args{
-				local: []v1beta1.Tag{
-					{Key: "key", Value: "different"},
-					{Key: "key1", Value: "val1"},
-					{Key: "key2", Value: "val2"},
-				},
-				remote: []iamtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
-				},
-			},
-			want: want{
-				add: []iamtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("different")},
-				},
-				remove: []string{"key"},
-			},
-		},
-		"RemoveAll": {
-			args: args{
-				remote: []iamtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
-				},
-			},
-			want: want{
-				remove: []string{"key", "key1", "key2"},
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			tagCmp := cmpopts.SortSlices(func(i, j iamtypes.Tag) bool {
-				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
-			})
-
-			crTagMap := make(map[string]string, len(tc.args.local))
-			for _, v := range tc.args.local {
-				crTagMap[v.Key] = v.Value
-			}
-
-			add, remove, _ := DiffIAMTags(crTagMap, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			sort.Strings(tc.want.remove)
-			sort.Strings(remove)
-			if diff := cmp.Diff(tc.want.remove, remove, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}

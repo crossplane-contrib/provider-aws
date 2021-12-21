@@ -38,6 +38,12 @@ type OpenIDConnectProviderParameters struct {
 	// +optional
 	ClientIDList []string `json:"clientIDList,omitempty"`
 
+	// Tags. For more information about
+	// tagging, see Tagging OpenID Connect (OIDC) identity providers (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags_idps_oidc.html)
+	// in the IAM User Guide.
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+
 	// A list of server certificate thumbprints for the OpenID Connect (OIDC) identity
 	// provider's server certificates. Typically this list includes only one entry.
 	// However, IAM lets you have up to five thumbprints for an OIDC provider. This
