@@ -95,6 +95,11 @@ type VPCParameters struct {
 	// +immutable
 	AmazonProvidedIpv6CIDRBlock *bool `json:"amazonProvidedIpv6CIDRBlock,omitempty"`
 
+	// The ID of an IPv6 address pool from which to allocate the IPv6 CIDR block.
+	// +optional
+	// +immutable
+	Ipv6Pool *string `json:"ipv6Pool,omitempty"`
+
 	// A boolean flag to enable/disable DNS support in the VPC
 	// +optional
 	EnableDNSSupport *bool `json:"enableDnsSupport,omitempty"`
