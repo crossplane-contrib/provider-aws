@@ -2,6 +2,7 @@ package transitgateway
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -138,19 +139,32 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	added := false
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[awsclients.StringValue(t.Key)] = awsclients.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		if tagMap[k] != v {
-			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, svcapitypes.Tag{Key: awsclients.String(k), Value: awsclients.String(v)})
-			added = true
+	var transitGatewayTags svcapitypes.TagSpecification
+	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
+		if aws.StringValue(tagSpecification.ResourceType) == "transit-gateway" {
+			transitGatewayTags = *tagSpecification
 		}
 	}
-	if !added {
-		return nil
+
+	tagMap := map[string]string{}
+	tagMap["Name"] = cr.Name
+	for _, t := range transitGatewayTags.Tags {
+		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
 	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		tagMap[k] = v
+	}
+	transitGatewayTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
+	transitGatewayTags.ResourceType = aws.String("transit-gateway")
+	i := 0
+	for k, v := range tagMap {
+		transitGatewayTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
+		i++
+	}
+	sort.Slice(transitGatewayTags.Tags, func(i, j int) bool {
+		return aws.StringValue(transitGatewayTags.Tags[i].Key) < aws.StringValue(transitGatewayTags.Tags[j].Key)
+	})
+
+	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&transitGatewayTags}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
