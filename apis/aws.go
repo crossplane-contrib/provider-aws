@@ -51,6 +51,7 @@ import (
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
@@ -113,6 +114,7 @@ func init() {
 		cloudwatchlogsv1alpha1.SchemeBuilder.AddToScheme,
 		iotv1alpha1.SchemeBuilder.AddToScheme,
 		athenav1alpha1.SchemeBuilder.AddToScheme,
+		ramv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

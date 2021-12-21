@@ -108,6 +108,7 @@ import (
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
@@ -239,6 +240,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		iotpolicy.SetupPolicy,
 		ec2route.SetupRoute,
 		athenaworkgroup.SetupWorkGroup,
+		resourceshare.SetupResourceShare,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
