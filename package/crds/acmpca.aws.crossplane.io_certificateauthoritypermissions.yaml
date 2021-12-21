@@ -212,15 +212,11 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    deprecated: true
-    deprecationWarning: Please use v1beta1 version of this resource that has identical
-      schema.
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: 'CertificateAuthorityPermission is a managed resource that represents
-          an AWS CertificateAuthorityPermission Manager. Deprecated: Please use v1beta1
-          version of this resource.'
+        description: CertificateAuthorityPermission is a managed resource that represents
+          an AWS CertificateAuthorityPermission Manager.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

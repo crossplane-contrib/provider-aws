@@ -79,8 +79,6 @@ type CertificateAuthorityPermissionParameters struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type CertificateAuthorityPermission struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -92,8 +90,6 @@ type CertificateAuthorityPermission struct {
 // +kubebuilder:object:root=true
 
 // CertificateAuthorityPermissionList contains a list of CertificateAuthorityPermission
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
-// Deprecated: Please use v1beta1 version of this resource.
 type CertificateAuthorityPermissionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
