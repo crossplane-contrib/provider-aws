@@ -120,9 +120,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.ClusterARN = nil
 	}
 	if resp.ClusterName != nil {
-		cr.Spec.ForProvider.ClusterName = resp.ClusterName
+		cr.Status.AtProvider.ClusterName = resp.ClusterName
 	} else {
-		cr.Spec.ForProvider.ClusterName = nil
+		cr.Status.AtProvider.ClusterName = nil
 	}
 	if resp.State != nil {
 		cr.Status.AtProvider.State = resp.State

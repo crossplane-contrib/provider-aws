@@ -61,21 +61,72 @@ spec:
                 description: ClusterParameters defines the desired state of Cluster
                 properties:
                   brokerNodeGroupInfo:
-                    description: Information about the brokers.
+                    description: Information about the brokers
                     properties:
-                      brokerAZDistribution:
-                        description: The distribution of broker nodes across Availability
-                          Zones. By default, broker nodes are distributed among the
-                          Availability Zones of your Region. Currently, the only supported
-                          value is DEFAULT. You can either specify this value explicitly
-                          or leave it out.
-                        type: string
+                      clientSubnetRefs:
+                        description: ClientSubnetRefs is a list of references to Subnets
+                          used to set the ClientSubnets.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      clientSubnetSelector:
+                        description: ClientSubnetSelector selects references to Subnets
+                          used to set the ClientSubnets.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       clientSubnets:
                         items:
                           type: string
                         type: array
                       instanceType:
                         type: string
+                      securityGroupRefs:
+                        description: SecurityGroupRefs is a list of references to
+                          SecurityGroups used to set the SecurityGroups.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupSelector:
+                        description: SecurityGroupSelector selects references to SecurityGroup
+                          used to set the SecurityGroups.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       securityGroups:
                         items:
                           type: string
@@ -114,15 +165,39 @@ spec:
                             type: array
                         type: object
                     type: object
-                  clusterName:
-                    description: The name of the cluster.
-                    type: string
                   configurationInfo:
                     description: Represents the configuration that you want MSK to
                       use for the cluster.
                     properties:
                       arn:
+                        description: ARN of the configuration to use.
                         type: string
+                      arnRef:
+                        description: ARNRef is a reference to a Kafka Configuration
+                          used to set ARN.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      arnSelector:
+                        description: ARNSelector selects a reference to a Kafka Configuration
+                          used to set ARN.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       revision:
                         format: int64
                         type: integer
@@ -234,8 +309,6 @@ spec:
                       cluster on Tls port.
                     type: string
                 required:
-                - brokerNodeGroupInfo
-                - clusterName
                 - kafkaVersion
                 - numberOfBrokerNodes
                 - region
@@ -292,6 +365,9 @@ spec:
                 properties:
                   clusterARN:
                     description: The Amazon Resource Name (ARN) of the cluster.
+                    type: string
+                  clusterName:
+                    description: The name of the MSK cluster.
                     type: string
                   state:
                     description: The state of the cluster. The possible states are
