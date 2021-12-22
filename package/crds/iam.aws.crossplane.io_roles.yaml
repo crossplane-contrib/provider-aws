@@ -15,6 +15,8 @@ spec:
     kind: Role
     listKind: RoleList
     plural: roles
+    shortNames:
+    - iamrole
     singular: role
   scope: Cluster
   versions:
