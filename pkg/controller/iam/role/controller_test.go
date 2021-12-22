@@ -24,6 +24,7 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -31,8 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -90,11 +92,30 @@ func withDescription() roleModifier {
 	}
 }
 
+func withTags(tagMaps ...map[string]string) roleModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.Role) {
+		r.Spec.ForProvider.Tags = tagList
+	}
+}
+
+func withGroupVersionKind() roleModifier {
+	return func(iamRole *v1beta1.Role) {
+		iamRole.TypeMeta.SetGroupVersionKind(v1beta1.RoleGroupVersionKind)
+	}
+}
+
 func role(m ...roleModifier) *v1beta1.Role {
 	cr := &v1beta1.Role{}
 	for _, f := range m {
 		f(cr)
 	}
+
 	return cr
 }
 
@@ -429,6 +450,65 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   *v1beta1.Role
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1beta1.Role
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				cr:   role(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: role(withTags(resource.GetExternalTags(role()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"Check Tag values": {
+			args: args{
+				cr:   role(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: role(withTags(resource.GetExternalTags(role(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   role(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
