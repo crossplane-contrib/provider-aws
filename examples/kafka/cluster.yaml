@@ -2,21 +2,26 @@
 apiVersion: kafka.aws.crossplane.io/v1alpha1
 kind: Cluster
 metadata:
-  name: kafka-test-server
+  name: example
 spec:
   forProvider:
+    region: us-east-1
     brokerNodeGroupInfo:
-      clientSubnets:
-        - subnet-f2ccb898
-        - subnet-aac361d6
+      clientSubnetRefs:
+        - name: sample-subnet1
+        - name: sample-subnet2
+      securityGroupRefs:
+        - name: sample-cluster-sg
       instanceType: kafka.t3.small
       storageInfo: 
         ebsStorageInfo:
           volumeSize: 1
-    clusterName: kafka-test-server
     kafkaVersion: 2.6.1
+    configurationInfo:
+      arnRef:
+        name: example-configuration
+      revision: 1
     numberOfBrokerNodes: 2
-    region: us-east-1
     tags:
       myKey: myValue
   providerConfigRef:

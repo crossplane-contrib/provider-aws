@@ -101,6 +101,7 @@ import (
 	iotpolicy "github.com/crossplane/provider-aws/pkg/controller/iot/policy"
 	"github.com/crossplane/provider-aws/pkg/controller/iot/thing"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
+	kafkaconfiguration "github.com/crossplane/provider-aws/pkg/controller/kafka/configuration"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
@@ -241,6 +242,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		ec2route.SetupRoute,
 		athenaworkgroup.SetupWorkGroup,
 		resourceshare.SetupResourceShare,
+		kafkaconfiguration.SetupConfiguration,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

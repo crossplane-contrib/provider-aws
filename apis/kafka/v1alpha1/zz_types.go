@@ -176,19 +176,6 @@ type CompatibleKafkaVersion struct {
 }
 
 // +kubebuilder:skipversion
-type Configuration struct {
-	ARN *string `json:"arn,omitempty"`
-
-	CreationTime *metav1.Time `json:"creationTime,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	KafkaVersions []*string `json:"kafkaVersions,omitempty"`
-
-	Name *string `json:"name,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type ConfigurationInfo struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -202,6 +189,23 @@ type ConfigurationRevision struct {
 	Description *string `json:"description,omitempty"`
 
 	Revision *int64 `json:"revision,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Configuration_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	KafkaVersions []*string `json:"kafkaVersions,omitempty"`
+	// Describes a configuration revision.
+	LatestRevision *ConfigurationRevision `json:"latestRevision,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// The state of a configuration.
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -267,8 +271,6 @@ type LoggingInfo struct {
 
 // +kubebuilder:skipversion
 type MutableClusterInfo struct {
-	// Specifies the configuration to use for the brokers.
-	ConfigurationInfo *ConfigurationInfo `json:"configurationInfo,omitempty"`
 	// Specifies which metrics are gathered for the MSK cluster. This property has
 	// the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
 	// and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
