@@ -95,7 +95,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
-						return nil, &awss3types.NoSuchBucket{}
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -179,11 +179,17 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
+					s3Testing.WithConditions(xpv1.Available()),
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						xpv1.ResourceCredentialsSecretEndpointKey:  []byte(s3Testing.BucketName),
+						v1beta1.ResourceCredentialsSecretRegionKey: []byte(s3Testing.Region),
+					},
+					ResourceLateInitialized: false,
 				},
 			},
 		},
@@ -705,7 +711,7 @@ func TestDelete(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
-						return nil, &awss3types.NoSuchBucket{}
+						return nil, &awss3types.NotFound{}
 					},
 				},
 				cr: s3Testing.Bucket(),

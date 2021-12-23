@@ -1,9 +1,18 @@
 ignore:
-  resource_names:
-    - Configuration
+  field_paths:
+    - CreateClusterInput.BrokerNodeGroupInfo
+    - CreateClusterInput.ClusterName
+    - CreateClusterInput.ConfigurationInfo
+    - CreateConfigurationInput.Name
+    - CreateConfigurationInput.ServerProperties
 resources:
+  Configuration:
+    exceptions:
+      errors:
+        404:
+          code: BadRequestException
   Cluster:
     exceptions:
       errors:
         404:
-          code: NotFoundException
+          code: BadRequestException

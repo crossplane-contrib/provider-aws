@@ -1,6 +1,6 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMAccessKey
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: AccessKey
 metadata:
   name: test-accesskey
 spec:

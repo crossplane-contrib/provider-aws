@@ -18,28 +18,6 @@ spec:
     singular: routetable
   scope: Cluster
   versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        properties:
-          ownerID:
-            type: string
-          routeTableID:
-            type: string
-          tags:
-            items:
-              properties:
-                key:
-                  type: string
-                value:
-                  type: string
-              type: object
-            type: array
-          vpcID:
-            type: string
-        type: object
-    served: true
-    storage: false
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
@@ -135,7 +113,12 @@ spec:
                   routes:
                     description: the routes in the route table
                     items:
-                      description: Route describes a route in a route table.
+                      description: RouteBeta describes a route in a route table. provider-aws
+                        currently provides both a standalone Route resource and a
+                        RouteTable resource with routes defined in-line. At this time
+                        you cannot use a Route Table with in-line routes in conjunction
+                        with any Route resources. Doing so will cause a conflict of
+                        rule settings and will overwrite rules.
                       properties:
                         destinationCidrBlock:
                           description: The IPv4 CIDR address block used for the destination

@@ -50,6 +50,11 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 	} else {
 		cr.Status.AtProvider.CreatedDate = nil
 	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
 	if resp.SecurityGroupIds != nil {
 		f2 := []*string{}
 		for _, f2iter := range resp.SecurityGroupIds {
@@ -71,6 +76,17 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 		cr.Status.AtProvider.SubnetIDs = f3
 	} else {
 		cr.Status.AtProvider.SubnetIDs = nil
+	}
+	if resp.Tags != nil {
+		f4 := map[string]*string{}
+		for f4key, f4valiter := range resp.Tags {
+			var f4val string
+			f4val = *f4valiter
+			f4[f4key] = &f4val
+		}
+		cr.Spec.ForProvider.Tags = f4
+	} else {
+		cr.Spec.ForProvider.Tags = nil
 	}
 	if resp.VpcLinkId != nil {
 		cr.Status.AtProvider.VPCLinkID = resp.VpcLinkId

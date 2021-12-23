@@ -12,6 +12,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
@@ -20,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
 )
 
 // SetupResolverRule adds a controller that reconciles ResolverRule
@@ -32,6 +34,7 @@ func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			e.postCreate = postCreate
 			e.preDelete = preDelete
 			e.preUpdate = preUpdate
+			e.postObserve = postObserve
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -72,4 +75,21 @@ func preDelete(_ context.Context, cr *v1alpha1.ResolverRule, obj *svcsdk.DeleteR
 func preUpdate(_ context.Context, cr *v1alpha1.ResolverRule, obj *svcsdk.UpdateResolverRuleInput) error {
 	obj.ResolverRuleId = aws.String(meta.GetExternalName(cr))
 	return nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.ResolverRule, obj *svcsdk.GetResolverRuleOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+
+	switch aws.StringValue(obj.ResolverRule.Status) {
+	case string(svcapitypes.ResolverRuleStatus_SDK_COMPLETE):
+		cr.SetConditions(xpv1.Available())
+	case string(svcapitypes.ResolverRuleStatus_SDK_UPDATING), string(svcapitypes.ResolverRuleStatus_SDK_FAILED):
+		cr.SetConditions(xpv1.Unavailable())
+	case string(svcapitypes.ResolverRuleStatus_SDK_DELETING):
+		cr.SetConditions(xpv1.Deleting())
+	}
+
+	return obs, err
 }

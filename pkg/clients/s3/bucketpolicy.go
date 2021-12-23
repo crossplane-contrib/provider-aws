@@ -43,12 +43,8 @@ func NewBucketPolicyClient(cfg aws.Config) BucketPolicyClient {
 
 // IsErrorPolicyNotFound returns true if the error code indicates that the item was not found
 func IsErrorPolicyNotFound(err error) bool {
-	if s3Err, ok := err.(smithy.APIError); ok {
-		if s3Err.ErrorCode() == "NoSuchBucketPolicy" {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == "NoSuchBucketPolicy"
 }
 
 // IsErrorBucketNotFound returns true if the error code indicates that the bucket was not found
@@ -151,8 +147,8 @@ func SerializeAWSPrincipal(p v1alpha3.AWSPrincipal) *string {
 		return p.AWSAccountID
 	case p.IAMRoleARN != nil:
 		return p.IAMRoleARN
-	case p.IAMUserARN != nil:
-		return p.IAMUserARN
+	case p.UserARN != nil:
+		return p.UserARN
 	default:
 		return nil
 	}

@@ -28,7 +28,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -134,7 +134,7 @@ func TestNotificationObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return nil, errBoom
@@ -148,7 +148,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"UpdateNeededFull": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -162,7 +162,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"UpdateNeededPartial": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -179,7 +179,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -193,7 +193,7 @@ func TestNotificationObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -240,7 +240,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return nil, errBoom
@@ -253,7 +253,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return &s3.PutBucketNotificationConfigurationOutput{}, nil
@@ -266,7 +266,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
 						return &s3.PutBucketNotificationConfigurationOutput{}, nil
@@ -306,7 +306,7 @@ func TestNotifLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, errBoom
@@ -315,12 +315,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, notificationGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -329,12 +329,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{
@@ -347,12 +347,12 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				b: s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
 						return &s3.GetBucketNotificationConfigurationOutput{}, nil
@@ -361,7 +361,7 @@ func TestNotifLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithNotificationConfig(generateNotificationConfig())),
 			},
 		},
 	}
@@ -373,6 +373,240 @@ func TestNotifLateInit(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsNotificationConfigurationUpToDate(t *testing.T) {
+	type args struct {
+		cr *v1beta1.NotificationConfiguration
+		b  *s3.GetBucketNotificationConfigurationOutput
+	}
+
+	type want struct {
+		isUpToDate ResourceStatus
+		err        error
+	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"IsUpToDate": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					}},
+					QueueConfigurations: []v1beta1.QueueConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       &id,
+						QueueArn: queueArn,
+					}},
+					TopicConfigurations: []v1beta1.TopicConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       &id,
+						TopicArn: &topicArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+					QueueConfigurations: []s3types.QueueConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       &id,
+						QueueArn: &queueArn,
+					}},
+					TopicConfigurations: []s3types.TopicConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       &id,
+						TopicArn: &topicArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateIgnoreIds": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                awsclient.String("lambda-id-1"),
+						LambdaFunctionArn: lambdaArn,
+					}},
+					QueueConfigurations: []v1beta1.QueueConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       awsclient.String("queue-id-1"),
+						QueueArn: queueArn,
+					}},
+					TopicConfigurations: []v1beta1.TopicConfiguration{{
+						Events:   generateNotificationEvents(),
+						Filter:   generateNotificationFilter(),
+						ID:       awsclient.String("topic-id-1"),
+						TopicArn: &topicArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                awsclient.String("lambda-id-2"),
+						LambdaFunctionArn: &lambdaArn,
+					}},
+					QueueConfigurations: []s3types.QueueConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       awsclient.String("queue-id-2"),
+						QueueArn: &queueArn,
+					}},
+					TopicConfigurations: []s3types.TopicConfiguration{{
+						Events:   generateNotificationAWSEvents(),
+						Filter:   generateAWSNotificationFilter(),
+						Id:       awsclient.String("topic-id-2"),
+						TopicArn: &topicArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateRulesOutOfOrder": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					},
+						{
+							Events:            generateNotificationEvents(),
+							Filter:            generateNotificationFilter(),
+							ID:                awsclient.String("test-id-2"),
+							LambdaFunctionArn: "lambda:321",
+						}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{
+						{
+							Events:            generateNotificationAWSEvents(),
+							Filter:            generateAWSNotificationFilter(),
+							Id:                awsclient.String("test-id-2"),
+							LambdaFunctionArn: awsclient.String("lambda:321"),
+						},
+						{
+							Events:            generateNotificationAWSEvents(),
+							Filter:            generateAWSNotificationFilter(),
+							Id:                &id,
+							LambdaFunctionArn: &lambdaArn,
+						}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateEmpty": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{},
+					QueueConfigurations:          []s3types.QueueConfiguration{},
+					TopicConfigurations:          []s3types.TopicConfiguration{},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateNilInput": {
+			args: args{
+				cr: nil,
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{},
+					QueueConfigurations:          []s3types.QueueConfiguration{},
+					TopicConfigurations:          []s3types.TopicConfiguration{},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateNilInputNeedsDelete": {
+			args: args{
+				cr: nil,
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 2,
+			},
+		},
+		"IsUpToDateFalseMissing": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{
+					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
+						Events:            generateNotificationEvents(),
+						Filter:            generateNotificationFilter(),
+						ID:                &id,
+						LambdaFunctionArn: lambdaArn,
+					}},
+				},
+				b: &s3.GetBucketNotificationConfigurationOutput{},
+			},
+			want: want{
+				isUpToDate: 1,
+			},
+		},
+		"IsUpToDateExtraNeedsDeletion": {
+			args: args{
+				cr: &v1beta1.NotificationConfiguration{},
+				b: &s3.GetBucketNotificationConfigurationOutput{
+					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
+						Events:            generateNotificationAWSEvents(),
+						Filter:            generateAWSNotificationFilter(),
+						Id:                &id,
+						LambdaFunctionArn: &lambdaArn,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 2,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			actual, err := IsNotificationConfigurationUpToDate(tc.args.cr, tc.args.b)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want error, +got error:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.isUpToDate, actual, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

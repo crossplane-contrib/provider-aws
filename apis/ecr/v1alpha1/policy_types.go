@@ -159,18 +159,18 @@ type RepositoryPrincipal struct {
 // AWSPrincipal wraps the potential values a policy
 // principal can take. Only one of the values should be set.
 type AWSPrincipal struct {
-	// IAMUserARN contains the ARN of an IAM user
+	// UserARN contains the ARN of an IAM user
 	// +optional
 	// +immutable
-	IAMUserARN *string `json:"iamUserArn,omitempty"`
+	UserARN *string `json:"iamUserArn,omitempty"`
 
-	// IAMUserARNRef contains the reference to an IAMUser
+	// UserARNRef contains the reference to an User
 	// +optional
-	IAMUserARNRef *xpv1.Reference `json:"iamUserArnRef,omitempty"`
+	UserARNRef *xpv1.Reference `json:"iamUserArnRef,omitempty"`
 
-	// IAMUserARNSelector queries for an IAMUser to retrieve its userName
+	// UserARNSelector queries for an User to retrieve its userName
 	// +optional
-	IAMUserARNSelector *xpv1.Selector `json:"iamUserArnSelector,omitempty"`
+	UserARNSelector *xpv1.Selector `json:"iamUserArnSelector,omitempty"`
 
 	// AWSAccountID identifies an AWS account as the principal
 	// +optional
@@ -251,6 +251,8 @@ type RepositoryPolicyStatus struct {
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -262,6 +264,8 @@ type RepositoryPolicy struct {
 // +kubebuilder:object:root=true
 
 // RepositoryPolicyList contains a list of RepositoryPolicies
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type RepositoryPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

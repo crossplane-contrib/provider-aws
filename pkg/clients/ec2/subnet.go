@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -33,13 +34,8 @@ func NewSubnetClient(cfg aws.Config) SubnetClient {
 
 // IsSubnetNotFoundErr returns true if the error is because the item doesn't exist
 func IsSubnetNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == SubnetIDNotFound {
-			return true
-		}
-	}
-
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == SubnetIDNotFound
 }
 
 // GenerateSubnetObservation is used to produce v1beta1.SubnetExternalStatus from
@@ -71,7 +67,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) { //
 	in.MapPublicIPOnLaunch = awsclients.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, s.VpcId)
 
-	if s.Ipv6CidrBlockAssociationSet != nil {
+	if s.Ipv6CidrBlockAssociationSet != nil && len(s.Ipv6CidrBlockAssociationSet) > 0 {
 		in.IPv6CIDRBlock = awsclients.LateInitializeStringPtr(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
 

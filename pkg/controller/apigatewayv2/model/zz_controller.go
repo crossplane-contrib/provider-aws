@@ -114,10 +114,30 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.ContentType != nil {
+		cr.Spec.ForProvider.ContentType = resp.ContentType
+	} else {
+		cr.Spec.ForProvider.ContentType = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
 	} else {
 		cr.Status.AtProvider.ModelID = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
+	if resp.Schema != nil {
+		cr.Spec.ForProvider.Schema = resp.Schema
+	} else {
+		cr.Spec.ForProvider.Schema = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

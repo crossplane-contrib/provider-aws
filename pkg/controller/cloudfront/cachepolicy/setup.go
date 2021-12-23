@@ -34,7 +34,6 @@ import (
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/controller/cloudfront"
 )
 
 // SetupCachePolicy adds a controller that reconciles CachePolicy.
@@ -103,15 +102,15 @@ func preDelete(_ context.Context, cp *svcapitypes.CachePolicy, dpi *svcsdk.Delet
 	return false, nil
 }
 
-var mappingOptions = []cloudfront.LateInitOption{cloudfront.Replacer("ID", "Id")}
+var mappingOptions = []LateInitOption{Replacer("ID", "Id")}
 
 func lateInitialize(in *svcapitypes.CachePolicyParameters, gpo *svcsdk.GetCachePolicyOutput) error {
-	_, err := cloudfront.LateInitializeFromResponse("",
+	_, err := LateInitializeFromResponse("",
 		in.CachePolicyConfig, gpo.CachePolicy.CachePolicyConfig, mappingOptions...)
 	return err
 }
 
 func isUpToDate(cp *svcapitypes.CachePolicy, gpo *svcsdk.GetCachePolicyOutput) (bool, error) {
-	return cloudfront.IsUpToDate(gpo.CachePolicy.CachePolicyConfig, cp.Spec.ForProvider.CachePolicyConfig,
+	return IsUpToDate(gpo.CachePolicy.CachePolicyConfig, cp.Spec.ForProvider.CachePolicyConfig,
 		mappingOptions...)
 }

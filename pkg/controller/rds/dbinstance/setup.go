@@ -146,6 +146,7 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
+	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 	pw, pwchanged, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return err
@@ -153,6 +154,7 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	if pwchanged {
 		obj.MasterUserPassword = aws.String(pw)
 	}
+
 	return nil
 }
 
@@ -170,7 +172,7 @@ func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Des
 		return managed.ExternalObservation{}, err
 	}
 	switch aws.StringValue(resp.DBInstances[0].DBInstanceStatus) {
-	case "available":
+	case "available", "modifying":
 		cr.SetConditions(xpv1.Available())
 	case "deleting", "stopped", "stopping":
 		cr.SetConditions(xpv1.Unavailable())

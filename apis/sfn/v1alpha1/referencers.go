@@ -24,7 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this StateMachine
@@ -36,8 +36,8 @@ func (mg *StateMachine) ResolveReferences(ctx context.Context, c client.Reader) 
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RoleARN),
 		Reference:    mg.Spec.ForProvider.RoleARNRef,
 		Selector:     mg.Spec.ForProvider.RoleARNSelector,
-		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      iamv1beta1.IAMRoleARN(),
+		To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+		Extract:      iamv1beta1.RoleARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.roleArn")

@@ -19,6 +19,7 @@ package sqs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -145,12 +146,8 @@ func GenerateQueueObservation(url string, attr map[string]string) v1beta1.QueueO
 
 // IsNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
 func IsNotFound(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == QueueNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == QueueNotFound
 }
 
 // LateInitialize fills the empty fields in *v1beta1.QueueParameters with

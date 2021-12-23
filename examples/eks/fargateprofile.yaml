@@ -1,4 +1,4 @@
-apiVersion: eks.aws.crossplane.io/v1alpha1
+apiVersion: eks.aws.crossplane.io/v1beta1
 kind: FargateProfile
 metadata:
   name: my-fargateprofile

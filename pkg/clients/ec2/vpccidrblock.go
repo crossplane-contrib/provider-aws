@@ -2,14 +2,15 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	awsgo "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/smithy-go"
 
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -39,43 +40,20 @@ func (r *CIDRNotFoundError) Error() string {
 
 // IsCIDRNotFound returns true if the error code indicates that the CIDR Block Association was not found
 func IsCIDRNotFound(err error) bool {
-	if _, ok := err.(*CIDRNotFoundError); ok {
+	var notFoundError *CIDRNotFoundError
+	if errors.As(err, &notFoundError) {
 		return true
 	}
-
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == errCIDRAssociationNotFound {
-			return true
-		}
-	}
-	return false
-}
-
-// IsVpcCidrBlockUpToDate returns true if there is no update-able difference between desired
-// and observed state of the resource.
-func IsVpcCidrBlockUpToDate(associationID string, spec manualv1alpha1.VPCCIDRBlockParameters, vpc ec2types.Vpc) (bool, error) {
-	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
-
-	if IPv4 != nil {
-		return *spec.CIDRBlock == *IPv4.CidrBlock, nil
-	}
-
-	if IPv6 != nil {
-		return aws.StringValue(spec.IPv6CIDRBlock) == aws.StringValue(IPv6.Ipv6CidrBlock) &&
-			aws.StringValue(spec.IPv6Pool) == aws.StringValue(IPv6.Ipv6Pool) &&
-			aws.StringValue(spec.IPv6CIDRBlockNetworkBorderGroup) == aws.StringValue(IPv6.NetworkBorderGroup), nil
-	}
-	return false, &CIDRNotFoundError{}
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == errCIDRAssociationNotFound
 }
 
 // IsVpcCidrDeleting returns true if the CIDR Block is already disassociated or disassociating
-func IsVpcCidrDeleting(observation manualv1alpha1.VPCCIDRBlockObservation) bool {
+func IsVpcCidrDeleting(observation v1beta1.VPCCIDRBlockObservation) bool {
 	switch {
-	case observation.CIDRBlockState == nil && observation.IPv6CIDRBlockState == nil:
+	case observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated):
 		return true
-	case observation.CIDRBlockState != nil && (*observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || *observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated)):
-		return true
-	case observation.IPv6CIDRBlockState != nil && (*observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || *observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated)):
+	case observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated):
 		return true
 	default:
 		return false
@@ -84,30 +62,30 @@ func IsVpcCidrDeleting(observation manualv1alpha1.VPCCIDRBlockObservation) bool 
 
 // GenerateVpcCIDRBlockObservation is used to produce v1alpha1.VPCObservation from
 // ec2.Vpc.
-func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2types.Vpc) manualv1alpha1.VPCCIDRBlockObservation {
-	o := manualv1alpha1.VPCCIDRBlockObservation{}
+func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2types.Vpc) v1beta1.VPCCIDRBlockObservation {
+	o := v1beta1.VPCCIDRBlockObservation{}
 
 	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
 
 	if IPv4 != nil {
-		o.AssociationID = IPv4.AssociationId
-		o.CIDRBlockState = &manualv1alpha1.VPCCIDRBlockState{
-			State:         aws.String(string(IPv4.CidrBlockState.State)),
-			StatusMessage: IPv4.CidrBlockState.StatusMessage,
+		o.AssociationID = awsclient.StringValue(IPv4.AssociationId)
+		o.CIDRBlockState = v1beta1.VPCCIDRBlockState{
+			State:         string(IPv4.CidrBlockState.State),
+			StatusMessage: awsclient.StringValue(IPv4.CidrBlockState.StatusMessage),
 		}
-		o.CIDRBlock = IPv4.CidrBlock
+		o.CIDRBlock = awsclient.StringValue(IPv4.CidrBlock)
 		return o
 	}
 
 	if IPv6 != nil {
-		o.AssociationID = IPv6.AssociationId
-		o.IPv6CIDRBlockState = &manualv1alpha1.VPCCIDRBlockState{
-			State:         awsclient.String(string(IPv6.Ipv6CidrBlockState.State)),
-			StatusMessage: IPv6.Ipv6CidrBlockState.StatusMessage,
+		o.AssociationID = awsclient.StringValue(IPv6.AssociationId)
+		o.IPv6CIDRBlockState = v1beta1.VPCCIDRBlockState{
+			State:         string(IPv6.Ipv6CidrBlockState.State),
+			StatusMessage: awsclient.StringValue(IPv6.Ipv6CidrBlockState.StatusMessage),
 		}
-		o.IPv6CIDRBlock = IPv6.Ipv6CidrBlock
-		o.IPv6Pool = IPv6.Ipv6Pool
-		o.NetworkBorderGroup = IPv6.NetworkBorderGroup
+		o.IPv6CIDRBlock = awsclient.StringValue(IPv6.Ipv6CidrBlock)
+		o.IPv6Pool = awsclient.StringValue(IPv6.Ipv6Pool)
+		o.NetworkBorderGroup = awsclient.StringValue(IPv6.NetworkBorderGroup)
 		return o
 	}
 	return o

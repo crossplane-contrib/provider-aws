@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 )
 
@@ -33,6 +33,17 @@ import (
 func SNSTopicARN() reference.ExtractValueFn {
 	return func(mg resource.Managed) string {
 		r, ok := mg.(*v1alpha1.SNSTopic)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
+
+// BucketARN returns a function that returns the ARN of the given S3 Bucket
+func BucketARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*Bucket)
 		if !ok {
 			return ""
 		}
@@ -85,8 +96,8 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ReplicationConfiguration.Role),
 			Reference:    mg.Spec.ForProvider.ReplicationConfiguration.RoleRef,
 			Selector:     mg.Spec.ForProvider.ReplicationConfiguration.RoleSelector,
-			To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
-			Extract:      v1beta1.IAMRoleARN(),
+			To:           reference.To{Managed: &v1beta1.Role{}, List: &v1beta1.RoleList{}},
+			Extract:      v1beta1.RoleARN(),
 		})
 		if err != nil {
 			return errors.Wrap(err, "spec.forProvider.replicationConfiguration.role")
@@ -103,7 +114,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 				Reference:    v.Destination.BucketRef,
 				Selector:     v.Destination.BucketSelector,
 				To:           reference.To{Managed: &Bucket{}, List: &BucketList{}},
-				Extract:      reference.ExternalName(),
+				Extract:      BucketARN(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "spec.forProvider.replicationConfiguration.rules[%d].bucket", i)

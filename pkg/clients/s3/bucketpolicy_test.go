@@ -95,7 +95,7 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				withPrincipal(&v1alpha3.BucketPrincipal{
 					AWSPrincipals: []v1alpha3.AWSPrincipal{
 						{
-							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
 						{
 							AWSAccountID: aws.String("111122223333"),

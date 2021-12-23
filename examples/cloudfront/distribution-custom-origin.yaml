@@ -1,0 +1,36 @@
+# Distribution will not be deleted unless you mark the distribution disabled via
+# spec.distributionConfig.enabled.
+apiVersion: cloudfront.aws.crossplane.io/v1alpha1
+kind: Distribution
+metadata:
+  name: example-distribution
+spec:
+  forProvider:
+    region: us-east-1
+    distributionConfig:
+      enabled: true
+      comment: Example CloudFront Distribution
+      origins:
+        items:
+          - domainName: crossplane-example.amazon.com
+            id: customOrigin
+            customOriginConfig:
+              httpPort: 80
+              originProtocolPolicy: "http-only"
+              originReadTimeout: 10
+              originKeepaliveTimeout: 5
+              httpSPort: 443
+              originSSLProtocols:
+                items:
+                  - TLSv1
+                quantity: 1
+      defaultCacheBehavior:
+        targetOriginID: customOrigin
+        viewerProtocolPolicy: allow-all
+        minTTL: 0
+        forwardedValues:
+          cookies:
+            forward: none
+          queryString: false
+  providerConfigRef:
+    name: example

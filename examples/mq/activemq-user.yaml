@@ -1,0 +1,29 @@
+# Note: The users API apply only ActiveMQ brokers. 
+#       Making changes to a user does not apply the changes to the user immediately. 
+#       To apply your changes, you must wait for the next maintenance window or reboot the broker.
+# https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/amazon-mq-broker-configuration-lifecycle.html
+apiVersion: mq.aws.crossplane.io/v1alpha1
+kind: User
+metadata:
+  name: example-activemq-user
+spec:
+  forProvider:
+    region: eu-central-1
+    brokerIDRef:
+      name: example-activemq
+    passwordSecretRef:
+      key: password
+      name: example-activemq-user
+      namespace: crossplane-system
+  writeConnectionSecretToRef:
+    name: example-activemq-user
+    namespace: default
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-activemq-user
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

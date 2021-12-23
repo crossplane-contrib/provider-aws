@@ -6,8 +6,8 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= cac5654b7bb64c8f754ad9af01799ef70d9541b6
-GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,kafka,kms,lambda,rds,secretsmanager,servicediscovery,sfn,transfer"
+CODE_GENERATOR_COMMIT ?= 285d87b66b62fbfb859986ddf74c9f9b6ae743fb
+GENERATED_SERVICES="apigatewayv2,athena,cloudfront,cloudwatchlogs,dynamodb,ec2,efs,glue,iot,kafka,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer,ram"
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
@@ -101,6 +101,15 @@ submodules:
 	@git submodule sync
 	@git submodule update --init --recursive
 
+# NOTE(hasheddan): the build submodule currently overrides XDG_CACHE_HOME in
+# order to force the Helm 3 to use the .work/helm directory. This causes Go on
+# Linux machines to use that directory as the build cache as well. We should
+# adjust this behavior in the build submodule because it is also causing Linux
+# users to duplicate their build cache, but for now we just make it easier to
+# identify its location in CI so that we cache between builds.
+go.cachedir:
+	@go env GOCACHE
+
 # This is for running out-of-cluster locally, and is for convenience. Running
 # this make target will print out the command which was used. For more control,
 # try running the binary directly with different arguments.
@@ -126,7 +135,7 @@ services: $(GOIMPORTS)
 	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
-		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../ || exit 1; \
+		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --output ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 

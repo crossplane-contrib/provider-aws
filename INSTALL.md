@@ -68,4 +68,6 @@ make run
 
 ## Install
 
-TBD: Steps to install the AWS provider package into a Crossplane cluster
+```console
+kubectl crossplane install provider crossplane/provider-aws:v0.21.2
+```

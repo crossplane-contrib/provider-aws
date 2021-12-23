@@ -1,0 +1,15 @@
+apiVersion: ram.aws.crossplane.io/v1alpha1
+kind: ResourceShare
+metadata:
+  name: example-sharing
+spec:
+  forProvider:
+    region: us-east-1
+    name: transitgateway-sharing
+    allowExternalPrincipals: true
+    principals:
+      - "123456789012"
+    resourceARNs:
+      - arn:aws:ec2:eu-central-1:12345678910:transit-gateway/tgw-0d8fdfe8c89fa6b2d
+  providerConfigRef:
+    name: example

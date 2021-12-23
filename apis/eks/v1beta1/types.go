@@ -92,6 +92,8 @@ type ClusterParameters struct {
 	//
 	// RoleArn is a required field
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	RoleArn string `json:"roleArn,omitempty"`
 
 	// RoleArnRef is a reference to an IAMRole used to set
@@ -198,6 +200,9 @@ type VpcConfigRequest struct {
 	// a security group, the default security group for your VPC is used.
 	// +immutable
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// SecurityGroupIDRefs are references to SecurityGroups used to set
@@ -215,6 +220,9 @@ type VpcConfigRequest struct {
 	// your worker nodes and the Kubernetes control plane.
 	// +immutable
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs are references to Subnets used to set

@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -35,12 +36,8 @@ func NewNatGatewayClient(cfg aws.Config) NatGatewayClient {
 
 // IsNatGatewayNotFoundErr returns true if the error is because the item doesn't exist
 func IsNatGatewayNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == NatGatewayNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == NatGatewayNotFound
 }
 
 // GenerateNATGatewayObservation is used to produce v1beta1.NatGatewayObservation from

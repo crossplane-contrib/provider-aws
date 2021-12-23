@@ -1,8 +1,8 @@
 ignore:
   resource_names:
-  - CustomKeyStore
-  - Grant
-  - Alias
+    - CustomKeyStore
+    - Grant
+    - Alias
 resources:
   Key:
     exceptions:

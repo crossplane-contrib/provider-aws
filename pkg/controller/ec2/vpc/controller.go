@@ -69,6 +69,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.VPCGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
@@ -187,8 +188,11 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	result, err := e.client.CreateVpc(ctx, &awsec2.CreateVpcInput{
-		CidrBlock:       aws.String(cr.Spec.ForProvider.CIDRBlock),
-		InstanceTenancy: awsec2types.Tenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
+		CidrBlock:                   aws.String(cr.Spec.ForProvider.CIDRBlock),
+		Ipv6CidrBlock:               cr.Spec.ForProvider.Ipv6CIDRBlock,
+		AmazonProvidedIpv6CidrBlock: cr.Spec.ForProvider.AmazonProvidedIpv6CIDRBlock,
+		Ipv6Pool:                    cr.Spec.ForProvider.Ipv6Pool,
+		InstanceTenancy:             awsec2types.Tenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
 	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)

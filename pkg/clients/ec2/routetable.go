@@ -3,6 +3,7 @@ package ec2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -52,32 +53,20 @@ func NewRouteTableClient(cfg aws.Config) RouteTableClient {
 
 // IsRouteTableNotFoundErr returns true if the error is because the route table doesn't exist
 func IsRouteTableNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == RouteTableIDNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == RouteTableIDNotFound
 }
 
 // IsRouteNotFoundErr returns true if the error is because the route doesn't exist
 func IsRouteNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == RouteNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == RouteNotFound
 }
 
 // IsAssociationIDNotFoundErr returns true if the error is because the association doesn't exist
 func IsAssociationIDNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == AssociationIDNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == AssociationIDNotFound
 }
 
 // GenerateRTObservation is used to produce v1beta1.RouteTableExternalStatus from
@@ -130,9 +119,9 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
 	if len(in.Routes) == 0 && len(rt.Routes) != 0 {
-		in.Routes = make([]v1beta1.Route, len(rt.Routes))
+		in.Routes = make([]v1beta1.RouteBeta, len(rt.Routes))
 		for i, val := range rt.Routes {
-			in.Routes[i] = v1beta1.Route{
+			in.Routes[i] = v1beta1.RouteBeta{
 				DestinationCIDRBlock:   val.DestinationCidrBlock,
 				GatewayID:              val.GatewayId,
 				InstanceID:             val.InstanceId,
@@ -171,7 +160,7 @@ func CreateRTPatch(in ec2types.RouteTable, target v1beta1.RouteTableParameters) 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
 		if val.GatewayId != nil && *val.GatewayId == DefaultLocalGatewayID {
-			targetCopy.Routes = append([]v1beta1.Route{{
+			targetCopy.Routes = append([]v1beta1.RouteBeta{{
 				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: val.DestinationCidrBlock,
 			}}, target.Routes...)
@@ -214,7 +203,7 @@ func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2types.RouteTable) (bool,
 }
 
 // SortRoutes sorts array of Routes on DestinationCIDR
-func SortRoutes(route []v1beta1.Route, ec2Route []ec2types.Route) {
+func SortRoutes(route []v1beta1.RouteBeta, ec2Route []ec2types.Route) {
 	sort.Slice(route, func(i, j int) bool {
 		return (route[i].DestinationCIDRBlock != nil && *route[i].DestinationCIDRBlock < *route[j].DestinationCIDRBlock) ||
 			(route[i].DestinationIPV6CIDRBlock != nil && *route[i].DestinationIPV6CIDRBlock < *route[j].DestinationIPV6CIDRBlock)

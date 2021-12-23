@@ -157,6 +157,8 @@ type CertificateParameters struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource."
+// Deprecated: Please use v1beta1 version of this resource.
 type Certificate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -167,7 +169,9 @@ type Certificate struct {
 
 // +kubebuilder:object:root=true
 
-// CertificateList contains a list of Certificate
+// CertificateList contains a list of Certificate.
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource."
+// Deprecated: Please use v1beta1 version of this resource.
 type CertificateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

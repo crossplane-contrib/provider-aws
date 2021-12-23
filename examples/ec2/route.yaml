@@ -1,0 +1,13 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Route
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableId: rtb-0bcc5f92178fcaaa3
+    destinationCIDRBlock: 172.16.0.0/12
+    transitGatewayIdRef:
+      name: tgw
+  providerConfigRef:
+    name: example

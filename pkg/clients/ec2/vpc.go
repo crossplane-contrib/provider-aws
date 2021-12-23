@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -35,13 +36,8 @@ func NewVPCClient(cfg aws.Config) VPCClient {
 
 // IsVPCNotFoundErr returns true if the error is because the item doesn't exist
 func IsVPCNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == VPCIDNotFound {
-			return true
-		}
-	}
-
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == VPCIDNotFound
 }
 
 // IsVpcUpToDate returns true if there is no update-able difference between desired
@@ -111,6 +107,10 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
 	in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
+	if len(v.Ipv6CidrBlockAssociationSet) != 0 {
+		ipv6Association := v.Ipv6CidrBlockAssociationSet[0]
+		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
+	}
 	if attributes.EnableDnsHostnames != nil {
 		in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
 	}

@@ -146,18 +146,18 @@ type BucketPrincipal struct {
 // AWSPrincipal wraps the potential values a policy
 // principal can take. Only one of the values should be set.
 type AWSPrincipal struct {
-	// IAMUserARN contains the ARN of an IAM user
+	// UserARN contains the ARN of an IAM user
 	// +optional
 	// +immutable
-	IAMUserARN *string `json:"iamUserArn,omitempty"`
+	UserARN *string `json:"iamUserArn,omitempty"`
 
-	// IAMUserARNRef contains the reference to an IAMUser
+	// UserARNRef contains the reference to an User
 	// +optional
-	IAMUserARNRef *xpv1.Reference `json:"iamUserArnRef,omitempty"`
+	UserARNRef *xpv1.Reference `json:"iamUserArnRef,omitempty"`
 
-	// IAMUserARNSelector queries for an IAMUser to retrieve its userName
+	// UserARNSelector queries for an User to retrieve its userName
 	// +optional
-	IAMUserARNSelector *xpv1.Selector `json:"iamUserArnSelector,omitempty"`
+	UserARNSelector *xpv1.Selector `json:"iamUserArnSelector,omitempty"`
 
 	// AWSAccountID identifies an AWS account as the principal
 	// +optional

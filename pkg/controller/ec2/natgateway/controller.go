@@ -49,6 +49,7 @@ func SetupNatGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.NATGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewNatGatewayClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -134,16 +135,22 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	nat, err := e.client.CreateNatGateway(ctx, &awsec2.CreateNatGatewayInput{
-		AllocationId: cr.Spec.ForProvider.AllocationID,
-		SubnetId:     cr.Spec.ForProvider.SubnetID,
-		TagSpecifications: []awsec2types.TagSpecification{
-			{
-				ResourceType: "natgateway",
-				Tags:         v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-			},
-		},
-	})
+	// Create an input without tags.
+	input := &awsec2.CreateNatGatewayInput{
+		ConnectivityType: awsec2types.ConnectivityType(cr.Spec.ForProvider.ConnectivityType),
+		AllocationId:     cr.Spec.ForProvider.AllocationID,
+		SubnetId:         cr.Spec.ForProvider.SubnetID,
+	}
+
+	// If we specified tags, update the above input.
+	if cr.Spec.ForProvider.Tags != nil {
+		input.TagSpecifications = []awsec2types.TagSpecification{{
+			ResourceType: "natgateway",
+			Tags:         v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}}
+	}
+
+	nat, err := e.client.CreateNatGateway(ctx, input)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}

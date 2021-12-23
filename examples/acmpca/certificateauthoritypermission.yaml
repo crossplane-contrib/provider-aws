@@ -1,4 +1,4 @@
-apiVersion: acmpca.aws.crossplane.io/v1alpha1
+apiVersion: acmpca.aws.crossplane.io/v1beta1
 kind: CertificateAuthorityPermission
 metadata:
   name: example

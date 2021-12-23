@@ -1,0 +1,60 @@
+ignore:
+  resource_names:
+    - DevEndpoint
+    - MLTransform
+    - PartitionIndex
+    - Registry
+    - Schema
+    - Script
+    - Table
+    - Trigger
+    - UserDefinedFunction
+    - Workflow
+    - Partition
+  field_paths:
+    - CreateJobInput.Name
+    - CreateJobInput.Role
+    - CreateSecurityConfigurationInput.Name
+    - CreateSecurityConfigurationInput.EncryptionConfiguration
+    - CreateCrawlerInput.Name
+    - CreateCrawlerInput.Role
+    - CreateDatabaseInput.DatabaseInput
+    - CreateClassifierInput.CsvClassifier
+    - CreateClassifierInput.XMLClassifier
+    - CreateClassifierInput.JsonClassifier
+    - CreateClassifierInput.GrokClassifier
+    - CreateConnectionInput.ConnectionInput
+    # See https://github.com/aws-controllers-k8s/community/issues/1078
+    - Crawler.Schedule
+
+resources:
+  Job:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  SecurityConfiguration:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Connection:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Database:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Crawler:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Classifier:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException

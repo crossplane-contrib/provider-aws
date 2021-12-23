@@ -1,0 +1,14 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Instance
+metadata:
+  name: sample-instance
+spec:
+  forProvider:
+    region: us-east-1
+    imageId: ami-0dc2d3e4c0f9ebd18
+    securityGroupRefs:
+      - name: sample-cluster-sg
+    subnetIdRef:
+      name: sample-subnet1  
+  providerConfigRef:
+    name: example

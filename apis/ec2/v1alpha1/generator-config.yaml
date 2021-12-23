@@ -5,6 +5,7 @@ ignore:
     - CarrierGateway
     - ClientVpnEndpoint
     - ClientVpnRoute
+    - CoipPool
     - CustomerGateway
     - DefaultSubnet
     - DefaultVpc
@@ -12,6 +13,7 @@ ignore:
     - Fleet
     - FpgaImage
     - Image
+    - Instance
     - InstanceExportTask
     - InternetGateway
     - KeyPair
@@ -29,7 +31,6 @@ ignore:
     - PlacementGroup
     - ReservedInstancesListing
     - RouteTable
-    - Route
     - SecurityGroup
     - Snapshot
     - SpotDatafeedSubscription
@@ -45,8 +46,6 @@ ignore:
     - TransitGatewayPrefixListReference
     - TransitGatewayRouteTable
     - TransitGatewayRoute
-    - TransitGatewayVpcAttachment
-    - TransitGateway
     - VpcEndpointConnectionNotification
     - VpcEndpointServiceConfiguration
     - VpcEndpoint
@@ -55,7 +54,8 @@ ignore:
     - VpnConnectionRoute
     - VpnConnection
     - VpnGateway
-    - Volume
+  shape_names:
+    - Instance
   field_paths:
     - CreateVpcPeeringConnectionInput.DryRun
     - DeleteVpcPeeringConnectionInput.DryRun
@@ -69,3 +69,34 @@ ignore:
     - DeleteVpcPeeringConnectionInput.PeerVPCID
     - RejectVpcPeeringConnectionInput.PeerVPCID
     - AcceptVpcPeeringConnectionInput.PeerVPCID
+    - CreateVolumeInput.DryRun
+    - CreateVolumeInput.KmsKeyId
+    - CreateTransitGatewayInput.DryRun
+    - DeleteTransitGatewayInput.DryRun
+    - DescribeTransitGatewaysInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.DryRun
+    - DeleteTransitGatewayVpcAttachmentInput.DryRun
+    - DescribeTransitGatewayVpcAttachmentsInput.DryRun
+    - RejectTransitGatewayVpcAttachmentInput.DryRun
+    - AcceptTransitGatewayVpcAttachmentInput.DryRun
+    - ModifyTransitGatewayVpcAttachmentInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.VpcId
+    - CreateTransitGatewayVpcAttachmentInput.SubnetIds
+    - CreateTransitGatewayVpcAttachmentInput.TransitGatewayId
+    - ModifyTransitGatewayOptions.PropagationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AssociationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AddTransitGatewayCidrBlocks
+    - ModifyTransitGatewayOptions.RemoveTransitGatewayCidrBlocks
+    - CreateRouteInput.DryRun
+    - CreateRouteInput.NatGatewayId
+    - CreateRouteInput.TransitGatewayId
+    - CreateRouteInput.VpcPeeringConnectionId
+    - CreateRouteInput.RouteTableId
+    - CreateRouteInput.InstanceId
+    - CreateRouteInput.GatewayId
+resources:
+  Volume:
+    exceptions:
+      errors:
+        404:
+          code: InvalidVolume.NotFound

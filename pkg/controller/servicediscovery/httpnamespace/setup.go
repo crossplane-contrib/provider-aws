@@ -43,6 +43,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)
 			e.preCreate = preCreate
+			e.postCreate = postCreate
 			e.delete = h.Delete
 			e.observe = h.Observe
 		},
@@ -65,4 +66,9 @@ func SetupHTTPNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	return nil
+}
+
+func postCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, resp *svcsdk.CreateHttpNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	cr.SetOperationID(resp.OperationId)
+	return cre, err
 }

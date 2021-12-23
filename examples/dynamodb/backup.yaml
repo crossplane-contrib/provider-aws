@@ -8,3 +8,5 @@ spec:
     backupName: sample-backup # backup id is used as external-name.
     tableNameRef:
       name: sample-table
+  providerConfigRef:
+    name: example

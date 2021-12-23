@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 )
 
 // Client defines the CertificateManager operations
@@ -45,7 +45,7 @@ func NewClient(conf *aws.Config) Client {
 }
 
 // GenerateCreateCertificateAuthorityInput from certificateAuthorityParameters
-func GenerateCreateCertificateAuthorityInput(p *v1alpha1.CertificateAuthorityParameters) *acmpca.CreateCertificateAuthorityInput {
+func GenerateCreateCertificateAuthorityInput(p *v1beta1.CertificateAuthorityParameters) *acmpca.CreateCertificateAuthorityInput {
 	m := &acmpca.CreateCertificateAuthorityInput{
 		CertificateAuthorityType:          p.Type,
 		CertificateAuthorityConfiguration: GenerateCertificateAuthorityConfiguration(p.CertificateAuthorityConfiguration),
@@ -64,7 +64,7 @@ func GenerateCreateCertificateAuthorityInput(p *v1alpha1.CertificateAuthorityPar
 }
 
 // GenerateCertificateAuthorityConfiguration from CertificateAuthorityConfiguration
-func GenerateCertificateAuthorityConfiguration(p v1alpha1.CertificateAuthorityConfiguration) *types.CertificateAuthorityConfiguration { // nolint:gocyclo
+func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityConfiguration) *types.CertificateAuthorityConfiguration { // nolint:gocyclo
 
 	m := &types.CertificateAuthorityConfiguration{
 		Subject: &types.ASN1Subject{
@@ -91,7 +91,7 @@ func GenerateCertificateAuthorityConfiguration(p v1alpha1.CertificateAuthorityCo
 }
 
 // GenerateRevocationConfiguration from RevocationConfiguration
-func GenerateRevocationConfiguration(p *v1alpha1.RevocationConfiguration) *types.RevocationConfiguration {
+func GenerateRevocationConfiguration(p *v1beta1.RevocationConfiguration) *types.RevocationConfiguration {
 	if p == nil {
 		return nil
 	}
@@ -110,7 +110,7 @@ func GenerateRevocationConfiguration(p *v1alpha1.RevocationConfiguration) *types
 
 // LateInitializeCertificateAuthority fills the empty fields in *v1beta1.CertificateAuthorityParameters with
 // the values seen in acmpca.CertificateAuthority.
-func LateInitializeCertificateAuthority(in *v1alpha1.CertificateAuthorityParameters, certificateAuthority *types.CertificateAuthority) { // nolint:gocyclo
+func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParameters, certificateAuthority *types.CertificateAuthority) { // nolint:gocyclo
 	if certificateAuthority == nil {
 		return
 	}
@@ -142,7 +142,7 @@ func LateInitializeCertificateAuthority(in *v1alpha1.CertificateAuthorityParamet
 }
 
 // IsCertificateAuthorityUpToDate checks whether there is a change in any of the modifiable fields.
-func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd types.CertificateAuthority, tags []types.Tag) bool { // nolint:gocyclo
+func IsCertificateAuthorityUpToDate(p *v1beta1.CertificateAuthority, cd types.CertificateAuthority, tags []types.Tag) bool { // nolint:gocyclo
 
 	if cd.RevocationConfiguration.CrlConfiguration.Enabled {
 		if !strings.EqualFold(aws.ToString(p.Spec.ForProvider.RevocationConfiguration.CustomCname), aws.ToString(cd.RevocationConfiguration.CrlConfiguration.CustomCname)) {
@@ -188,8 +188,8 @@ func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd types.C
 }
 
 // GenerateCertificateAuthorityExternalStatus is used to produce CertificateAuthorityExternalStatus from acmpca.certificateAuthorityStatus and v1alpha1.CertificateAuthority
-func GenerateCertificateAuthorityExternalStatus(certificateAuthority types.CertificateAuthority) v1alpha1.CertificateAuthorityExternalStatus {
-	return v1alpha1.CertificateAuthorityExternalStatus{
+func GenerateCertificateAuthorityExternalStatus(certificateAuthority types.CertificateAuthority) v1beta1.CertificateAuthorityExternalStatus {
+	return v1beta1.CertificateAuthorityExternalStatus{
 		CertificateAuthorityARN: aws.ToString(certificateAuthority.Arn),
 		Serial:                  aws.ToString(certificateAuthority.Serial),
 		Status:                  string(certificateAuthority.Status),

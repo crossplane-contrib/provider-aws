@@ -81,6 +81,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.CreateFu
 			SubnetIds:        cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs,
 		}
 	}
+	obj.Layers = cr.Spec.ForProvider.Layers
 	return nil
 }
 
@@ -174,7 +175,7 @@ func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, 
 		return false, nil
 	}
 
-	addTags, removeTags := diffTags(cr.Spec.ForProvider.Tags, obj.Tags)
+	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
 	return len(addTags) == 0 && len(removeTags) == 0, nil
 
 }
@@ -262,25 +263,6 @@ func isUpToDateSecurityGroupIDs(cr *svcapitypes.Function, obj *svcsdk.GetFunctio
 	return cmp.Equal(securityGroupIDs, awsSecurityGroupIDs, sortCmp, cmpopts.EquateEmpty())
 }
 
-// returns which AWS Tags exist in the resource tags and which are outdated and should be removed
-func diffTags(spec map[string]*string, current map[string]*string) (map[string]*string, []*string) {
-	addMap := make(map[string]*string, len(spec))
-	removeTags := make([]*string, 0)
-	for k, v := range current {
-		if aws.StringValue(spec[k]) == aws.StringValue(v) {
-			continue
-		}
-		removeTags = append(removeTags, aws.String(k))
-	}
-	for k, v := range spec {
-		if aws.StringValue(current[k]) == aws.StringValue(v) {
-			continue
-		}
-		addMap[k] = v
-	}
-	return addMap, removeTags
-}
-
 type updater struct {
 	client svcsdkapi.LambdaAPI
 }
@@ -318,7 +300,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
-	addTags, removeTags := diffTags(cr.Spec.ForProvider.Tags, tags.Tags)
+	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 	// Remove old tags before adding new tags in case values change for keys
 	if len(removeTags) > 0 {
 		if _, err := u.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{

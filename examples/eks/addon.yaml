@@ -1,0 +1,16 @@
+---
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: Addon
+metadata:
+  name: sample-addon
+  labels:
+    example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    addonName: coredns
+    addonVersion: "v1.8.4-eksbuild.1"
+    clusterNameRef:
+      name: sample-cluster
+  providerConfigRef:
+    name: example

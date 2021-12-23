@@ -118,6 +118,41 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.GlobalCluster.DatabaseName != nil {
+		cr.Spec.ForProvider.DatabaseName = resp.GlobalCluster.DatabaseName
+	} else {
+		cr.Spec.ForProvider.DatabaseName = nil
+	}
+	if resp.GlobalCluster.DeletionProtection != nil {
+		cr.Spec.ForProvider.DeletionProtection = resp.GlobalCluster.DeletionProtection
+	} else {
+		cr.Spec.ForProvider.DeletionProtection = nil
+	}
+	if resp.GlobalCluster.Engine != nil {
+		cr.Spec.ForProvider.Engine = resp.GlobalCluster.Engine
+	} else {
+		cr.Spec.ForProvider.Engine = nil
+	}
+	if resp.GlobalCluster.EngineVersion != nil {
+		cr.Spec.ForProvider.EngineVersion = resp.GlobalCluster.EngineVersion
+	} else {
+		cr.Spec.ForProvider.EngineVersion = nil
+	}
+	if resp.GlobalCluster.FailoverState != nil {
+		f4 := &svcapitypes.FailoverState{}
+		if resp.GlobalCluster.FailoverState.FromDbClusterArn != nil {
+			f4.FromDBClusterARN = resp.GlobalCluster.FailoverState.FromDbClusterArn
+		}
+		if resp.GlobalCluster.FailoverState.Status != nil {
+			f4.Status = resp.GlobalCluster.FailoverState.Status
+		}
+		if resp.GlobalCluster.FailoverState.ToDbClusterArn != nil {
+			f4.ToDBClusterARN = resp.GlobalCluster.FailoverState.ToDbClusterArn
+		}
+		cr.Status.AtProvider.FailoverState = f4
+	} else {
+		cr.Status.AtProvider.FailoverState = nil
+	}
 	if resp.GlobalCluster.GlobalClusterArn != nil {
 		cr.Status.AtProvider.GlobalClusterARN = resp.GlobalCluster.GlobalClusterArn
 	} else {
@@ -129,30 +164,30 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.GlobalClusterIdentifier = nil
 	}
 	if resp.GlobalCluster.GlobalClusterMembers != nil {
-		f6 := []*svcapitypes.GlobalClusterMember{}
-		for _, f6iter := range resp.GlobalCluster.GlobalClusterMembers {
-			f6elem := &svcapitypes.GlobalClusterMember{}
-			if f6iter.DBClusterArn != nil {
-				f6elem.DBClusterARN = f6iter.DBClusterArn
+		f7 := []*svcapitypes.GlobalClusterMember{}
+		for _, f7iter := range resp.GlobalCluster.GlobalClusterMembers {
+			f7elem := &svcapitypes.GlobalClusterMember{}
+			if f7iter.DBClusterArn != nil {
+				f7elem.DBClusterARN = f7iter.DBClusterArn
 			}
-			if f6iter.GlobalWriteForwardingStatus != nil {
-				f6elem.GlobalWriteForwardingStatus = f6iter.GlobalWriteForwardingStatus
+			if f7iter.GlobalWriteForwardingStatus != nil {
+				f7elem.GlobalWriteForwardingStatus = f7iter.GlobalWriteForwardingStatus
 			}
-			if f6iter.IsWriter != nil {
-				f6elem.IsWriter = f6iter.IsWriter
+			if f7iter.IsWriter != nil {
+				f7elem.IsWriter = f7iter.IsWriter
 			}
-			if f6iter.Readers != nil {
-				f6elemf3 := []*string{}
-				for _, f6elemf3iter := range f6iter.Readers {
-					var f6elemf3elem string
-					f6elemf3elem = *f6elemf3iter
-					f6elemf3 = append(f6elemf3, &f6elemf3elem)
+			if f7iter.Readers != nil {
+				f7elemf3 := []*string{}
+				for _, f7elemf3iter := range f7iter.Readers {
+					var f7elemf3elem string
+					f7elemf3elem = *f7elemf3iter
+					f7elemf3 = append(f7elemf3, &f7elemf3elem)
 				}
-				f6elem.Readers = f6elemf3
+				f7elem.Readers = f7elemf3
 			}
-			f6 = append(f6, f6elem)
+			f7 = append(f7, f7elem)
 		}
-		cr.Status.AtProvider.GlobalClusterMembers = f6
+		cr.Status.AtProvider.GlobalClusterMembers = f7
 	} else {
 		cr.Status.AtProvider.GlobalClusterMembers = nil
 	}
@@ -165,6 +200,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Status = resp.GlobalCluster.Status
 	} else {
 		cr.Status.AtProvider.Status = nil
+	}
+	if resp.GlobalCluster.StorageEncrypted != nil {
+		cr.Spec.ForProvider.StorageEncrypted = resp.GlobalCluster.StorageEncrypted
+	} else {
+		cr.Spec.ForProvider.StorageEncrypted = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

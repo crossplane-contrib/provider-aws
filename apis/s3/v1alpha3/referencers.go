@@ -24,8 +24,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
@@ -64,25 +63,25 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 	return nil
 }
 
-// ResolvePrincipal resolves all the IAMUser and IAMRole references in a BucketPrincipal
+// ResolvePrincipal resolves all the User and Role references in a BucketPrincipal
 func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *BucketPrincipal, statementIndex int) error {
 	if principal == nil {
 		return nil
 	}
 	for i := range principal.AWSPrincipals {
-		if principal.AWSPrincipals[i].IAMUserARNRef != nil || principal.AWSPrincipals[i].IAMUserARNSelector != nil {
+		if principal.AWSPrincipals[i].UserARNRef != nil || principal.AWSPrincipals[i].UserARNSelector != nil {
 			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMUserARN),
-				Reference:    principal.AWSPrincipals[i].IAMUserARNRef,
-				Selector:     principal.AWSPrincipals[i].IAMUserARNSelector,
-				To:           reference.To{Managed: &v1alpha1.IAMUser{}, List: &v1alpha1.IAMUserList{}},
-				Extract:      v1alpha1.IAMUserARN(),
+				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].UserARN),
+				Reference:    principal.AWSPrincipals[i].UserARNRef,
+				Selector:     principal.AWSPrincipals[i].UserARNSelector,
+				To:           reference.To{Managed: &iamv1beta1.User{}, List: &iamv1beta1.UserList{}},
+				Extract:      iamv1beta1.UserARN(),
 			})
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMUserARN", statementIndex, i))
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].UserARN", statementIndex, i))
 			}
-			principal.AWSPrincipals[i].IAMUserARN = reference.ToPtrValue(rsp.ResolvedValue)
-			principal.AWSPrincipals[i].IAMUserARNRef = rsp.ResolvedReference
+			principal.AWSPrincipals[i].UserARN = reference.ToPtrValue(rsp.ResolvedValue)
+			principal.AWSPrincipals[i].UserARNRef = rsp.ResolvedReference
 		}
 
 		if principal.AWSPrincipals[i].IAMRoleARNRef != nil || principal.AWSPrincipals[i].IAMRoleARNSelector != nil {
@@ -90,8 +89,8 @@ func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *
 				CurrentValue: reference.FromPtrValue(principal.AWSPrincipals[i].IAMRoleARN),
 				Reference:    principal.AWSPrincipals[i].IAMRoleARNRef,
 				Selector:     principal.AWSPrincipals[i].IAMRoleARNSelector,
-				To:           reference.To{Managed: &identityv1beta1.IAMRole{}, List: &identityv1beta1.IAMRoleList{}},
-				Extract:      identityv1beta1.IAMRoleARN(),
+				To:           reference.To{Managed: &iamv1beta1.Role{}, List: &iamv1beta1.RoleList{}},
+				Extract:      iamv1beta1.RoleARN(),
 			})
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.statement[%d].principal.aws[%d].IAMRoleArn", statementIndex, i))

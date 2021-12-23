@@ -123,10 +123,9 @@ type ReplicationRule struct {
 // see Backward Compatibility (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-backward-compat-considerations).
 type DeleteMarkerReplication struct {
 	// Indicates whether to replicate delete markers.
-	// In the current implementation, Amazon S3 doesn't replicate the delete markers.
-	// The status must be "Disabled".
-	// +kubebuilder:validation:Enum=Disabled
-	Status string `json:"Status"`
+	// Valid values are "Enabled" or "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
+	Status string `json:"status"`
 }
 
 // Destination specifies information about where to publish analysis or configuration results

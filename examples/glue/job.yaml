@@ -1,0 +1,16 @@
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Job
+metadata:
+  name: glue-job
+spec:
+  forProvider:
+    region: us-east-1
+    roleArnRef:
+      name: glue-role
+    command: 
+      name: "test.py"
+      pythonVersion: "3"
+      scriptLocation: "s3://aws-glue-crossplane-us-east-1/scripts"
+  providerConfigRef:
+    name: example

@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 )
 
 // ResolveReferences of this Cluster
@@ -51,7 +51,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValues: mg.Spec.ForProvider.IAMRoles,
 		References:    mg.Spec.ForProvider.IAMRoleRefs,
 		Selector:      mg.Spec.ForProvider.IAMRoleSelector,
-		To:            reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
+		To:            reference.To{Managed: &v1beta1.Role{}, List: &v1beta1.RoleList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {

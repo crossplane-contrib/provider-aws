@@ -40,6 +40,7 @@ type CertificateAuthorityPermissionParameters struct {
 
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +immutable
+	// +crossplane:generate:reference:type=CertificateAuthority
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
 
 	// CertificateAuthorityARNRef references an CertificateAuthority to retrieve its Arn

@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"errors"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -30,12 +31,8 @@ type AddressClient interface {
 
 // IsAddressNotFoundErr returns true if the error is because the address doesn't exist
 func IsAddressNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == AddressAddressNotFound || awsErr.ErrorCode() == AddressAllocationNotFound {
-			return true
-		}
-	}
-	return false
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && (awsErr.ErrorCode() == AddressAddressNotFound || awsErr.ErrorCode() == AddressAllocationNotFound)
 }
 
 // GenerateAddressObservation is used to produce v1beta1.AddressObservation from

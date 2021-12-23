@@ -45,22 +45,21 @@ func NewRequestPaymentConfigurationClient(client s3.BucketClient) *RequestPaymen
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	config := bucket.Spec.ForProvider.PayerConfiguration
+	if config == nil {
+		// If the payer configuration is not set, do not check
+		return Updated, nil
+	}
 	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, awsclient.Wrap(err, paymentGetFailed)
 	}
-	config := bucket.Spec.ForProvider.PayerConfiguration
 
-	switch {
-	case config == nil && len(external.Payer) == 0:
-		return Updated, nil
-	case config == nil && len(external.Payer) != 0:
-		return NeedsUpdate, nil
-	case config.Payer != string(external.Payer):
-		return NeedsUpdate, nil
-	default:
+	// Requester;BucketOwner
+	if string(external.Payer) == config.Payer {
 		return Updated, nil
 	}
+	return NeedsUpdate, nil
 }
 
 // CreateOrUpdate sends a request to have resource created on awsclient.

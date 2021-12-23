@@ -72,6 +72,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.DescribeKey
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.KeyState_PendingDeletion):
 		cr.SetConditions(xpv1.Deleting())
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	case string(svcapitypes.KeyState_PendingImport):
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.KeyState_Unavailable):

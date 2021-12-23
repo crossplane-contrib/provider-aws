@@ -72,15 +72,19 @@ func specPermissions() []v1beta1.IPPermission {
 	}
 }
 
-func sgPersmissions() []awsec2types.IpPermission {
+func sgPermissions(port int32, cidrs ...string) []awsec2types.IpPermission {
+	ranges := make([]awsec2types.IpRange, 0, len(cidrs))
+	for _, cidr := range cidrs {
+		ranges = append(ranges, awsec2types.IpRange{
+			CidrIp: aws.String(cidr),
+		})
+	}
 	return []awsec2types.IpPermission{
 		{
-			FromPort:   &port100,
-			ToPort:     &port100,
+			FromPort:   aws.Int32(port),
+			ToPort:     aws.Int32(port),
 			IpProtocol: aws.String(tcpProtocol),
-			IpRanges: []awsec2types.IpRange{{
-				CidrIp: aws.String(cidr),
-			}},
+			IpRanges:   ranges,
 		},
 	}
 }
@@ -323,16 +327,22 @@ func TestUpdate(t *testing.T) {
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return &awsec2.DescribeSecurityGroupsOutput{
 							SecurityGroups: []awsec2types.SecurityGroup{{
-								IpPermissions:       sgPersmissions(),
-								IpPermissionsEgress: sgPersmissions(),
+								IpPermissions:       sgPermissions(port100, cidr),
+								IpPermissionsEgress: sgPermissions(port100, cidr),
 							}},
 						}, nil
 					},
 					MockAuthorizeIngress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupIngressOutput, error) {
 						return &awsec2.AuthorizeSecurityGroupIngressOutput{}, nil
 					},
+					MockRevokeIngress: func(ctx context.Context, input *awsec2.RevokeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.RevokeSecurityGroupIngressOutput, error) {
+						return &awsec2.RevokeSecurityGroupIngressOutput{}, nil
+					},
 					MockAuthorizeEgress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupEgressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupEgressOutput, error) {
 						return &awsec2.AuthorizeSecurityGroupEgressOutput{}, nil
+					},
+					MockRevokeEgress: func(ctx context.Context, input *awsec2.RevokeSecurityGroupEgressInput, opts []func(*awsec2.Options)) (*awsec2.RevokeSecurityGroupEgressOutput, error) {
+						return &awsec2.RevokeSecurityGroupEgressOutput{}, nil
 					},
 				},
 				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
@@ -356,16 +366,20 @@ func TestUpdate(t *testing.T) {
 		"IngressFail": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
+
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return &awsec2.DescribeSecurityGroupsOutput{
 							SecurityGroups: []awsec2types.SecurityGroup{{
-								IpPermissions:       sgPersmissions(),
-								IpPermissionsEgress: sgPersmissions(),
+								IpPermissions:       sgPermissions(port100, cidr),
+								IpPermissionsEgress: sgPermissions(port100, cidr),
 							}},
 						}, nil
 					},
 					MockAuthorizeIngress: func(ctx context.Context, input *awsec2.AuthorizeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.AuthorizeSecurityGroupIngressOutput, error) {
 						return nil, errBoom
+					},
+					MockRevokeIngress: func(ctx context.Context, input *awsec2.RevokeSecurityGroupIngressInput, opts []func(*awsec2.Options)) (*awsec2.RevokeSecurityGroupIngressOutput, error) {
+						return nil, nil
 					},
 				},
 				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
@@ -438,8 +452,8 @@ func TestUpdateTags(t *testing.T) {
 									},
 								},
 
-								IpPermissions:       sgPersmissions(),
-								IpPermissionsEgress: sgPersmissions(),
+								IpPermissions:       sgPermissions(port100),
+								IpPermissionsEgress: sgPermissions(port100),
 							}},
 						}, nil
 					},

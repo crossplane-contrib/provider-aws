@@ -30,7 +30,7 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -115,7 +115,7 @@ func TestWebsiteObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return nil, errBoom
@@ -129,7 +129,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"UpdateNeededFull": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{}, nil
@@ -143,7 +143,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"UpdateNeededPartial": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{
@@ -159,7 +159,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithWebConfig(nil)),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{
@@ -178,7 +178,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithWebConfig(nil)),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clients3.WebsiteNotFoundErrCode}
@@ -192,7 +192,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithWebConfig(nil)),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{}, nil
@@ -206,7 +206,7 @@ func TestWebsiteObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(ctx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{
@@ -254,7 +254,7 @@ func TestWebsiteCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockPutBucketWebsite: func(ctx context.Context, input *s3.PutBucketWebsiteInput, opts []func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error) {
 						return nil, errBoom
@@ -267,7 +267,7 @@ func TestWebsiteCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockPutBucketWebsite: func(ctx context.Context, input *s3.PutBucketWebsiteInput, opts []func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error) {
 						return &s3.PutBucketWebsiteOutput{}, nil
@@ -280,7 +280,7 @@ func TestWebsiteCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockPutBucketWebsite: func(ctx context.Context, input *s3.PutBucketWebsiteInput, opts []func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error) {
 						return &s3.PutBucketWebsiteOutput{}, nil
@@ -319,7 +319,7 @@ func TestWebsiteDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketWebsite: func(ctx context.Context, input *s3.DeleteBucketWebsiteInput, opts []func(*s3.Options)) (*s3.DeleteBucketWebsiteOutput, error) {
 						return nil, errBoom
@@ -332,7 +332,7 @@ func TestWebsiteDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketWebsite: func(ctx context.Context, input *s3.DeleteBucketWebsiteInput, opts []func(*s3.Options)) (*s3.DeleteBucketWebsiteOutput, error) {
 						return &s3.DeleteBucketWebsiteOutput{}, nil
@@ -372,7 +372,7 @@ func TestWebsiteLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(tx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return nil, errBoom
@@ -381,12 +381,12 @@ func TestWebsiteLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, websiteGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"ErrorWebsiteConfigurationNotFound": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(tx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clients3.WebsiteNotFoundErrCode}
@@ -395,12 +395,12 @@ func TestWebsiteLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitNil": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(tx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clients3.WebsiteNotFoundErrCode}
@@ -409,12 +409,12 @@ func TestWebsiteLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithWebConfig(nil)),
 
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(tx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
@@ -429,12 +429,12 @@ func TestWebsiteLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				cr:  s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				b: s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsite: func(tx context.Context, input *s3.GetBucketWebsiteInput, opts []func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error) {
 						return &s3.GetBucketWebsiteOutput{
@@ -446,7 +446,7 @@ func TestWebsiteLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				cr:  s3testing.Bucket(s3testing.WithWebConfig(generateWebsiteConfig())),
 			},
 		},
 	}

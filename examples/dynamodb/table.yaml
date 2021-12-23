@@ -11,9 +11,116 @@ spec:
     keySchema:
       - attributeName: attribute1
         keyType: HASH
+    billingMode: PROVISIONED
     provisionedThroughput:
       readCapacityUnits: 1
       writeCapacityUnits: 1
     streamSpecification:
       streamEnabled: true
       streamViewType: NEW_AND_OLD_IMAGES
+  providerConfigRef:
+    name: example
+  writeConnectionSecretToRef:
+    name: sample-table
+    namespace: crossplane-system
+---
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: sample-table-ppr
+spec:
+  forProvider:
+    region: us-east-1
+    attributeDefinitions:
+      - attributeName: attribute1
+        attributeType: S
+    keySchema:
+      - attributeName: attribute1
+        keyType: HASH
+    # Note that due to a quirk of the DynamoDB API if you change billing mode
+    # from PROVISIONED to PAY_PER_REQUEST you must also set readCapacityUnits
+    # and writeCapacityUnits to 0.
+    billingMode: PAY_PER_REQUEST
+    streamSpecification:
+      streamEnabled: true
+      streamViewType: NEW_AND_OLD_IMAGES
+  providerConfigRef:
+    name: example
+  writeConnectionSecretToRef:
+    name: sample-table-ppr
+    namespace: crossplane-system
+---
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: sample-table-with-sse
+spec:
+  forProvider:
+    region: us-east-1
+    attributeDefinitions:
+      - attributeName: attribute1
+        attributeType: S
+    keySchema:
+      - attributeName: attribute1
+        keyType: HASH
+    provisionedThroughput:
+      readCapacityUnits: 1
+      writeCapacityUnits: 1
+    sseSpecification:
+      enabled: true
+  providerConfigRef:
+    name: example
+  writeConnectionSecretToRef:
+    name: sample-table-with-sse
+    namespace: crossplane-system
+---
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: sample-table-without-sse
+spec:
+  forProvider:
+    region: us-east-1
+    attributeDefinitions:
+      - attributeName: attribute1
+        attributeType: S
+    keySchema:
+      - attributeName: attribute1
+        keyType: HASH
+    provisionedThroughput:
+      readCapacityUnits: 1
+      writeCapacityUnits: 1
+  providerConfigRef:
+    name: example
+---
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: sample-table-global-secondary-indexes
+spec:
+  forProvider:
+    region: us-east-1
+    globalSecondaryIndexes:
+      - indexName: IndexKey
+        keySchema:
+          - keyType: HASH
+            attributeName: IndexKey
+          - keyType: RANGE
+            attributeName: SomeKey
+        projection:
+          projectionType: INCLUDE
+          nonKeyAttributes:
+            - SomeId
+    attributeDefinitions:
+      - attributeName: IndexKey
+        attributeType: S
+      - attributeName: SomeKey
+        attributeType: S
+    keySchema:
+      - attributeName: IndexKey
+        keyType: HASH
+      - attributeName: SomeKey
+        keyType: RANGE
+    billingMode: PAY_PER_REQUEST
+  providerConfigRef:
+    name: example

@@ -28,7 +28,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -45,7 +45,7 @@ var (
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
 	type args struct {
 		name string
-		p    *v1alpha1.NodeGroupParameters
+		p    *manualv1alpha1.NodeGroupParameters
 	}
 
 	cases := map[string]struct {
@@ -55,7 +55,7 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 		"AllFields": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
 					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
@@ -63,11 +63,11 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 					Labels:         map[string]string{"cool": "label"},
 					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
-					RemoteAccess: &v1alpha1.RemoteAccessConfig{
+					RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
 						SourceSecurityGroups: []string{"cool-group"},
 					},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -103,13 +103,13 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 		"SomeFields": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:       &amiType,
 					ClusterName:   clusterName,
 					DiskSize:      &diskSize,
 					InstanceTypes: []string{"cool-type"},
 					NodeRole:      nodeRole,
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -135,13 +135,13 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 		"DefaultDesiredSize": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:       &amiType,
 					ClusterName:   clusterName,
 					DiskSize:      &diskSize,
 					InstanceTypes: []string{"cool-type"},
 					NodeRole:      nodeRole,
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						MaxSize: &maxSize,
 						MinSize: &size,
 					},
@@ -178,7 +178,7 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 	type args struct {
 		name string
-		p    *v1alpha1.NodeGroupParameters
+		p    *manualv1alpha1.NodeGroupParameters
 		n    *ekstypes.Nodegroup
 	}
 
@@ -189,7 +189,7 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 		"AllFieldsEmpty": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
 					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
@@ -197,11 +197,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					Labels:         map[string]string{"cool": "label"},
 					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
-					RemoteAccess: &v1alpha1.RemoteAccessConfig{
+					RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
 						SourceSecurityGroups: []string{"cool-group"},
 					},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -229,7 +229,7 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 		"LabelsOnly": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
 					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
@@ -237,11 +237,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					Labels:         map[string]string{"cool": "label", "key": "val"},
 					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
-					RemoteAccess: &v1alpha1.RemoteAccessConfig{
+					RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
 						SourceSecurityGroups: []string{"cool-group"},
 					},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -276,7 +276,7 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 		"IgnoreDesiredSize": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
 					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
@@ -284,11 +284,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					Labels:         map[string]string{"cool": "label"},
 					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
-					RemoteAccess: &v1alpha1.RemoteAccessConfig{
+					RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
 						SourceSecurityGroups: []string{"cool-group"},
 					},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						MaxSize: &maxSize,
 						MinSize: &size,
 					},
@@ -324,7 +324,7 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 		"BoundDesiredSize": {
 			args: args{
 				name: ngName,
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
 					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
@@ -332,11 +332,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					Labels:         map[string]string{"cool": "label"},
 					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
-					RemoteAccess: &v1alpha1.RemoteAccessConfig{
+					RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
 						SourceSecurityGroups: []string{"cool-group"},
 					},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						MaxSize: awsclients.Int32(10),
 						MinSize: awsclients.Int32(6),
 					},
@@ -394,7 +394,7 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 
 	cases := map[string]struct {
 		args args
-		want v1alpha1.NodeGroupObservation
+		want manualv1alpha1.NodeGroupObservation
 	}{
 		"Full": {
 			args: args{
@@ -427,12 +427,12 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 					},
 				},
 			},
-			want: v1alpha1.NodeGroupObservation{
+			want: manualv1alpha1.NodeGroupObservation{
 				NodeGroupArn: ngArn,
-				Status:       v1alpha1.NodeGroupStatusActive,
+				Status:       manualv1alpha1.NodeGroupStatusActive,
 				CreatedAt:    &v1.Time{Time: now},
-				Health: v1alpha1.NodeGroupHealth{
-					Issues: []v1alpha1.Issue{
+				Health: manualv1alpha1.NodeGroupHealth{
+					Issues: []manualv1alpha1.Issue{
 						{
 							Code:        "AccessDenied",
 							Message:     message,
@@ -441,15 +441,15 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 					},
 				},
 				ModifiedAt: &v1.Time{Time: now},
-				Resources: v1alpha1.NodeGroupResources{
+				Resources: manualv1alpha1.NodeGroupResources{
 					RemoteAccessSecurityGroup: rasg,
-					AutoScalingGroups: []v1alpha1.AutoScalingGroup{
+					AutoScalingGroups: []manualv1alpha1.AutoScalingGroup{
 						{
 							Name: asg,
 						},
 					},
 				},
-				ScalingConfig: v1alpha1.NodeGroupScalingConfigStatus{
+				ScalingConfig: manualv1alpha1.NodeGroupScalingConfigStatus{
 					DesiredSize: &size,
 				},
 			},
@@ -469,17 +469,17 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 func TestLateInitializeNodeGroup(t *testing.T) {
 	ami := "AL2_x86_64"
 	type args struct {
-		p *v1alpha1.NodeGroupParameters
+		p *manualv1alpha1.NodeGroupParameters
 		n *ekstypes.Nodegroup
 	}
 
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.NodeGroupParameters
+		want *manualv1alpha1.NodeGroupParameters
 	}{
 		"AllFieldsEmpty": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{},
+				p: &manualv1alpha1.NodeGroupParameters{},
 				n: &ekstypes.Nodegroup{
 					AmiType:       ekstypes.AMITypesAl2X8664,
 					DiskSize:      &diskSize,
@@ -499,17 +499,17 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					Tags:           map[string]string{"cool": "tag"},
 				},
 			},
-			want: &v1alpha1.NodeGroupParameters{
+			want: &manualv1alpha1.NodeGroupParameters{
 				AMIType:        &ami,
 				DiskSize:       &diskSize,
 				InstanceTypes:  []string{"cool-type"},
 				Labels:         map[string]string{"cool": "label"},
 				ReleaseVersion: &version,
-				RemoteAccess: &v1alpha1.RemoteAccessConfig{
+				RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 					EC2SSHKey:            &keyArn,
 					SourceSecurityGroups: []string{"cool-group"},
 				},
-				ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+				ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 					DesiredSize: &size,
 					MaxSize:     &size,
 					MinSize:     &size,
@@ -520,8 +520,8 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 		},
 		"IgnoreDesiredSize": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+				p: &manualv1alpha1.NodeGroupParameters{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: nil,
 						MaxSize:     &maxSize,
 						MinSize:     &size,
@@ -546,17 +546,17 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					Tags:           map[string]string{"cool": "tag"},
 				},
 			},
-			want: &v1alpha1.NodeGroupParameters{
+			want: &manualv1alpha1.NodeGroupParameters{
 				AMIType:        &ami,
 				DiskSize:       &diskSize,
 				InstanceTypes:  []string{"cool-type"},
 				Labels:         map[string]string{"cool": "label"},
 				ReleaseVersion: &version,
-				RemoteAccess: &v1alpha1.RemoteAccessConfig{
+				RemoteAccess: &manualv1alpha1.RemoteAccessConfig{
 					EC2SSHKey:            &keyArn,
 					SourceSecurityGroups: []string{"cool-group"},
 				},
-				ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+				ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 					MaxSize: &maxSize,
 					MinSize: &size,
 				},
@@ -581,7 +581,7 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 	otherSize := int32(100)
 
 	type args struct {
-		p *v1alpha1.NodeGroupParameters
+		p *manualv1alpha1.NodeGroupParameters
 		n *ekstypes.Nodegroup
 	}
 
@@ -591,11 +591,11 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 	}{
 		"UpToDate": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &version,
 					Labels:  map[string]string{"cool": "label"},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -616,11 +616,11 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		},
 		"UpdateTags": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					Tags:    map[string]string{"cool": "tag", "another": "tag"},
 					Version: &version,
 					Labels:  map[string]string{"cool": "label"},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -641,11 +641,11 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		},
 		"UpdateVersion": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &otherVersion,
 					Labels:  map[string]string{"cool": "label"},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
@@ -667,11 +667,11 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		},
 		"UpdateScaling": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &version,
 					Labels:  map[string]string{"cool": "label"},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &otherSize,
 						MinSize:     &size,
@@ -693,11 +693,11 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		},
 		"IgnoreDesiredSize": {
 			args: args{
-				p: &v1alpha1.NodeGroupParameters{
+				p: &manualv1alpha1.NodeGroupParameters{
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &version,
 					Labels:  map[string]string{"cool": "label"},
-					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: nil,
 						MaxSize:     &maxSize,
 						MinSize:     &size,

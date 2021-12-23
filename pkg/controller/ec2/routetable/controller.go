@@ -73,6 +73,7 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RouteTableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -257,7 +258,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
 }
 
-func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error { // nolint:gocyclo
+func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error { // nolint:gocyclo
 	for _, rt := range observed {
 		found := false
 		for _, ds := range desired {
@@ -298,7 +299,7 @@ func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v
 	return nil
 }
 
-func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error { // nolint:gocyclo
+func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error { // nolint:gocyclo
 	for _, rt := range desired {
 		isObserved := false
 		for _, ob := range observed {
@@ -336,7 +337,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 	return nil
 }
 
-func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error {
+func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error {
 
 	if err := e.deleteRoutes(ctx, tableID, desired, observed); err != nil {
 		return awsclient.Wrap(err, errDeleteRoute)

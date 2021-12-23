@@ -222,9 +222,6 @@ func TestObserve(t *testing.T) {
 		},
 		"LateInitSuccess": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
 						return &awsrds.DescribeDBInstancesOutput{
@@ -246,36 +243,11 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
-			},
-		},
-		"LateInitFailedKubeUpdate": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(errBoom),
-				},
-				rds: &fake.MockRDSClient{
-					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
-						return &awsrds.DescribeDBInstancesOutput{
-							DBInstances: []awsrdstypes.DBInstance{
-								{
-									EngineVersion:    aws.String(engineVersion),
-									DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
-								},
-							},
-						}, nil
-					},
-				},
-				cr: instance(),
-			},
-			want: want{
-				cr: instance(
-					withEngineVersion(&engineVersion),
-				),
-				err: awsclient.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
 	}

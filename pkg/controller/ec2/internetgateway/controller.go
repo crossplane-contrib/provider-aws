@@ -68,6 +68,7 @@ func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateL
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.InternetGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInternetGatewayClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),

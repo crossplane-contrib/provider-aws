@@ -22,8 +22,15 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// Route describes a route in a route table.
-type Route struct {
+// ToDo (haarchri): changed Route to RouteBeta otherwise we got error "CRD for Route.ec2.aws.crossplane.io has no storage version"
+
+// RouteBeta describes a route in a route table.
+// provider-aws currently provides both a standalone Route resource
+// and a RouteTable resource with routes defined in-line.
+// At this time you cannot use a Route Table with in-line routes
+// in conjunction with any Route resources.
+// Doing so will cause a conflict of rule settings and will overwrite rules.
+type RouteBeta struct {
 	// The IPv4 CIDR address block used for the destination match. Routing
 	// decisions are based on the most specific match.
 	// +optional
@@ -75,7 +82,7 @@ type Route struct {
 }
 
 // ClearRefSelectors nils out ref and selectors
-func (r *Route) ClearRefSelectors() {
+func (r *RouteBeta) ClearRefSelectors() {
 	r.GatewayIDRef = nil
 	r.GatewayIDSelector = nil
 	r.NatGatewayIDSelector = nil
@@ -168,7 +175,7 @@ type RouteTableParameters struct {
 	Associations []Association `json:"associations"`
 
 	// the routes in the route table
-	Routes []Route `json:"routes"`
+	Routes []RouteBeta `json:"routes"`
 
 	// Tags represents to current ec2 tags.
 	// +optional

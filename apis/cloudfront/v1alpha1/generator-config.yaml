@@ -9,7 +9,7 @@ ignore:
     - RealtimeLogConfig
     - MonitoringSubscription
     - FieldLevelEncryptionConfig
-    - CloudFrontOriginAccessIdentity
   field_paths:
     - DistributionConfig.CallerReference
     - Origins.Quantity
+    - OriginAccessIdentityConfig.CallerReference
