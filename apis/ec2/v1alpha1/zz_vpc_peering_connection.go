@@ -38,13 +38,8 @@ type VPCPeeringConnectionParameters struct {
 	//
 	// Default: The Region in which you make the request.
 	PeerRegion *string `json:"peerRegion,omitempty"`
-	// The ID of the VPC with which you are creating the VPC peering connection.
-	// You must specify this parameter in the request.
-	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// The tags to assign to the peering connection.
-	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
-	// The ID of the requester VPC. You must specify this parameter in the request.
-	VPCID                                *string `json:"vpcID,omitempty"`
+	TagSpecifications                    []*TagSpecification `json:"tagSpecifications,omitempty"`
 	CustomVPCPeeringConnectionParameters `json:",inline"`
 }
 
