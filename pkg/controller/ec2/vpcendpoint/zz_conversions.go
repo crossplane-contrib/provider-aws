@@ -33,10 +33,6 @@ import (
 func GenerateDescribeVpcEndpointsInput(cr *svcapitypes.VPCEndpoint) *svcsdk.DescribeVpcEndpointsInput {
 	res := &svcsdk.DescribeVpcEndpointsInput{}
 
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
-
 	return res
 }
 
@@ -56,32 +52,10 @@ func GenerateVPCEndpoint(resp *svcsdk.DescribeVpcEndpointsOutput) *svcapitypes.V
 		} else {
 			cr.Spec.ForProvider.PrivateDNSEnabled = nil
 		}
-		if elem.RouteTableIds != nil {
-			f9 := []*string{}
-			for _, f9iter := range elem.RouteTableIds {
-				var f9elem string
-				f9elem = *f9iter
-				f9 = append(f9, &f9elem)
-			}
-			cr.Spec.ForProvider.RouteTableIDs = f9
-		} else {
-			cr.Spec.ForProvider.RouteTableIDs = nil
-		}
 		if elem.ServiceName != nil {
 			cr.Spec.ForProvider.ServiceName = elem.ServiceName
 		} else {
 			cr.Spec.ForProvider.ServiceName = nil
-		}
-		if elem.SubnetIds != nil {
-			f12 := []*string{}
-			for _, f12iter := range elem.SubnetIds {
-				var f12elem string
-				f12elem = *f12iter
-				f12 = append(f12, &f12elem)
-			}
-			cr.Spec.ForProvider.SubnetIDs = f12
-		} else {
-			cr.Spec.ForProvider.SubnetIDs = nil
 		}
 		if elem.VpcEndpointType != nil {
 			cr.Spec.ForProvider.VPCEndpointType = elem.VpcEndpointType
@@ -105,69 +79,39 @@ func GenerateCreateVpcEndpointInput(cr *svcapitypes.VPCEndpoint) *svcsdk.CreateV
 	if cr.Spec.ForProvider.ClientToken != nil {
 		res.SetClientToken(*cr.Spec.ForProvider.ClientToken)
 	}
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
 	if cr.Spec.ForProvider.PolicyDocument != nil {
 		res.SetPolicyDocument(*cr.Spec.ForProvider.PolicyDocument)
 	}
 	if cr.Spec.ForProvider.PrivateDNSEnabled != nil {
 		res.SetPrivateDnsEnabled(*cr.Spec.ForProvider.PrivateDNSEnabled)
 	}
-	if cr.Spec.ForProvider.RouteTableIDs != nil {
-		f4 := []*string{}
-		for _, f4iter := range cr.Spec.ForProvider.RouteTableIDs {
-			var f4elem string
-			f4elem = *f4iter
-			f4 = append(f4, &f4elem)
-		}
-		res.SetRouteTableIds(f4)
-	}
-	if cr.Spec.ForProvider.SecurityGroupIDs != nil {
-		f5 := []*string{}
-		for _, f5iter := range cr.Spec.ForProvider.SecurityGroupIDs {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
-		}
-		res.SetSecurityGroupIds(f5)
-	}
 	if cr.Spec.ForProvider.ServiceName != nil {
 		res.SetServiceName(*cr.Spec.ForProvider.ServiceName)
 	}
-	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f7 := []*string{}
-		for _, f7iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f7elem string
-			f7elem = *f7iter
-			f7 = append(f7, &f7elem)
-		}
-		res.SetSubnetIds(f7)
-	}
 	if cr.Spec.ForProvider.TagSpecifications != nil {
-		f8 := []*svcsdk.TagSpecification{}
-		for _, f8iter := range cr.Spec.ForProvider.TagSpecifications {
-			f8elem := &svcsdk.TagSpecification{}
-			if f8iter.ResourceType != nil {
-				f8elem.SetResourceType(*f8iter.ResourceType)
+		f4 := []*svcsdk.TagSpecification{}
+		for _, f4iter := range cr.Spec.ForProvider.TagSpecifications {
+			f4elem := &svcsdk.TagSpecification{}
+			if f4iter.ResourceType != nil {
+				f4elem.SetResourceType(*f4iter.ResourceType)
 			}
-			if f8iter.Tags != nil {
-				f8elemf1 := []*svcsdk.Tag{}
-				for _, f8elemf1iter := range f8iter.Tags {
-					f8elemf1elem := &svcsdk.Tag{}
-					if f8elemf1iter.Key != nil {
-						f8elemf1elem.SetKey(*f8elemf1iter.Key)
+			if f4iter.Tags != nil {
+				f4elemf1 := []*svcsdk.Tag{}
+				for _, f4elemf1iter := range f4iter.Tags {
+					f4elemf1elem := &svcsdk.Tag{}
+					if f4elemf1iter.Key != nil {
+						f4elemf1elem.SetKey(*f4elemf1iter.Key)
 					}
-					if f8elemf1iter.Value != nil {
-						f8elemf1elem.SetValue(*f8elemf1iter.Value)
+					if f4elemf1iter.Value != nil {
+						f4elemf1elem.SetValue(*f4elemf1iter.Value)
 					}
-					f8elemf1 = append(f8elemf1, f8elemf1elem)
+					f4elemf1 = append(f4elemf1, f4elemf1elem)
 				}
-				f8elem.SetTags(f8elemf1)
+				f4elem.SetTags(f4elemf1)
 			}
-			f8 = append(f8, f8elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTagSpecifications(f8)
+		res.SetTagSpecifications(f4)
 	}
 	if cr.Spec.ForProvider.VPCEndpointType != nil {
 		res.SetVpcEndpointType(*cr.Spec.ForProvider.VPCEndpointType)
@@ -180,9 +124,6 @@ func GenerateCreateVpcEndpointInput(cr *svcapitypes.VPCEndpoint) *svcsdk.CreateV
 func GenerateModifyVpcEndpointInput(cr *svcapitypes.VPCEndpoint) *svcsdk.ModifyVpcEndpointInput {
 	res := &svcsdk.ModifyVpcEndpointInput{}
 
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
 	if cr.Spec.ForProvider.PolicyDocument != nil {
 		res.SetPolicyDocument(*cr.Spec.ForProvider.PolicyDocument)
 	}
