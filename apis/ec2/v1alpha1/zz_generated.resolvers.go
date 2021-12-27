@@ -177,6 +177,81 @@ func (mg *TransitGatewayVPCAttachment) ResolveReferences(ctx context.Context, c 
 	return nil
 }
 
+// ResolveReferences of this VPCEndpoint.
+func (mg *VPCEndpoint) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.VPCIDRef = rsp.ResolvedReference
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDRefs,
+		Selector:      mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDSelector,
+		To: reference.To{
+			List:    &v1beta1.SecurityGroupList{},
+			Managed: &v1beta1.SecurityGroup{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDs")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.SecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDRefs,
+		Selector:      mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDSelector,
+		To: reference.To{
+			List:    &v1beta1.SubnetList{},
+			Managed: &v1beta1.Subnet{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDs")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.SubnetIDRefs = mrsp.ResolvedReferences
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDRefs,
+		Selector:      mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDSelector,
+		To: reference.To{
+			List:    &v1beta1.RouteTableList{},
+			Managed: &v1beta1.RouteTable{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDs")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomVPCEndpointParameters.RouteTableIDRefs = mrsp.ResolvedReferences
+
+	return nil
+}
+
 // ResolveReferences of this VPCPeeringConnection.
 func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
