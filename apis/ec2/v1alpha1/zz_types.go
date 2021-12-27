@@ -839,11 +839,8 @@ type EBSBlockDevice struct {
 	Throughput *int64 `json:"throughput,omitempty"`
 
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
-<<<<<<< HEAD
 
 	VolumeType *string `json:"volumeType,omitempty"`
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 }
 
 // +kubebuilder:skipversion
@@ -1850,7 +1847,6 @@ type LaunchTemplateEBSBlockDevice struct {
 
 	IOPS *int64 `json:"iops,omitempty"`
 
-<<<<<<< HEAD
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
 	Throughput *int64 `json:"throughput,omitempty"`
@@ -1858,11 +1854,6 @@ type LaunchTemplateEBSBlockDevice struct {
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
 
 	VolumeType *string `json:"volumeType,omitempty"`
-=======
-	Throughput *int64 `json:"throughput,omitempty"`
-
-	VolumeSize *int64 `json:"volumeSize,omitempty"`
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 }
 
 // +kubebuilder:skipversion
@@ -1873,7 +1864,6 @@ type LaunchTemplateEBSBlockDeviceRequest struct {
 
 	IOPS *int64 `json:"iops,omitempty"`
 
-<<<<<<< HEAD
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
 	Throughput *int64 `json:"throughput,omitempty"`
@@ -1881,11 +1871,6 @@ type LaunchTemplateEBSBlockDeviceRequest struct {
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
 
 	VolumeType *string `json:"volumeType,omitempty"`
-=======
-	Throughput *int64 `json:"throughput,omitempty"`
-
-	VolumeSize *int64 `json:"volumeSize,omitempty"`
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 }
 
 // +kubebuilder:skipversion
@@ -1962,11 +1947,8 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
 
-<<<<<<< HEAD
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
@@ -1992,11 +1974,8 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
 
-<<<<<<< HEAD
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
@@ -2718,11 +2697,6 @@ type PricingDetail struct {
 }
 
 // +kubebuilder:skipversion
-type PricingDetail struct {
-	Count *int64 `json:"count,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type PrincipalIDFormat struct {
 	ARN *string `json:"arn,omitempty"`
 }
@@ -3157,11 +3131,8 @@ type ScheduledInstancesEBS struct {
 
 	IOPS *int64 `json:"iops,omitempty"`
 
-<<<<<<< HEAD
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
 
 	VolumeType *string `json:"volumeType,omitempty"`
@@ -3202,11 +3173,8 @@ type ScheduledInstancesNetworkInterface struct {
 
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
-<<<<<<< HEAD
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
@@ -3602,8 +3570,6 @@ type Subnet struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
-
-	AvailableIPAddressCount *int64 `json:"availableIPAddressCount,omitempty"`
 
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
@@ -4526,11 +4492,8 @@ type VolumeDetail struct {
 type VolumeModification struct {
 	EndTime *metav1.Time `json:"endTime,omitempty"`
 
-<<<<<<< HEAD
 	ModificationState *string `json:"modificationState,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	OriginalIOPS *int64 `json:"originalIOPS,omitempty"`
 
 	OriginalMultiAttachEnabled *bool `json:"originalMultiAttachEnabled,omitempty"`
@@ -4539,13 +4502,10 @@ type VolumeModification struct {
 
 	OriginalThroughput *int64 `json:"originalThroughput,omitempty"`
 
-<<<<<<< HEAD
 	OriginalVolumeType *string `json:"originalVolumeType,omitempty"`
 
 	Progress *int64 `json:"progress,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	StartTime *metav1.Time `json:"startTime,omitempty"`
 
 	StatusMessage *string `json:"statusMessage,omitempty"`
@@ -4558,11 +4518,8 @@ type VolumeModification struct {
 
 	TargetThroughput *int64 `json:"targetThroughput,omitempty"`
 
-<<<<<<< HEAD
 	TargetVolumeType *string `json:"targetVolumeType,omitempty"`
 
-=======
->>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	VolumeID *string `json:"volumeID,omitempty"`
 }
 

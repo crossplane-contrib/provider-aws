@@ -65,12 +65,6 @@ spec:
                       to ensure the idempotency of the request. For more information,
                       see How to Ensure Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
                     type: string
-                  dryRun:
-                    description: Checks whether you have the required permissions
-                      for the action, without actually making the request, and provides
-                      an error response. If you have the required permissions, the
-                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-                    type: boolean
                   policyDocument:
                     description: (Interface and gateway endpoints) A policy to attach
                       to the endpoint that controls access to the service. The policy
@@ -95,11 +89,6 @@ spec:
                   region:
                     description: Region is which region the VPCEndpoint will be created.
                     type: string
-                  routeTableIDs:
-                    description: (Gateway endpoint) One or more route table IDs.
-                    items:
-                      type: string
-                    type: array
                   routeTableIdRefs:
                     description: RouteTableIDRefs is a list of references to RouteTables
                       used to set the RouteTableIDs.
@@ -128,9 +117,8 @@ spec:
                           is selected.
                         type: object
                     type: object
-                  securityGroupIDs:
-                    description: (Interface endpoint) The ID of one or more security
-                      groups to associate with the endpoint network interface.
+                  routeTableIds:
+                    description: (Gateway endpoint) One or more route table IDs.
                     items:
                       type: string
                     type: array
@@ -162,19 +150,17 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  securityGroupIds:
+                    description: (Interface endpoint) The ID of one or more security
+                      groups to associate with the endpoint network interface.
+                    items:
+                      type: string
+                    type: array
                   serviceName:
                     description: The service name. To get a list of available services,
                       use the DescribeVpcEndpointServices request, or get the name
                       from the service provider.
                     type: string
-                  subnetIDs:
-                    description: (Interface and Gateway Load Balancer endpoints) The
-                      ID of one or more subnets in which to create an endpoint network
-                      interface. For a Gateway Load Balancer endpoint, you can specify
-                      one subnet only.
-                    items:
-                      type: string
-                    type: array
                   subnetIdRefs:
                     description: SubnetIDRefs is a list of references to Subnets used
                       to set the SubnetIDs.
@@ -203,6 +189,14 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  subnetIds:
+                    description: (Interface and Gateway Load Balancer endpoints) The
+                      ID of one or more subnets in which to create an endpoint network
+                      interface. For a Gateway Load Balancer endpoint, you can specify
+                      one subnet only.
+                    items:
+                      type: string
+                    type: array
                   tagSpecifications:
                     description: The tags to associate with the endpoint.
                     items:
@@ -223,11 +217,11 @@ spec:
                   vpcEndpointType:
                     description: "The type of endpoint. \n Default: Gateway"
                     type: string
-                  vpcID:
+                  vpcId:
                     description: The ID of the VPC. You must specify this parameter
                       in the request.
                     type: string
-                  vpcIDRef:
+                  vpcIdRef:
                     description: VPCIDRef is a reference to an API used to set the
                       VPCID.
                     properties:
@@ -237,7 +231,7 @@ spec:
                     required:
                     - name
                     type: object
-                  vpcIDSelector:
+                  vpcIdSelector:
                     description: VPCIDSelector selects references to API used to set
                       the VPCID.
                     properties:

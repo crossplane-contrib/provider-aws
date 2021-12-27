@@ -32,11 +32,6 @@ type VPCEndpointParameters struct {
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
 	// of the request. For more information, see How to Ensure Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
 	ClientToken *string `json:"clientToken,omitempty"`
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `json:"dryRun,omitempty"`
 	// (Interface and gateway endpoints) A policy to attach to the endpoint that
 	// controls access to the service. The policy must be in valid JSON format.
 	// If this parameter is not specified, we attach a default policy that allows
@@ -58,19 +53,10 @@ type VPCEndpointParameters struct {
 	//
 	// Default: true for supported endpoints
 	PrivateDNSEnabled *bool `json:"privateDNSEnabled,omitempty"`
-	// (Gateway endpoint) One or more route table IDs.
-	RouteTableIDs []*string `json:"routeTableIDs,omitempty"`
-	// (Interface endpoint) The ID of one or more security groups to associate with
-	// the endpoint network interface.
-	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 	// The service name. To get a list of available services, use the DescribeVpcEndpointServices
 	// request, or get the name from the service provider.
 	// +kubebuilder:validation:Required
 	ServiceName *string `json:"serviceName"`
-	// (Interface and Gateway Load Balancer endpoints) The ID of one or more subnets
-	// in which to create an endpoint network interface. For a Gateway Load Balancer
-	// endpoint, you can specify one subnet only.
-	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 	// The tags to associate with the endpoint.
 	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
 	// The type of endpoint.
