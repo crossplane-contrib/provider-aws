@@ -48,7 +48,6 @@ ignore:
     - TransitGatewayRoute
     - VpcEndpointConnectionNotification
     - VpcEndpointServiceConfiguration
-    - VpcEndpoint
     - Vpc
     - VpcCidrBlock
     - VpnConnectionRoute
@@ -94,6 +93,14 @@ ignore:
     - CreateRouteInput.RouteTableId
     - CreateRouteInput.InstanceId
     - CreateRouteInput.GatewayId
+    - CreateVpcEndpointInput.VpcId
+    - ModifyVpcEndpointInput.VpcId
+    - DeleteVpcEndpointInput.VpcId
+    - CreateVpcEndpointInput.SubnetIds
+    - CreateVpcEndpointInput.SecurityGroupIds
+    - CreateVpcEndpointInput.DryRun
+    - CreateVpcEndpointInput.RouteTableIds
+    - Subnet.AvailableIpAddressCount
 resources:
   Volume:
     exceptions:

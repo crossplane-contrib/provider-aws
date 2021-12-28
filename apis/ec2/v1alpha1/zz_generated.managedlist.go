@@ -47,6 +47,15 @@ func (l *TransitGatewayVPCAttachmentList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this VPCEndpointList.
+func (l *VPCEndpointList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this VPCPeeringConnectionList.
 func (l *VPCPeeringConnectionList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))

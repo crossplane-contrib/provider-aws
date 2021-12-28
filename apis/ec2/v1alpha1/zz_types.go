@@ -349,6 +349,8 @@ type CapacityReservation struct {
 
 	OwnerID *string `json:"ownerID,omitempty"`
 
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
 	Tags []*Tag `json:"tags,omitempty"`
 
 	TotalInstanceCount *int64 `json:"totalInstanceCount,omitempty"`
@@ -716,6 +718,16 @@ type DeregisterInstanceTagAttributeRequest struct {
 type DescribeFastSnapshotRestoreSuccessItem struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
+	DisabledTime *metav1.Time `json:"disabledTime,omitempty"`
+
+	DisablingTime *metav1.Time `json:"disablingTime,omitempty"`
+
+	EnabledTime *metav1.Time `json:"enabledTime,omitempty"`
+
+	EnablingTime *metav1.Time `json:"enablingTime,omitempty"`
+
+	OptimizingTime *metav1.Time `json:"optimizingTime,omitempty"`
+
 	OwnerAlias *string `json:"ownerAlias,omitempty"`
 
 	OwnerID *string `json:"ownerID,omitempty"`
@@ -762,6 +774,16 @@ type DisableFastSnapshotRestoreStateErrorItem struct {
 // +kubebuilder:skipversion
 type DisableFastSnapshotRestoreSuccessItem struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	DisabledTime *metav1.Time `json:"disabledTime,omitempty"`
+
+	DisablingTime *metav1.Time `json:"disablingTime,omitempty"`
+
+	EnabledTime *metav1.Time `json:"enabledTime,omitempty"`
+
+	EnablingTime *metav1.Time `json:"enablingTime,omitempty"`
+
+	OptimizingTime *metav1.Time `json:"optimizingTime,omitempty"`
 
 	OwnerAlias *string `json:"ownerAlias,omitempty"`
 
@@ -914,6 +936,16 @@ type EnableFastSnapshotRestoreStateErrorItem struct {
 // +kubebuilder:skipversion
 type EnableFastSnapshotRestoreSuccessItem struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	DisabledTime *metav1.Time `json:"disabledTime,omitempty"`
+
+	DisablingTime *metav1.Time `json:"disablingTime,omitempty"`
+
+	EnabledTime *metav1.Time `json:"enabledTime,omitempty"`
+
+	EnablingTime *metav1.Time `json:"enablingTime,omitempty"`
+
+	OptimizingTime *metav1.Time `json:"optimizingTime,omitempty"`
 
 	OwnerAlias *string `json:"ownerAlias,omitempty"`
 
@@ -1132,6 +1164,8 @@ type FleetLaunchTemplateSpecificationRequest struct {
 
 // +kubebuilder:skipversion
 type FlowLog struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
 	DeliverLogsErrorMessage *string `json:"deliverLogsErrorMessage,omitempty"`
 
 	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
@@ -2311,6 +2345,8 @@ type NetworkACLEntry struct {
 type NetworkInsightsAnalysis struct {
 	NetworkPathFound *bool `json:"networkPathFound,omitempty"`
 
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
 	StatusMessage *string `json:"statusMessage,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
@@ -2318,6 +2354,8 @@ type NetworkInsightsAnalysis struct {
 
 // +kubebuilder:skipversion
 type NetworkInsightsPath struct {
+	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
+
 	Destination *string `json:"destination,omitempty"`
 
 	DestinationPort *int64 `json:"destinationPort,omitempty"`
@@ -3289,6 +3327,8 @@ type SnapshotInfo struct {
 
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
 	Tags []*Tag `json:"tags,omitempty"`
 
 	VolumeID *string `json:"volumeID,omitempty"`
@@ -3354,6 +3394,8 @@ type SpotFleetMonitoring struct {
 
 // +kubebuilder:skipversion
 type SpotFleetRequestConfig struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
 	SpotFleetRequestID *string `json:"spotFleetRequestID,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
@@ -3528,8 +3570,6 @@ type Subnet struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
-
-	AvailableIPAddressCount *int64 `json:"availableIPAddressCount,omitempty"`
 
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
@@ -4218,7 +4258,34 @@ type VPCClassicLink struct {
 }
 
 // +kubebuilder:skipversion
-type VPCEndpoint struct {
+type VPCEndpointConnection struct {
+	CreationTimestamp *metav1.Time `json:"creationTimestamp,omitempty"`
+
+	DNSEntries []*DNSEntry `json:"dnsEntries,omitempty"`
+
+	GatewayLoadBalancerARNs []*string `json:"gatewayLoadBalancerARNs,omitempty"`
+
+	NetworkLoadBalancerARNs []*string `json:"networkLoadBalancerARNs,omitempty"`
+
+	ServiceID *string `json:"serviceID,omitempty"`
+
+	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
+
+	VPCEndpointOwner *string `json:"vpcEndpointOwner,omitempty"`
+
+	VPCEndpointState *string `json:"vpcEndpointState,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCEndpoint_SDK struct {
+	CreationTimestamp *metav1.Time `json:"creationTimestamp,omitempty"`
+
+	DNSEntries []*DNSEntry `json:"dnsEntries,omitempty"`
+
+	Groups []*SecurityGroupIdentifier `json:"groups,omitempty"`
+	// The last error that occurred for a VPC endpoint.
+	LastError *LastError `json:"lastError,omitempty"`
+
 	NetworkInterfaceIDs []*string `json:"networkInterfaceIDs,omitempty"`
 
 	OwnerID *string `json:"ownerID,omitempty"`
@@ -4233,26 +4300,17 @@ type VPCEndpoint struct {
 
 	ServiceName *string `json:"serviceName,omitempty"`
 
+	State *string `json:"state,omitempty"`
+
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
 	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
 
+	VPCEndpointType *string `json:"vpcEndpointType,omitempty"`
+
 	VPCID *string `json:"vpcID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type VPCEndpointConnection struct {
-	GatewayLoadBalancerARNs []*string `json:"gatewayLoadBalancerARNs,omitempty"`
-
-	NetworkLoadBalancerARNs []*string `json:"networkLoadBalancerARNs,omitempty"`
-
-	ServiceID *string `json:"serviceID,omitempty"`
-
-	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
-
-	VPCEndpointOwner *string `json:"vpcEndpointOwner,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -4497,6 +4555,10 @@ type VolumeStatusEvent struct {
 	EventType *string `json:"eventType,omitempty"`
 
 	InstanceID *string `json:"instanceID,omitempty"`
+
+	NotAfter *metav1.Time `json:"notAfter,omitempty"`
+
+	NotBefore *metav1.Time `json:"notBefore,omitempty"`
 }
 
 // +kubebuilder:skipversion

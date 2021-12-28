@@ -1,0 +1,19 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-vpcendpoint
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.appstream.streaming
+    securityGroupIdRefs:
+    - name: sample-cluster-sg
+    subnetIdRefs:
+    - name: sample-subnet1
+    - name: sample-subnet2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example

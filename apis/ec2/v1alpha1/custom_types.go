@@ -235,3 +235,72 @@ type CustomRouteParameters struct {
 	// +optional
 	GatewayIDSelector *xpv1.Selector `json:"gatewayIdSelector,omitempty"`
 }
+
+// CustomVPCEndpointParameters are custom parameters for VPCEndpoint
+type CustomVPCEndpointParameters struct {
+	// The ID of the VPC. You must specify this parameter in the request.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// VPCIDRef is a reference to an API used to set
+	// the VPCID.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects references to API used
+	// to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
+
+	// (Interface endpoint) The ID of one or more security groups to associate with
+	// the endpoint network interface.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
+	SecurityGroupIDs []*string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
+	// the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
+
+	// SecurityGroupIDsSelector selects references to SecurityGroupID used
+	// to set the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
+
+	// (Interface and Gateway Load Balancer endpoints) The ID of one or more subnets
+	// in which to create an endpoint network interface. For a Gateway Load Balancer
+	// endpoint, you can specify one subnet only.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
+	SubnetIDs []*string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a list of references to Subnets used to set
+	// the SubnetIDs.
+	// +optional
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDsSelector selects references to Subnets used
+	// to set the SubnetIDs.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+
+	// (Gateway endpoint) One or more route table IDs.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.RouteTable
+	// +crossplane:generate:reference:refFieldName=RouteTableIDRefs
+	// +crossplane:generate:reference:selectorFieldName=RouteTableIDSelector
+	RouteTableIDs []*string `json:"routeTableIds,omitempty"`
+
+	// RouteTableIDRefs is a list of references to RouteTables used to set
+	// the RouteTableIDs.
+	// +optional
+	RouteTableIDRefs []xpv1.Reference `json:"routeTableIdRefs,omitempty"`
+
+	// RouteTableIDsSelector selects references to RouteTables used
+	// to set the RouteTableIDs.
+	// +optional
+	RouteTableIDSelector *xpv1.Selector `json:"routeTableIdSelector,omitempty"`
+}
