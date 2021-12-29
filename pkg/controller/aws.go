@@ -60,6 +60,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplate"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplateversion"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
 	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
@@ -167,6 +169,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,
 		internetgateway.SetupInternetGateway,
+		launchtemplate.SetupLaunchTemplate,
+		launchtemplateversion.SetupLaunchTemplateVersion,
 		natgateway.SetupNatGateway,
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,

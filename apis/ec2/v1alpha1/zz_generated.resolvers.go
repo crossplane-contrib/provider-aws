@@ -28,6 +28,48 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ResolveReferences of this LaunchTemplateVersion.
+func (mg *LaunchTemplateVersion) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateIDRef,
+		Selector:     mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateIDSelector,
+		To: reference.To{
+			List:    &LaunchTemplateList{},
+			Managed: &LaunchTemplate{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateID")
+	}
+	mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateName),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateNameRef,
+		Selector:     mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateNameSelector,
+		To: reference.To{
+			List:    &LaunchTemplateList{},
+			Managed: &LaunchTemplate{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateName")
+	}
+	mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomLaunchTemplateVersionParameters.LaunchTemplateNameRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this Route.
 func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
