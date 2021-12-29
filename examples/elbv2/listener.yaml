@@ -9,15 +9,14 @@ spec:
       - actionType: forward
         forwardConfig:
           targetGroups:
-            - targetGroupARNRef:
+            - targetGroupArnRef:
                 name: test-targetgroup
-    loadBalancerARNRef:
+    loadBalancerArnRef:
       name: test-loadbalancer
     port: 80
     protocol: HTTP
   providerConfigRef:
     name: example
-
 ---
 apiVersion: elbv2.aws.crossplane.io/v1alpha1
 kind: Listener
@@ -30,9 +29,9 @@ spec:
       - actionType: forward
         forwardConfig:
           targetGroups:
-            - targetGroupARNRef:
+            - targetGroupArnRef:
                 name: test-targetgroup
-    loadBalancerARNRef:
+    loadBalancerArnRef:
       name: test-loadbalancer
     port: 8080
     protocol: HTTP

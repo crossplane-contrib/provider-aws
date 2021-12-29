@@ -8,7 +8,7 @@ spec:
     port: 80
     protocol: HTTP
     region: us-east-1
-    vpcIDRef:
+    vpcIdRef:
       name: sample-vpc
   providerConfigRef:
     name: example
