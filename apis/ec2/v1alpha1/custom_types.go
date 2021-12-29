@@ -20,6 +20,35 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
+// CustomLaunchTemplateParameters includes the custom fields of LaunchTemplate.
+type CustomLaunchTemplateParameters struct{}
+
+// CustomLaunchTemplateVersionParameters includes the custom fields of LaunchTemplateVersion.
+type CustomLaunchTemplateVersionParameters struct{
+		// The ID of the Launch Template. You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+	// LaunchTemplateIDRef is a reference to an API used to set
+	// the LaunchTemplateID.
+	// +optional
+	LaunchTemplateIDRef *xpv1.Reference `json:"launchTemplateIDRef,omitempty"`
+	// LaunchTemplateIDSelector selects references to API used
+	// to set the LaunchTemplateID.
+	// +optional
+	LaunchTemplateIDSelector *xpv1.Selector `json:"launchTemplateIDSelector,omitempty"`
+		// The Name of the Launch Template. You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+	// LaunchTemplateNameRef is a reference to an API used to set
+	// the LaunchTemplateName.
+	// +optional
+	LaunchTemplateNameRef *xpv1.Reference `json:"launchTemplateNameRef,omitempty"`
+	// LaunchTemplateNameSelector selects references to API used
+	// to set the LaunchTemplateName.
+	// +optional
+	LaunchTemplateNameSelector *xpv1.Selector `json:"launchTemplateNameSelector,omitempty"`
+}
+
 // CustomVolumeParameters contains the additional fields for VolumeParameters.
 type CustomVolumeParameters struct {
 	// The identifier of the AWS Key Management Service (AWS KMS) customer master
