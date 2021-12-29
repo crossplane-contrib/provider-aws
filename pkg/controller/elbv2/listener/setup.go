@@ -48,7 +48,7 @@ func SetupListener(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Listener, obj *svcsdk.DescribeListenersInput) error {
-	obj.LoadBalancerArn = cr.Spec.ForProvider.LoadBalancerARN
+	obj.ListenerArns = append(obj.ListenerArns, aws.String(meta.GetExternalName(cr)))
 	return nil
 }
 
