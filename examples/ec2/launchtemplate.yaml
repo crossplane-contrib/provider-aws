@@ -1,0 +1,12 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: LaunchTemplate
+metadata:
+  name: test-crossplane
+spec:
+  forProvider:
+    region: us-east-1
+    launchTemplateName: test-crossplane
+    launchTemplateData:
+      keyName: kube
+  providerConfigRef:
+    name: example
