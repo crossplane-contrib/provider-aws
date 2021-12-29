@@ -21,23 +21,27 @@ import (
 )
 
 // CustomLaunchTemplateParameters includes the custom fields of LaunchTemplate.
-type CustomLaunchTemplateParameters struct{}
+type CustomLaunchTemplateParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+}
 
 // CustomLaunchTemplateVersionParameters includes the custom fields of LaunchTemplateVersion.
-type CustomLaunchTemplateVersionParameters struct{
-		// The ID of the Launch Template. You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
-	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+type CustomLaunchTemplateVersionParameters struct {
+	// The ID of the Launch Template. You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=LaunchTemplate
+	LaunchTemplateID *string `json:"launchTemplateId,omitempty"`
 	// LaunchTemplateIDRef is a reference to an API used to set
 	// the LaunchTemplateID.
 	// +optional
-	LaunchTemplateIDRef *xpv1.Reference `json:"launchTemplateIDRef,omitempty"`
+	LaunchTemplateIDRef *xpv1.Reference `json:"launchTemplateIdRef,omitempty"`
 	// LaunchTemplateIDSelector selects references to API used
 	// to set the LaunchTemplateID.
 	// +optional
-	LaunchTemplateIDSelector *xpv1.Selector `json:"launchTemplateIDSelector,omitempty"`
-		// The Name of the Launch Template. You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
+	LaunchTemplateIDSelector *xpv1.Selector `json:"launchTemplateIdSelector,omitempty"`
+	// The Name of the Launch Template. You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=LaunchTemplate
 	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
 	// LaunchTemplateNameRef is a reference to an API used to set
 	// the LaunchTemplateName.

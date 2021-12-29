@@ -6,7 +6,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -14,6 +13,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -48,7 +48,7 @@ func preObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, obj *s
 	return nil
 }
 
-func  postCreate(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, resp *svcsdk.CreateLaunchTemplateVersionOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, resp *svcsdk.CreateLaunchTemplateVersionOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -58,8 +58,8 @@ func  postCreate(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, resp 
 
 func postObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, _ *svcsdk.DescribeLaunchTemplateVersionsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
-	  return managed.ExternalObservation{}, err
+		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
-  }
+}
