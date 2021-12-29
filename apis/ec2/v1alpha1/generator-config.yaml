@@ -109,3 +109,8 @@ resources:
       errors:
         404:
           code: InvalidVolume.NotFound
+  LaunchTemplate:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateName.NotFoundException
