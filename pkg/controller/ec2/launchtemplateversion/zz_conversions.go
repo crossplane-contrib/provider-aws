@@ -37,12 +37,6 @@ func GenerateDescribeLaunchTemplateVersionsInput(cr *svcapitypes.LaunchTemplateV
 	if cr.Spec.ForProvider.DryRun != nil {
 		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
 	}
-	if cr.Spec.ForProvider.LaunchTemplateID != nil {
-		res.SetLaunchTemplateId(*cr.Spec.ForProvider.LaunchTemplateID)
-	}
-	if cr.Spec.ForProvider.LaunchTemplateName != nil {
-		res.SetLaunchTemplateName(*cr.Spec.ForProvider.LaunchTemplateName)
-	}
 
 	return res
 }
@@ -419,16 +413,6 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 			cr.Spec.ForProvider.LaunchTemplateData = f3
 		} else {
 			cr.Spec.ForProvider.LaunchTemplateData = nil
-		}
-		if elem.LaunchTemplateId != nil {
-			cr.Spec.ForProvider.LaunchTemplateID = elem.LaunchTemplateId
-		} else {
-			cr.Spec.ForProvider.LaunchTemplateID = nil
-		}
-		if elem.LaunchTemplateName != nil {
-			cr.Spec.ForProvider.LaunchTemplateName = elem.LaunchTemplateName
-		} else {
-			cr.Spec.ForProvider.LaunchTemplateName = nil
 		}
 		if elem.VersionDescription != nil {
 			cr.Spec.ForProvider.VersionDescription = elem.VersionDescription
@@ -819,12 +803,6 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			f2.SetUserData(*cr.Spec.ForProvider.LaunchTemplateData.UserData)
 		}
 		res.SetLaunchTemplateData(f2)
-	}
-	if cr.Spec.ForProvider.LaunchTemplateID != nil {
-		res.SetLaunchTemplateId(*cr.Spec.ForProvider.LaunchTemplateID)
-	}
-	if cr.Spec.ForProvider.LaunchTemplateName != nil {
-		res.SetLaunchTemplateName(*cr.Spec.ForProvider.LaunchTemplateName)
 	}
 	if cr.Spec.ForProvider.SourceVersion != nil {
 		res.SetSourceVersion(*cr.Spec.ForProvider.SourceVersion)

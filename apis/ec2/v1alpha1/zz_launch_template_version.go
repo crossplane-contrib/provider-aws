@@ -42,12 +42,6 @@ type LaunchTemplateVersionParameters struct {
 	// The information for the launch template.
 	// +kubebuilder:validation:Required
 	LaunchTemplateData *RequestLaunchTemplateData `json:"launchTemplateData"`
-	// The ID of the launch template. You must specify either the launch template
-	// ID or launch template name in the request.
-	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
-	// The name of the launch template. You must specify either the launch template
-	// ID or launch template name in the request.
-	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
 	// The version number of the launch template version on which to base the new
 	// version. The new version inherits the same launch parameters as the source
 	// version, except for parameters that you specify in LaunchTemplateData. Snapshots
