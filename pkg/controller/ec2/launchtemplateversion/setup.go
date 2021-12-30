@@ -3,6 +3,7 @@ package launchtemplateversion
 import (
 	"context"
 	"time"
+	"strconv"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -17,6 +18,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // SetupLaunchTemplateVersion adds a controller that reconciles LaunchTemplateVersion.
@@ -27,6 +29,8 @@ func SetupLaunchTemplateVersion(mgr ctrl.Manager, l logging.Logger, rl workqueue
 			e.preObserve = preObserve
 			e.postCreate = postCreate
 			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.delete = e.deleter
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -43,8 +47,19 @@ func SetupLaunchTemplateVersion(mgr ctrl.Manager, l logging.Logger, rl workqueue
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
+func preCreate(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, obj *svcsdk.CreateLaunchTemplateVersionInput) error {
+	obj.LaunchTemplateName = cr.Spec.ForProvider.LaunchTemplateName
+	obj.LaunchTemplateId = cr.Spec.ForProvider.LaunchTemplateID
+	return nil
+}
+
 func preObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, obj *svcsdk.DescribeLaunchTemplateVersionsInput) error {
-	obj.LaunchTemplateName = aws.String(meta.GetExternalName(cr))
+	obj.LaunchTemplateName = cr.Spec.ForProvider.LaunchTemplateName
+	obj.LaunchTemplateId = cr.Spec.ForProvider.LaunchTemplateID
+	if meta.GetExternalName(cr) == cr.Name {
+		return nil
+	}
+	obj.Versions = append(obj.Versions, aws.String(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -52,7 +67,7 @@ func postCreate(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, resp *
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, aws.StringValue(resp.LaunchTemplateVersion.LaunchTemplateName))
+	meta.SetExternalName(cr, strconv.FormatInt(*resp.LaunchTemplateVersion.VersionNumber,10))
 	return cre, nil
 }
 
@@ -60,6 +75,40 @@ func postObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, _ *sv
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+	if meta.GetExternalName(cr) == cr.Name {
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
+	}
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
+}
+
+func (e *external) deleter(ctx context.Context, mg cpresource.Managed) error {
+	cr, _ := mg.(*svcapitypes.LaunchTemplateVersion)
+	input := GenerateDeleteLaunchTemplateVersionInput(cr)
+	_, err := e.client.DeleteLaunchTemplateVersionsWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GenerateDeleteLaunchTemplateVersionInput returns a deletion input.
+func GenerateDeleteLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVersion) *svcsdk.DeleteLaunchTemplateVersionsInput {
+	res := &svcsdk.DeleteLaunchTemplateVersionsInput{}
+
+	if cr.Spec.ForProvider.DryRun != nil {
+		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
+	}
+	if cr.Spec.ForProvider.LaunchTemplateName != nil {
+		res.SetLaunchTemplateName(*cr.Spec.ForProvider.LaunchTemplateName)
+	}
+	if cr.Spec.ForProvider.LaunchTemplateID != nil {
+		res.SetLaunchTemplateId(*cr.Spec.ForProvider.LaunchTemplateID)
+	}
+	if meta.GetExternalName(cr) != "" && meta.GetExternalName(cr) != cr.Name {
+		res.SetVersions(append(res.Versions, aws.String(meta.GetExternalName(cr))))
+	}
+	return res
 }

@@ -30,7 +30,6 @@ func SetupLaunchTemplate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 			e.preObserve = preObserve
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
-			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.postObserve = postObserve
 		},
@@ -62,12 +61,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.LaunchTemplate, obj *svcsdk.Mo
 
 func preDelete(_ context.Context, cr *svcapitypes.LaunchTemplate, obj *svcsdk.DeleteLaunchTemplateInput) (bool, error) {
 	obj.LaunchTemplateName = aws.String(meta.GetExternalName(cr))
-	return true, nil
-}
-
-func preCreate(_ context.Context, cr *svcapitypes.LaunchTemplate, obj *svcsdk.CreateLaunchTemplateInput) error {
-	obj.LaunchTemplateName = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.LaunchTemplate, resp *svcsdk.CreateLaunchTemplateOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

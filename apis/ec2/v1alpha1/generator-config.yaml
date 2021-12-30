@@ -114,3 +114,8 @@ resources:
       errors:
         404:
           code: InvalidLaunchTemplateName.NotFoundException
+  LaunchTemplateVersion:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateId.VersionNotFound
