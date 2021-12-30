@@ -30,7 +30,6 @@ ignore:
     - NetworkInterface
     - PlacementGroup
     - ReservedInstancesListing
-    - RouteTable
     - SecurityGroup
     - Snapshot
     - SpotDatafeedSubscription
@@ -101,6 +100,8 @@ ignore:
     - CreateVpcEndpointInput.DryRun
     - CreateVpcEndpointInput.RouteTableIds
     - Subnet.AvailableIpAddressCount
+    - CreateRouteTableInput.DryRun
+    - CreateRouteTableInput.VpcId
 resources:
   Volume:
     exceptions:

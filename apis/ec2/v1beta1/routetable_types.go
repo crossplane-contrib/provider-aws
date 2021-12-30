@@ -172,10 +172,14 @@ type RouteTableParameters struct {
 	Region string `json:"region"`
 
 	// The associations between the route table and one or more subnets.
-	Associations []Association `json:"associations"`
+	// NOTE: Optional for RouteTable/v1alpha1 resource
+	// +optional
+	Associations []Association `json:"associations,omitempty"`
 
 	// the routes in the route table
-	Routes []RouteBeta `json:"routes"`
+	// NOTE: Optional for RouteTable/v1alpha1 resource
+	// +optional
+	Routes []RouteBeta `json:"routes,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	// +optional

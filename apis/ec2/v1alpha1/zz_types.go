@@ -2961,18 +2961,11 @@ type ResponseLaunchTemplateData struct {
 }
 
 // +kubebuilder:skipversion
-type RouteTable struct {
-	OwnerID *string `json:"ownerID,omitempty"`
-
-	RouteTableID *string `json:"routeTableID,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	VPCID *string `json:"vpcID,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type RouteTableAssociation struct {
+	// Describes the state of an association between a route table and a subnet
+	// or gateway.
+	AssociationState *RouteTableAssociationState `json:"associationState,omitempty"`
+
 	GatewayID *string `json:"gatewayID,omitempty"`
 
 	Main *bool `json:"main,omitempty"`
@@ -2986,7 +2979,26 @@ type RouteTableAssociation struct {
 
 // +kubebuilder:skipversion
 type RouteTableAssociationState struct {
+	State *string `json:"state,omitempty"`
+
 	StatusMessage *string `json:"statusMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RouteTable_SDK struct {
+	Associations []*RouteTableAssociation `json:"associations,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PropagatingVGWs []*PropagatingVGW `json:"propagatingVGWs,omitempty"`
+
+	RouteTableID *string `json:"routeTableID,omitempty"`
+
+	Routes []*Route_SDK `json:"routes,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3012,6 +3024,10 @@ type Route_SDK struct {
 	NATGatewayID *string `json:"natGatewayID,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
+
+	Origin *string `json:"origin,omitempty"`
+
+	State *string `json:"state,omitempty"`
 
 	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
 

@@ -1,0 +1,26 @@
+########################################
+## NOTE on RouteTable with Routes
+########################################
+# provider-aws currently provides here a RouteTable with Routes defined in-line. 
+# At this time you cannot use a RouteTable with in-line routes in conjunction with Route resources. 
+# Doing so will cause a conflict of rule settings and will overwrite rules.
+# see: https://github.com/crossplane/provider-aws/issues/657
+---
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: RouteTable
+metadata:
+  name: sample-routetable
+spec:
+  forProvider:
+    region: us-east-1
+    routes:
+      - destinationCidrBlock: 0.0.0.0/0
+        gatewayIdRef:
+          name: sample-internetgateway
+    associations:
+      - subnetIdRef:
+          name: sample-subnet1
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example

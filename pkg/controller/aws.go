@@ -62,7 +62,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
 	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable_beta"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	transitgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgateway"
@@ -168,7 +168,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		securitygroup.SetupSecurityGroup,
 		internetgateway.SetupInternetGateway,
 		natgateway.SetupNatGateway,
-		routetable.SetupRouteTable,
+		routetable_beta.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
 		certificateauthority.SetupCertificateAuthority,
 		certificateauthoritypermission.SetupCertificateAuthorityPermission,

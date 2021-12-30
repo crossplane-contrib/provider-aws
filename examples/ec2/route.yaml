@@ -1,3 +1,11 @@
+########################################
+## NOTE on Route
+########################################
+# provider-aws currently provides both a standalone Route resource and a Route Table resource with routes defined in-line.
+# At this time you cannot use a Route Table with in-line routes in conjunction with any Route resources.
+# Doing so will cause a conflict of rule settings and will overwrite rules.
+# see: https://github.com/crossplane/provider-aws/issues/657
+---
 apiVersion: ec2.aws.crossplane.io/v1alpha1
 kind: Route
 metadata:
@@ -5,7 +13,8 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    routeTableId: rtb-0bcc5f92178fcaaa3
+    routeTableIdRef:
+      name: routetable-without-routes
     destinationCIDRBlock: 172.16.0.0/12
     transitGatewayIdRef:
       name: tgw

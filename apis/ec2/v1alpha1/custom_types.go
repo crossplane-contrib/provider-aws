@@ -20,6 +20,23 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
+type CustomRouteTableParameters struct {
+	// The ID of the VPC.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// VPCIDRef is a reference to an API used to set
+	// the VPCID.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects references to API used
+	// to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
+}
+
 // CustomVolumeParameters contains the additional fields for VolumeParameters.
 type CustomVolumeParameters struct {
 	// The identifier of the AWS Key Management Service (AWS KMS) customer master
@@ -202,7 +219,18 @@ type CustomRouteParameters struct {
 	// in conjunction with any Route resources.
 	// Doing so will cause a conflict of rule settings and will overwrite rules.
 	// +optional
+	// +crossplane:generate:reference:type=RouteTable
 	RouteTableID *string `json:"routeTableId,omitempty"`
+
+	// RouteTableIDRef is a reference to an API used to set
+	// the RouteTableID.
+	// +optional
+	RouteTableIDRef *xpv1.Reference `json:"routeTableIdRef,omitempty"`
+
+	// RouteTableIDSelector selects references to API used
+	// to set the RouteTableID.
+	// +optional
+	RouteTableIDSelector *xpv1.Selector `json:"routeTableIdSelector,omitempty"`
 
 	// The ID of a NAT instance in your VPC. The operation fails if you specify
 	// an instance ID unless exactly one network interface is attached.
