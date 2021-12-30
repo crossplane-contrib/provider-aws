@@ -1,0 +1,16 @@
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: test-loadbalancer
+spec:
+  forProvider:
+    name: test-loadbalancer
+    loadBalancerType: application
+    region: us-east-1
+    securityGroupRefs:
+      - name: sample-cluster-sg
+    subnetRefs:
+      - name: sample-subnet1
+      - name: sample-subnet2
+  providerConfigRef:
+    name: example
