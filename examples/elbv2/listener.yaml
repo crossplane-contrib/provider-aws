@@ -1,0 +1,39 @@
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Listener
+metadata:
+  name: test-listener
+spec:
+  forProvider:
+    region: us-east-1
+    defaultActions:
+      - actionType: forward
+        forwardConfig:
+          targetGroups:
+            - targetGroupArnRef:
+                name: test-targetgroup
+    loadBalancerArnRef:
+      name: test-loadbalancer
+    port: 80
+    protocol: HTTP
+  providerConfigRef:
+    name: example
+---
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Listener
+metadata:
+  name: test-listener-two
+spec:
+  forProvider:
+    region: us-east-1
+    defaultActions:
+      - actionType: forward
+        forwardConfig:
+          targetGroups:
+            - targetGroupArnRef:
+                name: test-targetgroup
+    loadBalancerArnRef:
+      name: test-loadbalancer
+    port: 8080
+    protocol: HTTP
+  providerConfigRef:
+    name: example
