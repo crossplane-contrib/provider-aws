@@ -4081,7 +4081,11 @@ type TrafficMirrorTarget struct {
 type TransitGatewayAssociation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
+	ResourceType *string `json:"resourceType,omitempty"`
+
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+
+	TransitGatewayRouteTableID *string `json:"transitGatewayRouteTableID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -4091,6 +4095,8 @@ type TransitGatewayAttachment struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
@@ -4199,6 +4205,8 @@ type TransitGatewayMulticastDomainAssociation struct {
 
 	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
 
+	ResourceType *string `json:"resourceType,omitempty"`
+
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
@@ -4207,6 +4215,8 @@ type TransitGatewayMulticastDomainAssociations struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
 
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 
@@ -4226,6 +4236,8 @@ type TransitGatewayMulticastGroup struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -4288,6 +4300,8 @@ type TransitGatewayPeeringAttachment struct {
 type TransitGatewayPrefixListAttachment struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
+	ResourceType *string `json:"resourceType,omitempty"`
+
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
@@ -4298,11 +4312,15 @@ type TransitGatewayPrefixListReference struct {
 	PrefixListID *string `json:"prefixListID,omitempty"`
 
 	PrefixListOwnerID *string `json:"prefixListOwnerID,omitempty"`
+
+	TransitGatewayRouteTableID *string `json:"transitGatewayRouteTableID,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TransitGatewayPropagation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
 
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 
@@ -4329,26 +4347,41 @@ type TransitGatewayRequestOptions struct {
 }
 
 // +kubebuilder:skipversion
-type TransitGatewayRoute struct {
-	DestinationCIDRBlock *string `json:"destinationCIDRBlock,omitempty"`
-
-	PrefixListID *string `json:"prefixListID,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type TransitGatewayRouteAttachment struct {
 	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
 
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type TransitGatewayRouteTable struct {
+type TransitGatewayRouteTableAssociation struct {
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TransitGatewayRouteTablePropagation struct {
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TransitGatewayRouteTable_SDK struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	DefaultAssociationRouteTable *bool `json:"defaultAssociationRouteTable,omitempty"`
 
 	DefaultPropagationRouteTable *bool `json:"defaultPropagationRouteTable,omitempty"`
+
+	State *string `json:"state,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
@@ -4358,17 +4391,16 @@ type TransitGatewayRouteTable struct {
 }
 
 // +kubebuilder:skipversion
-type TransitGatewayRouteTableAssociation struct {
-	ResourceID *string `json:"resourceID,omitempty"`
+type TransitGatewayRoute_SDK struct {
+	DestinationCIDRBlock *string `json:"destinationCIDRBlock,omitempty"`
 
-	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
-}
+	PrefixListID *string `json:"prefixListID,omitempty"`
 
-// +kubebuilder:skipversion
-type TransitGatewayRouteTablePropagation struct {
-	ResourceID *string `json:"resourceID,omitempty"`
+	State *string `json:"state,omitempty"`
 
-	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+	TransitGatewayAttachments []*TransitGatewayRouteAttachment `json:"transitGatewayAttachments,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion

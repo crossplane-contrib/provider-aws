@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -33,9 +34,10 @@ func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, l logging.Logger, rl wor
 	name := managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
 	opts := []option{
 		func(e *external) {
+			c := &custom{client: e.client, kube: e.kube}
 			e.postObserve = postObserve
 			e.postCreate = postCreate
-			e.preCreate = preCreate
+			e.preCreate = c.preCreate
 			e.filterList = filterList
 		},
 	}
@@ -49,7 +51,7 @@ func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, l logging.Logger, rl wor
 			resource.ManagedKind(svcapitypes.TransitGatewayVPCAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
@@ -88,7 +90,25 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGatewayVPCAttachment,
 	return obs, nil
 }
 
-func preCreate(ctx context.Context, cr *svcapitypes.TransitGatewayVPCAttachment, obj *svcsdk.CreateTransitGatewayVpcAttachmentInput) error {
+type custom struct {
+	kube   client.Client
+	client svcsdkapi.EC2API
+}
+
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.TransitGatewayVPCAttachment, obj *svcsdk.CreateTransitGatewayVpcAttachmentInput) error {
+	// need extra call for error:
+	// cannot create TransitGatewayVPCAttachment in AWS: IncorrectState: tgw is in invalid state
+	input := &svcsdk.DescribeTransitGatewaysInput{}
+	input.TransitGatewayIds = append(input.TransitGatewayIds, cr.Spec.ForProvider.TransitGatewayID)
+	tgwState, err := e.client.DescribeTransitGatewaysWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	if awsclients.StringValue(tgwState.TransitGateways[0].State) != string(svcapitypes.TransitGatewayState_available) {
+		return errors.New("referenced transitgateway is not available for vpcattachment " + awsclients.StringValue(tgwState.TransitGateways[0].State))
+	}
+
 	obj.VpcId = cr.Spec.ForProvider.VPCID
 	obj.TransitGatewayId = cr.Spec.ForProvider.TransitGatewayID
 	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs

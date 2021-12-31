@@ -68,6 +68,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	transitgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgateway"
+	transitgatewayroute "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroute"
+	transitgatewayroutetable "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroutetable"
 	transitgatewayvpcattachment "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayvpcattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/volume"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
@@ -255,6 +257,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		listener.SetupListener,
 		loadbalancer.SetupLoadBalancer,
 		targetgroup.SetupTargetGroup,
+		transitgatewayroute.SetupTransitGatewayRoute,
+		transitgatewayroutetable.SetupTransitGatewayRouteTable,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
