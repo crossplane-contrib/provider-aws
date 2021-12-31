@@ -17,8 +17,6 @@ ignore:
     - InstanceExportTask
     - InternetGateway
     - KeyPair
-    - LaunchTemplateVersion
-    - LaunchTemplate
     - LocalGatewayRouteTableVpcAssociation
     - LocalGatewayRoute
     - ManagedPrefixList
@@ -101,9 +99,23 @@ ignore:
     - CreateVpcEndpointInput.DryRun
     - CreateVpcEndpointInput.RouteTableIds
     - Subnet.AvailableIpAddressCount
+    - CreateLaunchTemplateVersionInput.LaunchTemplateId
+    - DeleteLaunchTemplateVersionInput.LaunchTemplateId
+    - CreateLaunchTemplateVersionInput.LaunchTemplateName
+    - DeleteLaunchTemplateVersionInput.LaunchTemplateName
 resources:
   Volume:
     exceptions:
       errors:
         404:
           code: InvalidVolume.NotFound
+  LaunchTemplate:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateName.NotFoundException
+  LaunchTemplateVersion:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateId.VersionNotFound

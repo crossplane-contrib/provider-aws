@@ -364,7 +364,23 @@ type CapacityReservationGroup struct {
 }
 
 // +kubebuilder:skipversion
+type CapacityReservationSpecification struct {
+	CapacityReservationPreference *string `json:"capacityReservationPreference,omitempty"`
+	// Describes a target Capacity Reservation or Capacity Reservation group.
+	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CapacityReservationSpecificationResponse struct {
+	CapacityReservationPreference *string `json:"capacityReservationPreference,omitempty"`
+	// Describes a target Capacity Reservation or Capacity Reservation group.
+	CapacityReservationTarget *CapacityReservationTargetResponse `json:"capacityReservationTarget,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CapacityReservationTarget struct {
+	CapacityReservationID *string `json:"capacityReservationID,omitempty"`
+
 	CapacityReservationResourceGroupARN *string `json:"capacityReservationResourceGroupARN,omitempty"`
 }
 
@@ -611,6 +627,11 @@ type CreateFleetError struct {
 }
 
 // +kubebuilder:skipversion
+type CreateFleetInstance struct {
+	InstanceType *string `json:"instanceType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CreateTransitGatewayVPCAttachmentRequestOptions struct {
 	ApplianceModeSupport *string `json:"applianceModeSupport,omitempty"`
 
@@ -742,6 +763,11 @@ type DescribeFleetError struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DescribeFleetsInstances struct {
+	InstanceType *string `json:"instanceType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1136,6 +1162,8 @@ type FleetData struct {
 type FleetLaunchTemplateOverrides struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	MaxPrice *string `json:"maxPrice,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
@@ -1144,6 +1172,8 @@ type FleetLaunchTemplateOverrides struct {
 // +kubebuilder:skipversion
 type FleetLaunchTemplateOverridesRequest struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	MaxPrice *string `json:"maxPrice,omitempty"`
 
@@ -1154,11 +1184,17 @@ type FleetLaunchTemplateOverridesRequest struct {
 type FleetLaunchTemplateSpecification struct {
 	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
 
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
 	Version *string `json:"version,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FleetLaunchTemplateSpecificationRequest struct {
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
 	Version *string `json:"version,omitempty"`
 }
 
@@ -1481,6 +1517,14 @@ type ImportImageTask struct {
 type ImportInstanceLaunchSpecification struct {
 	AdditionalInfo *string `json:"additionalInfo,omitempty"`
 
+	GroupIDs []*string `json:"groupIDs,omitempty"`
+
+	GroupNames []*string `json:"groupNames,omitempty"`
+
+	InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	Monitoring *bool `json:"monitoring,omitempty"`
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
@@ -1587,6 +1631,11 @@ type InstanceIPv6AddressRequest struct {
 }
 
 // +kubebuilder:skipversion
+type InstanceMarketOptionsRequest struct {
+	MarketType *string `json:"marketType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type InstanceMetadataOptionsRequest struct {
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
 }
@@ -1606,6 +1655,8 @@ type InstanceNetworkInterface struct {
 	Description *string `json:"description,omitempty"`
 
 	InterfaceType *string `json:"interfaceType,omitempty"`
+
+	IPv6Addresses []*InstanceIPv6Address `json:"ipv6Addresses,omitempty"`
 
 	MacAddress *string `json:"macAddress,omitempty"`
 
@@ -1660,15 +1711,21 @@ type InstanceNetworkInterfaceSpecification struct {
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
 
+	Groups []*string `json:"groups,omitempty"`
+
 	InterfaceType *string `json:"interfaceType,omitempty"`
 
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+
+	IPv6Addresses []*InstanceIPv6Address `json:"ipv6Addresses,omitempty"`
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
+
+	PrivateIPAddresses []*PrivateIPAddressSpecification `json:"privateIPAddresses,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
 
@@ -1730,6 +1787,16 @@ type InstanceTagNotificationAttribute struct {
 }
 
 // +kubebuilder:skipversion
+type InstanceTypeInfo struct {
+	InstanceType *string `json:"instanceType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceTypeOffering struct {
+	InstanceType *string `json:"instanceType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type InstanceUsage struct {
 	AccountID *string `json:"accountID,omitempty"`
 
@@ -1781,6 +1848,8 @@ type LaunchSpecification struct {
 
 	ImageID *string `json:"imageID,omitempty"`
 
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	KernelID *string `json:"kernelID,omitempty"`
 
 	KeyName *string `json:"keyName,omitempty"`
@@ -1793,23 +1862,10 @@ type LaunchSpecification struct {
 }
 
 // +kubebuilder:skipversion
-type LaunchTemplate struct {
-	CreateTime *metav1.Time `json:"createTime,omitempty"`
-
-	CreatedBy *string `json:"createdBy,omitempty"`
-
-	DefaultVersionNumber *int64 `json:"defaultVersionNumber,omitempty"`
-
-	LatestVersionNumber *int64 `json:"latestVersionNumber,omitempty"`
-
-	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type LaunchTemplateBlockDeviceMapping struct {
 	DeviceName *string `json:"deviceName,omitempty"`
+	// Describes a block device for an EBS volume.
+	EBS *LaunchTemplateEBSBlockDevice `json:"ebs,omitempty"`
 
 	NoDevice *string `json:"noDevice,omitempty"`
 
@@ -1819,6 +1875,8 @@ type LaunchTemplateBlockDeviceMapping struct {
 // +kubebuilder:skipversion
 type LaunchTemplateBlockDeviceMappingRequest struct {
 	DeviceName *string `json:"deviceName,omitempty"`
+	// The parameters for a block device for an EBS volume.
+	EBS *LaunchTemplateEBSBlockDeviceRequest `json:"ebs,omitempty"`
 
 	NoDevice *string `json:"noDevice,omitempty"`
 
@@ -1840,12 +1898,28 @@ type LaunchTemplateCPUOptionsRequest struct {
 }
 
 // +kubebuilder:skipversion
+type LaunchTemplateCapacityReservationSpecificationRequest struct {
+	CapacityReservationPreference *string `json:"capacityReservationPreference,omitempty"`
+	// Describes a target Capacity Reservation or Capacity Reservation group.
+	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplateCapacityReservationSpecificationResponse struct {
+	CapacityReservationPreference *string `json:"capacityReservationPreference,omitempty"`
+	// Describes a target Capacity Reservation or Capacity Reservation group.
+	CapacityReservationTarget *CapacityReservationTargetResponse `json:"capacityReservationTarget,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LaunchTemplateEBSBlockDevice struct {
 	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
 
 	Encrypted *bool `json:"encrypted,omitempty"`
 
 	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
@@ -1864,6 +1938,8 @@ type LaunchTemplateEBSBlockDeviceRequest struct {
 
 	IOPS *int64 `json:"iops,omitempty"`
 
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
 	Throughput *int64 `json:"throughput,omitempty"`
@@ -1875,6 +1951,8 @@ type LaunchTemplateEBSBlockDeviceRequest struct {
 
 // +kubebuilder:skipversion
 type LaunchTemplateElasticInferenceAccelerator struct {
+	Count *int64 `json:"count,omitempty"`
+
 	Type *string `json:"type_,omitempty"`
 }
 
@@ -1920,13 +1998,37 @@ type LaunchTemplateIAMInstanceProfileSpecificationRequest struct {
 }
 
 // +kubebuilder:skipversion
+type LaunchTemplateInstanceMarketOptions struct {
+	MarketType *string `json:"marketType,omitempty"`
+	// The options for Spot Instances.
+	SpotOptions *LaunchTemplateSpotMarketOptions `json:"spotOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplateInstanceMarketOptionsRequest struct {
+	MarketType *string `json:"marketType,omitempty"`
+	// The options for Spot Instances.
+	SpotOptions *LaunchTemplateSpotMarketOptionsRequest `json:"spotOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LaunchTemplateInstanceMetadataOptions struct {
+	HTTPEndpoint *string `json:"httpEndpoint,omitempty"`
+
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
+
+	HTTPTokens *string `json:"httpTokens,omitempty"`
+
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LaunchTemplateInstanceMetadataOptionsRequest struct {
+	HTTPEndpoint *string `json:"httpEndpoint,omitempty"`
+
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
+
+	HTTPTokens *string `json:"httpTokens,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1941,15 +2043,21 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
 
+	Groups []*string `json:"groups,omitempty"`
+
 	InterfaceType *string `json:"interfaceType,omitempty"`
 
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+
+	IPv6Addresses []*InstanceIPv6Address `json:"ipv6Addresses,omitempty"`
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
+
+	PrivateIPAddresses []*PrivateIPAddressSpecification `json:"privateIPAddresses,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
 
@@ -1968,15 +2076,21 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
 
+	Groups []*string `json:"groups,omitempty"`
+
 	InterfaceType *string `json:"interfaceType,omitempty"`
 
 	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+
+	IPv6Addresses []*InstanceIPv6AddressRequest `json:"ipv6Addresses,omitempty"`
 
 	NetworkCardIndex *int64 `json:"networkCardIndex,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
 	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
+
+	PrivateIPAddresses []*PrivateIPAddressSpecification `json:"privateIPAddresses,omitempty"`
 
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIPAddressCount,omitempty"`
 
@@ -1996,6 +2110,8 @@ type LaunchTemplateLicenseConfigurationRequest struct {
 // +kubebuilder:skipversion
 type LaunchTemplateOverrides struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	SpotPrice *string `json:"spotPrice,omitempty"`
 
@@ -2017,6 +2133,8 @@ type LaunchTemplatePlacement struct {
 	PartitionNumber *int64 `json:"partitionNumber,omitempty"`
 
 	SpreadDomain *string `json:"spreadDomain,omitempty"`
+
+	Tenancy *string `json:"tenancy,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2025,15 +2143,23 @@ type LaunchTemplatePlacementRequest struct {
 
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
+	GroupName *string `json:"groupName,omitempty"`
+
+	HostID *string `json:"hostID,omitempty"`
+
 	HostResourceGroupARN *string `json:"hostResourceGroupARN,omitempty"`
 
 	PartitionNumber *int64 `json:"partitionNumber,omitempty"`
 
 	SpreadDomain *string `json:"spreadDomain,omitempty"`
+
+	Tenancy *string `json:"tenancy,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LaunchTemplateSpecification struct {
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+
 	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
 
 	Version *string `json:"version,omitempty"`
@@ -2043,7 +2169,11 @@ type LaunchTemplateSpecification struct {
 type LaunchTemplateSpotMarketOptions struct {
 	BlockDurationMinutes *int64 `json:"blockDurationMinutes,omitempty"`
 
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
+
 	MaxPrice *string `json:"maxPrice,omitempty"`
+
+	SpotInstanceType *string `json:"spotInstanceType,omitempty"`
 
 	ValidUntil *metav1.Time `json:"validUntil,omitempty"`
 }
@@ -2052,7 +2182,11 @@ type LaunchTemplateSpotMarketOptions struct {
 type LaunchTemplateSpotMarketOptionsRequest struct {
 	BlockDurationMinutes *int64 `json:"blockDurationMinutes,omitempty"`
 
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
+
 	MaxPrice *string `json:"maxPrice,omitempty"`
+
+	SpotInstanceType *string `json:"spotInstanceType,omitempty"`
 
 	ValidUntil *metav1.Time `json:"validUntil,omitempty"`
 }
@@ -2072,16 +2206,39 @@ type LaunchTemplateTagSpecificationRequest struct {
 }
 
 // +kubebuilder:skipversion
-type LaunchTemplateVersion struct {
+type LaunchTemplateVersion_SDK struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
 	CreatedBy *string `json:"createdBy,omitempty"`
 
 	DefaultVersion *bool `json:"defaultVersion,omitempty"`
+	// The information for a launch template.
+	LaunchTemplateData *ResponseLaunchTemplateData `json:"launchTemplateData,omitempty"`
 
 	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
 
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
+	VersionDescription *string `json:"versionDescription,omitempty"`
+
 	VersionNumber *int64 `json:"versionNumber,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplate_SDK struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	CreatedBy *string `json:"createdBy,omitempty"`
+
+	DefaultVersionNumber *int64 `json:"defaultVersionNumber,omitempty"`
+
+	LatestVersionNumber *int64 `json:"latestVersionNumber,omitempty"`
+
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2619,6 +2776,8 @@ type Placement struct {
 	PartitionNumber *int64 `json:"partitionNumber,omitempty"`
 
 	SpreadDomain *string `json:"spreadDomain,omitempty"`
+
+	Tenancy *string `json:"tenancy,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2821,9 +2980,68 @@ type RemovePrefixListEntry struct {
 
 // +kubebuilder:skipversion
 type RequestLaunchTemplateData struct {
+	BlockDeviceMappings []*LaunchTemplateBlockDeviceMappingRequest `json:"blockDeviceMappings,omitempty"`
+	// Describes an instance's Capacity Reservation targeting option. You can specify
+	// only one option at a time. Use the CapacityReservationPreference parameter
+	// to configure the instance to run in On-Demand capacity or to run in any open
+	// Capacity Reservation that has matching attributes (instance type, platform,
+	// Availability Zone). Use the CapacityReservationTarget parameter to explicitly
+	// target a specific Capacity Reservation or a Capacity Reservation group.
+	CapacityReservationSpecification *LaunchTemplateCapacityReservationSpecificationRequest `json:"capacityReservationSpecification,omitempty"`
+	// The CPU options for the instance. Both the core count and threads per core
+	// must be specified in the request.
+	CPUOptions *LaunchTemplateCPUOptionsRequest `json:"cpuOptions,omitempty"`
+	// The credit option for CPU usage of a T2, T3, or T3a instance.
+	CreditSpecification *CreditSpecificationRequest `json:"creditSpecification,omitempty"`
+
 	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+
+	ElasticGPUSpecifications []*ElasticGPUSpecification `json:"elasticGPUSpecifications,omitempty"`
+
+	ElasticInferenceAccelerators []*LaunchTemplateElasticInferenceAccelerator `json:"elasticInferenceAccelerators,omitempty"`
+	// Indicates whether the instance is enabled for AWS Nitro Enclaves. For more
+	// information, see What is AWS Nitro Enclaves? (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
+	// in the AWS Nitro Enclaves User Guide.
+	EnclaveOptions *LaunchTemplateEnclaveOptionsRequest `json:"enclaveOptions,omitempty"`
+	// Indicates whether the instance is configured for hibernation. This parameter
+	// is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
+	HibernationOptions *LaunchTemplateHibernationOptionsRequest `json:"hibernationOptions,omitempty"`
+	// An IAM instance profile.
+	IAMInstanceProfile *LaunchTemplateIAMInstanceProfileSpecificationRequest `json:"iamInstanceProfile,omitempty"`
+
+	ImageID *string `json:"imageID,omitempty"`
+
+	InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
+	// The market (purchasing) option for the instances.
+	InstanceMarketOptions *LaunchTemplateInstanceMarketOptionsRequest `json:"instanceMarketOptions,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	KernelID *string `json:"kernelID,omitempty"`
+
+	KeyName *string `json:"keyName,omitempty"`
+
+	LicenseSpecifications []*LaunchTemplateLicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
+	// The metadata options for the instance. For more information, see Instance
+	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	MetadataOptions *LaunchTemplateInstanceMetadataOptionsRequest `json:"metadataOptions,omitempty"`
+	// Describes the monitoring for the instance.
+	Monitoring *LaunchTemplatesMonitoringRequest `json:"monitoring,omitempty"`
+
+	NetworkInterfaces []*LaunchTemplateInstanceNetworkInterfaceSpecificationRequest `json:"networkInterfaces,omitempty"`
+	// Describes the placement of an instance.
+	Placement *LaunchTemplatePlacementRequest `json:"placement,omitempty"`
+
+	RamDiskID *string `json:"ramDiskID,omitempty"`
+
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+
+	SecurityGroups []*string `json:"securityGroups,omitempty"`
+
+	TagSpecifications []*LaunchTemplateTagSpecificationRequest `json:"tagSpecifications,omitempty"`
 
 	UserData *string `json:"userData,omitempty"`
 }
@@ -2833,6 +3051,16 @@ type RequestSpotLaunchSpecification struct {
 	AddressingType *string `json:"addressingType,omitempty"`
 
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+
+	ImageID *string `json:"imageID,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	KernelID *string `json:"kernelID,omitempty"`
+
+	KeyName *string `json:"keyName,omitempty"`
+
+	RamdiskID *string `json:"ramdiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -2863,6 +3091,10 @@ type ReservedInstances struct {
 
 	InstanceCount *int64 `json:"instanceCount,omitempty"`
 
+	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	ReservedInstancesID *string `json:"reservedInstancesID,omitempty"`
 
 	Start *metav1.Time `json:"start,omitempty"`
@@ -2875,6 +3107,8 @@ type ReservedInstancesConfiguration struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	InstanceCount *int64 `json:"instanceCount,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	Platform *string `json:"platform,omitempty"`
 }
@@ -2929,6 +3163,10 @@ type ReservedInstancesOffering struct {
 
 	Duration *int64 `json:"duration,omitempty"`
 
+	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	Marketplace *bool `json:"marketplace,omitempty"`
 
 	ReservedInstancesOfferingID *string `json:"reservedInstancesOfferingID,omitempty"`
@@ -2941,21 +3179,59 @@ type ResponseError struct {
 
 // +kubebuilder:skipversion
 type ResponseLaunchTemplateData struct {
+	BlockDeviceMappings []*LaunchTemplateBlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
+	// Information about the Capacity Reservation targeting option.
+	CapacityReservationSpecification *LaunchTemplateCapacityReservationSpecificationResponse `json:"capacityReservationSpecification,omitempty"`
+	// The CPU options for the instance.
+	CPUOptions *LaunchTemplateCPUOptions `json:"cpuOptions,omitempty"`
+	// Describes the credit option for CPU usage of a T2, T3, or T3a instance.
+	CreditSpecification *CreditSpecification `json:"creditSpecification,omitempty"`
+
 	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
+	ElasticGPUSpecifications []*ElasticGPUSpecificationResponse `json:"elasticGPUSpecifications,omitempty"`
+
+	ElasticInferenceAccelerators []*LaunchTemplateElasticInferenceAcceleratorResponse `json:"elasticInferenceAccelerators,omitempty"`
+	// Indicates whether the instance is enabled for AWS Nitro Enclaves.
+	EnclaveOptions *LaunchTemplateEnclaveOptions `json:"enclaveOptions,omitempty"`
+	// Indicates whether an instance is configured for hibernation.
+	HibernationOptions *LaunchTemplateHibernationOptions `json:"hibernationOptions,omitempty"`
+	// Describes an IAM instance profile.
+	IAMInstanceProfile *LaunchTemplateIAMInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
+
 	ImageID *string `json:"imageID,omitempty"`
+
+	InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
+	// The market (purchasing) option for the instances.
+	InstanceMarketOptions *LaunchTemplateInstanceMarketOptions `json:"instanceMarketOptions,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	KernelID *string `json:"kernelID,omitempty"`
 
 	KeyName *string `json:"keyName,omitempty"`
+
+	LicenseSpecifications []*LaunchTemplateLicenseConfiguration `json:"licenseSpecifications,omitempty"`
+	// The metadata options for the instance. For more information, see Instance
+	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	MetadataOptions *LaunchTemplateInstanceMetadataOptions `json:"metadataOptions,omitempty"`
+	// Describes the monitoring for the instance.
+	Monitoring *LaunchTemplatesMonitoring `json:"monitoring,omitempty"`
+
+	NetworkInterfaces []*LaunchTemplateInstanceNetworkInterfaceSpecification `json:"networkInterfaces,omitempty"`
+	// Describes the placement of an instance.
+	Placement *LaunchTemplatePlacement `json:"placement,omitempty"`
 
 	RamDiskID *string `json:"ramDiskID,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
+
+	TagSpecifications []*LaunchTemplateTagSpecification `json:"tagSpecifications,omitempty"`
 
 	UserData *string `json:"userData,omitempty"`
 }
@@ -3149,7 +3425,15 @@ type ScheduledInstancesIAMInstanceProfile struct {
 type ScheduledInstancesLaunchSpecification struct {
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
+	ImageID *string `json:"imageID,omitempty"`
+
 	InstanceType *string `json:"instanceType,omitempty"`
+
+	KernelID *string `json:"kernelID,omitempty"`
+
+	KeyName *string `json:"keyName,omitempty"`
+
+	RamdiskID *string `json:"ramdiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -3185,6 +3469,8 @@ type ScheduledInstancesNetworkInterface struct {
 // +kubebuilder:skipversion
 type ScheduledInstancesPlacement struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	GroupName *string `json:"groupName,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3374,6 +3660,8 @@ type SpotFleetLaunchSpecification struct {
 
 	ImageID *string `json:"imageID,omitempty"`
 
+	InstanceType *string `json:"instanceType,omitempty"`
+
 	KernelID *string `json:"kernelID,omitempty"`
 
 	KeyName *string `json:"keyName,omitempty"`
@@ -3406,6 +3694,8 @@ type SpotFleetRequestConfigData struct {
 	ClientToken *string `json:"clientToken,omitempty"`
 
 	IAMFleetRole *string `json:"iamFleetRole,omitempty"`
+
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
 
 	InstancePoolsToUseCount *int64 `json:"instancePoolsToUseCount,omitempty"`
 
@@ -3447,6 +3737,8 @@ type SpotInstanceRequest struct {
 
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
+
 	LaunchGroup *string `json:"launchGroup,omitempty"`
 
 	LaunchedAvailabilityZone *string `json:"launchedAvailabilityZone,omitempty"`
@@ -3456,6 +3748,8 @@ type SpotInstanceRequest struct {
 	SpotPrice *string `json:"spotPrice,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 
 	ValidFrom *metav1.Time `json:"validFrom,omitempty"`
 
@@ -3482,7 +3776,11 @@ type SpotInstanceStatus struct {
 type SpotMarketOptions struct {
 	BlockDurationMinutes *int64 `json:"blockDurationMinutes,omitempty"`
 
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
+
 	MaxPrice *string `json:"maxPrice,omitempty"`
+
+	SpotInstanceType *string `json:"spotInstanceType,omitempty"`
 
 	ValidUntil *metav1.Time `json:"validUntil,omitempty"`
 }
@@ -3518,11 +3816,15 @@ type SpotPlacement struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	GroupName *string `json:"groupName,omitempty"`
+
+	Tenancy *string `json:"tenancy,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SpotPrice struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	SpotPrice *string `json:"spotPrice,omitempty"`
 
@@ -4222,6 +4524,8 @@ type VPC struct {
 
 	DHCPOptionsID *string `json:"dhcpOptionsID,omitempty"`
 
+	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
+
 	IsDefault *bool `json:"isDefault,omitempty"`
 
 	OwnerID *string `json:"ownerID,omitempty"`
@@ -4466,6 +4770,11 @@ type ValidationError struct {
 	Code *string `json:"code,omitempty"`
 
 	Message *string `json:"message,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ValidationWarning struct {
+	Errors []*ValidationError `json:"errors,omitempty"`
 }
 
 // +kubebuilder:skipversion
