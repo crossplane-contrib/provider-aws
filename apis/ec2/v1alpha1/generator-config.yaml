@@ -42,8 +42,6 @@ ignore:
     - TransitGatewayMulticastDomain
     - TransitGatewayPeeringAttachment
     - TransitGatewayPrefixListReference
-    - TransitGatewayRouteTable
-    - TransitGatewayRoute
     - VpcEndpointConnectionNotification
     - VpcEndpointServiceConfiguration
     - Vpc
@@ -107,6 +105,11 @@ ignore:
     - CreateLaunchTemplateVersionInput.ClientToken
     - CreateLaunchTemplateInput.DryRun
     - CreateLaunchTemplateInput.ClientToken
+    - CreateTransitGatewayRouteInput.DryRun
+    - CreateTransitGatewayRouteInput.TransitGatewayAttachmentId
+    - CreateTransitGatewayRouteInput.TransitGatewayRouteTableId
+    - CreateTransitGatewayRouteTableInput.DryRun
+    - CreateTransitGatewayRouteTableInput.TransitGatewayId
 resources:
   Volume:
     exceptions:
@@ -123,3 +126,13 @@ resources:
       errors:
         404:
           code: InvalidLaunchTemplateId.VersionNotFound
+  TransitGatewayRouteTable:
+    exceptions:
+      errors:
+        404:
+          code: InvalidRouteTableID.NotFound
+  TransitGatewayRoute:
+    exceptions:
+      errors:
+        404:
+          code: InvalidRoute.NotFound

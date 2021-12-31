@@ -160,6 +160,74 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	return nil
 }
 
+// ResolveReferences of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentIDRef,
+		Selector:     mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayVPCAttachmentList{},
+			Managed: &TransitGatewayVPCAttachment{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentID")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayAttachmentIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableIDRef,
+		Selector:     mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayRouteTableList{},
+			Managed: &TransitGatewayRouteTable{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableID")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTransitGatewayRouteParameters.TransitGatewayRouteTableIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayList{},
+			Managed: &TransitGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayID")
+	}
+	mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTransitGatewayRouteTableParameters.TransitGatewayIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this TransitGatewayVPCAttachment.
 func (mg *TransitGatewayVPCAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

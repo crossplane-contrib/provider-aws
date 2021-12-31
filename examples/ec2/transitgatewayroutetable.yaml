@@ -1,0 +1,11 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: TransitGatewayRouteTable
+metadata:
+  name: tgw-routetable
+spec:
+  forProvider:
+    region: us-east-1
+    transitGatewayIdRef:
+      name: tgw
+  providerConfigRef:
+    name: example

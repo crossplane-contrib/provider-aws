@@ -337,3 +337,58 @@ type CustomVPCEndpointParameters struct {
 	// +optional
 	RouteTableIDSelector *xpv1.Selector `json:"routeTableIdSelector,omitempty"`
 }
+
+// CustomTransitGatewayRouteParameters are custom parameters for TransitGatewayRouteParameters
+type CustomTransitGatewayRouteParameters struct {
+	// The ID of the attachment.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGatewayVPCAttachment
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentId,omitempty"`
+
+	// TransitGatewayAttachmentIDRef is a reference to an API used to set
+	// the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDRef *xpv1.Reference `json:"transitGatewayAttachmentIdRef,omitempty"`
+
+	// TransitGatewayAttachmentIDSelector selects references to API used
+	// to set the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDSelector *xpv1.Selector `json:"transitGatewayAttachmentIdSelector,omitempty"`
+
+	// The ID of the transit gateway route table.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGatewayRouteTable
+	TransitGatewayRouteTableID *string `json:"transitGatewayRouteTableId,omitempty"`
+
+	// TransitGatewayRouteTableIDRef is a reference to an API used to set
+	// the TransitGatewayRouteTableID.
+	// +optional
+	TransitGatewayRouteTableIDRef *xpv1.Reference `json:"transitGatewayRouteTableIdRef,omitempty"`
+
+	// TransitGatewayRouteTableIDSelector selects references to API used
+	// to set the TransitGatewayRouteTableID.
+	// +optional
+	TransitGatewayRouteTableIDSelector *xpv1.Selector `json:"transitGatewayRouteTableIdSelector,omitempty"`
+}
+
+// CustomTransitGatewayRouteTableParameters are custom parameters for TransitGatewayRouteTableParameters
+type CustomTransitGatewayRouteTableParameters struct {
+	// The ID of the transit gateway.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGateway
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// TransitGatewayIDRef is a reference to an API used to set
+	// the TransitGatewayID.
+	// +optional
+	TransitGatewayIDRef *xpv1.Reference `json:"transitGatewayIdRef,omitempty"`
+
+	// TransitGatewayIDSelector selects references to API used
+	// to set the TransitGatewayID.
+	// +optional
+	TransitGatewayIDSelector *xpv1.Selector `json:"transitGatewayIdSelector,omitempty"`
+
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+}

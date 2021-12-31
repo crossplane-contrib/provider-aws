@@ -244,6 +244,118 @@ func (mg *TransitGateway) SetWriteConnectionSecretToReference(r *xpv1.SecretRefe
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this TransitGatewayRoute.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *TransitGatewayRoute) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this TransitGatewayRoute.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *TransitGatewayRoute) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this TransitGatewayRoute.
+func (mg *TransitGatewayRoute) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this TransitGatewayRouteTable.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *TransitGatewayRouteTable) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this TransitGatewayRouteTable.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *TransitGatewayRouteTable) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this TransitGatewayRouteTable.
+func (mg *TransitGatewayRouteTable) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this TransitGatewayVPCAttachment.
 func (mg *TransitGatewayVPCAttachment) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)

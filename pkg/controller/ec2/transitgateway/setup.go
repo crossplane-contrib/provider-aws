@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
-	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -34,9 +33,8 @@ func SetupTransitGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 	name := managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
 	opts := []option{
 		func(e *external) {
-			c := &custom{client: e.client, kube: e.kube}
-			e.postObserve = c.postObserve
-			e.postCreate = c.postCreate
+			e.postObserve = postObserve
+			e.postCreate = postCreate
 			e.isUpToDate = isUpToDate
 			e.lateInitialize = LateInitialize
 			e.filterList = filterList
@@ -52,13 +50,8 @@ func SetupTransitGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 			resource.ManagedKind(svcapitypes.TransitGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
-}
-
-type custom struct {
-	kube   client.Client
-	client svcsdkapi.EC2API
 }
 
 func filterList(cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatewaysOutput) *svcsdk.DescribeTransitGatewaysOutput {
@@ -72,7 +65,7 @@ func filterList(cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatew
 	return resp
 }
 
-func (e *custom) postObserve(_ context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatewaysOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func postObserve(_ context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatewaysOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -100,7 +93,7 @@ func isUpToDate(cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatew
 	return true, nil
 }
 
-func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.CreateTransitGatewayOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(ctx context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.CreateTransitGatewayOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}

@@ -56,6 +56,24 @@ func (l *TransitGatewayList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this TransitGatewayRouteList.
+func (l *TransitGatewayRouteList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this TransitGatewayRouteTableList.
+func (l *TransitGatewayRouteTableList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this TransitGatewayVPCAttachmentList.
 func (l *TransitGatewayVPCAttachmentList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
