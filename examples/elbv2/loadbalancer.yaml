@@ -14,3 +14,18 @@ spec:
       - name: sample-subnet2
   providerConfigRef:
     name: example
+---
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: gatewayloadbalancer
+spec:
+  forProvider:
+    name: gatewayloadbalancer
+    loadBalancerType: gateway
+    region: us-east-1
+    subnetRefs:
+      - name: sample-subnet1
+      - name: sample-subnet2
+  providerConfigRef:
+    name: example
