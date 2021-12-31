@@ -23,7 +23,8 @@ import (
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	manualv1alpha1 "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	v1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
+	v1alpha11 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -362,6 +363,48 @@ func (mg *VPCEndpoint) ResolveReferences(ctx context.Context, c client.Reader) e
 	return nil
 }
 
+// ResolveReferences of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var mrsp reference.MultiResolutionResponse
+	var err error
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNRefs,
+		Selector:      mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNSelector,
+		To: reference.To{
+			List:    &v1alpha1.LoadBalancerList{},
+			Managed: &v1alpha1.LoadBalancer{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNs")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNRefs = mrsp.ResolvedReferences
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNRefs,
+		Selector:      mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNSelector,
+		To: reference.To{
+			List:    &v1alpha1.LoadBalancerList{},
+			Managed: &v1alpha1.LoadBalancer{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNs")
+	}
+	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNRefs = mrsp.ResolvedReferences
+
+	return nil
+}
+
 // ResolveReferences of this VPCPeeringConnection.
 func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
@@ -401,8 +444,8 @@ func (mg *Volume) ResolveReferences(ctx context.Context, c client.Reader) error 
 		Reference:    mg.Spec.ForProvider.CustomVolumeParameters.KMSKeyIDRef,
 		Selector:     mg.Spec.ForProvider.CustomVolumeParameters.KMSKeyIDSelector,
 		To: reference.To{
-			List:    &v1alpha1.KeyList{},
-			Managed: &v1alpha1.Key{},
+			List:    &v1alpha11.KeyList{},
+			Managed: &v1alpha11.Key{},
 		},
 	})
 	if err != nil {

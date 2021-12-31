@@ -27,6 +27,47 @@ type CustomLaunchTemplateParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
+// CustomVPCEndpointServiceConfigurationParameters contains the additional fields
+// for VPCEndpointServiceConfigurationParameter.
+type CustomVPCEndpointServiceConfigurationParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of one or more Gateway Load Balancers.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
+	// +crossplane:generate:reference:refFieldName=GatewayLoadBalancerARNRefs
+	// +crossplane:generate:reference:selectorFieldName=GatewayLoadBalancerARNSelector
+	GatewayLoadBalancerARNs []*string `json:"gatewayLoadBalancerARNs,omitempty"`
+
+	// GatewayLoadBalancerARNRefs is a list of references to GatewayLoadBalancerARNs used to set
+	// the GatewayLoadBalancerARNs.
+	// +optional
+	GatewayLoadBalancerARNRefs []xpv1.Reference `json:"gatewayLoadBalancerARNRefs,omitempty"`
+
+	// GatewayLoadBalancerARNSelector selects references to GatewayLoadBalancerARNs used
+	// to set the GatewayLoadBalancerARNs.
+	// +optional
+	GatewayLoadBalancerARNSelector *xpv1.Selector `json:"gatewayLoadBalancerARNSelector,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of one or more Network Load Balancers for
+	// your service.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
+	// +crossplane:generate:reference:refFieldName=NetworkLoadBalancerARNRefs
+	// +crossplane:generate:reference:selectorFieldName=NetworkLoadBalancerARNSelector
+	NetworkLoadBalancerARNs []*string `json:"networkLoadBalancerARNs,omitempty"`
+
+	// NetworkLoadBalancerARNRefs is a list of references to NetworkLoadBalancerARNs used to set
+	// the NetworkLoadBalancerARNs.
+	// +optional
+	NetworkLoadBalancerARNRefs []xpv1.Reference `json:"networkLoadBalancerARNRefs,omitempty"`
+
+	// NetworkLoadBalancerARNSelector selects references to NetworkLoadBalancerARNs used
+	// to set the NetworkLoadBalancerARNs.
+	// +optional
+	NetworkLoadBalancerARNSelector *xpv1.Selector `json:"networkLoadBalancerARNSelector,omitempty"`
+}
+
 // CustomLaunchTemplateVersionParameters includes the custom fields of LaunchTemplateVersion.
 type CustomLaunchTemplateVersionParameters struct {
 	// The ID of the Launch Template. You must specify this parameter in the request.

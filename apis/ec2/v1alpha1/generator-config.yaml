@@ -43,7 +43,6 @@ ignore:
     - TransitGatewayPeeringAttachment
     - TransitGatewayPrefixListReference
     - VpcEndpointConnectionNotification
-    - VpcEndpointServiceConfiguration
     - Vpc
     - VpcCidrBlock
     - VpnConnectionRoute
@@ -110,6 +109,10 @@ ignore:
     - CreateTransitGatewayRouteInput.TransitGatewayRouteTableId
     - CreateTransitGatewayRouteTableInput.DryRun
     - CreateTransitGatewayRouteTableInput.TransitGatewayId
+    - CreateVpcEndpointServiceConfigurationInput.DryRun
+    - CreateVpcEndpointServiceConfigurationInput.ClientToken
+    - CreateVpcEndpointServiceConfigurationInput.GatewayLoadBalancerArns
+    - CreateVpcEndpointServiceConfigurationInput.NetworkLoadBalancerArns
 resources:
   Volume:
     exceptions:
