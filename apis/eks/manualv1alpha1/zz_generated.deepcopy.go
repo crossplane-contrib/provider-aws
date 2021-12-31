@@ -421,10 +421,30 @@ func (in *LaunchTemplateSpecification) DeepCopyInto(out *LaunchTemplateSpecifica
 		*out = new(string)
 		**out = **in
 	}
+	if in.NameRef != nil {
+		in, out := &in.NameRef, &out.NameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.NameSelector != nil {
+		in, out := &in.NameSelector, &out.NameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Version != nil {
 		in, out := &in.Version, &out.Version
 		*out = new(string)
 		**out = **in
+	}
+	if in.VersionRef != nil {
+		in, out := &in.VersionRef, &out.VersionRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.VersionSelector != nil {
+		in, out := &in.VersionSelector, &out.VersionSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

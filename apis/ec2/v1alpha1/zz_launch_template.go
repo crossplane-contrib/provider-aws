@@ -29,16 +29,6 @@ type LaunchTemplateParameters struct {
 	// Region is which region the LaunchTemplate will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Unique, case-sensitive identifier you provide to ensure the idempotency of
-	// the request. For more information, see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
-	//
-	// Constraint: Maximum 128 ASCII characters.
-	ClientToken *string `json:"clientToken,omitempty"`
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `json:"dryRun,omitempty"`
 	// The information for the launch template.
 	// +kubebuilder:validation:Required
 	LaunchTemplateData *RequestLaunchTemplateData `json:"launchTemplateData"`

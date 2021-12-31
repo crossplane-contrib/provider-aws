@@ -103,6 +103,10 @@ ignore:
     - DeleteLaunchTemplateVersionInput.LaunchTemplateId
     - CreateLaunchTemplateVersionInput.LaunchTemplateName
     - DeleteLaunchTemplateVersionInput.LaunchTemplateName
+    - CreateLaunchTemplateVersionInput.DryRun
+    - CreateLaunchTemplateVersionInput.ClientToken
+    - CreateLaunchTemplateInput.DryRun
+    - CreateLaunchTemplateInput.ClientToken
 resources:
   Volume:
     exceptions:

@@ -61,18 +61,6 @@ spec:
                 description: LaunchTemplateParameters defines the desired state of
                   LaunchTemplate
                 properties:
-                  clientToken:
-                    description: "Unique, case-sensitive identifier you provide to
-                      ensure the idempotency of the request. For more information,
-                      see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
-                      \n Constraint: Maximum 128 ASCII characters."
-                    type: string
-                  dryRun:
-                    description: Checks whether you have the required permissions
-                      for the action, without actually making the request, and provides
-                      an error response. If you have the required permissions, the
-                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-                    type: boolean
                   launchTemplateData:
                     description: The information for the launch template.
                     properties:
