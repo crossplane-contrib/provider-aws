@@ -21,6 +21,7 @@ package manualv1alpha1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	v1beta12 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	v1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	v1beta11 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
@@ -78,6 +79,42 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.ClusterName = rsp.ResolvedValue
 	mg.Spec.ForProvider.ClusterNameRef = rsp.ResolvedReference
 
+	if mg.Spec.ForProvider.LaunchTemplate != nil {
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LaunchTemplate.Name),
+			Extract:      reference.ExternalName(),
+			Reference:    mg.Spec.ForProvider.LaunchTemplate.NameRef,
+			Selector:     mg.Spec.ForProvider.LaunchTemplate.NameSelector,
+			To: reference.To{
+				List:    &v1alpha1.LaunchTemplateList{},
+				Managed: &v1alpha1.LaunchTemplate{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.ForProvider.LaunchTemplate.Name")
+		}
+		mg.Spec.ForProvider.LaunchTemplate.Name = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.LaunchTemplate.NameRef = rsp.ResolvedReference
+
+	}
+	if mg.Spec.ForProvider.LaunchTemplate != nil {
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LaunchTemplate.Version),
+			Extract:      reference.ExternalName(),
+			Reference:    mg.Spec.ForProvider.LaunchTemplate.VersionRef,
+			Selector:     mg.Spec.ForProvider.LaunchTemplate.VersionSelector,
+			To: reference.To{
+				List:    &v1alpha1.LaunchTemplateVersionList{},
+				Managed: &v1alpha1.LaunchTemplateVersion{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.ForProvider.LaunchTemplate.Version")
+		}
+		mg.Spec.ForProvider.LaunchTemplate.Version = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.LaunchTemplate.VersionRef = rsp.ResolvedReference
+
+	}
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.NodeRole,
 		Extract:      v1beta11.RoleARN(),

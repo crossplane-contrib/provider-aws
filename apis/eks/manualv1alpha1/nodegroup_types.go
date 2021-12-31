@@ -224,11 +224,35 @@ type LaunchTemplateSpecification struct {
 	ID *string `json:"id,omitempty"`
 
 	// The name of the launch template.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
 	Name *string `json:"name,omitempty"`
+
+	// NameRef is a reference to a LaunchTemplate used to set
+	// the Name.
+	// +immutable
+	// +optional
+	NameRef *xpv1.Reference `json:"nameRef,omitempty"`
+
+	// NameSelector selects references to a LaunchTemplate used
+	// to set the Name.
+	// +optional
+	NameSelector *xpv1.Selector `json:"nameSelector,omitempty"`
 
 	// The version of the launch template to use. If no version is specified, then the
 	// template's default version is used.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplateVersion
 	Version *string `json:"version,omitempty"`
+
+	// VersionRef is a reference to a LaunchTemplateVersion used to set
+	// the Version.
+	// +immutable
+	// +optional
+	VersionRef *xpv1.Reference `json:"versionRef,omitempty"`
+
+	// VersionSelector selects references to a LaunchTemplateVersion used
+	// to set the Version.
+	// +optional
+	VersionSelector *xpv1.Selector `json:"versionSelector,omitempty"`
 }
 
 // RemoteAccessConfig is the configuration for remotely accessing a node.
