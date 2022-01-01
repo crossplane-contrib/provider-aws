@@ -106,6 +106,37 @@ type ScalingConfiguration struct {
 	SecondsUntilAutoPause *int `json:"secondsUntilAutoPause,omitempty"`
 }
 
+// S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
+type S3RestoreBackupConfiguration struct {
+	// BucketName is the name of the S3 bucket containing the backup to restore.
+	BucketName *string `json:"bucketName"`
+
+	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
+	IngestionRoleARN *string `json:"ingestionRoleARN"`
+
+	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
+	// +optional
+	Prefix *string `json:"prefix"`
+
+	// SourceEngine is the engine used to create the backup.
+	// Must be "mysql".
+	SourceEngine *string `json:"sourceEngine"`
+
+	// SourceEngineVersion is the version of the engine used to create the backup.
+	// Example: "5.7.30"
+	SourceEngineVersion *string `json:"sourceEngineVersion"`
+}
+
+// RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
+type RestoreBackupConfiguration struct {
+	// S3 specifies the details of the S3 backup to restore from.
+	// +optional
+	S3 *S3RestoreBackupConfiguration `json:"s3"`
+
+	// Source is the type of the backup to restore when creating a new RDS instance. Only S3 is supported at present.
+	Source *string `json:"source"`
+}
+
 // RDSInstanceParameters define the desired state of an AWS Relational Database
 // Service instance.
 type RDSInstanceParameters struct {
@@ -367,6 +398,10 @@ type RDSInstanceParameters struct {
 	// in the Amazon RDS User Guide.
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	// RestoreFrom specifies the details of the backup to restore when creating a new RDS instance. (If the RDS instance already exists, this property will be ignored.)
+	// +optional
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom"`
 
 	// IOPS is the amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for the DB instance. For information about valid IOPS
