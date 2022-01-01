@@ -167,7 +167,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	err = e.RestoreOrCreate(cr, ctx, pw)
+	err = e.RestoreOrCreate(ctx, cr, pw)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -181,7 +181,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) RestoreOrCreate(cr *v1beta1.RDSInstance, ctx context.Context, pw string) error {
+func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error {
 	if cr.Spec.ForProvider.RestoreFrom == nil {
 		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
