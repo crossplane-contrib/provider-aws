@@ -609,6 +609,49 @@ spec:
                     description: Region is the region you'd like your RDSInstance
                       to be created in.
                     type: string
+                  restoreFrom:
+                    description: RestoreFrom specifies the details of the backup to
+                      restore when creating a new RDS instance. (If the RDS instance
+                      already exists, this property will be ignored.)
+                    properties:
+                      s3:
+                        description: S3 specifies the details of the S3 backup to
+                          restore from.
+                        properties:
+                          bucketName:
+                            description: BucketName is the name of the S3 bucket containing
+                              the backup to restore.
+                            type: string
+                          ingestionRoleARN:
+                            description: IngestionRoleARN is the IAM role RDS can
+                              assume that will allow it to access the contents of
+                              the S3 bucket.
+                            type: string
+                          prefix:
+                            description: Prefix is the path prefix of the S3 bucket
+                              within which the backup to restore is located.
+                            type: string
+                          sourceEngine:
+                            description: SourceEngine is the engine used to create
+                              the backup. Must be "mysql".
+                            type: string
+                          sourceEngineVersion:
+                            description: 'SourceEngineVersion is the version of the
+                              engine used to create the backup. Example: "5.7.30"'
+                            type: string
+                        required:
+                        - bucketName
+                        - ingestionRoleARN
+                        - sourceEngine
+                        - sourceEngineVersion
+                        type: object
+                      source:
+                        description: Source is the type of the backup to restore when
+                          creating a new RDS instance. Only S3 is supported at present.
+                        type: string
+                    required:
+                    - source
+                    type: object
                   scalingConfiguration:
                     description: ScalingConfiguration is the scaling properties of
                       the DB cluster. You can only modify scaling properties for DB
