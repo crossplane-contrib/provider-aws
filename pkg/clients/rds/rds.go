@@ -48,6 +48,7 @@ const (
 // Client defines RDS RDSClient operations
 type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
+	RestoreDBInstanceFromS3(context.Context, *rds.RestoreDBInstanceFromS3Input, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
 	DescribeDBInstances(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -107,6 +108,71 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		PubliclyAccessible:                 p.PubliclyAccessible,
 		StorageEncrypted:                   p.StorageEncrypted,
 		Timezone:                           p.Timezone,
+		StorageType:                        p.StorageType,
+		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
+// GenerateRestoreDBInstanceInput from RDSInstanceSpec
+func GenerateRestoreDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
+	c := &rds.RestoreDBInstanceFromS3Input{
+		DBInstanceIdentifier:               aws.String(name),
+		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),
+		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                   p.AvailabilityZone,
+		BackupRetentionPeriod:              awsclients.Int32Address(p.BackupRetentionPeriod),
+		CopyTagsToSnapshot:                 p.CopyTagsToSnapshot,
+		DBInstanceClass:                    aws.String(p.DBInstanceClass),
+		DBName:                             p.DBName,
+		DBParameterGroupName:               p.DBParameterGroupName,
+		DBSecurityGroups:                   p.DBSecurityGroups,
+		DBSubnetGroupName:                  p.DBSubnetGroupName,
+		DeletionProtection:                 p.DeletionProtection,
+		EnableCloudwatchLogsExports:        p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication:    p.EnableIAMDatabaseAuthentication,
+		EnablePerformanceInsights:          p.EnablePerformanceInsights,
+		Engine:                             aws.String(p.Engine),
+		EngineVersion:                      p.EngineVersion,
+		Iops:                               awsclients.Int32Address(p.IOPS),
+		KmsKeyId:                           p.KMSKeyID,
+		LicenseModel:                       p.LicenseModel,
+		MasterUserPassword:                 awsclients.String(password),
+		MasterUsername:                     p.MasterUsername,
+		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
+		MonitoringRoleArn:                  p.MonitoringRoleARN,
+		MultiAZ:                            p.MultiAZ,
+		OptionGroupName:                    p.OptionGroupName,
+		PerformanceInsightsKMSKeyId:        p.PerformanceInsightsKMSKeyID,
+		PerformanceInsightsRetentionPeriod: awsclients.Int32Address(p.PerformanceInsightsRetentionPeriod),
+		Port:                               awsclients.Int32Address(p.Port),
+		PreferredBackupWindow:              p.PreferredBackupWindow,
+		PreferredMaintenanceWindow:         p.PreferredMaintenanceWindow,
+		PubliclyAccessible:                 p.PubliclyAccessible,
+		S3BucketName:                       p.RestoreFrom.S3.BucketName,
+		S3IngestionRoleArn:                 p.RestoreFrom.S3.IngestionRoleARN,
+		S3Prefix:                           p.RestoreFrom.S3.Prefix,
+		SourceEngine:                       p.RestoreFrom.S3.SourceEngine,
+		SourceEngineVersion:                p.RestoreFrom.S3.SourceEngineVersion,
+		StorageEncrypted:                   p.StorageEncrypted,
 		StorageType:                        p.StorageType,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
 	}
