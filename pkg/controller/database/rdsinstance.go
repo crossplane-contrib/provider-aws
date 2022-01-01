@@ -167,21 +167,9 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	if cr.Spec.ForProvider.RestoreFrom == nil {
-		_, err = e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
-		if err != nil {
-			return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
-		}
-	} else {
-		switch *cr.Spec.ForProvider.RestoreFrom.Source {
-		case "S3":
-			_, err = e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
-			if err != nil {
-				return managed.ExternalCreation{}, awsclient.Wrap(err, errS3RestoreFailed)
-			}
-		default:
-			return managed.ExternalCreation{}, errors.New(errUnknownRestoreSource)
-		}
+	err = e.RestoreOrCreate(cr, ctx, pw)
+	if err != nil {
+		return managed.ExternalCreation{}, err
 	}
 
 	conn := managed.ConnectionDetails{
@@ -191,6 +179,27 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
+}
+
+func (e *external) RestoreOrCreate(cr *v1beta1.RDSInstance, ctx context.Context, pw string) error {
+	if cr.Spec.ForProvider.RestoreFrom == nil {
+		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errCreateFailed)
+		}
+		return nil
+	}
+
+	switch *cr.Spec.ForProvider.RestoreFrom.Source {
+	case "S3":
+		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errS3RestoreFailed)
+		}
+	default:
+		return errors.New(errUnknownRestoreSource)
+	}
+	return nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
