@@ -21,6 +21,7 @@ package v1beta1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
+	v1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -131,6 +132,32 @@ func (mg *GroupUserMembership) ResolveReferences(ctx context.Context, c client.R
 	}
 	mg.Spec.ForProvider.UserName = rsp.ResolvedValue
 	mg.Spec.ForProvider.UserNameRef = rsp.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this OpenIDConnectProvider.
+func (mg *OpenIDConnectProvider) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.URL,
+		Extract:      v1beta1.EKSOIDCIsser(),
+		Reference:    mg.Spec.ForProvider.EKSUrlRef,
+		Selector:     mg.Spec.ForProvider.EKSUrlSelector,
+		To: reference.To{
+			List:    &v1beta1.ClusterList{},
+			Managed: &v1beta1.Cluster{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.URL")
+	}
+	mg.Spec.ForProvider.URL = rsp.ResolvedValue
+	mg.Spec.ForProvider.EKSUrlRef = rsp.ResolvedReference
 
 	return nil
 }

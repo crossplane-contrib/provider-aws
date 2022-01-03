@@ -70,7 +70,20 @@ type OpenIDConnectProviderParameters struct {
 	// You cannot register the same provider multiple times in a single AWS account.
 	// If you try to submit a URL that has already been used for an OpenID Connect
 	// provider in the AWS account, you will get an error.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/eks/v1beta1.Cluster
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/eks/v1beta1.EKSOIDCIsser()
+	// +crossplane:generate:reference:refFieldName=EKSUrlRef
+	// +crossplane:generate:reference:selectorFieldName=EKSUrlSelector
 	URL string `json:"url"`
+
+	// EKSUrlRef references to an eks-controlplane to retrieve its oidc issuer url
+	// +optional
+	EKSUrlRef *xpv1.Reference `json:"eksUrlRef,omitempty"`
+
+	// EKSUrlSelector selects a reference to an eks-controlplane to retrieve its oidc issuer url
+	// +optional
+	EKSUrlSelector *xpv1.Selector `json:"eksUrlSelector,omitempty"`
 }
 
 // OpenIDConnectProviderSpec defines the desired state of OpenIDConnectProvider

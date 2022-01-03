@@ -79,6 +79,31 @@ spec:
                       type: string
                     maxItems: 100
                     type: array
+                  eksUrlRef:
+                    description: EKSUrlRef references to an eks-controlplane to retrieve
+                      its oidc issuer url
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  eksUrlSelector:
+                    description: EKSUrlSelector selects a reference to an eks-controlplane
+                      to retrieve its oidc issuer url
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   thumbprintList:
                     description: "A list of server certificate thumbprints for the
                       OpenID Connect (OIDC) identity provider's server certificates.
@@ -116,7 +141,6 @@ spec:
                     type: string
                 required:
                 - thumbprintList
-                - url
                 type: object
               providerConfigRef:
                 default:
