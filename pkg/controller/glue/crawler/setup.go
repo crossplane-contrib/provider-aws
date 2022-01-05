@@ -53,7 +53,6 @@ func SetupCrawler(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 		For(&svcapitypes.Crawler{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.CrawlerGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -80,7 +79,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, _ *svcsdk.GetCrawle
 
 func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerInput) error {
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
-	obj.Role = &cr.Spec.ForProvider.RoleArn
+	obj.Role = awsclients.String(cr.Spec.ForProvider.RoleArn)
 	obj.Schedule = cr.Spec.ForProvider.Schedule
 	return nil
 }
