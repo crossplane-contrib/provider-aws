@@ -1,0 +1,50 @@
+ignore:
+  field_paths:
+    - CreateStreamInput.StreamName
+resources:
+  Stream:
+    fields:
+      StreamStatus:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.StreamStatus
+      StreamARN:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.StreamARN
+      Shards:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.Shards
+      RetentionPeriodHours:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.RetentionPeriodHours
+      KeyId:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.KeyId
+      HasMoreShards:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.HasMoreShards
+      EnhancedMonitoring:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.EnhancedMonitoring
+      EncryptionType:
+        is_read_only: true
+        from:
+          operation: DescribeStream
+          path: StreamDescription.EncryptionType
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
