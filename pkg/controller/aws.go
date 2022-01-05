@@ -111,6 +111,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iot/thing"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	kafkaconfiguration "github.com/crossplane/provider-aws/pkg/controller/kafka/configuration"
+	kinesisstream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
@@ -261,6 +262,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		transitgatewayroute.SetupTransitGatewayRoute,
 		transitgatewayroutetable.SetupTransitGatewayRouteTable,
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
+		kinesisstream.SetupStream,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
