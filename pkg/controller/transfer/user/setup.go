@@ -95,6 +95,6 @@ func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserO
 func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserInput) error {
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	obj.Role = cr.Spec.ForProvider.Role
-	obj.UserName = &cr.Name
+	obj.UserName = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }
