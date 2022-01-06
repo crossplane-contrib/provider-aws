@@ -1,0 +1,24 @@
+# Important: UpdateShardCount cannot scale down below half your current open shard count.
+apiVersion: kinesis.aws.crossplane.io/v1alpha1
+kind: Stream
+metadata:
+  name: kinesis-stream
+spec:
+  forProvider:
+    region: us-east-1
+    enforceConsumerDeletion: true
+    shardCount: 4
+    retentionPeriodHours: 48
+    enhancedMetrics:
+      - shardLevelMetrics: 
+          - IncomingBytes
+          - OutgoingBytes 
+    kmsKeyARNRef: 
+      name: dev-key
+    tags:
+      - key: key1
+        value: value1
+      - key: key2
+        value: value2
+  providerConfigRef:
+    name: example

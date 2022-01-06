@@ -48,6 +48,7 @@ import (
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	iotv1alpha1 "github.com/crossplane/provider-aws/apis/iot/v1alpha1"
 	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
+	kinesisv1alpha1 "github.com/crossplane/provider-aws/apis/kinesis/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
@@ -117,6 +118,7 @@ func init() {
 		iotv1alpha1.SchemeBuilder.AddToScheme,
 		athenav1alpha1.SchemeBuilder.AddToScheme,
 		ramv1alpha1.SchemeBuilder.AddToScheme,
+		kinesisv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
