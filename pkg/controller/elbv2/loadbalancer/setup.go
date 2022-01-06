@@ -28,6 +28,7 @@ func SetupLoadBalancer(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			e.postObserve = postObserve
 			e.postCreate = postCreate
 			e.preDelete = preDelete
+			e.preCreate = preCreate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -69,4 +70,9 @@ func postCreate(_ context.Context, cr *svcapitypes.LoadBalancer, resp *svcsdk.Cr
 func preDelete(_ context.Context, cr *svcapitypes.LoadBalancer, obj *svcsdk.DeleteLoadBalancerInput) (bool, error) {
 	obj.LoadBalancerArn = aws.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.LoadBalancer, obj *svcsdk.CreateLoadBalancerInput) error {
+	obj.Type = cr.Spec.ForProvider.Type
+	return nil
 }

@@ -468,6 +468,62 @@ func (mg *VPCEndpoint) SetWriteConnectionSecretToReference(r *xpv1.SecretReferen
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this VPCEndpointServiceConfiguration.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *VPCEndpointServiceConfiguration) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this VPCEndpointServiceConfiguration.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *VPCEndpointServiceConfiguration) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this VPCEndpointServiceConfiguration.
+func (mg *VPCEndpointServiceConfiguration) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this VPCPeeringConnection.
 func (mg *VPCPeeringConnection) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)

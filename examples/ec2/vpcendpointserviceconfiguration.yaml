@@ -1,0 +1,11 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpointServiceConfiguration
+metadata:
+  name: sample-vpc-endpoint-service
+spec:
+  forProvider:
+    region: us-east-1
+    gatewayLoadBalancerARNRefs:
+      - name: gatewayloadbalancer
+  providerConfigRef:
+    name: example

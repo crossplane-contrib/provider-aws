@@ -75,6 +75,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpoint"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
@@ -259,6 +260,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		targetgroup.SetupTargetGroup,
 		transitgatewayroute.SetupTransitGatewayRoute,
 		transitgatewayroutetable.SetupTransitGatewayRouteTable,
+		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
