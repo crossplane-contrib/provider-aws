@@ -55,7 +55,6 @@ func SetupSecurityConfiguration(mgr ctrl.Manager, l logging.Logger, limiter work
 		For(&svcapitypes.SecurityConfiguration{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.SecurityConfigurationGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -89,7 +88,7 @@ func postCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *s
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.CreateSecurityConfigurationInput) error {
-	obj.Name = &cr.Name
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomEncryptionConfiguration != nil {
 		obj.EncryptionConfiguration = &svcsdk.EncryptionConfiguration{
