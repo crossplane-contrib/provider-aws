@@ -43,7 +43,6 @@ import (
 const (
 	errNotEKSCluster    = "managed resource is not an EKS cluster custom resource"
 	errKubeUpdateFailed = "cannot update EKS cluster custom resource"
-	errListTags         = "cannot list tags"
 	errTagResource      = "cannot tag resource"
 	errUntagResource    = "cannot untag resource"
 
@@ -135,14 +134,7 @@ func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput)
 		return false, nil
 	}
 
-	tags, err := h.client.ListTagsForResource(&awseks.ListTagsForResourceInput{
-		ResourceArn: awsclients.String(meta.GetExternalName(cr)),
-	})
-	if err != nil {
-		return false, errors.Wrap(err, errListTags)
-	}
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
-
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
 	return len(add) == 0 && len(remove) == 0, nil
 }
 
@@ -156,14 +148,17 @@ func (h *hooks) postUpdate(ctx context.Context, cr *v1alpha1.Addon, resp *awseks
 		return managed.ExternalUpdate{}, err
 	}
 
-	tags, err := h.client.ListTagsForResource(&awseks.ListTagsForResourceInput{
-		ResourceArn: awsclients.String(meta.GetExternalName(cr)),
-	})
-	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errListTags)
-	}
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
+	// Tag update needs to separate because UpdateAddon does not include tags (for unknown reason).
 
+	desc, err := h.client.DescribeAddonWithContext(ctx, &awseks.DescribeAddonInput{
+		AddonName:   cr.Spec.ForProvider.AddonName,
+		ClusterName: cr.Spec.ForProvider.ClusterName,
+	})
+	if err != nil || desc.Addon == nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
+	}
+
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
 			ResourceArn: awsclients.String(meta.GetExternalName(cr)),
