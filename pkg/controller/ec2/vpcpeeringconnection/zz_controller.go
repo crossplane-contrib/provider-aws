@@ -20,6 +20,7 @@ package vpcpeeringconnection
 
 import (
 	"context"
+	"fmt"
 
 	svcapi "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
@@ -62,7 +63,12 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
-	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
+	peerRegion := cr.Spec.ForProvider.PeerRegion
+	peerSess, err := awsclient.GetConfigV1(ctx, c.kube, mg, *peerRegion)
+	if err != nil {
+		return nil, errors.Wrap(err, errCreateSession)
+	}
+	return newExternal(c.kube, svcapi.New(sess), svcapi.New(peerSess), c.opts), nil
 }
 
 func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
@@ -292,10 +298,11 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 
 type option func(*external)
 
-func newExternal(kube client.Client, client svcsdkapi.EC2API, opts []option) *external {
+func newExternal(kube client.Client, client svcsdkapi.EC2API, peerClient svcsdkapi.EC2API, opts []option) *external {
 	e := &external{
 		kube:           kube,
 		client:         client,
+		peerClient:     peerClient,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
@@ -314,8 +321,10 @@ func newExternal(kube client.Client, client svcsdkapi.EC2API, opts []option) *ex
 }
 
 type external struct {
-	kube           client.Client
-	client         svcsdkapi.EC2API
+	kube       client.Client
+	client     svcsdkapi.EC2API
+	peerClient svcsdkapi.EC2API
+
 	preObserve     func(context.Context, *svcapitypes.VPCPeeringConnection, *svcsdk.DescribeVpcPeeringConnectionsInput) error
 	postObserve    func(context.Context, *svcapitypes.VPCPeeringConnection, *svcsdk.DescribeVpcPeeringConnectionsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.VPCPeeringConnection, *svcsdk.DescribeVpcPeeringConnectionsOutput) *svcsdk.DescribeVpcPeeringConnectionsOutput
