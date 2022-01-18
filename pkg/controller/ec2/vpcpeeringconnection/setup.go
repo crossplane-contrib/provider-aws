@@ -35,7 +35,7 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
 	opts := []option{
 		func(e *external) {
-			c := &custom{client: e.client, kube: e.kube}
+			c := &custom{client: e.client, kube: e.kube, peerClient: e.peerClient}
 			e.postObserve = c.postObserve
 			e.postCreate = c.postCreate
 			e.preCreate = preCreate
@@ -64,8 +64,9 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 }
 
 type custom struct {
-	kube   client.Client
-	client svcsdkapi.EC2API
+	kube       client.Client
+	client     svcsdkapi.EC2API
+	peerClient svcsdkapi.EC2API
 }
 
 func filterList(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput) *svcsdk.DescribeVpcPeeringConnectionsOutput {
@@ -80,7 +81,7 @@ func filterList(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPee
 	return resp
 }
 
-func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -89,8 +90,8 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 		req := svcsdk.AcceptVpcPeeringConnectionInput{
 			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
-		request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
-		err := request.Send()
+		request, _ := e.peerClient.AcceptVpcPeeringConnectionRequest(&req)
+		err = request.Send()
 		if err != nil {
 			return obs, err
 		}
