@@ -45,10 +45,6 @@ const (
 	errKubeUpdateFailed = "cannot update EKS cluster custom resource"
 	errTagResource      = "cannot tag resource"
 	errUntagResource    = "cannot untag resource"
-
-	statusCreating = "CREATING"
-	statusActive   = "ACTIVE"
-	statusDeleting = "DELETING"
 )
 
 // SetupAddon adds a controller that reconciles Clusters.
@@ -103,12 +99,16 @@ func postObserve(_ context.Context, cr *v1alpha1.Addon, _ *awseks.DescribeAddonO
 	}
 
 	switch awsclients.StringValue(cr.Status.AtProvider.Status) {
-	case statusCreating:
+	case awseks.AddonStatusCreating:
 		cr.SetConditions(xpv1.Creating())
-	case statusDeleting:
+	case awseks.AddonStatusDeleting:
 		cr.SetConditions(xpv1.Deleting())
-	case statusActive:
+	case awseks.AddonStatusActive:
 		cr.SetConditions(xpv1.Available())
+	case awseks.AddonStatusUpdating:
+		cr.SetConditions(xpv1.Available().WithMessage(awseks.AddonStatusUpdating))
+		// Prevent Update() call during update state - which will fail.
+		obs.ResourceUpToDate = true
 	default:
 		cr.SetConditions(xpv1.Unavailable())
 	}
@@ -123,14 +123,10 @@ func lateInitialize(spec *v1alpha1.AddonParameters, resp *awseks.DescribeAddonOu
 }
 
 func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) {
-	if resp.Addon == nil {
-		return false, nil
-	}
-
 	switch {
-	case resp.Addon == nil:
-	case cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion):
-	case cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
+	case resp.Addon == nil,
+		cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion),
+		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
 		return false, nil
 	}
 

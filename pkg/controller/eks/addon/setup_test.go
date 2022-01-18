@@ -115,7 +115,7 @@ func TestObserve(t *testing.T) {
 						).
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
-								Status: awsclient.String(statusActive),
+								Status: awsclient.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -128,7 +128,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testExternalName),
 					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(statusActive),
+						Status: awsclient.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -170,7 +170,7 @@ func TestObserve(t *testing.T) {
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
 								ServiceAccountRoleArn: &testServiceAccountRoleArn,
-								Status:                awsclient.String(statusActive),
+								Status:                awsclient.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -188,7 +188,7 @@ func TestObserve(t *testing.T) {
 						},
 					),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(statusActive),
+						Status: awsclient.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
