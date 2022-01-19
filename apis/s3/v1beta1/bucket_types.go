@@ -28,9 +28,7 @@ const (
 
 // BucketParameters are parameters for configuring the calls made to AWS Bucket API.
 type BucketParameters struct {
-	// The canned ACL to apply to the bucket. Note that either canned ACL or specific access
-	// permissions are required. If neither (or both) are provided, the creation of the bucket
-	// will fail.
+	// The canned ACL to apply to the bucket.
 	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read;aws-exec-read;bucket-owner-read;bucket-owner-full-control;log-delivery-write
 	// +optional
 	ACL *string `json:"acl,omitempty"`
@@ -63,6 +61,21 @@ type BucketParameters struct {
 	// Specifies whether you want S3 Object Lock to be enabled for the new bucket.
 	// +optional
 	ObjectLockEnabledForBucket *bool `json:"objectLockEnabledForBucket,omitempty"`
+
+	// The container element for object ownership for a bucket's ownership controls.
+	// BucketOwnerPreferred - Objects uploaded to the bucket change ownership to the
+	// bucket owner if the objects are uploaded with the bucket-owner-full-control
+	// canned ACL. ObjectWriter - The uploading account will own the object if the
+	// object is uploaded with the bucket-owner-full-control canned ACL.
+	// BucketOwnerEnforced - Access control lists (ACLs) are disabled and no longer
+	// affect permissions. The bucket owner automatically owns and has full control
+	// over every object in the bucket. The bucket only accepts PUT requests that don't
+	// specify an ACL or bucket owner full control ACLs, such as the
+	// bucket-owner-full-control canned ACL or an equivalent form of this ACL expressed
+	// in the XML format.
+	// +kubebuilder:validation:Enum=BucketOwnerPreferred;ObjectWriter;BucketOwnerEnforced
+	// +optional
+	ObjectOwnership *string `json:"objectOwnership,omitempty"`
 
 	// Specifies default encryption for a bucket using server-side encryption with
 	// Amazon S3-managed keys (SSE-S3) or customer master keys stored in AWS KMS

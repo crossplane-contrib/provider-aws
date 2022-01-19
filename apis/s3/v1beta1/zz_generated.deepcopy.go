@@ -205,6 +205,11 @@ func (in *BucketParameters) DeepCopyInto(out *BucketParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ObjectOwnership != nil {
+		in, out := &in.ObjectOwnership, &out.ObjectOwnership
+		*out = new(string)
+		**out = **in
+	}
 	if in.ServerSideEncryptionConfiguration != nil {
 		in, out := &in.ServerSideEncryptionConfiguration, &out.ServerSideEncryptionConfiguration
 		*out = new(ServerSideEncryptionConfiguration)
