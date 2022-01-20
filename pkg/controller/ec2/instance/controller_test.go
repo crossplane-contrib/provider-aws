@@ -75,7 +75,7 @@ func withTags(tagMaps ...map[string]string) instanceModifier {
 	var tagList []manualv1alpha1.Tag
 	for _, tagMap := range tagMaps {
 		for k, v := range tagMap {
-			tagList = append(tagList, manualv1alpha1.Tag{Key: k, Value: v})
+			tagList = append(tagList, manualv1alpha1.Tag{Key: aws.String(k), Value: aws.String(v)})
 		}
 	}
 	return func(r *manualv1alpha1.Instance) { r.Spec.ForProvider.Tags = tagList }
@@ -463,7 +463,7 @@ func TestInitialize(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b manualv1alpha1.Tag) bool { return a.Key < b.Key })); err == nil && diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b manualv1alpha1.Tag) bool { return *a.Key < *b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

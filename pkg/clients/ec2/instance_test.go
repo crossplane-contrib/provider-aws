@@ -526,8 +526,8 @@ func TestGenerateInstanceObservation(t *testing.T) {
 				SubnetID:              aws.String(subnetID),
 				Tags: []manualv1alpha1.Tag{
 					{
-						Key:   tagsKey,
-						Value: tagsVal,
+						Key:   aws.String(tagsKey),
+						Value: aws.String(tagsVal),
 					},
 				},
 				VirtualizationType: string(types.VirtualizationTypeHvm),
@@ -698,10 +698,10 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				TagSpecifications: []manualv1alpha1.TagSpecification{
 					{
 						ResourceType: aws.String(tagResourceType),
-						Tags: []manualv1alpha1.Tag{
+						Tags: []*manualv1alpha1.Tag{
 							{
-								Key:   tagsKey,
-								Value: tagsVal,
+								Key:   aws.String(tagsKey),
+								Value: aws.String(tagsVal),
 							},
 						},
 					},

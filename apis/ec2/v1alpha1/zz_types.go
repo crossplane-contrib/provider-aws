@@ -5388,8 +5388,6 @@ type VPCPeeringConnectionOptionsDescription struct {
 
 // +kubebuilder:skipversion
 type VPCPeeringConnectionStateReason struct {
-	Code *string `json:"code,omitempty"`
-
 	Message *string `json:"message,omitempty"`
 }
 
@@ -5397,33 +5395,11 @@ type VPCPeeringConnectionStateReason struct {
 type VPCPeeringConnectionVPCInfo struct {
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
-	CIDRBlockSet []*CIDRBlock `json:"cidrBlockSet,omitempty"`
-
-	IPv6CIDRBlockSet []*IPv6CIDRBlock `json:"ipv6CIDRBlockSet,omitempty"`
-
 	OwnerID *string `json:"ownerID,omitempty"`
-	// Describes the VPC peering connection options.
-	PeeringOptions *VPCPeeringConnectionOptionsDescription `json:"peeringOptions,omitempty"`
 
 	Region *string `json:"region,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type VPCPeeringConnection_SDK struct {
-	// Describes a VPC in a VPC peering connection.
-	AccepterVPCInfo *VPCPeeringConnectionVPCInfo `json:"accepterVPCInfo,omitempty"`
-
-	ExpirationTime *metav1.Time `json:"expirationTime,omitempty"`
-	// Describes a VPC in a VPC peering connection.
-	RequesterVPCInfo *VPCPeeringConnectionVPCInfo `json:"requesterVPCInfo,omitempty"`
-	// Describes the status of a VPC peering connection.
-	Status *VPCPeeringConnectionStateReason `json:"status,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
 }
 
 // +kubebuilder:skipversion

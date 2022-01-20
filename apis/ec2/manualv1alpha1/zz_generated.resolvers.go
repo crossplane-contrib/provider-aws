@@ -89,3 +89,29 @@ func (mg *Instance) ResolveReferences(ctx context.Context, c client.Reader) erro
 
 	return nil
 }
+
+// ResolveReferences of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef = rsp.ResolvedReference
+
+	return nil
+}

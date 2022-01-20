@@ -50,12 +50,14 @@ ignore:
     - TransitGatewayPrefixListReference
     - VpcEndpointConnectionNotification
     - Vpc
+    - VpcPeeringConnection
     - VpcCidrBlock
     - VpnConnectionRoute
     - VpnConnection
     - VpnGateway
   shape_names:
     - Instance
+    - VpcPeeringConnection
   field_paths:
     - CreateVpcPeeringConnectionInput.DryRun
     - DeleteVpcPeeringConnectionInput.DryRun

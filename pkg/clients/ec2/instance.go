@@ -824,8 +824,8 @@ func GenerateTags(tags []types.Tag) []manualv1alpha1.Tag {
 		res := make([]manualv1alpha1.Tag, len(tags))
 		for i, t := range tags {
 			res[i] = manualv1alpha1.Tag{
-				Key:   *t.Key,
-				Value: *t.Value,
+				Key:   t.Key,
+				Value: t.Value,
 			}
 		}
 		return res
@@ -846,8 +846,8 @@ func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []
 			tags := make([]types.Tag, len(ts.Tags))
 			for i, t := range ts.Tags {
 				tags[i] = types.Tag{
-					Key:   aws.String(t.Key),
-					Value: aws.String(t.Value),
+					Key:   t.Key,
+					Value: t.Value,
 				}
 			}
 

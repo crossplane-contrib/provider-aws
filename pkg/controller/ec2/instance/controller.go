@@ -364,7 +364,7 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	}
 	tagMap := map[string]string{}
 	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
+		tagMap[*t.Key] = *t.Value
 	}
 	for k, v := range resource.GetExternalTags(mgd) {
 		tagMap[k] = v
@@ -372,11 +372,11 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	cr.Spec.ForProvider.Tags = make([]svcapitypes.Tag, len(tagMap))
 	i := 0
 	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = svcapitypes.Tag{Key: k, Value: v}
+		cr.Spec.ForProvider.Tags[i] = svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
 		i++
 	}
 	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+		return *cr.Spec.ForProvider.Tags[i].Key < *cr.Spec.ForProvider.Tags[j].Key
 	})
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

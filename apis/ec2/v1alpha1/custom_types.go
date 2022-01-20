@@ -129,41 +129,6 @@ type CustomVolumeParameters struct {
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIdSelector,omitempty"`
 }
 
-// CustomVPCPeeringConnectionParameters are custom parameters for VPCPeeringConnection
-type CustomVPCPeeringConnectionParameters struct {
-	// The ID of the requester VPC. You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
-	VPCID *string `json:"vpcID,omitempty"`
-	// VPCIDRef is a reference to an API used to set
-	// the VPCID.
-	// +optional
-	VPCIDRef *xpv1.Reference `json:"vpcIDRef,omitempty"`
-	// VPCIDSelector selects references to API used
-	// to set the VPCID.
-	// +optional
-	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
-	// The ID of the VPC with which you are creating the VPC peering connection.
-	// You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
-	PeerVPCID *string `json:"peerVPCID,omitempty"`
-	// PeerVPCIDRef is a reference to an API used to set
-	// the PeerVPCID.
-	// +optional
-	PeerVPCIDRef *xpv1.Reference `json:"peerVPCIDRef,omitempty"`
-	// PeerVPCIDSelector selects references to API used
-	// to set the PeerVPCID.
-	// +optional
-	PeerVPCIDSelector *xpv1.Selector `json:"peerVPCIDSelector,omitempty"`
-	// Automatically accepts the peering connection. If this is not set, the peering connection
-	// will be created, but will be in pending-acceptance state. This will only lead to an active
-	// connection if both VPCs are in the same tenant.
-	AcceptRequest bool `json:"acceptRequest,omitempty"`
-
-	// Metadata tagging key value pairs
-	// +optional
-	Tags []Tag `json:"tags,omitempty"`
-}
-
 // CustomTransitGatewayParameters are custom parameters for TransitGateway
 type CustomTransitGatewayParameters struct {
 	// Metadata tagging key value pairs
@@ -261,7 +226,7 @@ type CustomRouteParameters struct {
 	NATGatewayIDSelector *xpv1.Selector `json:"natGatewayIdSelector,omitempty"`
 
 	// The ID of a VPC peering connection.
-	// +crossplane:generate:reference:type=VPCPeeringConnection
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1.VPCPeeringConnection
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`
 
 	// VPCPeeringConnectionIDRef is a reference to an API used to set
