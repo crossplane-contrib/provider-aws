@@ -56,7 +56,16 @@ var (
 	InstanceGroupVersionKind = SchemeGroupVersion.WithKind(InstanceKind)
 )
 
+// VPCPeeringConnection type metadata.
+var (
+	VPCPeeringConnectionKind             = reflect.TypeOf(VPCPeeringConnection{}).Name()
+	VPCPeeringConnectionGroupKind        = schema.GroupKind{Group: Group, Kind: VPCPeeringConnectionKind}.String()
+	VPCPeeringConnectionKindAPIVersion   = VPCPeeringConnectionKind + "." + SchemeGroupVersion.String()
+	VPCPeeringConnectionGroupVersionKind = SchemeGroupVersion.WithKind(VPCPeeringConnectionKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
 	SchemeBuilder.Register(&Instance{}, &InstanceList{})
+	SchemeBuilder.Register(&VPCPeeringConnection{}, &VPCPeeringConnectionList{})
 }

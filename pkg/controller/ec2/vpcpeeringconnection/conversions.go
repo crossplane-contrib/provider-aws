@@ -23,7 +23,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an

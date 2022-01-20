@@ -116,8 +116,8 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Reference:    mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDRef,
 		Selector:     mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDSelector,
 		To: reference.To{
-			List:    &VPCPeeringConnectionList{},
-			Managed: &VPCPeeringConnection{},
+			List:    &manualv1alpha1.VPCPeeringConnectionList{},
+			Managed: &manualv1alpha1.VPCPeeringConnection{},
 		},
 	})
 	if err != nil {
@@ -417,48 +417,6 @@ func (mg *VPCEndpointServiceConfiguration) ResolveReferences(ctx context.Context
 	}
 	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNs = reference.ToPtrValues(mrsp.ResolvedValues)
 	mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNRefs = mrsp.ResolvedReferences
-
-	return nil
-}
-
-// ResolveReferences of this VPCPeeringConnection.
-func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
-	r := reference.NewAPIResolver(c, mg)
-
-	var rsp reference.ResolutionResponse
-	var err error
-
-	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID),
-		Extract:      reference.ExternalName(),
-		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef,
-		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDSelector,
-		To: reference.To{
-			List:    &v1beta1.VPCList{},
-			Managed: &v1beta1.VPC{},
-		},
-	})
-	if err != nil {
-		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID")
-	}
-	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef = rsp.ResolvedReference
-
-	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID),
-		Extract:      reference.ExternalName(),
-		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef,
-		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDSelector,
-		To: reference.To{
-			List:    &v1beta1.VPCList{},
-			Managed: &v1beta1.VPC{},
-		},
-	})
-	if err != nil {
-		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID")
-	}
-	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef = rsp.ResolvedReference
 
 	return nil
 }

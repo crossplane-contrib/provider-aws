@@ -868,8 +868,9 @@ spec:
                             | traffic-mirror-target | transit-gateway | transit-gateway-attachment
                             | transit-gateway-route-table | vpc-endpoint (for interface
                             VPC endpoints)| vpc-endpoint-service (for gateway VPC
-                            endpoints) | volume | vpc-flow-log. \n To tag a resource
-                            after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html)."
+                            endpoints) | vpc-peering-connection | volume | vpc-flow-log.
+                            \n To tag a resource after it has been created, see CreateTags
+                            (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html)."
                           enum:
                           - capacity-reservation
                           - client-vpn-endpoint
@@ -893,6 +894,7 @@ spec:
                           - transit-gateway-route-table
                           - vpc-endpoint
                           - vpc-endpoint-service
+                          - vpc-peering-connection
                           - volume
                           - vpc-flow-log
                           type: string

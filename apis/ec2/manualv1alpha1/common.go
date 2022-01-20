@@ -19,12 +19,9 @@ package manualv1alpha1
 import (
 	"sort"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // BlockDeviceMapping describes a block device mapping.
@@ -820,10 +817,10 @@ type StateReason struct {
 // Tag defines a tag
 type Tag struct {
 	// Key is the name of the tag.
-	Key string `json:"key"`
+	Key *string `json:"key"`
 
 	// Value is the value of the tag.
-	Value string `json:"value"`
+	Value *string `json:"value"`
 }
 
 // TagSpecification defines the tags to apply to a resource when the resource is being created.
@@ -835,16 +832,16 @@ type TagSpecification struct {
 	// | traffic-mirror-filter | traffic-mirror-session | traffic-mirror-target
 	// | transit-gateway | transit-gateway-attachment | transit-gateway-route-table
 	// | vpc-endpoint (for interface VPC endpoints)| vpc-endpoint-service (for gateway
-	// VPC endpoints) | volume | vpc-flow-log.
+	// VPC endpoints) | vpc-peering-connection | volume | vpc-flow-log.
 	//
 	// To tag a resource after it has been created, see CreateTags
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	//
-	// +kubebuilder:validation:Enum=capacity-reservation;client-vpn-endpoint;dedicated-host;fleet;fpga-image;instance;ipv4pool-ec2;ipv6pool-ec2;key-pair;launch-template;natgateway;spot-fleet-request;placement-group;snapshot;traffic-mirror-filter;traffic-mirror-session;traffic-mirror-target;transit-gateway;transit-gateway-attachment;transit-gateway-route-table;vpc-endpoint;vpc-endpoint-service;volume;vpc-flow-log
+	// +kubebuilder:validation:Enum=capacity-reservation;client-vpn-endpoint;dedicated-host;fleet;fpga-image;instance;ipv4pool-ec2;ipv6pool-ec2;key-pair;launch-template;natgateway;spot-fleet-request;placement-group;snapshot;traffic-mirror-filter;traffic-mirror-session;traffic-mirror-target;transit-gateway;transit-gateway-attachment;transit-gateway-route-table;vpc-endpoint;vpc-endpoint-service;vpc-peering-connection;volume;vpc-flow-log
 	ResourceType *string `json:"resourceType"`
 
 	// The tags to apply to the resource
-	Tags []Tag `json:"tags"`
+	Tags []*Tag `json:"tags"`
 }
 
 // BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
@@ -854,7 +851,7 @@ func BuildFromEC2Tags(tags []types.Tag) []Tag {
 	}
 	res := make([]Tag, len(tags))
 	for i, t := range tags {
-		res[i] = Tag{awsclients.StringValue(t.Key), awsclients.StringValue(t.Value)}
+		res[i] = Tag{t.Key, t.Value}
 	}
 
 	return res
@@ -864,7 +861,7 @@ func BuildFromEC2Tags(tags []types.Tag) []Tag {
 func GenerateEC2Tags(tags []Tag) []types.Tag {
 	res := make([]types.Tag, len(tags))
 	for i, t := range tags {
-		res[i] = types.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		res[i] = types.Tag{Key: t.Key, Value: t.Value}
 	}
 	return res
 }
@@ -930,7 +927,7 @@ func CompareTags(tags []Tag, ec2Tags []types.Tag) bool {
 	SortTags(tags, ec2Tags)
 
 	for i, t := range tags {
-		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
+		if *t.Key != *ec2Tags[i].Key || *t.Value != *ec2Tags[i].Value {
 			return false
 		}
 	}
@@ -941,7 +938,7 @@ func CompareTags(tags []Tag, ec2Tags []types.Tag) bool {
 // SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
 func SortTags(tags []Tag, ec2Tags []types.Tag) {
 	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].Key < tags[j].Key
+		return *tags[i].Key < *tags[j].Key
 	})
 
 	sort.Slice(ec2Tags, func(i, j int) bool {
