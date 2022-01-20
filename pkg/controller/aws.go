@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+	"regexp"
 	"time"
 
 	"k8s.io/client-go/util/workqueue"
@@ -24,248 +26,254 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"github.com/crossplane/provider-aws/pkg/controller/acm"
-	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
-	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/apimapping"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/deployment"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/domainname"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/integration"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/integrationresponse"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/model"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/route"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/routeresponse"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
-	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/vpclink"
-	athenaworkgroup "github.com/crossplane/provider-aws/pkg/controller/athena/workgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/cache"
-	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
-	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
-	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
-	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
-	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
+	acm "github.com/crossplane/provider-aws/pkg/controller/acm"
+	acmpca_certificateauthority "github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
+	acmpca_certificateauthoritypermission "github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	apigatewayv2_api "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
+	apigatewayv2_apimapping "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/apimapping"
+	apigatewayv2_authorizer "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
+	apigatewayv2_deployment "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/deployment"
+	apigatewayv2_domainname "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/domainname"
+	apigatewayv2_integration "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/integration"
+	apigatewayv2_integrationresponse "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/integrationresponse"
+	apigatewayv2_model "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/model"
+	apigatewayv2_route "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/route"
+	apigatewayv2_routeresponse "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/routeresponse"
+	apigatewayv2_stage "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
+	apigatewayv2_vpclink "github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/vpclink"
+	athena_workgroup "github.com/crossplane/provider-aws/pkg/controller/athena/workgroup"
+	cache "github.com/crossplane/provider-aws/pkg/controller/cache"
+	cache_cachesubnetgroup "github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
+	cache_cluster "github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
+	cloudfront_cachepolicy "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
+	cloudfront_cloudfrontoriginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
+	cloudfront_distribution "github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cloudwatchlogs_loggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
-	"github.com/crossplane/provider-aws/pkg/controller/database"
-	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
-	docdbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
-	docdbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
-	docdbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
-	docdbsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbsubnetgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
-	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
-	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplate"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplateversion"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
-	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
-	transitgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgateway"
-	transitgatewayroute "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroute"
-	transitgatewayroutetable "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroutetable"
-	transitgatewayvpcattachment "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayvpcattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/volume"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpoint"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
-	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
-	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
-	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
-	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
-	"github.com/crossplane/provider-aws/pkg/controller/eks"
-	eksaddon "github.com/crossplane/provider-aws/pkg/controller/eks/addon"
-	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
-	"github.com/crossplane/provider-aws/pkg/controller/eks/identityproviderconfig"
-	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
-	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
-	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/elbv2/listener"
-	"github.com/crossplane/provider-aws/pkg/controller/elbv2/loadbalancer"
-	"github.com/crossplane/provider-aws/pkg/controller/elbv2/targetgroup"
-	glueclassifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
-	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
-	gluecrawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
-	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
-	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
-	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/policy"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/role"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/user"
-	"github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
-	iotpolicy "github.com/crossplane/provider-aws/pkg/controller/iot/policy"
-	"github.com/crossplane/provider-aws/pkg/controller/iot/thing"
-	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
-	kafkaconfiguration "github.com/crossplane/provider-aws/pkg/controller/kafka/configuration"
-	kinesisstream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
-	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
-	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
-	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
-	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
-	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
-	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
-	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
-	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
-	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
-	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
-	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
-	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
-	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
-	"github.com/crossplane/provider-aws/pkg/controller/redshift"
-	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
-	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
-	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverendpoint"
-	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverrule"
-	"github.com/crossplane/provider-aws/pkg/controller/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
-	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
-	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
-	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
-	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
-	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
-	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
-	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
-	transferserver "github.com/crossplane/provider-aws/pkg/controller/transfer/server"
-	transferuser "github.com/crossplane/provider-aws/pkg/controller/transfer/user"
+	database "github.com/crossplane/provider-aws/pkg/controller/database"
+	database_dbsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	docdb_dbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
+	docdb_dbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
+	docdb_dbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
+	docdb_dbsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbsubnetgroup"
+	dynamodb_backup "github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
+	dynamodb_globaltable "github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
+	dynamodb_table "github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
+	ec2_address "github.com/crossplane/provider-aws/pkg/controller/ec2/address"
+	ec2_instance "github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
+	ec2_internetgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
+	ec2_launchtemplate "github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplate"
+	ec2_launchtemplateversion "github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplateversion"
+	ec2_natgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
+	ec2_route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
+	ec2_routetable "github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
+	ec2_securitygroup "github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
+	ec2_subnet "github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
+	ec2_transitgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgateway"
+	ec2_transitgatewayroute "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroute"
+	ec2_transitgatewayroutetable "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroutetable"
+	ec2_transitgatewayvpcattachment "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayvpcattachment"
+	ec2_volume "github.com/crossplane/provider-aws/pkg/controller/ec2/volume"
+	ec2_vpc "github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
+	ec2_vpccidrblock "github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
+	ec2_vpcendpoint "github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpoint"
+	ec2_vpcendpointserviceconfiguration "github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
+	ec2_vpcpeeringconnection "github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
+	ecr_repository "github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
+	ecr_repositorypolicy "github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
+	efs_filesystem "github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
+	efs_mounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
+	eks "github.com/crossplane/provider-aws/pkg/controller/eks"
+	eks_addon "github.com/crossplane/provider-aws/pkg/controller/eks/addon"
+	eks_fargateprofile "github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
+	eks_identityproviderconfig "github.com/crossplane/provider-aws/pkg/controller/eks/identityproviderconfig"
+	eks_nodegroup "github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
+	elasticloadbalancing_elb "github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
+	elasticloadbalancing_elbattachment "github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	elbv2_listener "github.com/crossplane/provider-aws/pkg/controller/elbv2/listener"
+	elbv2_loadbalancer "github.com/crossplane/provider-aws/pkg/controller/elbv2/loadbalancer"
+	elbv2_targetgroup "github.com/crossplane/provider-aws/pkg/controller/elbv2/targetgroup"
+	glue_classifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
+	glue_connection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
+	glue_crawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
+	glue_database "github.com/crossplane/provider-aws/pkg/controller/glue/database"
+	glue_job "github.com/crossplane/provider-aws/pkg/controller/glue/job"
+	glue_securityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
+	iam_accesskey "github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
+	iam_group "github.com/crossplane/provider-aws/pkg/controller/iam/group"
+	iam_grouppolicyattachment "github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
+	iam_groupusermembership "github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
+	iam_openidconnectprovider "github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
+	iam_policy "github.com/crossplane/provider-aws/pkg/controller/iam/policy"
+	iam_role "github.com/crossplane/provider-aws/pkg/controller/iam/role"
+	iam_rolepolicyattachment "github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
+	iam_user "github.com/crossplane/provider-aws/pkg/controller/iam/user"
+	iam_userpolicyattachment "github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
+	iot_policy "github.com/crossplane/provider-aws/pkg/controller/iot/policy"
+	iot_thing "github.com/crossplane/provider-aws/pkg/controller/iot/thing"
+	kafka_cluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
+	kafka_configuration "github.com/crossplane/provider-aws/pkg/controller/kafka/configuration"
+	kinesis_stream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
+	kms_alias "github.com/crossplane/provider-aws/pkg/controller/kms/alias"
+	kms_key "github.com/crossplane/provider-aws/pkg/controller/kms/key"
+	lambda_function "github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	mq_broker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
+	mq_user "github.com/crossplane/provider-aws/pkg/controller/mq/user"
+	notification_snssubscription "github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
+	notification_snstopic "github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	ram_resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
+	rds_dbcluster "github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
+	rds_dbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
+	rds_dbinstance "github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
+	rds_dbparametergroup "github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
+	rds_globalcluster "github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
+	redshift "github.com/crossplane/provider-aws/pkg/controller/redshift"
+	route53_hostedzone "github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
+	route53_resourcerecordset "github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
+	route53resolver_resolverendpoint "github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverendpoint"
+	route53resolver_resolverrule "github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverrule"
+	s3 "github.com/crossplane/provider-aws/pkg/controller/s3"
+	s3_bucketpolicy "github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
+	secretsmanager_secret "github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
+	servicediscovery_httpnamespace "github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
+	servicediscovery_privatednsnamespace "github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
+	servicediscovery_publicdnsnamespace "github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	sfn_activity "github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
+	sfn_statemachine "github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
+	sqs_queue "github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
+	transfer_server "github.com/crossplane/provider-aws/pkg/controller/transfer/server"
+	transfer_user "github.com/crossplane/provider-aws/pkg/controller/transfer/user"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
-		cache.SetupReplicationGroup,
-		cachesubnetgroup.SetupCacheSubnetGroup,
-		cluster.SetupCacheCluster,
-		database.SetupRDSInstance,
-		docdbinstance.SetupDBInstance,
-		docdbcluster.SetupDBCluster,
-		docdbclusterparametergroup.SetupDBClusterParameterGroup,
-		docdbsubnetgroup.SetupDBSubnetGroup,
-		eks.SetupCluster,
-		eksaddon.SetupAddon,
-		identityproviderconfig.SetupIdentityProviderConfig,
-		elb.SetupELB,
-		elbattachment.SetupELBAttachment,
-		nodegroup.SetupNodeGroup,
-		s3.SetupBucket,
-		bucketpolicy.SetupBucketPolicy,
-		accesskey.SetupAccessKey,
-		user.SetupUser,
-		group.SetupGroup,
-		policy.SetupPolicy,
-		role.SetupRole,
-		groupusermembership.SetupGroupUserMembership,
-		userpolicyattachment.SetupUserPolicyAttachment,
-		grouppolicyattachment.SetupGroupPolicyAttachment,
-		rolepolicyattachment.SetupRolePolicyAttachment,
-		vpc.SetupVPC,
-		subnet.SetupSubnet,
-		securitygroup.SetupSecurityGroup,
-		internetgateway.SetupInternetGateway,
-		launchtemplate.SetupLaunchTemplate,
-		launchtemplateversion.SetupLaunchTemplateVersion,
-		natgateway.SetupNatGateway,
-		routetable.SetupRouteTable,
-		dbsubnetgroup.SetupDBSubnetGroup,
-		certificateauthority.SetupCertificateAuthority,
-		certificateauthoritypermission.SetupCertificateAuthorityPermission,
-		acm.SetupCertificate,
-		resourcerecordset.SetupResourceRecordSet,
-		hostedzone.SetupHostedZone,
-		secret.SetupSecret,
-		snstopic.SetupSNSTopic,
-		snssubscription.SetupSubscription,
-		queue.SetupQueue,
-		redshift.SetupCluster,
-		address.SetupAddress,
-		repository.SetupRepository,
-		repositorypolicy.SetupRepositoryPolicy,
-		api.SetupAPI,
-		stage.SetupStage,
-		route.SetupRoute,
-		authorizer.SetupAuthorizer,
-		integration.SetupIntegration,
-		deployment.SetupDeployment,
-		domainname.SetupDomainName,
-		integrationresponse.SetupIntegrationResponse,
-		model.SetupModel,
-		apimapping.SetupAPIMapping,
-		routeresponse.SetupRouteResponse,
-		vpclink.SetupVPCLink,
-		fargateprofile.SetupFargateProfile,
-		activity.SetupActivity,
-		statemachine.SetupStateMachine,
-		table.SetupTable,
-		backup.SetupBackup,
-		globaltable.SetupGlobalTable,
-		key.SetupKey,
-		alias.SetupAlias,
-		filesystem.SetupFileSystem,
-		dbcluster.SetupDBCluster,
-		dbclusterparametergroup.SetupDBClusterParameterGroup,
-		dbinstance.SetupDBInstance,
-		dbparametergroup.SetupDBParameterGroup,
-		globalcluster.SetupGlobalCluster,
-		vpccidrblock.SetupVPCCIDRBlock,
-		privatednsnamespace.SetupPrivateDNSNamespace,
-		publicdnsnamespace.SetupPublicDNSNamespace,
-		httpnamespace.SetupHTTPNamespace,
-		function.SetupFunction,
-		openidconnectprovider.SetupOpenIDConnectProvider,
-		distribution.SetupDistribution,
-		cachepolicy.SetupCachePolicy,
-		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
-		resolverendpoint.SetupResolverEndpoint,
-		resolverrule.SetupResolverRule,
-		vpcpeeringconnection.SetupVPCPeeringConnection,
-		vpcendpoint.SetupVPCEndpoint,
-		kafkacluster.SetupCluster,
-		efsmounttarget.SetupMountTarget,
-		transferserver.SetupServer,
-		transferuser.SetupUser,
-		instance.SetupInstance,
-		gluejob.SetupJob,
-		gluesecurityconfiguration.SetupSecurityConfiguration,
-		glueconnection.SetupConnection,
-		glueDatabase.SetupDatabase,
-		gluecrawler.SetupCrawler,
-		glueclassifier.SetupClassifier,
-		mqbroker.SetupBroker,
-		mquser.SetupUser,
-		cwloggroup.SetupLogGroup,
-		volume.SetupVolume,
-		transitgateway.SetupTransitGateway,
-		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
-		thing.SetupThing,
-		iotpolicy.SetupPolicy,
-		ec2route.SetupRoute,
-		athenaworkgroup.SetupWorkGroup,
-		resourceshare.SetupResourceShare,
-		kafkaconfiguration.SetupConfiguration,
-		listener.SetupListener,
-		loadbalancer.SetupLoadBalancer,
-		targetgroup.SetupTargetGroup,
-		transitgatewayroute.SetupTransitGatewayRoute,
-		transitgatewayroutetable.SetupTransitGatewayRouteTable,
-		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
-		kinesisstream.SetupStream,
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration, pattern string) error {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid pattern %s to enable controllers: %v", pattern, err)
+	}
+	for name, setup := range map[string]func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
+		"acm/Certificate": acm.SetupCertificate,
+		"acmpca/certificateauthority/CertificateAuthority":                     acmpca_certificateauthority.SetupCertificateAuthority,
+		"acmpca/certificateauthoritypermission/CertificateAuthorityPermission": acmpca_certificateauthoritypermission.SetupCertificateAuthorityPermission,
+		"apigatewayv2/api/API":                                                     apigatewayv2_api.SetupAPI,
+		"apigatewayv2/apimapping/APIMapping":                                       apigatewayv2_apimapping.SetupAPIMapping,
+		"apigatewayv2/authorizer/Authorizer":                                       apigatewayv2_authorizer.SetupAuthorizer,
+		"apigatewayv2/deployment/Deployment":                                       apigatewayv2_deployment.SetupDeployment,
+		"apigatewayv2/domainname/DomainName":                                       apigatewayv2_domainname.SetupDomainName,
+		"apigatewayv2/integration/Integration":                                     apigatewayv2_integration.SetupIntegration,
+		"apigatewayv2/integrationresponse/IntegrationResponse":                     apigatewayv2_integrationresponse.SetupIntegrationResponse,
+		"apigatewayv2/model/Model":                                                 apigatewayv2_model.SetupModel,
+		"apigatewayv2/route/Route":                                                 apigatewayv2_route.SetupRoute,
+		"apigatewayv2/routeresponse/RouteResponse":                                 apigatewayv2_routeresponse.SetupRouteResponse,
+		"apigatewayv2/stage/Stage":                                                 apigatewayv2_stage.SetupStage,
+		"apigatewayv2/vpclink/VPCLink":                                             apigatewayv2_vpclink.SetupVPCLink,
+		"athena/workgroup/WorkGroup":                                               athena_workgroup.SetupWorkGroup,
+		"cache/cachesubnetgroup/CacheSubnetGroup":                                  cache_cachesubnetgroup.SetupCacheSubnetGroup,
+		"cache/cluster/CacheCluster":                                               cache_cluster.SetupCacheCluster,
+		"cache/ReplicationGroup":                                                   cache.SetupReplicationGroup,
+		"cloudfront/cachepolicy/CachePolicy":                                       cloudfront_cachepolicy.SetupCachePolicy,
+		"cloudfront/cloudfrontoriginaccessidentity/CloudFrontOriginAccessIdentity": cloudfront_cloudfrontoriginaccessidentity.SetupCloudFrontOriginAccessIdentity,
+		"cloudfront/distribution/Distribution":                                     cloudfront_distribution.SetupDistribution,
+		"cloudwatchlogs/loggroup/LogGroup":                                         cloudwatchlogs_loggroup.SetupLogGroup,
+		"database/dbsubnetgroup/DBSubnetGroup":                                     database_dbsubnetgroup.SetupDBSubnetGroup,
+		"database/RDSInstance":                                                     database.SetupRDSInstance,
+		"docdb/dbcluster/DBCluster":                                                docdb_dbcluster.SetupDBCluster,
+		"docdb/dbclusterparametergroup/DBClusterParameterGroup":                    docdb_dbclusterparametergroup.SetupDBClusterParameterGroup,
+		"docdb/dbinstance/DBInstance":                                              docdb_dbinstance.SetupDBInstance,
+		"docdb/dbsubnetgroup/DBSubnetGroup":                                        docdb_dbsubnetgroup.SetupDBSubnetGroup,
+		"dynamodb/backup/Backup":                                                   dynamodb_backup.SetupBackup,
+		"dynamodb/globaltable/GlobalTable":                                         dynamodb_globaltable.SetupGlobalTable,
+		"dynamodb/table/Table":                                                     dynamodb_table.SetupTable,
+		"ec2/address/Address":                                                      ec2_address.SetupAddress,
+		"ec2/instance/Instance":                                                    ec2_instance.SetupInstance,
+		"ec2/internetgateway/InternetGateway":                                      ec2_internetgateway.SetupInternetGateway,
+		"ec2/launchtemplate/LaunchTemplate":                                        ec2_launchtemplate.SetupLaunchTemplate,
+		"ec2/launchtemplateversion/LaunchTemplateVersion":                          ec2_launchtemplateversion.SetupLaunchTemplateVersion,
+		"ec2/natgateway/NatGateway":                                                ec2_natgateway.SetupNatGateway,
+		"ec2/route/Route":                                                          ec2_route.SetupRoute,
+		"ec2/routetable/RouteTable":                                                ec2_routetable.SetupRouteTable,
+		"ec2/securitygroup/SecurityGroup":                                          ec2_securitygroup.SetupSecurityGroup,
+		"ec2/subnet/Subnet":                                                        ec2_subnet.SetupSubnet,
+		"ec2/transitgateway/TransitGateway":                                        ec2_transitgateway.SetupTransitGateway,
+		"ec2/transitgatewayroute/TransitGatewayRoute":                              ec2_transitgatewayroute.SetupTransitGatewayRoute,
+		"ec2/transitgatewayroutetable/TransitGatewayRouteTable":                    ec2_transitgatewayroutetable.SetupTransitGatewayRouteTable,
+		"ec2/transitgatewayvpcattachment/TransitGatewayVPCAttachment":              ec2_transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
+		"ec2/volume/Volume":                                                        ec2_volume.SetupVolume,
+		"ec2/vpc/VPC":                                                              ec2_vpc.SetupVPC,
+		"ec2/vpccidrblock/VPCCIDRBlock":                                            ec2_vpccidrblock.SetupVPCCIDRBlock,
+		"ec2/vpcendpoint/VPCEndpoint":                                              ec2_vpcendpoint.SetupVPCEndpoint,
+		"ec2/vpcendpointserviceconfiguration/VPCEndpointServiceConfiguration":      ec2_vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
+		"ec2/vpcpeeringconnection/VPCPeeringConnection":                            ec2_vpcpeeringconnection.SetupVPCPeeringConnection,
+		"ecr/repository/Repository":                                                ecr_repository.SetupRepository,
+		"ecr/repositorypolicy/RepositoryPolicy":                                    ecr_repositorypolicy.SetupRepositoryPolicy,
+		"efs/filesystem/FileSystem":                                                efs_filesystem.SetupFileSystem,
+		"efs/mounttarget/MountTarget":                                              efs_mounttarget.SetupMountTarget,
+		"eks/addon/Addon":                                                          eks_addon.SetupAddon,
+		"eks/Cluster":                                                              eks.SetupCluster,
+		"eks/fargateprofile/FargateProfile":                                        eks_fargateprofile.SetupFargateProfile,
+		"eks/identityproviderconfig/IdentityProviderConfig":                        eks_identityproviderconfig.SetupIdentityProviderConfig,
+		"eks/nodegroup/NodeGroup":                                                  eks_nodegroup.SetupNodeGroup,
+		"elasticloadbalancing/elb/ELB":                                             elasticloadbalancing_elb.SetupELB,
+		"elasticloadbalancing/elbattachment/ELBAttachment":                         elasticloadbalancing_elbattachment.SetupELBAttachment,
+		"elbv2/listener/Listener":                                                  elbv2_listener.SetupListener,
+		"elbv2/loadbalancer/LoadBalancer":                                          elbv2_loadbalancer.SetupLoadBalancer,
+		"elbv2/targetgroup/TargetGroup":                                            elbv2_targetgroup.SetupTargetGroup,
+		"glue/classifier/Classifier":                                               glue_classifier.SetupClassifier,
+		"glue/connection/Connection":                                               glue_connection.SetupConnection,
+		"glue/crawler/Crawler":                                                     glue_crawler.SetupCrawler,
+		"glue/database/Database":                                                   glue_database.SetupDatabase,
+		"glue/job/Job":                                                             glue_job.SetupJob,
+		"glue/securityconfiguration/SecurityConfiguration":                         glue_securityconfiguration.SetupSecurityConfiguration,
+		"iam/accesskey/AccessKey":                                                  iam_accesskey.SetupAccessKey,
+		"iam/group/Group":                                                          iam_group.SetupGroup,
+		"iam/grouppolicyattachment/GroupPolicyAttachment":                          iam_grouppolicyattachment.SetupGroupPolicyAttachment,
+		"iam/groupusermembership/GroupUserMembership":                              iam_groupusermembership.SetupGroupUserMembership,
+		"iam/openidconnectprovider/OpenIDConnectProvider":                          iam_openidconnectprovider.SetupOpenIDConnectProvider,
+		"iam/policy/Policy":                                                        iam_policy.SetupPolicy,
+		"iam/role/Role":                                                            iam_role.SetupRole,
+		"iam/rolepolicyattachment/RolePolicyAttachment":                            iam_rolepolicyattachment.SetupRolePolicyAttachment,
+		"iam/user/User":                                                            iam_user.SetupUser,
+		"iam/userpolicyattachment/UserPolicyAttachment":                            iam_userpolicyattachment.SetupUserPolicyAttachment,
+		"iot/policy/Policy":                                                        iot_policy.SetupPolicy,
+		"iot/thing/Thing":                                                          iot_thing.SetupThing,
+		"kafka/cluster/Cluster":                                                    kafka_cluster.SetupCluster,
+		"kafka/configuration/Configuration":                                        kafka_configuration.SetupConfiguration,
+		"kinesis/stream/Stream":                                                    kinesis_stream.SetupStream,
+		"kms/alias/Alias":                                                          kms_alias.SetupAlias,
+		"kms/key/Key":                                                              kms_key.SetupKey,
+		"lambda/function/Function":                                                 lambda_function.SetupFunction,
+		"mq/broker/Broker":                                                         mq_broker.SetupBroker,
+		"mq/user/User":                                                             mq_user.SetupUser,
+		"notification/snssubscription/Subscription":                                notification_snssubscription.SetupSubscription,
+		"notification/snstopic/SNSTopic":                                           notification_snstopic.SetupSNSTopic,
+		"ram/resourceshare/ResourceShare":                                          ram_resourceshare.SetupResourceShare,
+		"rds/dbcluster/DBCluster":                                                  rds_dbcluster.SetupDBCluster,
+		"rds/dbclusterparametergroup/DBClusterParameterGroup":                      rds_dbclusterparametergroup.SetupDBClusterParameterGroup,
+		"rds/dbinstance/DBInstance":                                                rds_dbinstance.SetupDBInstance,
+		"rds/dbparametergroup/DBParameterGroup":                                    rds_dbparametergroup.SetupDBParameterGroup,
+		"rds/globalcluster/GlobalCluster":                                          rds_globalcluster.SetupGlobalCluster,
+		"redshift/Cluster":                                                         redshift.SetupCluster,
+		"route53/hostedzone/HostedZone":                                            route53_hostedzone.SetupHostedZone,
+		"route53/resourcerecordset/ResourceRecordSet":                              route53_resourcerecordset.SetupResourceRecordSet,
+		"route53resolver/resolverendpoint/ResolverEndpoint":                        route53resolver_resolverendpoint.SetupResolverEndpoint,
+		"route53resolver/resolverrule/ResolverRule":                                route53resolver_resolverrule.SetupResolverRule,
+		"s3/Bucket":                                                s3.SetupBucket,
+		"s3/bucketpolicy/BucketPolicy":                             s3_bucketpolicy.SetupBucketPolicy,
+		"secretsmanager/secret/Secret":                             secretsmanager_secret.SetupSecret,
+		"servicediscovery/httpnamespace/HTTPNamespace":             servicediscovery_httpnamespace.SetupHTTPNamespace,
+		"servicediscovery/privatednsnamespace/PrivateDNSNamespace": servicediscovery_privatednsnamespace.SetupPrivateDNSNamespace,
+		"servicediscovery/publicdnsnamespace/PublicDNSNamespace":   servicediscovery_publicdnsnamespace.SetupPublicDNSNamespace,
+		"sfn/activity/Activity":                                    sfn_activity.SetupActivity,
+		"sfn/statemachine/StateMachine":                            sfn_statemachine.SetupStateMachine,
+		"sqs/queue/Queue":                                          sqs_queue.SetupQueue,
+		"transfer/server/Server":                                   transfer_server.SetupServer,
+		"transfer/user/User":                                       transfer_user.SetupUser,
 	} {
-		if err := setup(mgr, l, rl, poll); err != nil {
-			return err
+		if re.MatchString(name) {
+			if err := setup(mgr, l, rl, poll); err != nil {
+				return err
+			}
 		}
 	}
 
