@@ -31,6 +31,10 @@ type ProviderConfigSpec struct {
 	// +optional
 	AssumeRoleARN *string `json:"assumeRoleARN,omitempty"`
 
+	// ExternalID is the external ID used when assuming role.
+	// +optional
+	ExternalID *string `json:"externalID,omitempty"`
+
 	// Endpoint is where you can override the default endpoint configuration
 	// of AWS calls made by the provider.
 	// +optional
