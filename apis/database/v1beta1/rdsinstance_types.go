@@ -109,10 +109,39 @@ type ScalingConfiguration struct {
 // S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
 type S3RestoreBackupConfiguration struct {
 	// BucketName is the name of the S3 bucket containing the backup to restore.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/s3/v1beta1.Bucket
 	BucketName *string `json:"bucketName"`
 
+	// BucketNameRef is a reference to a Bucket used to set
+	// BucketName.
+	// +immutable
+	// +optional
+	BucketNameRef *xpv1.Reference `json:"bucketNameRef,omitempty"`
+
+	// BucketNameSelector selects a reference to a Bucket used to
+	// set BucketName.
+	// +immutable
+	// +optional
+	BucketNameSelector *xpv1.Selector `json:"bucketNameSelector,omitempty"`
+
 	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
-	IngestionRoleARN *string `json:"ingestionRoleARN"`
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	IngestionRoleARN *string `json:"ingestionRoleARN,omitempty"`
+
+	// IngestionRoleARNRef is a reference to a IAM Role used to set
+	// IngestionRoleARN.
+	// +immutable
+	// +optional
+	IngestionRoleARNRef *xpv1.Reference `json:"ingestionRoleARNRef,omitempty"`
+
+	// IngestionRoleARNSelector selects a reference to a IAM Role used to
+	// set IngestionRoleARN.
+	// +immutable
+	// +optional
+	IngestionRoleARNSelector *xpv1.Selector `json:"ingestionRoleARNSelector,omitempty"`
 
 	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
 	// +optional
@@ -305,6 +334,7 @@ type RDSInstanceParameters struct {
 	// DBSubnetGroupName is a DB subnet group to associate with this DB instance.
 	// If there is no DB subnet group, then it is a non-VPC DB instance.
 	// +optional
+	// +crossplane:generate:reference:type=DBSubnetGroup
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 
 	// DBSubnetGroupNameRef is a reference to a DBSubnetGroup used to set
@@ -497,6 +527,8 @@ type RDSInstanceParameters struct {
 	// If MonitoringInterval is set to a value other than 0, then you must supply
 	// a MonitoringRoleARN value.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	MonitoringRoleARN *string `json:"monitoringRoleArn,omitempty"`
 
 	// MonitoringRoleARNRef is a reference to an IAMRole used to set
@@ -671,6 +703,9 @@ type RDSInstanceParameters struct {
 	// by the DB cluster. For more information, see CreateDBCluster.
 	// Default: The default EC2 VPC security group for the DB subnet group's VPC.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=VPCSecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=VPCSecurityGroupIDSelector
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
 
 	// VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set
@@ -734,6 +769,7 @@ type RDSInstanceParameters struct {
 	// DomainIAMRoleName specifies the name of the IAM role to be used when making API calls to the
 	// Directory Service.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
