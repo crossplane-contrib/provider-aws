@@ -17,3 +17,19 @@ spec:
       name: sample-vpc
   providerConfigRef:
     name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-vpcendpoint-rtb
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdRefs:
+      - name: sample-routetable-ignore-routes
+    serviceName: com.amazonaws.us-east-1.s3
+    vpcEndpointType: Gateway
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example

@@ -47,6 +47,7 @@ type RouteBeta struct {
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
 	// +optional
+	// +crossplane:generate:reference:type=InternetGateway
 	GatewayID *string `json:"gatewayId,omitempty"`
 
 	// A referencer to retrieve the ID of a gateway
@@ -62,14 +63,16 @@ type RouteBeta struct {
 	// The ID of the local gateway.
 	LocalGatewayID *string `json:"localGatewayId,omitempty"`
 
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	// +optional
+	// +crossplane:generate:reference:type=NATGateway
+	NatGatewayID *string `json:"natGatewayId,omitempty"`
+
 	// A referencer to retrieve the ID of a NAT gateway
 	NatGatewayIDRef *xpv1.Reference `json:"natGatewayIdRef,omitempty"`
 
 	// A selector to select a referencer to retrieve the ID of a NAT gateway
 	NatGatewayIDSelector *xpv1.Selector `json:"natGatewayIdSelector,omitempty"`
-
-	// [IPv4 traffic only] The ID of a NAT gateway.
-	NatGatewayID *string `json:"natGatewayId,omitempty"`
 
 	// The ID of a network interface.
 	NetworkInterfaceID *string `json:"networkInterfaceId,omitempty"`
@@ -133,6 +136,7 @@ type Association struct {
 	// The ID of the subnet. A subnet ID is not returned for an implicit
 	// association.
 	// +optional
+	// +crossplane:generate:reference:type=Subnet
 	SubnetID *string `json:"subnetId,omitempty"`
 
 	// A referencer to retrieve the ID of a subnet
@@ -171,11 +175,16 @@ type RouteTableParameters struct {
 	// Region is the region you'd like your VPC to be created in.
 	Region string `json:"region"`
 
+	// Indicates whether we reconcile inline routes
+	// +optional
+	IgnoreRoutes *bool `json:"ignoreRoutes,omitempty"`
+
 	// The associations between the route table and one or more subnets.
 	Associations []Association `json:"associations"`
 
-	// the routes in the route table
-	Routes []RouteBeta `json:"routes"`
+	// inline routes in the route table
+	// +optional
+	Routes []RouteBeta `json:"routes,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	// +optional
@@ -184,6 +193,7 @@ type RouteTableParameters struct {
 	// VPCID is the ID of the VPC.
 	// +optional
 	// +immutable
+	// +crossplane:generate:reference:type=VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to retrieve its vpcId

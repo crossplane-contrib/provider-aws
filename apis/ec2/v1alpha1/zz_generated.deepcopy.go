@@ -2547,6 +2547,16 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RouteTableIDRef != nil {
+		in, out := &in.RouteTableIDRef, &out.RouteTableIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RouteTableIDSelector != nil {
+		in, out := &in.RouteTableIDSelector, &out.RouteTableIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.InstanceID != nil {
 		in, out := &in.InstanceID, &out.InstanceID
 		*out = new(string)

@@ -56,6 +56,7 @@ type SecurityGroupParameters struct {
 	// VPCID is the ID of the VPC.
 	// +optional
 	// +immutable
+	// +crossplane:generate:reference:type=VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
@@ -157,6 +158,7 @@ type UserIDGroupPair struct {
 
 	// The ID of the VPC for the referenced security group, if applicable.
 	// +optional
+	// +crossplane:generate:reference:type=VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId
