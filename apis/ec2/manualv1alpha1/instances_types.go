@@ -331,7 +331,9 @@ type InstanceObservation struct {
 	InstanceID *string `json:"instanceId,omitempty"`
 	// +optional
 	InstanceLifecycle string `json:"instanceLifecyle"`
-	InstanceType      string `json:"instanceType"`
+	// Supported instance family when set instanceInterruptionBehavior to hibernate
+	// C3, C4, C5, M4, M5, R3, R4
+	InstanceType string `json:"instanceType"`
 	// +optional
 	KernelID *string `json:"kernelId,omitempty"`
 	// +optional

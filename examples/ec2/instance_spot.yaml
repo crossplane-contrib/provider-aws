@@ -1,0 +1,18 @@
+
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernate-spot-instances.html 
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Instance
+metadata:
+  name: sample-instance-spot
+spec:
+  forProvider:
+    region: us-east-1
+    instanceMarketOptions:
+      marketType: spot
+      spotOptions:
+        instanceInterruptionBehavior: hibernate
+        spotInstanceType: persistent
+    instanceType: m5.large
+    imageId: ami-073d2c3aa43ed04b4
+  providerConfigRef:
+    name: example
