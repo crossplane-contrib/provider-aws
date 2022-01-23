@@ -68,6 +68,7 @@ func IsErrorNotFound(err error) bool {
 
 // GenerateCreateDBInstanceInput from RDSInstanceSpec
 func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
+	// Partially duplicates GenerateRestoreDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),
@@ -134,6 +135,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 
 // GenerateRestoreDBInstanceInput from RDSInstanceSpec
 func GenerateRestoreDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.RestoreDBInstanceFromS3Input{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),

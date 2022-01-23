@@ -116,7 +116,7 @@ type S3RestoreBackupConfiguration struct {
 
 	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
 	// +optional
-	Prefix *string `json:"prefix"`
+	Prefix *string `json:"prefix,omitempty"`
 
 	// SourceEngine is the engine used to create the backup.
 	// Must be "mysql".
@@ -131,7 +131,7 @@ type S3RestoreBackupConfiguration struct {
 type RestoreBackupConfiguration struct {
 	// S3 specifies the details of the S3 backup to restore from.
 	// +optional
-	S3 *S3RestoreBackupConfiguration `json:"s3"`
+	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
 
 	// Source is the type of the backup to restore when creating a new RDS instance. Only S3 is supported at present.
 	Source *string `json:"source"`
@@ -401,7 +401,7 @@ type RDSInstanceParameters struct {
 
 	// RestoreFrom specifies the details of the backup to restore when creating a new RDS instance. (If the RDS instance already exists, this property will be ignored.)
 	// +optional
-	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom"`
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
 
 	// IOPS is the amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for the DB instance. For information about valid IOPS
