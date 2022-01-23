@@ -48,14 +48,22 @@ const (
 )
 
 var (
-	masterUsername = "root"
-	engineVersion  = "5.6"
-	s3SourceType   = "S3"
-	s3BucketName   = "database-backup"
-	backup         = v1beta1.RestoreBackupConfiguration{
+	masterUsername     = "root"
+	engineVersion      = "5.6"
+	s3SourceType       = "S3"
+	snapshotSourceType = "Snapshot"
+	s3BucketName       = "database-backup"
+	snapshotIdentifier = "my-snapshot"
+	s3Backup           = v1beta1.RestoreBackupConfiguration{
 		Source: &s3SourceType,
 		S3: &v1beta1.S3RestoreBackupConfiguration{
 			BucketName: &s3BucketName,
+		},
+	}
+	snapshotBackup = v1beta1.RestoreBackupConfiguration{
+		Source: &snapshotSourceType,
+		Snapshot: &v1beta1.SnapshotRestoreBackupConfiguration{
+			SnapshotIdentifier: &snapshotIdentifier,
 		},
 	}
 
@@ -314,21 +322,45 @@ func TestCreate(t *testing.T) {
 				},
 			},
 		},
-		"SuccessfulRestore": {
+		"SuccessfulS3Restore": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromS3Input, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromS3Output, error) {
+					MockS3Restore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromS3Input, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromS3Output, error) {
 						return &awsrds.RestoreDBInstanceFromS3Output{}, nil
 					},
 				},
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withBackupConfiguration(&backup)),
+					withBackupConfiguration(&s3Backup)),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withBackupConfiguration(&backup),
+					withBackupConfiguration(&s3Backup),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulSnapshotRestore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockSnapshotRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromDBSnapshotInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromDBSnapshotOutput, error) {
+						return &awsrds.RestoreDBInstanceFromDBSnapshotOutput{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&snapshotBackup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&snapshotBackup),
 					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{

@@ -127,13 +127,24 @@ type S3RestoreBackupConfiguration struct {
 	SourceEngineVersion *string `json:"sourceEngineVersion"`
 }
 
+// SnapshotRestoreBackupConfiguration defines the details of the database snapshot to restore from.
+type SnapshotRestoreBackupConfiguration struct {
+	// SnapshotIdentifier is the identifier of the database snapshot to restore.
+	SnapshotIdentifier *string `json:"snapshotIdentifier"`
+}
+
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
 type RestoreBackupConfiguration struct {
 	// S3 specifies the details of the S3 backup to restore from.
 	// +optional
 	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
 
-	// Source is the type of the backup to restore when creating a new RDS instance. Only S3 is supported at present.
+	// Snapshot specifies the details of the database snapshot to restore from.
+	// +optional
+	Snapshot *SnapshotRestoreBackupConfiguration `json:"snapshot,omitempty"`
+
+	// Source is the type of the backup to restore when creating a new RDS instance.
+	// Only S3 and Snapshot are supported at present.
 	Source *string `json:"source"`
 }
 

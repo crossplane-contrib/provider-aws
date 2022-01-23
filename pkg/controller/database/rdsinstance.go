@@ -50,6 +50,7 @@ const (
 	errKubeUpdateFailed        = "cannot update RDS instance custom resource"
 	errCreateFailed            = "cannot create RDS instance"
 	errS3RestoreFailed         = "cannot restore RDS instance from S3 backup"
+	errSnapshotRestoreFailed   = "cannot restore RDS instance from snapshot"
 	errUnknownRestoreSource    = "unknown RDS restore souce"
 	errModifyFailed            = "cannot modify RDS instance"
 	errAddTagsFailed           = "cannot add tags to RDS instance"
@@ -192,9 +193,14 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 
 	switch *cr.Spec.ForProvider.RestoreFrom.Source {
 	case "S3":
-		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errS3RestoreFailed)
+		}
+	case "Snapshot":
+		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errSnapshotRestoreFailed)
 		}
 	default:
 		return errors.New(errUnknownRestoreSource)

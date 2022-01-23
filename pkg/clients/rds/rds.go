@@ -49,6 +49,7 @@ const (
 type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
 	RestoreDBInstanceFromS3(context.Context, *rds.RestoreDBInstanceFromS3Input, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
+	RestoreDBInstanceFromDBSnapshot(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
 	DescribeDBInstances(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -68,7 +69,8 @@ func IsErrorNotFound(err error) bool {
 
 // GenerateCreateDBInstanceInput from RDSInstanceSpec
 func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
-	// Partially duplicates GenerateRestoreDBInstanceInput - make sure any relevant changes are applied there too.
+	// Partially duplicates GenerateRestoreDBInstanceFromS3Input and GenerateRestoreDBInstanceFromSnapshotInput:
+	// Make sure any relevant changes are applied there too.
 	c := &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),
@@ -133,8 +135,8 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 	return c
 }
 
-// GenerateRestoreDBInstanceInput from RDSInstanceSpec
-func GenerateRestoreDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
+// GenerateRestoreDBInstanceFromS3Input from RDSInstanceSpec
+func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
 	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.RestoreDBInstanceFromS3Input{
 		DBInstanceIdentifier:               aws.String(name),
@@ -177,6 +179,55 @@ func GenerateRestoreDBInstanceInput(name, password string, p *v1beta1.RDSInstanc
 		StorageEncrypted:                   p.StorageEncrypted,
 		StorageType:                        p.StorageType,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
+// GenerateRestoreDBInstanceFromSnapshotInput from RDSInstanceSpec
+func GenerateRestoreDBInstanceFromSnapshotInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
+	c := &rds.RestoreDBInstanceFromDBSnapshotInput{
+		DBInstanceIdentifier:            aws.String(name),
+		AutoMinorVersionUpgrade:         p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                p.AvailabilityZone,
+		CopyTagsToSnapshot:              p.CopyTagsToSnapshot,
+		DBInstanceClass:                 aws.String(p.DBInstanceClass),
+		DBName:                          p.DBName,
+		DBParameterGroupName:            p.DBParameterGroupName,
+		DBSnapshotIdentifier:            p.RestoreFrom.Snapshot.SnapshotIdentifier,
+		DBSubnetGroupName:               p.DBSubnetGroupName,
+		DeletionProtection:              p.DeletionProtection,
+		Domain:                          p.Domain,
+		DomainIAMRoleName:               p.DomainIAMRoleName,
+		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		Engine:                          aws.String(p.Engine),
+		Iops:                            awsclients.Int32Address(p.IOPS),
+		LicenseModel:                    p.LicenseModel,
+		MultiAZ:                         p.MultiAZ,
+		OptionGroupName:                 p.OptionGroupName,
+		Port:                            awsclients.Int32Address(p.Port),
+		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageType:                     p.StorageType,
+		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))

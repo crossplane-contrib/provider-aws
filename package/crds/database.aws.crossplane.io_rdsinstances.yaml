@@ -645,9 +645,21 @@ spec:
                         - sourceEngine
                         - sourceEngineVersion
                         type: object
+                      snapshot:
+                        description: Snapshot specifies the details of the database
+                          snapshot to restore from.
+                        properties:
+                          snapshotIdentifier:
+                            description: SnapshotIdentifier is the identifier of the
+                              database snapshot to restore.
+                            type: string
+                        required:
+                        - snapshotIdentifier
+                        type: object
                       source:
                         description: Source is the type of the backup to restore when
-                          creating a new RDS instance. Only S3 is supported at present.
+                          creating a new RDS instance. Only S3 and Snapshot are supported
+                          at present.
                         type: string
                     required:
                     - source
