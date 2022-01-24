@@ -197,6 +197,7 @@ spec:
                             specified in the block device mapping for the AMI."
                           type: string
                       required:
+                      - deviceName
                       - ebs
                       type: object
                     type: array
