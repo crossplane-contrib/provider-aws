@@ -177,13 +177,7 @@ spec:
                                 must omit the Iops parameter. \n Default: gp2"
                               type: string
                           required:
-                          - deleteOnTermination
-                          - encrypted
-                          - iops
-                          - kmsKeyId
-                          - snapshotId
                           - volumeSize
-                          - volumeType
                           type: object
                         noDevice:
                           description: Suppresses the specified device included in
@@ -207,8 +201,6 @@ spec:
                       required:
                       - deviceName
                       - ebs
-                      - noDevice
-                      - virtualName
                       type: object
                     type: array
                   capacityReservationSpecification:
