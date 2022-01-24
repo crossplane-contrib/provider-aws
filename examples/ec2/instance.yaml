@@ -6,6 +6,10 @@ spec:
   forProvider:
     region: us-east-1
     imageId: ami-0dc2d3e4c0f9ebd18
+    blockDeviceMappings:
+     - deviceName: /dev/sdx
+       ebs:
+         volumeSize: 100
     securityGroupRefs:
       - name: sample-cluster-sg
     subnetIdRef:
