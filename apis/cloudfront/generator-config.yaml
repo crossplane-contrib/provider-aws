@@ -1,3 +1,8 @@
+resources:
+  "Distribution":
+    api_versions:
+    - name: "v1alpha1"
+      storage: true
 ignore:
   resource_names:
     - FieldLevelEncryptionProfile

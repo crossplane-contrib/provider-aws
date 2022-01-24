@@ -6,7 +6,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= 06f01f2f6c5f3b9331a37c0addf63d2f6a2d9af0
+CODE_GENERATOR_COMMIT ?= 62aa766135398ddb155384f58b220112902b7782
 GENERATED_SERVICES="apigatewayv2,athena,cloudfront,cloudwatchlogs,dynamodb,elbv2,ec2,efs,glue,iot,kafka,kinesis,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer,ram"
 
 # kind-related versions
@@ -129,7 +129,7 @@ services: $(GOIMPORTS)
 		exit 1; \
 	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
-		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
+		cd $(WORK_DIR) && git clone "https://github.com/ulucinar/code-generator.git"; \
 	fi
 	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
 	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
