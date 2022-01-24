@@ -37,7 +37,7 @@ type BlockDeviceMapping struct {
 
 	// Suppresses the specified device included in the block device mapping of the
 	// AMI.
-	NoDevice *string `json:"noDevice"`
+	NoDevice *string `json:"noDevice,omitempty"`
 
 	// The virtual device name (ephemeralN). Instance store volumes are numbered
 	// starting from 0. An instance type with 2 available instance store volumes
@@ -52,7 +52,7 @@ type BlockDeviceMapping struct {
 	// the block device mapping for the instance. When you launch an M3 instance,
 	// we ignore any instance store volumes specified in the block device mapping
 	// for the AMI.
-	VirtualName *string `json:"virtualName"`
+	VirtualName *string `json:"virtualName,omitempty"`
 }
 
 // CapacityReservationSpecification describes an instance's Capacity Reservation targeting option. You can specify
@@ -136,7 +136,7 @@ type EBSBlockDevice struct {
 	// more information, see Preserving Amazon EBS Volumes on Instance Termination
 	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html#preserving-volumes-on-termination)
 	// in the Amazon Elastic Compute Cloud User Guide.
-	DeleteOnTermination *bool `json:"deleteOnTermination"`
+	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
 
 	// Indicates whether the encryption state of an EBS volume is changed while
 	// being restored from a backing snapshot. The effect of setting the encryption
@@ -151,7 +151,7 @@ type EBSBlockDevice struct {
 	// encryption. For more information, see Supported Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
 	//
 	// This parameter is not returned by .
-	Encrypted *bool `json:"encrypted"`
+	Encrypted *bool `json:"encrypted,omitempty"`
 
 	// The number of I/O operations per second (IOPS) that the volume supports.
 	// For io1 volumes, this represents the number of IOPS that are provisioned
@@ -169,7 +169,7 @@ type EBSBlockDevice struct {
 	//
 	// Condition: This parameter is required for requests to create io1 volumes;
 	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
-	IOps *int32 `json:"iops"`
+	IOps *int32 `json:"iops,omitempty"`
 
 	// Identifier (key ID, key alias, ID ARN, or alias ARN) for a customer managed
 	// CMK under which the EBS volume is encrypted.
@@ -178,10 +178,10 @@ type EBSBlockDevice struct {
 	// RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// RequestSpotFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet.html),
 	// and RequestSpotInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html).
-	KmsKeyID *string `json:"kmsKeyId"`
+	KmsKeyID *string `json:"kmsKeyId,omitempty"`
 
 	// The ID of the snapshot.
-	SnapshotID *string `json:"snapshotId"`
+	SnapshotID *string `json:"snapshotId,omitempty"`
 
 	// The size of the volume, in GiB.
 	//
@@ -193,14 +193,14 @@ type EBSBlockDevice struct {
 	// Cold HDD (sc1), and 1-1024 for Magnetic (standard) volumes. If you specify
 	// a snapshot, the volume size must be equal to or larger than the snapshot
 	// size.
-	VolumeSize *int32 `json:"volumeSize"`
+	VolumeSize *int32 `json:"volumeSize,omitempty"`
 
 	// The volume type. If you set the type to io1, you must also specify the Iops
 	// parameter. If you set the type to gp2, st1, sc1, or standard, you must omit
 	// the Iops parameter.
 	//
 	// Default: gp2
-	VolumeType string `json:"volumeType"`
+	VolumeType string `json:"volumeType,omitempty"`
 }
 
 // EBSInstanceBlockDevice describes a parameter used to set up an EBS volume in a block device mapping.

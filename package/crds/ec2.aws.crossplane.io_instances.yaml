@@ -176,14 +176,6 @@ spec:
                                 you set the type to gp2, st1, sc1, or standard, you
                                 must omit the Iops parameter. \n Default: gp2"
                               type: string
-                          required:
-                          - deleteOnTermination
-                          - encrypted
-                          - iops
-                          - kmsKeyId
-                          - snapshotId
-                          - volumeSize
-                          - volumeType
                           type: object
                         noDevice:
                           description: Suppresses the specified device included in
@@ -205,10 +197,7 @@ spec:
                             specified in the block device mapping for the AMI."
                           type: string
                       required:
-                      - deviceName
                       - ebs
-                      - noDevice
-                      - virtualName
                       type: object
                     type: array
                   capacityReservationSpecification:
