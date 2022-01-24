@@ -50,6 +50,14 @@ const (
 var (
 	masterUsername = "root"
 	engineVersion  = "5.6"
+	s3SourceType   = "S3"
+	s3BucketName   = "database-backup"
+	backup         = v1beta1.RestoreBackupConfiguration{
+		Source: &s3SourceType,
+		S3: &v1beta1.S3RestoreBackupConfiguration{
+			BucketName: &s3BucketName,
+		},
+	}
 
 	replaceMe = "replace-me!"
 	errBoom   = errors.New("boom")
@@ -65,6 +73,10 @@ type rdsModifier func(*v1beta1.RDSInstance)
 
 func withMasterUsername(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
+}
+
+func withBackupConfiguration(backup *v1beta1.RestoreBackupConfiguration) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.RestoreFrom = backup }
 }
 
 func withConditions(c ...xpv1.Condition) rdsModifier {
@@ -281,7 +293,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"Successful": {
+		"SuccessfulCreate": {
 			args: args{
 				rds: &fake.MockRDSClient{
 					MockCreate: func(ctx context.Context, input *awsrds.CreateDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.CreateDBInstanceOutput, error) {
@@ -293,6 +305,30 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulRestore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromS3Input, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromS3Output, error) {
+						return &awsrds.RestoreDBInstanceFromS3Output{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&backup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&backup),
 					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{

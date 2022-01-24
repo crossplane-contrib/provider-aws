@@ -25,6 +25,7 @@ import (
 // MockRDSClient for testing.
 type MockRDSClient struct {
 	MockCreate   func(context.Context, *rds.CreateDBInstanceInput, []func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
+	MockRestore  func(context.Context, *rds.RestoreDBInstanceFromS3Input, []func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
 	MockDescribe func(context.Context, *rds.DescribeDBInstancesInput, []func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	MockModify   func(context.Context, *rds.ModifyDBInstanceInput, []func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	MockDelete   func(context.Context, *rds.DeleteDBInstanceInput, []func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -39,6 +40,11 @@ func (m *MockRDSClient) DescribeDBInstances(ctx context.Context, i *rds.Describe
 // CreateDBInstance creates RDS Instance with provided Specification
 func (m *MockRDSClient) CreateDBInstance(ctx context.Context, i *rds.CreateDBInstanceInput, opts ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error) {
 	return m.MockCreate(ctx, i, opts)
+}
+
+// RestoreDBInstanceFromS3 restores an RDS Instance from a backup with the provided Specification
+func (m *MockRDSClient) RestoreDBInstanceFromS3(ctx context.Context, i *rds.RestoreDBInstanceFromS3Input, opts ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error) {
+	return m.MockRestore(ctx, i, opts)
 }
 
 // ModifyDBInstance modifies RDS Instance with provided Specification
