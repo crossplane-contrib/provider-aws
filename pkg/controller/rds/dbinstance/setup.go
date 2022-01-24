@@ -59,6 +59,7 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			e.preDelete = c.preDelete
 			e.filterList = filterList
 			e.preUpdate = c.preUpdate
+			e.postUpdate = c.postUpdate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -117,16 +118,13 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return nil
 }
 
-func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.CreateDBInstanceOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
+func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.DBInstance) (managed.ConnectionDetails, error) {
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretUserKey: []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 	}
 	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "cannot get password from the given secret")
+		return managed.ConnectionDetails{}, errors.Wrap(err, "cannot get password from the given secret")
 	}
 	if pw != "" {
 		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
@@ -138,6 +136,17 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		if aws.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
 			conn[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Endpoint.Port, 10))
 		}
+	}
+	return conn, nil
+}
+
+func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.CreateDBInstanceOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	conn, err := e.assembleConnectionDetails(ctx, cr)
+	if err != nil {
+		return managed.ExternalCreation{}, err
 	}
 	return managed.ExternalCreation{
 		ConnectionDetails: conn,
@@ -156,6 +165,19 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	}
 
 	return nil
+}
+
+func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.ModifyDBInstanceOutput, _ managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+	conn, err := e.assembleConnectionDetails(ctx, cr)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+	return managed.ExternalUpdate{
+		ConnectionDetails: conn,
+	}, nil
 }
 
 func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
