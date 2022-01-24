@@ -131,12 +131,12 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	if pw != "" {
 		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 	}
-	if out.DBInstance.Endpoint != nil {
-		if aws.StringValue(out.DBInstance.Endpoint.Address) != "" {
-			conn[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(*out.DBInstance.Endpoint.Address)
+	if cr.Status.AtProvider.Endpoint != nil {
+		if aws.StringValue(cr.Status.AtProvider.Endpoint.Address) != "" {
+			conn[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.StringValue(cr.Status.AtProvider.Endpoint.Address))
 		}
-		if aws.Int64Value(out.DBInstance.Endpoint.Port) > 0 {
-			conn[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*out.DBInstance.Endpoint.Port, 10))
+		if aws.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
+			conn[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Endpoint.Port, 10))
 		}
 	}
 	return managed.ExternalCreation{
