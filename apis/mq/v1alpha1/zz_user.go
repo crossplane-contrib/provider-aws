@@ -79,7 +79,7 @@ type UserList struct {
 // Repository type metadata.
 var (
 	UserKind             = "User"
-	UserGroupKind        = schema.GroupKind{Group: Group, Kind: UserKind}.String()
+	UserGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: UserKind}.String()
 	UserKindAPIVersion   = UserKind + "." + GroupVersion.String()
 	UserGroupVersionKind = GroupVersion.WithKind(UserKind)
 )

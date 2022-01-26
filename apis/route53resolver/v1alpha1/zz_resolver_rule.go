@@ -135,7 +135,7 @@ type ResolverRuleList struct {
 // Repository type metadata.
 var (
 	ResolverRuleKind             = "ResolverRule"
-	ResolverRuleGroupKind        = schema.GroupKind{Group: Group, Kind: ResolverRuleKind}.String()
+	ResolverRuleGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ResolverRuleKind}.String()
 	ResolverRuleKindAPIVersion   = ResolverRuleKind + "." + GroupVersion.String()
 	ResolverRuleGroupVersionKind = GroupVersion.WithKind(ResolverRuleKind)
 )

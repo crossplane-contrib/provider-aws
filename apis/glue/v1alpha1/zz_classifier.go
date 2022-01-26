@@ -75,7 +75,7 @@ type ClassifierList struct {
 // Repository type metadata.
 var (
 	ClassifierKind             = "Classifier"
-	ClassifierGroupKind        = schema.GroupKind{Group: Group, Kind: ClassifierKind}.String()
+	ClassifierGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ClassifierKind}.String()
 	ClassifierKindAPIVersion   = ClassifierKind + "." + GroupVersion.String()
 	ClassifierGroupVersionKind = GroupVersion.WithKind(ClassifierKind)
 )

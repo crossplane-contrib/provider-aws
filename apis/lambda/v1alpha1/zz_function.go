@@ -167,7 +167,7 @@ type FunctionList struct {
 // Repository type metadata.
 var (
 	FunctionKind             = "Function"
-	FunctionGroupKind        = schema.GroupKind{Group: Group, Kind: FunctionKind}.String()
+	FunctionGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: FunctionKind}.String()
 	FunctionKindAPIVersion   = FunctionKind + "." + GroupVersion.String()
 	FunctionGroupVersionKind = GroupVersion.WithKind(FunctionKind)
 )

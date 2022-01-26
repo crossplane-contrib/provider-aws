@@ -89,7 +89,7 @@ type PrivateDNSNamespaceList struct {
 // Repository type metadata.
 var (
 	PrivateDNSNamespaceKind             = "PrivateDNSNamespace"
-	PrivateDNSNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: PrivateDNSNamespaceKind}.String()
+	PrivateDNSNamespaceGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: PrivateDNSNamespaceKind}.String()
 	PrivateDNSNamespaceKindAPIVersion   = PrivateDNSNamespaceKind + "." + GroupVersion.String()
 	PrivateDNSNamespaceGroupVersionKind = GroupVersion.WithKind(PrivateDNSNamespaceKind)
 )

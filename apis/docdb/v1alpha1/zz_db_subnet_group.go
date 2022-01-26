@@ -90,7 +90,7 @@ type DBSubnetGroupList struct {
 // Repository type metadata.
 var (
 	DBSubnetGroupKind             = "DBSubnetGroup"
-	DBSubnetGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBSubnetGroupKind}.String()
+	DBSubnetGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBSubnetGroupKind}.String()
 	DBSubnetGroupKindAPIVersion   = DBSubnetGroupKind + "." + GroupVersion.String()
 	DBSubnetGroupGroupVersionKind = GroupVersion.WithKind(DBSubnetGroupKind)
 )

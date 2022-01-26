@@ -100,7 +100,7 @@ type BackupList struct {
 // Repository type metadata.
 var (
 	BackupKind             = "Backup"
-	BackupGroupKind        = schema.GroupKind{Group: Group, Kind: BackupKind}.String()
+	BackupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: BackupKind}.String()
 	BackupKindAPIVersion   = BackupKind + "." + GroupVersion.String()
 	BackupGroupVersionKind = GroupVersion.WithKind(BackupKind)
 )

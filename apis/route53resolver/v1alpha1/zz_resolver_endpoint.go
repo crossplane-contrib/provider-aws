@@ -148,7 +148,7 @@ type ResolverEndpointList struct {
 // Repository type metadata.
 var (
 	ResolverEndpointKind             = "ResolverEndpoint"
-	ResolverEndpointGroupKind        = schema.GroupKind{Group: Group, Kind: ResolverEndpointKind}.String()
+	ResolverEndpointGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ResolverEndpointKind}.String()
 	ResolverEndpointKindAPIVersion   = ResolverEndpointKind + "." + GroupVersion.String()
 	ResolverEndpointGroupVersionKind = GroupVersion.WithKind(ResolverEndpointKind)
 )

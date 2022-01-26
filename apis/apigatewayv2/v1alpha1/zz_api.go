@@ -114,7 +114,7 @@ type APIList struct {
 // Repository type metadata.
 var (
 	APIKind             = "API"
-	APIGroupKind        = schema.GroupKind{Group: Group, Kind: APIKind}.String()
+	APIGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: APIKind}.String()
 	APIKindAPIVersion   = APIKind + "." + GroupVersion.String()
 	APIGroupVersionKind = GroupVersion.WithKind(APIKind)
 )

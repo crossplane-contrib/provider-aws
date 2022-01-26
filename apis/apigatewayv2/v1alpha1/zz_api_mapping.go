@@ -82,7 +82,7 @@ type APIMappingList struct {
 // Repository type metadata.
 var (
 	APIMappingKind             = "APIMapping"
-	APIMappingGroupKind        = schema.GroupKind{Group: Group, Kind: APIMappingKind}.String()
+	APIMappingGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: APIMappingKind}.String()
 	APIMappingKindAPIVersion   = APIMappingKind + "." + GroupVersion.String()
 	APIMappingGroupVersionKind = GroupVersion.WithKind(APIMappingKind)
 )

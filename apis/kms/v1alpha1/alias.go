@@ -104,7 +104,7 @@ type AliasList struct {
 // Repository type metadata.
 var (
 	AliasKind             = "Alias"
-	AliasGroupKind        = schema.GroupKind{Group: Group, Kind: AliasKind}.String()
+	AliasGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: AliasKind}.String()
 	AliasKindAPIVersion   = AliasKind + "." + GroupVersion.String()
 	AliasGroupVersionKind = GroupVersion.WithKind(AliasKind)
 )

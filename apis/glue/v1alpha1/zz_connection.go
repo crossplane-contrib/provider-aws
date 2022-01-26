@@ -78,7 +78,7 @@ type ConnectionList struct {
 // Repository type metadata.
 var (
 	ConnectionKind             = "Connection"
-	ConnectionGroupKind        = schema.GroupKind{Group: Group, Kind: ConnectionKind}.String()
+	ConnectionGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ConnectionKind}.String()
 	ConnectionKindAPIVersion   = ConnectionKind + "." + GroupVersion.String()
 	ConnectionGroupVersionKind = GroupVersion.WithKind(ConnectionKind)
 )

@@ -119,7 +119,7 @@ type StateMachineList struct {
 // Repository type metadata.
 var (
 	StateMachineKind             = "StateMachine"
-	StateMachineGroupKind        = schema.GroupKind{Group: Group, Kind: StateMachineKind}.String()
+	StateMachineGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: StateMachineKind}.String()
 	StateMachineKindAPIVersion   = StateMachineKind + "." + GroupVersion.String()
 	StateMachineGroupVersionKind = GroupVersion.WithKind(StateMachineKind)
 )

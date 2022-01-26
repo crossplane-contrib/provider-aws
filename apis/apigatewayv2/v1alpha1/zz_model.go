@@ -86,7 +86,7 @@ type ModelList struct {
 // Repository type metadata.
 var (
 	ModelKind             = "Model"
-	ModelGroupKind        = schema.GroupKind{Group: Group, Kind: ModelKind}.String()
+	ModelGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ModelKind}.String()
 	ModelKindAPIVersion   = ModelKind + "." + GroupVersion.String()
 	ModelGroupVersionKind = GroupVersion.WithKind(ModelKind)
 )

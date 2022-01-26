@@ -94,7 +94,7 @@ type GlobalTableList struct {
 // Repository type metadata.
 var (
 	GlobalTableKind             = "GlobalTable"
-	GlobalTableGroupKind        = schema.GroupKind{Group: Group, Kind: GlobalTableKind}.String()
+	GlobalTableGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GlobalTableKind}.String()
 	GlobalTableKindAPIVersion   = GlobalTableKind + "." + GroupVersion.String()
 	GlobalTableGroupVersionKind = GroupVersion.WithKind(GlobalTableKind)
 )

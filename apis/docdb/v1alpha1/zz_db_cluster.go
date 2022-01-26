@@ -238,7 +238,7 @@ type DBClusterList struct {
 // Repository type metadata.
 var (
 	DBClusterKind             = "DBCluster"
-	DBClusterGroupKind        = schema.GroupKind{Group: Group, Kind: DBClusterKind}.String()
+	DBClusterGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBClusterKind}.String()
 	DBClusterKindAPIVersion   = DBClusterKind + "." + GroupVersion.String()
 	DBClusterGroupVersionKind = GroupVersion.WithKind(DBClusterKind)
 )

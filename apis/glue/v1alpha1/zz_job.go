@@ -174,7 +174,7 @@ type JobList struct {
 // Repository type metadata.
 var (
 	JobKind             = "Job"
-	JobGroupKind        = schema.GroupKind{Group: Group, Kind: JobKind}.String()
+	JobGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: JobKind}.String()
 	JobKindAPIVersion   = JobKind + "." + GroupVersion.String()
 	JobGroupVersionKind = GroupVersion.WithKind(JobKind)
 )

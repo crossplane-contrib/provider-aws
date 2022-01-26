@@ -148,7 +148,7 @@ type LoadBalancerList struct {
 // Repository type metadata.
 var (
 	LoadBalancerKind             = "LoadBalancer"
-	LoadBalancerGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerKind}.String()
+	LoadBalancerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: LoadBalancerKind}.String()
 	LoadBalancerKindAPIVersion   = LoadBalancerKind + "." + GroupVersion.String()
 	LoadBalancerGroupVersionKind = GroupVersion.WithKind(LoadBalancerKind)
 )

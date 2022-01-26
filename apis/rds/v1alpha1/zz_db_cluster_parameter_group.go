@@ -98,7 +98,7 @@ type DBClusterParameterGroupList struct {
 // Repository type metadata.
 var (
 	DBClusterParameterGroupKind             = "DBClusterParameterGroup"
-	DBClusterParameterGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBClusterParameterGroupKind}.String()
+	DBClusterParameterGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBClusterParameterGroupKind}.String()
 	DBClusterParameterGroupKindAPIVersion   = DBClusterParameterGroupKind + "." + GroupVersion.String()
 	DBClusterParameterGroupGroupVersionKind = GroupVersion.WithKind(DBClusterParameterGroupKind)
 )

@@ -79,7 +79,7 @@ type SecurityConfigurationList struct {
 // Repository type metadata.
 var (
 	SecurityConfigurationKind             = "SecurityConfiguration"
-	SecurityConfigurationGroupKind        = schema.GroupKind{Group: Group, Kind: SecurityConfigurationKind}.String()
+	SecurityConfigurationGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: SecurityConfigurationKind}.String()
 	SecurityConfigurationKindAPIVersion   = SecurityConfigurationKind + "." + GroupVersion.String()
 	SecurityConfigurationGroupVersionKind = GroupVersion.WithKind(SecurityConfigurationKind)
 )

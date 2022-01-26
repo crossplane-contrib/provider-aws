@@ -88,7 +88,7 @@ type ThingList struct {
 // Repository type metadata.
 var (
 	ThingKind             = "Thing"
-	ThingGroupKind        = schema.GroupKind{Group: Group, Kind: ThingKind}.String()
+	ThingGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ThingKind}.String()
 	ThingKindAPIVersion   = ThingKind + "." + GroupVersion.String()
 	ThingGroupVersionKind = GroupVersion.WithKind(ThingKind)
 )

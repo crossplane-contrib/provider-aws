@@ -101,7 +101,7 @@ type MountTargetList struct {
 // Repository type metadata.
 var (
 	MountTargetKind             = "MountTarget"
-	MountTargetGroupKind        = schema.GroupKind{Group: Group, Kind: MountTargetKind}.String()
+	MountTargetGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: MountTargetKind}.String()
 	MountTargetKindAPIVersion   = MountTargetKind + "." + GroupVersion.String()
 	MountTargetGroupVersionKind = GroupVersion.WithKind(MountTargetKind)
 )

@@ -266,7 +266,7 @@ type TableList struct {
 // Repository type metadata.
 var (
 	TableKind             = "Table"
-	TableGroupKind        = schema.GroupKind{Group: Group, Kind: TableKind}.String()
+	TableGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: TableKind}.String()
 	TableKindAPIVersion   = TableKind + "." + GroupVersion.String()
 	TableGroupVersionKind = GroupVersion.WithKind(TableKind)
 )

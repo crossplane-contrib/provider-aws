@@ -87,7 +87,7 @@ type HTTPNamespaceList struct {
 // Repository type metadata.
 var (
 	HTTPNamespaceKind             = "HTTPNamespace"
-	HTTPNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: HTTPNamespaceKind}.String()
+	HTTPNamespaceGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: HTTPNamespaceKind}.String()
 	HTTPNamespaceKindAPIVersion   = HTTPNamespaceKind + "." + GroupVersion.String()
 	HTTPNamespaceGroupVersionKind = GroupVersion.WithKind(HTTPNamespaceKind)
 )

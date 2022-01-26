@@ -93,7 +93,7 @@ type VPCLinkList struct {
 // Repository type metadata.
 var (
 	VPCLinkKind             = "VPCLink"
-	VPCLinkGroupKind        = schema.GroupKind{Group: Group, Kind: VPCLinkKind}.String()
+	VPCLinkGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: VPCLinkKind}.String()
 	VPCLinkKindAPIVersion   = VPCLinkKind + "." + GroupVersion.String()
 	VPCLinkGroupVersionKind = GroupVersion.WithKind(VPCLinkKind)
 )

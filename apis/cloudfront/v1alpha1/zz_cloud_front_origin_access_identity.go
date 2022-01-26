@@ -84,7 +84,7 @@ type CloudFrontOriginAccessIdentityList struct {
 // Repository type metadata.
 var (
 	CloudFrontOriginAccessIdentityKind             = "CloudFrontOriginAccessIdentity"
-	CloudFrontOriginAccessIdentityGroupKind        = schema.GroupKind{Group: Group, Kind: CloudFrontOriginAccessIdentityKind}.String()
+	CloudFrontOriginAccessIdentityGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CloudFrontOriginAccessIdentityKind}.String()
 	CloudFrontOriginAccessIdentityKindAPIVersion   = CloudFrontOriginAccessIdentityKind + "." + GroupVersion.String()
 	CloudFrontOriginAccessIdentityGroupVersionKind = GroupVersion.WithKind(CloudFrontOriginAccessIdentityKind)
 )

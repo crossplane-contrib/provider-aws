@@ -97,7 +97,7 @@ type DBParameterGroupList struct {
 // Repository type metadata.
 var (
 	DBParameterGroupKind             = "DBParameterGroup"
-	DBParameterGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBParameterGroupKind}.String()
+	DBParameterGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBParameterGroupKind}.String()
 	DBParameterGroupKindAPIVersion   = DBParameterGroupKind + "." + GroupVersion.String()
 	DBParameterGroupGroupVersionKind = GroupVersion.WithKind(DBParameterGroupKind)
 )

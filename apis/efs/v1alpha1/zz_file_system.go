@@ -151,7 +151,7 @@ type FileSystemList struct {
 // Repository type metadata.
 var (
 	FileSystemKind             = "FileSystem"
-	FileSystemGroupKind        = schema.GroupKind{Group: Group, Kind: FileSystemKind}.String()
+	FileSystemGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: FileSystemKind}.String()
 	FileSystemKindAPIVersion   = FileSystemKind + "." + GroupVersion.String()
 	FileSystemGroupVersionKind = GroupVersion.WithKind(FileSystemKind)
 )

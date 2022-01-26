@@ -131,7 +131,7 @@ type StreamList struct {
 // Repository type metadata.
 var (
 	StreamKind             = "Stream"
-	StreamGroupKind        = schema.GroupKind{Group: Group, Kind: StreamKind}.String()
+	StreamGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: StreamKind}.String()
 	StreamKindAPIVersion   = StreamKind + "." + GroupVersion.String()
 	StreamGroupVersionKind = GroupVersion.WithKind(StreamKind)
 )

@@ -149,7 +149,7 @@ type SecretList struct {
 // Repository type metadata.
 var (
 	SecretKind             = "Secret"
-	SecretGroupKind        = schema.GroupKind{Group: Group, Kind: SecretKind}.String()
+	SecretGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: SecretKind}.String()
 	SecretKindAPIVersion   = SecretKind + "." + GroupVersion.String()
 	SecretGroupVersionKind = GroupVersion.WithKind(SecretKind)
 )

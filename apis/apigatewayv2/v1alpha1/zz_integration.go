@@ -113,7 +113,7 @@ type IntegrationList struct {
 // Repository type metadata.
 var (
 	IntegrationKind             = "Integration"
-	IntegrationGroupKind        = schema.GroupKind{Group: Group, Kind: IntegrationKind}.String()
+	IntegrationGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IntegrationKind}.String()
 	IntegrationKindAPIVersion   = IntegrationKind + "." + GroupVersion.String()
 	IntegrationGroupVersionKind = GroupVersion.WithKind(IntegrationKind)
 )

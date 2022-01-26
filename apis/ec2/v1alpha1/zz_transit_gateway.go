@@ -93,7 +93,7 @@ type TransitGatewayList struct {
 // Repository type metadata.
 var (
 	TransitGatewayKind             = "TransitGateway"
-	TransitGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: TransitGatewayKind}.String()
+	TransitGatewayGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: TransitGatewayKind}.String()
 	TransitGatewayKindAPIVersion   = TransitGatewayKind + "." + GroupVersion.String()
 	TransitGatewayGroupVersionKind = GroupVersion.WithKind(TransitGatewayKind)
 )

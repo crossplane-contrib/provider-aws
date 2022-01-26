@@ -84,7 +84,7 @@ type DistributionList struct {
 // Repository type metadata.
 var (
 	DistributionKind             = "Distribution"
-	DistributionGroupKind        = schema.GroupKind{Group: Group, Kind: DistributionKind}.String()
+	DistributionGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DistributionKind}.String()
 	DistributionKindAPIVersion   = DistributionKind + "." + GroupVersion.String()
 	DistributionGroupVersionKind = GroupVersion.WithKind(DistributionKind)
 )
