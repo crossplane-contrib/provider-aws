@@ -115,7 +115,7 @@ type ListenerList struct {
 // Repository type metadata.
 var (
 	ListenerKind             = "Listener"
-	ListenerGroupKind        = schema.GroupKind{Group: Group, Kind: ListenerKind}.String()
+	ListenerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ListenerKind}.String()
 	ListenerKindAPIVersion   = ListenerKind + "." + GroupVersion.String()
 	ListenerGroupVersionKind = GroupVersion.WithKind(ListenerKind)
 )

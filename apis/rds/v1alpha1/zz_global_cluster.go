@@ -110,7 +110,7 @@ type GlobalClusterList struct {
 // Repository type metadata.
 var (
 	GlobalClusterKind             = "GlobalCluster"
-	GlobalClusterGroupKind        = schema.GroupKind{Group: Group, Kind: GlobalClusterKind}.String()
+	GlobalClusterGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GlobalClusterKind}.String()
 	GlobalClusterKindAPIVersion   = GlobalClusterKind + "." + GroupVersion.String()
 	GlobalClusterGroupVersionKind = GroupVersion.WithKind(GlobalClusterKind)
 )

@@ -91,7 +91,7 @@ type LaunchTemplateList struct {
 // Repository type metadata.
 var (
 	LaunchTemplateKind             = "LaunchTemplate"
-	LaunchTemplateGroupKind        = schema.GroupKind{Group: Group, Kind: LaunchTemplateKind}.String()
+	LaunchTemplateGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: LaunchTemplateKind}.String()
 	LaunchTemplateKindAPIVersion   = LaunchTemplateKind + "." + GroupVersion.String()
 	LaunchTemplateGroupVersionKind = GroupVersion.WithKind(LaunchTemplateKind)
 )

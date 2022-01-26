@@ -111,7 +111,7 @@ type CrawlerList struct {
 // Repository type metadata.
 var (
 	CrawlerKind             = "Crawler"
-	CrawlerGroupKind        = schema.GroupKind{Group: Group, Kind: CrawlerKind}.String()
+	CrawlerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CrawlerKind}.String()
 	CrawlerKindAPIVersion   = CrawlerKind + "." + GroupVersion.String()
 	CrawlerGroupVersionKind = GroupVersion.WithKind(CrawlerKind)
 )

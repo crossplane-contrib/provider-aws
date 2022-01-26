@@ -87,7 +87,7 @@ type WorkGroupList struct {
 // Repository type metadata.
 var (
 	WorkGroupKind             = "WorkGroup"
-	WorkGroupGroupKind        = schema.GroupKind{Group: Group, Kind: WorkGroupKind}.String()
+	WorkGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: WorkGroupKind}.String()
 	WorkGroupKindAPIVersion   = WorkGroupKind + "." + GroupVersion.String()
 	WorkGroupGroupVersionKind = GroupVersion.WithKind(WorkGroupKind)
 )

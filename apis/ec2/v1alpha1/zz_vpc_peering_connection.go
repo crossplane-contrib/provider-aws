@@ -105,7 +105,7 @@ type VPCPeeringConnectionList struct {
 // Repository type metadata.
 var (
 	VPCPeeringConnectionKind             = "VPCPeeringConnection"
-	VPCPeeringConnectionGroupKind        = schema.GroupKind{Group: Group, Kind: VPCPeeringConnectionKind}.String()
+	VPCPeeringConnectionGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: VPCPeeringConnectionKind}.String()
 	VPCPeeringConnectionKindAPIVersion   = VPCPeeringConnectionKind + "." + GroupVersion.String()
 	VPCPeeringConnectionGroupVersionKind = GroupVersion.WithKind(VPCPeeringConnectionKind)
 )

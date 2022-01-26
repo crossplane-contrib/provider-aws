@@ -98,7 +98,7 @@ type ResourceShareList struct {
 // Repository type metadata.
 var (
 	ResourceShareKind             = "ResourceShare"
-	ResourceShareGroupKind        = schema.GroupKind{Group: Group, Kind: ResourceShareKind}.String()
+	ResourceShareGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ResourceShareKind}.String()
 	ResourceShareKindAPIVersion   = ResourceShareKind + "." + GroupVersion.String()
 	ResourceShareGroupVersionKind = GroupVersion.WithKind(ResourceShareKind)
 )

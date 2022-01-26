@@ -85,7 +85,7 @@ type RouteResponseList struct {
 // Repository type metadata.
 var (
 	RouteResponseKind             = "RouteResponse"
-	RouteResponseGroupKind        = schema.GroupKind{Group: Group, Kind: RouteResponseKind}.String()
+	RouteResponseGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RouteResponseKind}.String()
 	RouteResponseKindAPIVersion   = RouteResponseKind + "." + GroupVersion.String()
 	RouteResponseGroupVersionKind = GroupVersion.WithKind(RouteResponseKind)
 )

@@ -888,7 +888,7 @@ type DBInstanceList struct {
 // Repository type metadata.
 var (
 	DBInstanceKind             = "DBInstance"
-	DBInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: DBInstanceKind}.String()
+	DBInstanceGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBInstanceKind}.String()
 	DBInstanceKindAPIVersion   = DBInstanceKind + "." + GroupVersion.String()
 	DBInstanceGroupVersionKind = GroupVersion.WithKind(DBInstanceKind)
 )

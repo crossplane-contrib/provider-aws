@@ -172,7 +172,7 @@ type ServerList struct {
 // Repository type metadata.
 var (
 	ServerKind             = "Server"
-	ServerGroupKind        = schema.GroupKind{Group: Group, Kind: ServerKind}.String()
+	ServerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ServerKind}.String()
 	ServerKindAPIVersion   = ServerKind + "." + GroupVersion.String()
 	ServerGroupVersionKind = GroupVersion.WithKind(ServerKind)
 )

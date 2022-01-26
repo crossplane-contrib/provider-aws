@@ -110,7 +110,7 @@ type ActivityList struct {
 // Repository type metadata.
 var (
 	ActivityKind             = "Activity"
-	ActivityGroupKind        = schema.GroupKind{Group: Group, Kind: ActivityKind}.String()
+	ActivityGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ActivityKind}.String()
 	ActivityKindAPIVersion   = ActivityKind + "." + GroupVersion.String()
 	ActivityGroupVersionKind = GroupVersion.WithKind(ActivityKind)
 )

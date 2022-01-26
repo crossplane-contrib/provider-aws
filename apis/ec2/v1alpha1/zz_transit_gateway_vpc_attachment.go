@@ -96,7 +96,7 @@ type TransitGatewayVPCAttachmentList struct {
 // Repository type metadata.
 var (
 	TransitGatewayVPCAttachmentKind             = "TransitGatewayVPCAttachment"
-	TransitGatewayVPCAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: TransitGatewayVPCAttachmentKind}.String()
+	TransitGatewayVPCAttachmentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: TransitGatewayVPCAttachmentKind}.String()
 	TransitGatewayVPCAttachmentKindAPIVersion   = TransitGatewayVPCAttachmentKind + "." + GroupVersion.String()
 	TransitGatewayVPCAttachmentGroupVersionKind = GroupVersion.WithKind(TransitGatewayVPCAttachmentKind)
 )

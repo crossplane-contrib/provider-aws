@@ -168,7 +168,7 @@ type TargetGroupList struct {
 // Repository type metadata.
 var (
 	TargetGroupKind             = "TargetGroup"
-	TargetGroupGroupKind        = schema.GroupKind{Group: Group, Kind: TargetGroupKind}.String()
+	TargetGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: TargetGroupKind}.String()
 	TargetGroupKindAPIVersion   = TargetGroupKind + "." + GroupVersion.String()
 	TargetGroupGroupVersionKind = GroupVersion.WithKind(TargetGroupKind)
 )

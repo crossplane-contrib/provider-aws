@@ -176,7 +176,7 @@ type VolumeList struct {
 // Repository type metadata.
 var (
 	VolumeKind             = "Volume"
-	VolumeGroupKind        = schema.GroupKind{Group: Group, Kind: VolumeKind}.String()
+	VolumeGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: VolumeKind}.String()
 	VolumeKindAPIVersion   = VolumeKind + "." + GroupVersion.String()
 	VolumeGroupVersionKind = GroupVersion.WithKind(VolumeKind)
 )

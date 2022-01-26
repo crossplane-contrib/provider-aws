@@ -100,7 +100,7 @@ type RouteList struct {
 // Repository type metadata.
 var (
 	RouteKind             = "Route"
-	RouteGroupKind        = schema.GroupKind{Group: Group, Kind: RouteKind}.String()
+	RouteGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RouteKind}.String()
 	RouteKindAPIVersion   = RouteKind + "." + GroupVersion.String()
 	RouteGroupVersionKind = GroupVersion.WithKind(RouteKind)
 )

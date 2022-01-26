@@ -84,7 +84,7 @@ type DomainNameList struct {
 // Repository type metadata.
 var (
 	DomainNameKind             = "DomainName"
-	DomainNameGroupKind        = schema.GroupKind{Group: Group, Kind: DomainNameKind}.String()
+	DomainNameGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DomainNameKind}.String()
 	DomainNameKindAPIVersion   = DomainNameKind + "." + GroupVersion.String()
 	DomainNameGroupVersionKind = GroupVersion.WithKind(DomainNameKind)
 )

@@ -87,7 +87,7 @@ type IntegrationResponseList struct {
 // Repository type metadata.
 var (
 	IntegrationResponseKind             = "IntegrationResponse"
-	IntegrationResponseGroupKind        = schema.GroupKind{Group: Group, Kind: IntegrationResponseKind}.String()
+	IntegrationResponseGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IntegrationResponseKind}.String()
 	IntegrationResponseKindAPIVersion   = IntegrationResponseKind + "." + GroupVersion.String()
 	IntegrationResponseGroupVersionKind = GroupVersion.WithKind(IntegrationResponseKind)
 )

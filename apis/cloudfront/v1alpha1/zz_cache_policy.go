@@ -84,7 +84,7 @@ type CachePolicyList struct {
 // Repository type metadata.
 var (
 	CachePolicyKind             = "CachePolicy"
-	CachePolicyGroupKind        = schema.GroupKind{Group: Group, Kind: CachePolicyKind}.String()
+	CachePolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CachePolicyKind}.String()
 	CachePolicyKindAPIVersion   = CachePolicyKind + "." + GroupVersion.String()
 	CachePolicyGroupVersionKind = GroupVersion.WithKind(CachePolicyKind)
 )

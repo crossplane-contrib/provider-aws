@@ -88,7 +88,7 @@ type VPCEndpointServiceConfigurationList struct {
 // Repository type metadata.
 var (
 	VPCEndpointServiceConfigurationKind             = "VPCEndpointServiceConfiguration"
-	VPCEndpointServiceConfigurationGroupKind        = schema.GroupKind{Group: Group, Kind: VPCEndpointServiceConfigurationKind}.String()
+	VPCEndpointServiceConfigurationGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: VPCEndpointServiceConfigurationKind}.String()
 	VPCEndpointServiceConfigurationKindAPIVersion   = VPCEndpointServiceConfigurationKind + "." + GroupVersion.String()
 	VPCEndpointServiceConfigurationGroupVersionKind = GroupVersion.WithKind(VPCEndpointServiceConfigurationKind)
 )

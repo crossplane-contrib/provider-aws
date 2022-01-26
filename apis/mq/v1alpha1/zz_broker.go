@@ -112,7 +112,7 @@ type BrokerList struct {
 // Repository type metadata.
 var (
 	BrokerKind             = "Broker"
-	BrokerGroupKind        = schema.GroupKind{Group: Group, Kind: BrokerKind}.String()
+	BrokerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: BrokerKind}.String()
 	BrokerKindAPIVersion   = BrokerKind + "." + GroupVersion.String()
 	BrokerGroupVersionKind = GroupVersion.WithKind(BrokerKind)
 )

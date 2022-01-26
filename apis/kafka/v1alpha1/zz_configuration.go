@@ -91,7 +91,7 @@ type ConfigurationList struct {
 // Repository type metadata.
 var (
 	ConfigurationKind             = "Configuration"
-	ConfigurationGroupKind        = schema.GroupKind{Group: Group, Kind: ConfigurationKind}.String()
+	ConfigurationGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ConfigurationKind}.String()
 	ConfigurationKindAPIVersion   = ConfigurationKind + "." + GroupVersion.String()
 	ConfigurationGroupVersionKind = GroupVersion.WithKind(ConfigurationKind)
 )

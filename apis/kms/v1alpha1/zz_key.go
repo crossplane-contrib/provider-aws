@@ -272,7 +272,7 @@ type KeyList struct {
 // Repository type metadata.
 var (
 	KeyKind             = "Key"
-	KeyGroupKind        = schema.GroupKind{Group: Group, Kind: KeyKind}.String()
+	KeyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: KeyKind}.String()
 	KeyKindAPIVersion   = KeyKind + "." + GroupVersion.String()
 	KeyGroupVersionKind = GroupVersion.WithKind(KeyKind)
 )

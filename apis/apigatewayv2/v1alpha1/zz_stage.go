@@ -102,7 +102,7 @@ type StageList struct {
 // Repository type metadata.
 var (
 	StageKind             = "Stage"
-	StageGroupKind        = schema.GroupKind{Group: Group, Kind: StageKind}.String()
+	StageGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: StageKind}.String()
 	StageKindAPIVersion   = StageKind + "." + GroupVersion.String()
 	StageGroupVersionKind = GroupVersion.WithKind(StageKind)
 )

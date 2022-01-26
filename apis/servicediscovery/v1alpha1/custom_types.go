@@ -9,7 +9,7 @@ import (
 
 // AnnotationKeyOperationID is the key in the annotations map of a
 // Cloud Map managed resource for the OperationId returned by API calls
-const AnnotationKeyOperationID = Group + "/operation-id"
+const AnnotationKeyOperationID = CRDGroup + "/operation-id"
 
 // CustomServiceParameters are custom parameters for Services.
 type CustomServiceParameters struct{}

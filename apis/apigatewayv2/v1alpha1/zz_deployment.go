@@ -88,7 +88,7 @@ type DeploymentList struct {
 // Repository type metadata.
 var (
 	DeploymentKind             = "Deployment"
-	DeploymentGroupKind        = schema.GroupKind{Group: Group, Kind: DeploymentKind}.String()
+	DeploymentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DeploymentKind}.String()
 	DeploymentKindAPIVersion   = DeploymentKind + "." + GroupVersion.String()
 	DeploymentGroupVersionKind = GroupVersion.WithKind(DeploymentKind)
 )

@@ -91,7 +91,7 @@ type PolicyList struct {
 // Repository type metadata.
 var (
 	PolicyKind             = "Policy"
-	PolicyGroupKind        = schema.GroupKind{Group: Group, Kind: PolicyKind}.String()
+	PolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: PolicyKind}.String()
 	PolicyKindAPIVersion   = PolicyKind + "." + GroupVersion.String()
 	PolicyGroupVersionKind = GroupVersion.WithKind(PolicyKind)
 )

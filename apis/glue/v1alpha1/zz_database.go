@@ -78,7 +78,7 @@ type DatabaseList struct {
 // Repository type metadata.
 var (
 	DatabaseKind             = "Database"
-	DatabaseGroupKind        = schema.GroupKind{Group: Group, Kind: DatabaseKind}.String()
+	DatabaseGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DatabaseKind}.String()
 	DatabaseKindAPIVersion   = DatabaseKind + "." + GroupVersion.String()
 	DatabaseGroupVersionKind = GroupVersion.WithKind(DatabaseKind)
 )

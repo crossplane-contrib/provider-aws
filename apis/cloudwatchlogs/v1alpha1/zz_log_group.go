@@ -80,7 +80,7 @@ type LogGroupList struct {
 // Repository type metadata.
 var (
 	LogGroupKind             = "LogGroup"
-	LogGroupGroupKind        = schema.GroupKind{Group: Group, Kind: LogGroupKind}.String()
+	LogGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: LogGroupKind}.String()
 	LogGroupKindAPIVersion   = LogGroupKind + "." + GroupVersion.String()
 	LogGroupGroupVersionKind = GroupVersion.WithKind(LogGroupKind)
 )

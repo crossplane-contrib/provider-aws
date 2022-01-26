@@ -99,7 +99,7 @@ type AuthorizerList struct {
 // Repository type metadata.
 var (
 	AuthorizerKind             = "Authorizer"
-	AuthorizerGroupKind        = schema.GroupKind{Group: Group, Kind: AuthorizerKind}.String()
+	AuthorizerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: AuthorizerKind}.String()
 	AuthorizerKindAPIVersion   = AuthorizerKind + "." + GroupVersion.String()
 	AuthorizerGroupVersionKind = GroupVersion.WithKind(AuthorizerKind)
 )
