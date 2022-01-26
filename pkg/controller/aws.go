@@ -117,6 +117,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
+	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
@@ -265,6 +266,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 		kinesisstream.SetupStream,
 		resolverruleassociation.SetupResolverRuleAssociation,
+		neptunecluster.SetupDBCluster,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

@@ -1,0 +1,14 @@
+apiVersion: neptune.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: sample-cluster
+spec:
+  forProvider:
+    region: eu-central-1
+    applyImmediately: true
+    backupRetentionPeriod: 5
+    engine: neptune
+    enableIAMDatabaseAuthentication: true
+    deletionProtection: false
+    preferredBackupWindow: 07:00-09:00
+    skipFinalSnapshot: true

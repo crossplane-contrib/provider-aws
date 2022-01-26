@@ -1,0 +1,13 @@
+ignore:
+  resource_names:
+    - DBClusterEndpoint
+    # DBInstance generation is blocked due to this issue -> https://github.com/aws-controllers-k8s/community/issues/1069#issuecomment-1022186850
+    - DBInstance
+    - DBClusterParameterGroup
+    - DBClusterSnapshot
+    - DBParameterGroup
+    - DBSubnetGroup
+    - EventSubscription
+  field_paths:
+    - CreateDBClusterInput.DBClusterIdentifier
+    - ModifyDBClusterInput.DBClusterIdentifier
