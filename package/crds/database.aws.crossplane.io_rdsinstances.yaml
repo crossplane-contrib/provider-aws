@@ -622,11 +622,63 @@ spec:
                             description: BucketName is the name of the S3 bucket containing
                               the backup to restore.
                             type: string
+                          bucketNameRef:
+                            description: BucketNameRef is a reference to a Bucket
+                              used to set BucketName.
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          bucketNameSelector:
+                            description: BucketNameSelector selects a reference to
+                              a Bucket used to set BucketName.
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object
+                                  with the same controller reference as the selecting
+                                  object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching
+                                  labels is selected.
+                                type: object
+                            type: object
                           ingestionRoleARN:
                             description: IngestionRoleARN is the IAM role RDS can
                               assume that will allow it to access the contents of
                               the S3 bucket.
                             type: string
+                          ingestionRoleARNRef:
+                            description: IngestionRoleARNRef is a reference to a IAM
+                              Role used to set IngestionRoleARN.
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          ingestionRoleARNSelector:
+                            description: IngestionRoleARNSelector selects a reference
+                              to a IAM Role used to set IngestionRoleARN.
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object
+                                  with the same controller reference as the selecting
+                                  object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching
+                                  labels is selected.
+                                type: object
+                            type: object
                           prefix:
                             description: Prefix is the path prefix of the S3 bucket
                               within which the backup to restore is located.
@@ -640,8 +692,6 @@ spec:
                               engine used to create the backup. Example: "5.7.30"'
                             type: string
                         required:
-                        - bucketName
-                        - ingestionRoleARN
                         - sourceEngine
                         - sourceEngineVersion
                         type: object

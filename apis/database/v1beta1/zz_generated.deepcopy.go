@@ -886,10 +886,30 @@ func (in *S3RestoreBackupConfiguration) DeepCopyInto(out *S3RestoreBackupConfigu
 		*out = new(string)
 		**out = **in
 	}
+	if in.BucketNameRef != nil {
+		in, out := &in.BucketNameRef, &out.BucketNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.BucketNameSelector != nil {
+		in, out := &in.BucketNameSelector, &out.BucketNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.IngestionRoleARN != nil {
 		in, out := &in.IngestionRoleARN, &out.IngestionRoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.IngestionRoleARNRef != nil {
+		in, out := &in.IngestionRoleARNRef, &out.IngestionRoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.IngestionRoleARNSelector != nil {
+		in, out := &in.IngestionRoleARNSelector, &out.IngestionRoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Prefix != nil {
 		in, out := &in.Prefix, &out.Prefix
