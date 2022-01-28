@@ -13,6 +13,7 @@ AWS API. This can be done in one of two ways:
    in the cluster.
 3. Authenticating using [kube2iam](https://github.com/jtblin/kube2iam). This solution allows
    to avoid using static credentials with non-EKS cluster.
+4. use `assumeRoleARN` with the provider-aws to connect to other AWS accounts via one AWS account.
 
 ## Using IAM Roles for Service Accounts
 
@@ -272,3 +273,31 @@ kubectl apply -f provider-config.yaml
 ```
 
 *Note: Because the name of the `ProviderConfig` is `default` it will be used by any managed resources that do not explicitly reference a `ProviderConfig`.*
+
+
+## How can assumeRoleARN be used with provider-aws ?
+
+provider-aws will be configured to connect to AWS Account A via `InjectedIdentity`, request temporary security credentials, and then `assumeRoleARN` to assume a role in AWS Account B to manage the resources within AWS Account B.
+
+The first thing that needs to be done is to create an IAM role within AWS Account B that provider-aws will `assumeRoleARN` into.
+
+- From within the AWS console of AWS Account B, navigate to IAM > Roles > Create role > Another AWS account.
+
+  -  Enter the Account ID of Account A (the account provider-aws will call `assumeRoleARN` from).
+
+  - (Optional) Check the box for “Require external ID”. This ensures requests coming from Account A can only use 'AssumeRoleARN' if these requests pass the specified `externalID`.
+
+Next, the provider-aws must be configured to use `assumeRoleARN`. The code snippet below shows how to configure provider-aws to connect to AWS Account A and assumeRoleARN into a role within AWS Account B.
+
+```bash
+cat > provider-config.yaml <<EOF
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: account-b
+spec:
+  assumeRoleARN: "arn:aws:iam::999999999999:role/account-b"
+  credentials:
+    source: InjectedIdentity
+EOF
+```
