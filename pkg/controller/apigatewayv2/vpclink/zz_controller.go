@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
