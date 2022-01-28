@@ -35,8 +35,8 @@ The first run will take a while since it clones the code generator and AWS SDK.
 Once it is completed, you'll see new folders in `apis` and `pkg/controller`
 directories. By default, it generates every resource it can recognize but that's
 not what you want if you'd like to add support for only a few resources. In order
-to ignore some of the generated resources, you need to create a
-`apis/<serviceid>/v1alpha1/generator-config.yaml` file with the following content:
+to ignore some of the generated resources, you need to create an
+`apis/<serviceid>/generator-config.yaml` file with the following content:
 
 ```yaml
 ignore:
@@ -46,9 +46,21 @@ ignore:
     - <other CRD kinds you want to ignore>
 ```
 
+If you'd like to specify an API version for a generated resource other than 
+the default `v1alpha1`, you can do so with a configuration in `generator-config.yaml`
+as follows:
+```yaml
+resources:
+  "Distribution":
+    api_versions:
+    - name: "v1beta1"
+```
+If not overridden in the `generator-config.yaml` file, the default version generated is 
+`v1alpha1`.
+
 When you re-run the generation with this configuration, existing files won't be
-deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
-`generator-config.yaml` and then re-run the command.
+deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1`and 
+then re-run the command.
 
 If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
 
