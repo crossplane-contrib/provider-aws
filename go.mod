@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/aws/aws-sdk-go v1.37.10
-	github.com/aws/aws-sdk-go-v2 v1.11.0
+	github.com/aws/aws-sdk-go-v2 v1.11.2
 	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.0
 	github.com/aws/aws-sdk-go-v2/service/acm v1.8.0
@@ -18,6 +18,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/rds v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/redshift v1.13.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.13.0
+	github.com/aws/aws-sdk-go-v2/service/route53resolver v1.10.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.18.0
 	github.com/aws/aws-sdk-go-v2/service/sns v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
@@ -45,8 +46,8 @@ require (
 	github.com/alecthomas/units v0.0.0-20210912230133-d1bdfacee922 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.0.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.0.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.5.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.0 // indirect
