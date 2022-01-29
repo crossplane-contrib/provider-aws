@@ -730,14 +730,17 @@ type SpotMarketOptions struct {
 	// The required duration for the Spot Instances (also known as Spot blocks),
 	// in minutes. This value must be a multiple of 60 (60, 120, 180, 240, 300,
 	// or 360).
-	BlockDurationMinutes *int32 `json:"blockDurationMinutes"`
+	// +optional
+	BlockDurationMinutes *int32 `json:"blockDurationMinutes,omitempty"`
 
 	// The behavior when a Spot Instance is interrupted. The default is terminate.
+	// +kubebuilder:validation:Enum=hibernate;stop;terminate
 	InstanceInterruptionBehavior string `json:"instanceInterruptionBehavior"`
 
 	// The maximum hourly price you're willing to pay for the Spot Instances. The
 	// default is the On-Demand price.
-	MaxPrice *string `json:"maxPrice"`
+	// +optional
+	MaxPrice *string `json:"maxPrice,omitempty"`
 
 	// The Spot Instance request type. For RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances),
 	// persistent Spot Instance requests are only supported when InstanceInterruptionBehavior
@@ -751,7 +754,8 @@ type SpotMarketOptions struct {
 	// or this date and time is reached. The default end date is 7 days from the
 	// current date.
 	// Must be in UTC format (YYYY-MM-DDTHH:MM:SSZ)
-	ValidUntil *metav1.Time `json:"validUntil"`
+	// +optional
+	ValidUntil *metav1.Time `json:"validUntil,omitempty"`
 }
 
 // StateReason describes a state change.

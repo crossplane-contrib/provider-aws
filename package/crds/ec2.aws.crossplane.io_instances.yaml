@@ -369,6 +369,10 @@ spec:
                           instanceInterruptionBehavior:
                             description: The behavior when a Spot Instance is interrupted.
                               The default is terminate.
+                            enum:
+                            - hibernate
+                            - stop
+                            - terminate
                             type: string
                           maxPrice:
                             description: The maximum hourly price you're willing to
@@ -396,11 +400,8 @@ spec:
                             format: date-time
                             type: string
                         required:
-                        - blockDurationMinutes
                         - instanceInterruptionBehavior
-                        - maxPrice
                         - spotInstanceType
-                        - validUntil
                         type: object
                     required:
                     - marketType
@@ -1163,6 +1164,8 @@ spec:
                   instanceLifecyle:
                     type: string
                   instanceType:
+                    description: Supported instance family when set instanceInterruptionBehavior
+                      to hibernate C3, C4, C5, M4, M5, R3, R4
                     type: string
                   kernelId:
                     type: string
