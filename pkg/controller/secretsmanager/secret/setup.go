@@ -114,6 +114,10 @@ type hooks struct {
 }
 
 func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
+	if meta.WasDeleted(cr) {
+		return false, nil
+	}
+
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, nil
