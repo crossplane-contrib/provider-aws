@@ -57,7 +57,8 @@ import (
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	route53resolveralpha1 "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
+	route53resolvermanualv1alpha1 "github.com/crossplane/provider-aws/apis/route53resolver/manualv1alpha1"
+	route53resolverv1alpha1 "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
 	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	secretsmanagerv1alpha1 "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
@@ -109,7 +110,8 @@ func init() {
 		ec2v1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1alpha1.SchemeBuilder.AddToScheme,
 		cloudfrontv1alpha1.SchemeBuilder.AddToScheme,
-		route53resolveralpha1.SchemeBuilder.AddToScheme,
+		route53resolverv1alpha1.SchemeBuilder.AddToScheme,
+		route53resolvermanualv1alpha1.SchemeBuilder.AddToScheme,
 		kafkav1alpha1.SchemeBuilder.AddToScheme,
 		transferv1alpha1.SchemeBuilder.AddToScheme,
 		gluev1alpha1.SchemeBuilder.AddToScheme,
