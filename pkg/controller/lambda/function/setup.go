@@ -21,14 +21,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
-	svcapitypes "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupFunction adds a controller that reconciles Function.
 func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.FunctionGroupKind)
+	name := managed.ControllerName(svcapitypes.FunctionGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve
@@ -46,9 +45,9 @@ func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.Function{}).
+		For(&svcapitypes.Function{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.FunctionGroupVersionKind),
+			resource.ManagedKind(svcapitypes.FunctionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),

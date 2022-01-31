@@ -9,22 +9,22 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 )
 
 type args struct {
-	cr  *v1alpha1.Function
+	cr  *v1beta1.Function
 	obj *svcsdk.GetFunctionOutput
 }
 
-type functionModifier func(*v1alpha1.Function)
+type functionModifier func(*v1beta1.Function)
 
-func withSpec(p v1alpha1.FunctionParameters) functionModifier {
-	return func(r *v1alpha1.Function) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.FunctionParameters) functionModifier {
+	return func(r *v1beta1.Function) { r.Spec.ForProvider = p }
 }
 
-func function(m ...functionModifier) *v1alpha1.Function {
-	cr := &v1alpha1.Function{}
+func function(m ...functionModifier) *v1beta1.Function {
+	cr := &v1beta1.Function{}
 	cr.Name = "test-function-name"
 	for _, f := range m {
 		f(cr)
@@ -47,7 +47,7 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 	}{
 		"NilSourceNoUpdate": {
 			args: args{
-				cr:  function(withSpec(v1alpha1.FunctionParameters{})),
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{Variables: map[string]*string{}}}},
 			},
 			want: want{
@@ -57,7 +57,7 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NilSourceNilAwsNoUpdate": {
 			args: args{
-				cr:  function(withSpec(v1alpha1.FunctionParameters{})),
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
 			},
 			want: want{
@@ -67,8 +67,8 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"EmptySourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					Environment: &v1alpha1.Environment{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{},
 					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{Variables: map[string]*string{}}}},
@@ -80,7 +80,7 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NilSourceWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{
 					Variables: map[string]*string{"tagKey2": aws.String("tagValue2")}}}},
 			},
@@ -91,8 +91,8 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NilAwsWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					Environment: &v1alpha1.Environment{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{"tagKey1": aws.String("tagValue1")},
 					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
@@ -104,8 +104,8 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NeedsUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					Environment: &v1alpha1.Environment{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{"tagKey1": aws.String("tagValue1")},
 					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{
@@ -118,8 +118,8 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NoUpdateNeeded": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					Environment: &v1alpha1.Environment{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{"tagKey1": aws.String("tagValue1")},
 					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{
@@ -132,8 +132,8 @@ func TestIsUpToDateEnvironment(t *testing.T) {
 		},
 		"NoUpdateNeededOutOfOrder": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					Environment: &v1alpha1.Environment{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{"tagKey1": aws.String("tagValue1"), "tagKey2": aws.String("tagValue2"), "tagKey3": aws.String("tagValue3")},
 					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{Environment: &svcsdk.EnvironmentResponse{
@@ -170,7 +170,7 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 	}{
 		"NilSourceNoUpdate": {
 			args: args{
-				cr:  function(withSpec(v1alpha1.FunctionParameters{})),
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{FileSystemConfigs: []*svcsdk.FileSystemConfig{}}},
 			},
 			want: want{
@@ -180,7 +180,7 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NilSourceNilAwsNoUpdate": {
 			args: args{
-				cr:  function(withSpec(v1alpha1.FunctionParameters{})),
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
 			},
 			want: want{
@@ -190,8 +190,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"EmptySourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{}}},
 			},
@@ -202,7 +202,7 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NilSourceWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}}},
 			},
@@ -213,8 +213,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NilAwsWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
 			},
 			want: want{
@@ -224,8 +224,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NeedsUpdateArnAndMounthPath": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn2"), LocalMountPath: aws.String(" localMountPath2")}}}},
 			},
@@ -236,8 +236,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NeedsUpdateArn": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn2"), LocalMountPath: aws.String(" localMountPath1")}}}},
 			},
@@ -248,8 +248,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NeedsUpdateMountPath": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath2")}}}},
 			},
@@ -260,8 +260,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NoUpdateNeeded": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")}}}},
 			},
@@ -272,8 +272,8 @@ func TestIsUpToDateFileSystemConfigs(t *testing.T) {
 		},
 		"NoUpdateNeededSortOrder": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")},
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1"), LocalMountPath: aws.String(" localMountPath1")},
 						{ARN: aws.String("arn2"), LocalMountPath: aws.String(" localMountPath2")}}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn2"), LocalMountPath: aws.String(" localMountPath2")},
@@ -311,7 +311,7 @@ func TestIsUpToDateTracingConfig(t *testing.T) {
 	}{
 		"NilSourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					TracingConfig: &svcsdk.TracingConfigResponse{
 						Mode: aws.String(svcsdk.TracingModePassThrough)}}},
@@ -323,8 +323,8 @@ func TestIsUpToDateTracingConfig(t *testing.T) {
 		},
 		"EmptySourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					TracingConfig: &v1alpha1.TracingConfig{}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					TracingConfig: &v1beta1.TracingConfig{}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					TracingConfig: &svcsdk.TracingConfigResponse{
 						Mode: aws.String(svcsdk.TracingModePassThrough)}}},
@@ -336,7 +336,7 @@ func TestIsUpToDateTracingConfig(t *testing.T) {
 		},
 		"NilSourceWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					TracingConfig: &svcsdk.TracingConfigResponse{
 						Mode: aws.String(svcsdk.TracingModeActive)}}},
@@ -348,8 +348,8 @@ func TestIsUpToDateTracingConfig(t *testing.T) {
 		},
 		"NeedsUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					TracingConfig: &v1alpha1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					TracingConfig: &v1beta1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					TracingConfig: &svcsdk.TracingConfigResponse{
 						Mode: aws.String(svcsdk.TracingModePassThrough)}}},
@@ -361,8 +361,8 @@ func TestIsUpToDateTracingConfig(t *testing.T) {
 		},
 		"NoUpdateNeeded": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					TracingConfig: &v1alpha1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)}})),
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					TracingConfig: &v1beta1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					TracingConfig: &svcsdk.TracingConfigResponse{
 						Mode: aws.String(svcsdk.TracingModeActive)}}},
@@ -398,7 +398,7 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 	}{
 		"NilSourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{}}}},
 			},
@@ -409,7 +409,7 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NilSourceNilAwsNoUpdate": {
 			args: args{
-				cr:  function(withSpec(v1alpha1.FunctionParameters{})),
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
 			},
 			want: want{
@@ -419,9 +419,9 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"EmptySourceNoUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{},
 						},
 					}})),
@@ -435,7 +435,7 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NilSourceWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{})),
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{aws.String("id1")}}}},
 			},
@@ -446,9 +446,9 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NilAwsWithUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{aws.String("id1")},
 						},
 					}})),
@@ -461,9 +461,9 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NeedsUpdate": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{aws.String("id1")},
 						},
 					}})),
@@ -477,9 +477,9 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NoUpdateNeededSortOrderIsDifferent": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{aws.String("id1"), aws.String("id2")},
 						},
 					}})),
@@ -493,9 +493,9 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		},
 		"NoUpdateNeeded": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{aws.String("id1")},
 						},
 					}})),
@@ -523,7 +523,7 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 
 func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 	type args struct {
-		cr *v1alpha1.Function
+		cr *v1beta1.Function
 	}
 	type want struct {
 		obj *svcsdk.UpdateFunctionCodeInput
@@ -535,9 +535,9 @@ func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 	}{
 		"ConvertS3": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionCodeParameters: v1alpha1.CustomFunctionCodeParameters{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
+						CustomFunctionCodeParameters: v1beta1.CustomFunctionCodeParameters{
 							ImageURI: aws.String("test_image"),
 							S3Bucket: aws.String("test_bucket"),
 							S3Key:    aws.String("test_key"),
@@ -567,7 +567,7 @@ func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 
 func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 	type args struct {
-		cr *v1alpha1.Function
+		cr *v1beta1.Function
 	}
 	type want struct {
 		obj *svcsdk.UpdateFunctionConfigurationInput
@@ -579,22 +579,22 @@ func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 	}{
 		"ConvertToUpdateFunctionConfigurationInput": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{
-					DeadLetterConfig: &v1alpha1.DeadLetterConfig{TargetARN: aws.String("test_dlqArn")},
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					DeadLetterConfig: &v1beta1.DeadLetterConfig{TargetARN: aws.String("test_dlqArn")},
 					Description:      aws.String("test_description"),
-					Environment: &v1alpha1.Environment{
+					Environment: &v1beta1.Environment{
 						Variables: map[string]*string{"tagKey1": aws.String("tagValue1")},
 					},
-					FileSystemConfigs: []*v1alpha1.FileSystemConfig{{ARN: aws.String("arn1")}},
+					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1")}},
 					Handler:           aws.String("test_handler"),
 					KMSKeyARN:         aws.String("test_kms"),
 					MemorySize:        aws.Int64(128),
 					Runtime:           aws.String("test_runtime"),
 					Timeout:           aws.Int64(128),
-					TracingConfig:     &v1alpha1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
-					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+					TracingConfig:     &v1beta1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
+					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
 						Role: aws.String("test_role"),
-						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
 							SecurityGroupIDs: []*string{aws.String("id1")},
 						},
 					},
