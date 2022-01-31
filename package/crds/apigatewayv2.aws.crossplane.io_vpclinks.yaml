@@ -28,6 +28,8 @@ spec:
     - jsonPath: .metadata.annotations.crossplane\.io/external-name
       name: EXTERNAL-NAME
       type: string
+    deprecated: true
+    deprecationWarning: Please use v1beta1 version of this resource.
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -247,7 +249,7 @@ spec:
         - spec
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
   - additionalPrinterColumns:
