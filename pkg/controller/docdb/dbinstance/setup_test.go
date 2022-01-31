@@ -39,7 +39,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/docdb/fake"
 )
 
-const (
+var (
 	testDBIdentifier                    = "some-db-name"
 	testDBInstanceArn                   = "aws:test:docdb:test-region:test-account:test-db"
 	testAddress                         = "127.0.0.1"
@@ -2349,12 +2349,17 @@ func TestCreate(t *testing.T) {
 					MockCreateDBInstanceWithContext: func(c context.Context, cdi *docdb.CreateDBInstanceInput, opts []request.Option) (*docdb.CreateDBInstanceOutput, error) {
 						return &docdb.CreateDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: awsclient.String(testDBIdentifier),
+								AutoMinorVersionUpgrade: awsclient.Bool(true),
+								AvailabilityZone:        &testAvailabilityZone,
+								DBInstanceClass:         &testDBInstanceClass,
+								DBInstanceIdentifier:    awsclient.String(testDBIdentifier),
 								Endpoint: &docdb.Endpoint{
 									Address:      awsclient.String(testAddress),
 									HostedZoneId: awsclient.String(testHostedZone),
 									Port:         awsclient.Int64(testPort),
 								},
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								PromotionTier:              awsclient.Int64(testPromotionTier),
 							},
 						}, nil
 					},
