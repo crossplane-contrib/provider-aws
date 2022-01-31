@@ -245,7 +245,10 @@ func TestCreate(t *testing.T) {
 						).
 						Return(&awseks.CreateAddonOutput{
 							Addon: &awseks.Addon{
-								AddonArn: &testExternalName,
+								AddonArn:              &testExternalName,
+								ServiceAccountRoleArn: &testServiceAccountRoleArn,
+								AddonVersion:          &testAddonVersion,
+								AddonName:             &testAddonName,
 							},
 						}, nil)
 				}),

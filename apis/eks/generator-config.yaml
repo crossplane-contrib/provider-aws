@@ -3,6 +3,11 @@ ignore:
     - Nodegroup
     - Cluster
     - FargateProfile
+  shape_names:
+    - Nodegroup
+    - Cluster
+    - FargateProfile
+    - IdentityProviderConfig
   field_paths:
     - DescribeAddonInput.ClusterName
     - CreateAddonInput.ClusterName
