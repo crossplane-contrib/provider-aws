@@ -1,0 +1,11 @@
+apiVersion: cognitoidentity.aws.crossplane.io/v1alpha1
+kind: IdentityPool
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    identityPoolName: examplePool
+    allowUnauthenticatedIdentities: false
+  providerConfigRef:
+    name: example
