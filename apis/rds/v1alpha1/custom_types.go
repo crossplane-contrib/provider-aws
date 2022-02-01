@@ -278,3 +278,38 @@ type CustomDBInstanceParameters struct {
 	// are applied.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 }
+
+// CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
+type CustomDBInstanceRoleAssociationParameters struct {
+	// The name of the DB instance to associate the IAM role with.
+	// +crossplane:generate:reference:type=DBInstance
+	// +optional
+	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
+
+	// DBInstanceIdentifierRef is a reference to a DBInstance used to set
+	// the DBInstanceIdentifier.
+	// +optional
+	DBInstanceIdentifierRef *xpv1.Reference `json:"dbInstanceIdentifierRef,omitempty"`
+
+	// DBInstanceIdentifierSelector selects references to a DBInstance used
+	// to set the DBInstanceIdentifier.
+	// +optional
+	DBInstanceIdentifierSelector *xpv1.Selector `json:"dbInstanceIdentifierSelector,omitempty"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to associate with the DB instance,
+	// for example arn:aws:iam::123456789012:role/AccessRole.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +optional
+	RoleARN *string `json:"roleArn,omitempty"`
+
+	// RoleARNRef is a reference to a IAM Role used to set
+	// RoleARN.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleArnRef,omitempty"`
+
+	// RoleARNSelector selects a reference to a IAM Role used to
+	// set RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
+}

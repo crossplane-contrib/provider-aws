@@ -1,0 +1,14 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstanceRoleAssociation
+metadata:
+  name: example-dbinstanceroleassociation
+spec:
+  forProvider:
+    region: us-east-1
+    featureName: s3Import
+    roleArnRef:
+      name: somerole
+    dbInstanceIdentifierRef:
+      name: example-dbinstance
+  providerConfigRef:
+    name: example

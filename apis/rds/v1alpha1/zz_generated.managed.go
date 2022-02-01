@@ -188,6 +188,62 @@ func (mg *DBInstance) SetWriteConnectionSecretToReference(r *xpv1.SecretReferenc
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this DBInstanceRoleAssociation.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *DBInstanceRoleAssociation) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this DBInstanceRoleAssociation.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *DBInstanceRoleAssociation) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this DBInstanceRoleAssociation.
+func (mg *DBInstanceRoleAssociation) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this DBParameterGroup.
 func (mg *DBParameterGroup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
