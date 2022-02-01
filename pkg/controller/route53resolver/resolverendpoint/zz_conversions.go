@@ -55,6 +55,11 @@ func GenerateResolverEndpoint(resp *svcsdk.GetResolverEndpointOutput) *svcapityp
 	} else {
 		cr.Status.AtProvider.CreatorRequestID = nil
 	}
+	if resp.ResolverEndpoint.Direction != nil {
+		cr.Spec.ForProvider.Direction = resp.ResolverEndpoint.Direction
+	} else {
+		cr.Spec.ForProvider.Direction = nil
+	}
 	if resp.ResolverEndpoint.HostVPCId != nil {
 		cr.Status.AtProvider.HostVPCID = resp.ResolverEndpoint.HostVPCId
 	} else {
@@ -74,6 +79,11 @@ func GenerateResolverEndpoint(resp *svcsdk.GetResolverEndpointOutput) *svcapityp
 		cr.Status.AtProvider.ModificationTime = resp.ResolverEndpoint.ModificationTime
 	} else {
 		cr.Status.AtProvider.ModificationTime = nil
+	}
+	if resp.ResolverEndpoint.Name != nil {
+		cr.Spec.ForProvider.Name = resp.ResolverEndpoint.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
 	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
 		f9 := []*string{}

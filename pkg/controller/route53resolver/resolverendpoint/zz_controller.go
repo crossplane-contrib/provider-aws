@@ -129,6 +129,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CreatorRequestID = nil
 	}
+	if resp.ResolverEndpoint.Direction != nil {
+		cr.Spec.ForProvider.Direction = resp.ResolverEndpoint.Direction
+	} else {
+		cr.Spec.ForProvider.Direction = nil
+	}
 	if resp.ResolverEndpoint.HostVPCId != nil {
 		cr.Status.AtProvider.HostVPCID = resp.ResolverEndpoint.HostVPCId
 	} else {
@@ -148,6 +153,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.ModificationTime = resp.ResolverEndpoint.ModificationTime
 	} else {
 		cr.Status.AtProvider.ModificationTime = nil
+	}
+	if resp.ResolverEndpoint.Name != nil {
+		cr.Spec.ForProvider.Name = resp.ResolverEndpoint.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
 	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
 		f9 := []*string{}
@@ -184,10 +194,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.UpdateResolverEndpointWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
