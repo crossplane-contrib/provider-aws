@@ -129,6 +129,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CreatorRequestID = nil
 	}
+	if resp.ResolverRule.DomainName != nil {
+		cr.Spec.ForProvider.DomainName = resp.ResolverRule.DomainName
+	} else {
+		cr.Spec.ForProvider.DomainName = nil
+	}
 	if resp.ResolverRule.Id != nil {
 		cr.Status.AtProvider.ID = resp.ResolverRule.Id
 	} else {
@@ -139,10 +144,25 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.ModificationTime = nil
 	}
+	if resp.ResolverRule.Name != nil {
+		cr.Spec.ForProvider.Name = resp.ResolverRule.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
 	if resp.ResolverRule.OwnerId != nil {
 		cr.Status.AtProvider.OwnerID = resp.ResolverRule.OwnerId
 	} else {
 		cr.Status.AtProvider.OwnerID = nil
+	}
+	if resp.ResolverRule.ResolverEndpointId != nil {
+		cr.Spec.ForProvider.ResolverEndpointID = resp.ResolverRule.ResolverEndpointId
+	} else {
+		cr.Spec.ForProvider.ResolverEndpointID = nil
+	}
+	if resp.ResolverRule.RuleType != nil {
+		cr.Spec.ForProvider.RuleType = resp.ResolverRule.RuleType
+	} else {
+		cr.Spec.ForProvider.RuleType = nil
 	}
 	if resp.ResolverRule.ShareStatus != nil {
 		cr.Status.AtProvider.ShareStatus = resp.ResolverRule.ShareStatus
@@ -159,6 +179,22 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.StatusMessage = nil
 	}
+	if resp.ResolverRule.TargetIps != nil {
+		f13 := []*svcapitypes.TargetAddress{}
+		for _, f13iter := range resp.ResolverRule.TargetIps {
+			f13elem := &svcapitypes.TargetAddress{}
+			if f13iter.Ip != nil {
+				f13elem.IP = f13iter.Ip
+			}
+			if f13iter.Port != nil {
+				f13elem.Port = f13iter.Port
+			}
+			f13 = append(f13, f13elem)
+		}
+		cr.Spec.ForProvider.TargetIPs = f13
+	} else {
+		cr.Spec.ForProvider.TargetIPs = nil
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
@@ -173,10 +209,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.UpdateResolverRuleWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {

@@ -105,7 +105,7 @@ type ResolverRuleObservation struct {
 // ResolverRuleStatus defines the observed state of ResolverRule.
 type ResolverRuleStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ResolverRuleObservation `json:"atProvider"`
+	AtProvider          ResolverRuleObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -115,11 +115,12 @@ type ResolverRuleStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type ResolverRule struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ResolverRuleSpec   `json:"spec,omitempty"`
+	Spec              ResolverRuleSpec   `json:"spec"`
 	Status            ResolverRuleStatus `json:"status,omitempty"`
 }
 
