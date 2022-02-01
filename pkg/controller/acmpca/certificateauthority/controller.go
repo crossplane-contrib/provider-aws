@@ -73,10 +73,7 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
-
-			// TODO: implement tag initializer
-
-			managed.WithInitializers(),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -255,4 +252,34 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.CertificateAuthority)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	added := false
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		if p, ok := tagMap[k]; !ok || v != p {
+			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+			added = true
+		}
+	}
+	if !added {
+		return nil
+	}
+	err := t.kube.Update(ctx, cr)
+	if err != nil {
+		return errors.Wrap(err, errKubeUpdateFailed)
+	}
+	return nil
 }
