@@ -7,7 +7,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_COMMIT ?= c7d9f6bbcaf8f628910202fa126e03faa970502b
-GENERATED_SERVICES="apigatewayv2,athena,cloudfront,cloudwatchlogs,docdb,dynamodb,elbv2,ec2,efs,eks,glue,iot,kafka,kinesis,kms,lambda,mq,rds,route53resolver,secretsmanager,servicediscovery,sfn,transfer,ram"
+GENERATED_SERVICES := $(shell find ./apis/ -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
@@ -123,16 +123,11 @@ run: go.build
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
-	@if [ "$(SERVICES)" = "" ]; then \
-		echo "Error: Please specify the comma-seperated list of services via 'SERVICES' variable."; \
-		echo "For more info: https://github.com/crossplane/provider-aws/blob/master/CODE_GENERATION.md#code-generation"; \
-		exit 1; \
-	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
 	fi
 	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
-	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
+	@for svc in $(SERVICES); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
 		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --output ../../ || exit 1; \
@@ -140,7 +135,7 @@ services: $(GOIMPORTS)
 	done
 
 services.all:
-	@$(MAKE) services SERVICES=$(GENERATED_SERVICES)
+	@$(MAKE) services SERVICES="$(GENERATED_SERVICES)"
 
 # ====================================================================================
 # Special Targets
