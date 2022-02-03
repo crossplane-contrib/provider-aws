@@ -885,6 +885,14 @@ func Int32Value(v *int32) int32 {
 	return 0
 }
 
+// TimeToMetaTime converts a standard Go time.Time to a K8s metav1.Time.
+func TimeToMetaTime(t *time.Time) *metav1.Time {
+	if t == nil {
+		return nil
+	}
+	return &metav1.Time{Time: *t}
+}
+
 // LateInitializeStringPtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeStringPtr(in *string, from *string) *string {
