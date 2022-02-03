@@ -308,11 +308,8 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				},
 			},
 			want: &eks.UpdateNodegroupConfigInput{
-				ClusterName: &clusterName,
-				Labels: &ekstypes.UpdateLabelsPayload{
-					AddOrUpdateLabels: map[string]string{},
-					RemoveLabels:      []string{},
-				},
+				ClusterName:   &clusterName,
+				Labels:        nil,
 				NodegroupName: &ngName,
 				ScalingConfig: &ekstypes.NodegroupScalingConfig{
 					DesiredSize: &currentSize,
@@ -356,11 +353,8 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				},
 			},
 			want: &eks.UpdateNodegroupConfigInput{
-				ClusterName: &clusterName,
-				Labels: &ekstypes.UpdateLabelsPayload{
-					AddOrUpdateLabels: map[string]string{},
-					RemoveLabels:      []string{},
-				},
+				ClusterName:   &clusterName,
+				Labels:        nil,
 				NodegroupName: &ngName,
 				ScalingConfig: &ekstypes.NodegroupScalingConfig{
 					DesiredSize: awsclients.Int32(6),
