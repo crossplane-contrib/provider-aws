@@ -6,8 +6,9 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
+CODE_GENERATOR_REPO ?= https://github.com/aws-controllers-k8s/code-generator.git
 CODE_GENERATOR_COMMIT ?= f8c0f4711a91e50335450521e3c49673d135d56d
-GENERATED_SERVICES := $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
+GENERATED_SERVICES := $(shell find ./apis/ -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
@@ -124,7 +125,7 @@ run: go.build
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
-		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
+		cd $(WORK_DIR) && git clone "$(CODE_GENERATOR_REPO)"; \
 	fi
 	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
 	@for svc in $(SERVICES); do \

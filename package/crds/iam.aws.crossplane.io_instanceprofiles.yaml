@@ -1,0 +1,312 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.2
+  creationTimestamp: null
+  name: instanceprofiles.iam.aws.crossplane.io
+spec:
+  group: iam.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: InstanceProfile
+    listKind: InstanceProfileList
+    plural: instanceprofiles
+    singular: instanceprofile
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: InstanceProfile is the Schema for the InstanceProfiles API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: InstanceProfileSpec defines the desired state of InstanceProfile
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: InstanceProfileParameters defines the desired state of
+                  InstanceProfile
+                properties:
+                  path:
+                    description: "The path to the instance profile. For more information
+                      about paths, see IAM Identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+                      in the IAM User Guide. \n This parameter is optional. If it
+                      is not included, it defaults to a slash (/). \n This parameter
+                      allows (through its regex pattern (http://wikipedia.org/wiki/regex))
+                      a string of characters consisting of either a forward slash
+                      (/) by itself or a string that must begin and end with forward
+                      slashes. In addition, it can contain any ASCII character from
+                      the ! (\\u0021) through the DEL character (\\u007F), including
+                      most punctuation characters, digits, and upper and lowercased
+                      letters."
+                    type: string
+                  role:
+                    description: Role is the ID for the Role to add to Instance Profile.
+                    type: string
+                  roleRef:
+                    description: RoleRef is a reference to an Role
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  roleSelector:
+                    description: RoleSelector selects references to Role
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  tags:
+                    description: "A list of tags that you want to attach to the newly
+                      created IAM instance profile. Each tag consists of a key name
+                      and an associated value. For more information about tagging,
+                      see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+                      in the IAM User Guide. \n If any one of the tags is invalid
+                      or if you exceed the allowed maximum number of tags, then the
+                      entire request fails and the resource is not created."
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: InstanceProfileStatus defines the observed state of InstanceProfile.
+            properties:
+              atProvider:
+                description: InstanceProfileObservation defines the observed state
+                  of InstanceProfile
+                properties:
+                  arn:
+                    description: The Amazon Resource Name (ARN) specifying the instance
+                      profile. For more information about ARNs and how to use them
+                      in policies, see IAM identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+                      in the IAM User Guide.
+                    type: string
+                  createDate:
+                    description: The date when the instance profile was created.
+                    format: date-time
+                    type: string
+                  instanceProfileID:
+                    description: The stable and unique string identifying the instance
+                      profile. For more information about IDs, see IAM identifiers
+                      (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+                      in the IAM User Guide.
+                    type: string
+                  instanceProfileName:
+                    description: The name identifying the instance profile.
+                    type: string
+                  roles:
+                    description: The role associated with the instance profile.
+                    items:
+                      properties:
+                        arn:
+                          description: "The Amazon Resource Name (ARN). ARNs are unique
+                            identifiers for AWS resources. \n For more information
+                            about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                            in the AWS General Reference."
+                          type: string
+                        assumeRolePolicyDocument:
+                          type: string
+                        createDate:
+                          format: date-time
+                          type: string
+                        description:
+                          type: string
+                        maxSessionDuration:
+                          format: int64
+                          type: integer
+                        path:
+                          type: string
+                        permissionsBoundary:
+                          description: "Contains information about an attached permissions
+                            boundary. \n An attached permissions boundary is a managed
+                            policy that has been attached to a user or role to set
+                            the permissions boundary. \n For more information about
+                            permissions boundaries, see Permissions boundaries for
+                            IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
+                            in the IAM User Guide."
+                          properties:
+                            permissionsBoundaryARN:
+                              description: "The Amazon Resource Name (ARN). ARNs are
+                                unique identifiers for AWS resources. \n For more
+                                information about ARNs, go to Amazon Resource Names
+                                (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                                in the AWS General Reference."
+                              type: string
+                            permissionsBoundaryType:
+                              type: string
+                          type: object
+                        roleID:
+                          type: string
+                        roleLastUsed:
+                          description: "Contains information about the last time that
+                            an IAM role was used. This includes the date and time
+                            and the Region in which the role was last used. Activity
+                            is only reported for the trailing 400 days. This period
+                            can be shorter if your Region began supporting these features
+                            within the last year. The role might have been used more
+                            than 400 days ago. For more information, see Regions where
+                            data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
+                            in the IAM User Guide. \n This data type is returned as
+                            a response element in the GetRole and GetAccountAuthorizationDetails
+                            operations."
+                          properties:
+                            lastUsedDate:
+                              format: date-time
+                              type: string
+                            region:
+                              type: string
+                          type: object
+                        roleName:
+                          type: string
+                        tags:
+                          items:
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

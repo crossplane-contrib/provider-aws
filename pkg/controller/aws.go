@@ -101,6 +101,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/instanceprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/policy"
@@ -164,6 +165,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		eks.SetupCluster,
 		eksaddon.SetupAddon,
 		identityproviderconfig.SetupIdentityProviderConfig,
+		instanceprofile.SetupInstanceProfile,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,

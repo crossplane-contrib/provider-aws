@@ -1,0 +1,13 @@
+---
+apiVersion: iam.aws.crossplane.io/v1alpha1
+kind: InstanceProfile
+metadata:
+  name: someinstanceprofile
+spec:
+  forProvider:
+    roleSelector:
+      matchLabels:
+        addToInstanceProfile: "true"
+    tags:
+      - key: k1
+        value: v1
