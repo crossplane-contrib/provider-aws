@@ -7,7 +7,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_COMMIT ?= c7d9f6bbcaf8f628910202fa126e03faa970502b
-GENERATED_SERVICES := $(shell find ./apis/ -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
+GENERATED_SERVICES := $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
