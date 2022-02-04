@@ -96,9 +96,12 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 
 	if len(p.Labels) > 0 {
 		addOrModify, remove := awsclient.DiffLabels(p.Labels, ng.Labels)
-		u.Labels = &ekstypes.UpdateLabelsPayload{
-			AddOrUpdateLabels: addOrModify,
-			RemoveLabels:      remove,
+		// error: both or either addOrUpdateLabels or removeLabels must not be empty
+		if len(addOrModify) > 0 || len(remove) > 0 {
+			u.Labels = &ekstypes.UpdateLabelsPayload{
+				AddOrUpdateLabels: addOrModify,
+				RemoveLabels:      remove,
+			}
 		}
 	}
 	if p.ScalingConfig != nil {
