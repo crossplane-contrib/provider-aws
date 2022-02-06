@@ -145,6 +145,7 @@ type RestoreBackupConfiguration struct {
 
 	// Source is the type of the backup to restore when creating a new RDS instance.
 	// Only S3 and Snapshot are supported at present.
+	// +kubebuilder:validation:Enum=S3;Snapshot
 	Source *string `json:"source"`
 }
 

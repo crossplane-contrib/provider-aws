@@ -198,7 +198,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 			return awsclient.Wrap(err, errS3RestoreFailed)
 		}
 	case "Snapshot":
-		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errSnapshotRestoreFailed)
 		}

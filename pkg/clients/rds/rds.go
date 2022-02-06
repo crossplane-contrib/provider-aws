@@ -202,7 +202,7 @@ func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1beta1.RDSI
 }
 
 // GenerateRestoreDBInstanceFromSnapshotInput from RDSInstanceSpec
-func GenerateRestoreDBInstanceFromSnapshotInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
+func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
 	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.RestoreDBInstanceFromDBSnapshotInput{
 		DBInstanceIdentifier:            aws.String(name),
