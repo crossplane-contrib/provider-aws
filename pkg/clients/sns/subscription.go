@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
-
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SubscriptionAttributes refers to AWS SNS Subscription Attributes List
@@ -50,7 +50,7 @@ const (
 	SubscriptionConfirmationWasAuthenticated = "ConfirmationWasAuthenticated"
 )
 
-// SubscriptionClient is the external client used for AWS SNSSubscription
+// SubscriptionClient is the external client used for AWS Subscription
 type SubscriptionClient interface {
 	Subscribe(ctx context.Context, input *sns.SubscribeInput, opts ...func(*sns.Options)) (*sns.SubscribeOutput, error)
 	Unsubscribe(ctx context.Context, input *sns.UnsubscribeInput, opts ...func(*sns.Options)) (*sns.UnsubscribeOutput, error)
@@ -65,7 +65,7 @@ func NewSubscriptionClient(cfg aws.Config) SubscriptionClient {
 }
 
 // GenerateSubscribeInput prepares input for SubscribeRequest
-func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.SubscribeInput {
+func GenerateSubscribeInput(p *v1beta1.SubscriptionParameters) *sns.SubscribeInput {
 	input := &sns.SubscribeInput{
 		Endpoint:              aws.String(p.Endpoint),
 		Protocol:              aws.String(p.Protocol),
@@ -76,18 +76,18 @@ func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.Subscrib
 	return input
 }
 
-// GenerateSubscriptionObservation is used to produce SNSSubscriptionObservation
+// GenerateSubscriptionObservation is used to produce SubscriptionObservation
 // from resource at cloud & its attributes
-func GenerateSubscriptionObservation(attr map[string]string) v1alpha1.SNSSubscriptionObservation {
+func GenerateSubscriptionObservation(attr map[string]string) v1beta1.SubscriptionObservation {
 
-	o := v1alpha1.SNSSubscriptionObservation{}
+	o := v1beta1.SubscriptionObservation{}
 	o.Owner = aws.String(attr[SubscriptionOwner])
-	var status v1alpha1.ConfirmationStatus
+	var status v1beta1.ConfirmationStatus
 	if s, err := strconv.ParseBool(attr[SubscriptionPendingConfirmation]); err == nil {
 		if s {
-			status = v1alpha1.ConfirmationPending
+			status = v1beta1.ConfirmationPending
 		} else {
-			status = v1alpha1.ConfirmationSuccessful
+			status = v1beta1.ConfirmationSuccessful
 		}
 	}
 	o.Status = &status
@@ -100,9 +100,9 @@ func GenerateSubscriptionObservation(attr map[string]string) v1alpha1.SNSSubscri
 }
 
 // LateInitializeSubscription fills the empty fields in
-// *v1alpha1.SNSSubscriptionParameters with the values seen in
+// *v1beta1.SubscriptionParameters with the values seen in
 // sns.Subscription
-func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) {
+func LateInitializeSubscription(in *v1beta1.SubscriptionParameters, subAttributes map[string]string) {
 	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, awsclients.String(subAttributes[SubscriptionDeliveryPolicy]))
 	in.FilterPolicy = awsclients.LateInitializeStringPtr(in.FilterPolicy, awsclients.String(subAttributes[SubscriptionFilterPolicy]))
 	in.RawMessageDelivery = awsclients.LateInitializeStringPtr(in.RawMessageDelivery, awsclients.String(subAttributes[SubscriptionRawMessageDelivery]))
@@ -110,7 +110,7 @@ func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttri
 }
 
 // getSubAttributes returns map of SNS Sunscription Attributes
-func getSubAttributes(p v1alpha1.SNSSubscriptionParameters) map[string]string {
+func getSubAttributes(p v1beta1.SubscriptionParameters) map[string]string {
 	return map[string]string{
 		SubscriptionDeliveryPolicy:     aws.ToString(p.DeliveryPolicy),
 		SubscriptionFilterPolicy:       aws.ToString(p.FilterPolicy),
@@ -121,7 +121,7 @@ func getSubAttributes(p v1alpha1.SNSSubscriptionParameters) map[string]string {
 
 // GetChangedSubAttributes will return the changed attributes  for a subscription
 // in provider side
-func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[string]string) map[string]string {
+func GetChangedSubAttributes(p v1beta1.SubscriptionParameters, attrs map[string]string) map[string]string {
 	subAttrs := getSubAttributes(p)
 	changedAttrs := make(map[string]string)
 	for k, v := range subAttrs {
@@ -134,7 +134,7 @@ func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[str
 }
 
 // IsSNSSubscriptionAttributesUpToDate checks if attributes are up to date
-func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) bool {
+func IsSNSSubscriptionAttributesUpToDate(p v1beta1.SubscriptionParameters, subAttributes map[string]string) bool {
 	return aws.ToString(p.DeliveryPolicy) == subAttributes[SubscriptionDeliveryPolicy] &&
 		aws.ToString(p.FilterPolicy) == subAttributes[SubscriptionFilterPolicy] &&
 		aws.ToString(p.RawMessageDelivery) == subAttributes[SubscriptionRawMessageDelivery] &&

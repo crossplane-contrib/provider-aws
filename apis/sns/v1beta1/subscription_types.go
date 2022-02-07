@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -22,9 +22,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SNSSubscriptionParameters define the desired state of a AWS SNS Topic
-type SNSSubscriptionParameters struct {
-	// Region is the region you'd like your SNSSubscription to be in.
+// SubscriptionParameters define the desired state of a AWS SNS Topic
+type SubscriptionParameters struct {
+	// Region is the region you'd like your Subscription to be in.
 	Region string `json:"region"`
 
 	// TopicArn is the Arn of the SNS Topic
@@ -76,10 +76,10 @@ type SNSSubscriptionParameters struct {
 	RedrivePolicy *string `json:"redrivePolicy,omitempty"`
 }
 
-// SNSSubscriptionSpec defined the desired state of a AWS SNS Topic
-type SNSSubscriptionSpec struct {
+// SubscriptionSpec defined the desired state of a AWS SNS Topic
+type SubscriptionSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       SNSSubscriptionParameters `json:"forProvider"`
+	ForProvider       SubscriptionParameters `json:"forProvider"`
 }
 
 // ConfirmationStatus represents Status of SNS Subscription Confirmation
@@ -92,8 +92,8 @@ const (
 	ConfirmationSuccessful ConfirmationStatus = "Confirmed"
 )
 
-// SNSSubscriptionObservation represents the observed state of a AWS SNS Topic
-type SNSSubscriptionObservation struct {
+// SubscriptionObservation represents the observed state of a AWS SNS Topic
+type SubscriptionObservation struct {
 
 	// The subscription's owner.
 	// +optional
@@ -109,15 +109,15 @@ type SNSSubscriptionObservation struct {
 	ConfirmationWasAuthenticated *bool `json:"confirmationWasAuthenticated,omitempty"`
 }
 
-// SNSSubscriptionStatus is the status of AWS SNS Topic
-type SNSSubscriptionStatus struct {
+// SubscriptionStatus is the status of AWS SNS Topic
+type SubscriptionStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SNSSubscriptionObservation `json:"atProvider,omitempty"`
+	AtProvider          SubscriptionObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SNSSubscription defines a managed resource that represents state of
+// Subscription defines a managed resource that represents state of
 // a AWS SNS Subscription
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
@@ -127,21 +127,19 @@ type SNSSubscriptionStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of SNS group."
-// Deprecated: Please use v1beta1 version of SNS group.
-type SNSSubscription struct {
+type Subscription struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SNSSubscriptionSpec   `json:"spec"`
-	Status SNSSubscriptionStatus `json:"status,omitempty"`
+	Spec   SubscriptionSpec   `json:"spec"`
+	Status SubscriptionStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SNSSubscriptionList contains a list of SNSTopic
-type SNSSubscriptionList struct {
+// SubscriptionList contains a list of Topic
+type SubscriptionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []SNSSubscription `json:"items"`
+	Items           []Subscription `json:"items"`
 }

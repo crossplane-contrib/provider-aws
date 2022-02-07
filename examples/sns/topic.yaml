@@ -1,0 +1,14 @@
+apiVersion: sns.aws.crossplane.io/v1beta1
+kind: Topic
+metadata:
+  name: some-topic
+spec:
+  forProvider:
+    region: us-east-1
+    name: sample-topic
+    tags:
+    - key: key
+      value: value
+    displayName: display-topic-name
+  providerConfigRef:
+    name: example

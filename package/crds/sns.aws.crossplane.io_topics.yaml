@@ -4,18 +4,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: snstopics.notification.aws.crossplane.io
+  name: topics.sns.aws.crossplane.io
 spec:
-  group: notification.aws.crossplane.io
+  group: sns.aws.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - aws
-    kind: SNSTopic
-    listKind: SNSTopicList
-    plural: snstopics
-    singular: snstopic
+    kind: Topic
+    listKind: TopicList
+    plural: topics
+    singular: topic
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,13 +34,11 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    deprecated: true
-    deprecationWarning: Please use v1beta1 version of SNS group.
-    name: v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: 'SNSTopic defines a managed resource that represents state of
-          a AWS SNSTopic Deprecated: Please use v1beta1 version of SNS group.'
+        description: Topic defines a managed resource that represents state of a AWS
+          Topic
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -55,7 +53,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: SNSTopicSpec defined the desired state of a AWS SNS Topic
+            description: TopicSpec defined the desired state of a AWS SNS Topic
             properties:
               deletionPolicy:
                 default: Delete
@@ -67,8 +65,8 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: SNSTopicParameters define the desired state of a AWS
-                  SNS Topic
+                description: TopicParameters define the desired state of a AWS SNS
+                  Topic
                 properties:
                   deliveryPolicy:
                     description: DeliveryRetryPolicy - the JSON serialization of the
@@ -93,8 +91,8 @@ spec:
                       the topic.
                     type: string
                   region:
-                    description: Region is the region you'd like your SNSTopic to
-                      be created in.
+                    description: Region is the region you'd like your Topic to be
+                      created in.
                     type: string
                   tags:
                     description: Tags represetnt a list of user-provided metadata
@@ -178,11 +176,11 @@ spec:
             - forProvider
             type: object
           status:
-            description: SNSTopicStatus is the status of AWS SNS Topic
+            description: TopicStatus is the status of AWS SNS Topic
             properties:
               atProvider:
-                description: SNSTopicObservation represents the observed state of
-                  a AWS SNS Topic
+                description: TopicObservation represents the observed state of a AWS
+                  SNS Topic
                 properties:
                   arn:
                     description: ARN is the Amazon Resource Name (ARN) specifying

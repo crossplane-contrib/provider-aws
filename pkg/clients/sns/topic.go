@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
-
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // TopicAttributes refers to AWS SNS Topic Attributes List
@@ -54,7 +54,7 @@ const (
 	TopicARN TopicAttributes = "TopicArn"
 )
 
-// TopicClient is the external client used for AWS SNSTopic
+// TopicClient is the external client used for AWS Topic
 type TopicClient interface {
 	CreateTopic(ctx context.Context, input *sns.CreateTopicInput, opts ...func(*sns.Options)) (*sns.CreateTopicOutput, error)
 	DeleteTopic(ctx context.Context, input *sns.DeleteTopicInput, opts ...func(*sns.Options)) (*sns.DeleteTopicOutput, error)
@@ -68,7 +68,7 @@ func NewTopicClient(cfg aws.Config) TopicClient {
 }
 
 // GenerateCreateTopicInput prepares input for CreateTopicRequest
-func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicInput {
+func GenerateCreateTopicInput(p *v1beta1.TopicParameters) *sns.CreateTopicInput {
 	input := &sns.CreateTopicInput{
 		Name: &p.Name,
 	}
@@ -86,9 +86,9 @@ func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicIn
 	return input
 }
 
-// LateInitializeTopicAttr fills the empty fields in *v1alpha1.SNSTopicParameters with the
+// LateInitializeTopicAttr fills the empty fields in *v1beta1.TopicParameters with the
 // values seen in sns.Topic.
-func LateInitializeTopicAttr(in *v1alpha1.SNSTopicParameters, attrs map[string]string) {
+func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]string) {
 	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
 	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
 	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
@@ -102,7 +102,7 @@ func LateInitializeTopicAttr(in *v1alpha1.SNSTopicParameters, attrs map[string]s
 // Please see https://docs.aws.amazon.com/sns/latest/api/API_SetTopicAttributes.html
 // So we need to compare each topic attribute and call SetTopicAttribute for ones which has
 // changed.
-func GetChangedAttributes(p v1alpha1.SNSTopicParameters, attrs map[string]string) map[string]string {
+func GetChangedAttributes(p v1beta1.TopicParameters, attrs map[string]string) map[string]string {
 	topicAttrs := getTopicAttributes(p)
 	changedAttrs := make(map[string]string)
 	for k, v := range topicAttrs {
@@ -114,9 +114,9 @@ func GetChangedAttributes(p v1alpha1.SNSTopicParameters, attrs map[string]string
 	return changedAttrs
 }
 
-// GenerateTopicObservation is used to produce SNSTopicObservation from attributes
-func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservation {
-	o := v1alpha1.SNSTopicObservation{}
+// GenerateTopicObservation is used to produce TopicObservation from attributes
+func GenerateTopicObservation(attr map[string]string) v1beta1.TopicObservation {
+	o := v1beta1.TopicObservation{}
 
 	o.Owner = aws.String(attr[string(TopicOwner)])
 
@@ -138,14 +138,14 @@ func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservati
 }
 
 // IsSNSTopicUpToDate checks if object is up to date
-func IsSNSTopicUpToDate(p v1alpha1.SNSTopicParameters, attr map[string]string) bool {
+func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) bool {
 	return aws.ToString(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
 		aws.ToString(p.DisplayName) == attr[string(TopicDisplayName)] &&
 		aws.ToString(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
 		aws.ToString(p.Policy) == attr[string(TopicPolicy)]
 }
 
-func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
+func getTopicAttributes(p v1beta1.TopicParameters) map[string]string {
 
 	topicAttr := make(map[string]string)
 
