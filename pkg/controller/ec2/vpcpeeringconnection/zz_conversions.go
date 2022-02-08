@@ -213,36 +213,30 @@ func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnectio
 	if cr.Spec.ForProvider.PeerRegion != nil {
 		res.SetPeerRegion(*cr.Spec.ForProvider.PeerRegion)
 	}
-	if cr.Spec.ForProvider.PeerVPCID != nil {
-		res.SetPeerVpcId(*cr.Spec.ForProvider.PeerVPCID)
-	}
 	if cr.Spec.ForProvider.TagSpecifications != nil {
-		f3 := []*svcsdk.TagSpecification{}
-		for _, f3iter := range cr.Spec.ForProvider.TagSpecifications {
-			f3elem := &svcsdk.TagSpecification{}
-			if f3iter.ResourceType != nil {
-				f3elem.SetResourceType(*f3iter.ResourceType)
+		f2 := []*svcsdk.TagSpecification{}
+		for _, f2iter := range cr.Spec.ForProvider.TagSpecifications {
+			f2elem := &svcsdk.TagSpecification{}
+			if f2iter.ResourceType != nil {
+				f2elem.SetResourceType(*f2iter.ResourceType)
 			}
-			if f3iter.Tags != nil {
-				f3elemf1 := []*svcsdk.Tag{}
-				for _, f3elemf1iter := range f3iter.Tags {
-					f3elemf1elem := &svcsdk.Tag{}
-					if f3elemf1iter.Key != nil {
-						f3elemf1elem.SetKey(*f3elemf1iter.Key)
+			if f2iter.Tags != nil {
+				f2elemf1 := []*svcsdk.Tag{}
+				for _, f2elemf1iter := range f2iter.Tags {
+					f2elemf1elem := &svcsdk.Tag{}
+					if f2elemf1iter.Key != nil {
+						f2elemf1elem.SetKey(*f2elemf1iter.Key)
 					}
-					if f3elemf1iter.Value != nil {
-						f3elemf1elem.SetValue(*f3elemf1iter.Value)
+					if f2elemf1iter.Value != nil {
+						f2elemf1elem.SetValue(*f2elemf1iter.Value)
 					}
-					f3elemf1 = append(f3elemf1, f3elemf1elem)
+					f2elemf1 = append(f2elemf1, f2elemf1elem)
 				}
-				f3elem.SetTags(f3elemf1)
+				f2elem.SetTags(f2elemf1)
 			}
-			f3 = append(f3, f3elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetTagSpecifications(f3)
-	}
-	if cr.Spec.ForProvider.VPCID != nil {
-		res.SetVpcId(*cr.Spec.ForProvider.VPCID)
+		res.SetTagSpecifications(f2)
 	}
 
 	return res

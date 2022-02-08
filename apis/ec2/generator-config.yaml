@@ -55,14 +55,14 @@ ignore:
     - DeleteVpcPeeringConnectionInput.DryRun
     - RejectVpcPeeringConnectionInput.DryRun
     - AcceptVpcPeeringConnectionInput.DryRun
-    - CreateVpcPeeringConnectionInput.VPCID
-    - DeleteVpcPeeringConnectionInput.VPCID
-    - RejectVpcPeeringConnectionInput.VPCID
-    - AcceptVpcPeeringConnectionInput.VPCID
-    - CreateVpcPeeringConnectionInput.PeerVPCID
-    - DeleteVpcPeeringConnectionInput.PeerVPCID
-    - RejectVpcPeeringConnectionInput.PeerVPCID
-    - AcceptVpcPeeringConnectionInput.PeerVPCID
+    - CreateVpcPeeringConnectionInput.VpcId
+    - DeleteVpcPeeringConnectionInput.VpcId
+    - RejectVpcPeeringConnectionInput.VpcId
+    - AcceptVpcPeeringConnectionInput.VpcId
+    - CreateVpcPeeringConnectionInput.PeerVpcId
+    - DeleteVpcPeeringConnectionInput.PeerVpcId
+    - RejectVpcPeeringConnectionInput.PeerVpcId
+    - AcceptVpcPeeringConnectionInput.PeerVpcId
     - CreateVolumeInput.DryRun
     - CreateVolumeInput.KmsKeyId
     - CreateTransitGatewayInput.DryRun

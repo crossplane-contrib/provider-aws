@@ -129,6 +129,16 @@ spec:
                           type: array
                       type: object
                     type: array
+                  tags:
+                    description: Metadata tagging key value pairs
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
                   vpcID:
                     description: The ID of the requester VPC. You must specify this
                       parameter in the request.

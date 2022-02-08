@@ -2,6 +2,7 @@ package vpcpeeringconnection
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,6 +15,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -22,6 +24,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+)
+
+const (
+	errKubeUpdateFailed = "cannot update VPCPeeringConnection"
 )
 
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
@@ -48,6 +54,7 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
@@ -115,21 +122,8 @@ func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.De
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionInput) error {
-	// set external name as tag on the vpc peering connection
-	resType := "vpc-peering-connection"
-	key := "crossplane-claim-name"
-	value := cr.ObjectMeta.Name
-
-	spec := svcsdk.TagSpecification{
-		ResourceType: &resType,
-		Tags: []*svcsdk.Tag{
-			{
-				Key:   &key,
-				Value: &value,
-			},
-		},
-	}
-	obj.TagSpecifications = append(obj.TagSpecifications, &spec)
+	obj.PeerVpcId = cr.Spec.ForProvider.PeerVPCID
+	obj.VpcId = cr.Spec.ForProvider.VPCID
 
 	return nil
 }
@@ -138,8 +132,47 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConne
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	// set peering connection id as external name annotation on k8s object after creation
 
+	// set peering connection id as external name annotation on k8s object after creation
 	meta.SetExternalName(cr, aws.StringValue(obj.VpcPeeringConnection.VpcPeeringConnectionId))
 	return cre, nil
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*svcapitypes.VPCPeeringConnection)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	var vpcPeeringConnectionTags svcapitypes.TagSpecification
+	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
+		if aws.StringValue(tagSpecification.ResourceType) == "vpc-peering-connection" {
+			vpcPeeringConnectionTags = *tagSpecification
+		}
+	}
+
+	tagMap := map[string]string{}
+	tagMap["Name"] = cr.Name
+	for _, t := range vpcPeeringConnectionTags.Tags {
+		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		tagMap[k] = v
+	}
+	vpcPeeringConnectionTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
+	vpcPeeringConnectionTags.ResourceType = aws.String("vpc-peering-connection")
+	i := 0
+	for k, v := range tagMap {
+		vpcPeeringConnectionTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
+		i++
+	}
+	sort.Slice(vpcPeeringConnectionTags.Tags, func(i, j int) bool {
+		return aws.StringValue(vpcPeeringConnectionTags.Tags[i].Key) < aws.StringValue(vpcPeeringConnectionTags.Tags[j].Key)
+	})
+
+	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&vpcPeeringConnectionTags}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
