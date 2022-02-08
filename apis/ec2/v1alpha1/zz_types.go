@@ -398,8 +398,6 @@ type CarrierGateway struct {
 	OwnerID *string `json:"ownerID,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
-
-	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -523,8 +521,6 @@ type ClientVPNEndpoint struct {
 	SplitTunnel *bool `json:"splitTunnel,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
-
-	VPCID *string `json:"vpcID,omitempty"`
 
 	VPNPort *int64 `json:"vpnPort,omitempty"`
 }

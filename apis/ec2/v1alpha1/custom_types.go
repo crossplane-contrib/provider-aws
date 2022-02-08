@@ -157,6 +157,10 @@ type CustomVPCPeeringConnectionParameters struct {
 	// will be created, but will be in pending-acceptance state. This will only lead to an active
 	// connection if both VPCs are in the same tenant.
 	AcceptRequest bool `json:"acceptRequest,omitempty"`
+
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // CustomTransitGatewayParameters are custom parameters for TransitGateway
