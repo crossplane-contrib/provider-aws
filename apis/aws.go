@@ -53,6 +53,7 @@ import (
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
+	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
@@ -123,6 +124,7 @@ func init() {
 		athenav1alpha1.SchemeBuilder.AddToScheme,
 		ramv1alpha1.SchemeBuilder.AddToScheme,
 		kinesisv1alpha1.SchemeBuilder.AddToScheme,
+		neptunev1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
