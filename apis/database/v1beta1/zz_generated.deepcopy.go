@@ -643,6 +643,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(v1.SecretKeySelector)
 		**out = **in
 	}
+	if in.MaxAllocatedStorage != nil {
+		in, out := &in.MaxAllocatedStorage, &out.MaxAllocatedStorage
+		*out = new(int)
+		**out = **in
+	}
 	if in.MonitoringInterval != nil {
 		in, out := &in.MonitoringInterval, &out.MonitoringInterval
 		*out = new(int)

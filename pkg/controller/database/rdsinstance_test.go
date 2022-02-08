@@ -109,6 +109,18 @@ func withDBInstanceStatus(s string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
 }
 
+func withAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.AllocatedStorage = &i }
+}
+
+func withMaxAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MaxAllocatedStorage = &i }
+}
+
+func withStatusAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.AllocatedStorage = i }
+}
+
 func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = &s }
 }
@@ -152,6 +164,37 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"AutoscaledStorageIsUpToDate": { // if aws scales storage up, we should still consider it up to date, even if initial storage size was provided
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:    aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									MaxAllocatedStorage: aws.Int32(100),
+									AllocatedStorage:    30,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+			},
+			want: want{
+				cr: instance(
+					withMaxAllocatedStorage(100),
+					withAllocatedStorage(20),
+					withStatusAllocatedStorage(30),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -515,6 +558,33 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withTags(map[string]string{"foo": "bar"})),
+			},
+		},
+		"AutoscaleExcludeStorage": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						if input.AllocatedStorage != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("AllocatedStorage must not be set when on a modify request when AWS has autoscaled the storage")
+						}
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{
+								MaxAllocatedStorage: aws.Int32(100),
+								AllocatedStorage:    30,
+							}},
+						}, nil
+					},
+					MockAddTags: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
+					},
+				},
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+			},
+			want: want{
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
 			},
 		},
 		"AlreadyModifying": {

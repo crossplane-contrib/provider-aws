@@ -98,6 +98,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		LicenseModel:                       p.LicenseModel,
 		MasterUserPassword:                 awsclients.String(password),
 		MasterUsername:                     p.MasterUsername,
+		MaxAllocatedStorage:                awsclients.Int32Address(p.MaxAllocatedStorage),
 		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
 		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
@@ -257,6 +258,19 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
 
+	// Don't attempt to scale down storage if autoscaling is enabled,
+	// and the current storage is larger than what was once
+	// requested. We still want to allow the user to manually scale
+	// the storage, so we only remove it if we're certain AWS will
+	// reject the value
+	if target.MaxAllocatedStorage != nil && aws.ToInt(target.AllocatedStorage) < aws.ToInt(currentParams.AllocatedStorage) {
+		// By making the values equal, CreateJSONPatch will exclude
+		// the field. It might seem more sensible to change the target
+		// object, but it's a pointer to the CR so we do not want to
+		// mutate it.
+		currentParams.AllocatedStorage = target.AllocatedStorage
+	}
+
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -297,6 +311,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 		EngineVersion:                      p.EngineVersion,
 		Iops:                               awsclients.Int32Address(p.IOPS),
 		LicenseModel:                       p.LicenseModel,
+		MaxAllocatedStorage:                awsclients.Int32Address(p.MaxAllocatedStorage),
 		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
 		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
@@ -333,6 +348,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 // rds.DBInstance.
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
+		AllocatedStorage:                      int(db.AllocatedStorage),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),
@@ -497,6 +513,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
 	in.LicenseModel = awsclients.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = awsclients.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+	in.MaxAllocatedStorage = awsclients.LateInitializeIntFrom32Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
 	in.MonitoringInterval = awsclients.LateInitializeIntFrom32Ptr(in.MonitoringInterval, db.MonitoringInterval)
 	in.MonitoringRoleARN = awsclients.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
 	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, awsclients.Bool(db.MultiAZ))
