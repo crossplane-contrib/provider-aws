@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
@@ -50,7 +51,6 @@ const (
 	errCreateTags           = "failed to create tags for the secret"
 	errRemoveTags           = "failed to remove tags for the secret"
 	errFmtKeyNotFound       = "key %s is not found in referenced Kubernetes secret"
-	errGetSecretFailed      = "failed to get Kubernetes secret"
 	errGetSecretValue       = "cannot get the value of secret from AWS"
 	errGetResourcePolicy    = "cannot get resource policy"
 	errPutResourcePolicy    = "cannot put resource policy"
@@ -122,9 +122,14 @@ type hooks struct {
 }
 
 func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.DescribeSecretOutput) error {
-	payload, err := e.getPayload(context.TODO(), spec)
-	if err := client.IgnoreNotFound(err); err != nil || payload == nil {
+	_, err := e.getPayload(context.TODO(), spec)
+	if err := client.IgnoreNotFound(err); err != nil {
 		return err
+	}
+	// Proceed only if the secret does not exist because empty value might be
+	// valid content.
+	if !kerrors.IsNotFound(err) {
+		return nil
 	}
 
 	// If the K8s does not exist, create it with the data from AWS
@@ -271,7 +276,7 @@ func (e *hooks) getPayload(ctx context.Context, params *svcapitypes.SecretParame
 	}
 	sc := &corev1.Secret{}
 	if err := e.kube.Get(ctx, nn, sc); err != nil {
-		return nil, errors.Wrap(err, errGetSecretFailed)
+		return nil, err
 	}
 
 	if ref.Key != nil {
