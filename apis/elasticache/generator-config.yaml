@@ -1,0 +1,15 @@
+ignore:
+  field_paths:
+    - DescribeCacheParameterGroupsInput.CacheParameterGroupName
+    - CreateCacheParameterGroupInput.CacheParameterGroupName
+    - ModifyCacheParameterGroupInput.CacheParameterGroupName
+    - DeleteCacheParameterGroupInput.CacheParameterGroupName
+  resource_names:
+    - CacheCluster
+    - CacheSecurityGroup
+    - CacheSubnetGroup
+    - User
+    - UserGroup
+    - ReplicationGroup
+    - GlobalReplicationGroup
+    - Snapshot
