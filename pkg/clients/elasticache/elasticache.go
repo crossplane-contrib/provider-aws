@@ -59,6 +59,8 @@ type Client interface {
 	CreateCacheCluster(context.Context, *elasticache.CreateCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error)
 	DeleteCacheCluster(context.Context, *elasticache.DeleteCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
 	ModifyCacheCluster(context.Context, *elasticache.ModifyCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
+
+	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
 }
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
@@ -147,6 +149,26 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 	}
 }
 
+// NewModifyReplicationGroupShardConfigurationInput returns ElastiCache replication group
+// shard configuration modification input suitable for use with the AWS API.
+func NewModifyReplicationGroupShardConfigurationInput(g v1beta1.ReplicationGroupParameters, id string, rg elasticachetypes.ReplicationGroup) *elasticache.ModifyReplicationGroupShardConfigurationInput {
+	input := &elasticache.ModifyReplicationGroupShardConfigurationInput{
+		ApplyImmediately:   g.ApplyModificationsImmediately,
+		NodeGroupCount:     int32(*g.NumNodeGroups),
+		ReplicationGroupId: aws.String(id),
+	}
+
+	// For scale down we must name the nodes. This code picks the oldest rg
+	// now, but there might be a better algorithm, such as the one with least
+	// data
+	remove := len(rg.NodeGroups) - int(input.NodeGroupCount)
+	for i := 0; i < remove; i++ {
+		input.NodeGroupsToRemove = append(input.NodeGroupsToRemove, aws.ToString(rg.NodeGroups[i].NodeGroupId))
+	}
+
+	return input
+}
+
 // NewDeleteReplicationGroupInput returns ElastiCache replication group deletion
 // input suitable for use with the AWS API.
 func NewDeleteReplicationGroupInput(id string) *elasticache.DeleteReplicationGroupInput {
@@ -206,6 +228,12 @@ func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticachetypes.R
 			s.CacheSecurityGroupNames[i] = aws.ToString(val.CacheSecurityGroupName)
 		}
 	}
+}
+
+// ReplicationGroupShardConfigurationNeedsUpdate returns true if the supplied ReplicationGroup and
+// the configuration shards.
+func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup) bool {
+	return kube.NumNodeGroups != nil && *kube.NumNodeGroups != len(rg.NodeGroups)
 }
 
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
