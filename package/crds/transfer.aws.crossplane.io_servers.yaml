@@ -112,6 +112,35 @@ spec:
                       to clients over the internet. Your VPC's default security groups
                       are automatically assigned to your endpoint.
                     properties:
+                      addressAllocationIDRefs:
+                        description: AddressAllocationIDRefs is a list of references
+                          to AddressAllocationID used to set the AddressAllocationIDs.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      addressAllocationIDSelector:
+                        description: AddressAllocationIDSelector selects references
+                          to AddressAllocationID used to set the AddressAllocationIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       addressAllocationIDs:
                         description: "A list of address allocation IDs that are required
                           to attach an Elastic IP address to your server's endpoint.
@@ -203,6 +232,31 @@ spec:
                           can only be set when EndpointType is set to VPC_ENDPOINT.
                           \n For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint."
                         type: string
+                      vpcEndpointIDRef:
+                        description: VPCEndpointIDRef is a reference to a VPCEndpointID.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      vpcEndpointIDSelector:
+                        description: VPCEndpointIDSelector selects references to a
+                          VPCEndpointID.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       vpcID:
                         description: "The VPC ID of the VPC in which a server's endpoint
                           will be hosted. \n This property can only be set when EndpointType

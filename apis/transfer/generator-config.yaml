@@ -4,6 +4,8 @@ ignore:
     - CreateUserInput.UserName
     - CreateUserInput.Role
     - CreateServerInput.EndpointDetails
+    - CreateServerInput.Certificate
+    - CreateServerInput.LoggingRole
 resources:
   Server:
     exceptions:
