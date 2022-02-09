@@ -40,6 +40,18 @@ func GenerateGetFunctionInput(cr *svcapitypes.Function) *svcsdk.GetFunctionInput
 func GenerateFunction(resp *svcsdk.GetFunctionOutput) *svcapitypes.Function {
 	cr := &svcapitypes.Function{}
 
+	if resp.Tags != nil {
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range resp.Tags {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
+		}
+		cr.Spec.ForProvider.Tags = f3
+	} else {
+		cr.Spec.ForProvider.Tags = nil
+	}
+
 	return cr
 }
 

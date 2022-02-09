@@ -56,6 +56,11 @@ type GlobalClusterSpec struct {
 
 // GlobalClusterObservation defines the observed state of GlobalCluster
 type GlobalClusterObservation struct {
+	// A data object containing all properties for the current state of an in-process
+	// or pending failover process for this Aurora global database. This object
+	// is empty unless the FailoverGlobalCluster API operation has been called on
+	// this Aurora global database (GlobalCluster).
+	FailoverState *FailoverState `json:"failoverState,omitempty"`
 	// The Amazon Resource Name (ARN) for the global database cluster.
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
 	// Contains a user-supplied global database cluster identifier. This identifier
@@ -85,6 +90,7 @@ type GlobalClusterStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type GlobalCluster struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -105,7 +111,7 @@ type GlobalClusterList struct {
 // Repository type metadata.
 var (
 	GlobalClusterKind             = "GlobalCluster"
-	GlobalClusterGroupKind        = schema.GroupKind{Group: Group, Kind: GlobalClusterKind}.String()
+	GlobalClusterGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GlobalClusterKind}.String()
 	GlobalClusterKindAPIVersion   = GlobalClusterKind + "." + GroupVersion.String()
 	GlobalClusterGroupVersionKind = GroupVersion.WithKind(GlobalClusterKind)
 )

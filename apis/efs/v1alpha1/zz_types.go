@@ -27,6 +27,7 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type AccessPointDescription struct {
 	AccessPointID *string `json:"accessPointID,omitempty"`
 
@@ -39,6 +40,45 @@ type AccessPointDescription struct {
 	Tags []*Tag `json:"tags,omitempty"`
 }
 
+// +kubebuilder:skipversion
+type FileSystemDescription struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	CreationToken *string `json:"creationToken,omitempty"`
+
+	Encrypted *bool `json:"encrypted,omitempty"`
+
+	FileSystemARN *string `json:"fileSystemARN,omitempty"`
+
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	LifeCycleState *string `json:"lifeCycleState,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	NumberOfMountTargets *int64 `json:"numberOfMountTargets,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PerformanceMode *string `json:"performanceMode,omitempty"`
+	// The latest known metered size (in bytes) of data stored in the file system,
+	// in its Value field, and the time at which that size was determined in its
+	// Timestamp field. The value doesn't represent the size of a consistent snapshot
+	// of the file system, but it is eventually consistent when there are no writes
+	// to the file system. That is, the value represents the actual size only if
+	// the file system is not modified for a period longer than a couple of hours.
+	// Otherwise, the value is not necessarily the exact size the file system was
+	// at any instant in time.
+	SizeInBytes *FileSystemSize `json:"sizeInBytes,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	ThroughputMode *string `json:"throughputMode,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemSize struct {
 	Timestamp *metav1.Time `json:"timestamp,omitempty"`
 
@@ -49,6 +89,30 @@ type FileSystemSize struct {
 	ValueInStandard *int64 `json:"valueInStandard,omitempty"`
 }
 
+// +kubebuilder:skipversion
+type MountTargetDescription struct {
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
+	IPAddress *string `json:"ipAddress,omitempty"`
+
+	LifeCycleState *string `json:"lifeCycleState,omitempty"`
+
+	MountTargetID *string `json:"mountTargetID,omitempty"`
+
+	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	SubnetID *string `json:"subnetID,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 

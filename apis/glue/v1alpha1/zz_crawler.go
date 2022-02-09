@@ -91,6 +91,7 @@ type CrawlerStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Crawler struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -111,7 +112,7 @@ type CrawlerList struct {
 // Repository type metadata.
 var (
 	CrawlerKind             = "Crawler"
-	CrawlerGroupKind        = schema.GroupKind{Group: Group, Kind: CrawlerKind}.String()
+	CrawlerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CrawlerKind}.String()
 	CrawlerKindAPIVersion   = CrawlerKind + "." + GroupVersion.String()
 	CrawlerGroupVersionKind = GroupVersion.WithKind(CrawlerKind)
 )

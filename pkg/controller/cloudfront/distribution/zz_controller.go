@@ -830,7 +830,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						if f0f4f11f0iter.S3OriginConfig != nil {
 							f0f4f11f0elemf8 := &svcapitypes.S3OriginConfig{}
 							if f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
-								f0f4f11f0elemf8.OriginAccessIDentity = f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity
+								f0f4f11f0elemf8.OriginAccessIdentity = f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity
 							}
 							f0f4f11f0elem.S3OriginConfig = f0f4f11f0elemf8
 						}

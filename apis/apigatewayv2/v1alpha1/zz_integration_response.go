@@ -67,6 +67,7 @@ type IntegrationResponseStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type IntegrationResponse struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -87,7 +88,7 @@ type IntegrationResponseList struct {
 // Repository type metadata.
 var (
 	IntegrationResponseKind             = "IntegrationResponse"
-	IntegrationResponseGroupKind        = schema.GroupKind{Group: Group, Kind: IntegrationResponseKind}.String()
+	IntegrationResponseGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: IntegrationResponseKind}.String()
 	IntegrationResponseKindAPIVersion   = IntegrationResponseKind + "." + GroupVersion.String()
 	IntegrationResponseGroupVersionKind = GroupVersion.WithKind(IntegrationResponseKind)
 )

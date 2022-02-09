@@ -32,6 +32,12 @@ guidelines to get started.
 We use AWS Go code generation pipeline to generate new controllers. See [Code Generation Guide](CODE_GENERATION.md)
 to add a new resource.
 
+## Releases
+
+AWS Provider is released every 4 weeks and we issue patch releases as necessary.
+For example, `v0.20.0` is released on October 19, 2021. The next minor
+release `v0.21.0` will be cut on November 16, 2021, and so on.
+
 ## Report a Bug
 
 For filing bugs, suggesting improvements, or requesting new features, please

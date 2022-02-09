@@ -114,10 +114,79 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	if resp.AuthorizerCredentialsArn != nil {
+		cr.Spec.ForProvider.AuthorizerCredentialsARN = resp.AuthorizerCredentialsArn
+	} else {
+		cr.Spec.ForProvider.AuthorizerCredentialsARN = nil
+	}
 	if resp.AuthorizerId != nil {
 		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
 	} else {
 		cr.Status.AtProvider.AuthorizerID = nil
+	}
+	if resp.AuthorizerPayloadFormatVersion != nil {
+		cr.Spec.ForProvider.AuthorizerPayloadFormatVersion = resp.AuthorizerPayloadFormatVersion
+	} else {
+		cr.Spec.ForProvider.AuthorizerPayloadFormatVersion = nil
+	}
+	if resp.AuthorizerResultTtlInSeconds != nil {
+		cr.Spec.ForProvider.AuthorizerResultTtlInSeconds = resp.AuthorizerResultTtlInSeconds
+	} else {
+		cr.Spec.ForProvider.AuthorizerResultTtlInSeconds = nil
+	}
+	if resp.AuthorizerType != nil {
+		cr.Spec.ForProvider.AuthorizerType = resp.AuthorizerType
+	} else {
+		cr.Spec.ForProvider.AuthorizerType = nil
+	}
+	if resp.AuthorizerUri != nil {
+		cr.Spec.ForProvider.AuthorizerURI = resp.AuthorizerUri
+	} else {
+		cr.Spec.ForProvider.AuthorizerURI = nil
+	}
+	if resp.EnableSimpleResponses != nil {
+		cr.Spec.ForProvider.EnableSimpleResponses = resp.EnableSimpleResponses
+	} else {
+		cr.Spec.ForProvider.EnableSimpleResponses = nil
+	}
+	if resp.IdentitySource != nil {
+		f7 := []*string{}
+		for _, f7iter := range resp.IdentitySource {
+			var f7elem string
+			f7elem = *f7iter
+			f7 = append(f7, &f7elem)
+		}
+		cr.Spec.ForProvider.IdentitySource = f7
+	} else {
+		cr.Spec.ForProvider.IdentitySource = nil
+	}
+	if resp.IdentityValidationExpression != nil {
+		cr.Spec.ForProvider.IdentityValidationExpression = resp.IdentityValidationExpression
+	} else {
+		cr.Spec.ForProvider.IdentityValidationExpression = nil
+	}
+	if resp.JwtConfiguration != nil {
+		f9 := &svcapitypes.JWTConfiguration{}
+		if resp.JwtConfiguration.Audience != nil {
+			f9f0 := []*string{}
+			for _, f9f0iter := range resp.JwtConfiguration.Audience {
+				var f9f0elem string
+				f9f0elem = *f9f0iter
+				f9f0 = append(f9f0, &f9f0elem)
+			}
+			f9.Audience = f9f0
+		}
+		if resp.JwtConfiguration.Issuer != nil {
+			f9.Issuer = resp.JwtConfiguration.Issuer
+		}
+		cr.Spec.ForProvider.JWTConfiguration = f9
+	} else {
+		cr.Spec.ForProvider.JWTConfiguration = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

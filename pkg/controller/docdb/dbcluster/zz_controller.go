@@ -135,6 +135,22 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.AssociatedRoles = nil
 	}
+	if resp.DBCluster.AvailabilityZones != nil {
+		f1 := []*string{}
+		for _, f1iter := range resp.DBCluster.AvailabilityZones {
+			var f1elem string
+			f1elem = *f1iter
+			f1 = append(f1, &f1elem)
+		}
+		cr.Spec.ForProvider.AvailabilityZones = f1
+	} else {
+		cr.Spec.ForProvider.AvailabilityZones = nil
+	}
+	if resp.DBCluster.BackupRetentionPeriod != nil {
+		cr.Spec.ForProvider.BackupRetentionPeriod = resp.DBCluster.BackupRetentionPeriod
+	} else {
+		cr.Spec.ForProvider.BackupRetentionPeriod = nil
+	}
 	if resp.DBCluster.ClusterCreateTime != nil {
 		cr.Status.AtProvider.ClusterCreateTime = &metav1.Time{*resp.DBCluster.ClusterCreateTime}
 	} else {
@@ -187,6 +203,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBClusterResourceID = nil
 	}
+	if resp.DBCluster.DeletionProtection != nil {
+		cr.Spec.ForProvider.DeletionProtection = resp.DBCluster.DeletionProtection
+	} else {
+		cr.Spec.ForProvider.DeletionProtection = nil
+	}
 	if resp.DBCluster.EarliestRestorableTime != nil {
 		cr.Status.AtProvider.EarliestRestorableTime = &metav1.Time{*resp.DBCluster.EarliestRestorableTime}
 	} else {
@@ -208,15 +229,35 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.Endpoint = nil
 	}
+	if resp.DBCluster.Engine != nil {
+		cr.Spec.ForProvider.Engine = resp.DBCluster.Engine
+	} else {
+		cr.Spec.ForProvider.Engine = nil
+	}
+	if resp.DBCluster.EngineVersion != nil {
+		cr.Spec.ForProvider.EngineVersion = resp.DBCluster.EngineVersion
+	} else {
+		cr.Spec.ForProvider.EngineVersion = nil
+	}
 	if resp.DBCluster.HostedZoneId != nil {
 		cr.Status.AtProvider.HostedZoneID = resp.DBCluster.HostedZoneId
 	} else {
 		cr.Status.AtProvider.HostedZoneID = nil
 	}
+	if resp.DBCluster.KmsKeyId != nil {
+		cr.Spec.ForProvider.KMSKeyID = resp.DBCluster.KmsKeyId
+	} else {
+		cr.Spec.ForProvider.KMSKeyID = nil
+	}
 	if resp.DBCluster.LatestRestorableTime != nil {
 		cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*resp.DBCluster.LatestRestorableTime}
 	} else {
 		cr.Status.AtProvider.LatestRestorableTime = nil
+	}
+	if resp.DBCluster.MasterUsername != nil {
+		cr.Spec.ForProvider.MasterUsername = resp.DBCluster.MasterUsername
+	} else {
+		cr.Spec.ForProvider.MasterUsername = nil
 	}
 	if resp.DBCluster.MultiAZ != nil {
 		cr.Status.AtProvider.MultiAZ = resp.DBCluster.MultiAZ
@@ -228,6 +269,21 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.PercentProgress = nil
 	}
+	if resp.DBCluster.Port != nil {
+		cr.Spec.ForProvider.Port = resp.DBCluster.Port
+	} else {
+		cr.Spec.ForProvider.Port = nil
+	}
+	if resp.DBCluster.PreferredBackupWindow != nil {
+		cr.Spec.ForProvider.PreferredBackupWindow = resp.DBCluster.PreferredBackupWindow
+	} else {
+		cr.Spec.ForProvider.PreferredBackupWindow = nil
+	}
+	if resp.DBCluster.PreferredMaintenanceWindow != nil {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = resp.DBCluster.PreferredMaintenanceWindow
+	} else {
+		cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
+	}
 	if resp.DBCluster.ReaderEndpoint != nil {
 		cr.Status.AtProvider.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
 	} else {
@@ -237,6 +293,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
 	} else {
 		cr.Status.AtProvider.Status = nil
+	}
+	if resp.DBCluster.StorageEncrypted != nil {
+		cr.Spec.ForProvider.StorageEncrypted = resp.DBCluster.StorageEncrypted
+	} else {
+		cr.Spec.ForProvider.StorageEncrypted = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
 		f28 := []*svcapitypes.VPCSecurityGroupMembership{}

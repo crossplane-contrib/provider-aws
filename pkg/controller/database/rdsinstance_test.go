@@ -48,8 +48,24 @@ const (
 )
 
 var (
-	masterUsername = "root"
-	engineVersion  = "5.6"
+	masterUsername     = "root"
+	engineVersion      = "5.6"
+	s3SourceType       = "S3"
+	snapshotSourceType = "Snapshot"
+	s3BucketName       = "database-backup"
+	snapshotIdentifier = "my-snapshot"
+	s3Backup           = v1beta1.RestoreBackupConfiguration{
+		Source: &s3SourceType,
+		S3: &v1beta1.S3RestoreBackupConfiguration{
+			BucketName: &s3BucketName,
+		},
+	}
+	snapshotBackup = v1beta1.RestoreBackupConfiguration{
+		Source: &snapshotSourceType,
+		Snapshot: &v1beta1.SnapshotRestoreBackupConfiguration{
+			SnapshotIdentifier: &snapshotIdentifier,
+		},
+	}
 
 	replaceMe = "replace-me!"
 	errBoom   = errors.New("boom")
@@ -65,6 +81,10 @@ type rdsModifier func(*v1beta1.RDSInstance)
 
 func withMasterUsername(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
+}
+
+func withBackupConfiguration(backup *v1beta1.RestoreBackupConfiguration) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.RestoreFrom = backup }
 }
 
 func withConditions(c ...xpv1.Condition) rdsModifier {
@@ -87,6 +107,18 @@ func withTags(tagMaps ...map[string]string) rdsModifier {
 
 func withDBInstanceStatus(s string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
+}
+
+func withAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.AllocatedStorage = &i }
+}
+
+func withMaxAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MaxAllocatedStorage = &i }
+}
+
+func withStatusAllocatedStorage(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.AllocatedStorage = i }
 }
 
 func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
@@ -132,6 +164,37 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"AutoscaledStorageIsUpToDate": { // if aws scales storage up, we should still consider it up to date, even if initial storage size was provided
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:    aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									MaxAllocatedStorage: aws.Int32(100),
+									AllocatedStorage:    30,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+			},
+			want: want{
+				cr: instance(
+					withMaxAllocatedStorage(100),
+					withAllocatedStorage(20),
+					withStatusAllocatedStorage(30),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -222,9 +285,6 @@ func TestObserve(t *testing.T) {
 		},
 		"LateInitSuccess": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
 						return &awsrds.DescribeDBInstancesOutput{
@@ -246,36 +306,11 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
-			},
-		},
-		"LateInitFailedKubeUpdate": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(errBoom),
-				},
-				rds: &fake.MockRDSClient{
-					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
-						return &awsrds.DescribeDBInstancesOutput{
-							DBInstances: []awsrdstypes.DBInstance{
-								{
-									EngineVersion:    aws.String(engineVersion),
-									DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
-								},
-							},
-						}, nil
-					},
-				},
-				cr: instance(),
-			},
-			want: want{
-				cr: instance(
-					withEngineVersion(&engineVersion),
-				),
-				err: awsclient.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
 	}
@@ -309,7 +344,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"Successful": {
+		"SuccessfulCreate": {
 			args: args{
 				rds: &fake.MockRDSClient{
 					MockCreate: func(ctx context.Context, input *awsrds.CreateDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.CreateDBInstanceOutput, error) {
@@ -321,6 +356,54 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulS3Restore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockS3Restore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromS3Input, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromS3Output, error) {
+						return &awsrds.RestoreDBInstanceFromS3Output{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&s3Backup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&s3Backup),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulSnapshotRestore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockSnapshotRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromDBSnapshotInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromDBSnapshotOutput, error) {
+						return &awsrds.RestoreDBInstanceFromDBSnapshotOutput{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&snapshotBackup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&snapshotBackup),
 					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
@@ -475,6 +558,33 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withTags(map[string]string{"foo": "bar"})),
+			},
+		},
+		"AutoscaleExcludeStorage": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						if input.AllocatedStorage != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("AllocatedStorage must not be set when on a modify request when AWS has autoscaled the storage")
+						}
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{
+								MaxAllocatedStorage: aws.Int32(100),
+								AllocatedStorage:    30,
+							}},
+						}, nil
+					},
+					MockAddTags: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
+					},
+				},
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+			},
+			want: want{
+				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
 			},
 		},
 		"AlreadyModifying": {

@@ -40,7 +40,7 @@ import (
 	svcutils "github.com/crossplane/provider-aws/pkg/controller/docdb"
 )
 
-const (
+var (
 	testAvailabilityZone                 = "test-zone-a"
 	testOtherAvailabilityZone            = "test-zone-b"
 	testBackupRetentionPeriod            = 10
@@ -1984,11 +1984,25 @@ func TestCreate(t *testing.T) {
 					MockCreateDBClusterWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterInput, o []request.Option) (*docdb.CreateDBClusterOutput, error) {
 						return &docdb.CreateDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-								DBClusterArn:        awsclient.String(testDBClusterArn),
-								Endpoint:            awsclient.String(testEndpoint),
-								ReaderEndpoint:      awsclient.String(testReaderEndpoint),
-								Port:                awsclient.Int64(testPort),
+								AvailabilityZones: []*string{
+									&testAvailabilityZone,
+									&testOtherAvailabilityZone,
+								},
+								BackupRetentionPeriod:      awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
+								DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+								DBClusterArn:               awsclient.String(testDBClusterArn),
+								DeletionProtection:         awsclient.Bool(true),
+								Endpoint:                   awsclient.String(testEndpoint),
+								Engine:                     &testEngine,
+								EngineVersion:              &testEngineVersion,
+								KmsKeyId:                   &testKMSKeyID,
+								MasterUsername:             &testMasterUserName,
+								ReaderEndpoint:             awsclient.String(testReaderEndpoint),
+								Port:                       awsclient.Int64(testPort),
+								PreferredBackupWindow:      &testPreferredBackupWindow,
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								StorageEncrypted:           awsclient.Bool(true),
 							},
 						}, nil
 					},
@@ -2066,6 +2080,7 @@ func TestCreate(t *testing.T) {
 					withEndpoint(testEndpoint),
 					withReaderEndpoint(testReaderEndpoint),
 					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
+					withStatusDBClusterParameterGroupName(testDBClusterParameterGroupName),
 				),
 				result: managed.ExternalCreation{
 					ConnectionDetails: generateConnectionDetails(

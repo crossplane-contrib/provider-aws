@@ -65,6 +65,7 @@ type RouteResponseStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type RouteResponse struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -85,7 +86,7 @@ type RouteResponseList struct {
 // Repository type metadata.
 var (
 	RouteResponseKind             = "RouteResponse"
-	RouteResponseGroupKind        = schema.GroupKind{Group: Group, Kind: RouteResponseKind}.String()
+	RouteResponseGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RouteResponseKind}.String()
 	RouteResponseKindAPIVersion   = RouteResponseKind + "." + GroupVersion.String()
 	RouteResponseGroupVersionKind = GroupVersion.WithKind(RouteResponseKind)
 )

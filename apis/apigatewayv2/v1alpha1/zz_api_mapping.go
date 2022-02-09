@@ -62,6 +62,7 @@ type APIMappingStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type APIMapping struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -82,7 +83,7 @@ type APIMappingList struct {
 // Repository type metadata.
 var (
 	APIMappingKind             = "APIMapping"
-	APIMappingGroupKind        = schema.GroupKind{Group: Group, Kind: APIMappingKind}.String()
+	APIMappingGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: APIMappingKind}.String()
 	APIMappingKindAPIVersion   = APIMappingKind + "." + GroupVersion.String()
 	APIMappingGroupVersionKind = GroupVersion.WithKind(APIMappingKind)
 )

@@ -50,6 +50,7 @@ func SetupKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll
 			resource.ManagedKind(svcapitypes.KeyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -72,6 +73,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.DescribeKey
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.KeyState_PendingDeletion):
 		cr.SetConditions(xpv1.Deleting())
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	case string(svcapitypes.KeyState_PendingImport):
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.KeyState_Unavailable):

@@ -54,7 +54,6 @@ func SetupClassifier(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 		For(&svcapitypes.Classifier{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ClassifierGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -91,7 +90,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomCsvClassifier != nil {
 		obj.CsvClassifier = &svcsdk.CreateCsvClassifierRequest{
-			Name:                 &cr.Name,
+			Name:                 awsclients.String(meta.GetExternalName(cr)),
 			AllowSingleColumn:    cr.Spec.ForProvider.CustomCsvClassifier.AllowSingleColumn,
 			ContainsHeader:       cr.Spec.ForProvider.CustomCsvClassifier.ContainsHeader,
 			Delimiter:            cr.Spec.ForProvider.CustomCsvClassifier.Delimiter,
@@ -103,7 +102,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomXMLClassifier != nil {
 		obj.XMLClassifier = &svcsdk.CreateXMLClassifierRequest{
-			Name:           &cr.Name,
+			Name:           awsclients.String(meta.GetExternalName(cr)),
 			Classification: cr.Spec.ForProvider.CustomXMLClassifier.Classification,
 			RowTag:         cr.Spec.ForProvider.CustomXMLClassifier.RowTag,
 		}
@@ -111,7 +110,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomGrokClassifier != nil {
 		obj.GrokClassifier = &svcsdk.CreateGrokClassifierRequest{
-			Name:           &cr.Name,
+			Name:           awsclients.String(meta.GetExternalName(cr)),
 			Classification: cr.Spec.ForProvider.CustomGrokClassifier.Classification,
 			CustomPatterns: cr.Spec.ForProvider.CustomGrokClassifier.CustomPatterns,
 			GrokPattern:    cr.Spec.ForProvider.CustomGrokClassifier.GrokPattern,
@@ -120,7 +119,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomJSONClassifier != nil {
 		obj.JsonClassifier = &svcsdk.CreateJsonClassifierRequest{
-			Name:     &cr.Name,
+			Name:     awsclients.String(meta.GetExternalName(cr)),
 			JsonPath: cr.Spec.ForProvider.CustomJSONClassifier.JSONPath,
 		}
 	}

@@ -18,6 +18,7 @@ package bucket
 
 import (
 	"context"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -71,12 +72,15 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 
 	source := GenerateReplicationConfiguration(config)
 
-	sortReplicationRules(external.ReplicationConfiguration.Rules)
+	return IsUpToDate(external.ReplicationConfiguration, source)
+}
 
-	if cmp.Equal(external.ReplicationConfiguration, source, cmpopts.IgnoreTypes(document.NoSerde{})) {
+// IsUpToDate determines whether a replication configuration needs to be updated
+func IsUpToDate(external *types.ReplicationConfiguration, source *types.ReplicationConfiguration) (ResourceStatus, error) {
+	sortReplicationRules(external.Rules)
+	if cmp.Equal(external, source, cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return Updated, nil
 	}
-
 	return NeedsUpdate, nil
 }
 
@@ -139,11 +143,11 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 		config.Rules[i] = v1beta1.ReplicationRule{
 			ID:       rule.ID,
 			Priority: rule.Priority,
+			Filter:   &v1beta1.ReplicationRuleFilter{},
 			Status:   string(rule.Status),
 		}
 
 		if rule.Filter != nil {
-			config.Rules[i].Filter = &v1beta1.ReplicationRuleFilter{}
 			// https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/s3/types@v1.3.0#ReplicationRuleFilter
 			// type switches can be used to check the union value
 			union := rule.Filter
@@ -212,6 +216,16 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 }
 
 func sortReplicationRules(rules []types.ReplicationRule) {
+
+	sort.Slice(rules, func(i, j int) bool {
+		// Sort first by Rule ID
+		if a, b := rules[i].ID, rules[j].ID; a != b {
+			return aws.ToString(a) < aws.ToString(b)
+		}
+		// AWS won't let you have rules with the same name, but that may be defined
+		return true
+	})
+
 	for i := range rules {
 		andOperator, ok := rules[i].Filter.(*types.ReplicationRuleFilterMemberAnd)
 		if ok {
@@ -264,6 +278,7 @@ func createRule(input v1beta1.ReplicationRule) types.ReplicationRule {
 	newRule := types.ReplicationRule{
 		ID:       Rule.ID,
 		Priority: Rule.Priority,
+		Filter:   &types.ReplicationRuleFilterMemberPrefix{Value: ""},
 		Status:   types.ReplicationRuleStatus(Rule.Status),
 	}
 	if Rule.Filter != nil {

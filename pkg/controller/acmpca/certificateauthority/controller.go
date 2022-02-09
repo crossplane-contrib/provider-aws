@@ -38,7 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
@@ -60,16 +60,16 @@ const (
 
 // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.CertificateAuthorityGroupKind)
+	name := managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.CertificateAuthority{}).
+		For(&v1beta1.CertificateAuthority{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.CertificateAuthorityGroupVersionKind),
+			resource.ManagedKind(v1beta1.CertificateAuthorityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
@@ -87,7 +87,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.CertificateAuthority)
+	cr, ok := mg.(*v1beta1.CertificateAuthority)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -104,7 +104,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.CertificateAuthority)
+	cr, ok := mgd.(*v1beta1.CertificateAuthority)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -158,7 +158,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 
-	cr, ok := mgd.(*v1alpha1.CertificateAuthority)
+	cr, ok := mgd.(*v1beta1.CertificateAuthority)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -174,7 +174,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 
-	cr, ok := mgd.(*v1alpha1.CertificateAuthority)
+	cr, ok := mgd.(*v1beta1.CertificateAuthority)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -221,7 +221,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.CertificateAuthority)
+	cr, ok := mgd.(*v1beta1.CertificateAuthority)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

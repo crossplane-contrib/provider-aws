@@ -45,6 +45,7 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ra
 			e.preCreate = preCreate
 			e.delete = h.Delete
 			e.observe = h.Observe
+			e.postCreate = postCreate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -65,4 +66,9 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ra
 func preCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.CreatePublicDnsNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	return nil
+}
+
+func postCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, resp *svcsdk.CreatePublicDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	cr.SetOperationID(resp.OperationId)
+	return cre, err
 }

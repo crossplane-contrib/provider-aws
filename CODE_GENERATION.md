@@ -22,7 +22,7 @@ per-service basis. For example, `rds` is a service that contains `DBInstance`,
 `DBCluster` and many other related resources. The first thing to do is to figure
 out which service the resource we'd like to generate belongs to.
 
-Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.4/models/apis)
+Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.10/models/apis)
 and make note of the service name. For example, in order to generate Lambda
 resources, you need to use `lambda` as service name. Once you figure that out,
 the following is the command you need to run to generate CRDs and controllers:
@@ -35,8 +35,8 @@ The first run will take a while since it clones the code generator and AWS SDK.
 Once it is completed, you'll see new folders in `apis` and `pkg/controller`
 directories. By default, it generates every resource it can recognize but that's
 not what you want if you'd like to add support for only a few resources. In order
-to ignore some of the generated resources, you need to create a
-`apis/<serviceid>/v1alpha1/generator-config.yaml` file with the following content:
+to ignore some of the generated resources, you need to create an
+`apis/<serviceid>/generator-config.yaml` file with the following content:
 
 ```yaml
 ignore:
@@ -46,21 +46,23 @@ ignore:
     - <other CRD kinds you want to ignore>
 ```
 
+If you'd like to specify an API version for a generated resource other than
+the default `v1alpha1`, you can do so with a configuration in `generator-config.yaml`
+as follows:
+```yaml
+resources:
+  "Distribution":
+    api_versions:
+    - name: "v1beta1"
+```
+If not overridden in the `generator-config.yaml` file, the default version generated is
+`v1alpha1`.
+
 When you re-run the generation with this configuration, existing files won't be
-deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
-`generator-config.yaml` and then re-run the command.
+deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1`and
+then re-run the command.
 
 If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
-
-### Makefile
-
-```bash
-- GENERATED_SERVICES="apigatewayv2"
-+ GENERATED_SERVICES="apigatewayv2,<serviceid>"
-```
-
-If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
-and mention that you're using Crossplane pipeline.
 
 ### Crossplane Code Generation
 
@@ -408,16 +410,16 @@ to test the real-world scenario. There are two Docker images to be built; one ha
 the controller image, the other one has package metadata and CRDs. We need to choose a
 controller image before building metadata image. Then we'll start the build process.
 
-Pre-requisites: 
-* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.1/reference/install.html).
-* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.1/getting-started/install-configure.html#install-crossplane-cli). 
+Pre-requisites:
+* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.5/reference/install.html).
+* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.5/getting-started/install-configure.html#install-crossplane-cli).
 * Docker hub account with your own public repository.
 
 Follow the steps below to get set-up for in-cluster testing:
 * Run `make build DOCKER_REGISTRY=<username> VERSION=test-version` in `provider-aws`. This will create two images mentioned above:
-  * `build-<short-sha>/provider-aws-amd64:latest //Controller Image This is the one that will be running in the cluster.` 
+  * `build-<short-sha>/provider-aws-amd64:latest //Controller Image This is the one that will be running in the cluster.`
   * `build-<short-sha>/provider-aws-controller-amd64:latest //Metadata Image This is the one we'll use when we install the provider.`
-  
+
 
 * Tag and push both the images to your personal docker repository.
 

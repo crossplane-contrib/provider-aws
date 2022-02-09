@@ -109,11 +109,17 @@ type DBClusterParameters struct {
 	//
 	// Possible values are postgresql and upgrade.
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
-	// A value that indicates whether to enable write operations to be forwarded
-	// from this cluster to the primary cluster in an Aurora global database. The
-	// resulting changes are replicated back to this cluster. This parameter only
-	// applies to DB clusters that are secondary clusters in an Aurora global database.
-	// By default, Aurora disallows write operations for secondary clusters.
+	// A value that indicates whether to enable this DB cluster to forward write
+	// operations to the primary cluster of an Aurora global database (GlobalCluster).
+	// By default, write operations are not allowed on Aurora DB clusters that are
+	// secondary clusters in an Aurora global database.
+	//
+	// You can set this value only on Aurora DB clusters that are members of an
+	// Aurora global database. With this parameter enabled, a secondary cluster
+	// can forward writes to the current primary cluster and the resulting changes
+	// are replicated back to this cluster. For the primary DB cluster of an Aurora
+	// global database, this value is used immediately if the primary is demoted
+	// by the FailoverGlobalCluster API operation, but it does nothing until then.
 	EnableGlobalWriteForwarding *bool `json:"enableGlobalWriteForwarding,omitempty"`
 	// A value that indicates whether to enable the HTTP endpoint for an Aurora
 	// Serverless DB cluster. By default, the HTTP endpoint is disabled.
@@ -473,6 +479,7 @@ type DBClusterStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type DBCluster struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -493,7 +500,7 @@ type DBClusterList struct {
 // Repository type metadata.
 var (
 	DBClusterKind             = "DBCluster"
-	DBClusterGroupKind        = schema.GroupKind{Group: Group, Kind: DBClusterKind}.String()
+	DBClusterGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBClusterKind}.String()
 	DBClusterKindAPIVersion   = DBClusterKind + "." + GroupVersion.String()
 	DBClusterGroupVersionKind = GroupVersion.WithKind(DBClusterKind)
 )

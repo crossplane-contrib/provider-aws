@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
@@ -52,26 +52,26 @@ type args struct {
 	cr     resource.Managed
 }
 
-type certificateAuthorityPermissionModifier func(*v1alpha1.CertificateAuthorityPermission)
+type certificateAuthorityPermissionModifier func(*v1beta1.CertificateAuthorityPermission)
 
 func withConditions(c ...xpv1.Condition) certificateAuthorityPermissionModifier {
-	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.CertificateAuthorityPermission) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withExternalName(name string) func(*v1alpha1.CertificateAuthorityPermission) {
-	return func(r *v1alpha1.CertificateAuthorityPermission) { meta.SetExternalName(r, name) }
+func withExternalName(name string) func(*v1beta1.CertificateAuthorityPermission) {
+	return func(r *v1beta1.CertificateAuthorityPermission) { meta.SetExternalName(r, name) }
 }
 
-func withPrincipal(p string) func(*v1alpha1.CertificateAuthorityPermission) {
-	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.Principal = p }
+func withPrincipal(p string) func(*v1beta1.CertificateAuthorityPermission) {
+	return func(r *v1beta1.CertificateAuthorityPermission) { r.Spec.ForProvider.Principal = p }
 }
 
-func withCertificateAuthorityARN(arn string) func(*v1alpha1.CertificateAuthorityPermission) {
-	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.CertificateAuthorityARN = &arn }
+func withCertificateAuthorityARN(arn string) func(*v1beta1.CertificateAuthorityPermission) {
+	return func(r *v1beta1.CertificateAuthorityPermission) { r.Spec.ForProvider.CertificateAuthorityARN = &arn }
 }
 
-func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier) *v1alpha1.CertificateAuthorityPermission {
-	cr := &v1alpha1.CertificateAuthorityPermission{}
+func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier) *v1beta1.CertificateAuthorityPermission {
+	cr := &v1beta1.CertificateAuthorityPermission{}
 	for _, f := range m {
 		f(cr)
 	}

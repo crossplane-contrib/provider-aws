@@ -66,6 +66,7 @@ type ModelStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -86,7 +87,7 @@ type ModelList struct {
 // Repository type metadata.
 var (
 	ModelKind             = "Model"
-	ModelGroupKind        = schema.GroupKind{Group: Group, Kind: ModelKind}.String()
+	ModelGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ModelKind}.String()
 	ModelKindAPIVersion   = ModelKind + "." + GroupVersion.String()
 	ModelGroupVersionKind = GroupVersion.WithKind(ModelKind)
 )

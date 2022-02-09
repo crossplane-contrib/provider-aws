@@ -78,6 +78,7 @@ type DBClusterParameterGroupStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type DBClusterParameterGroup struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -98,7 +99,7 @@ type DBClusterParameterGroupList struct {
 // Repository type metadata.
 var (
 	DBClusterParameterGroupKind             = "DBClusterParameterGroup"
-	DBClusterParameterGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBClusterParameterGroupKind}.String()
+	DBClusterParameterGroupGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DBClusterParameterGroupKind}.String()
 	DBClusterParameterGroupKindAPIVersion   = DBClusterParameterGroupKind + "." + GroupVersion.String()
 	DBClusterParameterGroupGroupVersionKind = GroupVersion.WithKind(DBClusterParameterGroupKind)
 )

@@ -44,9 +44,9 @@ type AuthorizerParameters struct {
 	EnableSimpleResponses *bool `json:"enableSimpleResponses,omitempty"`
 
 	// +kubebuilder:validation:Required
-	IDentitySource []*string `json:"identitySource"`
+	IdentitySource []*string `json:"identitySource"`
 
-	IDentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
+	IdentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
 
 	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
 
@@ -79,6 +79,7 @@ type AuthorizerStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Authorizer struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -99,7 +100,7 @@ type AuthorizerList struct {
 // Repository type metadata.
 var (
 	AuthorizerKind             = "Authorizer"
-	AuthorizerGroupKind        = schema.GroupKind{Group: Group, Kind: AuthorizerKind}.String()
+	AuthorizerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: AuthorizerKind}.String()
 	AuthorizerKindAPIVersion   = AuthorizerKind + "." + GroupVersion.String()
 	AuthorizerGroupVersionKind = GroupVersion.WithKind(AuthorizerKind)
 )

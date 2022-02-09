@@ -32,7 +32,7 @@ type APIParameters struct {
 
 	APIKeySelectionExpression *string `json:"apiKeySelectionExpression,omitempty"`
 
-	CorsConfiguration *Cors `json:"corsConfiguration,omitempty"`
+	CORSConfiguration *CORS `json:"corsConfiguration,omitempty"`
 
 	CredentialsARN *string `json:"credentialsARN,omitempty"`
 
@@ -94,6 +94,7 @@ type APIStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type API struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -114,7 +115,7 @@ type APIList struct {
 // Repository type metadata.
 var (
 	APIKind             = "API"
-	APIGroupKind        = schema.GroupKind{Group: Group, Kind: APIKind}.String()
+	APIGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: APIKind}.String()
 	APIKindAPIVersion   = APIKind + "." + GroupVersion.String()
 	APIGroupVersionKind = GroupVersion.WithKind(APIKind)
 )

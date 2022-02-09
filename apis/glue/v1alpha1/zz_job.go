@@ -154,6 +154,7 @@ type JobStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Job struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -174,7 +175,7 @@ type JobList struct {
 // Repository type metadata.
 var (
 	JobKind             = "Job"
-	JobGroupKind        = schema.GroupKind{Group: Group, Kind: JobKind}.String()
+	JobGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: JobKind}.String()
 	JobKindAPIVersion   = JobKind + "." + GroupVersion.String()
 	JobGroupVersionKind = GroupVersion.WithKind(JobKind)
 )

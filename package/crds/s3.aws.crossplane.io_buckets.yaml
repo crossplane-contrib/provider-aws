@@ -87,6 +87,10 @@ spec:
                     - public-read
                     - public-read-write
                     - authenticated-read
+                    - aws-exec-read
+                    - bucket-owner-read
+                    - bucket-owner-full-control
+                    - log-delivery-write
                     type: string
                   corsConfiguration:
                     description: Describes the cross-origin access configuration for
@@ -669,6 +673,32 @@ spec:
                                 when it detects events of the specified type. \n QueueArn
                                 is a required field"
                               type: string
+                            queueArnRef:
+                              description: QueueArnRef references an Queue to retrieve
+                                its ARN
+                              properties:
+                                name:
+                                  description: Name of the referenced object.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            queueArnSelector:
+                              description: QueueArnSelector selects a reference to
+                                an Queue to retrieve its ARN
+                              properties:
+                                matchControllerRef:
+                                  description: MatchControllerRef ensures an object
+                                    with the same controller reference as the selecting
+                                    object is selected.
+                                  type: boolean
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: MatchLabels ensures an object with
+                                    matching labels is selected.
+                                  type: object
+                              type: object
                           required:
                           - events
                           - queueArn
@@ -908,16 +938,15 @@ spec:
                                 S3 handled replication of delete markers differently.
                                 For more information, see Backward Compatibility (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-backward-compat-considerations)."
                               properties:
-                                Status:
+                                status:
                                   description: Indicates whether to replicate delete
-                                    markers. In the current implementation, Amazon
-                                    S3 doesn't replicate the delete markers. The status
-                                    must be "Disabled".
+                                    markers. Valid values are "Enabled" or "Disabled"
                                   enum:
+                                  - Enabled
                                   - Disabled
                                   type: string
                               required:
-                              - Status
+                              - status
                               type: object
                             destination:
                               description: "A container for information about the
@@ -1006,6 +1035,32 @@ spec:
                                         in the AWS Key Management Service Developer
                                         Guide.
                                       type: string
+                                    replicaKmsKeyIdRef:
+                                      description: ReplicaKmsKeyIDRef references an
+                                        KMSKey to retrieve its ID
+                                      properties:
+                                        name:
+                                          description: Name of the referenced object.
+                                          type: string
+                                      required:
+                                      - name
+                                      type: object
+                                    replicaKmsKeyIdSelector:
+                                      description: ReplicaKmsKeyIDSelector selects
+                                        a reference to an KMSKey to retrieve its ID
+                                      properties:
+                                        matchControllerRef:
+                                          description: MatchControllerRef ensures
+                                            an object with the same controller reference
+                                            as the selecting object is selected.
+                                          type: boolean
+                                        matchLabels:
+                                          additionalProperties:
+                                            type: string
+                                          description: MatchLabels ensures an object
+                                            with matching labels is selected.
+                                          type: object
+                                      type: object
                                   required:
                                   - replicaKmsKeyId
                                   type: object
@@ -1280,6 +1335,32 @@ spec:
                                     Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
                                     in the AWS Key Management Service Developer Guide."
                                   type: string
+                                kmsMasterKeyIdRef:
+                                  description: KMSMasterKeyIDRef references an KMSKey
+                                    to retrieve its ID
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                kmsMasterKeyIdSelector:
+                                  description: KMSMasterKeyIDSelector selects a reference
+                                    to an KMSKey to retrieve its ID
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object
+                                        with the same controller reference as the
+                                        selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with
+                                        matching labels is selected.
+                                      type: object
+                                  type: object
                                 sseAlgorithm:
                                   description: Server-side encryption algorithm to
                                     use for the default encryption. Options are AES256

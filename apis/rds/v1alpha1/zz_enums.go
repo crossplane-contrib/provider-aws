@@ -68,6 +68,14 @@ const (
 	EngineFamily_POSTGRESQL EngineFamily = "POSTGRESQL"
 )
 
+type FailoverStatus string
+
+const (
+	FailoverStatus_pending      FailoverStatus = "pending"
+	FailoverStatus_failing_over FailoverStatus = "failing-over"
+	FailoverStatus_cancelling   FailoverStatus = "cancelling"
+)
+
 type IAMAuthMode string
 
 const (

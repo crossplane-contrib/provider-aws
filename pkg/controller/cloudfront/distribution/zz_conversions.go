@@ -756,7 +756,7 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 						if f0f4f11f0iter.S3OriginConfig != nil {
 							f0f4f11f0elemf8 := &svcapitypes.S3OriginConfig{}
 							if f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
-								f0f4f11f0elemf8.OriginAccessIDentity = f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity
+								f0f4f11f0elemf8.OriginAccessIdentity = f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity
 							}
 							f0f4f11f0elem.S3OriginConfig = f0f4f11f0elemf8
 						}
@@ -1475,8 +1475,8 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 					}
 					if f0f11f0iter.S3OriginConfig != nil {
 						f0f11f0elemf8 := &svcsdk.S3OriginConfig{}
-						if f0f11f0iter.S3OriginConfig.OriginAccessIDentity != nil {
-							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIDentity)
+						if f0f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
+							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIdentity)
 						}
 						f0f11f0elem.SetS3OriginConfig(f0f11f0elemf8)
 					}
@@ -2171,8 +2171,8 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 					}
 					if f0f11f0iter.S3OriginConfig != nil {
 						f0f11f0elemf8 := &svcsdk.S3OriginConfig{}
-						if f0f11f0iter.S3OriginConfig.OriginAccessIDentity != nil {
-							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIDentity)
+						if f0f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
+							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIdentity)
 						}
 						f0f11f0elem.SetS3OriginConfig(f0f11f0elemf8)
 					}

@@ -27,16 +27,19 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type Filter struct {
 	Key *string `json:"key,omitempty"`
 
 	Values []*string `json:"values,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RotationRulesType struct {
 	AutomaticallyAfterDays *int64 `json:"automaticallyAfterDays,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SecretListEntry struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -69,12 +72,14 @@ type SecretListEntry struct {
 	Tags []*Tag `json:"tags,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SecretVersionsListEntry struct {
 	LastAccessedDate *metav1.Time `json:"lastAccessedDate,omitempty"`
 
 	VersionStages []*string `json:"versionStages,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 

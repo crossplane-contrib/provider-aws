@@ -25,7 +25,6 @@ import (
 	"github.com/pkg/errors"
 
 	awseks "github.com/aws/aws-sdk-go/service/eks"
-	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -51,8 +50,10 @@ var (
 	errBoom                   = errors.New("boom")
 )
 
+type mockClientFn func(t *testing.T) *mockeksiface.MockEKSAPI
+
 type args struct {
-	eks eksiface.EKSAPI
+	eks mockClientFn
 	cr  *v1alpha1.Addon
 }
 
@@ -74,13 +75,15 @@ func withStatus(s v1alpha1.AddonObservation) AddonModifier {
 	return func(r *v1alpha1.Addon) { r.Status.AtProvider = s }
 }
 
-type mockClientModifier func(*mockeksiface.MockEKSAPI)
+type mockClientModifier func(me *mockeksiface.MockEKSAPI)
 
-func mockClient(t *testing.T, mod mockClientModifier) *mockeksiface.MockEKSAPI {
-	ctrl := gomock.NewController(t)
-	mock := mockeksiface.NewMockEKSAPI(ctrl)
-	mod(mock)
-	return mock
+func mockClient(m mockClientModifier) mockClientFn {
+	return func(t *testing.T) *mockeksiface.MockEKSAPI {
+		ctrl := gomock.NewController(t)
+		mock := mockeksiface.NewMockEKSAPI(ctrl)
+		m(mock)
+		return mock
+	}
 }
 
 func addon(m ...AddonModifier) *v1alpha1.Addon {
@@ -104,7 +107,7 @@ func TestObserve(t *testing.T) {
 	}{
 		"SuccessfulAvailable": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						DescribeAddonWithContext(
 							context.Background(),
@@ -112,15 +115,8 @@ func TestObserve(t *testing.T) {
 						).
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
-								Status: awsclient.String(statusActive),
+								Status: awsclient.String(awseks.AddonStatusActive),
 							},
-						}, nil)
-					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(&awseks.ListTagsForResourceOutput{
-							Tags: map[string]*string{},
 						}, nil)
 				}),
 				cr: addon(
@@ -132,7 +128,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testExternalName),
 					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(statusActive),
+						Status: awsclient.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -144,7 +140,7 @@ func TestObserve(t *testing.T) {
 		},
 		"FailedDescribeRequest": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						DescribeAddonWithContext(
 							context.Background(),
@@ -163,35 +159,9 @@ func TestObserve(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
-		"FailedListTagsForResource": {
-			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
-					me.EXPECT().
-						DescribeAddonWithContext(
-							context.Background(),
-							&awseks.DescribeAddonInput{},
-						).
-						Return(&awseks.DescribeAddonOutput{Addon: &awseks.Addon{}}, nil)
-					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(nil, errBoom)
-				}),
-				cr: addon(
-					withExternalName(testExternalName),
-				),
-			},
-			want: want{
-				cr: addon(
-					withExternalName(testExternalName),
-				),
-				err: awsclient.Wrap(errors.Wrap(errBoom, errListTags), "isUpToDate check failed"),
-			},
-		},
 		"LateInitSuccess": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						DescribeAddonWithContext(
 							context.Background(),
@@ -200,15 +170,8 @@ func TestObserve(t *testing.T) {
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
 								ServiceAccountRoleArn: &testServiceAccountRoleArn,
-								Status:                awsclient.String(statusActive),
+								Status:                awsclient.String(awseks.AddonStatusActive),
 							},
-						}, nil)
-					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(&awseks.ListTagsForResourceOutput{
-							Tags: map[string]*string{},
 						}, nil)
 				}),
 				cr: addon(
@@ -225,7 +188,7 @@ func TestObserve(t *testing.T) {
 						},
 					),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(statusActive),
+						Status: awsclient.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -239,7 +202,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(nil, tc.eks, []option{setupHooks})
+			e := newExternal(nil, tc.eks(t), []option{setupHooks})
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -268,7 +231,7 @@ func TestCreate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						CreateAddonWithContext(
 							context.Background(),
@@ -282,7 +245,10 @@ func TestCreate(t *testing.T) {
 						).
 						Return(&awseks.CreateAddonOutput{
 							Addon: &awseks.Addon{
-								AddonArn: &testExternalName,
+								AddonArn:              &testExternalName,
+								ServiceAccountRoleArn: &testServiceAccountRoleArn,
+								AddonVersion:          &testAddonVersion,
+								AddonName:             &testAddonName,
 							},
 						}, nil)
 				}),
@@ -320,7 +286,7 @@ func TestCreate(t *testing.T) {
 		},
 		"FailedRequest": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						CreateAddonWithContext(
 							context.Background(),
@@ -366,7 +332,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(nil, tc.eks, []option{setupHooks})
+			e := newExternal(nil, tc.eks(t), []option{setupHooks})
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -395,7 +361,7 @@ func TestUpdate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						UpdateAddonWithContext(
 							context.Background(),
@@ -409,12 +375,18 @@ func TestUpdate(t *testing.T) {
 						).
 						Return(&awseks.UpdateAddonOutput{}, nil)
 					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(&awseks.ListTagsForResourceOutput{
-							Tags: map[string]*string{
-								testOtherTagKey: &testOtherTagValue,
+						DescribeAddonWithContext(
+							context.Background(),
+							&awseks.DescribeAddonInput{
+								AddonName:   &testAddonName,
+								ClusterName: &testClusterName,
+							},
+						).
+						Return(&awseks.DescribeAddonOutput{
+							Addon: &awseks.Addon{
+								Tags: map[string]*string{
+									testOtherTagKey: &testOtherTagValue,
+								},
 							},
 						}, nil)
 					me.EXPECT().
@@ -479,7 +451,7 @@ func TestUpdate(t *testing.T) {
 		},
 		"FailedUpdateRequest": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						UpdateAddonWithContext(
 							context.Background(),
@@ -522,9 +494,9 @@ func TestUpdate(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
-		"FailedListTagsRequest": {
+		"FailedDescribeAddon": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						UpdateAddonWithContext(
 							context.Background(),
@@ -538,9 +510,13 @@ func TestUpdate(t *testing.T) {
 						).
 						Return(&awseks.UpdateAddonOutput{}, nil)
 					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
+						DescribeAddonWithContext(
+							context.Background(),
+							&awseks.DescribeAddonInput{
+								AddonName:   &testAddonName,
+								ClusterName: &testClusterName,
+							},
+						).
 						Return(nil, errBoom)
 				}),
 				cr: addon(
@@ -569,12 +545,12 @@ func TestUpdate(t *testing.T) {
 						},
 					}),
 				),
-				err: awsclient.Wrap(errBoom, errListTags),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 		"FailedTagResource": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						UpdateAddonWithContext(
 							context.Background(),
@@ -588,12 +564,18 @@ func TestUpdate(t *testing.T) {
 						).
 						Return(&awseks.UpdateAddonOutput{}, nil)
 					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(&awseks.ListTagsForResourceOutput{
-							Tags: map[string]*string{
-								testOtherTagKey: &testOtherTagValue,
+						DescribeAddonWithContext(
+							context.Background(),
+							&awseks.DescribeAddonInput{
+								AddonName:   &testAddonName,
+								ClusterName: &testClusterName,
+							},
+						).
+						Return(&awseks.DescribeAddonOutput{
+							Addon: &awseks.Addon{
+								Tags: map[string]*string{
+									testOtherTagKey: &testOtherTagValue,
+								},
 							},
 						}, nil)
 					me.EXPECT().
@@ -650,7 +632,7 @@ func TestUpdate(t *testing.T) {
 		},
 		"UntagResource": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						UpdateAddonWithContext(
 							context.Background(),
@@ -664,12 +646,18 @@ func TestUpdate(t *testing.T) {
 						).
 						Return(&awseks.UpdateAddonOutput{}, nil)
 					me.EXPECT().
-						ListTagsForResource(&awseks.ListTagsForResourceInput{
-							ResourceArn: &testExternalName,
-						}).
-						Return(&awseks.ListTagsForResourceOutput{
-							Tags: map[string]*string{
-								testOtherTagKey: &testOtherTagValue,
+						DescribeAddonWithContext(
+							context.Background(),
+							&awseks.DescribeAddonInput{
+								AddonName:   &testAddonName,
+								ClusterName: &testClusterName,
+							},
+						).
+						Return(&awseks.DescribeAddonOutput{
+							Addon: &awseks.Addon{
+								Tags: map[string]*string{
+									testOtherTagKey: &testOtherTagValue,
+								},
 							},
 						}, nil)
 					me.EXPECT().
@@ -736,7 +724,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(nil, tc.eks, []option{setupHooks})
+			e := newExternal(nil, tc.eks(t), []option{setupHooks})
 			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -764,7 +752,7 @@ func TestDelete(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						DeleteAddonWithContext(
 							context.Background(),
@@ -798,7 +786,7 @@ func TestDelete(t *testing.T) {
 		},
 		"FailedRequest": {
 			args: args{
-				eks: mockClient(t, func(me *mockeksiface.MockEKSAPI) {
+				eks: mockClient(func(me *mockeksiface.MockEKSAPI) {
 					me.EXPECT().
 						DeleteAddonWithContext(
 							context.Background(),
@@ -835,7 +823,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(nil, tc.eks, []option{setupHooks})
+			e := newExternal(nil, tc.eks(t), []option{setupHooks})
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

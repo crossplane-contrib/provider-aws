@@ -44,6 +44,12 @@ func GenerateGetDatabaseInput(cr *svcapitypes.Database) *svcsdk.GetDatabaseInput
 func GenerateDatabase(resp *svcsdk.GetDatabaseOutput) *svcapitypes.Database {
 	cr := &svcapitypes.Database{}
 
+	if resp.Database.CatalogId != nil {
+		cr.Spec.ForProvider.CatalogID = resp.Database.CatalogId
+	} else {
+		cr.Spec.ForProvider.CatalogID = nil
+	}
+
 	return cr
 }
 

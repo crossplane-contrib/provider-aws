@@ -92,6 +92,7 @@ type AddonStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Addon struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -112,7 +113,7 @@ type AddonList struct {
 // Repository type metadata.
 var (
 	AddonKind             = "Addon"
-	AddonGroupKind        = schema.GroupKind{Group: Group, Kind: AddonKind}.String()
+	AddonGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: AddonKind}.String()
 	AddonKindAPIVersion   = AddonKind + "." + GroupVersion.String()
 	AddonGroupVersionKind = GroupVersion.WithKind(AddonKind)
 )

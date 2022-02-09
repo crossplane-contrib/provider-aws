@@ -106,6 +106,78 @@ type ScalingConfiguration struct {
 	SecondsUntilAutoPause *int `json:"secondsUntilAutoPause,omitempty"`
 }
 
+// S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
+type S3RestoreBackupConfiguration struct {
+	// BucketName is the name of the S3 bucket containing the backup to restore.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/s3/v1beta1.Bucket
+	BucketName *string `json:"bucketName"`
+
+	// BucketNameRef is a reference to a Bucket used to set
+	// BucketName.
+	// +immutable
+	// +optional
+	BucketNameRef *xpv1.Reference `json:"bucketNameRef,omitempty"`
+
+	// BucketNameSelector selects a reference to a Bucket used to
+	// set BucketName.
+	// +immutable
+	// +optional
+	BucketNameSelector *xpv1.Selector `json:"bucketNameSelector,omitempty"`
+
+	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	IngestionRoleARN *string `json:"ingestionRoleARN,omitempty"`
+
+	// IngestionRoleARNRef is a reference to a IAM Role used to set
+	// IngestionRoleARN.
+	// +immutable
+	// +optional
+	IngestionRoleARNRef *xpv1.Reference `json:"ingestionRoleARNRef,omitempty"`
+
+	// IngestionRoleARNSelector selects a reference to a IAM Role used to
+	// set IngestionRoleARN.
+	// +immutable
+	// +optional
+	IngestionRoleARNSelector *xpv1.Selector `json:"ingestionRoleARNSelector,omitempty"`
+
+	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
+	// +optional
+	Prefix *string `json:"prefix,omitempty"`
+
+	// SourceEngine is the engine used to create the backup.
+	// Must be "mysql".
+	SourceEngine *string `json:"sourceEngine"`
+
+	// SourceEngineVersion is the version of the engine used to create the backup.
+	// Example: "5.7.30"
+	SourceEngineVersion *string `json:"sourceEngineVersion"`
+}
+
+// SnapshotRestoreBackupConfiguration defines the details of the database snapshot to restore from.
+type SnapshotRestoreBackupConfiguration struct {
+	// SnapshotIdentifier is the identifier of the database snapshot to restore.
+	SnapshotIdentifier *string `json:"snapshotIdentifier"`
+}
+
+// RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
+type RestoreBackupConfiguration struct {
+	// S3 specifies the details of the S3 backup to restore from.
+	// +optional
+	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
+
+	// Snapshot specifies the details of the database snapshot to restore from.
+	// +optional
+	Snapshot *SnapshotRestoreBackupConfiguration `json:"snapshot,omitempty"`
+
+	// Source is the type of the backup to restore when creating a new RDS instance.
+	// Only S3 and Snapshot are supported at present.
+	// +kubebuilder:validation:Enum=S3;Snapshot
+	Source *string `json:"source"`
+}
+
 // RDSInstanceParameters define the desired state of an AWS Relational Database
 // Service instance.
 type RDSInstanceParameters struct {
@@ -274,6 +346,7 @@ type RDSInstanceParameters struct {
 	// DBSubnetGroupName is a DB subnet group to associate with this DB instance.
 	// If there is no DB subnet group, then it is a non-VPC DB instance.
 	// +optional
+	// +crossplane:generate:reference:type=DBSubnetGroup
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 
 	// DBSubnetGroupNameRef is a reference to a DBSubnetGroup used to set
@@ -368,6 +441,10 @@ type RDSInstanceParameters struct {
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
+	// RestoreFrom specifies the details of the backup to restore when creating a new RDS instance. (If the RDS instance already exists, this property will be ignored.)
+	// +optional
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
+
 	// IOPS is the amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for the DB instance. For information about valid IOPS
 	// values, see see Amazon RDS Provisioned IOPS Storage to Improve Performance
@@ -445,6 +522,16 @@ type RDSInstanceParameters struct {
 	// +immutable
 	MasterPasswordSecretRef *xpv1.SecretKeySelector `json:"masterPasswordSecretRef,omitempty"`
 
+	// The upper limit to which Amazon RDS can automatically scale the storage of
+	// the DB instance.
+	//
+	// For more information about this setting, including limitations that apply
+	// to it, see Managing capacity automatically with Amazon RDS storage autoscaling
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.Autoscaling)
+	// in the Amazon RDS User Guide.
+	// +optional
+	MaxAllocatedStorage *int `json:"maxAllocatedStorage,omitempty"`
+
 	// MonitoringInterval is the interval, in seconds, between points when Enhanced Monitoring metrics
 	// are collected for the DB instance. To disable collecting Enhanced Monitoring
 	// metrics, specify 0. The default is 0.
@@ -462,6 +549,8 @@ type RDSInstanceParameters struct {
 	// If MonitoringInterval is set to a value other than 0, then you must supply
 	// a MonitoringRoleARN value.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	MonitoringRoleARN *string `json:"monitoringRoleArn,omitempty"`
 
 	// MonitoringRoleARNRef is a reference to an IAMRole used to set
@@ -636,6 +725,9 @@ type RDSInstanceParameters struct {
 	// by the DB cluster. For more information, see CreateDBCluster.
 	// Default: The default EC2 VPC security group for the DB subnet group's VPC.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=VPCSecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=VPCSecurityGroupIDSelector
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
 
 	// VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set
@@ -699,6 +791,7 @@ type RDSInstanceParameters struct {
 	// DomainIAMRoleName specifies the name of the IAM role to be used when making API calls to the
 	// Directory Service.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
@@ -772,6 +865,8 @@ const (
 	RDSInstanceStateBackingUp = "backing-up"
 	// The instance is being backed up, but is available
 	RDSInstanceStateConfiguringEnhancedMonitoring = "configuring-enhanced-monitoring"
+	// After you modify the storage size for a DB instance, the status of the DB instance is storage-optimization.
+	RDSInstanceStateStorageOptimization = "storage-optimization"
 	// The instance has failed and Amazon RDS can't recover it. Perform a point-in-time restore to the latest restorable time of the instance to recover the data.
 	RDSInstanceStateFailed = "failed"
 )
@@ -1026,6 +1121,9 @@ type RDSInstanceObservation struct {
 	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB
 	// instance is accessed.
 	DBResourceID string `json:"dbResourceId,omitempty"`
+
+	// AllocatedStorage is the allocated storage size in gibibytes.
+	AllocatedStorage int `json:"allocatedStorage,omitempty"`
 
 	// DomainMemberships is the Active Directory Domain membership records associated with the DB instance.
 	DomainMemberships []DomainMembership `json:"domainMemberships,omitempty"`

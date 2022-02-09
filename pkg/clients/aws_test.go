@@ -681,7 +681,7 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 
 			// If no endpointConfig was provided the returned endpointResolver should be nil
 			if tc.args.endpointConfig != nil {
-				actual, endpointError := config.EndpointResolver.ResolveEndpoint(tc.args.service, tc.args.region)
+				actual, endpointError := config.EndpointResolverWithOptions.ResolveEndpoint(tc.args.service, tc.args.region, nil)
 				if tc.want.error != nil {
 					g.Expect(endpointError).To(HaveOccurred())
 				} else {
@@ -690,8 +690,195 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 						t.Errorf("add: -want, +got:\n%s", diff)
 					}
 				}
-			} else if config.EndpointResolver != nil {
-				t.Errorf("Expected config.EndpointResolver to be nil")
+			} else if config.EndpointResolverWithOptions != nil {
+				t.Errorf("Expected config.EndpointResolverWithOptions to be nil")
+			}
+		})
+	}
+}
+
+func TestDiffTagsMapPtr(t *testing.T) {
+	type args struct {
+		cr  map[string]*string
+		obj map[string]*string
+	}
+	type want struct {
+		addTags    map[string]*string
+		removeTags []*string
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"AddNewTag": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("only_in_cr"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+				}},
+			want: want{
+				addTags: map[string]*string{
+					"k2": String("only_in_cr"),
+				},
+				removeTags: []*string{},
+			},
+		},
+		"RemoveExistingTag": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("only_in_aws"),
+				}},
+			want: want{
+				addTags: map[string]*string{},
+				removeTags: []*string{
+					String("k2"),
+				}},
+		},
+		"AddAndRemoveWhenKeyChanges": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("same_key_different_value_1"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+					"k2": String("same_key_different_value_2"),
+				}},
+			want: want{
+				addTags: map[string]*string{
+					"k2": String("same_key_different_value_1"),
+				},
+				removeTags: []*string{
+					String("k2"),
+				}},
+		},
+		"NoChange": {
+			args: args{
+				cr: map[string]*string{
+					"k1": String("exists_in_both"),
+				},
+				obj: map[string]*string{
+					"k1": String("exists_in_both"),
+				}},
+			want: want{
+				addTags:    map[string]*string{},
+				removeTags: []*string{},
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			// Act
+			addTags, removeTags := DiffTagsMapPtr(tc.args.cr, tc.args.obj)
+
+			// Assert
+			if diff := cmp.Diff(tc.want.addTags, addTags, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.removeTags, removeTags, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestLateInitStringPtrSlice(t *testing.T) {
+	type args struct {
+		in   []*string
+		from []*string
+	}
+
+	cases := map[string]struct {
+		args args
+		want []*string
+	}{
+		"BothNil": {
+			args: args{},
+			want: nil,
+		},
+		"BothEmpty": {
+			args: args{
+				in:   []*string{},
+				from: []*string{},
+			},
+			want: []*string{},
+		},
+		"FromNil": {
+			args: args{
+				in:   aws.StringSlice([]string{"hi!"}),
+				from: nil,
+			},
+			want: aws.StringSlice([]string{"hi!"}),
+		},
+		"InNil": {
+			args: args{
+				in:   nil,
+				from: aws.StringSlice([]string{"hi!"}),
+			},
+			want: aws.StringSlice([]string{"hi!"}),
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := LateInitializeStringPtrSlice(tc.args.in, tc.args.from)
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("\nLateInitializeStringPtrSlice(...): -got, +want:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestLateInitInt64PtrSlice(t *testing.T) {
+	type args struct {
+		in   []*int64
+		from []*int64
+	}
+
+	cases := map[string]struct {
+		args args
+		want []*int64
+	}{
+		"BothNil": {
+			args: args{},
+			want: nil,
+		},
+		"BothEmpty": {
+			args: args{
+				in:   []*int64{},
+				from: []*int64{},
+			},
+			want: []*int64{},
+		},
+		"FromNil": {
+			args: args{
+				in:   aws.Int64Slice([]int64{1}),
+				from: nil,
+			},
+			want: aws.Int64Slice([]int64{1}),
+		},
+		"InNil": {
+			args: args{
+				in:   nil,
+				from: aws.Int64Slice([]int64{1}),
+			},
+			want: aws.Int64Slice([]int64{1}),
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := LateInitializeInt64PtrSlice(tc.args.in, tc.args.from)
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("\nLateInitializeInt64PtrSlice(...): -got, +want:\n%s", diff)
 			}
 		})
 	}

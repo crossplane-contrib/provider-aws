@@ -81,6 +81,25 @@ type VPCParameters struct {
 	// +immutable
 	CIDRBlock string `json:"cidrBlock"`
 
+	// The IPv6 CIDR block from the IPv6 address pool. You must also specify Ipv6Pool
+	// in the request. To let Amazon choose the IPv6 CIDR block for you, omit this
+	// parameter.
+	// +optional
+	// +immutable
+	Ipv6CIDRBlock *string `json:"ipv6CidrBlock,omitempty"`
+
+	// Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for the
+	// VPC. You cannot specify the range of IP addresses, or the size of the CIDR
+	// block.
+	// +optional
+	// +immutable
+	AmazonProvidedIpv6CIDRBlock *bool `json:"amazonProvidedIpv6CidrBlock,omitempty"`
+
+	// The ID of an IPv6 address pool from which to allocate the IPv6 CIDR block.
+	// +optional
+	// +immutable
+	Ipv6Pool *string `json:"ipv6Pool,omitempty"`
+
 	// A boolean flag to enable/disable DNS support in the VPC
 	// +optional
 	EnableDNSSupport *bool `json:"enableDnsSupport,omitempty"`
@@ -138,6 +157,7 @@ type VPCStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="CIDR",type="string",JSONPath=".spec.forProvider.cidrBlock"
+// +kubebuilder:printcolumn:name="IPV6CIDR",type="string",JSONPath=".spec.forProvider.ipv6CidrBlock"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

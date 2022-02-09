@@ -66,11 +66,13 @@ spec:
                   Elastic Kubernetes Service NodeGroup.
                 properties:
                   amiType:
-                    description: The AMI type for your node group. GPU instance types
-                      should use the AL2_x86_64_GPU AMI type, which uses the Amazon
-                      EKS-optimized Linux AMI with GPU support. Non-GPU instances
-                      should use the AL2_x86_64 AMI type, which uses the Amazon EKS-optimized
-                      Linux AMI.
+                    description: The AMI type for your node group. GPU instance can
+                      use AL2_x86_64_GPU AMI type, which uses the Amazon EKS-optimized
+                      Linux AMI with GPU support. Non-GPU instances can use AL2_x86_64
+                      (default) AMI type, which uses the Amazon EKS-optimized Linux
+                      AMI or, BOTTLEROCKET_ARM_64 AMI type, which uses the Amazon
+                      Bottlerocket AMI for ARM instances, or BOTTLEROCKET_x86_64 AMI
+                      type, which uses the Amazon Bottlerocket AMI fir x86_64 instances.
                     type: string
                   capacityType:
                     description: CapacityType for your node group.
@@ -139,11 +141,63 @@ spec:
                       name:
                         description: The name of the launch template.
                         type: string
+                      nameRef:
+                        description: NameRef is a reference to a LaunchTemplate used
+                          to set the Name.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      nameSelector:
+                        description: NameSelector selects references to a LaunchTemplate
+                          used to set the Name.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                       version:
                         description: The version of the launch template to use. If
                           no version is specified, then the template's default version
                           is used.
                         type: string
+                      versionRef:
+                        description: VersionRef is a reference to a LaunchTemplateVersion
+                          used to set the Version.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      versionSelector:
+                        description: VersionSelector selects references to a LaunchTemplateVersion
+                          used to set the Version.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
                     type: object
                   nodeRole:
                     description: "The Amazon Resource Name (ARN) of the IAM role to

@@ -1,0 +1,15 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Volume
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    availabilityZone: us-east-1a
+    encrypted: true
+    kmsKeyIdRef:
+      name: dev-key
+    volumeType: gp3
+    size: 1
+  providerConfigRef:
+    name: example

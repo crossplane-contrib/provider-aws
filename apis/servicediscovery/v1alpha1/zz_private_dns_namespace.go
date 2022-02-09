@@ -69,6 +69,7 @@ type PrivateDNSNamespaceStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type PrivateDNSNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -89,7 +90,7 @@ type PrivateDNSNamespaceList struct {
 // Repository type metadata.
 var (
 	PrivateDNSNamespaceKind             = "PrivateDNSNamespace"
-	PrivateDNSNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: PrivateDNSNamespaceKind}.String()
+	PrivateDNSNamespaceGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: PrivateDNSNamespaceKind}.String()
 	PrivateDNSNamespaceKindAPIVersion   = PrivateDNSNamespaceKind + "." + GroupVersion.String()
 	PrivateDNSNamespaceGroupVersionKind = GroupVersion.WithKind(PrivateDNSNamespaceKind)
 )

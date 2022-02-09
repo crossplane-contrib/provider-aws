@@ -1,6 +1,15 @@
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+)
+
+// AnnotationKeyOperationID is the key in the annotations map of a
+// Cloud Map managed resource for the OperationId returned by API calls
+const AnnotationKeyOperationID = CRDGroup + "/operation-id"
 
 // CustomServiceParameters are custom parameters for Services.
 type CustomServiceParameters struct{}
@@ -27,12 +36,15 @@ type CustomPublicDNSNamespaceParameters struct{}
 
 // GetOperationID returns the last operation id.
 func (in *HTTPNamespace) GetOperationID() *string {
-	return in.Status.AtProvider.OperationID
+	if val, ok := in.GetAnnotations()[AnnotationKeyOperationID]; ok {
+		return &val
+	}
+	return nil
 }
 
 // SetOperationID sets the last operation id.
 func (in *HTTPNamespace) SetOperationID(id *string) {
-	in.Status.AtProvider.OperationID = id
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
 }
 
 // GetDescription returns the description.
@@ -47,12 +59,15 @@ func (in *HTTPNamespace) SetDescription(d *string) {
 
 // GetOperationID returns the last operation id.
 func (in *PrivateDNSNamespace) GetOperationID() *string {
-	return in.Status.AtProvider.OperationID
+	if val, ok := in.GetAnnotations()[AnnotationKeyOperationID]; ok {
+		return &val
+	}
+	return nil
 }
 
 // SetOperationID sets the last operation id.
 func (in *PrivateDNSNamespace) SetOperationID(id *string) {
-	in.Status.AtProvider.OperationID = id
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
 }
 
 // GetDescription returns the description.
@@ -67,12 +82,15 @@ func (in *PrivateDNSNamespace) SetDescription(d *string) {
 
 // GetOperationID returns the last operation id.
 func (in *PublicDNSNamespace) GetOperationID() *string {
-	return in.Status.AtProvider.OperationID
+	if val, ok := in.GetAnnotations()[AnnotationKeyOperationID]; ok {
+		return &val
+	}
+	return nil
 }
 
 // SetOperationID sets the last operation id.
 func (in *PublicDNSNamespace) SetOperationID(id *string) {
-	in.Status.AtProvider.OperationID = id
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
 }
 
 // GetDescription returns the description.

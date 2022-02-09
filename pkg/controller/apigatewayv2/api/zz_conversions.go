@@ -60,10 +60,78 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 	} else {
 		cr.Status.AtProvider.APIID = nil
 	}
+	if resp.ApiKeySelectionExpression != nil {
+		cr.Spec.ForProvider.APIKeySelectionExpression = resp.ApiKeySelectionExpression
+	} else {
+		cr.Spec.ForProvider.APIKeySelectionExpression = nil
+	}
+	if resp.CorsConfiguration != nil {
+		f4 := &svcapitypes.CORS{}
+		if resp.CorsConfiguration.AllowCredentials != nil {
+			f4.AllowCredentials = resp.CorsConfiguration.AllowCredentials
+		}
+		if resp.CorsConfiguration.AllowHeaders != nil {
+			f4f1 := []*string{}
+			for _, f4f1iter := range resp.CorsConfiguration.AllowHeaders {
+				var f4f1elem string
+				f4f1elem = *f4f1iter
+				f4f1 = append(f4f1, &f4f1elem)
+			}
+			f4.AllowHeaders = f4f1
+		}
+		if resp.CorsConfiguration.AllowMethods != nil {
+			f4f2 := []*string{}
+			for _, f4f2iter := range resp.CorsConfiguration.AllowMethods {
+				var f4f2elem string
+				f4f2elem = *f4f2iter
+				f4f2 = append(f4f2, &f4f2elem)
+			}
+			f4.AllowMethods = f4f2
+		}
+		if resp.CorsConfiguration.AllowOrigins != nil {
+			f4f3 := []*string{}
+			for _, f4f3iter := range resp.CorsConfiguration.AllowOrigins {
+				var f4f3elem string
+				f4f3elem = *f4f3iter
+				f4f3 = append(f4f3, &f4f3elem)
+			}
+			f4.AllowOrigins = f4f3
+		}
+		if resp.CorsConfiguration.ExposeHeaders != nil {
+			f4f4 := []*string{}
+			for _, f4f4iter := range resp.CorsConfiguration.ExposeHeaders {
+				var f4f4elem string
+				f4f4elem = *f4f4iter
+				f4f4 = append(f4f4, &f4f4elem)
+			}
+			f4.ExposeHeaders = f4f4
+		}
+		if resp.CorsConfiguration.MaxAge != nil {
+			f4.MaxAge = resp.CorsConfiguration.MaxAge
+		}
+		cr.Spec.ForProvider.CORSConfiguration = f4
+	} else {
+		cr.Spec.ForProvider.CORSConfiguration = nil
+	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
 	} else {
 		cr.Status.AtProvider.CreatedDate = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
+	if resp.DisableExecuteApiEndpoint != nil {
+		cr.Spec.ForProvider.DisableExecuteAPIEndpoint = resp.DisableExecuteApiEndpoint
+	} else {
+		cr.Spec.ForProvider.DisableExecuteAPIEndpoint = nil
+	}
+	if resp.DisableSchemaValidation != nil {
+		cr.Spec.ForProvider.DisableSchemaValidation = resp.DisableSchemaValidation
+	} else {
+		cr.Spec.ForProvider.DisableSchemaValidation = nil
 	}
 	if resp.ImportInfo != nil {
 		f9 := []*string{}
@@ -75,6 +143,37 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 		cr.Status.AtProvider.ImportInfo = f9
 	} else {
 		cr.Status.AtProvider.ImportInfo = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
+	if resp.ProtocolType != nil {
+		cr.Spec.ForProvider.ProtocolType = resp.ProtocolType
+	} else {
+		cr.Spec.ForProvider.ProtocolType = nil
+	}
+	if resp.RouteSelectionExpression != nil {
+		cr.Spec.ForProvider.RouteSelectionExpression = resp.RouteSelectionExpression
+	} else {
+		cr.Spec.ForProvider.RouteSelectionExpression = nil
+	}
+	if resp.Tags != nil {
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range resp.Tags {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
+		}
+		cr.Spec.ForProvider.Tags = f13
+	} else {
+		cr.Spec.ForProvider.Tags = nil
+	}
+	if resp.Version != nil {
+		cr.Spec.ForProvider.Version = resp.Version
+	} else {
+		cr.Spec.ForProvider.Version = nil
 	}
 	if resp.Warnings != nil {
 		f15 := []*string{}
@@ -98,49 +197,49 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 	if cr.Spec.ForProvider.APIKeySelectionExpression != nil {
 		res.SetApiKeySelectionExpression(*cr.Spec.ForProvider.APIKeySelectionExpression)
 	}
-	if cr.Spec.ForProvider.CorsConfiguration != nil {
+	if cr.Spec.ForProvider.CORSConfiguration != nil {
 		f1 := &svcsdk.Cors{}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowCredentials != nil {
-			f1.SetAllowCredentials(*cr.Spec.ForProvider.CorsConfiguration.AllowCredentials)
+		if cr.Spec.ForProvider.CORSConfiguration.AllowCredentials != nil {
+			f1.SetAllowCredentials(*cr.Spec.ForProvider.CORSConfiguration.AllowCredentials)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowHeaders != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowHeaders != nil {
 			f1f1 := []*string{}
-			for _, f1f1iter := range cr.Spec.ForProvider.CorsConfiguration.AllowHeaders {
+			for _, f1f1iter := range cr.Spec.ForProvider.CORSConfiguration.AllowHeaders {
 				var f1f1elem string
 				f1f1elem = *f1f1iter
 				f1f1 = append(f1f1, &f1f1elem)
 			}
 			f1.SetAllowHeaders(f1f1)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowMethods != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowMethods != nil {
 			f1f2 := []*string{}
-			for _, f1f2iter := range cr.Spec.ForProvider.CorsConfiguration.AllowMethods {
+			for _, f1f2iter := range cr.Spec.ForProvider.CORSConfiguration.AllowMethods {
 				var f1f2elem string
 				f1f2elem = *f1f2iter
 				f1f2 = append(f1f2, &f1f2elem)
 			}
 			f1.SetAllowMethods(f1f2)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowOrigins != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowOrigins != nil {
 			f1f3 := []*string{}
-			for _, f1f3iter := range cr.Spec.ForProvider.CorsConfiguration.AllowOrigins {
+			for _, f1f3iter := range cr.Spec.ForProvider.CORSConfiguration.AllowOrigins {
 				var f1f3elem string
 				f1f3elem = *f1f3iter
 				f1f3 = append(f1f3, &f1f3elem)
 			}
 			f1.SetAllowOrigins(f1f3)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.ExposeHeaders != nil {
 			f1f4 := []*string{}
-			for _, f1f4iter := range cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders {
+			for _, f1f4iter := range cr.Spec.ForProvider.CORSConfiguration.ExposeHeaders {
 				var f1f4elem string
 				f1f4elem = *f1f4iter
 				f1f4 = append(f1f4, &f1f4elem)
 			}
 			f1.SetExposeHeaders(f1f4)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.MaxAge != nil {
-			f1.SetMaxAge(*cr.Spec.ForProvider.CorsConfiguration.MaxAge)
+		if cr.Spec.ForProvider.CORSConfiguration.MaxAge != nil {
+			f1.SetMaxAge(*cr.Spec.ForProvider.CORSConfiguration.MaxAge)
 		}
 		res.SetCorsConfiguration(f1)
 	}
@@ -197,49 +296,49 @@ func GenerateUpdateApiInput(cr *svcapitypes.API) *svcsdk.UpdateApiInput {
 	if cr.Spec.ForProvider.APIKeySelectionExpression != nil {
 		res.SetApiKeySelectionExpression(*cr.Spec.ForProvider.APIKeySelectionExpression)
 	}
-	if cr.Spec.ForProvider.CorsConfiguration != nil {
+	if cr.Spec.ForProvider.CORSConfiguration != nil {
 		f2 := &svcsdk.Cors{}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowCredentials != nil {
-			f2.SetAllowCredentials(*cr.Spec.ForProvider.CorsConfiguration.AllowCredentials)
+		if cr.Spec.ForProvider.CORSConfiguration.AllowCredentials != nil {
+			f2.SetAllowCredentials(*cr.Spec.ForProvider.CORSConfiguration.AllowCredentials)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowHeaders != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowHeaders != nil {
 			f2f1 := []*string{}
-			for _, f2f1iter := range cr.Spec.ForProvider.CorsConfiguration.AllowHeaders {
+			for _, f2f1iter := range cr.Spec.ForProvider.CORSConfiguration.AllowHeaders {
 				var f2f1elem string
 				f2f1elem = *f2f1iter
 				f2f1 = append(f2f1, &f2f1elem)
 			}
 			f2.SetAllowHeaders(f2f1)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowMethods != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowMethods != nil {
 			f2f2 := []*string{}
-			for _, f2f2iter := range cr.Spec.ForProvider.CorsConfiguration.AllowMethods {
+			for _, f2f2iter := range cr.Spec.ForProvider.CORSConfiguration.AllowMethods {
 				var f2f2elem string
 				f2f2elem = *f2f2iter
 				f2f2 = append(f2f2, &f2f2elem)
 			}
 			f2.SetAllowMethods(f2f2)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.AllowOrigins != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.AllowOrigins != nil {
 			f2f3 := []*string{}
-			for _, f2f3iter := range cr.Spec.ForProvider.CorsConfiguration.AllowOrigins {
+			for _, f2f3iter := range cr.Spec.ForProvider.CORSConfiguration.AllowOrigins {
 				var f2f3elem string
 				f2f3elem = *f2f3iter
 				f2f3 = append(f2f3, &f2f3elem)
 			}
 			f2.SetAllowOrigins(f2f3)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders != nil {
+		if cr.Spec.ForProvider.CORSConfiguration.ExposeHeaders != nil {
 			f2f4 := []*string{}
-			for _, f2f4iter := range cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders {
+			for _, f2f4iter := range cr.Spec.ForProvider.CORSConfiguration.ExposeHeaders {
 				var f2f4elem string
 				f2f4elem = *f2f4iter
 				f2f4 = append(f2f4, &f2f4elem)
 			}
 			f2.SetExposeHeaders(f2f4)
 		}
-		if cr.Spec.ForProvider.CorsConfiguration.MaxAge != nil {
-			f2.SetMaxAge(*cr.Spec.ForProvider.CorsConfiguration.MaxAge)
+		if cr.Spec.ForProvider.CORSConfiguration.MaxAge != nil {
+			f2.SetMaxAge(*cr.Spec.ForProvider.CORSConfiguration.MaxAge)
 		}
 		res.SetCorsConfiguration(f2)
 	}

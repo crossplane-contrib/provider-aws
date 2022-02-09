@@ -39,11 +39,14 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/routeresponse"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/vpclink"
+	athenaworkgroup "github.com/crossplane/provider-aws/pkg/controller/athena/workgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
+	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -57,12 +60,22 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplate"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/launchtemplateversion"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
+	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
+	transitgateway "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgateway"
+	transitgatewayroute "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroute"
+	transitgatewayroutetable "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayroutetable"
+	transitgatewayvpcattachment "github.com/crossplane/provider-aws/pkg/controller/ec2/transitgatewayvpcattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/volume"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpoint"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
@@ -73,31 +86,42 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/identityproviderconfig"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
+	"github.com/crossplane/provider-aws/pkg/controller/elasticache/cacheparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/listener"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/loadbalancer"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/targetgroup"
 	glueclassifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
 	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
 	gluecrawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
 	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
 	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroupusermembership"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/accesskey"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/policy"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/role"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/rolepolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/user"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/userpolicyattachment"
+	iotpolicy "github.com/crossplane/provider-aws/pkg/controller/iot/policy"
+	"github.com/crossplane/provider-aws/pkg/controller/iot/thing"
 	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
+	kafkaconfiguration "github.com/crossplane/provider-aws/pkg/controller/kafka/configuration"
+	kinesisstream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
+	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
+	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
@@ -108,6 +132,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverendpoint"
 	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverrule"
+	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverruleassociation"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
@@ -127,6 +152,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
+		cacheparametergroup.SetupCacheParameterGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
 		docdbinstance.SetupDBInstance,
@@ -141,19 +167,21 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
-		iamaccesskey.SetupIAMAccessKey,
-		iamuser.SetupIAMUser,
-		iamgroup.SetupIAMGroup,
-		iampolicy.SetupIAMPolicy,
-		iamrole.SetupIAMRole,
-		iamgroupusermembership.SetupIAMGroupUserMembership,
-		iamuserpolicyattachment.SetupIAMUserPolicyAttachment,
-		iamgrouppolicyattachment.SetupIAMGroupPolicyAttachment,
-		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
+		accesskey.SetupAccessKey,
+		user.SetupUser,
+		group.SetupGroup,
+		policy.SetupPolicy,
+		role.SetupRole,
+		groupusermembership.SetupGroupUserMembership,
+		userpolicyattachment.SetupUserPolicyAttachment,
+		grouppolicyattachment.SetupGroupPolicyAttachment,
+		rolepolicyattachment.SetupRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,
 		internetgateway.SetupInternetGateway,
+		launchtemplate.SetupLaunchTemplate,
+		launchtemplateversion.SetupLaunchTemplateVersion,
 		natgateway.SetupNatGateway,
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
@@ -189,6 +217,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		backup.SetupBackup,
 		globaltable.SetupGlobalTable,
 		key.SetupKey,
+		alias.SetupAlias,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
 		dbclusterparametergroup.SetupDBClusterParameterGroup,
@@ -203,9 +232,11 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
+		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
+		vpcendpoint.SetupVPCEndpoint,
 		kafkacluster.SetupCluster,
 		efsmounttarget.SetupMountTarget,
 		transferserver.SetupServer,
@@ -219,6 +250,25 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		glueclassifier.SetupClassifier,
 		mqbroker.SetupBroker,
 		mquser.SetupUser,
+		cwloggroup.SetupLogGroup,
+		volume.SetupVolume,
+		transitgateway.SetupTransitGateway,
+		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
+		thing.SetupThing,
+		iotpolicy.SetupPolicy,
+		ec2route.SetupRoute,
+		athenaworkgroup.SetupWorkGroup,
+		resourceshare.SetupResourceShare,
+		kafkaconfiguration.SetupConfiguration,
+		listener.SetupListener,
+		loadbalancer.SetupLoadBalancer,
+		targetgroup.SetupTargetGroup,
+		transitgatewayroute.SetupTransitGatewayRoute,
+		transitgatewayroutetable.SetupTransitGatewayRouteTable,
+		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
+		kinesisstream.SetupStream,
+		resolverruleassociation.SetupResolverRuleAssociation,
+		neptunecluster.SetupDBCluster,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

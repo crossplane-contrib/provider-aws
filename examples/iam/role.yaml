@@ -1,6 +1,6 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRole
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
 metadata:
   name: somerole
 spec:
@@ -16,7 +16,8 @@ spec:
                         "ec2.amazonaws.com",
                         "eks.amazonaws.com",
                         "eks-fargate-pods.amazonaws.com",
-                        "lambda.amazonaws.com"
+                        "lambda.amazonaws.com",
+                        "s3.amazonaws.com"
                     ]
                 },
                 "Action": [
@@ -30,10 +31,9 @@ spec:
         value: v1
   providerConfigRef:
     name: example
-
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRole
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
 metadata:
   name: somenoderole
 spec:
@@ -61,8 +61,8 @@ spec:
   providerConfigRef:
     name: example
 ---
-apiVersion: identity.aws.crossplane.io/v1beta1
-kind: IAMRole
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
 metadata:
   name: glue-role
 spec:

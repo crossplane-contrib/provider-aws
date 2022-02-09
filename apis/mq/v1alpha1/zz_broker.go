@@ -92,6 +92,7 @@ type BrokerStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Broker struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -112,7 +113,7 @@ type BrokerList struct {
 // Repository type metadata.
 var (
 	BrokerKind             = "Broker"
-	BrokerGroupKind        = schema.GroupKind{Group: Group, Kind: BrokerKind}.String()
+	BrokerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: BrokerKind}.String()
 	BrokerKindAPIVersion   = BrokerKind + "." + GroupVersion.String()
 	BrokerGroupVersionKind = GroupVersion.WithKind(BrokerKind)
 )

@@ -43,6 +43,7 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)
 			e.preCreate = preCreate
+			e.postCreate = postCreate
 			e.delete = h.Delete
 			e.observe = h.Observe
 		},
@@ -67,4 +68,9 @@ func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcs
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	obj.Vpc = cr.Spec.ForProvider.VPC
 	return nil
+}
+
+func postCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, resp *svcsdk.CreatePrivateDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	cr.SetOperationID(resp.OperationId)
+	return cre, err
 }

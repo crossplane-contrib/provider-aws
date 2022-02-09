@@ -96,6 +96,14 @@ var (
 	AddressGroupVersionKind = SchemeGroupVersion.WithKind(AddressKind)
 )
 
+// VPCCIDRBlock type metadata.
+var (
+	VPCCIDRBlockKind             = reflect.TypeOf(VPCCIDRBlock{}).Name()
+	VPCCIDRBlockGroupKind        = schema.GroupKind{Group: Group, Kind: VPCCIDRBlockKind}.String()
+	VPCCIDRBlockKindAPIVersion   = VPCCIDRBlockKind + "." + SchemeGroupVersion.String()
+	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
@@ -104,4 +112,5 @@ func init() {
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
 	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
 	SchemeBuilder.Register(&Address{}, &AddressList{})
+	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
 }

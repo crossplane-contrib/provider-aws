@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,6 +73,62 @@ func (mg *CachePolicy) SetProviderReference(r *xpv1.Reference) {
 
 // SetWriteConnectionSecretToReference of this CachePolicy.
 func (mg *CachePolicy) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this CloudFrontOriginAccessIdentity.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *CloudFrontOriginAccessIdentity) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CloudFrontOriginAccessIdentity.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CloudFrontOriginAccessIdentity) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

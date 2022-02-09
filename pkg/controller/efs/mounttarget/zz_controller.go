@@ -133,6 +133,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.FileSystemID = nil
 	}
+	if resp.IpAddress != nil {
+		cr.Spec.ForProvider.IPAddress = resp.IpAddress
+	} else {
+		cr.Spec.ForProvider.IPAddress = nil
+	}
 	if resp.LifeCycleState != nil {
 		cr.Status.AtProvider.LifeCycleState = resp.LifeCycleState
 	} else {

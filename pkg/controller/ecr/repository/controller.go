@@ -18,7 +18,6 @@ package repository
 
 import (
 	"context"
-	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -39,9 +38,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
+	"github.com/crossplane/provider-aws/pkg/clients/ecr"
 )
 
 const (
@@ -64,15 +63,15 @@ const (
 
 // SetupRepository adds a controller that reconciles ECR.
 func SetupRepository(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.RepositoryGroupKind)
+	name := managed.ControllerName(v1beta1.RepositoryGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.Repository{}).
+		For(&v1beta1.Repository{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.RepositoryGroupVersionKind),
+			resource.ManagedKind(v1beta1.RepositoryGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -87,7 +86,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Repository)
+	cr, ok := mg.(*v1beta1.Repository)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -104,7 +103,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.Repository)
+	cr, ok := mgd.(*v1beta1.Repository)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -154,7 +153,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.Repository)
+	cr, ok := mgd.(*v1beta1.Repository)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -172,7 +171,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.Repository)
+	cr, ok := mgd.(*v1beta1.Repository)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -227,7 +226,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.Repository)
+	cr, ok := mgd.(*v1beta1.Repository)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -245,30 +244,28 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.Repository)
+	cr, ok := mgd.(*v1beta1.Repository)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
+	added := false
 	tagMap := map[string]string{}
 	for _, t := range cr.Spec.ForProvider.Tags {
 		tagMap[t.Key] = t.Value
 	}
 	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
+		if tagMap[k] != v {
+			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+			added = true
+		}
 	}
-	cr.Spec.ForProvider.Tags = make([]v1alpha1.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1alpha1.Tag{Key: k, Value: v}
-		i++
+	if !added {
+		return nil
 	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
-func (e *external) updateTags(ctx context.Context, repo *v1alpha1.Repository) error {
+func (e *external) updateTags(ctx context.Context, repo *v1beta1.Repository) error {
 	resp, err := e.client.ListTagsForResource(ctx, &awsecr.ListTagsForResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn})
 	if err != nil {
 		return awsclient.Wrap(err, errListTags)

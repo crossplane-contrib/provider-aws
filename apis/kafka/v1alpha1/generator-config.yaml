@@ -1,9 +1,0 @@
-ignore:
-  resource_names:
-    - Configuration
-resources:
-  Cluster:
-    exceptions:
-      errors:
-        404:
-          code: NotFoundException

@@ -1,6 +1,6 @@
 ---
-apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMUser
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: User
 metadata:
   name: someuser
   labels:

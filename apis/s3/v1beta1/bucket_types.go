@@ -31,7 +31,7 @@ type BucketParameters struct {
 	// The canned ACL to apply to the bucket. Note that either canned ACL or specific access
 	// permissions are required. If neither (or both) are provided, the creation of the bucket
 	// will fail.
-	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read
+	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read;aws-exec-read;bucket-owner-read;bucket-owner-full-control;log-delivery-write
 	// +optional
 	ACL *string `json:"acl,omitempty"`
 

@@ -49,6 +49,9 @@ const (
 	errNotRDSInstance          = "managed resource is not an RDS instance custom resource"
 	errKubeUpdateFailed        = "cannot update RDS instance custom resource"
 	errCreateFailed            = "cannot create RDS instance"
+	errS3RestoreFailed         = "cannot restore RDS instance from S3 backup"
+	errSnapshotRestoreFailed   = "cannot restore RDS instance from snapshot"
+	errUnknownRestoreSource    = "unknown RDS restore souce"
 	errModifyFailed            = "cannot modify RDS instance"
 	errAddTagsFailed           = "cannot add tags to RDS instance"
 	errDeleteFailed            = "cannot delete RDS instance"
@@ -120,15 +123,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(e.kube.Update(ctx, cr), errKubeUpdateFailed)
-		}
-	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
-	case v1beta1.RDSInstanceStateAvailable, v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateBackingUp, v1beta1.RDSInstanceStateConfiguringEnhancedMonitoring:
+	case v1beta1.RDSInstanceStateAvailable, v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateBackingUp, v1beta1.RDSInstanceStateConfiguringEnhancedMonitoring, v1beta1.RDSInstanceStateStorageOptimization:
 		cr.Status.SetConditions(xpv1.Available())
 	case v1beta1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(xpv1.Creating())
@@ -143,9 +141,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ResourceUpToDate:  upToDate,
-		ConnectionDetails: rds.GetConnectionDetails(*cr),
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
+		ConnectionDetails:       rds.GetConnectionDetails(*cr),
 	}, nil
 }
 
@@ -169,10 +168,11 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	_, err = e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+	err = e.RestoreOrCreate(ctx, cr, pw)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, err
 	}
+
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretPasswordKey: []byte(pw),
 	}
@@ -180,6 +180,32 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
+}
+
+func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error {
+	if cr.Spec.ForProvider.RestoreFrom == nil {
+		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errCreateFailed)
+		}
+		return nil
+	}
+
+	switch *cr.Spec.ForProvider.RestoreFrom.Source {
+	case "S3":
+		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errS3RestoreFailed)
+		}
+	case "Snapshot":
+		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errSnapshotRestoreFailed)
+		}
+	default:
+		return errors.New(errUnknownRestoreSource)
+	}
+	return nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo

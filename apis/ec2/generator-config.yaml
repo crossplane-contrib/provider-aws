@@ -1,0 +1,138 @@
+ignore:
+  resource_names:
+    - AccountAttribute
+    - CapacityReservation
+    - CarrierGateway
+    - ClientVpnEndpoint
+    - ClientVpnRoute
+    - CoipPool
+    - CustomerGateway
+    - DefaultSubnet
+    - DefaultVpc
+    - EgressOnlyInternetGateway
+    - Fleet
+    - FpgaImage
+    - Image
+    - Instance
+    - InstanceExportTask
+    - InternetGateway
+    - KeyPair
+    - LocalGatewayRouteTableVpcAssociation
+    - LocalGatewayRoute
+    - ManagedPrefixList
+    - NatGateway
+    - NetworkAclEntry
+    - NetworkAcl
+    - NetworkInsightsPath
+    - NetworkInterfacePermission
+    - NetworkInterface
+    - PlacementGroup
+    - ReservedInstancesListing
+    - RouteTable
+    - SecurityGroup
+    - Snapshot
+    - SpotDatafeedSubscription
+    - Subnet 
+    - TrafficMirrorFilterRule
+    - TrafficMirrorFilter
+    - TrafficMirrorSession
+    - TrafficMirrorTarget
+    - TransitGatewayConnectPeer
+    - TransitGatewayConnect
+    - TransitGatewayMulticastDomain
+    - TransitGatewayPeeringAttachment
+    - TransitGatewayPrefixListReference
+    - VpcEndpointConnectionNotification
+    - Vpc
+    - VpcCidrBlock
+    - VpnConnectionRoute
+    - VpnConnection
+    - VpnGateway
+  shape_names:
+    - Instance
+  field_paths:
+    - CreateVpcPeeringConnectionInput.DryRun
+    - DeleteVpcPeeringConnectionInput.DryRun
+    - RejectVpcPeeringConnectionInput.DryRun
+    - AcceptVpcPeeringConnectionInput.DryRun
+    - CreateVpcPeeringConnectionInput.VpcId
+    - DeleteVpcPeeringConnectionInput.VpcId
+    - RejectVpcPeeringConnectionInput.VpcId
+    - AcceptVpcPeeringConnectionInput.VpcId
+    - CreateVpcPeeringConnectionInput.PeerVpcId
+    - DeleteVpcPeeringConnectionInput.PeerVpcId
+    - RejectVpcPeeringConnectionInput.PeerVpcId
+    - AcceptVpcPeeringConnectionInput.PeerVpcId
+    - CreateVolumeInput.DryRun
+    - CreateVolumeInput.KmsKeyId
+    - CreateTransitGatewayInput.DryRun
+    - DeleteTransitGatewayInput.DryRun
+    - DescribeTransitGatewaysInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.DryRun
+    - DeleteTransitGatewayVpcAttachmentInput.DryRun
+    - DescribeTransitGatewayVpcAttachmentsInput.DryRun
+    - RejectTransitGatewayVpcAttachmentInput.DryRun
+    - AcceptTransitGatewayVpcAttachmentInput.DryRun
+    - ModifyTransitGatewayVpcAttachmentInput.DryRun
+    - CreateTransitGatewayVpcAttachmentInput.VpcId
+    - CreateTransitGatewayVpcAttachmentInput.SubnetIds
+    - CreateTransitGatewayVpcAttachmentInput.TransitGatewayId
+    - ModifyTransitGatewayOptions.PropagationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AssociationDefaultRouteTableId
+    - ModifyTransitGatewayOptions.AddTransitGatewayCidrBlocks
+    - ModifyTransitGatewayOptions.RemoveTransitGatewayCidrBlocks
+    - CreateRouteInput.DryRun
+    - CreateRouteInput.NatGatewayId
+    - CreateRouteInput.TransitGatewayId
+    - CreateRouteInput.VpcPeeringConnectionId
+    - CreateRouteInput.RouteTableId
+    - CreateRouteInput.InstanceId
+    - CreateRouteInput.GatewayId
+    - CreateVpcEndpointInput.VpcId
+    - ModifyVpcEndpointInput.VpcId
+    - CreateVpcEndpointInput.SubnetIds
+    - CreateVpcEndpointInput.SecurityGroupIds
+    - CreateVpcEndpointInput.DryRun
+    - CreateVpcEndpointInput.RouteTableIds
+    - Subnet.AvailableIpAddressCount
+    - CreateLaunchTemplateVersionInput.LaunchTemplateId
+    - CreateLaunchTemplateVersionInput.LaunchTemplateName
+    - CreateLaunchTemplateVersionInput.DryRun
+    - CreateLaunchTemplateVersionInput.ClientToken
+    - CreateLaunchTemplateInput.DryRun
+    - CreateLaunchTemplateInput.ClientToken
+    - CreateTransitGatewayRouteInput.DryRun
+    - CreateTransitGatewayRouteInput.TransitGatewayAttachmentId
+    - CreateTransitGatewayRouteInput.TransitGatewayRouteTableId
+    - CreateTransitGatewayRouteTableInput.DryRun
+    - CreateTransitGatewayRouteTableInput.TransitGatewayId
+    - CreateVpcEndpointServiceConfigurationInput.DryRun
+    - CreateVpcEndpointServiceConfigurationInput.ClientToken
+    - CreateVpcEndpointServiceConfigurationInput.GatewayLoadBalancerArns
+    - CreateVpcEndpointServiceConfigurationInput.NetworkLoadBalancerArns
+resources:
+  Volume:
+    exceptions:
+      errors:
+        404:
+          code: InvalidVolume.NotFound
+  LaunchTemplate:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateName.NotFoundException
+  LaunchTemplateVersion:
+    exceptions:
+      errors:
+        404:
+          code: InvalidLaunchTemplateId.VersionNotFound
+  TransitGatewayRouteTable:
+    exceptions:
+      errors:
+        404:
+          code: InvalidRouteTableID.NotFound
+  TransitGatewayRoute:
+    exceptions:
+      errors:
+        404:
+          code: InvalidRoute.NotFound

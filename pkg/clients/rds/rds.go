@@ -48,6 +48,8 @@ const (
 // Client defines RDS RDSClient operations
 type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
+	RestoreDBInstanceFromS3(context.Context, *rds.RestoreDBInstanceFromS3Input, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
+	RestoreDBInstanceFromDBSnapshot(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
 	DescribeDBInstances(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -67,6 +69,8 @@ func IsErrorNotFound(err error) bool {
 
 // GenerateCreateDBInstanceInput from RDSInstanceSpec
 func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
+	// Partially duplicates GenerateRestoreDBInstanceFromS3Input and GenerateRestoreDBInstanceFromSnapshotInput:
+	// Make sure any relevant changes are applied there too.
 	c := &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),
@@ -94,6 +98,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		LicenseModel:                       p.LicenseModel,
 		MasterUserPassword:                 awsclients.String(password),
 		MasterUsername:                     p.MasterUsername,
+		MaxAllocatedStorage:                awsclients.Int32Address(p.MaxAllocatedStorage),
 		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
 		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
@@ -131,12 +136,140 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 	return c
 }
 
+// GenerateRestoreDBInstanceFromS3Input from RDSInstanceSpec
+func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
+	c := &rds.RestoreDBInstanceFromS3Input{
+		DBInstanceIdentifier:               aws.String(name),
+		AllocatedStorage:                   awsclients.Int32Address(p.AllocatedStorage),
+		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                   p.AvailabilityZone,
+		BackupRetentionPeriod:              awsclients.Int32Address(p.BackupRetentionPeriod),
+		CopyTagsToSnapshot:                 p.CopyTagsToSnapshot,
+		DBInstanceClass:                    aws.String(p.DBInstanceClass),
+		DBName:                             p.DBName,
+		DBParameterGroupName:               p.DBParameterGroupName,
+		DBSecurityGroups:                   p.DBSecurityGroups,
+		DBSubnetGroupName:                  p.DBSubnetGroupName,
+		DeletionProtection:                 p.DeletionProtection,
+		EnableCloudwatchLogsExports:        p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication:    p.EnableIAMDatabaseAuthentication,
+		EnablePerformanceInsights:          p.EnablePerformanceInsights,
+		Engine:                             aws.String(p.Engine),
+		EngineVersion:                      p.EngineVersion,
+		Iops:                               awsclients.Int32Address(p.IOPS),
+		KmsKeyId:                           p.KMSKeyID,
+		LicenseModel:                       p.LicenseModel,
+		MasterUserPassword:                 awsclients.String(password),
+		MasterUsername:                     p.MasterUsername,
+		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
+		MonitoringRoleArn:                  p.MonitoringRoleARN,
+		MultiAZ:                            p.MultiAZ,
+		OptionGroupName:                    p.OptionGroupName,
+		PerformanceInsightsKMSKeyId:        p.PerformanceInsightsKMSKeyID,
+		PerformanceInsightsRetentionPeriod: awsclients.Int32Address(p.PerformanceInsightsRetentionPeriod),
+		Port:                               awsclients.Int32Address(p.Port),
+		PreferredBackupWindow:              p.PreferredBackupWindow,
+		PreferredMaintenanceWindow:         p.PreferredMaintenanceWindow,
+		PubliclyAccessible:                 p.PubliclyAccessible,
+		S3BucketName:                       p.RestoreFrom.S3.BucketName,
+		S3IngestionRoleArn:                 p.RestoreFrom.S3.IngestionRoleARN,
+		S3Prefix:                           p.RestoreFrom.S3.Prefix,
+		SourceEngine:                       p.RestoreFrom.S3.SourceEngine,
+		SourceEngineVersion:                p.RestoreFrom.S3.SourceEngineVersion,
+		StorageEncrypted:                   p.StorageEncrypted,
+		StorageType:                        p.StorageType,
+		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
+// GenerateRestoreDBInstanceFromSnapshotInput from RDSInstanceSpec
+func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
+	c := &rds.RestoreDBInstanceFromDBSnapshotInput{
+		DBInstanceIdentifier:            aws.String(name),
+		AutoMinorVersionUpgrade:         p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                p.AvailabilityZone,
+		CopyTagsToSnapshot:              p.CopyTagsToSnapshot,
+		DBInstanceClass:                 aws.String(p.DBInstanceClass),
+		DBName:                          p.DBName,
+		DBParameterGroupName:            p.DBParameterGroupName,
+		DBSnapshotIdentifier:            p.RestoreFrom.Snapshot.SnapshotIdentifier,
+		DBSubnetGroupName:               p.DBSubnetGroupName,
+		DeletionProtection:              p.DeletionProtection,
+		Domain:                          p.Domain,
+		DomainIAMRoleName:               p.DomainIAMRoleName,
+		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		Engine:                          aws.String(p.Engine),
+		Iops:                            awsclients.Int32Address(p.IOPS),
+		LicenseModel:                    p.LicenseModel,
+		MultiAZ:                         p.MultiAZ,
+		OptionGroupName:                 p.OptionGroupName,
+		Port:                            awsclients.Int32Address(p.Port),
+		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageType:                     p.StorageType,
+		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
 // CreatePatch creates a *v1beta1.RDSInstanceParameters that has only the changed
 // values between the target *v1beta1.RDSInstanceParameters and the current
 // *rds.DBInstance
 func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) {
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
+
+	// Don't attempt to scale down storage if autoscaling is enabled,
+	// and the current storage is larger than what was once
+	// requested. We still want to allow the user to manually scale
+	// the storage, so we only remove it if we're certain AWS will
+	// reject the value
+	if target.MaxAllocatedStorage != nil && aws.ToInt(target.AllocatedStorage) < aws.ToInt(currentParams.AllocatedStorage) {
+		// By making the values equal, CreateJSONPatch will exclude
+		// the field. It might seem more sensible to change the target
+		// object, but it's a pointer to the CR so we do not want to
+		// mutate it.
+		currentParams.AllocatedStorage = target.AllocatedStorage
+	}
 
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
@@ -178,6 +311,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 		EngineVersion:                      p.EngineVersion,
 		Iops:                               awsclients.Int32Address(p.IOPS),
 		LicenseModel:                       p.LicenseModel,
+		MaxAllocatedStorage:                awsclients.Int32Address(p.MaxAllocatedStorage),
 		MonitoringInterval:                 awsclients.Int32Address(p.MonitoringInterval),
 		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
@@ -214,6 +348,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 // rds.DBInstance.
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
+		AllocatedStorage:                      int(db.AllocatedStorage),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),
@@ -378,6 +513,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
 	in.LicenseModel = awsclients.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = awsclients.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+	in.MaxAllocatedStorage = awsclients.LateInitializeIntFrom32Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
 	in.MonitoringInterval = awsclients.LateInitializeIntFrom32Ptr(in.MonitoringInterval, db.MonitoringInterval)
 	in.MonitoringRoleARN = awsclients.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
 	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, awsclients.Bool(db.MultiAZ))

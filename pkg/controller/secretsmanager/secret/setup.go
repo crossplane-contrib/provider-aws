@@ -25,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,13 +51,18 @@ const (
 	errCreateTags           = "failed to create tags for the secret"
 	errRemoveTags           = "failed to remove tags for the secret"
 	errFmtKeyNotFound       = "key %s is not found in referenced Kubernetes secret"
-	errGetSecretFailed      = "failed to get Kubernetes secret"
 	errGetSecretValue       = "cannot get the value of secret from AWS"
 	errGetResourcePolicy    = "cannot get resource policy"
 	errPutResourcePolicy    = "cannot put resource policy"
 	errDeleteResourcePolicy = "cannot delete resource policy"
 	errInvalidSpecPolicy    = "spec policy is invalid"
 	errInvalidCurrentPolicy = "current policy is invalid"
+	errParseSecretValue     = "cannot parse AWS secret value"
+	errGetAWSSecretValue    = "cannot get AWS secret value"
+	errCreateK8sSecret      = "canoot create secret in K8s"
+	errNoAWSValue           = "neither SecretString nor SecretBinary field is filled in the returned object"
+	errNoSecretRef          = "neither binarySecretRef nor stringSecretRef is given"
+	errOnlyOneSecretRef     = "only one of binarySecretRef or stringSecretRef must be set"
 )
 
 // SetupSecret adds a controller that reconciles a Secret.
@@ -66,6 +73,7 @@ func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			h := &hooks{client: e.client, kube: e.kube}
+			e.lateInitialize = h.lateInitialize
 			e.isUpToDate = h.isUpToDate
 			e.preUpdate = h.preUpdate
 			e.preCreate = h.preCreate
@@ -113,7 +121,89 @@ type hooks struct {
 	kube   client.Client
 }
 
+func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.DescribeSecretOutput) error {
+	_, err := e.getPayload(context.TODO(), spec)
+	if err := client.IgnoreNotFound(err); err != nil {
+		return err
+	}
+	// Proceed only if the secret does not exist because empty value might be
+	// valid content.
+	if !kerrors.IsNotFound(err) {
+		return nil
+	}
+
+	// If the K8s does not exist, create it with the data from AWS
+	req := &svcsdk.GetSecretValueInput{
+		SecretId: resp.ARN,
+	}
+	valueResp, err := e.client.GetSecretValueWithContext(context.TODO(), req)
+	if err != nil {
+		return errors.Wrap(err, errGetSecretValue)
+	}
+	ref, err := getSecretRef(spec)
+	if err != nil {
+		return err
+	}
+
+	data, err := getAWSSecretData(ref, valueResp)
+	if err != nil {
+		return errors.Wrap(err, errGetAWSSecretValue)
+	}
+	sc := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ref.Name,
+			Namespace: ref.Namespace,
+		},
+		Data: data,
+	}
+	return errors.Wrap(e.kube.Create(context.TODO(), sc), errCreateK8sSecret)
+}
+
+func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValueOutput) (map[string][]byte, error) { // nolint:gocyclo
+	if ref.Key != nil {
+		switch {
+		case awsclients.StringValue(s.SecretString) != "":
+			return map[string][]byte{
+				*ref.Key: []byte(awsclients.StringValue(s.SecretString)),
+			}, nil
+		case len(s.SecretBinary) != 0:
+			return map[string][]byte{
+				*ref.Key: s.SecretBinary,
+			}, nil
+		default:
+			return nil, errors.New(errNoAWSValue)
+		}
+	}
+
+	var raw []byte
+
+	switch {
+	case awsclients.StringValue(s.SecretString) != "":
+		raw = []byte(awsclients.StringValue(s.SecretString))
+	case len(s.SecretBinary) != 0:
+		raw = s.SecretBinary
+	default:
+		return nil, errors.New(errNoAWSValue)
+	}
+
+	parsed := map[string]string{}
+	err := json.Unmarshal(raw, &parsed)
+	if err != nil {
+		return nil, errors.Wrap(err, errParseSecretValue)
+	}
+
+	payload := map[string][]byte{}
+	for k, v := range parsed {
+		payload[k] = []byte(v)
+	}
+	return payload, nil
+}
+
 func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
+	if meta.WasDeleted(cr) {
+		return false, nil
+	}
+
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, nil
@@ -162,7 +252,7 @@ func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOu
 	if err != nil {
 		return false, awsclients.Wrap(err, errGetSecretValue)
 	}
-	payload, err := e.getPayload(ctx, cr)
+	payload, err := e.getPayload(ctx, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
@@ -172,18 +262,13 @@ func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOu
 	case len(s.SecretBinary) != 0:
 		return bytes.Equal(payload, s.SecretBinary), nil
 	}
-	return false, errors.New("neither SecretString nor SecretBinary field is filled in the returned object")
+	return false, errors.New(errNoAWSValue)
 }
 
-func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) ([]byte, error) {
-	var ref *svcapitypes.SecretReference
-	switch {
-	case cr.Spec.ForProvider.StringSecretRef != nil:
-		ref = cr.Spec.ForProvider.StringSecretRef
-	case cr.Spec.ForProvider.BinarySecretRef != nil:
-		ref = cr.Spec.ForProvider.BinarySecretRef
-	default:
-		return nil, errors.New("neither binarySecretRef nor stringSecretRef is given")
+func (e *hooks) getPayload(ctx context.Context, params *svcapitypes.SecretParameters) ([]byte, error) {
+	ref, err := getSecretRef(params)
+	if err != nil {
+		return nil, err
 	}
 	nn := types.NamespacedName{
 		Name:      ref.Name,
@@ -191,7 +276,7 @@ func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) ([]byte,
 	}
 	sc := &corev1.Secret{}
 	if err := e.kube.Get(ctx, nn, sc); err != nil {
-		return nil, errors.Wrap(err, errGetSecretFailed)
+		return nil, err
 	}
 
 	if ref.Key != nil {
@@ -210,6 +295,19 @@ func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) ([]byte,
 		return nil, err
 	}
 	return payload, nil
+}
+
+// getSecretRef returns either params.StringSecretRef, params.BinarySecretRef or an error if none or both of them are set
+func getSecretRef(params *svcapitypes.SecretParameters) (*svcapitypes.SecretReference, error) {
+	if params.StringSecretRef != nil {
+		if params.BinarySecretRef != nil {
+			return nil, errors.New(errOnlyOneSecretRef)
+		}
+		return params.StringSecretRef, nil
+	} else if params.BinarySecretRef != nil {
+		return params.BinarySecretRef, nil
+	}
+	return nil, errors.New(errNoSecretRef)
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error { // nolint:gocyclo
@@ -255,7 +353,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 		}
 	}
 
-	payload, err := e.getPayload(ctx, cr)
+	payload, err := e.getPayload(ctx, &cr.Spec.ForProvider)
 	if err != nil {
 		return err
 	}
@@ -272,7 +370,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 }
 
 func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.CreateSecretInput) error {
-	payload, err := e.getPayload(ctx, cr)
+	payload, err := e.getPayload(ctx, &cr.Spec.ForProvider)
 	if err != nil {
 		return err
 	}

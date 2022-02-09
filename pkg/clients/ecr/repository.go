@@ -12,7 +12,7 @@ import (
 	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -41,8 +41,8 @@ type RepositoryClient interface {
 
 // GenerateRepositoryObservation is used to produce v1alpha1.RepositoryObservation from
 // ecr.Repository
-func GenerateRepositoryObservation(repo ecrtypes.Repository) v1alpha1.RepositoryObservation {
-	o := v1alpha1.RepositoryObservation{
+func GenerateRepositoryObservation(repo ecrtypes.Repository) v1beta1.RepositoryObservation {
+	o := v1beta1.RepositoryObservation{
 		RegistryID:     awsclient.StringValue(repo.RegistryId),
 		RepositoryArn:  awsclient.StringValue(repo.RepositoryArn),
 		RepositoryName: awsclient.StringValue(repo.RepositoryName),
@@ -57,12 +57,12 @@ func GenerateRepositoryObservation(repo ecrtypes.Repository) v1alpha1.Repository
 
 // LateInitializeRepository fills the empty fields in *v1alpha1.RepositoryParameters with
 // the values seen in ecr.Repository.
-func LateInitializeRepository(in *v1alpha1.RepositoryParameters, r *ecrtypes.Repository) { // nolint:gocyclo
+func LateInitializeRepository(in *v1beta1.RepositoryParameters, r *ecrtypes.Repository) { // nolint:gocyclo
 	if r == nil {
 		return
 	}
 	if r.ImageScanningConfiguration != nil && in.ImageScanningConfiguration == nil {
-		scanConfig := v1alpha1.ImageScanningConfiguration{
+		scanConfig := v1beta1.ImageScanningConfiguration{
 			ScanOnPush: r.ImageScanningConfiguration.ScanOnPush,
 		}
 		in.ImageScanningConfiguration = &scanConfig
@@ -73,15 +73,15 @@ func LateInitializeRepository(in *v1alpha1.RepositoryParameters, r *ecrtypes.Rep
 // CreatePatch creates a *v1alpha1.RepositoryParameters that has only the changed
 // values between the target *v1alpha1.RepositoryParameters and the current
 // *ecr.Repository.
-func CreatePatch(in *ecrtypes.Repository, target *v1alpha1.RepositoryParameters) (*v1alpha1.RepositoryParameters, error) {
-	currentParams := &v1alpha1.RepositoryParameters{}
+func CreatePatch(in *ecrtypes.Repository, target *v1beta1.RepositoryParameters) (*v1beta1.RepositoryParameters, error) {
+	currentParams := &v1beta1.RepositoryParameters{}
 	LateInitializeRepository(currentParams, in)
 
 	jsonPatch, err := awsclient.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
-	patch := &v1alpha1.RepositoryParameters{}
+	patch := &v1beta1.RepositoryParameters{}
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func CreatePatch(in *ecrtypes.Repository, target *v1alpha1.RepositoryParameters)
 }
 
 // IsRepositoryUpToDate checks whether there is a change in any of the modifiable fields.
-func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecrtypes.Tag, repo *ecrtypes.Repository) bool {
+func IsRepositoryUpToDate(e *v1beta1.RepositoryParameters, tags []ecrtypes.Tag, repo *ecrtypes.Repository) bool {
 	switch {
 	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration != nil:
 		if e.ImageScanningConfiguration.ScanOnPush != repo.ImageScanningConfiguration.ScanOnPush {
@@ -111,7 +111,7 @@ func IsRepoNotFoundErr(err error) bool {
 }
 
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters
-func GenerateCreateRepositoryInput(name string, params *v1alpha1.RepositoryParameters) *ecr.CreateRepositoryInput {
+func GenerateCreateRepositoryInput(name string, params *v1beta1.RepositoryParameters) *ecr.CreateRepositoryInput {
 	c := &ecr.CreateRepositoryInput{
 		RepositoryName:     awsclient.String(name),
 		ImageTagMutability: ecrtypes.ImageTagMutability(awsclient.StringValue(params.ImageTagMutability)),
@@ -126,7 +126,7 @@ func GenerateCreateRepositoryInput(name string, params *v1alpha1.RepositoryParam
 }
 
 // CompareTags compares arrays of v1alpha1.Tag and ecrtypes.Tag
-func CompareTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) bool {
+func CompareTags(tags []v1beta1.Tag, ecrTags []ecrtypes.Tag) bool {
 	if len(tags) != len(ecrTags) {
 		return false
 	}
@@ -143,7 +143,7 @@ func CompareTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) bool {
 }
 
 // SortTags sorts array of v1alpha1.Tag and ecrtypes.Tag on 'Key'
-func SortTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) {
+func SortTags(tags []v1beta1.Tag, ecrTags []ecrtypes.Tag) {
 	sort.Slice(tags, func(i, j int) bool {
 		return tags[i].Key < tags[j].Key
 	})
@@ -154,7 +154,7 @@ func SortTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) {
 }
 
 // DiffTags returns tags that should be added or removed.
-func DiffTags(spec []v1alpha1.Tag, current []ecrtypes.Tag) (addTags []ecrtypes.Tag, remove []string) {
+func DiffTags(spec []v1beta1.Tag, current []ecrtypes.Tag) (addTags []ecrtypes.Tag, remove []string) {
 	addMap := make(map[string]string, len(spec))
 	for _, t := range spec {
 		addMap[t.Key] = t.Value

@@ -106,30 +106,30 @@ func TestObserve(t *testing.T) {
 				},
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
@@ -155,30 +155,30 @@ func TestObserve(t *testing.T) {
 				},
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
@@ -204,21 +204,26 @@ func TestObserve(t *testing.T) {
 				},
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
@@ -226,9 +231,6 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
 						ResourceStatus: xpv1.ResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Unavailable()},
@@ -258,6 +260,11 @@ func TestObserve(t *testing.T) {
 				},
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
@@ -265,9 +272,6 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
 						ResourceStatus: xpv1.ResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Deleting()},
@@ -278,6 +282,11 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
@@ -285,9 +294,6 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
 						ResourceStatus: xpv1.ResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Unavailable()},
@@ -332,16 +338,16 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region:      "eu-central-1",
 							Name:        aws.String("test"),
 							Description: aws.String(validDescription),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
@@ -349,7 +355,10 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
-						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
 					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
@@ -359,9 +368,6 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
 						ResourceStatus: xpv1.ResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Available()},
@@ -406,7 +412,10 @@ func TestObserve(t *testing.T) {
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
-						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
 					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
@@ -414,17 +423,15 @@ func TestObserve(t *testing.T) {
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
-					},
 				},
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
-						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
 					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
@@ -434,9 +441,6 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
 						ResourceStatus: xpv1.ResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Available()},
@@ -495,30 +499,30 @@ func TestDelete(t *testing.T) {
 				},
 				kube: nil,
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
 				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},

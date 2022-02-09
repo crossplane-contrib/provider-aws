@@ -35,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
 )
@@ -51,15 +51,15 @@ const (
 
 // SetupRepositoryPolicy adds a controller that reconciles ECR.
 func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.RepositoryPolicyGroupKind)
+	name := managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.RepositoryPolicy{}).
+		For(&v1beta1.RepositoryPolicy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.RepositoryPolicyGroupVersionKind),
+			resource.ManagedKind(v1beta1.RepositoryPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithPollInterval(poll),
@@ -72,7 +72,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.RepositoryPolicy)
+	cr, ok := mg.(*v1beta1.RepositoryPolicy)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -89,7 +89,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	cr, ok := mgd.(*v1beta1.RepositoryPolicy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -122,7 +122,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	cr, ok := mgd.(*v1beta1.RepositoryPolicy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -137,7 +137,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	cr, ok := mgd.(*v1beta1.RepositoryPolicy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -151,7 +151,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.RepositoryPolicy)
+	cr, ok := mgd.(*v1beta1.RepositoryPolicy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

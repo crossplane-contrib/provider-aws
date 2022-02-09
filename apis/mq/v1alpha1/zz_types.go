@@ -27,16 +27,19 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type AvailabilityZone struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerEngineType struct {
 	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
 	// RabbitMQ.
 	EngineType *string `json:"engineType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerInstance struct {
 	ConsoleURL *string `json:"consoleURL,omitempty"`
 
@@ -45,6 +48,7 @@ type BrokerInstance struct {
 	IPAddress *string `json:"ipAddress,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerInstanceOption struct {
 	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
 	// RabbitMQ.
@@ -58,6 +62,7 @@ type BrokerInstanceOption struct {
 	SupportedEngineVersions []*string `json:"supportedEngineVersions,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerSummary struct {
 	BrokerARN *string `json:"brokerARN,omitempty"`
 
@@ -77,6 +82,7 @@ type BrokerSummary struct {
 	HostInstanceType *string `json:"hostInstanceType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Configuration struct {
 	ARN *string `json:"arn,omitempty"`
 	// The authentication strategy used to secure the broker.
@@ -98,12 +104,14 @@ type Configuration struct {
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConfigurationID struct {
 	ID *string `json:"id,omitempty"`
 
 	Revision *int64 `json:"revision,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConfigurationRevision struct {
 	Created *metav1.Time `json:"created,omitempty"`
 
@@ -112,6 +120,7 @@ type ConfigurationRevision struct {
 	Revision *int64 `json:"revision,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Configurations struct {
 	// A list of information about the configuration. Does not apply to RabbitMQ
 	// brokers.
@@ -123,16 +132,19 @@ type Configurations struct {
 	Pending *ConfigurationID `json:"pending,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionOptions struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	UseAWSOwnedKey *bool `json:"useAWSOwnedKey,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EngineVersion struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LDAPServerMetadataInput struct {
 	Hosts []*string `json:"hosts,omitempty"`
 
@@ -157,6 +169,7 @@ type LDAPServerMetadataInput struct {
 	UserSearchSubtree *bool `json:"userSearchSubtree,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LDAPServerMetadataOutput struct {
 	Hosts []*string `json:"hosts,omitempty"`
 
@@ -179,12 +192,14 @@ type LDAPServerMetadataOutput struct {
 	UserSearchSubtree *bool `json:"userSearchSubtree,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Logs struct {
 	Audit *bool `json:"audit,omitempty"`
 
 	General *bool `json:"general,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LogsSummary struct {
 	Audit *bool `json:"audit,omitempty"`
 
@@ -197,18 +212,21 @@ type LogsSummary struct {
 	Pending *PendingLogs `json:"pending,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PendingLogs struct {
 	Audit *bool `json:"audit,omitempty"`
 
 	General *bool `json:"general,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SanitizationWarning struct {
 	AttributeName *string `json:"attributeName,omitempty"`
 
 	ElementName *string `json:"elementName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserPendingChanges struct {
 	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
 
@@ -217,6 +235,7 @@ type UserPendingChanges struct {
 	PendingChange *string `json:"pendingChange,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserSummary struct {
 	// The type of change pending for the ActiveMQ user.
 	PendingChange *string `json:"pendingChange,omitempty"`
@@ -224,6 +243,7 @@ type UserSummary struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type User_SDK struct {
 	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
 
@@ -234,6 +254,7 @@ type User_SDK struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type WeeklyStartTime struct {
 	DayOfWeek *string `json:"dayOfWeek,omitempty"`
 

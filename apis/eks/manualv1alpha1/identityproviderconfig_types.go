@@ -106,6 +106,7 @@ type IdentityProviderConfigParameters struct {
 
 	// The name of the cluster to associate the identity provider with.
 	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/eks/v1beta1.Cluster
 	ClusterName string `json:"clusterName,omitempty"`
 
 	// ClusterNameRef is a reference to a Cluster used to set

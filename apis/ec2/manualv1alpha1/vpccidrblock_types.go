@@ -132,6 +132,8 @@ type VPCCIDRBlockStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type VPCCIDRBlock struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -143,6 +145,8 @@ type VPCCIDRBlock struct {
 // +kubebuilder:object:root=true
 
 // VPCCIDRBlockList contains a list of VPCCIDRBlocks
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type VPCCIDRBlockList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -147,8 +147,8 @@ func SerializeAWSPrincipal(p v1alpha3.AWSPrincipal) *string {
 		return p.AWSAccountID
 	case p.IAMRoleARN != nil:
 		return p.IAMRoleARN
-	case p.IAMUserARN != nil:
-		return p.IAMUserARN
+	case p.UserARN != nil:
+		return p.UserARN
 	default:
 		return nil
 	}

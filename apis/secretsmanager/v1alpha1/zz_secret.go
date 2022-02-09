@@ -129,6 +129,7 @@ type SecretStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Secret struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -149,7 +150,7 @@ type SecretList struct {
 // Repository type metadata.
 var (
 	SecretKind             = "Secret"
-	SecretGroupKind        = schema.GroupKind{Group: Group, Kind: SecretKind}.String()
+	SecretGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: SecretKind}.String()
 	SecretKindAPIVersion   = SecretKind + "." + GroupVersion.String()
 	SecretGroupVersionKind = GroupVersion.WithKind(SecretKind)
 )

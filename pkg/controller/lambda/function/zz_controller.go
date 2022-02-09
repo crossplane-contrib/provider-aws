@@ -124,6 +124,51 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CodeSize = nil
 	}
+	if resp.DeadLetterConfig != nil {
+		f2 := &svcapitypes.DeadLetterConfig{}
+		if resp.DeadLetterConfig.TargetArn != nil {
+			f2.TargetARN = resp.DeadLetterConfig.TargetArn
+		}
+		cr.Spec.ForProvider.DeadLetterConfig = f2
+	} else {
+		cr.Spec.ForProvider.DeadLetterConfig = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
+	if resp.Environment != nil {
+		f4 := &svcapitypes.Environment{}
+		if resp.Environment.Variables != nil {
+			f4f1 := map[string]*string{}
+			for f4f1key, f4f1valiter := range resp.Environment.Variables {
+				var f4f1val string
+				f4f1val = *f4f1valiter
+				f4f1[f4f1key] = &f4f1val
+			}
+			f4.Variables = f4f1
+		}
+		cr.Spec.ForProvider.Environment = f4
+	} else {
+		cr.Spec.ForProvider.Environment = nil
+	}
+	if resp.FileSystemConfigs != nil {
+		f5 := []*svcapitypes.FileSystemConfig{}
+		for _, f5iter := range resp.FileSystemConfigs {
+			f5elem := &svcapitypes.FileSystemConfig{}
+			if f5iter.Arn != nil {
+				f5elem.ARN = f5iter.Arn
+			}
+			if f5iter.LocalMountPath != nil {
+				f5elem.LocalMountPath = f5iter.LocalMountPath
+			}
+			f5 = append(f5, f5elem)
+		}
+		cr.Spec.ForProvider.FileSystemConfigs = f5
+	} else {
+		cr.Spec.ForProvider.FileSystemConfigs = nil
+	}
 	if resp.FunctionArn != nil {
 		cr.Status.AtProvider.FunctionARN = resp.FunctionArn
 	} else {
@@ -133,6 +178,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.FunctionName = resp.FunctionName
 	} else {
 		cr.Status.AtProvider.FunctionName = nil
+	}
+	if resp.Handler != nil {
+		cr.Spec.ForProvider.Handler = resp.Handler
+	} else {
+		cr.Spec.ForProvider.Handler = nil
 	}
 	if resp.ImageConfigResponse != nil {
 		f9 := &svcapitypes.ImageConfigResponse{}
@@ -175,6 +225,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.ImageConfigResponse = nil
 	}
+	if resp.KMSKeyArn != nil {
+		cr.Spec.ForProvider.KMSKeyARN = resp.KMSKeyArn
+	} else {
+		cr.Spec.ForProvider.KMSKeyARN = nil
+	}
 	if resp.LastModified != nil {
 		cr.Status.AtProvider.LastModified = resp.LastModified
 	} else {
@@ -200,6 +255,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.MasterARN = nil
 	}
+	if resp.MemorySize != nil {
+		cr.Spec.ForProvider.MemorySize = resp.MemorySize
+	} else {
+		cr.Spec.ForProvider.MemorySize = nil
+	}
+	if resp.PackageType != nil {
+		cr.Spec.ForProvider.PackageType = resp.PackageType
+	} else {
+		cr.Spec.ForProvider.PackageType = nil
+	}
 	if resp.RevisionId != nil {
 		cr.Status.AtProvider.RevisionID = resp.RevisionId
 	} else {
@@ -209,6 +274,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Role = resp.Role
 	} else {
 		cr.Status.AtProvider.Role = nil
+	}
+	if resp.Runtime != nil {
+		cr.Spec.ForProvider.Runtime = resp.Runtime
+	} else {
+		cr.Spec.ForProvider.Runtime = nil
 	}
 	if resp.SigningJobArn != nil {
 		cr.Status.AtProvider.SigningJobARN = resp.SigningJobArn
@@ -235,35 +305,49 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.StateReasonCode = nil
 	}
+	if resp.Timeout != nil {
+		cr.Spec.ForProvider.Timeout = resp.Timeout
+	} else {
+		cr.Spec.ForProvider.Timeout = nil
+	}
+	if resp.TracingConfig != nil {
+		f27 := &svcapitypes.TracingConfig{}
+		if resp.TracingConfig.Mode != nil {
+			f27.Mode = resp.TracingConfig.Mode
+		}
+		cr.Spec.ForProvider.TracingConfig = f27
+	} else {
+		cr.Spec.ForProvider.TracingConfig = nil
+	}
 	if resp.Version != nil {
 		cr.Status.AtProvider.Version = resp.Version
 	} else {
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f30 := &svcapitypes.VPCConfigResponse{}
+		f29 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f30f0 := []*string{}
-			for _, f30f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f30f0elem string
-				f30f0elem = *f30f0iter
-				f30f0 = append(f30f0, &f30f0elem)
+			f29f0 := []*string{}
+			for _, f29f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f29f0elem string
+				f29f0elem = *f29f0iter
+				f29f0 = append(f29f0, &f29f0elem)
 			}
-			f30.SecurityGroupIDs = f30f0
+			f29.SecurityGroupIDs = f29f0
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f30f1 := []*string{}
-			for _, f30f1iter := range resp.VpcConfig.SubnetIds {
-				var f30f1elem string
-				f30f1elem = *f30f1iter
-				f30f1 = append(f30f1, &f30f1elem)
+			f29f1 := []*string{}
+			for _, f29f1iter := range resp.VpcConfig.SubnetIds {
+				var f29f1elem string
+				f29f1elem = *f29f1iter
+				f29f1 = append(f29f1, &f29f1elem)
 			}
-			f30.SubnetIDs = f30f1
+			f29.SubnetIDs = f29f1
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f30.VPCID = resp.VpcConfig.VpcId
+			f29.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f30
+		cr.Status.AtProvider.VPCConfig = f29
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

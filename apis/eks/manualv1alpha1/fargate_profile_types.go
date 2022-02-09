@@ -162,6 +162,8 @@ type FargateProfileStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type FargateProfile struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -173,6 +175,8 @@ type FargateProfile struct {
 // +kubebuilder:object:root=true
 
 // FargateProfileList contains a list of FargateProfile items
+// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of this resource that has identical schema."
+// Deprecated: Please use v1beta1 version of this resource.
 type FargateProfileList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

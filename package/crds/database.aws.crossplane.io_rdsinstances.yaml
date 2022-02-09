@@ -451,6 +451,14 @@ spec:
                       First character must be a letter.    * Cannot be a reserved
                       word for the chosen database engine.'
                     type: string
+                  maxAllocatedStorage:
+                    description: "The upper limit to which Amazon RDS can automatically
+                      scale the storage of the DB instance. \n For more information
+                      about this setting, including limitations that apply to it,
+                      see Managing capacity automatically with Amazon RDS storage
+                      autoscaling (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.Autoscaling)
+                      in the Amazon RDS User Guide."
+                    type: integer
                   monitoringInterval:
                     description: 'MonitoringInterval is the interval, in seconds,
                       between points when Enhanced Monitoring metrics are collected
@@ -609,6 +617,114 @@ spec:
                     description: Region is the region you'd like your RDSInstance
                       to be created in.
                     type: string
+                  restoreFrom:
+                    description: RestoreFrom specifies the details of the backup to
+                      restore when creating a new RDS instance. (If the RDS instance
+                      already exists, this property will be ignored.)
+                    properties:
+                      s3:
+                        description: S3 specifies the details of the S3 backup to
+                          restore from.
+                        properties:
+                          bucketName:
+                            description: BucketName is the name of the S3 bucket containing
+                              the backup to restore.
+                            type: string
+                          bucketNameRef:
+                            description: BucketNameRef is a reference to a Bucket
+                              used to set BucketName.
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          bucketNameSelector:
+                            description: BucketNameSelector selects a reference to
+                              a Bucket used to set BucketName.
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object
+                                  with the same controller reference as the selecting
+                                  object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching
+                                  labels is selected.
+                                type: object
+                            type: object
+                          ingestionRoleARN:
+                            description: IngestionRoleARN is the IAM role RDS can
+                              assume that will allow it to access the contents of
+                              the S3 bucket.
+                            type: string
+                          ingestionRoleARNRef:
+                            description: IngestionRoleARNRef is a reference to a IAM
+                              Role used to set IngestionRoleARN.
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          ingestionRoleARNSelector:
+                            description: IngestionRoleARNSelector selects a reference
+                              to a IAM Role used to set IngestionRoleARN.
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object
+                                  with the same controller reference as the selecting
+                                  object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching
+                                  labels is selected.
+                                type: object
+                            type: object
+                          prefix:
+                            description: Prefix is the path prefix of the S3 bucket
+                              within which the backup to restore is located.
+                            type: string
+                          sourceEngine:
+                            description: SourceEngine is the engine used to create
+                              the backup. Must be "mysql".
+                            type: string
+                          sourceEngineVersion:
+                            description: 'SourceEngineVersion is the version of the
+                              engine used to create the backup. Example: "5.7.30"'
+                            type: string
+                        required:
+                        - sourceEngine
+                        - sourceEngineVersion
+                        type: object
+                      snapshot:
+                        description: Snapshot specifies the details of the database
+                          snapshot to restore from.
+                        properties:
+                          snapshotIdentifier:
+                            description: SnapshotIdentifier is the identifier of the
+                              database snapshot to restore.
+                            type: string
+                        required:
+                        - snapshotIdentifier
+                        type: object
+                      source:
+                        description: Source is the type of the backup to restore when
+                          creating a new RDS instance. Only S3 and Snapshot are supported
+                          at present.
+                        enum:
+                        - S3
+                        - Snapshot
+                        type: string
+                    required:
+                    - source
+                    type: object
                   scalingConfiguration:
                     description: ScalingConfiguration is the scaling properties of
                       the DB cluster. You can only modify scaling properties for DB
@@ -793,6 +909,10 @@ spec:
                 description: RDSInstanceObservation is the representation of the current
                   state that is observed.
                 properties:
+                  allocatedStorage:
+                    description: AllocatedStorage is the allocated storage size in
+                      gibibytes.
+                    type: integer
                   dbInstanceArn:
                     description: DBInstanceArn is the Amazon Resource Name (ARN) for
                       the DB instance.

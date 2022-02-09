@@ -1,0 +1,14 @@
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: TargetGroup
+metadata:
+  name: test-targetgroup
+spec:
+  forProvider:
+    name: test-targetgroup
+    port: 80
+    protocol: HTTP
+    region: us-east-1
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example

@@ -81,6 +81,7 @@ type RouteStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Route struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -101,7 +102,7 @@ type RouteList struct {
 // Repository type metadata.
 var (
 	RouteKind             = "Route"
-	RouteGroupKind        = schema.GroupKind{Group: Group, Kind: RouteKind}.String()
+	RouteGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RouteKind}.String()
 	RouteKindAPIVersion   = RouteKind + "." + GroupVersion.String()
 	RouteGroupVersionKind = GroupVersion.WithKind(RouteKind)
 )

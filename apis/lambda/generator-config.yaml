@@ -1,0 +1,14 @@
+ignore:
+  field_paths:
+    - CreateFunctionInput.FunctionName
+    - CreateFunctionInput.VpcConfig
+    - CreateFunctionInput.Code
+    - GetFunctionInput.FunctionName
+    - DeleteFunctionInput.FunctionName
+    - CreateFunctionInput.Role
+    # See https://github.com/aws-controllers-k8s/community/issues/1078
+    - FunctionConfiguration.Layers
+  resource_names:
+    - Alias
+    - CodeSigningConfig
+    - EventSourceMapping

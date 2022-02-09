@@ -102,6 +102,13 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  connectivityType:
+                    description: Indicates whether the NAT gateway supports public
+                      or private connectivity. The default is public connectivity.
+                    enum:
+                    - public
+                    - private
+                    type: string
                   region:
                     description: Region is the region you'd like your NATGateway to
                       be created in.

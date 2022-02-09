@@ -229,6 +229,9 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any security groups
 	// as part of the network interface.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// SecurityGroupsRefs is a list of references to SecurityGroups used to set
@@ -246,6 +249,7 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any subnets as part
 	// of the network interface.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
 	SubnetID *string `json:"subnetId,omitempty"`
 
 	// SubnetIDRef is a reference to a Subnet used to set the SubnetID.
@@ -327,7 +331,9 @@ type InstanceObservation struct {
 	InstanceID *string `json:"instanceId,omitempty"`
 	// +optional
 	InstanceLifecycle string `json:"instanceLifecyle"`
-	InstanceType      string `json:"instanceType"`
+	// Supported instance family when set instanceInterruptionBehavior to hibernate
+	// C3, C4, C5, M4, M5, R3, R4
+	InstanceType string `json:"instanceType"`
 	// +optional
 	KernelID *string `json:"kernelId,omitempty"`
 	// +optional

@@ -18,12 +18,23 @@ limitations under the License.
 
 package v1alpha1
 
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+)
+
+// +kubebuilder:skipversion
 type Filter struct {
 	Name *string `json:"name,omitempty"`
 
 	Values []*string `json:"values,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type IPAddressResponse struct {
 	CreationTime *string `json:"creationTime,omitempty"`
 
@@ -36,12 +47,14 @@ type IPAddressResponse struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type IPAddressUpdate struct {
 	IP *string `json:"ip,omitempty"`
 
 	IPID *string `json:"ipID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverDNSSEcConfig struct {
 	ID *string `json:"id,omitempty"`
 
@@ -50,6 +63,7 @@ type ResolverDNSSEcConfig struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverEndpoint_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -76,6 +90,7 @@ type ResolverEndpoint_SDK struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverQueryLogConfig struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -90,6 +105,7 @@ type ResolverQueryLogConfig struct {
 	ShareStatus *string `json:"shareStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverQueryLogConfigAssociation struct {
 	CreationTime *string `json:"creationTime,omitempty"`
 
@@ -100,6 +116,7 @@ type ResolverQueryLogConfigAssociation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverRuleConfig struct {
 	Name *string `json:"name,omitempty"`
 
@@ -108,6 +125,7 @@ type ResolverRuleConfig struct {
 	TargetIPs []*TargetAddress `json:"targetIPs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResolverRule_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -138,12 +156,14 @@ type ResolverRule_SDK struct {
 	TargetIPs []*TargetAddress `json:"targetIPs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TargetAddress struct {
 	IP *string `json:"ip,omitempty"`
 

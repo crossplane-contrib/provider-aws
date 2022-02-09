@@ -1,0 +1,12 @@
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: aws-provider-account-b
+spec:
+  assumeRoleARN: "arn:aws:iam::999999999999:role/account_b"
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: aws-creds
+      key: creds

@@ -177,13 +177,7 @@ spec:
                                 must omit the Iops parameter. \n Default: gp2"
                               type: string
                           required:
-                          - deleteOnTermination
-                          - encrypted
-                          - iops
-                          - kmsKeyId
-                          - snapshotId
                           - volumeSize
-                          - volumeType
                           type: object
                         noDevice:
                           description: Suppresses the specified device included in
@@ -207,8 +201,6 @@ spec:
                       required:
                       - deviceName
                       - ebs
-                      - noDevice
-                      - virtualName
                       type: object
                     type: array
                   capacityReservationSpecification:
@@ -345,9 +337,6 @@ spec:
                       name:
                         description: The name of the instance profile.
                         type: string
-                    required:
-                    - arn
-                    - name
                     type: object
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch
@@ -380,6 +369,10 @@ spec:
                           instanceInterruptionBehavior:
                             description: The behavior when a Spot Instance is interrupted.
                               The default is terminate.
+                            enum:
+                            - hibernate
+                            - stop
+                            - terminate
                             type: string
                           maxPrice:
                             description: The maximum hourly price you're willing to
@@ -407,11 +400,8 @@ spec:
                             format: date-time
                             type: string
                         required:
-                        - blockDurationMinutes
                         - instanceInterruptionBehavior
-                        - maxPrice
                         - spotInstanceType
-                        - validUntil
                         type: object
                     required:
                     - marketType
@@ -1174,6 +1164,8 @@ spec:
                   instanceLifecyle:
                     type: string
                   instanceType:
+                    description: Supported instance family when set instanceInterruptionBehavior
+                      to hibernate C3, C4, C5, M4, M5, R3, R4
                     type: string
                   kernelId:
                     type: string

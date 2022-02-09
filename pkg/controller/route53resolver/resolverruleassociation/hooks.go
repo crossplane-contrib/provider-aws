@@ -1,0 +1,155 @@
+/*
+Copyright 2021 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package resolverruleassociation
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"k8s.io/client-go/util/workqueue"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/crossplane/provider-aws/apis/route53resolver/manualv1alpha1"
+	resolverruleassociation "github.com/crossplane/provider-aws/pkg/clients/resolverruleassociation"
+
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+)
+
+const (
+	errUnexpectedObject = "The managed resource is not an AssociatedResolverRule resource"
+	errCreate           = "failed to create the AssociatedResolverRule"
+	errDelete           = "failed to delete the AssociatedResolverRule"
+	errGet              = "failed to get the AssociatedResolverRule"
+)
+
+// SetupResolverRuleAssociation adds a controller that reconciles ResolverRuleAssociation
+func SetupResolverRuleAssociation(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewController(rl),
+		}).
+		For(&manualv1alpha1.ResolverRuleAssociation{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(manualv1alpha1.ResolverRuleAssociationGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newRoute53ResolverClientFn: resolverruleassociation.NewRoute53ResolverClient}),
+			managed.WithInitializers(),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+type connector struct {
+	kube                       client.Client
+	newRoute53ResolverClientFn func(config aws.Config) resolverruleassociation.Client
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cr, ok := mg.(*manualv1alpha1.ResolverRuleAssociation)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	if err != nil {
+		return nil, err
+	}
+	return &external{client: c.newRoute53ResolverClientFn(*cfg), kube: c.kube}, nil
+}
+
+type external struct {
+	client resolverruleassociation.Client
+	kube   client.Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*manualv1alpha1.ResolverRuleAssociation)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
+	}
+
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
+	}
+
+	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(awsclient.String(meta.GetExternalName(cr))))
+	if err != nil {
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
+	}
+
+	switch res.ResolverRuleAssociation.Status { // nolint:exhaustive
+	case manualv1alpha1.ResolverRuleAssociationStatusComplete:
+		cr.Status.SetConditions(xpv1.Available())
+	case manualv1alpha1.ResolverRuleAssociationStatusCreating:
+		cr.Status.SetConditions(xpv1.Creating())
+	case manualv1alpha1.ResolverRuleAssociationStatusDeleting:
+		cr.Status.SetConditions(xpv1.Deleting())
+	default:
+		cr.Status.SetConditions(xpv1.Unavailable())
+	}
+
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: true,
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*manualv1alpha1.ResolverRuleAssociation)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
+	}
+
+	rsp, err := e.client.AssociateResolverRule(ctx, resolverruleassociation.GenerateCreateAssociateResolverRuleInput(cr))
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	}
+
+	meta.SetExternalName(cr, awsclient.StringValue(rsp.ResolverRuleAssociation.Id))
+	return managed.ExternalCreation{}, nil
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*manualv1alpha1.ResolverRuleAssociation)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+
+	_, err := e.client.DisassociateResolverRule(ctx, resolverruleassociation.GenerateDeleteAssociateResolverRuleInput(cr))
+
+	return awsclient.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errDelete)
+}
+
+func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
+}

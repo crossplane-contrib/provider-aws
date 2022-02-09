@@ -27,14 +27,17 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type AccountQuota struct {
 	AccountQuotaName *string `json:"accountQuotaName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AvailabilityZone struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type AvailableProcessorFeature struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -43,6 +46,7 @@ type AvailableProcessorFeature struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Certificate struct {
 	CertificateARN *string `json:"certificateARN,omitempty"`
 
@@ -61,18 +65,21 @@ type Certificate struct {
 	ValidTill *metav1.Time `json:"validTill,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CharacterSet struct {
 	CharacterSetDescription *string `json:"characterSetDescription,omitempty"`
 
 	CharacterSetName *string `json:"characterSetName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CloudwatchLogsExportConfiguration struct {
 	DisableLogTypes []*string `json:"disableLogTypes,omitempty"`
 
 	EnableLogTypes []*string `json:"enableLogTypes,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClusterPendingModifiedValues struct {
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
@@ -86,6 +93,7 @@ type ClusterPendingModifiedValues struct {
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConnectionPoolConfiguration struct {
 	ConnectionBorrowTimeout *int64 `json:"connectionBorrowTimeout,omitempty"`
 
@@ -98,6 +106,7 @@ type ConnectionPoolConfiguration struct {
 	SessionPinningFilters []*string `json:"sessionPinningFilters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConnectionPoolConfigurationInfo struct {
 	ConnectionBorrowTimeout *int64 `json:"connectionBorrowTimeout,omitempty"`
 
@@ -110,6 +119,7 @@ type ConnectionPoolConfigurationInfo struct {
 	SessionPinningFilters []*string `json:"sessionPinningFilters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CustomAvailabilityZone struct {
 	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
 
@@ -118,6 +128,7 @@ type CustomAvailabilityZone struct {
 	CustomAvailabilityZoneStatus *string `json:"customAvailabilityZoneStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterEndpoint struct {
 	CustomEndpointType *string `json:"customEndpointType,omitempty"`
 
@@ -140,6 +151,7 @@ type DBClusterEndpoint struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterMember struct {
 	DBClusterParameterGroupStatus *string `json:"dbClusterParameterGroupStatus,omitempty"`
 
@@ -150,12 +162,14 @@ type DBClusterMember struct {
 	PromotionTier *int64 `json:"promotionTier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterOptionGroupStatus struct {
 	DBClusterOptionGroupName *string `json:"dbClusterOptionGroupName,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterParameterGroup_SDK struct {
 	DBClusterParameterGroupARN *string `json:"dbClusterParameterGroupARN,omitempty"`
 
@@ -166,6 +180,7 @@ type DBClusterParameterGroup_SDK struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterRole struct {
 	FeatureName *string `json:"featureName,omitempty"`
 
@@ -174,6 +189,7 @@ type DBClusterRole struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterSnapshot struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
@@ -188,6 +204,8 @@ type DBClusterSnapshot struct {
 	DBClusterSnapshotIdentifier *string `json:"dbClusterSnapshotIdentifier,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
+
+	EngineMode *string `json:"engineMode,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
@@ -219,14 +237,17 @@ type DBClusterSnapshot struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterSnapshotAttribute struct {
 	AttributeName *string `json:"attributeName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBClusterSnapshotAttributesResult struct {
 	DBClusterSnapshotIdentifier *string `json:"dbClusterSnapshotIdentifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBCluster_SDK struct {
 	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
 
@@ -345,6 +366,7 @@ type DBCluster_SDK struct {
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBEngineVersion struct {
 	DBEngineDescription *string `json:"dbEngineDescription,omitempty"`
 
@@ -371,6 +393,7 @@ type DBEngineVersion struct {
 	SupportsReadReplica *bool `json:"supportsReadReplica,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBInstanceAutomatedBackup struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
@@ -423,10 +446,12 @@ type DBInstanceAutomatedBackup struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBInstanceAutomatedBackupsReplication struct {
 	DBInstanceAutomatedBackupsARN *string `json:"dbInstanceAutomatedBackupsARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBInstanceRole struct {
 	FeatureName *string `json:"featureName,omitempty"`
 
@@ -435,6 +460,7 @@ type DBInstanceRole struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBInstanceStatusInfo struct {
 	Message *string `json:"message,omitempty"`
 
@@ -445,6 +471,7 @@ type DBInstanceStatusInfo struct {
 	StatusType *string `json:"statusType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBInstance_SDK struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
@@ -601,12 +628,14 @@ type DBInstance_SDK struct {
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBParameterGroupStatus_SDK struct {
 	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
 
 	ParameterApplyStatus *string `json:"parameterApplyStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBParameterGroup_SDK struct {
 	DBParameterGroupARN *string `json:"dbParameterGroupARN,omitempty"`
 
@@ -617,6 +646,7 @@ type DBParameterGroup_SDK struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBProxy struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 
@@ -643,6 +673,7 @@ type DBProxy struct {
 	VPCSubnetIDs []*string `json:"vpcSubnetIDs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBProxyTarget struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -655,6 +686,7 @@ type DBProxyTarget struct {
 	TrackedClusterID *string `json:"trackedClusterID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBProxyTargetGroup struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 
@@ -671,6 +703,7 @@ type DBProxyTargetGroup struct {
 	UpdatedDate *metav1.Time `json:"updatedDate,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSecurityGroup struct {
 	DBSecurityGroupARN *string `json:"dbSecurityGroupARN,omitempty"`
 
@@ -683,12 +716,14 @@ type DBSecurityGroup struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSecurityGroupMembership struct {
 	DBSecurityGroupName *string `json:"dbSecurityGroupName,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSnapshot struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
@@ -750,14 +785,17 @@ type DBSnapshot struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSnapshotAttribute struct {
 	AttributeName *string `json:"attributeName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSnapshotAttributesResult struct {
 	DBSnapshotIdentifier *string `json:"dbSnapshotIdentifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DBSubnetGroup struct {
 	DBSubnetGroupARN *string `json:"dbSubnetGroupARN,omitempty"`
 
@@ -772,10 +810,12 @@ type DBSubnetGroup struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DescribeDBLogFilesDetails struct {
 	LogFileName *string `json:"logFileName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type DomainMembership struct {
 	Domain *string `json:"domain,omitempty"`
 
@@ -786,6 +826,7 @@ type DomainMembership struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EC2SecurityGroup struct {
 	EC2SecurityGroupID *string `json:"ec2SecurityGroupID,omitempty"`
 
@@ -796,6 +837,7 @@ type EC2SecurityGroup struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Endpoint struct {
 	Address *string `json:"address,omitempty"`
 
@@ -804,6 +846,7 @@ type Endpoint struct {
 	Port *int64 `json:"port,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EngineDefaults struct {
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
 
@@ -812,6 +855,7 @@ type EngineDefaults struct {
 	Parameters []*Parameter `json:"parameters,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Event struct {
 	Date *metav1.Time `json:"date,omitempty"`
 
@@ -822,10 +866,12 @@ type Event struct {
 	SourceIdentifier *string `json:"sourceIdentifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EventCategoriesMap struct {
 	SourceType *string `json:"sourceType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EventSubscription struct {
 	CustSubscriptionID *string `json:"custSubscriptionID,omitempty"`
 
@@ -844,6 +890,7 @@ type EventSubscription struct {
 	SubscriptionCreationTime *string `json:"subscriptionCreationTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ExportTask struct {
 	ExportOnly []*string `json:"exportOnly,omitempty"`
 
@@ -876,12 +923,23 @@ type ExportTask struct {
 	WarningMessage *string `json:"warningMessage,omitempty"`
 }
 
+// +kubebuilder:skipversion
+type FailoverState struct {
+	FromDBClusterARN *string `json:"fromDBClusterARN,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	ToDBClusterARN *string `json:"toDBClusterARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Filter struct {
 	Name *string `json:"name,omitempty"`
 
 	Values []*string `json:"values,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GlobalClusterMember struct {
 	DBClusterARN *string `json:"dbClusterARN,omitempty"`
 
@@ -892,6 +950,7 @@ type GlobalClusterMember struct {
 	Readers []*string `json:"readers,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type GlobalCluster_SDK struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
@@ -900,6 +959,10 @@ type GlobalCluster_SDK struct {
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
+	// Contains the state of scheduled or in-process failover operations on an Aurora
+	// global database (GlobalCluster). This Data type is empty unless a failover
+	// operation is scheduled or is currently underway on the Aurora global database.
+	FailoverState *FailoverState `json:"failoverState,omitempty"`
 
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
 
@@ -914,12 +977,14 @@ type GlobalCluster_SDK struct {
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type IPRange struct {
 	CIDRIP *string `json:"cidrIP,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InstallationMedia struct {
 	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
 
@@ -936,16 +1001,19 @@ type InstallationMedia struct {
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type InstallationMediaFailureCause struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MinimumEngineVersionPerAllowedValue struct {
 	AllowedValue *string `json:"allowedValue,omitempty"`
 
 	MinimumEngineVersion *string `json:"minimumEngineVersion,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Option struct {
 	DBSecurityGroupMemberships []*DBSecurityGroupMembership `json:"dbSecurityGroupMemberships,omitempty"`
 
@@ -964,6 +1032,7 @@ type Option struct {
 	VPCSecurityGroupMemberships []*VPCSecurityGroupMembership `json:"vpcSecurityGroupMemberships,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionConfiguration struct {
 	OptionName *string `json:"optionName,omitempty"`
 
@@ -972,6 +1041,7 @@ type OptionConfiguration struct {
 	Port *int64 `json:"port,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionGroup struct {
 	AllowsVPCAndNonVPCInstanceMemberships *bool `json:"allowsVPCAndNonVPCInstanceMemberships,omitempty"`
 
@@ -988,12 +1058,14 @@ type OptionGroup struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionGroupMembership struct {
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionGroupOption struct {
 	DefaultPort *int64 `json:"defaultPort,omitempty"`
 
@@ -1020,6 +1092,7 @@ type OptionGroupOption struct {
 	VPCOnly *bool `json:"vpcOnly,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionGroupOptionSetting struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -1036,6 +1109,7 @@ type OptionGroupOptionSetting struct {
 	SettingName *string `json:"settingName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionSetting struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -1056,12 +1130,14 @@ type OptionSetting struct {
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OptionVersion struct {
 	IsDefault *bool `json:"isDefault,omitempty"`
 
 	Version *string `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OrderableDBInstanceOption struct {
 	AvailabilityZoneGroup *string `json:"availabilityZoneGroup,omitempty"`
 
@@ -1110,10 +1186,12 @@ type OrderableDBInstanceOption struct {
 	VPC *bool `json:"vpc,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Outpost struct {
 	ARN *string `json:"arn,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Parameter struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -1138,12 +1216,14 @@ type Parameter struct {
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PendingCloudwatchLogsExports struct {
 	LogTypesToDisable []*string `json:"logTypesToDisable,omitempty"`
 
 	LogTypesToEnable []*string `json:"logTypesToEnable,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PendingMaintenanceAction struct {
 	Action *string `json:"action,omitempty"`
 
@@ -1158,6 +1238,7 @@ type PendingMaintenanceAction struct {
 	OptInStatus *string `json:"optInStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PendingModifiedValues struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
@@ -1193,12 +1274,14 @@ type PendingModifiedValues struct {
 	StorageType *string `json:"storageType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ProcessorFeature struct {
 	Name *string `json:"name,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Range struct {
 	From *int64 `json:"from,omitempty"`
 
@@ -1207,10 +1290,12 @@ type Range struct {
 	To *int64 `json:"to,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RecurringCharge struct {
 	RecurringChargeFrequency *string `json:"recurringChargeFrequency,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ReservedDBInstance struct {
 	CurrencyCode *string `json:"currencyCode,omitempty"`
 
@@ -1239,6 +1324,7 @@ type ReservedDBInstance struct {
 	State *string `json:"state,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ReservedDBInstancesOffering struct {
 	CurrencyCode *string `json:"currencyCode,omitempty"`
 
@@ -1255,16 +1341,19 @@ type ReservedDBInstancesOffering struct {
 	ReservedDBInstancesOfferingID *string `json:"reservedDBInstancesOfferingID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ResourcePendingMaintenanceActions struct {
 	ResourceIdentifier *string `json:"resourceIdentifier,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type RestoreWindow struct {
 	EarliestTime *metav1.Time `json:"earliestTime,omitempty"`
 
 	LatestTime *metav1.Time `json:"latestTime,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ScalingConfiguration struct {
 	AutoPause *bool `json:"autoPause,omitempty"`
 
@@ -1277,6 +1366,7 @@ type ScalingConfiguration struct {
 	TimeoutAction *string `json:"timeoutAction,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ScalingConfigurationInfo struct {
 	AutoPause *bool `json:"autoPause,omitempty"`
 
@@ -1289,6 +1379,7 @@ type ScalingConfigurationInfo struct {
 	TimeoutAction *string `json:"timeoutAction,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type SourceRegion struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -1299,6 +1390,7 @@ type SourceRegion struct {
 	SupportsDBInstanceAutomatedBackupsReplication *bool `json:"supportsDBInstanceAutomatedBackupsReplication,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Subnet struct {
 	// Contains Availability Zone information.
 	//
@@ -1317,20 +1409,24 @@ type Subnet struct {
 	SubnetStatus *string `json:"subnetStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TargetHealth struct {
 	Description *string `json:"description,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Timezone struct {
 	TimezoneName *string `json:"timezoneName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UpgradeTarget struct {
 	AutoUpgrade *bool `json:"autoUpgrade,omitempty"`
 
@@ -1341,8 +1437,15 @@ type UpgradeTarget struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IsMajorVersionUpgrade *bool `json:"isMajorVersionUpgrade,omitempty"`
+
+	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
+	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
+
+	SupportsParallelQuery *bool `json:"supportsParallelQuery,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserAuthConfig struct {
 	Description *string `json:"description,omitempty"`
 
@@ -1351,6 +1454,7 @@ type UserAuthConfig struct {
 	UserName *string `json:"userName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserAuthConfigInfo struct {
 	Description *string `json:"description,omitempty"`
 
@@ -1359,12 +1463,14 @@ type UserAuthConfigInfo struct {
 	UserName *string `json:"userName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type VPCSecurityGroupMembership struct {
 	Status *string `json:"status,omitempty"`
 
 	VPCSecurityGroupID *string `json:"vpcSecurityGroupID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type VPNDetails struct {
 	VPNGatewayIP *string `json:"vpnGatewayIP,omitempty"`
 
@@ -1377,6 +1483,7 @@ type VPNDetails struct {
 	VPNTunnelOriginatorIP *string `json:"vpnTunnelOriginatorIP,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ValidStorageOptions struct {
 	StorageType *string `json:"storageType,omitempty"`
 

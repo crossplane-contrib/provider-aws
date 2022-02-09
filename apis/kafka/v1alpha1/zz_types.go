@@ -27,12 +27,14 @@ var (
 	_ = &metav1.Time{}
 )
 
+// +kubebuilder:skipversion
 type BrokerEBSVolumeInfo struct {
 	KafkaBrokerNodeID *string `json:"kafkaBrokerNodeID,omitempty"`
 
 	VolumeSizeGB *int64 `json:"volumeSizeGB,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerLogs struct {
 	// Details of the CloudWatch Logs destination for broker logs.
 	CloudWatchLogs *CloudWatchLogs `json:"cloudWatchLogs,omitempty"`
@@ -42,6 +44,7 @@ type BrokerLogs struct {
 	S3 *S3 `json:"s3,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerNodeGroupInfo struct {
 	// The distribution of broker nodes across Availability Zones. By default, broker
 	// nodes are distributed among the Availability Zones of your Region. Currently,
@@ -58,6 +61,7 @@ type BrokerNodeGroupInfo struct {
 	StorageInfo *StorageInfo `json:"storageInfo,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerNodeInfo struct {
 	AttachedENIID *string `json:"attachedENIID,omitempty"`
 
@@ -70,6 +74,7 @@ type BrokerNodeInfo struct {
 	Endpoints []*string `json:"endpoints,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type BrokerSoftwareInfo struct {
 	ConfigurationARN *string `json:"configurationARN,omitempty"`
 
@@ -78,18 +83,21 @@ type BrokerSoftwareInfo struct {
 	KafkaVersion *string `json:"kafkaVersion,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClientAuthentication struct {
 	Sasl *Sasl `json:"sasl,omitempty"`
 	// Details for client authentication using TLS.
 	TLS *TLS `json:"tls,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CloudWatchLogs struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	LogGroup *string `json:"logGroup,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClusterInfo struct {
 	ActiveOperationARN *string `json:"activeOperationARN,omitempty"`
 	// Describes the setup to be used for Kafka broker nodes in the cluster.
@@ -133,6 +141,7 @@ type ClusterInfo struct {
 	ZookeeperConnectStringTLS *string `json:"zookeeperConnectStringTLS,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClusterOperationInfo struct {
 	ClientRequestID *string `json:"clientRequestID,omitempty"`
 
@@ -149,38 +158,31 @@ type ClusterOperationInfo struct {
 	OperationType *string `json:"operationType,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClusterOperationStep struct {
 	StepName *string `json:"stepName,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ClusterOperationStepInfo struct {
 	StepStatus *string `json:"stepStatus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type CompatibleKafkaVersion struct {
 	SourceVersion *string `json:"sourceVersion,omitempty"`
 
 	TargetVersions []*string `json:"targetVersions,omitempty"`
 }
 
-type Configuration struct {
-	ARN *string `json:"arn,omitempty"`
-
-	CreationTime *metav1.Time `json:"creationTime,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	KafkaVersions []*string `json:"kafkaVersions,omitempty"`
-
-	Name *string `json:"name,omitempty"`
-}
-
+// +kubebuilder:skipversion
 type ConfigurationInfo struct {
 	ARN *string `json:"arn,omitempty"`
 
 	Revision *int64 `json:"revision,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ConfigurationRevision struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
@@ -189,14 +191,34 @@ type ConfigurationRevision struct {
 	Revision *int64 `json:"revision,omitempty"`
 }
 
+// +kubebuilder:skipversion
+type Configuration_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	KafkaVersions []*string `json:"kafkaVersions,omitempty"`
+	// Describes a configuration revision.
+	LatestRevision *ConfigurationRevision `json:"latestRevision,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// The state of a configuration.
+	State *string `json:"state,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EBSStorageInfo struct {
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionAtRest struct {
 	DataVolumeKMSKeyID *string `json:"dataVolumeKMSKeyID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionInTransit struct {
 	// Client-broker encryption in transit setting.
 	ClientBroker *string `json:"clientBroker,omitempty"`
@@ -204,6 +226,7 @@ type EncryptionInTransit struct {
 	InCluster *bool `json:"inCluster,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type EncryptionInfo struct {
 	// The data-volume encryption details.
 	EncryptionAtRest *EncryptionAtRest `json:"encryptionAtRest,omitempty"`
@@ -211,38 +234,43 @@ type EncryptionInfo struct {
 	EncryptionInTransit *EncryptionInTransit `json:"encryptionInTransit,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ErrorInfo struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
 	ErrorString *string `json:"errorString,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Firehose struct {
 	DeliveryStream *string `json:"deliveryStream,omitempty"`
 
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JmxExporter struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type JmxExporterInfo struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type KafkaVersion struct {
 	Version *string `json:"version,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type LoggingInfo struct {
 	// The broker logs configuration for this MSK cluster.
 	BrokerLogs *BrokerLogs `json:"brokerLogs,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type MutableClusterInfo struct {
-	// Specifies the configuration to use for the brokers.
-	ConfigurationInfo *ConfigurationInfo `json:"configurationInfo,omitempty"`
 	// Specifies which metrics are gathered for the MSK cluster. This property has
 	// the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
 	// and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
@@ -262,14 +290,17 @@ type MutableClusterInfo struct {
 	OpenMonitoring *OpenMonitoring `json:"openMonitoring,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type NodeExporter struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type NodeExporterInfo struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type NodeInfo struct {
 	AddedToClusterTime *string `json:"addedToClusterTime,omitempty"`
 
@@ -278,16 +309,19 @@ type NodeInfo struct {
 	NodeARN *string `json:"nodeARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OpenMonitoring struct {
 	// Prometheus settings for open monitoring.
 	Prometheus *Prometheus `json:"prometheus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type OpenMonitoringInfo struct {
 	// Prometheus settings.
 	Prometheus *PrometheusInfo `json:"prometheus,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Prometheus struct {
 	// Indicates whether you want to enable or disable the JMX Exporter.
 	JmxExporter *JmxExporter `json:"jmxExporter,omitempty"`
@@ -295,6 +329,7 @@ type Prometheus struct {
 	NodeExporter *NodeExporter `json:"nodeExporter,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type PrometheusInfo struct {
 	// Indicates whether you want to enable or disable the JMX Exporter.
 	JmxExporter *JmxExporterInfo `json:"jmxExporter,omitempty"`
@@ -302,6 +337,7 @@ type PrometheusInfo struct {
 	NodeExporter *NodeExporterInfo `json:"nodeExporter,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type S3 struct {
 	Bucket *string `json:"bucket,omitempty"`
 
@@ -310,24 +346,29 @@ type S3 struct {
 	Prefix *string `json:"prefix,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Sasl struct {
 	Scram *Scram `json:"scram,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type Scram struct {
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type StorageInfo struct {
 	// Contains information about the EBS storage volumes attached to Kafka broker
 	// nodes.
 	EBSStorageInfo *EBSStorageInfo `json:"ebsStorageInfo,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type TLS struct {
 	CertificateAuthorityARNList []*string `json:"certificateAuthorityARNList,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UnprocessedScramSecret struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
@@ -336,6 +377,7 @@ type UnprocessedScramSecret struct {
 	SecretARN *string `json:"secretARN,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type ZookeeperNodeInfo struct {
 	AttachedENIID *string `json:"attachedENIID,omitempty"`
 

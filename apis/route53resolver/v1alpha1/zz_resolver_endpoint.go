@@ -118,7 +118,7 @@ type ResolverEndpointObservation struct {
 // ResolverEndpointStatus defines the observed state of ResolverEndpoint.
 type ResolverEndpointStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ResolverEndpointObservation `json:"atProvider"`
+	AtProvider          ResolverEndpointObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -128,11 +128,12 @@ type ResolverEndpointStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type ResolverEndpoint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ResolverEndpointSpec   `json:"spec,omitempty"`
+	Spec              ResolverEndpointSpec   `json:"spec"`
 	Status            ResolverEndpointStatus `json:"status,omitempty"`
 }
 
@@ -148,7 +149,7 @@ type ResolverEndpointList struct {
 // Repository type metadata.
 var (
 	ResolverEndpointKind             = "ResolverEndpoint"
-	ResolverEndpointGroupKind        = schema.GroupKind{Group: Group, Kind: ResolverEndpointKind}.String()
+	ResolverEndpointGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ResolverEndpointKind}.String()
 	ResolverEndpointKindAPIVersion   = ResolverEndpointKind + "." + GroupVersion.String()
 	ResolverEndpointGroupVersionKind = GroupVersion.WithKind(ResolverEndpointKind)
 )

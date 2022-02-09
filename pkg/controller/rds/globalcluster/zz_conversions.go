@@ -62,6 +62,21 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 		} else {
 			cr.Spec.ForProvider.EngineVersion = nil
 		}
+		if elem.FailoverState != nil {
+			f4 := &svcapitypes.FailoverState{}
+			if elem.FailoverState.FromDbClusterArn != nil {
+				f4.FromDBClusterARN = elem.FailoverState.FromDbClusterArn
+			}
+			if elem.FailoverState.Status != nil {
+				f4.Status = elem.FailoverState.Status
+			}
+			if elem.FailoverState.ToDbClusterArn != nil {
+				f4.ToDBClusterARN = elem.FailoverState.ToDbClusterArn
+			}
+			cr.Status.AtProvider.FailoverState = f4
+		} else {
+			cr.Status.AtProvider.FailoverState = nil
+		}
 		if elem.GlobalClusterArn != nil {
 			cr.Status.AtProvider.GlobalClusterARN = elem.GlobalClusterArn
 		} else {
@@ -73,30 +88,30 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 			cr.Status.AtProvider.GlobalClusterIdentifier = nil
 		}
 		if elem.GlobalClusterMembers != nil {
-			f6 := []*svcapitypes.GlobalClusterMember{}
-			for _, f6iter := range elem.GlobalClusterMembers {
-				f6elem := &svcapitypes.GlobalClusterMember{}
-				if f6iter.DBClusterArn != nil {
-					f6elem.DBClusterARN = f6iter.DBClusterArn
+			f7 := []*svcapitypes.GlobalClusterMember{}
+			for _, f7iter := range elem.GlobalClusterMembers {
+				f7elem := &svcapitypes.GlobalClusterMember{}
+				if f7iter.DBClusterArn != nil {
+					f7elem.DBClusterARN = f7iter.DBClusterArn
 				}
-				if f6iter.GlobalWriteForwardingStatus != nil {
-					f6elem.GlobalWriteForwardingStatus = f6iter.GlobalWriteForwardingStatus
+				if f7iter.GlobalWriteForwardingStatus != nil {
+					f7elem.GlobalWriteForwardingStatus = f7iter.GlobalWriteForwardingStatus
 				}
-				if f6iter.IsWriter != nil {
-					f6elem.IsWriter = f6iter.IsWriter
+				if f7iter.IsWriter != nil {
+					f7elem.IsWriter = f7iter.IsWriter
 				}
-				if f6iter.Readers != nil {
-					f6elemf3 := []*string{}
-					for _, f6elemf3iter := range f6iter.Readers {
-						var f6elemf3elem string
-						f6elemf3elem = *f6elemf3iter
-						f6elemf3 = append(f6elemf3, &f6elemf3elem)
+				if f7iter.Readers != nil {
+					f7elemf3 := []*string{}
+					for _, f7elemf3iter := range f7iter.Readers {
+						var f7elemf3elem string
+						f7elemf3elem = *f7elemf3iter
+						f7elemf3 = append(f7elemf3, &f7elemf3elem)
 					}
-					f6elem.Readers = f6elemf3
+					f7elem.Readers = f7elemf3
 				}
-				f6 = append(f6, f6elem)
+				f7 = append(f7, f7elem)
 			}
-			cr.Status.AtProvider.GlobalClusterMembers = f6
+			cr.Status.AtProvider.GlobalClusterMembers = f7
 		} else {
 			cr.Status.AtProvider.GlobalClusterMembers = nil
 		}

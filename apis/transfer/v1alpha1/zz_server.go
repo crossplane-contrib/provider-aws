@@ -86,14 +86,14 @@ type ServerParameters struct {
 	// containing all of the information required to call a customer-supplied authentication
 	// API, including the API Gateway URL. Not required when IdentityProviderType
 	// is set to SERVICE_MANAGED.
-	IDentityProviderDetails *IDentityProviderDetails `json:"identityProviderDetails,omitempty"`
+	IdentityProviderDetails *IdentityProviderDetails `json:"identityProviderDetails,omitempty"`
 	// Specifies the mode of authentication for a server. The default value is SERVICE_MANAGED,
 	// which allows you to store and access user credentials within the AWS Transfer
 	// Family service. Use the API_GATEWAY value to integrate with an identity provider
 	// of your choosing. The API_GATEWAY setting requires you to provide an API
 	// Gateway endpoint URL to call for authentication using the IdentityProviderDetails
 	// parameter.
-	IDentityProviderType *string `json:"identityProviderType,omitempty"`
+	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 	// Allows the service to write your users' activity to your Amazon CloudWatch
 	// logs for monitoring and auditing purposes.
 	LoggingRole *string `json:"loggingRole,omitempty"`
@@ -152,6 +152,7 @@ type ServerStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Server struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -172,7 +173,7 @@ type ServerList struct {
 // Repository type metadata.
 var (
 	ServerKind             = "Server"
-	ServerGroupKind        = schema.GroupKind{Group: Group, Kind: ServerKind}.String()
+	ServerGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ServerKind}.String()
 	ServerKindAPIVersion   = ServerKind + "." + GroupVersion.String()
 	ServerGroupVersionKind = GroupVersion.WithKind(ServerKind)
 )

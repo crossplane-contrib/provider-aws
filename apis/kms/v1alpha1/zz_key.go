@@ -252,6 +252,7 @@ type KeyStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Key struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -272,7 +273,7 @@ type KeyList struct {
 // Repository type metadata.
 var (
 	KeyKind             = "Key"
-	KeyGroupKind        = schema.GroupKind{Group: Group, Kind: KeyKind}.String()
+	KeyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: KeyKind}.String()
 	KeyKindAPIVersion   = KeyKind + "." + GroupVersion.String()
 	KeyGroupVersionKind = GroupVersion.WithKind(KeyKind)
 )

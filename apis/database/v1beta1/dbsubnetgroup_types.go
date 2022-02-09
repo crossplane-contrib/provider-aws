@@ -49,6 +49,9 @@ type DBSubnetGroupParameters struct {
 	Description string `json:"description"`
 
 	// The EC2 Subnet IDs for the DB subnet group.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs is a set of references that each retrieve the subnetID from the referenced Subnet

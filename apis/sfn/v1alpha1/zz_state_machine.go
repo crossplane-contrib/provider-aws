@@ -99,6 +99,7 @@ type StateMachineStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type StateMachine struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -119,7 +120,7 @@ type StateMachineList struct {
 // Repository type metadata.
 var (
 	StateMachineKind             = "StateMachine"
-	StateMachineGroupKind        = schema.GroupKind{Group: Group, Kind: StateMachineKind}.String()
+	StateMachineGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: StateMachineKind}.String()
 	StateMachineKindAPIVersion   = StateMachineKind + "." + GroupVersion.String()
 	StateMachineGroupVersionKind = GroupVersion.WithKind(StateMachineKind)
 )

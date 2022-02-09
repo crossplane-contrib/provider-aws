@@ -6,8 +6,8 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= cac5654b7bb64c8f754ad9af01799ef70d9541b6
-GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,glue,kafka,kms,lambda,mq,rds,secretsmanager,servicediscovery,sfn,transfer"
+CODE_GENERATOR_COMMIT ?= edec6dad2fbd530d615d01e96f5251a806e1f36d
+GENERATED_SERVICES := $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
@@ -101,6 +101,15 @@ submodules:
 	@git submodule sync
 	@git submodule update --init --recursive
 
+# NOTE(hasheddan): the build submodule currently overrides XDG_CACHE_HOME in
+# order to force the Helm 3 to use the .work/helm directory. This causes Go on
+# Linux machines to use that directory as the build cache as well. We should
+# adjust this behavior in the build submodule because it is also causing Linux
+# users to duplicate their build cache, but for now we just make it easier to
+# identify its location in CI so that we cache between builds.
+go.cachedir:
+	@go env GOCACHE
+
 # This is for running out-of-cluster locally, and is for convenience. Running
 # this make target will print out the command which was used. For more control,
 # try running the binary directly with different arguments.
@@ -114,24 +123,19 @@ run: go.build
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
-	@if [ "$(SERVICES)" = "" ]; then \
-		echo "Error: Please specify the comma-seperated list of services via 'SERVICES' variable."; \
-		echo "For more info: https://github.com/crossplane/provider-aws/blob/master/CODE_GENERATION.md#code-generation"; \
-		exit 1; \
-	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
 	fi
 	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
-	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
+	@for svc in $(SERVICES); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
-		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../ || exit 1; \
+		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --output ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 
 services.all:
-	@$(MAKE) services SERVICES=$(GENERATED_SERVICES)
+	@$(MAKE) services SERVICES="$(GENERATED_SERVICES)"
 
 # ====================================================================================
 # Special Targets

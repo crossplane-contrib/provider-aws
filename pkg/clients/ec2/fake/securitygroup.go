@@ -34,6 +34,7 @@ type MockSecurityGroupClient struct {
 	MockDescribe         func(ctx context.Context, input *ec2.DescribeSecurityGroupsInput, opts []func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error)
 	MockAuthorizeIngress func(ctx context.Context, input *ec2.AuthorizeSecurityGroupIngressInput, opts []func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error)
 	MockAuthorizeEgress  func(ctx context.Context, input *ec2.AuthorizeSecurityGroupEgressInput, opts []func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupEgressOutput, error)
+	MockRevokeIngress    func(ctx context.Context, input *ec2.RevokeSecurityGroupIngressInput, opts []func(*ec2.Options)) (*ec2.RevokeSecurityGroupIngressOutput, error)
 	MockRevokeEgress     func(ctx context.Context, input *ec2.RevokeSecurityGroupEgressInput, opts []func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error)
 	MockCreateTags       func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 	MockDeleteTags       func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
@@ -67,6 +68,11 @@ func (m *MockSecurityGroupClient) AuthorizeSecurityGroupEgress(ctx context.Conte
 // RevokeSecurityGroupEgress mocks RevokeSecurityGroupEgress method
 func (m *MockSecurityGroupClient) RevokeSecurityGroupEgress(ctx context.Context, input *ec2.RevokeSecurityGroupEgressInput, opts ...func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error) {
 	return m.MockRevokeEgress(ctx, input, opts)
+}
+
+// RevokeSecurityGroupIngress mocks RevokeSecurityGroupIngress method
+func (m *MockSecurityGroupClient) RevokeSecurityGroupIngress(ctx context.Context, input *ec2.RevokeSecurityGroupIngressInput, opts ...func(*ec2.Options)) (*ec2.RevokeSecurityGroupIngressOutput, error) {
+	return m.MockRevokeIngress(ctx, input, opts)
 }
 
 // CreateTags mocks CreateTagsInput method

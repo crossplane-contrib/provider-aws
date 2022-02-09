@@ -1,0 +1,28 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: TransitGatewayRoute
+metadata:
+  name: tgw-route-blackhole
+spec:
+  forProvider:
+    region: us-east-1
+    blackhole: true
+    destinationCIDRBlock: 10.0.0.0/8
+    transitGatewayRouteTableIdRef:
+      name: tgw-routetable
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: TransitGatewayRoute
+metadata:
+  name: tgw-route-vpc-attach
+spec:
+  forProvider:
+    region: us-east-1
+    destinationCIDRBlock: 0.0.0.0/0
+    transitGatewayAttachmentIdRef:
+      name: tgw-vpc-attach
+    transitGatewayRouteTableIdRef:
+      name: tgw-routetable
+  providerConfigRef:
+    name: example

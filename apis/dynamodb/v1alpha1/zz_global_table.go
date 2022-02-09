@@ -74,6 +74,7 @@ type GlobalTableStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type GlobalTable struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -94,7 +95,7 @@ type GlobalTableList struct {
 // Repository type metadata.
 var (
 	GlobalTableKind             = "GlobalTable"
-	GlobalTableGroupKind        = schema.GroupKind{Group: Group, Kind: GlobalTableKind}.String()
+	GlobalTableGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: GlobalTableKind}.String()
 	GlobalTableKindAPIVersion   = GlobalTableKind + "." + GroupVersion.String()
 	GlobalTableGroupVersionKind = GroupVersion.WithKind(GlobalTableKind)
 )

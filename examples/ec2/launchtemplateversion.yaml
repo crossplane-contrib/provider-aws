@@ -1,0 +1,19 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: LaunchTemplateVersion
+metadata:
+  name: test-crossplane-v3
+spec:
+  forProvider:
+    sourceVersion: "1"
+    launchTemplateNameRef:
+      name: test-crossplane-obj
+    launchTemplateData:
+      # resourceTags
+      tagSpecifications:
+      - resourceType: volume
+        tags:
+        - key: version
+          value: "2"
+    region: us-east-1
+  providerConfigRef:
+    name: example

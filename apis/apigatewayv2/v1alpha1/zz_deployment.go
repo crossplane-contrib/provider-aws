@@ -68,6 +68,7 @@ type DeploymentStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Deployment struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -88,7 +89,7 @@ type DeploymentList struct {
 // Repository type metadata.
 var (
 	DeploymentKind             = "Deployment"
-	DeploymentGroupKind        = schema.GroupKind{Group: Group, Kind: DeploymentKind}.String()
+	DeploymentGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DeploymentKind}.String()
 	DeploymentKindAPIVersion   = DeploymentKind + "." + GroupVersion.String()
 	DeploymentGroupVersionKind = GroupVersion.WithKind(DeploymentKind)
 )

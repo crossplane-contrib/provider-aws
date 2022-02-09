@@ -64,6 +64,7 @@ type DistributionStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Distribution struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -84,7 +85,7 @@ type DistributionList struct {
 // Repository type metadata.
 var (
 	DistributionKind             = "Distribution"
-	DistributionGroupKind        = schema.GroupKind{Group: Group, Kind: DistributionKind}.String()
+	DistributionGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: DistributionKind}.String()
 	DistributionKindAPIVersion   = DistributionKind + "." + GroupVersion.String()
 	DistributionGroupVersionKind = GroupVersion.WithKind(DistributionKind)
 )

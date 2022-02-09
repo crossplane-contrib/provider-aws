@@ -30,7 +30,7 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -130,7 +130,7 @@ func TestReplicationObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -144,7 +144,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -158,7 +158,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -172,7 +172,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
@@ -186,7 +186,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -200,7 +200,7 @@ func TestReplicationObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -243,7 +243,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -256,7 +256,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return &s3.PutBucketReplicationOutput{}, nil
@@ -269,7 +269,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
 						return &s3.PutBucketReplicationOutput{}, nil
@@ -308,7 +308,7 @@ func TestReplicationDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
 						return nil, errBoom
@@ -321,7 +321,7 @@ func TestReplicationDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
 						return &s3.DeleteBucketReplicationOutput{}, nil
@@ -361,7 +361,7 @@ func TestReplicationLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, errBoom
@@ -370,12 +370,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, replicationGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"ErrorReplicationConfigurationNotFound": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
@@ -384,12 +384,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitNil": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{}, nil
@@ -398,12 +398,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
@@ -412,12 +412,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
@@ -426,12 +426,12 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				b: s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 						return &s3.GetBucketReplicationOutput{
@@ -442,7 +442,7 @@ func TestReplicationLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
+				cr:  s3testing.Bucket(s3testing.WithReplConfig(generateReplicationConfig())),
 			},
 		},
 	}
@@ -454,6 +454,458 @@ func TestReplicationLateInit(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	type args struct {
+		cr *v1beta1.ReplicationConfiguration
+		b  *s3types.ReplicationConfiguration
+	}
+
+	type want struct {
+		isUpToDate ResourceStatus
+		err        error
+	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"IsUpToDate": {
+			args: args{
+				cr: &v1beta1.ReplicationConfiguration{
+					Role: &role,
+					Rules: []v1beta1.ReplicationRule{{
+						DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+						Destination: v1beta1.Destination{
+							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &v1beta1.Metrics{
+								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         enabled,
+							},
+							ReplicationTime: &v1beta1.ReplicationTime{
+								Status: enabled,
+								Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+							},
+							StorageClass: &storage,
+						},
+						ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+						Filter: &v1beta1.ReplicationRuleFilter{
+							And: &v1beta1.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   tags,
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+						Status:                  enabled,
+					}},
+				},
+				b: &s3types.ReplicationConfiguration{
+					Role: &role,
+					Rules: []s3types.ReplicationRule{{
+						DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+						Destination: &s3types.Destination{
+							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &s3types.Metrics{
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         s3types.MetricsStatusEnabled,
+							},
+							ReplicationTime: &s3types.ReplicationTime{
+								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status: s3types.ReplicationTimeStatusEnabled,
+							},
+							StorageClass: s3types.StorageClassOnezoneIa,
+						},
+						ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+						Filter: &s3types.ReplicationRuleFilterMemberAnd{
+							Value: s3types.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   awsTags,
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+						Status:                  s3types.ReplicationRuleStatusEnabled,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateRulesOutOfOrder": {
+			args: args{
+				cr: &v1beta1.ReplicationConfiguration{
+					Role: &role,
+					Rules: []v1beta1.ReplicationRule{{
+						DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+						Destination: v1beta1.Destination{
+							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+							Account:                  &accountID,
+							Bucket:                   awsclient.String("bucket-1"),
+							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &v1beta1.Metrics{
+								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         enabled,
+							},
+							ReplicationTime: &v1beta1.ReplicationTime{
+								Status: enabled,
+								Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+							},
+							StorageClass: &storage,
+						},
+						ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+						Filter: &v1beta1.ReplicationRuleFilter{
+							And: &v1beta1.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   tags,
+							},
+						},
+						ID:                      awsclient.String("rule-1"),
+						Priority:                priority,
+						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+						Status:                  enabled,
+					},
+						{
+							DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+							Destination: v1beta1.Destination{
+								AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+								Account:                  &accountID,
+								Bucket:                   awsclient.String("bucket-2"),
+								EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+								Metrics: &v1beta1.Metrics{
+									EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									Status:         enabled,
+								},
+								ReplicationTime: &v1beta1.ReplicationTime{
+									Status: enabled,
+									Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								},
+								StorageClass: &storage,
+							},
+							ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+							Filter: &v1beta1.ReplicationRuleFilter{
+								And: &v1beta1.ReplicationRuleAndOperator{
+									Prefix: &prefix,
+									Tags:   tags,
+								},
+							},
+							ID:                      awsclient.String("rule-2"),
+							Priority:                priority,
+							SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+							Status:                  enabled,
+						}},
+				},
+				b: &s3types.ReplicationConfiguration{
+					Role: &role,
+					Rules: []s3types.ReplicationRule{{
+						DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+						Destination: &s3types.Destination{
+							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+							Account:                  &accountID,
+							Bucket:                   awsclient.String("bucket-2"),
+							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &s3types.Metrics{
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         s3types.MetricsStatusEnabled,
+							},
+							ReplicationTime: &s3types.ReplicationTime{
+								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status: s3types.ReplicationTimeStatusEnabled,
+							},
+							StorageClass: s3types.StorageClassOnezoneIa,
+						},
+						ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+						Filter: &s3types.ReplicationRuleFilterMemberAnd{
+							Value: s3types.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   awsTags,
+							},
+						},
+						ID:                      awsclient.String("rule-2"),
+						Priority:                priority,
+						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+						Status:                  s3types.ReplicationRuleStatusEnabled,
+					},
+						{
+							DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+							Destination: &s3types.Destination{
+								AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+								Account:                  &accountID,
+								Bucket:                   awsclient.String("bucket-1"),
+								EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+								Metrics: &s3types.Metrics{
+									EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									Status:         s3types.MetricsStatusEnabled,
+								},
+								ReplicationTime: &s3types.ReplicationTime{
+									Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									Status: s3types.ReplicationTimeStatusEnabled,
+								},
+								StorageClass: s3types.StorageClassOnezoneIa,
+							},
+							ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+							Filter: &s3types.ReplicationRuleFilterMemberAnd{
+								Value: s3types.ReplicationRuleAndOperator{
+									Prefix: &prefix,
+									Tags:   awsTags,
+								},
+							},
+							ID:                      awsclient.String("rule-1"),
+							Priority:                priority,
+							SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+							Status:                  s3types.ReplicationRuleStatusEnabled,
+						}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateTagsOutOfOrder": {
+			args: args{
+				cr: &v1beta1.ReplicationConfiguration{
+					Role: &role,
+					Rules: []v1beta1.ReplicationRule{{
+						DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+						Destination: v1beta1.Destination{
+							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &v1beta1.Metrics{
+								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         enabled,
+							},
+							ReplicationTime: &v1beta1.ReplicationTime{
+								Status: enabled,
+								Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+							},
+							StorageClass: &storage,
+						},
+						ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+						Filter: &v1beta1.ReplicationRuleFilter{
+							And: &v1beta1.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags: []v1beta1.Tag{{
+									Key:   "test",
+									Value: "value",
+								},
+									{
+										Key:   "xyz",
+										Value: "abc",
+									}},
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+						Status:                  enabled,
+					}},
+				},
+				b: &s3types.ReplicationConfiguration{
+					Role: &role,
+					Rules: []s3types.ReplicationRule{{
+						DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+						Destination: &s3types.Destination{
+							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &s3types.Metrics{
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         s3types.MetricsStatusEnabled,
+							},
+							ReplicationTime: &s3types.ReplicationTime{
+								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status: s3types.ReplicationTimeStatusEnabled,
+							},
+							StorageClass: s3types.StorageClassOnezoneIa,
+						},
+						ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+						Filter: &s3types.ReplicationRuleFilterMemberAnd{
+							Value: s3types.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags: []s3types.Tag{
+									{
+										Key:   awsclient.String("xyz"),
+										Value: awsclient.String("abc"),
+									},
+									{
+										Key:   awsclient.String("test"),
+										Value: awsclient.String("value"),
+									},
+								},
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+						Status:                  s3types.ReplicationRuleStatusEnabled,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateEmptyFilter": {
+			args: args{
+				cr: &v1beta1.ReplicationConfiguration{
+					Role: &role,
+					Rules: []v1beta1.ReplicationRule{{
+						DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+						Destination: v1beta1.Destination{
+							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &v1beta1.Metrics{
+								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         enabled,
+							},
+							ReplicationTime: &v1beta1.ReplicationTime{
+								Status: enabled,
+								Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+							},
+							StorageClass: &storage,
+						},
+						ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+						Filter:                    nil,
+						ID:                        &id,
+						Priority:                  priority,
+						SourceSelectionCriteria:   &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+						Status:                    enabled,
+					}},
+				},
+				b: &s3types.ReplicationConfiguration{
+					Role: &role,
+					Rules: []s3types.ReplicationRule{{
+						DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+						Destination: &s3types.Destination{
+							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &s3types.Metrics{
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         s3types.MetricsStatusEnabled,
+							},
+							ReplicationTime: &s3types.ReplicationTime{
+								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status: s3types.ReplicationTimeStatusEnabled,
+							},
+							StorageClass: s3types.StorageClassOnezoneIa,
+						},
+						ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+						Filter: &s3types.ReplicationRuleFilterMemberPrefix{
+							Value: "",
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+						Status:                  s3types.ReplicationRuleStatusEnabled,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 0,
+			},
+		},
+		"IsUpToDateFalseRuleStatusDisabled": {
+			args: args{
+				cr: &v1beta1.ReplicationConfiguration{
+					Role: &role,
+					Rules: []v1beta1.ReplicationRule{{
+						DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
+						Destination: v1beta1.Destination{
+							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &v1beta1.Metrics{
+								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         enabled,
+							},
+							ReplicationTime: &v1beta1.ReplicationTime{
+								Status: enabled,
+								Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+							},
+							StorageClass: &storage,
+						},
+						ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
+						Filter: &v1beta1.ReplicationRuleFilter{
+							And: &v1beta1.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   tags,
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+						Status:                  "Disabled",
+					}},
+				},
+				b: &s3types.ReplicationConfiguration{
+					Role: &role,
+					Rules: []s3types.ReplicationRule{{
+						DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+						Destination: &s3types.Destination{
+							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
+							Account:                  &accountID,
+							Bucket:                   &bucketName,
+							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+							Metrics: &s3types.Metrics{
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status:         s3types.MetricsStatusEnabled,
+							},
+							ReplicationTime: &s3types.ReplicationTime{
+								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Status: s3types.ReplicationTimeStatusEnabled,
+							},
+							StorageClass: s3types.StorageClassOnezoneIa,
+						},
+						ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+						Filter: &s3types.ReplicationRuleFilterMemberAnd{
+							Value: s3types.ReplicationRuleAndOperator{
+								Prefix: &prefix,
+								Tags:   awsTags,
+							},
+						},
+						ID:                      &id,
+						Priority:                priority,
+						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+						Status:                  s3types.ReplicationRuleStatusEnabled,
+					}},
+				},
+			},
+			want: want{
+				isUpToDate: 1,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			mg := GenerateReplicationConfiguration(tc.args.cr)
+			actual, err := IsUpToDate(tc.args.b, mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want error, +got error:\n%s", diff)
+			}
+
+			if diff := cmp.Diff(actual, tc.want.isUpToDate, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

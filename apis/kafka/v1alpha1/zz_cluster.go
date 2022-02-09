@@ -29,16 +29,8 @@ type ClusterParameters struct {
 	// Region is which region the Cluster will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Information about the brokers.
-	// +kubebuilder:validation:Required
-	BrokerNodeGroupInfo *BrokerNodeGroupInfo `json:"brokerNodeGroupInfo"`
 	// Includes all client authentication related information.
 	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
-	// The name of the cluster.
-	// +kubebuilder:validation:Required
-	ClusterName *string `json:"clusterName"`
-	// Represents the configuration that you want MSK to use for the cluster.
-	ConfigurationInfo *ConfigurationInfo `json:"configurationInfo,omitempty"`
 	// Includes all encryption-related information.
 	EncryptionInfo *EncryptionInfo `json:"encryptionInfo,omitempty"`
 	// Specifies the level of monitoring for the MSK cluster. The possible values
@@ -69,6 +61,8 @@ type ClusterSpec struct {
 type ClusterObservation struct {
 	// The Amazon Resource Name (ARN) of the cluster.
 	ClusterARN *string `json:"clusterARN,omitempty"`
+	// The name of the MSK cluster.
+	ClusterName *string `json:"clusterName,omitempty"`
 	// The state of the cluster. The possible states are ACTIVE, CREATING, DELETING,
 	// FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.
 	State *string `json:"state,omitempty"`
@@ -87,6 +81,7 @@ type ClusterStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Cluster struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -107,7 +102,7 @@ type ClusterList struct {
 // Repository type metadata.
 var (
 	ClusterKind             = "Cluster"
-	ClusterGroupKind        = schema.GroupKind{Group: Group, Kind: ClusterKind}.String()
+	ClusterGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: ClusterKind}.String()
 	ClusterKindAPIVersion   = ClusterKind + "." + GroupVersion.String()
 	ClusterGroupVersionKind = GroupVersion.WithKind(ClusterKind)
 )

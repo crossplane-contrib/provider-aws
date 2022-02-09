@@ -1,0 +1,19 @@
+ignore:
+  resource_names:
+    - Nodegroup
+    - Cluster
+    - FargateProfile
+  shape_names:
+    - Nodegroup
+    - Cluster
+    - FargateProfile
+    - IdentityProviderConfig
+  field_paths:
+    - DescribeAddonInput.ClusterName
+    - CreateAddonInput.ClusterName
+    - UpdateAddonInput.ClusterName
+    - DeleteAddonInput.ClusterName
+    - DescribeAddonInput.ClientRequestToken
+    - CreateAddonInput.ClientRequestToken
+    - UpdateAddonInput.ClientRequestToken
+    - DeleteAddonInput.ClientRequestToken

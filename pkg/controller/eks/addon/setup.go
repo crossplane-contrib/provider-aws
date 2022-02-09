@@ -43,13 +43,8 @@ import (
 const (
 	errNotEKSCluster    = "managed resource is not an EKS cluster custom resource"
 	errKubeUpdateFailed = "cannot update EKS cluster custom resource"
-	errListTags         = "cannot list tags"
 	errTagResource      = "cannot tag resource"
 	errUntagResource    = "cannot untag resource"
-
-	statusCreating = "CREATING"
-	statusActive   = "ACTIVE"
-	statusDeleting = "DELETING"
 )
 
 // SetupAddon adds a controller that reconciles Clusters.
@@ -104,12 +99,16 @@ func postObserve(_ context.Context, cr *v1alpha1.Addon, _ *awseks.DescribeAddonO
 	}
 
 	switch awsclients.StringValue(cr.Status.AtProvider.Status) {
-	case statusCreating:
+	case awseks.AddonStatusCreating:
 		cr.SetConditions(xpv1.Creating())
-	case statusDeleting:
+	case awseks.AddonStatusDeleting:
 		cr.SetConditions(xpv1.Deleting())
-	case statusActive:
+	case awseks.AddonStatusActive:
 		cr.SetConditions(xpv1.Available())
+	case awseks.AddonStatusUpdating:
+		cr.SetConditions(xpv1.Available().WithMessage(awseks.AddonStatusUpdating))
+		// Prevent Update() call during update state - which will fail.
+		obs.ResourceUpToDate = true
 	default:
 		cr.SetConditions(xpv1.Unavailable())
 	}
@@ -124,25 +123,14 @@ func lateInitialize(spec *v1alpha1.AddonParameters, resp *awseks.DescribeAddonOu
 }
 
 func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) {
-	if resp.Addon == nil {
-		return false, nil
-	}
-
 	switch {
-	case resp.Addon == nil:
-	case cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion):
-	case cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
+	case resp.Addon == nil,
+		cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion),
+		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
 		return false, nil
 	}
 
-	tags, err := h.client.ListTagsForResource(&awseks.ListTagsForResourceInput{
-		ResourceArn: awsclients.String(meta.GetExternalName(cr)),
-	})
-	if err != nil {
-		return false, errors.Wrap(err, errListTags)
-	}
-	add, remove := diffTags(cr.Spec.ForProvider.Tags, tags.Tags)
-
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
 	return len(add) == 0 && len(remove) == 0, nil
 }
 
@@ -156,14 +144,17 @@ func (h *hooks) postUpdate(ctx context.Context, cr *v1alpha1.Addon, resp *awseks
 		return managed.ExternalUpdate{}, err
 	}
 
-	tags, err := h.client.ListTagsForResource(&awseks.ListTagsForResourceInput{
-		ResourceArn: awsclients.String(meta.GetExternalName(cr)),
-	})
-	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errListTags)
-	}
-	add, remove := diffTags(cr.Spec.ForProvider.Tags, tags.Tags)
+	// Tag update needs to separate because UpdateAddon does not include tags (for unknown reason).
 
+	desc, err := h.client.DescribeAddonWithContext(ctx, &awseks.DescribeAddonInput{
+		AddonName:   cr.Spec.ForProvider.AddonName,
+		ClusterName: cr.Spec.ForProvider.ClusterName,
+	})
+	if err != nil || desc.Addon == nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
+	}
+
+	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
 			ResourceArn: awsclients.String(meta.GetExternalName(cr)),
@@ -222,24 +213,4 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
-}
-
-// diffTags returns tags that should be added or removed.
-func diffTags(spec map[string]*string, current map[string]*string) (addMap map[string]*string, remove []*string) {
-	addMap = make(map[string]*string, len(spec))
-	for k, v := range spec {
-		addMap[k] = v
-	}
-	removeMap := map[string]struct{}{}
-	for k, v := range current {
-		if awsclients.StringValue(addMap[k]) == awsclients.StringValue(v) {
-			delete(addMap, k)
-			continue
-		}
-		removeMap[k] = struct{}{}
-	}
-	for k := range removeMap {
-		remove = append(remove, awsclients.String(k))
-	}
-	return
 }

@@ -30,7 +30,7 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var _ SubresourceClient = &CORSConfigurationClient{}
@@ -78,7 +78,7 @@ func TestCORSObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return nil, errBoom
@@ -92,7 +92,7 @@ func TestCORSObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: nil}, nil
@@ -106,7 +106,7 @@ func TestCORSObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(nil)),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: generateAWSCORS().CORSRules}, nil
@@ -120,7 +120,7 @@ func TestCORSObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(nil)),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return nil, &smithy.GenericAPIError{Code: clientss3.CORSNotFoundErrCode}
@@ -134,7 +134,7 @@ func TestCORSObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(nil)),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: nil}, nil
@@ -148,7 +148,7 @@ func TestCORSObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: generateAWSCORS().CORSRules}, nil
@@ -190,7 +190,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockPutBucketCors: func(ctx context.Context, input *s3.PutBucketCorsInput, opts []func(*s3.Options)) (*s3.PutBucketCorsOutput, error) {
 						return nil, errBoom
@@ -203,7 +203,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockPutBucketCors: func(ctx context.Context, input *s3.PutBucketCorsInput, opts []func(*s3.Options)) (*s3.PutBucketCorsOutput, error) {
 						return &s3.PutBucketCorsOutput{}, nil
@@ -216,7 +216,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockPutBucketCors: func(ctx context.Context, input *s3.PutBucketCorsInput, opts []func(*s3.Options)) (*s3.PutBucketCorsOutput, error) {
 						return &s3.PutBucketCorsOutput{}, nil
@@ -255,7 +255,7 @@ func TestCORSDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketCors: func(ctx context.Context, input *s3.DeleteBucketCorsInput, opts []func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error) {
 						return nil, errBoom
@@ -268,7 +268,7 @@ func TestCORSDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockDeleteBucketCors: func(ctx context.Context, input *s3.DeleteBucketCorsInput, opts []func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error) {
 						return &s3.DeleteBucketCorsOutput{}, nil
@@ -308,7 +308,7 @@ func TestCORSLateInit(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
@@ -318,12 +318,12 @@ func TestCORSLateInit(t *testing.T) {
 			},
 			want: want{
 				err: awsclient.Wrap(errBoom, corsGetFailed),
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"ErrorCORSErrCode": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
@@ -333,12 +333,12 @@ func TestCORSLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"NoLateInitEmpty": {
 			args: args{
-				b: s3Testing.Bucket(),
+				b: s3testing.Bucket(),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: make([]s3types.CORSRule, 0)}, nil
@@ -347,12 +347,12 @@ func TestCORSLateInit(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(),
+				cr:  s3testing.Bucket(),
 			},
 		},
 		"SuccessfulLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(nil)),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(nil)),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: generateAWSCORS().CORSRules}, nil
@@ -362,12 +362,12 @@ func TestCORSLateInit(t *testing.T) {
 
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				cr:  s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 			},
 		},
 		"NoOpLateInit": {
 			args: args{
-				b: s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				b: s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
 						return &s3.GetBucketCorsOutput{CORSRules: []s3types.CORSRule{
@@ -379,7 +379,7 @@ func TestCORSLateInit(t *testing.T) {
 
 			want: want{
 				err: nil,
-				cr:  s3Testing.Bucket(s3Testing.WithCORSConfig(generateCORSConfig())),
+				cr:  s3testing.Bucket(s3testing.WithCORSConfig(generateCORSConfig())),
 			},
 		},
 	}

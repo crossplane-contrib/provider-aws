@@ -41,7 +41,6 @@ func SetupUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, pol
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve
-			e.postCreate = postCreate
 			e.preObserve = preObserve
 			e.preDelete = preDelete
 			e.preCreate = preCreate
@@ -55,7 +54,7 @@ func SetupUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, pol
 		For(&svcapitypes.User{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.UserGroupVersionKind),
-			managed.WithInitializers(),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -84,17 +83,9 @@ func postObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUs
 	return obs, nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.UserName))
-	return managed.ExternalCreation{}, nil
-}
-
 func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserInput) error {
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	obj.Role = cr.Spec.ForProvider.Role
-	obj.UserName = &cr.Name
+	obj.UserName = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }
