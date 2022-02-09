@@ -65,6 +65,11 @@ func IsOIDCProviderUpToDate(in svcapitypes.OpenIDConnectProviderParameters, obse
 	if !cmp.Equal(in.ThumbprintList, observed.ThumbprintList, sortSlicesOpt, cmpopts.EquateEmpty()) {
 		return false
 	}
+	if in.Tags == nil && observed.Tags != nil {
+		for _, tag := range observed.Tags {
+			in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
+		}
+	}
 	return true
 }
 

@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
+  "github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -35,7 +36,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+  "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
@@ -69,6 +72,18 @@ func withExternalName(name string) oidcProviderModifier {
 
 func withAtProvider(s svcapitypes.OpenIDConnectProviderObservation) oidcProviderModifier {
 	return func(r *svcapitypes.OpenIDConnectProvider) { r.Status.AtProvider = s }
+}
+
+func withTags(tagMaps ...map[string]string) roleModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.OpenIDConnectProvider) {
+		r.Spec.ForProvider.Tags = tagList
+	}
 }
 
 func oidcProvider(m ...oidcProviderModifier) *svcapitypes.OpenIDConnectProvider {

@@ -21,6 +21,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Tag represents user-provided metadata that can be associated
+// with an OpenIDConnectProvider. For more information about tagging,
+// see Tagging IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+// in the IAM User Guide.
+type Tag struct {
+
+        // The key name that can be used to look up or retrieve the associated value.
+        // For example, Department or Cost Center are common choices.
+        Key string `json:"key"`
+
+        // The value associated with this tag. For example, tags with a key name of
+        // Department could have values such as Human Resources, Accounting, and Support.
+        // Tags with a key name of Cost Center might have values that consist of the
+        // number associated with the different cost centers in your company. Typically,
+        // many resources have tags with the same key name but with different values.
+        //
+        // AWS always interprets the tag Value as a single string. If you need to store
+        // an array, you can store comma-separated values in the string. However, you
+        // must interpret the value in your code.
+        // +optional
+        Value string `json:"value,omitempty"`
+}
+
 // OpenIDConnectProviderParameters defines the desired state of OpenIDConnectProvider
 type OpenIDConnectProviderParameters struct {
 	// A list of client IDs (also known as audiences). When a mobile or web app
@@ -71,6 +94,13 @@ type OpenIDConnectProviderParameters struct {
 	// If you try to submit a URL that has already been used for an OpenID Connect
 	// provider in the AWS account, you will get an error.
 	URL string `json:"url"`
+
+	// Tags. For more information about
+	// tagging, see Tagging IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+	// in the IAM User Guide.
+	// +immutable
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // OpenIDConnectProviderSpec defines the desired state of OpenIDConnectProvider
