@@ -44,11 +44,6 @@ func GenerateDescribeServerInput(cr *svcapitypes.Server) *svcsdk.DescribeServerI
 func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 	cr := &svcapitypes.Server{}
 
-	if resp.Server.Certificate != nil {
-		cr.Spec.ForProvider.Certificate = resp.Server.Certificate
-	} else {
-		cr.Spec.ForProvider.Certificate = nil
-	}
 	if resp.Server.Domain != nil {
 		cr.Spec.ForProvider.Domain = resp.Server.Domain
 	} else {
@@ -75,11 +70,6 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 		cr.Spec.ForProvider.IdentityProviderType = resp.Server.IdentityProviderType
 	} else {
 		cr.Spec.ForProvider.IdentityProviderType = nil
-	}
-	if resp.Server.LoggingRole != nil {
-		cr.Spec.ForProvider.LoggingRole = resp.Server.LoggingRole
-	} else {
-		cr.Spec.ForProvider.LoggingRole = nil
 	}
 	if resp.Server.Protocols != nil {
 		f9 := []*string{}
@@ -126,9 +116,6 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput {
 	res := &svcsdk.CreateServerInput{}
 
-	if cr.Spec.ForProvider.Certificate != nil {
-		res.SetCertificate(*cr.Spec.ForProvider.Certificate)
-	}
 	if cr.Spec.ForProvider.Domain != nil {
 		res.SetDomain(*cr.Spec.ForProvider.Domain)
 	}
@@ -139,46 +126,43 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 		res.SetHostKey(*cr.Spec.ForProvider.HostKey)
 	}
 	if cr.Spec.ForProvider.IdentityProviderDetails != nil {
-		f4 := &svcsdk.IdentityProviderDetails{}
+		f3 := &svcsdk.IdentityProviderDetails{}
 		if cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole != nil {
-			f4.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
+			f3.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
 		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.URL != nil {
-			f4.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)
+			f3.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)
 		}
-		res.SetIdentityProviderDetails(f4)
+		res.SetIdentityProviderDetails(f3)
 	}
 	if cr.Spec.ForProvider.IdentityProviderType != nil {
 		res.SetIdentityProviderType(*cr.Spec.ForProvider.IdentityProviderType)
 	}
-	if cr.Spec.ForProvider.LoggingRole != nil {
-		res.SetLoggingRole(*cr.Spec.ForProvider.LoggingRole)
-	}
 	if cr.Spec.ForProvider.Protocols != nil {
-		f7 := []*string{}
-		for _, f7iter := range cr.Spec.ForProvider.Protocols {
-			var f7elem string
-			f7elem = *f7iter
-			f7 = append(f7, &f7elem)
+		f5 := []*string{}
+		for _, f5iter := range cr.Spec.ForProvider.Protocols {
+			var f5elem string
+			f5elem = *f5iter
+			f5 = append(f5, &f5elem)
 		}
-		res.SetProtocols(f7)
+		res.SetProtocols(f5)
 	}
 	if cr.Spec.ForProvider.SecurityPolicyName != nil {
 		res.SetSecurityPolicyName(*cr.Spec.ForProvider.SecurityPolicyName)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := []*svcsdk.Tag{}
-		for _, f9iter := range cr.Spec.ForProvider.Tags {
-			f9elem := &svcsdk.Tag{}
-			if f9iter.Key != nil {
-				f9elem.SetKey(*f9iter.Key)
+		f7 := []*svcsdk.Tag{}
+		for _, f7iter := range cr.Spec.ForProvider.Tags {
+			f7elem := &svcsdk.Tag{}
+			if f7iter.Key != nil {
+				f7elem.SetKey(*f7iter.Key)
 			}
-			if f9iter.Value != nil {
-				f9elem.SetValue(*f9iter.Value)
+			if f7iter.Value != nil {
+				f7elem.SetValue(*f7iter.Value)
 			}
-			f9 = append(f9, f9elem)
+			f7 = append(f7, f7elem)
 		}
-		res.SetTags(f9)
+		res.SetTags(f7)
 	}
 
 	return res
@@ -188,9 +172,6 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput {
 	res := &svcsdk.UpdateServerInput{}
 
-	if cr.Spec.ForProvider.Certificate != nil {
-		res.SetCertificate(*cr.Spec.ForProvider.Certificate)
-	}
 	if cr.Spec.ForProvider.EndpointType != nil {
 		res.SetEndpointType(*cr.Spec.ForProvider.EndpointType)
 	}
@@ -206,9 +187,6 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 			f4.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)
 		}
 		res.SetIdentityProviderDetails(f4)
-	}
-	if cr.Spec.ForProvider.LoggingRole != nil {
-		res.SetLoggingRole(*cr.Spec.ForProvider.LoggingRole)
 	}
 	if cr.Spec.ForProvider.Protocols != nil {
 		f6 := []*string{}

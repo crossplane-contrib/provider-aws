@@ -29,36 +29,6 @@ type ServerParameters struct {
 	// Region is which region the Server will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The Amazon Resource Name (ARN) of the AWS Certificate Manager (ACM) certificate.
-	// Required when Protocols is set to FTPS.
-	//
-	// To request a new public certificate, see Request a public certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html)
-	// in the AWS Certificate Manager User Guide.
-	//
-	// To import an existing certificate into ACM, see Importing certificates into
-	// ACM (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
-	// in the AWS Certificate Manager User Guide.
-	//
-	// To request a private certificate to use FTPS through private IP addresses,
-	// see Request a private certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-private.html)
-	// in the AWS Certificate Manager User Guide.
-	//
-	// Certificates with the following cryptographic algorithms and key sizes are
-	// supported:
-	//
-	//    * 2048-bit RSA (RSA_2048)
-	//
-	//    * 4096-bit RSA (RSA_4096)
-	//
-	//    * Elliptic Prime Curve 256 bit (EC_prime256v1)
-	//
-	//    * Elliptic Prime Curve 384 bit (EC_secp384r1)
-	//
-	//    * Elliptic Prime Curve 521 bit (EC_secp521r1)
-	//
-	// The certificate must be a valid SSL/TLS X.509 version 3 certificate with
-	// FQDN or IP address specified and information about the issuer.
-	Certificate *string `json:"certificate,omitempty"`
 
 	Domain *string `json:"domain,omitempty"`
 	// The type of VPC endpoint that you want your server to connect to. You can
@@ -94,9 +64,6 @@ type ServerParameters struct {
 	// Gateway endpoint URL to call for authentication using the IdentityProviderDetails
 	// parameter.
 	IdentityProviderType *string `json:"identityProviderType,omitempty"`
-	// Allows the service to write your users' activity to your Amazon CloudWatch
-	// logs for monitoring and auditing purposes.
-	LoggingRole *string `json:"loggingRole,omitempty"`
 	// Specifies the file transfer protocol or protocols over which your file transfer
 	// protocol client can connect to your server's endpoint. The available protocols
 	// are:

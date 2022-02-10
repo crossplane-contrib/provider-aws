@@ -110,6 +110,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateSer
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateServerInput) error {
+	obj.Certificate = cr.Spec.ForProvider.Certificate
+	obj.LoggingRole = cr.Spec.ForProvider.LoggingRole
 	obj.EndpointDetails = &svcsdk.EndpointDetails{
 		AddressAllocationIds: cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs,
 		SecurityGroupIds:     cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs,

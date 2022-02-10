@@ -24,6 +24,7 @@ type CustomUserParameters struct {
 	// A system-assigned unique identifier for a server instance. This is the specific
 	// server that you added your user to.
 	// +optional
+	// +crossplane:generate:reference:type=Server
 	ServerID *string `json:"serverID,omitempty"`
 
 	// ServerIDRef is a reference to an server instance.
@@ -41,6 +42,8 @@ type CustomUserParameters struct {
 	// that allows the server to access your resources when servicing your users'
 	// transfer requests.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	Role *string `json:"role,omitempty"`
 
 	// RoleRef is a reference to a IAM role.
@@ -61,6 +64,38 @@ type CustomServerParameters struct {
 	// groups are automatically assigned to your endpoint.
 	CustomEndpointDetails *CustomEndpointDetails `json:"endpointDetails,omitempty"`
 
+	// The Amazon Resource Name (ARN) of the AWS Certificate Manager (ACM) certificate.
+	// Required when Protocols is set to FTPS.
+	//
+	// To request a new public certificate, see Request a public certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html)
+	// in the AWS Certificate Manager User Guide.
+	//
+	// To import an existing certificate into ACM, see Importing certificates into
+	// ACM (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
+	// in the AWS Certificate Manager User Guide.
+	//
+	// To request a private certificate to use FTPS through private IP addresses,
+	// see Request a private certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-private.html)
+	// in the AWS Certificate Manager User Guide.
+	//
+	// Certificates with the following cryptographic algorithms and key sizes are
+	// supported:
+	//
+	//    * 2048-bit RSA (RSA_2048)
+	//
+	//    * 4096-bit RSA (RSA_4096)
+	//
+	//    * Elliptic Prime Curve 256 bit (EC_prime256v1)
+	//
+	//    * Elliptic Prime Curve 384 bit (EC_secp384r1)
+	//
+	//    * Elliptic Prime Curve 521 bit (EC_secp521r1)
+	//
+	// The certificate must be a valid SSL/TLS X.509 version 3 certificate with
+	// FQDN or IP address specified and information about the issuer.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/acm/v1beta1.Certificate
+	Certificate *string `json:"certificate,omitempty"`
+
 	// CertificateRef is a reference to a Certificate.
 	// +optional
 	CertificateRef *xpv1.Reference `json:"certificateRef,omitempty"`
@@ -68,6 +103,12 @@ type CustomServerParameters struct {
 	// CertificateSelector selects references to a Certificate.
 	// +optional
 	CertificateSelector *xpv1.Selector `json:"certificateSelector,omitempty"`
+
+	// Allows the service to write your users' activity to your Amazon CloudWatch
+	// logs for monitoring and auditing purposes.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	LoggingRole *string `json:"loggingRole,omitempty"`
 
 	// LoggingRoleRef is a reference to a IAM role.
 	// +optional
@@ -85,7 +126,20 @@ type CustomEndpointDetails struct {
 	//
 	// This property can only be set when EndpointType is set to VPC and it is only
 	// valid in the UpdateServer API.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Address
+	// +crossplane:generate:reference:refFieldName=AddressAllocationIDRefs
+	// +crossplane:generate:reference:selectorFieldName=AddressAllocationIDSelector
 	AddressAllocationIDs []*string `json:"addressAllocationIDs,omitempty"`
+
+	// AddressAllocationIDRefs is a list of references to AddressAllocationID used to set
+	// the AddressAllocationIDs.
+	// +optional
+	AddressAllocationIDRefs []xpv1.Reference `json:"addressAllocationIDRefs,omitempty"`
+
+	// AddressAllocationIDSelector selects references to AddressAllocationID used
+	// to set the AddressAllocationIDs.
+	// +optional
+	AddressAllocationIDSelector *xpv1.Selector `json:"addressAllocationIDSelector,omitempty"`
 
 	// A list of security groups IDs that are available to attach to your server's
 	// endpoint.
@@ -97,6 +151,9 @@ type CustomEndpointDetails struct {
 	// to VPC. To change security groups associated with your server's VPC endpoint
 	// after creation, use the Amazon EC2 ModifyVpcEndpoint (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyVpcEndpoint.html)
 	// API.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
@@ -113,6 +170,9 @@ type CustomEndpointDetails struct {
 	// VPC.
 	//
 	// This property can only be set when EndpointType is set to VPC.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
 	// SubnetIDsRefs is a list of references to Subnets used to set
@@ -130,11 +190,21 @@ type CustomEndpointDetails struct {
 	// This property can only be set when EndpointType is set to VPC_ENDPOINT.
 	//
 	// For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.VPCEndpoint
 	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
+
+	// VPCEndpointIDRef is a reference to a VPCEndpointID.
+	// +optional
+	VPCEndpointIDRef *xpv1.Reference `json:"vpcEndpointIDRef,omitempty"`
+
+	// VPCEndpointIDSelector selects references to a VPCEndpointID.
+	// +optional
+	VPCEndpointIDSelector *xpv1.Selector `json:"vpcEndpointIDSelector,omitempty"`
 
 	// The VPC ID of the VPC in which a server's endpoint will be hosted.
 	//
 	// This property can only be set when EndpointType is set to VPC.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
 	VPCID *string `json:"vpcID,omitempty"`
 
 	// VPCIDRef is a reference to a VPCID.
