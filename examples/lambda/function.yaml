@@ -1,6 +1,6 @@
 # You need to pull, tag & push hello-world:latest image to an ECR repository
 # in your account. It doesn't pull from public sources.
-apiVersion: lambda.aws.crossplane.io/v1alpha1
+apiVersion: lambda.aws.crossplane.io/v1beta1
 kind: Function
 metadata:
   name: test-function

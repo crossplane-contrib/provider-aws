@@ -1,4 +1,4 @@
-apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+apiVersion: apigatewayv2.aws.crossplane.io/v1beta1
 kind: VPCLink
 metadata:
   name: test-vpclink

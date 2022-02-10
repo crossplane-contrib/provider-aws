@@ -1,3 +1,9 @@
+resources:
+  VpcLink:
+    api_versions:
+      - name: v1beta1
+        served: true
+        storage: true
 ignore:
   field_paths:
     - CreateStageInput.ApiId
