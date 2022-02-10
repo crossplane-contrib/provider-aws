@@ -66,6 +66,8 @@ apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Role
 metadata:
   name: glue-role
+  labels:
+    glue-role: attach
 spec:
   forProvider:
     assumeRolePolicyDocument: |

@@ -28,14 +28,15 @@ type RolePolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
-	// +immutable
 	// +crossplane:generate:reference:type=Policy
 	// +crossplane:generate:reference:extractor=PolicyARN()
-	PolicyARN string `json:"policyArn,omitempty"`
+	// +crossplane:generate:reference:refFieldName=PolicyARNRefs
+	// +crossplane:generate:reference:selectorFieldName=PolicyARNSelector
+	PolicyARNs []string `json:"policyArns,omitempty"`
 
 	// PolicyARNRef references an Policy to retrieve its Policy ARN.
 	// +optional
-	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
+	PolicyARNRefs []xpv1.Reference `json:"policyArnRefs,omitempty"`
 
 	// PolicyARNSelector selects a reference to an Policy to retrieve its
 	// Policy ARN
@@ -65,9 +66,9 @@ type RolePolicyAttachmentSpec struct {
 
 // RolePolicyAttachmentExternalStatus keeps the state for the external resource
 type RolePolicyAttachmentExternalStatus struct {
-	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
-	// is not yet attached
-	AttachedPolicyARN string `json:"attachedPolicyArn"`
+	// AttachedPolicyARNs is the arns for the attached policies. If empty, the
+	// policies are not yet attached.
+	AttachedPolicyARNs []string `json:"attachedPolicyArns"`
 }
 
 // An RolePolicyAttachmentStatus represents the observed state of an
@@ -84,7 +85,6 @@ type RolePolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ROLENAME",type="string",JSONPath=".spec.forProvider.roleName"
-// +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

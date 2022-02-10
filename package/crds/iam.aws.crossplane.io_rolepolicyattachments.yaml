@@ -29,9 +29,6 @@ spec:
     - jsonPath: .spec.forProvider.roleName
       name: ROLENAME
       type: string
-    - jsonPath: .spec.forProvider.policyArn
-      name: POLICYARN
-      type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
@@ -70,20 +67,19 @@ spec:
                 description: RolePolicyAttachmentParameters define the desired state
                   of an AWS IAM Role policy attachment.
                 properties:
-                  policyArn:
-                    description: PolicyARN is the Amazon Resource Name (ARN) of the
-                      IAM policy you want to attach.
-                    type: string
-                  policyArnRef:
+                  policyArnRefs:
                     description: PolicyARNRef references an Policy to retrieve its
                       Policy ARN.
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   policyArnSelector:
                     description: PolicyARNSelector selects a reference to an Policy
                       to retrieve its Policy ARN
@@ -99,6 +95,12 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  policyArns:
+                    description: PolicyARN is the Amazon Resource Name (ARN) of the
+                      IAM policy you want to attach.
+                    items:
+                      type: string
+                    type: array
                   roleName:
                     description: RoleName presents the name of the IAM role.
                     type: string
@@ -179,12 +181,14 @@ spec:
                 description: RolePolicyAttachmentExternalStatus keeps the state for
                   the external resource
                 properties:
-                  attachedPolicyArn:
-                    description: AttachedPolicyARN is the arn for the attached policy.
-                      If nil, the policy is not yet attached
-                    type: string
+                  attachedPolicyArns:
+                    description: AttachedPolicyARNs is the arns for the attached policies.
+                      If empty, the policies are not yet attached.
+                    items:
+                      type: string
+                    type: array
                 required:
-                - attachedPolicyArn
+                - attachedPolicyArns
                 type: object
               conditions:
                 description: Conditions of the resource.

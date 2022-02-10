@@ -2,7 +2,7 @@
 apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Policy
 metadata:
-  name: somepolicy  
+  name: somepolicy
 spec:
   forProvider:
     name: external-name
@@ -25,9 +25,11 @@ apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Policy
 metadata:
   name: somepolicywithpath
+  labels:
+    glue-role: attach
 spec:
   forProvider:
-    name: external-name
+    name: external-name-with-path
     path: "/some-org-unit/"
     document: |
       {
@@ -48,6 +50,8 @@ apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Policy
 metadata:
   name: glue-policy
+  labels:
+    glue-role: attach
 spec:
   forProvider:
     name: glue-policy

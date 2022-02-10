@@ -61,11 +61,11 @@ func withRoleName(s *string) rolePolicyModifier {
 }
 
 func withSpecPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARN = *s }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARNs = []string{*s} }
 }
 
 func withStatusPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = *s }
+	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = []string{*s} }
 }
 
 func rolePolicy(m ...rolePolicyModifier) *v1beta1.RolePolicyAttachment {

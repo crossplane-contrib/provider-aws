@@ -80,10 +80,10 @@ metadata:
   name: glue-rolepolicyattachment
 spec:
   forProvider:
-    policyArnRef:
-      name: glue-policy
+    policyArnSelector:
+      matchLabels:
+        glue-role: attach
     roleNameRef:
       name: glue-role
   providerConfigRef:
     name: example
-  

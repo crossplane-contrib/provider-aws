@@ -21,7 +21,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -94,18 +93,25 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiamtypes.AttachedPolicy
-	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
-			attachedPolicyObject = &observed.AttachedPolicies[i]
-			break
+	var attachedPolicyARNs []string
+	for _, policy := range observed.AttachedPolicies {
+		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
+			if arn == aws.ToString(policy.PolicyArn) {
+				attachedPolicyARNs = append(attachedPolicyARNs, arn)
+			}
 		}
 	}
-	if attachedPolicyObject == nil {
+	if len(attachedPolicyARNs) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
+	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
+		return managed.ExternalObservation{
+			ResourceExists:   true,
+			ResourceUpToDate: false,
+		}, nil
+	}
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider.AttachedPolicyARN = awsclient.StringValue(attachedPolicyObject.PolicyArn)
+	cr.Status.AtProvider.AttachedPolicyARNs = attachedPolicyARNs
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
@@ -117,11 +123,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
-		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
+			PolicyArn: aws.String(policy),
+			RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+		})
+		if err != nil {
+			return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+		}
+	}
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -134,9 +146,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	_, err := e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
-		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	})
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
+
+	var err error
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err = e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
+			PolicyArn: aws.String(policy),
+			RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+		})
+		err = resource.Ignore(iam.IsErrorNotFound, err)
+	}
+	return awsclient.Wrap(err, errDetach)
 }
