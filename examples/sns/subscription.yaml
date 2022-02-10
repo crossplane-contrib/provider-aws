@@ -1,0 +1,17 @@
+apiVersion: sns.aws.crossplane.io/v1beta1
+kind: Subscription
+metadata:
+  name: sample-subscription
+spec:
+  forProvider:
+    region: us-east-1
+    protocol: email
+    # You can see mail sent to this address at the below URL, which is open to.
+    # The public. You'll need to confirm the subscription in order for the
+    # notification to become ready.
+    # https://www.mailinator.com/v4/public/inboxes.jsp?to=crossplane-test
+    endpoint: crossplane-test@mailinator.com
+    topicArnRef:
+      name: some-topic
+  providerConfigRef:
+    name: example

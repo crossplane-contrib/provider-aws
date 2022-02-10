@@ -54,7 +54,7 @@ import (
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
-	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
@@ -66,6 +66,7 @@ import (
 	secretsmanagerv1alpha1 "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
 	servicediscoveryv1alpha1 "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
 	sfnv1alpha1 "github.com/crossplane/provider-aws/apis/sfn/v1alpha1"
+	snsv1beta1 "github.com/crossplane/provider-aws/apis/sns/v1beta1"
 	sqsv1beta1 "github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	transferv1alpha1 "github.com/crossplane/provider-aws/apis/transfer/v1alpha1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
@@ -84,7 +85,7 @@ func init() {
 		elasticachev1alpha1.SchemeBuilder.AddToScheme,
 		elbv2v1alpha1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
-		notificationv1alpha3.SchemeBuilder.AddToScheme,
+		notificationv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1beta1.SchemeBuilder.AddToScheme,
@@ -125,6 +126,7 @@ func init() {
 		ramv1alpha1.SchemeBuilder.AddToScheme,
 		kinesisv1alpha1.SchemeBuilder.AddToScheme,
 		neptunev1alpha1.SchemeBuilder.AddToScheme,
+		snsv1beta1.SchemeBuilder.AddToScheme,
 	)
 }
 

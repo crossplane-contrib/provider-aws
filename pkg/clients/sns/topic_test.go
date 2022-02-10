@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -27,8 +29,6 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 )
 
 var (
@@ -87,10 +87,10 @@ func withAttrDisplayName(s *string) topicAttrModifier {
 }
 
 // topic Observation Modifier
-type topicObservationModifier func(*v1alpha1.SNSTopicObservation)
+type topicObservationModifier func(*v1beta1.TopicObservation)
 
-func topicObservation(m ...func(*v1alpha1.SNSTopicObservation)) *v1alpha1.SNSTopicObservation {
-	o := &v1alpha1.SNSTopicObservation{}
+func topicObservation(m ...func(*v1beta1.TopicObservation)) *v1beta1.TopicObservation {
+	o := &v1beta1.TopicObservation{}
 
 	for _, f := range m {
 		f(o)
@@ -100,19 +100,19 @@ func topicObservation(m ...func(*v1alpha1.SNSTopicObservation)) *v1alpha1.SNSTop
 }
 
 func withObservationOwner(s *string) topicObservationModifier {
-	return func(o *v1alpha1.SNSTopicObservation) {
+	return func(o *v1beta1.TopicObservation) {
 		o.Owner = s
 	}
 }
 
 func withObservationARN(s string) topicObservationModifier {
-	return func(o *v1alpha1.SNSTopicObservation) {
+	return func(o *v1beta1.TopicObservation) {
 		o.ARN = s
 	}
 }
 
 func withObservationSubs(confirmed, pending, deleted string) topicObservationModifier {
-	return func(o *v1alpha1.SNSTopicObservation) {
+	return func(o *v1beta1.TopicObservation) {
 		if s, err := strconv.ParseInt(confirmed, 10, 64); err == nil {
 			n := &s
 			o.ConfirmedSubscriptions = n
@@ -129,11 +129,11 @@ func withObservationSubs(confirmed, pending, deleted string) topicObservationMod
 }
 
 // topic Parameters
-func topicParams(m ...func(*v1alpha1.SNSTopicParameters)) *v1alpha1.SNSTopicParameters {
-	o := &v1alpha1.SNSTopicParameters{
+func topicParams(m ...func(*v1beta1.TopicParameters)) *v1beta1.TopicParameters {
+	o := &v1beta1.TopicParameters{
 		Name:        *aws.String(topicName),
 		DisplayName: aws.String(topicDisplayName),
-		Tags: []v1alpha1.Tag{
+		Tags: []v1beta1.Tag{
 			{Key: tagKey1, Value: &tagValue1},
 			{Key: tagKey2, Value: &tagValue2},
 		},
@@ -153,7 +153,7 @@ func topicParams(m ...func(*v1alpha1.SNSTopicParameters)) *v1alpha1.SNSTopicPara
 
 func TestGenerateCreateTopicInput(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.SNSTopicParameters
+		in  v1beta1.TopicParameters
 		out awssns.CreateTopicInput
 	}{
 		"FilledInput": {
@@ -181,7 +181,7 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 func TestGetChangedAttributes(t *testing.T) {
 
 	type args struct {
-		p    v1alpha1.SNSTopicParameters
+		p    v1beta1.TopicParameters
 		attr *map[string]string
 	}
 
@@ -191,7 +191,7 @@ func TestGetChangedAttributes(t *testing.T) {
 	}{
 		"NoChange": {
 			args: args{
-				p: v1alpha1.SNSTopicParameters{
+				p: v1beta1.TopicParameters{
 					Name:        topicName,
 					DisplayName: &topicDisplayName,
 				},
@@ -203,7 +203,7 @@ func TestGetChangedAttributes(t *testing.T) {
 		},
 		"Change": {
 			args: args{
-				p: v1alpha1.SNSTopicParameters{
+				p: v1beta1.TopicParameters{
 					Name:        topicName,
 					DisplayName: &topicDisplayName,
 				},
@@ -230,7 +230,7 @@ func TestGetChangedAttributes(t *testing.T) {
 func TestGenerateTopicObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  *map[string]string
-		out *v1alpha1.SNSTopicObservation
+		out *v1beta1.TopicObservation
 	}{
 		"AllFilled": {
 			in: topicAttributes(
@@ -275,7 +275,7 @@ func TestGenerateTopicObservation(t *testing.T) {
 
 func TestIsSNSTopicUpToDate(t *testing.T) {
 	type args struct {
-		p    v1alpha1.SNSTopicParameters
+		p    v1beta1.TopicParameters
 		attr *map[string]string
 	}
 
@@ -288,7 +288,7 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 				attr: topicAttributes(
 					withAttrDisplayName(&topicDisplayName),
 				),
-				p: v1alpha1.SNSTopicParameters{
+				p: v1beta1.TopicParameters{
 					DisplayName: &topicDisplayName,
 				},
 			},
@@ -299,7 +299,7 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 				attr: topicAttributes(
 					withAttrDisplayName(&topicDisplayName),
 				),
-				p: v1alpha1.SNSTopicParameters{},
+				p: v1beta1.TopicParameters{},
 			},
 			want: false,
 		},

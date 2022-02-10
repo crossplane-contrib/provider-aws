@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,9 +45,9 @@ type Tag struct {
 	Value *string `json:"value,omitempty"`
 }
 
-// SNSTopicParameters define the desired state of a AWS SNS Topic
-type SNSTopicParameters struct {
-	// Region is the region you'd like your SNSTopic to be created in.
+// TopicParameters define the desired state of a AWS SNS Topic
+type TopicParameters struct {
+	// Region is the region you'd like your Topic to be created in.
 	Region string `json:"region"`
 
 	// Name refers to the name of the AWS SNS Topic
@@ -85,14 +85,14 @@ type SNSTopicParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// SNSTopicSpec defined the desired state of a AWS SNS Topic
-type SNSTopicSpec struct {
+// TopicSpec defined the desired state of a AWS SNS Topic
+type TopicSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       SNSTopicParameters `json:"forProvider"`
+	ForProvider       TopicParameters `json:"forProvider"`
 }
 
-// SNSTopicObservation represents the observed state of a AWS SNS Topic
-type SNSTopicObservation struct {
+// TopicObservation represents the observed state of a AWS SNS Topic
+type TopicObservation struct {
 
 	// Owner refers to owner of SNS Topic
 	// +optional
@@ -113,15 +113,15 @@ type SNSTopicObservation struct {
 	ARN string `json:"arn"`
 }
 
-// SNSTopicStatus is the status of AWS SNS Topic
-type SNSTopicStatus struct {
+// TopicStatus is the status of AWS SNS Topic
+type TopicStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SNSTopicObservation `json:"atProvider,omitempty"`
+	AtProvider          TopicObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SNSTopic defines a managed resource that represents state of a AWS SNSTopic
+// Topic defines a managed resource that represents state of a AWS Topic
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="TOPIC-NAME",type="string",JSONPath=".spec.forProvider.name"
@@ -129,21 +129,19 @@ type SNSTopicStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-// +kubebuilder:deprecatedversion:warning="Please use v1beta1 version of SNS group."
-// Deprecated: Please use v1beta1 version of SNS group.
-type SNSTopic struct {
+type Topic struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SNSTopicSpec   `json:"spec"`
-	Status SNSTopicStatus `json:"status,omitempty"`
+	Spec   TopicSpec   `json:"spec"`
+	Status TopicStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SNSTopicList contains a list of SNSTopic
-type SNSTopicList struct {
+// TopicList contains a list of Topic
+type TopicList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []SNSTopic `json:"items"`
+	Items           []Topic `json:"items"`
 }

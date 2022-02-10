@@ -39,8 +39,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/sns"
-	snsclient "github.com/crossplane/provider-aws/pkg/clients/sns"
+	notclient "github.com/crossplane/provider-aws/pkg/clients/notification"
 )
 
 const (
@@ -63,7 +62,7 @@ func SetupSubscription(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 		For(&v1alpha1.SNSSubscription{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.SNSSubscriptionGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewSubscriptionClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: notclient.NewSubscriptionClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -74,7 +73,7 @@ func SetupSubscription(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(config aws.Config) sns.SubscriptionClient
+	newClientFn func(config aws.Config) notclient.SubscriptionClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -90,7 +89,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 }
 
 type external struct {
-	client snsclient.SubscriptionClient
+	client notclient.SubscriptionClient
 	kube   client.Client
 }
 
@@ -112,14 +111,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 	if err != nil {
 		return managed.ExternalObservation{},
-			awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
+			awsclient.Wrap(resource.Ignore(notclient.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
-	snsclient.LateInitializeSubscription(&cr.Spec.ForProvider, res.Attributes)
+	notclient.LateInitializeSubscription(&cr.Spec.ForProvider, res.Attributes)
 
 	// GenerateObservation for SNS Subscription
-	cr.Status.AtProvider = snsclient.GenerateSubscriptionObservation(res.Attributes)
+	cr.Status.AtProvider = notclient.GenerateSubscriptionObservation(res.Attributes)
 
 	// Set Status for SNS Subcription
 	switch *cr.Status.AtProvider.Status { //nolint:exhaustive
@@ -129,7 +128,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.Status.SetConditions(xpv1.Creating())
 	}
 
-	upToDate := snsclient.IsSNSSubscriptionAttributesUpToDate(cr.Spec.ForProvider, res.Attributes)
+	upToDate := notclient.IsSNSSubscriptionAttributesUpToDate(cr.Spec.ForProvider, res.Attributes)
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
@@ -143,7 +142,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	input := snsclient.GenerateSubscribeInput(&cr.Spec.ForProvider)
+	input := notclient.GenerateSubscribeInput(&cr.Spec.ForProvider)
 	res, err := e.client.Subscribe(ctx, input)
 
 	if err != nil {
@@ -168,7 +167,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 	// Update Subscription
-	attrs := snsclient.GetChangedSubAttributes(cr.Spec.ForProvider, resp.Attributes)
+	attrs := notclient.GetChangedSubAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
 		_, err := e.client.SetSubscriptionAttributes(ctx, &awssns.SetSubscriptionAttributesInput{
 			AttributeName:   aws.String(k),
@@ -196,5 +195,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	_, err := e.client.Unsubscribe(ctx, &awssns.UnsubscribeInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
 	})
-	return awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(notclient.IsSubscriptionNotFound, err), errDelete)
 }

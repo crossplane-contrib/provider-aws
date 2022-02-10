@@ -37,11 +37,14 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    deprecated: true
+    deprecationWarning: Please use v1beta1 version of SNS group.
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: SNSSubscription defines a managed resource that represents state
-          of a AWS SNS Subscription
+        description: 'SNSSubscription defines a managed resource that represents state
+          of a AWS SNS Subscription Deprecated: Please use v1beta1 version of SNS
+          group.'
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2022 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package snstopic
+package topic
 
 import (
 	"context"
@@ -37,32 +37,32 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	notclient "github.com/crossplane/provider-aws/pkg/clients/notification"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
+	snsclient "github.com/crossplane/provider-aws/pkg/clients/sns"
 )
 
 const (
-	errUnexpectedObject = "the managed resource is not a SNSTopic resource"
+	errUnexpectedObject = "the managed resource is not a Topic resource"
 	errGetTopicAttr     = "failed to get SNS Topic Attribute"
 	errCreate           = "failed to create the SNS Topic"
 	errDelete           = "failed to delete the SNS Topic"
 	errUpdate           = "failed to update the SNS Topic"
 )
 
-// SetupSNSTopic adds a controller that reconciles SNSTopic.
+// SetupSNSTopic adds a controller that reconciles Topic.
 func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.SNSTopicGroupKind)
+	name := managed.ControllerName(v1beta1.TopicGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewController(rl),
 		}).
-		For(&v1alpha1.SNSTopic{}).
+		For(&v1beta1.Topic{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.SNSTopicGroupVersionKind),
+			resource.ManagedKind(v1beta1.TopicGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewTopicClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
@@ -78,7 +78,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.SNSTopic)
+	cr, ok := mg.(*v1beta1.Topic)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -90,12 +90,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 }
 
 type external struct {
-	client notclient.TopicClient
+	client snsclient.TopicClient
 	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*v1beta1.Topic)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -114,28 +114,28 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
-	notclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
+	snsclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
 
 	cr.SetConditions(xpv1.Available())
 
 	// GenerateObservation for SNS Topic
-	cr.Status.AtProvider = notclient.GenerateTopicObservation(res.Attributes)
+	cr.Status.AtProvider = snsclient.GenerateTopicObservation(res.Attributes)
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        notclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes),
+		ResourceUpToDate:        snsclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes),
 		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*v1beta1.Topic)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	resp, err := e.client.CreateTopic(ctx, notclient.GenerateCreateTopicInput(&cr.Spec.ForProvider))
+	resp, err := e.client.CreateTopic(ctx, snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -145,7 +145,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*v1beta1.Topic)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -159,7 +159,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Update Topic Attributes
-	attrs := notclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
+	attrs := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
 		_, err = e.client.SetTopicAttributes(ctx, &awssns.SetTopicAttributesInput{
 			AttributeName:  aws.String(k),
@@ -172,7 +172,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*v1beta1.Topic)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
