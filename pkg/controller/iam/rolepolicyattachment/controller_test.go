@@ -38,9 +38,10 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpectedItem resource.Managed
-	roleName       = "some arbitrary name"
-	specPolicyArn  = "some arbitrary arn"
+	unexpectedItem   resource.Managed
+	roleName         = "some arbitrary name"
+	specPolicyArn    = "some arbitrary arn"
+	specPolicyArnTwo = "some other arbitrary arn"
 
 	errBoom = errors.New("boom")
 )
@@ -60,12 +61,20 @@ func withRoleName(s *string) rolePolicyModifier {
 	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.RoleName = *s }
 }
 
-func withSpecPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARNs = []string{*s} }
+func withSpecPolicyArns(s ...*string) rolePolicyModifier {
+	var arns []string
+	for _, i := range s {
+		arns = append(arns, *i)
+	}
+	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARNs = arns }
 }
 
-func withStatusPolicyArn(s *string) rolePolicyModifier {
-	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = []string{*s} }
+func withStatusPolicyArns(s ...*string) rolePolicyModifier {
+	var arns []string
+	for _, i := range s {
+		arns = append(arns, *i)
+	}
+	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = arns }
 }
 
 func rolePolicy(m ...rolePolicyModifier) *v1beta1.RolePolicyAttachment {
@@ -101,12 +110,12 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: rolePolicy(withSpecPolicyArn(&specPolicyArn)),
+				cr: rolePolicy(withSpecPolicyArns(&specPolicyArn)),
 			},
 			want: want{
-				cr: rolePolicy(withSpecPolicyArn(&specPolicyArn),
+				cr: rolePolicy(withSpecPolicyArns(&specPolicyArn),
 					withConditions(xpv1.Available()),
-					withStatusPolicyArn(&specPolicyArn)),
+					withStatusPolicyArns(&specPolicyArn)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -189,12 +198,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -214,11 +223,11 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -260,17 +269,116 @@ func TestUpdate(t *testing.T) {
 					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
 						return &awsiam.AttachRolePolicyOutput{}, nil
 					},
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
+								},
+							},
+						}, nil
+					},
 					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
 						return &awsiam.DetachRolePolicyOutput{}, nil
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+			},
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				cr:  unexpectedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ObserveClientError": {
+			args: args{
+				iam: &fake.MockRolePolicyAttachmentClient{
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return &awsiam.AttachRolePolicyOutput{}, nil
+					},
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return nil, errBoom
+					},
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return &awsiam.DetachRolePolicyOutput{}, nil
+					},
+				},
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn)),
+			},
+			want: want{
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn)),
+				err: awsclient.Wrap(errBoom, errGet),
+			},
+		},
+		"AttachClientError": {
+			args: args{
+				iam: &fake.MockRolePolicyAttachmentClient{
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return nil, errBoom
+					},
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
+								},
+							},
+						}, nil
+					},
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return &awsiam.DetachRolePolicyOutput{}, nil
+					},
+				},
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+			},
+			want: want{
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+				err: awsclient.Wrap(errBoom, errAttach),
+			},
+		},
+		"DetachClientError": {
+			args: args{
+				iam: &fake.MockRolePolicyAttachmentClient{
+					MockAttachRolePolicy: func(ctx context.Context, input *awsiam.AttachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachRolePolicyOutput, error) {
+						return &awsiam.AttachRolePolicyOutput{}, nil
+					},
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
+								},
+								{
+									PolicyArn: &specPolicyArnTwo,
+								},
+							},
+						}, nil
+					},
+					MockDetachRolePolicy: func(ctx context.Context, input *awsiam.DetachRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachRolePolicyOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn)),
+			},
+			want: want{
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(&specPolicyArn)),
+				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
 	}
@@ -312,12 +420,12 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -337,11 +445,11 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn)),
+					withSpecPolicyArns(&specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},

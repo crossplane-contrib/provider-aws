@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -80,6 +81,30 @@ type external struct {
 	kube   client.Client
 }
 
+// Return an array of policy ARNs from attached policies
+func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
+	var parns []string
+	for _, tp := range p {
+		parns = append(parns, aws.ToString(tp.PolicyArn))
+	}
+	return parns
+}
+
+func (e *external) isUpToDate(cr *v1beta1.RolePolicyAttachment, resp *awsiam.ListAttachedRolePoliciesOutput) bool {
+	var attachedPolicyARNs []string
+	for _, policy := range resp.AttachedPolicies {
+		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
+			if arn == aws.ToString(policy.PolicyArn) {
+				attachedPolicyARNs = append(attachedPolicyARNs, arn)
+			}
+		}
+	}
+	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
+		return false
+	}
+	return true
+}
+
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1beta1.RolePolicyAttachment)
 	if !ok {
@@ -92,29 +117,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
-
-	var attachedPolicyARNs []string
-	for _, policy := range observed.AttachedPolicies {
-		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
-			if arn == aws.ToString(policy.PolicyArn) {
-				attachedPolicyARNs = append(attachedPolicyARNs, arn)
-			}
-		}
-	}
-	if len(attachedPolicyARNs) == 0 {
+	if len(observed.AttachedPolicies) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
-	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
-		return managed.ExternalObservation{
-			ResourceExists:   true,
-			ResourceUpToDate: false,
-		}, nil
-	}
+
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider.AttachedPolicyARNs = attachedPolicyARNs
+	cr.Status.AtProvider.AttachedPolicyARNs = getPolicyARNs(observed.AttachedPolicies)
+
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: true,
+		ResourceUpToDate: e.isUpToDate(cr, observed),
 	}, nil
 }
 
@@ -136,8 +148,54 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
-	// PolicyARN is the only distinguishing field and on update to that, new policy is attached
+// Return ARNs from target that are not contained in match
+func unmatchedPolicyARNs(target []string, match []string) []string {
+	var unmatchedPolicyARNs []string
+	for _, t := range target {
+		for _, m := range match {
+			if t == m {
+				break
+			}
+			unmatchedPolicyARNs = append(unmatchedPolicyARNs, t)
+		}
+	}
+	return unmatchedPolicyARNs
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1beta1.RolePolicyAttachment)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	observed, err := e.client.ListAttachedRolePolicies(ctx, &awsiam.ListAttachedRolePoliciesInput{
+		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
+	})
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
+	}
+
+	needsAttachPolicyARNs := unmatchedPolicyARNs(cr.Spec.ForProvider.PolicyARNs, getPolicyARNs(observed.AttachedPolicies))
+	for _, policy := range needsAttachPolicyARNs {
+		_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
+			PolicyArn: aws.String(policy),
+			RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+		})
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAttach)
+		}
+	}
+
+	needsDeletePolicyARNs := unmatchedPolicyARNs(getPolicyARNs(observed.AttachedPolicies), cr.Spec.ForProvider.PolicyARNs)
+	for _, policy := range needsDeletePolicyARNs {
+		_, err = e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
+			PolicyArn: aws.String(policy),
+			RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+		})
+		if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDetach)
+		}
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
