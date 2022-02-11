@@ -6,8 +6,8 @@ metadata:
 spec:
   forProvider:
     # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
-    policyArnRef:
-      name: somepolicy
+    policyArnRefs:
+      - name: somepolicy
     userNameRef:
       name: someuser
   providerConfigRef:

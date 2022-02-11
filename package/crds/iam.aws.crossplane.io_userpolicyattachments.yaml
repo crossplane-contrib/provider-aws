@@ -23,9 +23,6 @@ spec:
     - jsonPath: .spec.forProvider.userName
       name: USERNAME
       type: string
-    - jsonPath: .spec.forProvider.policyArn
-      name: POLICYARN
-      type: string
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
       type: string
@@ -70,20 +67,19 @@ spec:
                 description: UserPolicyAttachmentParameters define the desired state
                   of an AWS UserPolicyAttachment.
                 properties:
-                  policyArn:
-                    description: PolicyARN is the Amazon Resource Name (ARN) of the
-                      IAM policy you want to attach.
-                    type: string
-                  policyArnRef:
+                  policyArnRefs:
                     description: PolicyARNRef references an Policy to retrieve its
                       Policy ARN.
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   policyArnSelector:
                     description: PolicyARNSelector selects a reference to an Policy
                       to retrieve its Policy ARN
@@ -99,6 +95,12 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  policyArns:
+                    description: PolicyARN is the Amazon Resource Name (ARN) of the
+                      IAM policy you want to attach.
+                    items:
+                      type: string
+                    type: array
                   userName:
                     description: UserName presents the name of the User.
                     type: string
@@ -180,12 +182,14 @@ spec:
                 description: UserPolicyAttachmentObservation keeps the state for the
                   external resource
                 properties:
-                  attachedPolicyArn:
-                    description: AttachedPolicyARN is the arn for the attached policy.
-                      If nil, the policy is not yet attached
-                    type: string
+                  attachedPolicyArns:
+                    description: AttachedPolicyARN are the arns for the attached policies.
+                      If empty, the policies are not yet attached
+                    items:
+                      type: string
+                    type: array
                 required:
-                - attachedPolicyArn
+                - attachedPolicyArns
                 type: object
               conditions:
                 description: Conditions of the resource.

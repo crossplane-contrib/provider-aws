@@ -40,6 +40,7 @@ import (
 var (
 	unexpectedItem resource.Managed
 	policyArn      = "some arn"
+	policyArnTwo   = "some other arn"
 	userName       = "some user"
 
 	errBoom = errors.New("boom")
@@ -60,12 +61,20 @@ func withUserName(s string) userPolicyModifier {
 	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
 }
 
-func withSpecPolicyArn(s string) userPolicyModifier {
-	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+func withSpecPolicyArns(s ...string) userPolicyModifier {
+	var arns []string
+	for _, i := range s {
+		arns = append(arns, i)
+	}
+	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARNs = arns }
 }
 
-func withStatusPolicyArn(s string) userPolicyModifier {
-	return func(r *v1beta1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+func withStatusPolicyArns(s ...string) userPolicyModifier {
+	var arns []string
+	for _, i := range s {
+		arns = append(arns, i)
+	}
+	return func(r *v1beta1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = arns }
 }
 
 func userPolicy(m ...userPolicyModifier) *v1beta1.UserPolicyAttachment {
@@ -102,13 +111,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 			want: want{
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn),
+					withSpecPolicyArns(policyArn),
 					withConditions(xpv1.Available()),
-					withStatusPolicyArn(policyArn)),
+					withStatusPolicyArns(policyArn)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -131,10 +140,10 @@ func TestObserve(t *testing.T) {
 						return &awsiam.ListAttachedUserPoliciesOutput{}, nil
 					},
 				},
-				cr: userPolicy(withSpecPolicyArn(policyArn)),
+				cr: userPolicy(withSpecPolicyArns(policyArn)),
 			},
 			want: want{
-				cr: userPolicy(withSpecPolicyArn(policyArn)),
+				cr: userPolicy(withSpecPolicyArns(policyArn)),
 			},
 		},
 		"ClientError": {
@@ -191,12 +200,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 			want: want{
 				cr: userPolicy(
 					withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 		},
 		"InValidInput": {
@@ -216,11 +225,11 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 			want: want{
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -230,6 +239,156 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			e := &external{client: tc.iam}
 			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"VaildInput": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockAttachUserPolicy: func(ctx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return &awsiam.AttachUserPolicyOutput{}, nil
+					},
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+							},
+						}, nil
+					},
+					MockDetachUserPolicy: func(ctx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return &awsiam.DetachUserPolicyOutput{}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+			},
+			want: want{
+				cr: userPolicy(
+					withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+			},
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				cr:  unexpectedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ObserveClientError": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockAttachUserPolicy: func(ctx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return &awsiam.AttachUserPolicyOutput{}, nil
+					},
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return nil, errBoom
+					},
+					MockDetachUserPolicy: func(ctx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return &awsiam.DetachUserPolicyOutput{}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn)),
+			},
+			want: want{
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn)),
+				err: awsclient.Wrap(errBoom, errGet),
+			},
+		},
+		"AttachClientError": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockAttachUserPolicy: func(ctx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return nil, errBoom
+					},
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+							},
+						}, nil
+					},
+					MockDetachUserPolicy: func(ctx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return &awsiam.DetachUserPolicyOutput{}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+			},
+			want: want{
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+				err: awsclient.Wrap(errBoom, errAttach),
+			},
+		},
+		"DetachClientError": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockAttachUserPolicy: func(ctx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return &awsiam.AttachUserPolicyOutput{}, nil
+					},
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+								{
+									PolicyArn: &policyArnTwo,
+								},
+							},
+						}, nil
+					},
+					MockDetachUserPolicy: func(ctx context.Context, input *awsiam.DetachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.DetachUserPolicyOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn)),
+			},
+			want: want{
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn)),
+				err: awsclient.Wrap(errBoom, errDetach),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -263,12 +422,12 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 			want: want{
 				cr: userPolicy(
 					withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 		},
 		"InValidInput": {
@@ -288,11 +447,11 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 			},
 			want: want{
 				cr: userPolicy(withUserName(userName),
-					withSpecPolicyArn(policyArn)),
+					withSpecPolicyArns(policyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},

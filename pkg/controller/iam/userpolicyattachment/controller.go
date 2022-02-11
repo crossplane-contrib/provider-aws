@@ -82,6 +82,30 @@ type external struct {
 	kube   client.Client
 }
 
+// Return an array of policy ARNs from attached policies
+func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
+	var parns []string
+	for _, tp := range p {
+		parns = append(parns, aws.ToString(tp.PolicyArn))
+	}
+	return parns
+}
+
+func (e *external) isUpToDate(cr *v1beta1.UserPolicyAttachment, resp *awsiam.ListAttachedUserPoliciesOutput) bool {
+	var attachedPolicyARNs []string
+	for _, policy := range resp.AttachedPolicies {
+		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
+			if arn == aws.ToString(policy.PolicyArn) {
+				attachedPolicyARNs = append(attachedPolicyARNs, arn)
+			}
+		}
+	}
+	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
+		return false
+	}
+	return true
+}
+
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1beta1.UserPolicyAttachment)
 	if !ok {
@@ -95,26 +119,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiamtypes.AttachedPolicy
-	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
-			attachedPolicyObject = &observed.AttachedPolicies[i]
-			break
-		}
+	if len(observed.AttachedPolicies) == 0 {
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	if attachedPolicyObject == nil {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider = v1beta1.UserPolicyAttachmentObservation{
-		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
-	}
+	cr.Status.AtProvider.AttachedPolicyARNs = getPolicyARNs(observed.AttachedPolicies)
+
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: true,
+		ResourceUpToDate: e.isUpToDate(cr, observed),
 	}, nil
 }
 
@@ -124,18 +138,66 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
-		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	})
-
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
+			PolicyArn: aws.String(policy),
+			UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		})
+		if err != nil {
+			return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+		}
+	}
+	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
-	// Updating any field will create a new User-Policy attachment in AWS, which will be
-	// irrelevant/out-of-sync to the original defined attachment.
-	// It is encouraged to instead create a new UserPolicyAttachment resource.
+// Return ARNs from target that are not contained in match
+func unmatchedPolicyARNs(target []string, match []string) []string {
+	var unmatchedPolicyARNs []string
+	for _, t := range target {
+		for _, m := range match {
+			if t == m {
+				break
+			}
+			unmatchedPolicyARNs = append(unmatchedPolicyARNs, t)
+		}
+	}
+	return unmatchedPolicyARNs
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1beta1.UserPolicyAttachment)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	observed, err := e.client.ListAttachedUserPolicies(ctx, &awsiam.ListAttachedUserPoliciesInput{
+		UserName: aws.String(cr.Spec.ForProvider.UserName),
+	})
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
+	}
+
+	needsAttachPolicyARNs := unmatchedPolicyARNs(cr.Spec.ForProvider.PolicyARNs, getPolicyARNs(observed.AttachedPolicies))
+	for _, policy := range needsAttachPolicyARNs {
+		_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
+			PolicyArn: aws.String(policy),
+			UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		})
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAttach)
+		}
+	}
+
+	needsDeletePolicyARNs := unmatchedPolicyARNs(getPolicyARNs(observed.AttachedPolicies), cr.Spec.ForProvider.PolicyARNs)
+	for _, policy := range needsDeletePolicyARNs {
+		_, err = e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
+			PolicyArn: aws.String(policy),
+			UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		})
+		if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDetach)
+		}
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -145,10 +207,13 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
-		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	})
-
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
+	var err error
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err = e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
+			PolicyArn: aws.String(policy),
+			UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		})
+		err = resource.Ignore(iam.IsErrorNotFound, err)
+	}
+	return awsclient.Wrap(err, errDetach)
 }
