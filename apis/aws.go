@@ -24,7 +24,8 @@ import (
 	acmv1beta1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	acmpcav1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
-	apigatewayv2 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	apigatewayv2v1alpha1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	apigatewayv2v1beta1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1beta1"
 	athenav1alpha1 "github.com/crossplane/provider-aws/apis/athena/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
@@ -52,6 +53,7 @@ import (
 	kinesisv1alpha1 "github.com/crossplane/provider-aws/apis/kinesis/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
+	lambdav1beta1 "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -64,6 +66,7 @@ import (
 	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	secretsmanagerv1alpha1 "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
+	secretsmanagerv1beta1 "github.com/crossplane/provider-aws/apis/secretsmanager/v1beta1"
 	servicediscoveryv1alpha1 "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
 	sfnv1alpha1 "github.com/crossplane/provider-aws/apis/sfn/v1alpha1"
 	snsv1beta1 "github.com/crossplane/provider-aws/apis/sns/v1beta1"
@@ -94,6 +97,7 @@ func init() {
 		s3v1alpha2.SchemeBuilder.AddToScheme,
 		s3v1beta1.SchemeBuilder.AddToScheme,
 		secretsmanagerv1alpha1.SchemeBuilder.AddToScheme,
+		secretsmanagerv1beta1.SchemeBuilder.AddToScheme,
 		servicediscoveryv1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1beta1.SchemeBuilder.AddToScheme,
@@ -104,7 +108,8 @@ func init() {
 		eksmanualv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1beta1.SchemeBuilder.AddToScheme,
-		apigatewayv2.SchemeBuilder.AddToScheme,
+		apigatewayv2v1alpha1.SchemeBuilder.AddToScheme,
+		apigatewayv2v1beta1.SchemeBuilder.AddToScheme,
 		sfnv1alpha1.SchemeBuilder.AddToScheme,
 		dynamodbv1alpha1.SchemeBuilder.AddToScheme,
 		kmsv1alpha1.SchemeBuilder.AddToScheme,
@@ -113,6 +118,7 @@ func init() {
 		ec2manualv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1alpha1.SchemeBuilder.AddToScheme,
+		lambdav1beta1.SchemeBuilder.AddToScheme,
 		cloudfrontv1alpha1.SchemeBuilder.AddToScheme,
 		route53resolverv1alpha1.SchemeBuilder.AddToScheme,
 		route53resolvermanualv1alpha1.SchemeBuilder.AddToScheme,
