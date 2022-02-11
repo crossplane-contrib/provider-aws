@@ -66,7 +66,7 @@ type RolePolicyAttachmentSpec struct {
 
 // RolePolicyAttachmentExternalStatus keeps the state for the external resource
 type RolePolicyAttachmentExternalStatus struct {
-	// AttachedPolicyARNs is the arns for the attached policies. If empty, the
+	// AttachedPolicyARNs are the arns for the attached policies. If empty, the
 	// policies are not yet attached.
 	AttachedPolicyARNs []string `json:"attachedPolicyArns"`
 }

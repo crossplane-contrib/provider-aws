@@ -18,7 +18,6 @@ package grouppolicyattachment
 
 import (
 	"context"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -30,7 +29,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -85,51 +83,52 @@ type external struct {
 	kube   client.Client
 }
 
+// Return an array of policy ARNs from attached policies
+func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
+	var parns []string
+	for _, tp := range p {
+		parns = append(parns, aws.ToString(tp.PolicyArn))
+	}
+	return parns
+}
+
+func (e *external) isUpToDate(cr *v1beta1.GroupPolicyAttachment, resp *awsiam.ListAttachedGroupPoliciesOutput) bool {
+	var attachedPolicyARNs []string
+	for _, policy := range resp.AttachedPolicies {
+		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
+			if arn == aws.ToString(policy.PolicyArn) {
+				attachedPolicyARNs = append(attachedPolicyARNs, arn)
+			}
+		}
+	}
+	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
+		return false
+	}
+	return true
+}
+
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1beta1.GroupPolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{ResourceExists: false}, nil
-	}
-	// ARN can have its own slashes, we'll use the first part and assume the rest
-	// is ARN.
-	nn := strings.SplitN(meta.GetExternalName(cr), "/", 2)
-	if len(nn) != 2 {
-		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <group-name>/<policy-arn>")
-	}
-	groupName, policyARN := nn[0], nn[1]
-
 	observed, err := e.client.ListAttachedGroupPolicies(ctx, &awsiam.ListAttachedGroupPoliciesInput{
-		GroupName: &groupName,
+		GroupName: aws.String(cr.Spec.ForProvider.GroupName),
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiamtypes.AttachedPolicy
-	for i, policy := range observed.AttachedPolicies {
-		if policyARN == aws.ToString(policy.PolicyArn) {
-			attachedPolicyObject = &observed.AttachedPolicies[i]
-			break
-		}
-	}
-
-	if attachedPolicyObject == nil {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+	if len(observed.AttachedPolicies) == 0 {
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider = v1beta1.GroupPolicyAttachmentObservation{
-		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
-	}
+	cr.Status.AtProvider.AttachedPolicyARNs = getPolicyARNs(observed.AttachedPolicies)
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: true,
+		ResourceUpToDate: e.isUpToDate(cr, observed),
 	}, nil
 }
 
@@ -139,26 +138,66 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.AttachGroupPolicy(ctx, &awsiam.AttachGroupPolicyInput{
-		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
-		GroupName: &cr.Spec.ForProvider.GroupName,
-	})
-	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err := e.client.AttachGroupPolicy(ctx, &awsiam.AttachGroupPolicyInput{
+			PolicyArn: &policy,
+			GroupName: &cr.Spec.ForProvider.GroupName,
+		})
+		if err != nil {
+			return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+		}
 	}
-
-	// This resource is interesting in that it's a binding without its own
-	// external identity. We therefore derive an external name from the
-	// names of the group and user that are bound.
-	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.PolicyARN)
-
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
-	// Updating any field will create a new Group-Policy attachment in AWS, which will be
-	// irrelevant/out-of-sync to the original defined attachment.
-	// It is encouraged to instead create a new GroupPolicyAttachment resource.
+// Return ARNs from target that are not contained in match
+func unmatchedPolicyARNs(target []string, match []string) []string {
+	var unmatchedPolicyARNs []string
+	for _, t := range target {
+		for _, m := range match {
+			if t == m {
+				break
+			}
+			unmatchedPolicyARNs = append(unmatchedPolicyARNs, t)
+		}
+	}
+	return unmatchedPolicyARNs
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1beta1.GroupPolicyAttachment)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	observed, err := e.client.ListAttachedGroupPolicies(ctx, &awsiam.ListAttachedGroupPoliciesInput{
+		GroupName: aws.String(cr.Spec.ForProvider.GroupName),
+	})
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
+	}
+
+	needsAttachPolicyARNs := unmatchedPolicyARNs(cr.Spec.ForProvider.PolicyARNs, getPolicyARNs(observed.AttachedPolicies))
+	for _, policy := range needsAttachPolicyARNs {
+		_, err := e.client.AttachGroupPolicy(ctx, &awsiam.AttachGroupPolicyInput{
+			PolicyArn: aws.String(policy),
+			GroupName: aws.String(cr.Spec.ForProvider.GroupName),
+		})
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAttach)
+		}
+	}
+
+	needsDeletePolicyARNs := unmatchedPolicyARNs(getPolicyARNs(observed.AttachedPolicies), cr.Spec.ForProvider.PolicyARNs)
+	for _, policy := range needsDeletePolicyARNs {
+		_, err = e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
+			PolicyArn: aws.String(policy),
+			GroupName: aws.String(cr.Spec.ForProvider.GroupName),
+		})
+		if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDetach)
+		}
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -170,10 +209,13 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
-		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
-		GroupName: &cr.Spec.ForProvider.GroupName,
-	})
+	var err error
+	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
+		_, err = e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
+			PolicyArn: &policy,
+			GroupName: &cr.Spec.ForProvider.GroupName,
+		})
+	}
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

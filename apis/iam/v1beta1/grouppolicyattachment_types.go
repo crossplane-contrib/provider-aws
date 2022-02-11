@@ -27,14 +27,15 @@ type GroupPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
-	// +immutable
 	// +crossplane:generate:reference:type=Policy
 	// +crossplane:generate:reference:extractor=PolicyARN()
-	PolicyARN string `json:"policyArn,omitempty"`
+	// +crossplane:generate:reference:refFieldName=PolicyARNRefs
+	// +crossplane:generate:reference:selectorFieldName=PolicyARNSelector
+	PolicyARNs []string `json:"policyArns,omitempty"`
 
 	// PolicyARNRef references an Policy to retrieve its Policy ARN.
 	// +optional
-	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
+	PolicyARNRefs []xpv1.Reference `json:"policyArnRefs,omitempty"`
 
 	// PolicyARNSelector selects a reference to an Policy to retrieve its
 	// Policy ARN
@@ -64,9 +65,9 @@ type GroupPolicyAttachmentSpec struct {
 
 // GroupPolicyAttachmentObservation keeps the state for the external resource
 type GroupPolicyAttachmentObservation struct {
-	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
-	// is not yet attached
-	AttachedPolicyARN string `json:"attachedPolicyArn"`
+	// AttachedPolicyARNs are the arns for the attached policies. If empty, the
+	// policies are not yet attached
+	AttachedPolicyARNs []string `json:"attachedPolicyArns"`
 }
 
 // An GroupPolicyAttachmentStatus represents the observed state of an
@@ -81,7 +82,6 @@ type GroupPolicyAttachmentStatus struct {
 // An GroupPolicyAttachment is a managed resource that represents an AWS IAM
 // Group policy attachment.
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
-// +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

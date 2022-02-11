@@ -182,8 +182,8 @@ spec:
                   the external resource
                 properties:
                   attachedPolicyArns:
-                    description: AttachedPolicyARNs is the arns for the attached policies.
-                      If empty, the policies are not yet attached.
+                    description: AttachedPolicyARNs are the arns for the attached
+                      policies. If empty, the policies are not yet attached.
                     items:
                       type: string
                     type: array

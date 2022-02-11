@@ -5,8 +5,8 @@ metadata:
   name: sample-grouppolicyattachment
 spec:
   forProvider:
-    policyArnRef:
-      name: somepolicy
+    policyArnRefs:
+      - name: somepolicy
     groupNameRef:
       name: somegroup
   providerConfigRef:
