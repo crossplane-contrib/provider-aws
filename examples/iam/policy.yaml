@@ -27,6 +27,7 @@ metadata:
   name: somepolicywithpath
   labels:
     glue-role: attach
+    some-group: attach
 spec:
   forProvider:
     name: external-name-with-path
@@ -52,6 +53,7 @@ metadata:
   name: glue-policy
   labels:
     glue-role: attach
+    some-group: attach
 spec:
   forProvider:
     name: glue-policy

@@ -5,8 +5,8 @@ metadata:
   name: sample-rolepolicyattachment
 spec:
   forProvider:
-    policyArnRef:
-      name: somepolicy
+    policyArnRefs:
+      - name: somepolicy
     roleNameRef:
       name: somerole
   providerConfigRef:
@@ -18,7 +18,8 @@ metadata:
   name: sample-s3-replication-policy
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonS3FullAccess
+    policyArns:
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
     roleNameRef:
       name: somerole
   providerConfigRef:
@@ -31,7 +32,8 @@ metadata:
   name: sample-rolemanagedpolicyattachment
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+    policyArns:
+      - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
     roleNameRef:
       name: somerole
   providerConfigRef:
@@ -44,7 +46,8 @@ metadata:
   name: sample-noderolemanagedpolicyattachment1
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+    policyArns:
+      - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
     roleNameRef:
       name: somenoderole
   providerConfigRef:
@@ -56,7 +59,8 @@ metadata:
   name: sample-noderolemanagedpolicyattachment2
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+    policyArns:
+      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
     roleNameRef:
       name: somenoderole
   providerConfigRef:
@@ -68,7 +72,8 @@ metadata:
   name: sample-noderolemanagedpolicyattachment3
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+    policyArns:
+      - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
     roleNameRef:
       name: somenoderole
   providerConfigRef:
