@@ -203,13 +203,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	var err error
 	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
-		_, err = e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
+		_, err := e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
 			PolicyArn: aws.String(policy),
 			RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
 		})
-		err = resource.Ignore(iam.IsErrorNotFound, err)
+		if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+			return awsclient.Wrap(err, errDetach)
+		}
 	}
-	return awsclient.Wrap(err, errDetach)
+	return nil
 }

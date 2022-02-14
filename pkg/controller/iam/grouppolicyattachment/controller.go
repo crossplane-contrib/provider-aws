@@ -207,13 +207,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	var err error
 	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
-		_, err = e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
+		_, err := e.client.DetachGroupPolicy(ctx, &awsiam.DetachGroupPolicyInput{
 			PolicyArn: aws.String(policy),
 			GroupName: aws.String(cr.Spec.ForProvider.GroupName),
 		})
+		if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+			return awsclient.Wrap(err, errDetach)
+		}
 	}
-
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
+	return nil
 }
