@@ -62,19 +62,11 @@ func withUserName(s string) userPolicyModifier {
 }
 
 func withSpecPolicyArns(s ...string) userPolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, i)
-	}
-	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARNs = arns }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARNs = s }
 }
 
 func withStatusPolicyArns(s ...string) userPolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, i)
-	}
-	return func(r *v1beta1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = arns }
+	return func(r *v1beta1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = s }
 }
 
 func userPolicy(m ...userPolicyModifier) *v1beta1.UserPolicyAttachment {

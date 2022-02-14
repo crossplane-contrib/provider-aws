@@ -84,7 +84,7 @@ type external struct {
 
 // Return an array of policy ARNs from attached policies
 func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
-	var parns []string
+	parns := make([]string, 0, len(p))
 	for _, tp := range p {
 		parns = append(parns, aws.ToString(tp.PolicyArn))
 	}
@@ -92,7 +92,7 @@ func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
 }
 
 func (e *external) isUpToDate(cr *v1beta1.UserPolicyAttachment, resp *awsiam.ListAttachedUserPoliciesOutput) bool {
-	var attachedPolicyARNs []string
+	attachedPolicyARNs := make([]string, 0, len(resp.AttachedPolicies))
 	for _, policy := range resp.AttachedPolicies {
 		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
 			if arn == aws.ToString(policy.PolicyArn) {
@@ -100,10 +100,7 @@ func (e *external) isUpToDate(cr *v1beta1.UserPolicyAttachment, resp *awsiam.Lis
 			}
 		}
 	}
-	if len(attachedPolicyARNs) != len(cr.Spec.ForProvider.PolicyARNs) {
-		return false
-	}
-	return true
+	return len(attachedPolicyARNs) == len(cr.Spec.ForProvider.PolicyARNs)
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {

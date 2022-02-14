@@ -61,20 +61,12 @@ func withRoleName(s *string) rolePolicyModifier {
 	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.RoleName = *s }
 }
 
-func withSpecPolicyArns(s ...*string) rolePolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, *i)
-	}
-	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARNs = arns }
+func withSpecPolicyArns(s ...string) rolePolicyModifier {
+	return func(r *v1beta1.RolePolicyAttachment) { r.Spec.ForProvider.PolicyARNs = s }
 }
 
-func withStatusPolicyArns(s ...*string) rolePolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, *i)
-	}
-	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = arns }
+func withStatusPolicyArns(s ...string) rolePolicyModifier {
+	return func(r *v1beta1.RolePolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = s }
 }
 
 func rolePolicy(m ...rolePolicyModifier) *v1beta1.RolePolicyAttachment {
@@ -110,12 +102,12 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: rolePolicy(withSpecPolicyArns(&specPolicyArn)),
+				cr: rolePolicy(withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
-				cr: rolePolicy(withSpecPolicyArns(&specPolicyArn),
+				cr: rolePolicy(withSpecPolicyArns(specPolicyArn),
 					withConditions(xpv1.Available()),
-					withStatusPolicyArns(&specPolicyArn)),
+					withStatusPolicyArns(specPolicyArn)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -198,12 +190,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -223,11 +215,11 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -283,12 +275,12 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo)),
 			},
 		},
 		"InValidInput": {
@@ -314,11 +306,11 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -342,11 +334,11 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn, &specPolicyArnTwo)),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
@@ -373,11 +365,11 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
@@ -420,12 +412,12 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(
 					withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 		},
 		"InValidInput": {
@@ -445,11 +437,11 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 			},
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArns(&specPolicyArn)),
+					withSpecPolicyArns(specPolicyArn)),
 				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},

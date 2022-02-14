@@ -62,19 +62,11 @@ func withSpecGroupName(s string) groupPolicyModifier {
 }
 
 func withSpecPolicyArns(s ...string) groupPolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, i)
-	}
-	return func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.PolicyARNs = arns }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.PolicyARNs = s }
 }
 
 func withStatusPolicyArns(s ...string) groupPolicyModifier {
-	var arns []string
-	for _, i := range s {
-		arns = append(arns, i)
-	}
-	return func(r *v1beta1.GroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = arns }
+	return func(r *v1beta1.GroupPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARNs = s }
 }
 
 func groupPolicy(m ...groupPolicyModifier) *v1beta1.GroupPolicyAttachment {
