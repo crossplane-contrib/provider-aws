@@ -139,6 +139,65 @@ func TestObserve(t *testing.T) {
 				cr: groupPolicy(withSpecPolicyArns(policyArn)),
 			},
 		},
+		"PolicyNeedsCreate": {
+			args: args{
+				iam: &fake.MockGroupPolicyAttachmentClient{
+					MockListAttachedGroupPolicies: func(ctx context.Context, input *awsiam.ListAttachedGroupPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedGroupPoliciesOutput, error) {
+						return &awsiam.ListAttachedGroupPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: groupPolicy(withSpecGroupName(groupName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+			},
+			want: want{
+				cr: groupPolicy(
+					withSpecGroupName(groupName),
+					withSpecPolicyArns(policyArn, policyArnTwo),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(policyArn)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"PolicyNeedsDelete": {
+			args: args{
+				iam: &fake.MockGroupPolicyAttachmentClient{
+					MockListAttachedGroupPolicies: func(ctx context.Context, input *awsiam.ListAttachedGroupPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedGroupPoliciesOutput, error) {
+						return &awsiam.ListAttachedGroupPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+								{
+									PolicyArn: &policyArnTwo,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: groupPolicy(withSpecGroupName(groupName),
+					withSpecPolicyArns(policyArn)),
+			},
+			want: want{
+				cr: groupPolicy(
+					withSpecGroupName(groupName),
+					withSpecPolicyArns(policyArn),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(policyArn, policyArnTwo)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{

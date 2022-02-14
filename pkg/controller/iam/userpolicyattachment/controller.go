@@ -18,6 +18,7 @@ package userpolicyattachment
 
 import (
 	"context"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -92,15 +93,17 @@ func getPolicyARNs(p []awsiamtypes.AttachedPolicy) []string {
 }
 
 func (e *external) isUpToDate(cr *v1beta1.UserPolicyAttachment, resp *awsiam.ListAttachedUserPoliciesOutput) bool {
-	attachedPolicyARNs := make([]string, 0, len(resp.AttachedPolicies))
-	for _, policy := range resp.AttachedPolicies {
-		for _, arn := range cr.Spec.ForProvider.PolicyARNs {
-			if arn == aws.ToString(policy.PolicyArn) {
-				attachedPolicyARNs = append(attachedPolicyARNs, arn)
-			}
+	if len(cr.Spec.ForProvider.PolicyARNs) != len(resp.AttachedPolicies) {
+		return false
+	}
+	attachedARNs := getPolicyARNs(resp.AttachedPolicies)
+	sort.Strings(attachedARNs)
+	for _, v := range cr.Spec.ForProvider.PolicyARNs {
+		if sort.SearchStrings(attachedARNs, v) == len(attachedARNs) {
+			return false
 		}
 	}
-	return len(attachedPolicyARNs) == len(cr.Spec.ForProvider.PolicyARNs)
+	return true
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
@@ -149,12 +152,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 // Return ARNs from target that are not contained in match
 func unmatchedPolicyARNs(target []string, match []string) []string {
-	var unmatchedPolicyARNs []string
+	unmatchedPolicyARNs := make([]string, 0, len(target))
+	sort.Strings(match)
 	for _, t := range target {
-		for _, m := range match {
-			if t == m {
-				break
-			}
+		if sort.SearchStrings(match, t) == len(match) {
 			unmatchedPolicyARNs = append(unmatchedPolicyARNs, t)
 		}
 	}

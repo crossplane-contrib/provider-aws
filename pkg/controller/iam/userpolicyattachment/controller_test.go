@@ -138,6 +138,65 @@ func TestObserve(t *testing.T) {
 				cr: userPolicy(withSpecPolicyArns(policyArn)),
 			},
 		},
+		"PolicyNeedsCreate": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo)),
+			},
+			want: want{
+				cr: userPolicy(
+					withUserName(userName),
+					withSpecPolicyArns(policyArn, policyArnTwo),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(policyArn)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"PolicyNeedsDelete": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockListAttachedUserPolicies: func(ctx context.Context, input *awsiam.ListAttachedUserPoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedUserPoliciesOutput, error) {
+						return &awsiam.ListAttachedUserPoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &policyArn,
+								},
+								{
+									PolicyArn: &policyArnTwo,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					withSpecPolicyArns(policyArn)),
+			},
+			want: want{
+				cr: userPolicy(
+					withUserName(userName),
+					withSpecPolicyArns(policyArn),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(policyArn, policyArnTwo)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockUserPolicyAttachmentClient{

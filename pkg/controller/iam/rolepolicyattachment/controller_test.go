@@ -150,6 +150,65 @@ func TestObserve(t *testing.T) {
 				cr: rolePolicy(),
 			},
 		},
+		"PolicyNeedsCreate": {
+			args: args{
+				iam: &fake.MockRolePolicyAttachmentClient{
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo)),
+			},
+			want: want{
+				cr: rolePolicy(
+					withRoleName(&roleName),
+					withSpecPolicyArns(specPolicyArn, specPolicyArnTwo),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(specPolicyArn)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"PolicyNeedsDelete": {
+			args: args{
+				iam: &fake.MockRolePolicyAttachmentClient{
+					MockListAttachedRolePolicies: func(ctx context.Context, input *awsiam.ListAttachedRolePoliciesInput, opts []func(*awsiam.Options)) (*awsiam.ListAttachedRolePoliciesOutput, error) {
+						return &awsiam.ListAttachedRolePoliciesOutput{
+							AttachedPolicies: []awsiamtypes.AttachedPolicy{
+								{
+									PolicyArn: &specPolicyArn,
+								},
+								{
+									PolicyArn: &specPolicyArnTwo,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: rolePolicy(withRoleName(&roleName),
+					withSpecPolicyArns(specPolicyArn)),
+			},
+			want: want{
+				cr: rolePolicy(
+					withRoleName(&roleName),
+					withSpecPolicyArns(specPolicyArn),
+					withConditions(xpv1.Available()),
+					withStatusPolicyArns(specPolicyArn, specPolicyArnTwo)),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
