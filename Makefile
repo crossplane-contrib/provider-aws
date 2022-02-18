@@ -8,7 +8,7 @@ PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_REPO ?= https://github.com/aws-controllers-k8s/code-generator.git
 CODE_GENERATOR_COMMIT ?= f8c0f4711a91e50335450521e3c49673d135d56d
-GENERATED_SERVICES := $(shell find ./apis/ -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
+GENERATED_SERVICES := $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
