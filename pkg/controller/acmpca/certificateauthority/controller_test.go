@@ -18,14 +18,18 @@ package certificateauthority
 
 import (
 	"context"
+
 	"testing"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
 	awsacmpcatypes "github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -59,6 +63,10 @@ var (
 	title                      = "someTitle"
 
 	errBoom = errors.New("boom")
+
+	sortTags = cmpopts.SortSlices(func(a, b v1beta1.Tag) bool {
+		return a.Key > b.Key
+	})
 )
 
 type args struct {
@@ -66,21 +74,21 @@ type args struct {
 	cr     resource.Managed
 }
 
-type certificateAuthorityModifier func(*v1alpha1.CertificateAuthority)
+type certificateAuthorityModifier func(*v1beta1.CertificateAuthority)
 
 func withConditions(c ...xpv1.Condition) certificateAuthorityModifier {
-	return func(r *v1alpha1.CertificateAuthority) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.CertificateAuthority) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withCertificateAuthorityArn() certificateAuthorityModifier {
-	return func(r *v1alpha1.CertificateAuthority) {
+	return func(r *v1beta1.CertificateAuthority) {
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
 
 func withCertificateAuthorityType() certificateAuthorityModifier {
-	return func(r *v1alpha1.CertificateAuthority) {
+	return func(r *v1beta1.CertificateAuthority) {
 		r.Spec.ForProvider.Type = awsacmpcatypes.CertificateAuthorityTypeRoot
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
@@ -88,7 +96,7 @@ func withCertificateAuthorityType() certificateAuthorityModifier {
 }
 
 func withCertificateAuthorityAtProviderStatus(s string) certificateAuthorityModifier {
-	return func(r *v1alpha1.CertificateAuthority) {
+	return func(r *v1beta1.CertificateAuthority) {
 		r.Status.AtProvider.Status = s
 	}
 }
@@ -96,15 +104,33 @@ func withCertificateAuthorityAtProviderStatus(s string) certificateAuthorityModi
 func withCertificateAuthorityStatus() certificateAuthorityModifier {
 	status := "ACTIVE"
 
-	return func(r *v1alpha1.CertificateAuthority) {
+	return func(r *v1beta1.CertificateAuthority) {
 		r.Spec.ForProvider.Status = &status
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
 
-func certificateAuthority(m ...certificateAuthorityModifier) *v1alpha1.CertificateAuthority {
-	cr := &v1alpha1.CertificateAuthority{}
+func withTags(tagMaps ...map[string]string) certificateAuthorityModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.CertificateAuthority) {
+		r.Spec.ForProvider.Tags = tagList
+	}
+}
+
+func withGroupVersionKind() certificateAuthorityModifier {
+	return func(r *v1beta1.CertificateAuthority) {
+		r.TypeMeta.SetGroupVersionKind(v1beta1.CertificateAuthorityGroupVersionKind)
+	}
+}
+
+func certificateAuthority(m ...certificateAuthorityModifier) *v1beta1.CertificateAuthority {
+	cr := &v1beta1.CertificateAuthority{}
 	meta.SetExternalName(cr, certificateAuthorityArn)
 	for _, f := range m {
 		f(cr)
@@ -527,6 +553,72 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   resource.Managed
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1beta1.CertificateAuthority
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"InvalidInput": {
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"Successful": {
+			args: args{
+				cr:   certificateAuthority(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: certificateAuthority(withTags(resource.GetExternalTags(certificateAuthority()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"Check Tag values": {
+			args: args{
+				cr:   certificateAuthority(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: certificateAuthority(withTags(resource.GetExternalTags(certificateAuthority(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   certificateAuthority(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, sortTags); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
