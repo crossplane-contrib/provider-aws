@@ -140,6 +140,7 @@ func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEnc
 	}
 	for i, rule := range config.Rules {
 		bei.ServerSideEncryptionConfiguration.Rules[i] = types.ServerSideEncryptionRule{
+			BucketKeyEnabled: rule.BucketKeyEnabled,
 			ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
 				SSEAlgorithm:   types.ServerSideEncryption(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),
