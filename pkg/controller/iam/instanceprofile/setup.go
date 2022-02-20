@@ -88,6 +88,9 @@ func postCreate(_ context.Context, cr *svcapitypes.InstanceProfile, resp *svcsdk
 		return managed.ExternalCreation{}, err
 	}
 	sess, err := session.NewSession()
+	if err != nil {
+		return cre, err
+	}
 	svc := iam.New(sess)
 	input := &iam.AddRoleToInstanceProfileInput{
 		InstanceProfileName: aws.String(cr.Name),
@@ -101,6 +104,9 @@ func postCreate(_ context.Context, cr *svcapitypes.InstanceProfile, resp *svcsdk
 func preDelete(_ context.Context, cr *svcapitypes.InstanceProfile, obj *svcsdk.DeleteInstanceProfileInput) (bool, error) {
 	obj.InstanceProfileName = aws.String(meta.GetExternalName(cr))
 	sess, err := session.NewSession()
+	if err != nil {
+		return false, err
+	}
 	svc := iam.New(sess)
 	input := &iam.RemoveRoleFromInstanceProfileInput{
 		InstanceProfileName: aws.String(cr.Name),

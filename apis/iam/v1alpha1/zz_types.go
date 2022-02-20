@@ -55,10 +55,11 @@ type AccessKeyMetadata struct {
 
 // +kubebuilder:skipversion
 type AttachedPermissionsBoundary struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	PermissionsBoundaryARN *string `json:"permissionsBoundaryARN,omitempty"`
 
 	PermissionsBoundaryType *string `json:"permissionsBoundaryType,omitempty"`
@@ -66,10 +67,11 @@ type AttachedPermissionsBoundary struct {
 
 // +kubebuilder:skipversion
 type AttachedPolicy struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	PolicyARN *string `json:"policyARN,omitempty"`
 }
 
@@ -80,10 +82,11 @@ type EntityDetails struct {
 
 // +kubebuilder:skipversion
 type EntityInfo struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	ID *string `json:"id,omitempty"`
@@ -100,10 +103,11 @@ type ErrorDetails struct {
 
 // +kubebuilder:skipversion
 type Group struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -115,10 +119,11 @@ type Group struct {
 
 // +kubebuilder:skipversion
 type GroupDetail struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -130,10 +135,11 @@ type GroupDetail struct {
 
 // +kubebuilder:skipversion
 type InstanceProfile_SDK struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -165,10 +171,11 @@ type MFADevice struct {
 
 // +kubebuilder:skipversion
 type ManagedPolicyDetail struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -182,10 +189,11 @@ type ManagedPolicyDetail struct {
 
 // +kubebuilder:skipversion
 type OpenIDConnectProviderListEntry struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 }
 
@@ -216,10 +224,11 @@ type PermissionsBoundaryDecisionDetail struct {
 
 // +kubebuilder:skipversion
 type Policy struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -240,10 +249,11 @@ type PolicyDetail struct {
 
 // +kubebuilder:skipversion
 type PolicyGrantingServiceAccess struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	PolicyARN *string `json:"policyARN,omitempty"`
 }
 
@@ -275,10 +285,11 @@ type PolicyVersion struct {
 
 // +kubebuilder:skipversion
 type Role struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	AssumeRolePolicyDocument *string `json:"assumeRolePolicyDocument,omitempty"`
@@ -320,10 +331,11 @@ type Role struct {
 
 // +kubebuilder:skipversion
 type RoleDetail struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	AssumeRolePolicyDocument *string `json:"assumeRolePolicyDocument,omitempty"`
@@ -370,10 +382,11 @@ type RoleLastUsed struct {
 
 // +kubebuilder:skipversion
 type SAMLProviderListEntry struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -398,10 +411,11 @@ type ServerCertificate struct {
 
 // +kubebuilder:skipversion
 type ServerCertificateMetadata struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	Expiration *metav1.Time `json:"expiration,omitempty"`
@@ -416,10 +430,11 @@ type ServerCertificateMetadata struct {
 // +kubebuilder:skipversion
 type ServiceLastAccessed struct {
 	LastAuthenticated *metav1.Time `json:"lastAuthenticated,omitempty"`
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	LastAuthenticatedEntity *string `json:"lastAuthenticatedEntity,omitempty"`
 
 	LastAuthenticatedRegion *string `json:"lastAuthenticatedRegion,omitempty"`
@@ -450,10 +465,11 @@ type Tag struct {
 // +kubebuilder:skipversion
 type TrackedActionLastAccessed struct {
 	ActionName *string `json:"actionName,omitempty"`
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	LastAccessedEntity *string `json:"lastAccessedEntity,omitempty"`
 
 	LastAccessedRegion *string `json:"lastAccessedRegion,omitempty"`
@@ -463,10 +479,11 @@ type TrackedActionLastAccessed struct {
 
 // +kubebuilder:skipversion
 type User struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
@@ -491,10 +508,11 @@ type User struct {
 
 // +kubebuilder:skipversion
 type UserDetail struct {
-	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
+	// Services resources.
 	//
 	// For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the AWS General Reference.
+	// in the Amazon Web Services General Reference.
 	ARN *string `json:"arn,omitempty"`
 
 	CreateDate *metav1.Time `json:"createDate,omitempty"`

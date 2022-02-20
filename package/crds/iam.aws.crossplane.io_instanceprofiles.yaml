@@ -193,9 +193,10 @@ spec:
                       properties:
                         arn:
                           description: "The Amazon Resource Name (ARN). ARNs are unique
-                            identifiers for AWS resources. \n For more information
-                            about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-                            in the AWS General Reference."
+                            identifiers for Amazon Web Services resources. \n For
+                            more information about ARNs, go to Amazon Resource Names
+                            (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                            in the Amazon Web Services General Reference."
                           type: string
                         assumeRolePolicyDocument:
                           type: string
@@ -220,10 +221,10 @@ spec:
                           properties:
                             permissionsBoundaryARN:
                               description: "The Amazon Resource Name (ARN). ARNs are
-                                unique identifiers for AWS resources. \n For more
-                                information about ARNs, go to Amazon Resource Names
-                                (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-                                in the AWS General Reference."
+                                unique identifiers for Amazon Web Services resources.
+                                \n For more information about ARNs, go to Amazon Resource
+                                Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                                in the Amazon Web Services General Reference."
                               type: string
                             permissionsBoundaryType:
                               type: string
