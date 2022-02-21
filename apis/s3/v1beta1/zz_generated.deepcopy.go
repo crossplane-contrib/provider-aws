@@ -926,6 +926,11 @@ func (in *QueueConfiguration) DeepCopyInto(out *QueueConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.QueueArn != nil {
+		in, out := &in.QueueArn, &out.QueueArn
+		*out = new(string)
+		**out = **in
+	}
 	if in.QueueArnRef != nil {
 		in, out := &in.QueueArnRef, &out.QueueArnRef
 		*out = new(v1.Reference)

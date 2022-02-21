@@ -36,7 +36,7 @@ import (
 
 const (
 	notificationGetFailed = "cannot get Bucket notification"
-	notificationPutFailed = "cannot put Bucket notification"
+	notificationPutFailed = "cannot put Bucket notification (may be caused by insuffifienct permissions on the target)"
 )
 
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
@@ -180,7 +180,7 @@ func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []ty
 	for _, v := range config.QueueConfigurations {
 		conf := types.QueueConfiguration{
 			Id:       v.ID,
-			QueueArn: awsclient.String(v.QueueArn),
+			QueueArn: v.QueueArn,
 		}
 		if v.Events != nil {
 			conf.Events = copyEvents(v.Events)
@@ -359,7 +359,7 @@ func LateInitializeQueue(external []types.QueueConfiguration, local []v1beta1.Qu
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
 			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
-			QueueArn: awsclient.LateInitializeString(local[i].QueueArn, v.QueueArn),
+			QueueArn: awsclient.LateInitializeStringPtr(local[i].QueueArn, v.QueueArn),
 		}
 	}
 	return local

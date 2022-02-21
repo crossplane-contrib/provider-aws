@@ -137,8 +137,8 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 	if mg.Spec.ForProvider.NotificationConfiguration != nil {
 		for i4 := 0; i4 < len(mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations); i4++ {
 			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-				CurrentValue: mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArn,
-				Extract:      reference.ExternalName(),
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArn),
+				Extract:      v1beta11.QueueARN(),
 				Reference:    mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArnRef,
 				Selector:     mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArnSelector,
 				To: reference.To{
@@ -149,7 +149,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			if err != nil {
 				return errors.Wrap(err, "mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArn")
 			}
-			mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArn = rsp.ResolvedValue
+			mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArn = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.NotificationConfiguration.QueueConfigurations[i4].QueueArnRef = rsp.ResolvedReference
 
 		}
