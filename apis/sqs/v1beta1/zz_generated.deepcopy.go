@@ -151,6 +151,16 @@ func (in *QueueParameters) DeepCopyInto(out *QueueParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KMSMasterKeyIDRef != nil {
+		in, out := &in.KMSMasterKeyIDRef, &out.KMSMasterKeyIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.KMSMasterKeyIDSelector != nil {
+		in, out := &in.KMSMasterKeyIDSelector, &out.KMSMasterKeyIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.KMSDataKeyReusePeriodSeconds != nil {
 		in, out := &in.KMSDataKeyReusePeriodSeconds, &out.KMSDataKeyReusePeriodSeconds
 		*out = new(int64)

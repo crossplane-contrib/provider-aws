@@ -48,6 +48,8 @@ const (
 type RedrivePolicy struct {
 	// The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
 	// SQS moves messages after the value of maxReceiveCount is exceeded.
+	// +crossplane:generate:reference:type=Queue
+	// +crossplane:generate:reference:extractor=QueueARN()
 	DeadLetterTargetARN *string `json:"deadLetterTargetArn,omitempty"`
 
 	// DeadLetterTargetARNRef reference a Queue to retrieve its ARN.
@@ -122,7 +124,12 @@ type QueueParameters struct {
 	// in the AWS Key Management Service API Reference.
 	// Applies only to server-side-encryption (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html):
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
 	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
+
+	KMSMasterKeyIDRef *xpv1.Reference `json:"kmsMasterKeyIdRef,omitempty"`
+
+	KMSMasterKeyIDSelector *xpv1.Selector `json:"kmsMasterKeyIdSelector,omitempty"`
 
 	// KMSDataKeyReusePeriodSeconds - The length of time, in seconds, for which
 	// Amazon SQS can reuse a data key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#data-keys)
