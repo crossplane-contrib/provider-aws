@@ -701,7 +701,6 @@ spec:
                               type: object
                           required:
                           - events
-                          - queueArn
                           type: object
                         type: array
                       topicConfigurations:

@@ -83,7 +83,7 @@ func generateNotificationConfig() *v1beta1.NotificationConfiguration {
 			Events:   generateNotificationEvents(),
 			Filter:   generateNotificationFilter(),
 			ID:       &id,
-			QueueArn: queueArn,
+			QueueArn: awsclient.String(queueArn),
 		}},
 		TopicConfigurations: []v1beta1.TopicConfiguration{{
 			Events:   generateNotificationEvents(),
@@ -406,7 +406,7 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 						Events:   generateNotificationEvents(),
 						Filter:   generateNotificationFilter(),
 						ID:       &id,
-						QueueArn: queueArn,
+						QueueArn: awsclient.String(queueArn),
 					}},
 					TopicConfigurations: []v1beta1.TopicConfiguration{{
 						Events:   generateNotificationEvents(),
@@ -453,7 +453,7 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 						Events:   generateNotificationEvents(),
 						Filter:   generateNotificationFilter(),
 						ID:       awsclient.String("queue-id-1"),
-						QueueArn: queueArn,
+						QueueArn: awsclient.String(queueArn),
 					}},
 					TopicConfigurations: []v1beta1.TopicConfiguration{{
 						Events:   generateNotificationEvents(),

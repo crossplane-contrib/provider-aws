@@ -136,7 +136,8 @@ type QueueConfiguration struct {
 	//
 	// QueueArn is a required field
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/sqs/v1beta1.Queue
-	QueueArn string `json:"queueArn"`
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/sqs/v1beta1.QueueARN()
+	QueueArn *string `json:"queueArn,omitempty"`
 
 	// QueueArnRef references an Queue to retrieve its ARN
 	// +optional
