@@ -26,6 +26,7 @@ type VPCClient interface {
 	DescribeVpcAttribute(ctx context.Context, input *ec2.DescribeVpcAttributeInput, opts ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 	ModifyVpcAttribute(ctx context.Context, input *ec2.ModifyVpcAttributeInput, opts ...func(*ec2.Options)) (*ec2.ModifyVpcAttributeOutput, error)
 	CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 	ModifyVpcTenancy(ctx context.Context, input *ec2.ModifyVpcTenancyInput, opts ...func(*ec2.Options)) (*ec2.ModifyVpcTenancyOutput, error)
 }
 

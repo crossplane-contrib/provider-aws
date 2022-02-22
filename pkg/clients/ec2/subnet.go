@@ -25,6 +25,7 @@ type SubnetClient interface {
 	DeleteSubnet(ctx context.Context, input *ec2.DeleteSubnetInput, opts ...func(*ec2.Options)) (*ec2.DeleteSubnetOutput, error)
 	ModifySubnetAttribute(ctx context.Context, input *ec2.ModifySubnetAttributeInput, opts ...func(*ec2.Options)) (*ec2.ModifySubnetAttributeOutput, error)
 	CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 }
 
 // NewSubnetClient returns a new client using AWS credentials as JSON encoded data.

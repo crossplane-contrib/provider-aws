@@ -18,6 +18,7 @@ package subnet
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -45,6 +46,7 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an Subnet resource"
+	errKubeUpdateFailed = "cannot update Subnet custom resource"
 
 	errDescribe      = "failed to describe Subnet"
 	errMultipleItems = "retrieved multiple Subnets"
@@ -52,6 +54,7 @@ const (
 	errDelete        = "failed to delete the Subnet resource"
 	errUpdate        = "failed to update the Subnet resource"
 	errCreateTags    = "failed to create tags for the Subnet resource"
+	errDeleteTags    = "failed to delete tags for the Subnet resource"
 )
 
 // SetupSubnet adds a controller that reconciles Subnets.
@@ -68,7 +71,7 @@ func SetupSubnet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
 			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -167,7 +170,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -187,10 +190,20 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	subnet := response.Subnets[0]
 
-	if !v1beta1.CompareTags(cr.Spec.ForProvider.Tags, subnet.Tags) {
+	add, remove := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), subnet.Tags)
+	if len(remove) > 0 {
+		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      remove,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+		}
+	}
+
+	if len(add) > 0 {
 		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
-			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+			Tags:      add,
 		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
@@ -233,4 +246,32 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.Subnet)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		tagMap[k] = v
+	}
+	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
+	i := 0
+	for k, v := range tagMap {
+		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
+		i++
+	}
+	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
+		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+	})
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

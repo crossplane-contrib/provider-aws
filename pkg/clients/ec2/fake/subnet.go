@@ -34,6 +34,7 @@ type MockSubnetClient struct {
 	MockDescribe   func(ctx context.Context, input *ec2.DescribeSubnetsInput, opts []func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
 	MockModify     func(ctx context.Context, input *ec2.ModifySubnetAttributeInput, opts []func(*ec2.Options)) (*ec2.ModifySubnetAttributeOutput, error)
 	MockCreateTags func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDeleteTags func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 }
 
 // CreateSubnet mocks CreateSubnet method
@@ -59,4 +60,9 @@ func (m *MockSubnetClient) ModifySubnetAttribute(ctx context.Context, input *ec2
 // CreateTags mocks CreateTags method
 func (m *MockSubnetClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
 	return m.MockCreateTags(ctx, input, opts)
+}
+
+// DeleteTags mocks DeleteTags method
+func (m *MockSubnetClient) DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTags(ctx, input, opts)
 }

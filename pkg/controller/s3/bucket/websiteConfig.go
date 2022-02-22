@@ -146,23 +146,25 @@ func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.W
 			Protocol: types.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
-	wi.RoutingRules = make([]types.RoutingRule, len(config.RoutingRules))
-	for i, rule := range config.RoutingRules {
-		rr := types.RoutingRule{
-			Redirect: &types.Redirect{
-				HostName:             rule.Redirect.HostName,
-				HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
-				Protocol:             types.Protocol(rule.Redirect.Protocol),
-				ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
-				ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
-			},
-		}
-		if rule.Condition != nil {
-			rr.Condition = &types.Condition{
-				HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
-				KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
+	if len(config.RoutingRules) > 0 {
+		wi.RoutingRules = make([]types.RoutingRule, len(config.RoutingRules))
+		for i, rule := range config.RoutingRules {
+			rr := types.RoutingRule{
+				Redirect: &types.Redirect{
+					HostName:             rule.Redirect.HostName,
+					HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
+					Protocol:             types.Protocol(rule.Redirect.Protocol),
+					ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
+					ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
+				},
 			}
-			wi.RoutingRules[i] = rr
+			if rule.Condition != nil {
+				rr.Condition = &types.Condition{
+					HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
+					KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
+				}
+				wi.RoutingRules[i] = rr
+			}
 		}
 	}
 
