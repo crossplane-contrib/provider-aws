@@ -25,9 +25,10 @@ out which service the resource we'd like to generate belongs to.
 Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.10/models/apis)
 and make note of the service name. For example, in order to generate Lambda
 resources, you need to use `lambda` as service name. Once you figure that out,
-the following is the command you need to run to generate CRDs and controllers:
+the following is the commands you need to run to generate CRDs and controllers:
 
 ```console
+touch apis/<service id>/generator-config.yaml
 make services SERVICES=<service id>
 ```
 
@@ -96,7 +97,7 @@ their generation yet.
 ### Setup Controller
 
 The generated controller needs to be registered with the main controller manager
-of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
+of the provider. Create a file called `pkg/controller/<serviceid>/<managedResource>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
