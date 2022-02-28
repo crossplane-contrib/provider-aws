@@ -20,15 +20,17 @@ import (
 	"context"
 	"testing"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/pkg/errors"
 
-	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -36,8 +38,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
+	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
 
@@ -47,10 +50,47 @@ var (
 	url            = "https://example.com"
 
 	errBoom = errors.New("boom")
+
+	key1   = "foo1"
+	value1 = "bar1"
+	key2   = "foo2"
+	value2 = "bar2"
+
+	tagComparer = cmp.Comparer(func(expected, actual iamtypes.Tag) bool {
+		return cmp.Equal(expected.Key, actual.Key) &&
+			cmp.Equal(expected.Value, actual.Value)
+	})
+
+	createInputComparer = cmp.Comparer(func(expected, actual *awsiam.CreateOpenIDConnectProviderInput) bool {
+		return cmp.Equal(expected.Url, actual.Url) &&
+			cmp.Equal(expected.ClientIDList, actual.ClientIDList, test.EquateConditions()) &&
+			cmp.Equal(expected.ThumbprintList, actual.ThumbprintList, test.EquateConditions()) &&
+			cmp.Equal(expected.Tags, actual.Tags, tagComparer, sortIAMTags)
+	})
+
+	tagInputComparer = cmp.Comparer(func(expected, actual *awsiam.TagOpenIDConnectProviderInput) bool {
+		return cmp.Equal(expected.OpenIDConnectProviderArn, actual.OpenIDConnectProviderArn) &&
+			cmp.Equal(expected.Tags, actual.Tags, tagComparer, sortIAMTags)
+	})
+
+	untagInputComparer = cmp.Comparer(func(expected, actual *awsiam.UntagOpenIDConnectProviderInput) bool {
+		return cmp.Equal(expected.OpenIDConnectProviderArn, actual.OpenIDConnectProviderArn) &&
+			cmp.Equal(expected.TagKeys, actual.TagKeys, sortStrings)
+	})
+
+	sortTags = cmpopts.SortSlices(func(a, b v1beta1.Tag) bool {
+		return a.Key > b.Key
+	})
+	sortIAMTags = cmpopts.SortSlices(func(a, b iamtypes.Tag) bool {
+		return *a.Key > *b.Key
+	})
+	sortStrings = cmpopts.SortSlices(func(x, y string) bool {
+		return x < y
+	})
 )
 
 type args struct {
-	iam iam.OpenIDConnectProviderClient
+	iam *fake.MockOpenIDConnectProviderClient
 	cr  resource.Managed
 }
 
@@ -69,6 +109,36 @@ func withExternalName(name string) oidcProviderModifier {
 
 func withAtProvider(s svcapitypes.OpenIDConnectProviderObservation) oidcProviderModifier {
 	return func(r *svcapitypes.OpenIDConnectProvider) { r.Status.AtProvider = s }
+}
+
+func withTags(tagMaps ...map[string]string) oidcProviderModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.OpenIDConnectProvider) {
+		r.Spec.ForProvider.Tags = tagList
+	}
+}
+
+func withGroupVersionKind() oidcProviderModifier {
+	return func(r *v1beta1.OpenIDConnectProvider) {
+		r.TypeMeta.SetGroupVersionKind(v1beta1.OpenIDConnectProviderGroupVersionKind)
+	}
+}
+
+func withClientIDList(l []string) oidcProviderModifier {
+	return func(r *svcapitypes.OpenIDConnectProvider) {
+		r.Spec.ForProvider.ClientIDList = l
+	}
+}
+
+func withThumbprintList(l []string) oidcProviderModifier {
+	return func(r *svcapitypes.OpenIDConnectProvider) {
+		r.Spec.ForProvider.ThumbprintList = l
+	}
 }
 
 func oidcProvider(m ...oidcProviderModifier) *svcapitypes.OpenIDConnectProvider {
@@ -194,6 +264,7 @@ func TestCreate(t *testing.T) {
 	type want struct {
 		cr     resource.Managed
 		result managed.ExternalCreation
+		input  *awsiam.CreateOpenIDConnectProviderInput
 		err    error
 	}
 
@@ -231,13 +302,35 @@ func TestCreate(t *testing.T) {
 						return &awsiam.CreateOpenIDConnectProviderOutput{OpenIDConnectProviderArn: aws.String(providerArn)}, nil
 					},
 				},
-				cr: oidcProvider(withURL(url)),
+				cr: oidcProvider(withURL(url),
+					withThumbprintList([]string{"thumbs1", "thumbs2"}),
+					withClientIDList([]string{"client1", "client2"}),
+					withTags(map[string]string{key1: value1, key2: value2})),
 			},
 			want: want{
-				cr: oidcProvider(withURL(url), func(provider *svcapitypes.OpenIDConnectProvider) {
-					meta.SetExternalName(provider, providerArn)
-				}),
+				cr: oidcProvider(withURL(url),
+					withThumbprintList([]string{"thumbs1", "thumbs2"}),
+					withClientIDList([]string{"client1", "client2"}),
+					withTags(map[string]string{key1: value1, key2: value2}),
+					func(provider *svcapitypes.OpenIDConnectProvider) {
+						meta.SetExternalName(provider, providerArn)
+					}),
 				result: managed.ExternalCreation{},
+				input: &awsiam.CreateOpenIDConnectProviderInput{
+					ThumbprintList: []string{"thumbs1", "thumbs2"},
+					Url:            &url,
+					ClientIDList:   []string{"client1", "client2"},
+					Tags: []iamtypes.Tag{
+						{
+							Key:   &key1,
+							Value: &value1,
+						},
+						{
+							Key:   &key2,
+							Value: &value2,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -250,11 +343,17 @@ func TestCreate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions(), sortTags); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if tc.want.input != nil {
+				actual := tc.args.iam.MockOpenIDConnectProviderInput.CreateOIDCProviderInput
+				if diff := cmp.Diff(tc.want.input, actual, createInputComparer, sortTags); diff != "" {
+					t.Errorf("r: -want, +got:\n%s", diff)
+				}
 			}
 		})
 	}
@@ -412,6 +511,166 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+func TestUpdate_Tags(t *testing.T) {
+	type want struct {
+		cr         resource.Managed
+		result     managed.ExternalUpdate
+		err        error
+		tagInput   *awsiam.TagOpenIDConnectProviderInput
+		untagInput *awsiam.UntagOpenIDConnectProviderInput
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"AddTagsError": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{}, nil
+					},
+					MockTagOpenIDConnectProvider: func(ctx context.Context, input *awsiam.TagOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.TagOpenIDConnectProviderOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: oidcProvider(withTags(map[string]string{key1: value1})),
+			},
+			want: want{
+				cr:  oidcProvider(withTags(map[string]string{key1: value1})),
+				err: awsclient.Wrap(errBoom, errAddTags),
+			},
+		},
+		"AddTagsSuccess": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{}, nil
+					},
+					MockTagOpenIDConnectProvider: func(ctx context.Context, input *awsiam.TagOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.TagOpenIDConnectProviderOutput, error) {
+						return &awsiam.TagOpenIDConnectProviderOutput{}, nil
+					},
+				},
+				cr: oidcProvider(
+					withTags(map[string]string{key1: value1, key2: value2}),
+					withExternalName(providerArn)),
+			},
+			want: want{
+				cr: oidcProvider(
+					withTags(map[string]string{key1: value1, key2: value2}),
+					withExternalName(providerArn)),
+				tagInput: &awsiam.TagOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: &providerArn,
+					Tags: []iamtypes.Tag{
+						{Key: &key1, Value: &value1},
+						{Key: &key2, Value: &value2},
+					}},
+			},
+		},
+		"UpdateTagsSuccess": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							Tags: []iamtypes.Tag{
+								{Key: &key1, Value: &value1},
+								{Key: &key2, Value: &value2},
+							}}, nil
+					},
+					MockTagOpenIDConnectProvider: func(ctx context.Context, input *awsiam.TagOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.TagOpenIDConnectProviderOutput, error) {
+						return &awsiam.TagOpenIDConnectProviderOutput{}, nil
+					},
+				},
+				cr: oidcProvider(
+					withTags(map[string]string{key1: value2, key2: value2}),
+					withExternalName(providerArn)),
+			},
+			want: want{
+				cr: oidcProvider(
+					withTags(map[string]string{key1: value2, key2: value2}),
+					withExternalName(providerArn)),
+				tagInput: &awsiam.TagOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: &providerArn,
+					Tags: []iamtypes.Tag{
+						{Key: &key1, Value: &value2},
+					}},
+			},
+		},
+		"RemoveTagsError": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							Tags: []iamtypes.Tag{
+								{Key: &key1, Value: &value1},
+								{Key: &key2, Value: &value2},
+							}}, nil
+					},
+					MockUntagOpenIDConnectProvider: func(ctx context.Context, input *awsiam.UntagOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.UntagOpenIDConnectProviderOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: oidcProvider(withTags(map[string]string{key1: value1})),
+			},
+			want: want{
+				cr:  oidcProvider(withTags(map[string]string{key1: value1})),
+				err: awsclient.Wrap(errBoom, errRemoveTags),
+			},
+		},
+		"RemoveTagsSuccess": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							Tags: []iamtypes.Tag{
+								{Key: &key1, Value: &value1},
+								{Key: &key2, Value: &value2},
+							}}, nil
+					},
+					MockUntagOpenIDConnectProvider: func(ctx context.Context, input *awsiam.UntagOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.UntagOpenIDConnectProviderOutput, error) {
+						return nil, nil
+					},
+				},
+				cr: oidcProvider(withExternalName(providerArn)),
+			},
+			want: want{
+				cr: oidcProvider(withExternalName(providerArn)),
+				untagInput: &awsiam.UntagOpenIDConnectProviderInput{
+					OpenIDConnectProviderArn: &providerArn,
+					TagKeys:                  []string{key1, key2},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions(), sortTags); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if tc.want.tagInput != nil {
+				if diff := cmp.Diff(tc.want.tagInput, tc.iam.MockOpenIDConnectProviderInput.TagOpenIDConnectProviderInput, tagInputComparer, sortIAMTags); diff != "" {
+					t.Errorf("r: -want, +got:\n%s", diff)
+				}
+			}
+			if tc.want.untagInput != nil {
+				if diff := cmp.Diff(tc.want.untagInput, tc.iam.MockOpenIDConnectProviderInput.UntagOpenIDConnectProviderInput, untagInputComparer, sortStrings); diff != "" {
+					t.Errorf("r: -want, +got:\n%s", diff)
+				}
+			}
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	type want struct {
 		cr  resource.Managed
@@ -469,6 +728,72 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   resource.Managed
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1beta1.OpenIDConnectProvider
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"InvalidInput": {
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"Successful": {
+			args: args{
+				cr:   oidcProvider(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: oidcProvider(withTags(resource.GetExternalTags(oidcProvider()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"Check Tag values": {
+			args: args{
+				cr:   oidcProvider(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: oidcProvider(withTags(resource.GetExternalTags(oidcProvider(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   oidcProvider(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, sortTags); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

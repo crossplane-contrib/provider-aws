@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -54,6 +55,9 @@ const (
 	errRemoveClientID   = "cannot remove clientID to OpenIDConnectProvider in AWS"
 	errDelete           = "failed to delete OpenIDConnectProvider"
 	errSDK              = "empty OpenIDConnectProvider received from IAM API"
+	errAddTags          = "cannot add tags to OpenIDConnectProvider in AWS"
+	errRemoveTags       = "cannot remove tags to OpenIDConnectProvider in AWS"
+	errKubeUpdateFailed = "cannot update OpenIDConnectProvider instance custom resource"
 )
 
 // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
@@ -68,7 +72,7 @@ func SetupOpenIDConnectProvider(mgr ctrl.Manager, l logging.Logger, rl workqueue
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.OpenIDConnectProviderGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewOpenIDConnectProviderClient}),
-			managed.WithInitializers(),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -133,10 +137,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
+
+	iamTags := make([]iamtypes.Tag, len(cr.Spec.ForProvider.Tags))
+	for i := range cr.Spec.ForProvider.Tags {
+		iamTags[i] = iamtypes.Tag{Key: aws.String(cr.Spec.ForProvider.Tags[i].Key), Value: aws.String(cr.Spec.ForProvider.Tags[i].Value)}
+	}
+
 	observed, err := e.client.CreateOpenIDConnectProvider(ctx, &awsiam.CreateOpenIDConnectProviderInput{
 		ClientIDList:   cr.Spec.ForProvider.ClientIDList,
 		ThumbprintList: cr.Spec.ForProvider.ThumbprintList,
 		Url:            aws.String(cr.Spec.ForProvider.URL),
+		Tags:           iamTags,
 	})
 
 	if err != nil {
@@ -147,13 +158,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+	// NOTE(cebernardi) gocyclo is disabled because the method needs to check the different components (Thumbprint,
+	// ClientID and Tags and it's updating them with dedicated calls, hence increasing the complexity
+
 	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
+	arn := aws.String(meta.GetExternalName(cr))
 	observedProvider, err := e.client.GetOpenIDConnectProvider(ctx, &awsiam.GetOpenIDConnectProviderInput{
-		OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
+		OpenIDConnectProviderArn: arn,
 	})
 
 	if err != nil {
@@ -168,7 +183,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return x < y
 		})) {
 		if _, err := e.client.UpdateOpenIDConnectProviderThumbprint(ctx, &awsiam.UpdateOpenIDConnectProviderThumbprintInput{
-			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
+			OpenIDConnectProviderArn: arn,
 			ThumbprintList:           cr.Spec.ForProvider.ThumbprintList,
 		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateThumbprint)
@@ -178,7 +193,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	addClientIDList, removeClientIDList := iam.SliceDifference(observedProvider.ClientIDList, cr.Spec.ForProvider.ClientIDList)
 	for _, clientID := range addClientIDList {
 		if _, err := e.client.AddClientIDToOpenIDConnectProvider(ctx, &awsiam.AddClientIDToOpenIDConnectProviderInput{
-			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
+			OpenIDConnectProviderArn: arn,
 			ClientID:                 aws.String(clientID),
 		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddClientID)
@@ -187,10 +202,30 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	for _, clientID := range removeClientIDList {
 		if _, err := e.client.RemoveClientIDFromOpenIDConnectProvider(ctx, &awsiam.RemoveClientIDFromOpenIDConnectProviderInput{
-			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
+			OpenIDConnectProviderArn: arn,
 			ClientID:                 aws.String(clientID),
 		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveClientID)
+		}
+	}
+
+	addTags, removeTags, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observedProvider.Tags)
+
+	if len(addTags) > 0 {
+		if _, err := e.client.TagOpenIDConnectProvider(ctx, &awsiam.TagOpenIDConnectProviderInput{
+			OpenIDConnectProviderArn: arn,
+			Tags:                     addTags,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTags)
+		}
+	}
+
+	if len(removeTags) > 0 {
+		if _, err := e.client.UntagOpenIDConnectProvider(ctx, &awsiam.UntagOpenIDConnectProviderInput{
+			OpenIDConnectProviderArn: arn,
+			TagKeys:                  removeTags,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTags)
 		}
 	}
 
@@ -207,4 +242,30 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	added := false
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		if p, ok := tagMap[k]; !ok || v != p {
+			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+			added = true
+		}
+	}
+	if !added {
+		return nil
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

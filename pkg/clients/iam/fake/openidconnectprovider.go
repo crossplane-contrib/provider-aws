@@ -27,14 +27,24 @@ import (
 // this ensures that the mock implements the client interface
 var _ clientset.OpenIDConnectProviderClient = (*MockOpenIDConnectProviderClient)(nil)
 
+// MockOpenIDConnectProviderInput holds the input structures for future inspections
+type MockOpenIDConnectProviderInput struct {
+	CreateOIDCProviderInput         *iam.CreateOpenIDConnectProviderInput
+	TagOpenIDConnectProviderInput   *iam.TagOpenIDConnectProviderInput
+	UntagOpenIDConnectProviderInput *iam.UntagOpenIDConnectProviderInput
+}
+
 // MockOpenIDConnectProviderClient is a type that implements all the methods for OpenIDConnectProviderClient interface
 type MockOpenIDConnectProviderClient struct {
+	MockOpenIDConnectProviderInput              MockOpenIDConnectProviderInput
 	MockGetOpenIDConnectProvider                func(ctx context.Context, input *iam.GetOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.GetOpenIDConnectProviderOutput, error)
 	MockCreateOpenIDConnectProvider             func(ctx context.Context, input *iam.CreateOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.CreateOpenIDConnectProviderOutput, error)
 	MockAddClientIDToOpenIDConnectProvider      func(ctx context.Context, input *iam.AddClientIDToOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.AddClientIDToOpenIDConnectProviderOutput, error)
 	MockRemoveClientIDFromOpenIDConnectProvider func(ctx context.Context, input *iam.RemoveClientIDFromOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.RemoveClientIDFromOpenIDConnectProviderOutput, error)
 	MockUpdateOpenIDConnectProviderThumbprint   func(ctx context.Context, input *iam.UpdateOpenIDConnectProviderThumbprintInput, opts []func(*iam.Options)) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error)
 	MockDeleteOpenIDConnectProvider             func(ctx context.Context, input *iam.DeleteOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error)
+	MockTagOpenIDConnectProvider                func(ctx context.Context, input *iam.TagOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.TagOpenIDConnectProviderOutput, error)
+	MockUntagOpenIDConnectProvider              func(ctx context.Context, input *iam.UntagOpenIDConnectProviderInput, opts []func(*iam.Options)) (*iam.UntagOpenIDConnectProviderOutput, error)
 }
 
 // GetOpenIDConnectProvider mocks client call.
@@ -44,6 +54,7 @@ func (m *MockOpenIDConnectProviderClient) GetOpenIDConnectProvider(ctx context.C
 
 // CreateOpenIDConnectProvider mocks client call.
 func (m *MockOpenIDConnectProviderClient) CreateOpenIDConnectProvider(ctx context.Context, input *iam.CreateOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.CreateOpenIDConnectProviderOutput, error) {
+	m.MockOpenIDConnectProviderInput.CreateOIDCProviderInput = input
 	return m.MockCreateOpenIDConnectProvider(ctx, input, opts)
 }
 
@@ -65,4 +76,16 @@ func (m *MockOpenIDConnectProviderClient) UpdateOpenIDConnectProviderThumbprint(
 // DeleteOpenIDConnectProvider mocks client call.
 func (m *MockOpenIDConnectProviderClient) DeleteOpenIDConnectProvider(ctx context.Context, input *iam.DeleteOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error) {
 	return m.MockDeleteOpenIDConnectProvider(ctx, input, opts)
+}
+
+// TagOpenIDConnectProvider mocks client call
+func (m *MockOpenIDConnectProviderClient) TagOpenIDConnectProvider(ctx context.Context, input *iam.TagOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.TagOpenIDConnectProviderOutput, error) {
+	m.MockOpenIDConnectProviderInput.TagOpenIDConnectProviderInput = input
+	return m.MockTagOpenIDConnectProvider(ctx, input, opts)
+}
+
+// UntagOpenIDConnectProvider mocks client call
+func (m *MockOpenIDConnectProviderClient) UntagOpenIDConnectProvider(ctx context.Context, input *iam.UntagOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.UntagOpenIDConnectProviderOutput, error) {
+	m.MockOpenIDConnectProviderInput.UntagOpenIDConnectProviderInput = input
+	return m.MockUntagOpenIDConnectProvider(ctx, input, opts)
 }

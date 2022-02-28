@@ -643,6 +643,11 @@ func (in *OpenIDConnectProviderParameters) DeepCopyInto(out *OpenIDConnectProvid
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]Tag, len(*in))
+		copy(*out, *in)
+	}
 	if in.ThumbprintList != nil {
 		in, out := &in.ThumbprintList, &out.ThumbprintList
 		*out = make([]string, len(*in))
