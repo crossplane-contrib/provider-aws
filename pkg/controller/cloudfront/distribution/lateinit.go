@@ -263,14 +263,44 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 func lateInitCacheBehaviors(in *svcapitypes.CacheBehaviors, from *svcsdk.CacheBehaviors) {
 	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
 
-	if len(from.Items) == 0 || in.Items != nil {
+	if len(from.Items) == 0 {
 		return
 	}
 
-	in.Items = make([]*svcapitypes.CacheBehavior, len(from.Items))
+	// If we have no cache behaviors, late init the entire slice
+	if in.Items == nil {
+		in.Items = make([]*svcapitypes.CacheBehavior, len(from.Items))
+		for i := range from.Items {
+			in.Items[i] = &svcapitypes.CacheBehavior{}
+			lateInitCacheBehavior(in.Items[i], from.Items[i])
+		}
+
+		return
+	}
+
+	// If we have some cache behaviors, we need to late init each one of them
+	existing := make(map[string]*svcsdk.CacheBehavior)
 	for i := range from.Items {
-		in.Items[i] = &svcapitypes.CacheBehavior{}
-		lateInitCacheBehavior(in.Items[i], from.Items[i])
+		o := from.Items[i]
+		if o.PathPattern == nil {
+			continue
+		}
+		// PathPattern must be unique for each CacheBehavior
+		existing[awsclients.StringValue(o.PathPattern)] = o
+	}
+
+	for i := range in.Items {
+		ic := in.Items[i]
+		if ic.PathPattern == nil {
+			continue
+		}
+
+		fc := existing[awsclients.StringValue(ic.PathPattern)]
+		if fc == nil {
+			continue
+		}
+
+		lateInitCacheBehavior(ic, fc)
 	}
 }
 
@@ -360,7 +390,7 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 	in.SmoothStreaming = awsclients.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
 	in.TargetOriginID = awsclients.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
 
-	if from.TrustedKeyGroups != nil {
+	if from.TrustedKeyGroups != nil && *from.TrustedKeyGroups.Enabled && len(from.TrustedKeyGroups.Items) == 0 && *from.TrustedKeyGroups.Quantity == 0 {
 		if in.TrustedKeyGroups == nil {
 			in.TrustedKeyGroups = &svcapitypes.TrustedKeyGroups{}
 		}
@@ -370,7 +400,7 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 		in.TrustedKeyGroups.Quantity = awsclients.LateInitializeInt64Ptr(in.TrustedKeyGroups.Quantity, from.TrustedKeyGroups.Quantity)
 	}
 
-	if from.TrustedSigners != nil {
+	if from.TrustedSigners != nil && *from.TrustedSigners.Enabled && len(from.TrustedSigners.Items) == 0 && *from.TrustedSigners.Quantity == 0 {
 		if in.TrustedSigners == nil {
 			in.TrustedSigners = &svcapitypes.TrustedSigners{}
 		}
@@ -386,14 +416,44 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 func lateInitCustomErrorResponses(in *svcapitypes.CustomErrorResponses, from *svcsdk.CustomErrorResponses) {
 	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
 
-	if len(from.Items) == 0 || in.Items != nil {
+	if len(from.Items) == 0 {
 		return
 	}
 
-	in.Items = make([]*svcapitypes.CustomErrorResponse, len(from.Items))
+	// If we have no custom error responses, late init the entire slice.
+	if in.Items == nil {
+		in.Items = make([]*svcapitypes.CustomErrorResponse, len(from.Items))
+		for i := range from.Items {
+			in.Items[i] = &svcapitypes.CustomErrorResponse{}
+			lateInitCustomErrorResponse(in.Items[i], from.Items[i])
+		}
+
+		return
+	}
+
+	// If we have some custom error responses, we need to late init each one them
+	existing := make(map[int64]*svcsdk.CustomErrorResponse)
 	for i := range from.Items {
-		in.Items[i] = &svcapitypes.CustomErrorResponse{}
-		lateInitCustomErrorResponse(in.Items[i], from.Items[i])
+		o := from.Items[i]
+		if o.ErrorCode == nil {
+			continue
+		}
+		// ErrorCode must be unique for each CustomErrorResponse
+		existing[awsclients.Int64Value(o.ErrorCode)] = o
+	}
+
+	for i := range in.Items {
+		ie := in.Items[i]
+		if ie.ErrorCode == nil {
+			continue
+		}
+
+		fe := existing[awsclients.Int64Value(ie.ErrorCode)]
+		if fe == nil {
+			continue
+		}
+
+		lateInitCustomErrorResponse(ie, fe)
 	}
 }
 
@@ -407,14 +467,43 @@ func lateInitCustomErrorResponse(in *svcapitypes.CustomErrorResponse, from *svcs
 func lateInitOriginGroups(in *svcapitypes.OriginGroups, from *svcsdk.OriginGroups) {
 	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
 
-	if len(from.Items) == 0 || in.Items != nil {
+	if len(from.Items) == 0 {
 		return
 	}
 
-	in.Items = make([]*svcapitypes.OriginGroup, len(from.Items))
+	// If we have no origin groups, late init the entire slice.
+	if in.Items == nil {
+		in.Items = make([]*svcapitypes.OriginGroup, len(from.Items))
+		for i := range from.Items {
+			in.Items[i] = &svcapitypes.OriginGroup{}
+			lateInitOriginGroup(in.Items[i], from.Items[i])
+		}
+
+		return
+	}
+
+	// If we have some origin groups, we need to late init each one them
+	existing := make(map[string]*svcsdk.OriginGroup)
 	for i := range from.Items {
-		in.Items[i] = &svcapitypes.OriginGroup{}
-		lateInitOriginGroup(in.Items[i], from.Items[i])
+		o := from.Items[i]
+		if o.Id == nil {
+			continue
+		}
+		existing[awsclients.StringValue(o.Id)] = o
+	}
+
+	for i := range in.Items {
+		io := in.Items[i]
+		if io.ID == nil {
+			continue
+		}
+
+		fo := existing[awsclients.StringValue(io.ID)]
+		if fo == nil {
+			continue
+		}
+
+		lateInitOriginGroup(io, fo)
 	}
 }
 
@@ -585,7 +674,7 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 func lateInitOriginCustomHeaders(in *svcapitypes.CustomHeaders, from *svcsdk.CustomHeaders) {
 	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
 
-	if len(from.Items) == 0 || in.Items != nil {
+	if len(from.Items) == 0 {
 		return
 	}
 
@@ -593,6 +682,31 @@ func lateInitOriginCustomHeaders(in *svcapitypes.CustomHeaders, from *svcsdk.Cus
 	for i := range from.Items {
 		in.Items[i] = &svcapitypes.OriginCustomHeader{}
 		lateInitOriginCustomHeader(in.Items[i], from.Items[i])
+	}
+
+	// If we have some origin custom headers, we need to late init each one of them
+	existing := make(map[string]*svcsdk.OriginCustomHeader)
+	for i := range from.Items {
+		o := from.Items[i]
+		if o.HeaderName == nil {
+			continue
+		}
+		// HeaderName must be unique for each OriginCustomHeader
+		existing[awsclients.StringValue(o.HeaderName)] = o
+	}
+
+	for i := range in.Items {
+		ih := in.Items[i]
+		if ih.HeaderName == nil {
+			continue
+		}
+
+		fh := existing[awsclients.StringValue(ih.HeaderName)]
+		if fh == nil {
+			continue
+		}
+
+		lateInitOriginCustomHeader(ih, fh)
 	}
 }
 
@@ -604,14 +718,44 @@ func lateInitOriginCustomHeader(in *svcapitypes.OriginCustomHeader, from *svcsdk
 func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociations, from *svcsdk.LambdaFunctionAssociations) {
 	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
 
-	if len(from.Items) == 0 || in.Items != nil {
+	if len(from.Items) == 0 {
 		return
 	}
 
-	in.Items = make([]*svcapitypes.LambdaFunctionAssociation, len(from.Items))
+	// If we have no lambda function associations, late init the entire slice
+	if in.Items == nil {
+		in.Items = make([]*svcapitypes.LambdaFunctionAssociation, len(from.Items))
+		for i := range from.Items {
+			in.Items[i] = &svcapitypes.LambdaFunctionAssociation{}
+			lateInitLambdaFunctionAssociation(in.Items[i], from.Items[i])
+		}
+
+		return
+	}
+
+	// If we have some lambda function associations, we need to late init each one of them
+	existing := make(map[string]*svcsdk.LambdaFunctionAssociation)
 	for i := range from.Items {
-		in.Items[i] = &svcapitypes.LambdaFunctionAssociation{}
-		lateInitLambdaFunctionAssociation(in.Items[i], from.Items[i])
+		o := from.Items[i]
+		if o.LambdaFunctionARN == nil {
+			continue
+		}
+		// LambdaFunctionARN must be unique for each LambdaFunctionAssociation
+		existing[awsclients.StringValue(o.LambdaFunctionARN)] = o
+	}
+
+	for i := range in.Items {
+		il := in.Items[i]
+		if il.LambdaFunctionARN == nil {
+			continue
+		}
+
+		fl := existing[awsclients.StringValue(il.LambdaFunctionARN)]
+		if fl == nil {
+			continue
+		}
+
+		lateInitLambdaFunctionAssociation(il, fl)
 	}
 }
 
