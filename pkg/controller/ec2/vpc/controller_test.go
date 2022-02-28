@@ -323,6 +323,13 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				vpc: &fake.MockVPCClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeVpcsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcsOutput, error) {
+						return &awsec2.DescribeVpcsOutput{
+							Vpcs: []awsec2types.Vpc{{
+								VpcId: aws.String(vpcID),
+							}},
+						}, nil
+					},
 					MockModifyTenancy: func(ctx context.Context, input *awsec2.ModifyVpcTenancyInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcTenancyOutput, error) {
 						return &awsec2.ModifyVpcTenancyOutput{}, nil
 					},
@@ -346,6 +353,13 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				vpc: &fake.MockVPCClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeVpcsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcsOutput, error) {
+						return &awsec2.DescribeVpcsOutput{
+							Vpcs: []awsec2types.Vpc{{
+								VpcId: aws.String(vpcID),
+							}},
+						}, nil
+					},
 					MockModifyTenancy: func(ctx context.Context, input *awsec2.ModifyVpcTenancyInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcTenancyOutput, error) {
 						return nil, errBoom
 					},

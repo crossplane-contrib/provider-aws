@@ -54,6 +54,7 @@ const (
 	errUpdate              = "failed to update VPC resource"
 	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
 	errCreateTags          = "failed to create tags for the VPC resource"
+	errDeleteTags          = "failed to delete tags for the VPC resource"
 	errDelete              = "failed to delete the VPC resource"
 )
 
@@ -203,11 +204,25 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.VPC)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
+
+	response, err := e.client.DescribeVpcs(ctx, &awsec2.DescribeVpcsInput{
+		VpcIds: []string{meta.GetExternalName(cr)},
+	})
+
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+	}
+
+	if response.Vpcs == nil {
+		return managed.ExternalUpdate{}, errors.New(errUpdate)
+	}
+
+	vpc := response.Vpcs[0]
 
 	if cr.Spec.ForProvider.EnableDNSSupport != nil {
 		modifyInput := &awsec2.ModifyVpcAttributeInput{
@@ -229,16 +244,26 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	// NOTE(muvaf): VPCs can only be tagged after the creation and this request
-	// is idempotent.
-	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
-		Resources: []string{meta.GetExternalName(cr)},
-		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}); err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+	add, remove := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), vpc.Tags)
+	if len(remove) > 0 {
+		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      remove,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+		}
 	}
 
-	_, err := e.client.ModifyVpcTenancy(ctx, &awsec2.ModifyVpcTenancyInput{
+	if len(add) > 0 {
+		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      add,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+		}
+	}
+
+	_, err = e.client.ModifyVpcTenancy(ctx, &awsec2.ModifyVpcTenancyInput{
 		InstanceTenancy: awsec2types.VpcTenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
 		VpcId:           aws.String(meta.GetExternalName(cr)),
 	})

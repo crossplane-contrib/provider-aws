@@ -35,6 +35,7 @@ type MockVPCClient struct {
 	MockModifyAttribute      func(ctx context.Context, input *ec2.ModifyVpcAttributeInput, opts []func(*ec2.Options)) (*ec2.ModifyVpcAttributeOutput, error)
 	MockModifyTenancy        func(ctx context.Context, input *ec2.ModifyVpcTenancyInput, opts []func(*ec2.Options)) (*ec2.ModifyVpcTenancyOutput, error)
 	MockCreateTags           func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDeleteTags           func(ctx context.Context, input *ec2.DeleteTagsInput, opts []func(*ec2.Options)) (*ec2.DeleteTagsOutput, error)
 	MockDescribeVpcAttribute func(ctx context.Context, input *ec2.DescribeVpcAttributeInput, opts []func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 }
 
@@ -66,6 +67,11 @@ func (m *MockVPCClient) ModifyVpcTenancy(ctx context.Context, input *ec2.ModifyV
 // CreateTags mocks CreateTags method
 func (m *MockVPCClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
 	return m.MockCreateTags(ctx, input, opts)
+}
+
+// DeleteTags mocks DeleteTags method
+func (m *MockVPCClient) DeleteTags(ctx context.Context, input *ec2.DeleteTagsInput, opts ...func(*ec2.Options)) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTags(ctx, input, opts)
 }
 
 // DescribeVpcAttribute mocks DescribeVpcAttribute method
