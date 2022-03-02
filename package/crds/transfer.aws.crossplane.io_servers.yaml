@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: servers.transfer.aws.crossplane.io
 spec:
@@ -72,12 +73,12 @@ spec:
                       a private certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-private.html)
                       in the AWS Certificate Manager User Guide. \n Certificates with
                       the following cryptographic algorithms and key sizes are supported:
-                      \n    * 2048-bit RSA (RSA_2048) \n    * 4096-bit RSA (RSA_4096)
-                      \n    * Elliptic Prime Curve 256 bit (EC_prime256v1) \n    *
-                      Elliptic Prime Curve 384 bit (EC_secp384r1) \n    * Elliptic
-                      Prime Curve 521 bit (EC_secp521r1) \n The certificate must be
-                      a valid SSL/TLS X.509 version 3 certificate with FQDN or IP
-                      address specified and information about the issuer."
+                      \n * 2048-bit RSA (RSA_2048) \n * 4096-bit RSA (RSA_4096) \n
+                      * Elliptic Prime Curve 256 bit (EC_prime256v1) \n * Elliptic
+                      Prime Curve 384 bit (EC_secp384r1) \n * Elliptic Prime Curve
+                      521 bit (EC_secp521r1) \n The certificate must be a valid SSL/TLS
+                      X.509 version 3 certificate with FQDN or IP address specified
+                      and information about the issuer."
                     type: string
                   certificateRef:
                     description: CertificateRef is a reference to a Certificate.
@@ -382,19 +383,19 @@ spec:
                   protocols:
                     description: "Specifies the file transfer protocol or protocols
                       over which your file transfer protocol client can connect to
-                      your server's endpoint. The available protocols are: \n    *
-                      SFTP (Secure Shell (SSH) File Transfer Protocol): File transfer
-                      over    SSH \n    * FTPS (File Transfer Protocol Secure): File
-                      transfer with TLS encryption \n    * FTP (File Transfer Protocol):
-                      Unencrypted file transfer \n If you select FTPS, you must choose
-                      a certificate stored in Amazon Web Services Certificate Manager
-                      (ACM) which is used to identify your server when clients connect
-                      to it over FTPS. \n If Protocol includes either FTP or FTPS,
-                      then the EndpointType must be VPC and the IdentityProviderType
-                      must be AWS_DIRECTORY_SERVICE or API_GATEWAY. \n If Protocol
-                      includes FTP, then AddressAllocationIds cannot be associated.
-                      \n If Protocol is set only to SFTP, the EndpointType can be
-                      set to PUBLIC and the IdentityProviderType can be set to SERVICE_MANAGED."
+                      your server's endpoint. The available protocols are: \n * SFTP
+                      (Secure Shell (SSH) File Transfer Protocol): File transfer over
+                      SSH \n * FTPS (File Transfer Protocol Secure): File transfer
+                      with TLS encryption \n * FTP (File Transfer Protocol): Unencrypted
+                      file transfer \n If you select FTPS, you must choose a certificate
+                      stored in Amazon Web Services Certificate Manager (ACM) which
+                      is used to identify your server when clients connect to it over
+                      FTPS. \n If Protocol includes either FTP or FTPS, then the EndpointType
+                      must be VPC and the IdentityProviderType must be AWS_DIRECTORY_SERVICE
+                      or API_GATEWAY. \n If Protocol includes FTP, then AddressAllocationIds
+                      cannot be associated. \n If Protocol is set only to SFTP, the
+                      EndpointType can be set to PUBLIC and the IdentityProviderType
+                      can be set to SERVICE_MANAGED."
                     items:
                       type: string
                     type: array

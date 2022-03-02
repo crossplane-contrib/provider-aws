@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: targetgroups.elbv2.aws.crossplane.io
 spec:
@@ -177,16 +178,15 @@ spec:
                   targetType:
                     description: "The type of target that you must specify when registering
                       targets with this target group. You can't specify targets for
-                      a target group using more than one target type. \n    * instance
+                      a target group using more than one target type. \n * instance
                       - Register targets by instance ID. This is the default value.
-                      \n    * ip - Register targets by IP address. You can specify
-                      IP addresses from    the subnets of the virtual private cloud
-                      (VPC) for the target group, the    RFC 1918 range (10.0.0.0/8,
-                      172.16.0.0/12, and 192.168.0.0/16), and the    RFC 6598 range
-                      (100.64.0.0/10). You can't specify publicly routable IP    addresses.
-                      \n    * lambda - Register a single Lambda function as a target.
-                      \n    * alb - Register a single Application Load Balancer as
-                      a target."
+                      \n * ip - Register targets by IP address. You can specify IP
+                      addresses from the subnets of the virtual private cloud (VPC)
+                      for the target group, the RFC 1918 range (10.0.0.0/8, 172.16.0.0/12,
+                      and 192.168.0.0/16), and the RFC 6598 range (100.64.0.0/10).
+                      You can't specify publicly routable IP addresses. \n * lambda
+                      - Register a single Lambda function as a target. \n * alb -
+                      Register a single Application Load Balancer as a target."
                     type: string
                   unhealthyThresholdCount:
                     description: The number of consecutive health check failures required

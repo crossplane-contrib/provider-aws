@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: jobs.glue.aws.crossplane.io
 spec:
@@ -133,15 +134,15 @@ spec:
                       \n Do not set Max Capacity if using WorkerType and NumberOfWorkers.
                       \n The value that can be allocated for MaxCapacity depends on
                       whether you are running a Python shell job or an Apache Spark
-                      ETL job: \n    * When you specify a Python shell job (JobCommand.Name=\"pythonshell\"),
-                      \   you can allocate either 0.0625 or 1 DPU. The default is
-                      0.0625 DPU. \n    * When you specify an Apache Spark ETL job
-                      (JobCommand.Name=\"glueetl\")    or Apache Spark streaming ETL
-                      job (JobCommand.Name=\"gluestreaming\"), you    can allocate
-                      from 2 to 100 DPUs. The default is 10 DPUs. This job type    cannot
-                      have a fractional DPU allocation. \n For Glue version 2.0 jobs,
-                      you cannot instead specify a Maximum capacity. Instead, you
-                      should specify a Worker type and the Number of workers."
+                      ETL job: \n * When you specify a Python shell job (JobCommand.Name=\"pythonshell\"),
+                      you can allocate either 0.0625 or 1 DPU. The default is 0.0625
+                      DPU. \n * When you specify an Apache Spark ETL job (JobCommand.Name=\"glueetl\")
+                      or Apache Spark streaming ETL job (JobCommand.Name=\"gluestreaming\"),
+                      you can allocate from 2 to 100 DPUs. The default is 10 DPUs.
+                      This job type cannot have a fractional DPU allocation. \n For
+                      Glue version 2.0 jobs, you cannot instead specify a Maximum
+                      capacity. Instead, you should specify a Worker type and the
+                      Number of workers."
                     type: number
                   maxRetries:
                     description: The maximum number of times to retry this job if
@@ -221,15 +222,15 @@ spec:
                   workerType:
                     description: "The type of predefined worker that is allocated
                       when a job runs. Accepts a value of Standard, G.1X, or G.2X.
-                      \n    * For the Standard worker type, each worker provides 4
-                      vCPU, 16 GB of    memory and a 50GB disk, and 2 executors per
-                      worker. \n    * For the G.1X worker type, each worker maps to
-                      1 DPU (4 vCPU, 16 GB of    memory, 64 GB disk), and provides
-                      1 executor per worker. We recommend    this worker type for
-                      memory-intensive jobs. \n    * For the G.2X worker type, each
-                      worker maps to 2 DPU (8 vCPU, 32 GB of    memory, 128 GB disk),
-                      and provides 1 executor per worker. We recommend    this worker
-                      type for memory-intensive jobs."
+                      \n * For the Standard worker type, each worker provides 4 vCPU,
+                      16 GB of memory and a 50GB disk, and 2 executors per worker.
+                      \n * For the G.1X worker type, each worker maps to 1 DPU (4
+                      vCPU, 16 GB of memory, 64 GB disk), and provides 1 executor
+                      per worker. We recommend this worker type for memory-intensive
+                      jobs. \n * For the G.2X worker type, each worker maps to 2 DPU
+                      (8 vCPU, 32 GB of memory, 128 GB disk), and provides 1 executor
+                      per worker. We recommend this worker type for memory-intensive
+                      jobs."
                     type: string
                 required:
                 - command

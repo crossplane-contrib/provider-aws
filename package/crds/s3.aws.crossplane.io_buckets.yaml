@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: buckets.s3.aws.crossplane.io
 spec:
@@ -840,12 +841,12 @@ spec:
                         description: "Specifies whether Amazon S3 should block public
                           access control lists (ACLs) for this bucket and objects
                           in this bucket. Setting this element to TRUE causes the
-                          following behavior: \n    * PUT Bucket acl and PUT Object
-                          acl calls fail if the specified ACL is    public. \n    *
-                          PUT Object calls fail if the request includes a public ACL.
-                          \n    * PUT Bucket calls fail if the request includes a
-                          public ACL. \n Enabling this setting doesn't affect existing
-                          policies or ACLs."
+                          following behavior: \n * PUT Bucket acl and PUT Object acl
+                          calls fail if the specified ACL is public. \n * PUT Object
+                          calls fail if the request includes a public ACL. \n * PUT
+                          Bucket calls fail if the request includes a public ACL.
+                          \n Enabling this setting doesn't affect existing policies
+                          or ACLs."
                         type: boolean
                       blockPublicPolicy:
                         description: "Specifies whether Amazon S3 should block public
@@ -1173,11 +1174,10 @@ spec:
                                     The filters determine the subset of objects to
                                     which the rule applies. This element is required
                                     only if you specify more than one filter. For
-                                    example: \n    * If you specify both a Prefix
-                                    and a Tag filter, wrap these filters in    an
-                                    And tag. \n    * If you specify a filter based
-                                    on multiple tags, wrap the Tag elements    in
-                                    an And tag."
+                                    example: \n * If you specify both a Prefix and
+                                    a Tag filter, wrap these filters in an And tag.
+                                    \n * If you specify a filter based on multiple
+                                    tags, wrap the Tag elements in an And tag."
                                   properties:
                                     prefix:
                                       description: An object key name prefix that
@@ -1238,10 +1238,10 @@ spec:
                                 when filtering. If two or more rules identify the
                                 same object based on a specified filter, the rule
                                 with higher priority takes precedence. For example:
-                                \n    * Same object quality prefix-based filter criteria
-                                if prefixes you specified    in multiple rules overlap
-                                \n    * Same object qualify tag-based filter criteria
-                                specified in multiple    rules \n For more information,
+                                \n * Same object quality prefix-based filter criteria
+                                if prefixes you specified in multiple rules overlap
+                                \n * Same object qualify tag-based filter criteria
+                                specified in multiple rules \n For more information,
                                 see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
                                 in the Amazon Simple Storage Service Developer Guide."
                               format: int32
@@ -1327,8 +1327,8 @@ spec:
                                     operations, you must use a fully qualified CMK
                                     ARN. For more information, see Using encryption
                                     for cross-account operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-encryption.html#bucket-encryption-update-bucket-policy).
-                                    \n For example: \n    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
-                                    \n    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+                                    \n For example: \n * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+                                    \n * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
                                     \n Amazon S3 only supports symmetric CMKs and
                                     not asymmetric CMKs. For more information, see
                                     Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)

@@ -75,14 +75,7 @@ cobertura:
 		grep -v zz_generated.deepcopy | \
 		$(GOCOVER_COBERTURA) > $(GO_TEST_OUTPUT)/cobertura-coverage.xml
 
-crds.clean:
-	@$(INFO) cleaning generated CRDs
-	@find package/crds -name '*.yaml' -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
-	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
-	@$(OK) cleaned generated CRDs
-
 generate.init: services.all
-generate.done: crds.clean
 
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.

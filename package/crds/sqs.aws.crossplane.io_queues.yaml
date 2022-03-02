@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: queues.sqs.aws.crossplane.io
 spec:
@@ -94,14 +95,14 @@ spec:
                     format: int64
                     type: integer
                   fifoQueue:
-                    description: "FIFOQueue - Designates a queue as FIFO. Valid values:
-                      true, false. If \tyou don't specify the FifoQueue attribute,
-                      Amazon SQS creates a standard \tqueue. You can provide this
-                      attribute only during queue creation. You \tcan't change it
-                      for an existing queue. When you set this attribute, you \tmust
-                      also provide the MessageGroupId for your messages explicitly.
-                      For \tmore information, see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
-                      \tin the Amazon Simple Queue Service Developer Guide."
+                    description: 'FIFOQueue - Designates a queue as FIFO. Valid values:
+                      true, false. If you don''t specify the FifoQueue attribute,
+                      Amazon SQS creates a standard queue. You can provide this attribute
+                      only during queue creation. You can''t change it for an existing
+                      queue. When you set this attribute, you must also provide the
+                      MessageGroupId for your messages explicitly. For more information,
+                      see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
+                      in the Amazon Simple Queue Service Developer Guide.'
                     type: boolean
                   kmsDataKeyReusePeriodSeconds:
                     description: 'KMSDataKeyReusePeriodSeconds - The length of time,
