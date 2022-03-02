@@ -279,9 +279,15 @@ func GenerateObservation(obj *svcsdk.ServiceConfiguration) *svcapitypes.ServiceC
 		BaseEndpointDNSNames: obj.BaseEndpointDnsNames,
 		ManagesVPCEndpoints:  obj.ManagesVpcEndpoints,
 		PrivateDNSName:       obj.PrivateDnsName,
-		ServiceID:            obj.ServiceId,
-		ServiceName:          obj.ServiceName,
-		ServiceState:         obj.ServiceState,
+		PrivateDNSNameConfiguration: &svcapitypes.PrivateDNSNameConfiguration{
+			Name:  obj.PrivateDnsNameConfiguration.Name,
+			State: obj.PrivateDnsNameConfiguration.State,
+			Value: obj.PrivateDnsNameConfiguration.Value,
+			Type:  obj.PrivateDnsNameConfiguration.Type,
+		},
+		ServiceID:    obj.ServiceId,
+		ServiceName:  obj.ServiceName,
+		ServiceState: obj.ServiceState,
 	}
 
 	o.NetworkLoadBalancerARNs = append(o.NetworkLoadBalancerARNs, obj.NetworkLoadBalancerArns...)
