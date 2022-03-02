@@ -35,11 +35,6 @@ import (
 // Are they really all optional and thus late-init-able? I'm pretty sure despite
 // what the AWS SDK says that some of these fields are required.
 
-// TODO(negz): We should ask the code generator to ignore all the 'quantity'
-// fields and just infer them from the length of their associated items slice.
-// Currently we only do this for Origins, for reasons that are unclear.
-// https://github.com/crossplane/provider-aws/issues/789
-
 func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistributionOutput) error {
 	if gdo.Distribution == nil || gdo.Distribution.DistributionConfig == nil {
 		return nil
@@ -59,7 +54,6 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 		}
 
 		in.Aliases.Items = awsclients.LateInitializeStringPtrSlice(in.Aliases.Items, from.Aliases.Items)
-		in.Aliases.Quantity = awsclients.LateInitializeInt64Ptr(in.Aliases.Quantity, from.Aliases.Quantity)
 	}
 
 	if from.CacheBehaviors != nil {
@@ -131,7 +125,6 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 				in.Restrictions.GeoRestriction = &svcapitypes.GeoRestriction{}
 			}
 
-			in.Restrictions.GeoRestriction.Quantity = awsclients.LateInitializeInt64Ptr(in.Restrictions.GeoRestriction.Quantity, from.Restrictions.GeoRestriction.Quantity)
 			in.Restrictions.GeoRestriction.Items = awsclients.LateInitializeStringPtrSlice(in.Restrictions.GeoRestriction.Items, from.Restrictions.GeoRestriction.Items)
 			in.Restrictions.GeoRestriction.RestrictionType = awsclients.LateInitializeStringPtr(in.Restrictions.GeoRestriction.RestrictionType, from.Restrictions.GeoRestriction.RestrictionType)
 		}
@@ -162,7 +155,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 		}
 
 		in.AllowedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
-		in.AllowedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.Quantity, from.AllowedMethods.Quantity)
 
 		if from.AllowedMethods.CachedMethods != nil {
 			if in.AllowedMethods.CachedMethods == nil {
@@ -170,7 +162,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 			}
 
 			in.AllowedMethods.CachedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
-			in.AllowedMethods.CachedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.CachedMethods.Quantity, from.AllowedMethods.CachedMethods.Quantity)
 		}
 	}
 
@@ -197,7 +188,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 				}
 
 				in.ForwardedValues.Cookies.WhitelistedNames.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
-				in.ForwardedValues.Cookies.WhitelistedNames.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.Cookies.WhitelistedNames.Quantity, from.ForwardedValues.Cookies.WhitelistedNames.Quantity)
 			}
 		}
 
@@ -207,8 +197,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 			}
 
 			in.ForwardedValues.Headers.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
-			in.ForwardedValues.Headers.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.Headers.Quantity, from.ForwardedValues.Headers.Quantity)
-
 		}
 
 		in.ForwardedValues.QueryString = awsclients.LateInitializeBoolPtr(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
@@ -219,7 +207,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 			}
 
 			in.ForwardedValues.QueryStringCacheKeys.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
-			in.ForwardedValues.QueryStringCacheKeys.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.QueryStringCacheKeys.Quantity, from.ForwardedValues.QueryStringCacheKeys.Quantity)
 		}
 	}
 
@@ -244,7 +231,6 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 
 		in.TrustedKeyGroups.Enabled = awsclients.LateInitializeBoolPtr(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
 		in.TrustedKeyGroups.Items = awsclients.LateInitializeStringPtrSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
-		in.TrustedKeyGroups.Quantity = awsclients.LateInitializeInt64Ptr(in.TrustedKeyGroups.Quantity, from.TrustedKeyGroups.Quantity)
 	}
 
 	if from.TrustedSigners != nil {
@@ -254,15 +240,12 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 
 		in.TrustedSigners.Enabled = awsclients.LateInitializeBoolPtr(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
 		in.TrustedSigners.Items = awsclients.LateInitializeStringPtrSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
-		in.TrustedSigners.Quantity = awsclients.LateInitializeInt64Ptr(in.TrustedSigners.Quantity, from.TrustedSigners.Quantity)
 	}
 
 	in.ViewerProtocolPolicy = awsclients.LateInitializeStringPtr(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
 }
 
 func lateInitCacheBehaviors(in *svcapitypes.CacheBehaviors, from *svcsdk.CacheBehaviors) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	if len(from.Items) == 0 {
 		return
 	}
@@ -313,7 +296,6 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 		}
 
 		in.AllowedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
-		in.AllowedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.Quantity, from.AllowedMethods.Quantity)
 
 		if from.AllowedMethods.CachedMethods != nil {
 			if in.AllowedMethods.CachedMethods == nil {
@@ -321,7 +303,6 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 			}
 
 			in.AllowedMethods.CachedMethods.Items = awsclients.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
-			in.AllowedMethods.CachedMethods.Quantity = awsclients.LateInitializeInt64Ptr(in.AllowedMethods.CachedMethods.Quantity, from.AllowedMethods.CachedMethods.Quantity)
 		}
 	}
 
@@ -348,7 +329,6 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 				}
 
 				in.ForwardedValues.Cookies.WhitelistedNames.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
-				in.ForwardedValues.Cookies.WhitelistedNames.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.Cookies.WhitelistedNames.Quantity, from.ForwardedValues.Cookies.WhitelistedNames.Quantity)
 			}
 		}
 
@@ -358,8 +338,6 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 			}
 
 			in.ForwardedValues.Headers.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
-			in.ForwardedValues.Headers.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.Headers.Quantity, from.ForwardedValues.Headers.Quantity)
-
 		}
 
 		in.ForwardedValues.QueryString = awsclients.LateInitializeBoolPtr(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
@@ -370,7 +348,6 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 			}
 
 			in.ForwardedValues.QueryStringCacheKeys.Items = awsclients.LateInitializeStringPtrSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
-			in.ForwardedValues.QueryStringCacheKeys.Quantity = awsclients.LateInitializeInt64Ptr(in.ForwardedValues.QueryStringCacheKeys.Quantity, from.ForwardedValues.QueryStringCacheKeys.Quantity)
 		}
 	}
 
@@ -390,32 +367,28 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 	in.SmoothStreaming = awsclients.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
 	in.TargetOriginID = awsclients.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
 
-	if from.TrustedKeyGroups != nil && *from.TrustedKeyGroups.Enabled && len(from.TrustedKeyGroups.Items) == 0 && *from.TrustedKeyGroups.Quantity == 0 {
+	if from.TrustedKeyGroups != nil && *from.TrustedKeyGroups.Enabled && len(from.TrustedKeyGroups.Items) != 0 {
 		if in.TrustedKeyGroups == nil {
 			in.TrustedKeyGroups = &svcapitypes.TrustedKeyGroups{}
 		}
 
 		in.TrustedKeyGroups.Enabled = awsclients.LateInitializeBoolPtr(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
 		in.TrustedKeyGroups.Items = awsclients.LateInitializeStringPtrSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
-		in.TrustedKeyGroups.Quantity = awsclients.LateInitializeInt64Ptr(in.TrustedKeyGroups.Quantity, from.TrustedKeyGroups.Quantity)
 	}
 
-	if from.TrustedSigners != nil && *from.TrustedSigners.Enabled && len(from.TrustedSigners.Items) == 0 && *from.TrustedSigners.Quantity == 0 {
+	if from.TrustedSigners != nil && *from.TrustedSigners.Enabled && len(from.TrustedSigners.Items) != 0 {
 		if in.TrustedSigners == nil {
 			in.TrustedSigners = &svcapitypes.TrustedSigners{}
 		}
 
 		in.TrustedSigners.Enabled = awsclients.LateInitializeBoolPtr(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
 		in.TrustedSigners.Items = awsclients.LateInitializeStringPtrSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
-		in.TrustedSigners.Quantity = awsclients.LateInitializeInt64Ptr(in.TrustedSigners.Quantity, from.TrustedSigners.Quantity)
 	}
 
 	in.ViewerProtocolPolicy = awsclients.LateInitializeStringPtr(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
 }
 
 func lateInitCustomErrorResponses(in *svcapitypes.CustomErrorResponses, from *svcsdk.CustomErrorResponses) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	if len(from.Items) == 0 {
 		return
 	}
@@ -465,8 +438,6 @@ func lateInitCustomErrorResponse(in *svcapitypes.CustomErrorResponse, from *svcs
 }
 
 func lateInitOriginGroups(in *svcapitypes.OriginGroups, from *svcsdk.OriginGroups) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	if len(from.Items) == 0 {
 		return
 	}
@@ -519,7 +490,6 @@ func lateInitOriginGroup(in *svcapitypes.OriginGroup, from *svcsdk.OriginGroup) 
 			}
 
 			in.FailoverCriteria.StatusCodes.Items = awsclients.LateInitializeInt64PtrSlice(in.FailoverCriteria.StatusCodes.Items, from.FailoverCriteria.StatusCodes.Items)
-			in.FailoverCriteria.StatusCodes.Quantity = awsclients.LateInitializeInt64Ptr(in.FailoverCriteria.StatusCodes.Quantity, from.FailoverCriteria.StatusCodes.Quantity)
 		}
 	}
 
@@ -535,8 +505,6 @@ func lateInitOriginGroup(in *svcapitypes.OriginGroup, from *svcsdk.OriginGroup) 
 }
 
 func lateInitOriginGroupMembers(in *svcapitypes.OriginGroupMembers, from *svcsdk.OriginGroupMembers) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	// TODO(negz): I believe OriginGroupMembers have an ID field, so we may
 	// be able to match them by ID when late-initializing like we do for
 	// Origins.
@@ -572,9 +540,6 @@ func lateInitOriginGroupMember(in *svcapitypes.OriginGroupMember, from *svcsdk.O
 //
 // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-overview-required-fields.html
 func lateInitOrigins(in *svcapitypes.Origins, from *svcsdk.Origins) {
-	// NOTE(negz): This is the only type where we the code generator ignores
-	// the quantity field and we infer it from the slice's length.
-
 	if len(from.Items) == 0 {
 		return
 	}
@@ -645,7 +610,6 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 			}
 
 			in.CustomOriginConfig.OriginSSLProtocols.Items = awsclients.LateInitializeStringPtrSlice(in.CustomOriginConfig.OriginSSLProtocols.Items, from.CustomOriginConfig.OriginSslProtocols.Items)
-			in.CustomOriginConfig.OriginSSLProtocols.Quantity = awsclients.LateInitializeInt64Ptr(in.CustomOriginConfig.OriginSSLProtocols.Quantity, from.CustomOriginConfig.OriginSslProtocols.Quantity)
 		}
 	}
 
@@ -672,8 +636,6 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 }
 
 func lateInitOriginCustomHeaders(in *svcapitypes.CustomHeaders, from *svcsdk.CustomHeaders) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	if len(from.Items) == 0 {
 		return
 	}
@@ -716,8 +678,6 @@ func lateInitOriginCustomHeader(in *svcapitypes.OriginCustomHeader, from *svcsdk
 }
 
 func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociations, from *svcsdk.LambdaFunctionAssociations) {
-	in.Quantity = awsclients.LateInitializeInt64Ptr(in.Quantity, from.Quantity)
-
 	if len(from.Items) == 0 {
 		return
 	}

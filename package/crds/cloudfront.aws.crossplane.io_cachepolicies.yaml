@@ -128,9 +128,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                             type: object
                           queryStringsConfig:
@@ -298,9 +295,6 @@ spec:
                                         items:
                                           type: string
                                         type: array
-                                      quantity:
-                                        format: int64
-                                        type: integer
                                     type: object
                                 type: object
                               queryStringsConfig:

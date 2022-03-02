@@ -107,9 +107,6 @@ func GenerateCachePolicy(resp *svcsdk.GetCachePolicyOutput) *svcapitypes.CachePo
 							}
 							f0f0f5f3f1.Items = f0f0f5f3f1f0
 						}
-						if resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity != nil {
-							f0f0f5f3f1.Quantity = resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity
-						}
 						f0f0f5f3.Headers = f0f0f5f3f1
 					}
 					f0f0f5.HeadersConfig = f0f0f5f3
@@ -228,9 +225,6 @@ func GenerateCreateCachePolicyInput(cr *svcapitypes.CachePolicy) *svcsdk.CreateC
 						}
 						f0f5f3f1.SetItems(f0f5f3f1f0)
 					}
-					if cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity != nil {
-						f0f5f3f1.SetQuantity(*cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity)
-					}
 					f0f5f3.SetHeaders(f0f5f3f1)
 				}
 				f0f5.SetHeadersConfig(f0f5f3)
@@ -333,9 +327,6 @@ func GenerateUpdateCachePolicyInput(cr *svcapitypes.CachePolicy) *svcsdk.UpdateC
 							f0f5f3f1f0 = append(f0f5f3f1f0, &f0f5f3f1f0elem)
 						}
 						f0f5f3f1.SetItems(f0f5f3f1f0)
-					}
-					if cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity != nil {
-						f0f5f3f1.SetQuantity(*cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.HeadersConfig.Headers.Quantity)
 					}
 					f0f5f3.SetHeaders(f0f5f3f1)
 				}

@@ -55,8 +55,6 @@ type AliasICPRecordal struct {
 // +kubebuilder:skipversion
 type Aliases struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -74,8 +72,6 @@ type AllowedMethods struct {
 	CachedMethods *CachedMethods `json:"cachedMethods,omitempty"`
 
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -158,8 +154,6 @@ type CacheBehavior struct {
 // +kubebuilder:skipversion
 type CacheBehaviors struct {
 	Items []*CacheBehavior `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -272,8 +266,6 @@ type CachePolicy_SDK struct {
 // +kubebuilder:skipversion
 type CachedMethods struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -321,15 +313,11 @@ type CustomErrorResponse struct {
 // +kubebuilder:skipversion
 type CustomErrorResponses struct {
 	Items []*CustomErrorResponse `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type CustomHeaders struct {
 	Items []*OriginCustomHeader `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -796,16 +784,12 @@ type ForwardedValues struct {
 type GeoRestriction struct {
 	Items []*string `json:"items,omitempty"`
 
-	Quantity *int64 `json:"quantity,omitempty"`
-
 	RestrictionType *string `json:"restrictionType,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type Headers struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -900,8 +884,6 @@ type LambdaFunctionAssociation struct {
 // +kubebuilder:skipversion
 type LambdaFunctionAssociations struct {
 	Items []*LambdaFunctionAssociation `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1028,8 +1010,6 @@ type OriginGroupMembers struct {
 type OriginGroups struct {
 	// List of origin groups for a distribution.
 	Items []*OriginGroup `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1076,8 +1056,6 @@ type OriginRequestPolicyQueryStringsConfig struct {
 // +kubebuilder:skipversion
 type OriginSSLProtocols struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1177,8 +1155,6 @@ type QueryArgProfiles struct {
 // +kubebuilder:skipversion
 type QueryStringCacheKeys struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1238,8 +1214,6 @@ type Signer struct {
 type StatusCodes struct {
 	// List of status codes for origin failover.
 	Items []*int64 `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1329,8 +1303,6 @@ type TrustedKeyGroups struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1338,8 +1310,6 @@ type TrustedSigners struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -12,4 +12,20 @@ ignore:
   field_paths:
     - DistributionConfig.CallerReference
     - Origins.Quantity
+    - Aliases.Quantity
+    - CustomErrorResponses.Quantity
+    - GeoRestriction.Quantity
+    - AllowedMethods.Quantity
+    - CachedMethods.Quantity
+    - Headers.Quantity
+    - QueryStringCacheKeys.Quantity
+    - LambdaFunctionAssociations.Quantity
+    - TrustedKeyGroups.Quantity
+    - TrustedSigners.Quantity
+    - CacheBehaviors.Quantity
+    - CachedMethods.Quantity
+    - OriginGroups.Quantity
+    - StatusCodes.Quantity
+    - CustomHeaders.Quantity
+    - OriginSslProtocols.Quantity
     - OriginAccessIdentityConfig.CallerReference

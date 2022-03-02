@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//nolint:gocyclo,staticcheck,golint
 package distribution
 
 import (
@@ -86,6 +87,149 @@ func preCreate(_ context.Context, cr *svcapitypes.Distribution, cdi *svcsdk.Crea
 		cdi.DistributionConfig.Origins.Quantity =
 			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
 	}
+
+	if cr.Spec.ForProvider.DistributionConfig.Aliases != nil {
+		cdi.DistributionConfig.Aliases.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items))
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
+		cdi.DistributionConfig.CustomErrorResponses.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items))
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil && cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
+		cdi.DistributionConfig.Restrictions.GeoRestriction.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items))
+	}
+
+	dcb := cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior
+	if dcb != nil {
+		if dcb.AllowedMethods != nil {
+			cdi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity =
+				awsclients.Int64(len(dcb.AllowedMethods.Items))
+
+			if dcb.AllowedMethods != nil && dcb.AllowedMethods.CachedMethods != nil {
+				cdi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity =
+					awsclients.Int64(len(dcb.AllowedMethods.CachedMethods.Items))
+			}
+		}
+
+		if dcb.ForwardedValues != nil {
+			if dcb.ForwardedValues.Cookies != nil && dcb.ForwardedValues.Cookies.WhitelistedNames != nil {
+				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items))
+			}
+
+			if dcb.ForwardedValues.Headers != nil {
+				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.Headers.Items))
+			}
+
+			if dcb.ForwardedValues.QueryStringCacheKeys != nil {
+				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items))
+			}
+		}
+
+		if dcb.LambdaFunctionAssociations != nil {
+			cdi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
+				awsclients.Int64(len(dcb.LambdaFunctionAssociations.Items))
+		}
+
+		if dcb.TrustedKeyGroups != nil {
+			cdi.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity =
+				awsclients.Int64(len(dcb.TrustedKeyGroups.Items))
+		}
+
+		if dcb.TrustedSigners != nil {
+			cdi.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity =
+				awsclients.Int64(len(dcb.TrustedSigners.Items))
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
+		cdi.DistributionConfig.CacheBehaviors.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items))
+
+		for i, cbi := range cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items {
+			if cbi.AllowedMethods != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.Quantity =
+					awsclients.Int64(len(cbi.AllowedMethods.Items))
+			}
+
+			if cbi.AllowedMethods != nil && cbi.AllowedMethods.CachedMethods != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.CachedMethods.Quantity =
+					awsclients.Int64(len(cbi.AllowedMethods.CachedMethods.Items))
+			}
+
+			if cbi.ForwardedValues != nil {
+				if cbi.ForwardedValues.Cookies != nil && cbi.ForwardedValues.Cookies.WhitelistedNames != nil {
+					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Cookies.WhitelistedNames.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items))
+				}
+
+				if cbi.ForwardedValues.Headers != nil {
+					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Headers.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.Headers.Items))
+				}
+
+				if cbi.ForwardedValues.QueryStringCacheKeys != nil {
+					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items))
+				}
+			}
+
+			if cbi.LambdaFunctionAssociations != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].LambdaFunctionAssociations.Quantity =
+					awsclients.Int64(len(cbi.LambdaFunctionAssociations.Items))
+			}
+
+			if cbi.TrustedKeyGroups != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].TrustedKeyGroups.Quantity =
+					awsclients.Int64(len(cbi.TrustedKeyGroups.Items))
+			}
+
+			if cbi.TrustedSigners != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].TrustedSigners.Quantity =
+					awsclients.Int64(len(cbi.TrustedSigners.Items))
+			}
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
+		cdi.DistributionConfig.OriginGroups.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items))
+
+		for i, ogi := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
+			if ogi.FailoverCriteria != nil && ogi.FailoverCriteria.StatusCodes != nil {
+				cdi.DistributionConfig.OriginGroups.Items[i].FailoverCriteria.StatusCodes.Quantity =
+					awsclients.Int64(len(ogi.FailoverCriteria.StatusCodes.Items))
+			}
+
+			if ogi.Members != nil {
+				cdi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = awsclients.Int64(len(ogi.Members.Items))
+			}
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
+		cdi.DistributionConfig.Origins.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
+
+		for i, io := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
+			if io.CustomHeaders != nil {
+				cdi.DistributionConfig.Origins.Items[i].CustomHeaders.Quantity =
+					awsclients.Int64(len(io.CustomHeaders.Items))
+			}
+
+			if io.CustomOriginConfig != nil && io.CustomOriginConfig.OriginSSLProtocols != nil {
+				cdi.DistributionConfig.Origins.Items[i].CustomOriginConfig.OriginSslProtocols.Quantity =
+					awsclients.Int64(len(io.CustomOriginConfig.OriginSSLProtocols.Items))
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -178,6 +322,146 @@ func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.Upda
 	udi.DistributionConfig.CallerReference = awsclients.String(string(cr.UID))
 	udi.DistributionConfig.Origins.Quantity =
 		awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
+
+	if cr.Spec.ForProvider.DistributionConfig.Aliases != nil {
+		udi.DistributionConfig.Aliases.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items), 0)
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
+		udi.DistributionConfig.CustomErrorResponses.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items), 0)
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil && cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
+		udi.DistributionConfig.Restrictions.GeoRestriction.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items), 0)
+	}
+
+	dcb := cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior
+	if dcb != nil {
+		if dcb.AllowedMethods != nil {
+			udi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity =
+				awsclients.Int64(len(dcb.AllowedMethods.Items), 0)
+
+			if dcb.AllowedMethods != nil && dcb.AllowedMethods.CachedMethods != nil {
+				udi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity =
+					awsclients.Int64(len(dcb.AllowedMethods.CachedMethods.Items), 0)
+			}
+		}
+
+		if dcb.ForwardedValues != nil {
+			if dcb.ForwardedValues.Cookies != nil && dcb.ForwardedValues.Cookies.WhitelistedNames != nil {
+				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+			}
+
+			if dcb.ForwardedValues.Headers != nil {
+				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.Headers.Items), 0)
+			}
+
+			if dcb.ForwardedValues.QueryStringCacheKeys != nil {
+				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity =
+					awsclients.Int64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items), 0)
+			}
+		}
+		if dcb.LambdaFunctionAssociations != nil {
+			udi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
+				awsclients.Int64(len(dcb.LambdaFunctionAssociations.Items), 0)
+		}
+
+		if dcb.TrustedKeyGroups != nil {
+			udi.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity =
+				awsclients.Int64(len(dcb.TrustedKeyGroups.Items), 0)
+		}
+
+		if dcb.TrustedSigners != nil {
+			udi.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity =
+				awsclients.Int64(len(dcb.TrustedSigners.Items), 0)
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
+		udi.DistributionConfig.CacheBehaviors.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items), 0)
+
+		for i, cbi := range cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items {
+			if cbi.AllowedMethods != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.Quantity =
+					awsclients.Int64(len(cbi.AllowedMethods.Items), 0)
+			}
+
+			if cbi.AllowedMethods != nil && cbi.AllowedMethods.CachedMethods != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.CachedMethods.Quantity =
+					awsclients.Int64(len(cbi.AllowedMethods.CachedMethods.Items), 0)
+			}
+
+			if cbi.ForwardedValues != nil {
+				if cbi.ForwardedValues.Cookies != nil && cbi.ForwardedValues.Cookies.WhitelistedNames != nil {
+					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Cookies.WhitelistedNames.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+				}
+
+				if cbi.ForwardedValues.Headers != nil {
+					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Headers.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.Headers.Items), 0)
+				}
+
+				if cbi.ForwardedValues.QueryStringCacheKeys != nil {
+					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
+						awsclients.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items), 0)
+				}
+			}
+
+			if cbi.LambdaFunctionAssociations != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].LambdaFunctionAssociations.Quantity =
+					awsclients.Int64(len(cbi.LambdaFunctionAssociations.Items), 0)
+			}
+
+			if cbi.TrustedKeyGroups != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].TrustedKeyGroups.Quantity =
+					awsclients.Int64(len(cbi.TrustedKeyGroups.Items), 0)
+			}
+
+			if cbi.TrustedSigners != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].TrustedSigners.Quantity =
+					awsclients.Int64(len(cbi.TrustedSigners.Items), 0)
+			}
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
+		udi.DistributionConfig.OriginGroups.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items), 0)
+
+		for i, ogi := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
+			if ogi.FailoverCriteria != nil && ogi.FailoverCriteria.StatusCodes != nil {
+				udi.DistributionConfig.OriginGroups.Items[i].FailoverCriteria.StatusCodes.Quantity =
+					awsclients.Int64(len(ogi.FailoverCriteria.StatusCodes.Items), 0)
+			}
+
+			if ogi.Members != nil {
+				udi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = awsclients.Int64(len(ogi.Members.Items), 0)
+			}
+		}
+	}
+
+	if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
+		udi.DistributionConfig.Origins.Quantity =
+			awsclients.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items), 0)
+
+		for i, io := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
+			if io.CustomHeaders != nil {
+				udi.DistributionConfig.Origins.Items[i].CustomHeaders.Quantity =
+					awsclients.Int64(len(io.CustomHeaders.Items), 0)
+			}
+			if io.CustomOriginConfig != nil && io.CustomOriginConfig.OriginSSLProtocols != nil {
+				udi.DistributionConfig.Origins.Items[i].CustomOriginConfig.OriginSslProtocols.Quantity =
+					awsclients.Int64(len(io.CustomOriginConfig.OriginSSLProtocols.Items), 0)
+			}
+		}
+	}
 
 	return nil
 }
