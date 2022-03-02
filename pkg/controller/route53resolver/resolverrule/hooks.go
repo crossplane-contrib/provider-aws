@@ -2,30 +2,24 @@ package resolverrule
 
 import (
 	"context"
-	"time"
-
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/route53resolver"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
-
-	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
 	svcapitypes "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
 )
 
 // SetupResolverRule adds a controller that reconciles ResolverRule
-func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupResolverRule(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1alpha1.ResolverRuleGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -39,16 +33,14 @@ func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&v1alpha1.ResolverRule{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(v1alpha1.ResolverRuleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

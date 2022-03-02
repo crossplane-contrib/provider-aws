@@ -15,18 +15,14 @@ package volume
 
 import (
 	"context"
-	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"k8s.io/client-go/util/workqueue"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -35,7 +31,7 @@ import (
 )
 
 // SetupVolume adds a controller that reconciles Volume.
-func SetupVolume(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter, poll time.Duration) error {
+func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VolumeGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -47,16 +43,14 @@ func SetupVolume(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimit
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(limiter),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Volume{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.VolumeGroupVersionKind),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
