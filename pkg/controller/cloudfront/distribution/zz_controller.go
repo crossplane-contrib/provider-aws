@@ -221,9 +221,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					}
 					f0f4f0.Items = f0f4f0f0
 				}
-				if resp.Distribution.DistributionConfig.Aliases.Quantity != nil {
-					f0f4f0.Quantity = resp.Distribution.DistributionConfig.Aliases.Quantity
-				}
 				f0f4.Aliases = f0f4f0
 			}
 			if resp.Distribution.DistributionConfig.CacheBehaviors != nil {
@@ -245,9 +242,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									}
 									f0f4f1f0elemf0f0.Items = f0f4f1f0elemf0f0f0
 								}
-								if f0f4f1f0iter.AllowedMethods.CachedMethods.Quantity != nil {
-									f0f4f1f0elemf0f0.Quantity = f0f4f1f0iter.AllowedMethods.CachedMethods.Quantity
-								}
 								f0f4f1f0elemf0.CachedMethods = f0f4f1f0elemf0f0
 							}
 							if f0f4f1f0iter.AllowedMethods.Items != nil {
@@ -258,9 +252,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									f0f4f1f0elemf0f1 = append(f0f4f1f0elemf0f1, &f0f4f1f0elemf0f1elem)
 								}
 								f0f4f1f0elemf0.Items = f0f4f1f0elemf0f1
-							}
-							if f0f4f1f0iter.AllowedMethods.Quantity != nil {
-								f0f4f1f0elemf0.Quantity = f0f4f1f0iter.AllowedMethods.Quantity
 							}
 							f0f4f1f0elem.AllowedMethods = f0f4f1f0elemf0
 						}
@@ -312,9 +303,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									}
 									f0f4f1f0elemf5f1.Items = f0f4f1f0elemf5f1f0
 								}
-								if f0f4f1f0iter.ForwardedValues.Headers.Quantity != nil {
-									f0f4f1f0elemf5f1.Quantity = f0f4f1f0iter.ForwardedValues.Headers.Quantity
-								}
 								f0f4f1f0elemf5.Headers = f0f4f1f0elemf5f1
 							}
 							if f0f4f1f0iter.ForwardedValues.QueryString != nil {
@@ -330,9 +318,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 										f0f4f1f0elemf5f3f0 = append(f0f4f1f0elemf5f3f0, &f0f4f1f0elemf5f3f0elem)
 									}
 									f0f4f1f0elemf5f3.Items = f0f4f1f0elemf5f3f0
-								}
-								if f0f4f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-									f0f4f1f0elemf5f3.Quantity = f0f4f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity
 								}
 								f0f4f1f0elemf5.QueryStringCacheKeys = f0f4f1f0elemf5f3
 							}
@@ -356,9 +341,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									f0f4f1f0elemf6f0 = append(f0f4f1f0elemf6f0, f0f4f1f0elemf6f0elem)
 								}
 								f0f4f1f0elemf6.Items = f0f4f1f0elemf6f0
-							}
-							if f0f4f1f0iter.LambdaFunctionAssociations.Quantity != nil {
-								f0f4f1f0elemf6.Quantity = f0f4f1f0iter.LambdaFunctionAssociations.Quantity
 							}
 							f0f4f1f0elem.LambdaFunctionAssociations = f0f4f1f0elemf6
 						}
@@ -397,9 +379,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								}
 								f0f4f1f0elemf14.Items = f0f4f1f0elemf14f1
 							}
-							if f0f4f1f0iter.TrustedKeyGroups.Quantity != nil {
-								f0f4f1f0elemf14.Quantity = f0f4f1f0iter.TrustedKeyGroups.Quantity
-							}
 							f0f4f1f0elem.TrustedKeyGroups = f0f4f1f0elemf14
 						}
 						if f0f4f1f0iter.TrustedSigners != nil {
@@ -416,9 +395,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								}
 								f0f4f1f0elemf15.Items = f0f4f1f0elemf15f1
 							}
-							if f0f4f1f0iter.TrustedSigners.Quantity != nil {
-								f0f4f1f0elemf15.Quantity = f0f4f1f0iter.TrustedSigners.Quantity
-							}
 							f0f4f1f0elem.TrustedSigners = f0f4f1f0elemf15
 						}
 						if f0f4f1f0iter.ViewerProtocolPolicy != nil {
@@ -427,9 +403,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						f0f4f1f0 = append(f0f4f1f0, f0f4f1f0elem)
 					}
 					f0f4f1.Items = f0f4f1f0
-				}
-				if resp.Distribution.DistributionConfig.CacheBehaviors.Quantity != nil {
-					f0f4f1.Quantity = resp.Distribution.DistributionConfig.CacheBehaviors.Quantity
 				}
 				f0f4.CacheBehaviors = f0f4f1
 			}
@@ -458,9 +431,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					}
 					f0f4f3.Items = f0f4f3f0
 				}
-				if resp.Distribution.DistributionConfig.CustomErrorResponses.Quantity != nil {
-					f0f4f3.Quantity = resp.Distribution.DistributionConfig.CustomErrorResponses.Quantity
-				}
 				f0f4.CustomErrorResponses = f0f4f3
 			}
 			if resp.Distribution.DistributionConfig.DefaultCacheBehavior != nil {
@@ -478,9 +448,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							}
 							f0f4f4f0f0.Items = f0f4f4f0f0f0
 						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity != nil {
-							f0f4f4f0f0.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity
-						}
 						f0f4f4f0.CachedMethods = f0f4f4f0f0
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
@@ -491,9 +458,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f4f0f1 = append(f0f4f4f0f1, &f0f4f4f0f1elem)
 						}
 						f0f4f4f0.Items = f0f4f4f0f1
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity != nil {
-						f0f4f4f0.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity
 					}
 					f0f4f4.AllowedMethods = f0f4f4f0
 				}
@@ -545,9 +509,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							}
 							f0f4f4f5f1.Items = f0f4f4f5f1f0
 						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity != nil {
-							f0f4f4f5f1.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity
-						}
 						f0f4f4f5.Headers = f0f4f4f5f1
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
@@ -563,9 +524,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								f0f4f4f5f3f0 = append(f0f4f4f5f3f0, &f0f4f4f5f3f0elem)
 							}
 							f0f4f4f5f3.Items = f0f4f4f5f3f0
-						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-							f0f4f4f5f3.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity
 						}
 						f0f4f4f5.QueryStringCacheKeys = f0f4f4f5f3
 					}
@@ -589,9 +547,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f4f6f0 = append(f0f4f4f6f0, f0f4f4f6f0elem)
 						}
 						f0f4f4f6.Items = f0f4f4f6f0
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity != nil {
-						f0f4f4f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity
 					}
 					f0f4f4.LambdaFunctionAssociations = f0f4f4f6
 				}
@@ -627,9 +582,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						}
 						f0f4f4f13.Items = f0f4f4f13f1
 					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity != nil {
-						f0f4f4f13.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity
-					}
 					f0f4f4.TrustedKeyGroups = f0f4f4f13
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
@@ -645,9 +597,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f4f14f1 = append(f0f4f4f14f1, &f0f4f4f14f1elem)
 						}
 						f0f4f4f14.Items = f0f4f4f14f1
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity != nil {
-						f0f4f4f14.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity
 					}
 					f0f4f4.TrustedSigners = f0f4f4f14
 				}
@@ -703,9 +652,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									}
 									f0f4f10f0elemf0f0.Items = f0f4f10f0elemf0f0f0
 								}
-								if f0f4f10f0iter.FailoverCriteria.StatusCodes.Quantity != nil {
-									f0f4f10f0elemf0f0.Quantity = f0f4f10f0iter.FailoverCriteria.StatusCodes.Quantity
-								}
 								f0f4f10f0elemf0.StatusCodes = f0f4f10f0elemf0f0
 							}
 							f0f4f10f0elem.FailoverCriteria = f0f4f10f0elemf0
@@ -734,9 +680,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						f0f4f10f0 = append(f0f4f10f0, f0f4f10f0elem)
 					}
 					f0f4f10.Items = f0f4f10f0
-				}
-				if resp.Distribution.DistributionConfig.OriginGroups.Quantity != nil {
-					f0f4f10.Quantity = resp.Distribution.DistributionConfig.OriginGroups.Quantity
 				}
 				f0f4.OriginGroups = f0f4f10
 			}
@@ -768,9 +711,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								}
 								f0f4f11f0elemf2.Items = f0f4f11f0elemf2f0
 							}
-							if f0f4f11f0iter.CustomHeaders.Quantity != nil {
-								f0f4f11f0elemf2.Quantity = f0f4f11f0iter.CustomHeaders.Quantity
-							}
 							f0f4f11f0elem.CustomHeaders = f0f4f11f0elemf2
 						}
 						if f0f4f11f0iter.CustomOriginConfig != nil {
@@ -800,9 +740,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 										f0f4f11f0elemf3f5f0 = append(f0f4f11f0elemf3f5f0, &f0f4f11f0elemf3f5f0elem)
 									}
 									f0f4f11f0elemf3f5.Items = f0f4f11f0elemf3f5f0
-								}
-								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
-									f0f4f11f0elemf3f5.Quantity = f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity
 								}
 								f0f4f11f0elemf3.OriginSSLProtocols = f0f4f11f0elemf3f5
 							}
@@ -855,9 +792,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f13f0f0 = append(f0f4f13f0f0, &f0f4f13f0f0elem)
 						}
 						f0f4f13f0.Items = f0f4f13f0f0
-					}
-					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Quantity != nil {
-						f0f4f13f0.Quantity = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Quantity
 					}
 					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
 						f0f4f13f0.RestrictionType = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType

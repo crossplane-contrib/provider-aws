@@ -142,17 +142,14 @@ func TestLateInitialize(t *testing.T) {
 					Distribution: &svcsdk.Distribution{
 						DistributionConfig: &svcsdk.DistributionConfig{
 							Aliases: &svcsdk.Aliases{
-								Items:    []*string{awsclients.String("example.org")},
-								Quantity: awsclients.Int64(1),
+								Items: []*string{awsclients.String("example.org")},
 							},
 							CacheBehaviors: &svcsdk.CacheBehaviors{
 								Items: []*svcsdk.CacheBehavior{{
 									AllowedMethods: &svcsdk.AllowedMethods{
-										Items:    []*string{awsclients.String("GET")},
-										Quantity: awsclients.Int64(1),
+										Items: []*string{awsclients.String("GET")},
 										CachedMethods: &svcsdk.CachedMethods{
-											Items:    []*string{awsclients.String("GET")},
-											Quantity: awsclients.Int64(1),
+											Items: []*string{awsclients.String("GET")},
 										},
 									},
 									CachePolicyId:          awsclients.String("example"),
@@ -163,18 +160,15 @@ func TestLateInitialize(t *testing.T) {
 										Cookies: &svcsdk.CookiePreference{
 											Forward: awsclients.String("example"),
 											WhitelistedNames: &svcsdk.CookieNames{
-												Items:    []*string{awsclients.String("example")},
-												Quantity: awsclients.Int64(1),
+												Items: []*string{awsclients.String("example")},
 											},
 										},
 										Headers: &svcsdk.Headers{
-											Items:    []*string{awsclients.String("X-Hello")},
-											Quantity: awsclients.Int64(1),
+											Items: []*string{awsclients.String("X-Hello")},
 										},
 										QueryString: awsclients.Bool(true),
 										QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-											Items:    []*string{awsclients.String("search")},
-											Quantity: awsclients.Int64(1),
+											Items: []*string{awsclients.String("search")},
 										},
 									},
 									LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
@@ -183,7 +177,6 @@ func TestLateInitialize(t *testing.T) {
 											IncludeBody:       awsclients.Bool(true),
 											LambdaFunctionARN: awsclients.String("arn"),
 										}},
-										Quantity: awsclients.Int64(1),
 									},
 									MaxTTL:                awsclients.Int64(42),
 									MinTTL:                awsclients.Int64(42),
@@ -193,17 +186,14 @@ func TestLateInitialize(t *testing.T) {
 									SmoothStreaming:       awsclients.Bool(true),
 									TargetOriginId:        awsclients.String("example"),
 									TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-										Enabled:  awsclients.Bool(true),
-										Items:    []*string{awsclients.String("the-good-key")},
-										Quantity: awsclients.Int64(1),
+										Enabled: awsclients.Bool(true),
+										Items:   []*string{awsclients.String("the-good-key")},
 									},
 									TrustedSigners: &svcsdk.TrustedSigners{
-										Enabled:  awsclients.Bool(true),
-										Items:    []*string{awsclients.String("the-good-signer")},
-										Quantity: awsclients.Int64(1),
+										Enabled: awsclients.Bool(true),
+										Items:   []*string{awsclients.String("the-good-signer")},
 									},
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							CustomErrorResponses: &svcsdk.CustomErrorResponses{
 								Items: []*svcsdk.CustomErrorResponse{{
@@ -212,15 +202,12 @@ func TestLateInitialize(t *testing.T) {
 									ResponseCode:       awsclients.String("I'm a teapot"),
 									ResponsePagePath:   awsclients.String("/teapot"),
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							DefaultCacheBehavior: &svcsdk.DefaultCacheBehavior{
 								AllowedMethods: &svcsdk.AllowedMethods{
-									Items:    []*string{awsclients.String("GET")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("GET")},
 									CachedMethods: &svcsdk.CachedMethods{
-										Items:    []*string{awsclients.String("GET")},
-										Quantity: awsclients.Int64(1),
+										Items: []*string{awsclients.String("GET")},
 									},
 								},
 								CachePolicyId:          awsclients.String("example"),
@@ -231,18 +218,15 @@ func TestLateInitialize(t *testing.T) {
 									Cookies: &svcsdk.CookiePreference{
 										Forward: awsclients.String("example"),
 										WhitelistedNames: &svcsdk.CookieNames{
-											Items:    []*string{awsclients.String("example")},
-											Quantity: awsclients.Int64(1),
+											Items: []*string{awsclients.String("example")},
 										},
 									},
 									Headers: &svcsdk.Headers{
-										Items:    []*string{awsclients.String("X-Hello")},
-										Quantity: awsclients.Int64(1),
+										Items: []*string{awsclients.String("X-Hello")},
 									},
 									QueryString: awsclients.Bool(true),
 									QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-										Items:    []*string{awsclients.String("search")},
-										Quantity: awsclients.Int64(1),
+										Items: []*string{awsclients.String("search")},
 									},
 								},
 								LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
@@ -251,7 +235,6 @@ func TestLateInitialize(t *testing.T) {
 										IncludeBody:       awsclients.Bool(true),
 										LambdaFunctionARN: awsclients.String("arn"),
 									}},
-									Quantity: awsclients.Int64(1),
 								},
 								MaxTTL:                awsclients.Int64(42),
 								MinTTL:                awsclients.Int64(42),
@@ -260,14 +243,12 @@ func TestLateInitialize(t *testing.T) {
 								SmoothStreaming:       awsclients.Bool(true),
 								TargetOriginId:        awsclients.String("example"),
 								TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-									Enabled:  awsclients.Bool(true),
-									Items:    []*string{awsclients.String("the-good-key")},
-									Quantity: awsclients.Int64(1),
+									Enabled: awsclients.Bool(true),
+									Items:   []*string{awsclients.String("the-good-key")},
 								},
 								TrustedSigners: &svcsdk.TrustedSigners{
-									Enabled:  awsclients.Bool(true),
-									Items:    []*string{awsclients.String("the-good-signer")},
-									Quantity: awsclients.Int64(1),
+									Enabled: awsclients.Bool(true),
+									Items:   []*string{awsclients.String("the-good-signer")},
 								},
 							},
 							DefaultRootObject: awsclients.String("the-good-one"),
@@ -284,18 +265,15 @@ func TestLateInitialize(t *testing.T) {
 								Items: []*svcsdk.OriginGroup{{
 									FailoverCriteria: &svcsdk.OriginGroupFailoverCriteria{
 										StatusCodes: &svcsdk.StatusCodes{
-											Items:    []*int64{awsclients.Int64(418)},
-											Quantity: awsclients.Int64(1),
+											Items: []*int64{awsclients.Int64(418)},
 										},
 									},
 									Members: &svcsdk.OriginGroupMembers{
 										Items: []*svcsdk.OriginGroupMember{{
 											OriginId: awsclients.String("example"),
 										}},
-										Quantity: awsclients.Int64(1),
 									},
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							Origins: &svcsdk.Origins{
 								Items: []*svcsdk.Origin{{
@@ -306,7 +284,6 @@ func TestLateInitialize(t *testing.T) {
 											HeaderName:  awsclients.String("X-Cool"),
 											HeaderValue: awsclients.String("very"),
 										}},
-										Quantity: awsclients.Int64(1),
 									},
 									CustomOriginConfig: &svcsdk.CustomOriginConfig{
 										HTTPPort:               awsclients.Int64(8080),
@@ -315,8 +292,7 @@ func TestLateInitialize(t *testing.T) {
 										OriginProtocolPolicy:   awsclients.String("all-of-them"),
 										OriginReadTimeout:      awsclients.Int64(42),
 										OriginSslProtocols: &svcsdk.OriginSslProtocols{
-											Items:    []*string{awsclients.String("TLS_1.2")},
-											Quantity: awsclients.Int64(1),
+											Items: []*string{awsclients.String("TLS_1.2")},
 										},
 									},
 									DomainName: awsclients.String("example.org"),
@@ -330,14 +306,12 @@ func TestLateInitialize(t *testing.T) {
 										OriginAccessIdentity: awsclients.String("cool-guy"),
 									},
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							PriceClass: awsclients.String("really-cheap"),
 							Restrictions: &svcsdk.Restrictions{
 								GeoRestriction: &svcsdk.GeoRestriction{
 									RestrictionType: awsclients.String("no-australians"),
 									Items:           []*string{awsclients.String("negz"), awsclients.String("kylie")},
-									Quantity:        awsclients.Int64(1),
 								},
 							},
 							ViewerCertificate: &svcsdk.ViewerCertificate{
@@ -357,17 +331,14 @@ func TestLateInitialize(t *testing.T) {
 			want: &svcapitypes.DistributionParameters{
 				DistributionConfig: &svcapitypes.DistributionConfig{
 					Aliases: &svcapitypes.Aliases{
-						Items:    []*string{awsclients.String("example.org")},
-						Quantity: awsclients.Int64(1),
+						Items: []*string{awsclients.String("example.org")},
 					},
 					CacheBehaviors: &svcapitypes.CacheBehaviors{
 						Items: []*svcapitypes.CacheBehavior{{
 							AllowedMethods: &svcapitypes.AllowedMethods{
-								Items:    []*string{awsclients.String("GET")},
-								Quantity: awsclients.Int64(1),
+								Items: []*string{awsclients.String("GET")},
 								CachedMethods: &svcapitypes.CachedMethods{
-									Items:    []*string{awsclients.String("GET")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("GET")},
 								},
 							},
 							CachePolicyID:          awsclients.String("example"),
@@ -378,18 +349,15 @@ func TestLateInitialize(t *testing.T) {
 								Cookies: &svcapitypes.CookiePreference{
 									Forward: awsclients.String("example"),
 									WhitelistedNames: &svcapitypes.CookieNames{
-										Items:    []*string{awsclients.String("example")},
-										Quantity: awsclients.Int64(1),
+										Items: []*string{awsclients.String("example")},
 									},
 								},
 								Headers: &svcapitypes.Headers{
-									Items:    []*string{awsclients.String("X-Hello")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("X-Hello")},
 								},
 								QueryString: awsclients.Bool(true),
 								QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-									Items:    []*string{awsclients.String("search")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("search")},
 								},
 							},
 							LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
@@ -398,7 +366,6 @@ func TestLateInitialize(t *testing.T) {
 									IncludeBody:       awsclients.Bool(true),
 									LambdaFunctionARN: awsclients.String("arn"),
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							MaxTTL:                awsclients.Int64(42),
 							MinTTL:                awsclients.Int64(42),
@@ -408,17 +375,14 @@ func TestLateInitialize(t *testing.T) {
 							SmoothStreaming:       awsclients.Bool(true),
 							TargetOriginID:        awsclients.String("example"),
 							TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-								Enabled:  awsclients.Bool(true),
-								Items:    []*string{awsclients.String("the-good-key")},
-								Quantity: awsclients.Int64(1),
+								Enabled: awsclients.Bool(true),
+								Items:   []*string{awsclients.String("the-good-key")},
 							},
 							TrustedSigners: &svcapitypes.TrustedSigners{
-								Enabled:  awsclients.Bool(true),
-								Items:    []*string{awsclients.String("the-good-signer")},
-								Quantity: awsclients.Int64(1),
+								Enabled: awsclients.Bool(true),
+								Items:   []*string{awsclients.String("the-good-signer")},
 							},
 						}},
-						Quantity: awsclients.Int64(1),
 					},
 					CustomErrorResponses: &svcapitypes.CustomErrorResponses{
 						Items: []*svcapitypes.CustomErrorResponse{{
@@ -427,15 +391,12 @@ func TestLateInitialize(t *testing.T) {
 							ResponseCode:       awsclients.String("I'm a teapot"),
 							ResponsePagePath:   awsclients.String("/teapot"),
 						}},
-						Quantity: awsclients.Int64(1),
 					},
 					DefaultCacheBehavior: &svcapitypes.DefaultCacheBehavior{
 						AllowedMethods: &svcapitypes.AllowedMethods{
-							Items:    []*string{awsclients.String("GET")},
-							Quantity: awsclients.Int64(1),
+							Items: []*string{awsclients.String("GET")},
 							CachedMethods: &svcapitypes.CachedMethods{
-								Items:    []*string{awsclients.String("GET")},
-								Quantity: awsclients.Int64(1),
+								Items: []*string{awsclients.String("GET")},
 							},
 						},
 						CachePolicyID:          awsclients.String("example"),
@@ -446,18 +407,15 @@ func TestLateInitialize(t *testing.T) {
 							Cookies: &svcapitypes.CookiePreference{
 								Forward: awsclients.String("example"),
 								WhitelistedNames: &svcapitypes.CookieNames{
-									Items:    []*string{awsclients.String("example")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("example")},
 								},
 							},
 							Headers: &svcapitypes.Headers{
-								Items:    []*string{awsclients.String("X-Hello")},
-								Quantity: awsclients.Int64(1),
+								Items: []*string{awsclients.String("X-Hello")},
 							},
 							QueryString: awsclients.Bool(true),
 							QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-								Items:    []*string{awsclients.String("search")},
-								Quantity: awsclients.Int64(1),
+								Items: []*string{awsclients.String("search")},
 							},
 						},
 						LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
@@ -466,7 +424,6 @@ func TestLateInitialize(t *testing.T) {
 								IncludeBody:       awsclients.Bool(true),
 								LambdaFunctionARN: awsclients.String("arn"),
 							}},
-							Quantity: awsclients.Int64(1),
 						},
 						MaxTTL:                awsclients.Int64(42),
 						MinTTL:                awsclients.Int64(42),
@@ -475,14 +432,12 @@ func TestLateInitialize(t *testing.T) {
 						SmoothStreaming:       awsclients.Bool(true),
 						TargetOriginID:        awsclients.String("example"),
 						TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-							Enabled:  awsclients.Bool(true),
-							Items:    []*string{awsclients.String("the-good-key")},
-							Quantity: awsclients.Int64(1),
+							Enabled: awsclients.Bool(true),
+							Items:   []*string{awsclients.String("the-good-key")},
 						},
 						TrustedSigners: &svcapitypes.TrustedSigners{
-							Enabled:  awsclients.Bool(true),
-							Items:    []*string{awsclients.String("the-good-signer")},
-							Quantity: awsclients.Int64(1),
+							Enabled: awsclients.Bool(true),
+							Items:   []*string{awsclients.String("the-good-signer")},
 						},
 					},
 					DefaultRootObject: awsclients.String("the-good-one"),
@@ -499,18 +454,15 @@ func TestLateInitialize(t *testing.T) {
 						Items: []*svcapitypes.OriginGroup{{
 							FailoverCriteria: &svcapitypes.OriginGroupFailoverCriteria{
 								StatusCodes: &svcapitypes.StatusCodes{
-									Items:    []*int64{awsclients.Int64(418)},
-									Quantity: awsclients.Int64(1),
+									Items: []*int64{awsclients.Int64(418)},
 								},
 							},
 							Members: &svcapitypes.OriginGroupMembers{
 								Items: []*svcapitypes.OriginGroupMember{{
 									OriginID: awsclients.String("example"),
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 						}},
-						Quantity: awsclients.Int64(1),
 					},
 					Origins: &svcapitypes.Origins{
 						Items: []*svcapitypes.Origin{{
@@ -521,7 +473,6 @@ func TestLateInitialize(t *testing.T) {
 									HeaderName:  awsclients.String("X-Cool"),
 									HeaderValue: awsclients.String("very"),
 								}},
-								Quantity: awsclients.Int64(1),
 							},
 							CustomOriginConfig: &svcapitypes.CustomOriginConfig{
 								HTTPPort:               awsclients.Int64(8080),
@@ -530,8 +481,7 @@ func TestLateInitialize(t *testing.T) {
 								OriginProtocolPolicy:   awsclients.String("all-of-them"),
 								OriginReadTimeout:      awsclients.Int64(42),
 								OriginSSLProtocols: &svcapitypes.OriginSSLProtocols{
-									Items:    []*string{awsclients.String("TLS_1.2")},
-									Quantity: awsclients.Int64(1),
+									Items: []*string{awsclients.String("TLS_1.2")},
 								},
 							},
 							DomainName: awsclients.String("example.org"),
@@ -551,7 +501,6 @@ func TestLateInitialize(t *testing.T) {
 						GeoRestriction: &svcapitypes.GeoRestriction{
 							RestrictionType: awsclients.String("no-australians"),
 							Items:           []*string{awsclients.String("negz"), awsclients.String("kylie")},
-							Quantity:        awsclients.Int64(1),
 						},
 					},
 					ViewerCertificate: &svcapitypes.ViewerCertificate{
@@ -601,7 +550,6 @@ func TestLateInitialize(t *testing.T) {
 										Id:         awsclients.String("custom"),
 									},
 								},
-								Quantity: awsclients.Int64(3),
 							},
 						},
 					},

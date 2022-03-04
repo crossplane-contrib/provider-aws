@@ -71,9 +71,6 @@ spec:
                             items:
                               type: string
                             type: array
-                          quantity:
-                            format: int64
-                            type: integer
                         type: object
                       cacheBehaviors:
                         description: A complex type that contains zero or more CacheBehavior
@@ -115,17 +112,11 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     items:
                                       items:
                                         type: string
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 cachePolicyID:
                                   type: string
@@ -190,9 +181,6 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     queryString:
                                       type: boolean
@@ -215,9 +203,6 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                   type: object
                                 lambdaFunctionAssociations:
@@ -246,9 +231,6 @@ spec:
                                             type: string
                                         type: object
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 maxTTL:
                                   format: int64
@@ -277,9 +259,6 @@ spec:
                                       items:
                                         type: string
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 trustedSigners:
                                   description: A list of AWS accounts whose public
@@ -292,17 +271,11 @@ spec:
                                       items:
                                         type: string
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 viewerProtocolPolicy:
                                   type: string
                               type: object
                             type: array
-                          quantity:
-                            format: int64
-                            type: integer
                         type: object
                       comment:
                         type: string
@@ -331,9 +304,6 @@ spec:
                                   type: string
                               type: object
                             type: array
-                          quantity:
-                            format: int64
-                            type: integer
                         type: object
                       defaultCacheBehavior:
                         description: A complex type that describes the default cache
@@ -372,17 +342,11 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               items:
                                 items:
                                   type: string
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           cachePolicyID:
                             type: string
@@ -445,9 +409,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               queryString:
                                 type: boolean
@@ -468,9 +429,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                             type: object
                           lambdaFunctionAssociations:
@@ -497,9 +455,6 @@ spec:
                                       type: string
                                   type: object
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           maxTTL:
                             format: int64
@@ -526,9 +481,6 @@ spec:
                                 items:
                                   type: string
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           trustedSigners:
                             description: A list of AWS accounts whose public keys
@@ -541,9 +493,6 @@ spec:
                                 items:
                                   type: string
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           viewerProtocolPolicy:
                             type: string
@@ -597,9 +546,6 @@ spec:
                                             format: int64
                                             type: integer
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                   type: object
                                 id:
@@ -622,9 +568,6 @@ spec:
                                   type: object
                               type: object
                             type: array
-                          quantity:
-                            format: int64
-                            type: integer
                         type: object
                       origins:
                         description: Contains information about the origins for this
@@ -652,9 +595,6 @@ spec:
                                             type: string
                                         type: object
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 customOriginConfig:
                                   description: A custom origin. A custom origin is
@@ -687,9 +627,6 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                   type: object
                                 domainName:
@@ -738,9 +675,6 @@ spec:
                                 items:
                                   type: string
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                               restrictionType:
                                 type: string
                             type: object
@@ -946,9 +880,6 @@ spec:
                                 items:
                                   type: string
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           cacheBehaviors:
                             description: A complex type that contains zero or more
@@ -992,17 +923,11 @@ spec:
                                               items:
                                                 type: string
                                               type: array
-                                            quantity:
-                                              format: int64
-                                              type: integer
                                           type: object
                                         items:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     cachePolicyID:
                                       type: string
@@ -1071,9 +996,6 @@ spec:
                                               items:
                                                 type: string
                                               type: array
-                                            quantity:
-                                              format: int64
-                                              type: integer
                                           type: object
                                         queryString:
                                           type: boolean
@@ -1097,9 +1019,6 @@ spec:
                                               items:
                                                 type: string
                                               type: array
-                                            quantity:
-                                              format: int64
-                                              type: integer
                                           type: object
                                       type: object
                                     lambdaFunctionAssociations:
@@ -1129,9 +1048,6 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     maxTTL:
                                       format: int64
@@ -1160,9 +1076,6 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     trustedSigners:
                                       description: A list of AWS accounts whose public
@@ -1175,17 +1088,11 @@ spec:
                                           items:
                                             type: string
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     viewerProtocolPolicy:
                                       type: string
                                   type: object
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           comment:
                             type: string
@@ -1214,9 +1121,6 @@ spec:
                                       type: string
                                   type: object
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           defaultCacheBehavior:
                             description: A complex type that describes the default
@@ -1256,17 +1160,11 @@ spec:
                                         items:
                                           type: string
                                         type: array
-                                      quantity:
-                                        format: int64
-                                        type: integer
                                     type: object
                                   items:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               cachePolicyID:
                                 type: string
@@ -1330,9 +1228,6 @@ spec:
                                         items:
                                           type: string
                                         type: array
-                                      quantity:
-                                        format: int64
-                                        type: integer
                                     type: object
                                   queryString:
                                     type: boolean
@@ -1354,9 +1249,6 @@ spec:
                                         items:
                                           type: string
                                         type: array
-                                      quantity:
-                                        format: int64
-                                        type: integer
                                     type: object
                                 type: object
                               lambdaFunctionAssociations:
@@ -1384,9 +1276,6 @@ spec:
                                           type: string
                                       type: object
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               maxTTL:
                                 format: int64
@@ -1413,9 +1302,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               trustedSigners:
                                 description: A list of AWS accounts whose public keys
@@ -1428,9 +1314,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               viewerProtocolPolicy:
                                 type: string
@@ -1484,9 +1367,6 @@ spec:
                                                 format: int64
                                                 type: integer
                                               type: array
-                                            quantity:
-                                              format: int64
-                                              type: integer
                                           type: object
                                       type: object
                                     id:
@@ -1510,9 +1390,6 @@ spec:
                                       type: object
                                   type: object
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           origins:
                             description: Contains information about the origins for
@@ -1540,9 +1417,6 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     customOriginConfig:
                                       description: A custom origin. A custom origin
@@ -1576,9 +1450,6 @@ spec:
                                               items:
                                                 type: string
                                               type: array
-                                            quantity:
-                                              format: int64
-                                              type: integer
                                           type: object
                                       type: object
                                     domainName:
@@ -1628,9 +1499,6 @@ spec:
                                     items:
                                       type: string
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                   restrictionType:
                                     type: string
                                 type: object

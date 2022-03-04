@@ -147,9 +147,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 					}
 					f0f4f0.Items = f0f4f0f0
 				}
-				if resp.Distribution.DistributionConfig.Aliases.Quantity != nil {
-					f0f4f0.Quantity = resp.Distribution.DistributionConfig.Aliases.Quantity
-				}
 				f0f4.Aliases = f0f4f0
 			}
 			if resp.Distribution.DistributionConfig.CacheBehaviors != nil {
@@ -171,9 +168,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 									}
 									f0f4f1f0elemf0f0.Items = f0f4f1f0elemf0f0f0
 								}
-								if f0f4f1f0iter.AllowedMethods.CachedMethods.Quantity != nil {
-									f0f4f1f0elemf0f0.Quantity = f0f4f1f0iter.AllowedMethods.CachedMethods.Quantity
-								}
 								f0f4f1f0elemf0.CachedMethods = f0f4f1f0elemf0f0
 							}
 							if f0f4f1f0iter.AllowedMethods.Items != nil {
@@ -184,9 +178,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 									f0f4f1f0elemf0f1 = append(f0f4f1f0elemf0f1, &f0f4f1f0elemf0f1elem)
 								}
 								f0f4f1f0elemf0.Items = f0f4f1f0elemf0f1
-							}
-							if f0f4f1f0iter.AllowedMethods.Quantity != nil {
-								f0f4f1f0elemf0.Quantity = f0f4f1f0iter.AllowedMethods.Quantity
 							}
 							f0f4f1f0elem.AllowedMethods = f0f4f1f0elemf0
 						}
@@ -238,9 +229,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 									}
 									f0f4f1f0elemf5f1.Items = f0f4f1f0elemf5f1f0
 								}
-								if f0f4f1f0iter.ForwardedValues.Headers.Quantity != nil {
-									f0f4f1f0elemf5f1.Quantity = f0f4f1f0iter.ForwardedValues.Headers.Quantity
-								}
 								f0f4f1f0elemf5.Headers = f0f4f1f0elemf5f1
 							}
 							if f0f4f1f0iter.ForwardedValues.QueryString != nil {
@@ -256,9 +244,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 										f0f4f1f0elemf5f3f0 = append(f0f4f1f0elemf5f3f0, &f0f4f1f0elemf5f3f0elem)
 									}
 									f0f4f1f0elemf5f3.Items = f0f4f1f0elemf5f3f0
-								}
-								if f0f4f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-									f0f4f1f0elemf5f3.Quantity = f0f4f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity
 								}
 								f0f4f1f0elemf5.QueryStringCacheKeys = f0f4f1f0elemf5f3
 							}
@@ -282,9 +267,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 									f0f4f1f0elemf6f0 = append(f0f4f1f0elemf6f0, f0f4f1f0elemf6f0elem)
 								}
 								f0f4f1f0elemf6.Items = f0f4f1f0elemf6f0
-							}
-							if f0f4f1f0iter.LambdaFunctionAssociations.Quantity != nil {
-								f0f4f1f0elemf6.Quantity = f0f4f1f0iter.LambdaFunctionAssociations.Quantity
 							}
 							f0f4f1f0elem.LambdaFunctionAssociations = f0f4f1f0elemf6
 						}
@@ -323,9 +305,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								}
 								f0f4f1f0elemf14.Items = f0f4f1f0elemf14f1
 							}
-							if f0f4f1f0iter.TrustedKeyGroups.Quantity != nil {
-								f0f4f1f0elemf14.Quantity = f0f4f1f0iter.TrustedKeyGroups.Quantity
-							}
 							f0f4f1f0elem.TrustedKeyGroups = f0f4f1f0elemf14
 						}
 						if f0f4f1f0iter.TrustedSigners != nil {
@@ -342,9 +321,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								}
 								f0f4f1f0elemf15.Items = f0f4f1f0elemf15f1
 							}
-							if f0f4f1f0iter.TrustedSigners.Quantity != nil {
-								f0f4f1f0elemf15.Quantity = f0f4f1f0iter.TrustedSigners.Quantity
-							}
 							f0f4f1f0elem.TrustedSigners = f0f4f1f0elemf15
 						}
 						if f0f4f1f0iter.ViewerProtocolPolicy != nil {
@@ -353,9 +329,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 						f0f4f1f0 = append(f0f4f1f0, f0f4f1f0elem)
 					}
 					f0f4f1.Items = f0f4f1f0
-				}
-				if resp.Distribution.DistributionConfig.CacheBehaviors.Quantity != nil {
-					f0f4f1.Quantity = resp.Distribution.DistributionConfig.CacheBehaviors.Quantity
 				}
 				f0f4.CacheBehaviors = f0f4f1
 			}
@@ -384,9 +357,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 					}
 					f0f4f3.Items = f0f4f3f0
 				}
-				if resp.Distribution.DistributionConfig.CustomErrorResponses.Quantity != nil {
-					f0f4f3.Quantity = resp.Distribution.DistributionConfig.CustomErrorResponses.Quantity
-				}
 				f0f4.CustomErrorResponses = f0f4f3
 			}
 			if resp.Distribution.DistributionConfig.DefaultCacheBehavior != nil {
@@ -404,9 +374,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							}
 							f0f4f4f0f0.Items = f0f4f4f0f0f0
 						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity != nil {
-							f0f4f4f0f0.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity
-						}
 						f0f4f4f0.CachedMethods = f0f4f4f0f0
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
@@ -417,9 +384,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							f0f4f4f0f1 = append(f0f4f4f0f1, &f0f4f4f0f1elem)
 						}
 						f0f4f4f0.Items = f0f4f4f0f1
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity != nil {
-						f0f4f4f0.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity
 					}
 					f0f4f4.AllowedMethods = f0f4f4f0
 				}
@@ -471,9 +435,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							}
 							f0f4f4f5f1.Items = f0f4f4f5f1f0
 						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity != nil {
-							f0f4f4f5f1.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity
-						}
 						f0f4f4f5.Headers = f0f4f4f5f1
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
@@ -489,9 +450,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								f0f4f4f5f3f0 = append(f0f4f4f5f3f0, &f0f4f4f5f3f0elem)
 							}
 							f0f4f4f5f3.Items = f0f4f4f5f3f0
-						}
-						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-							f0f4f4f5f3.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity
 						}
 						f0f4f4f5.QueryStringCacheKeys = f0f4f4f5f3
 					}
@@ -515,9 +473,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							f0f4f4f6f0 = append(f0f4f4f6f0, f0f4f4f6f0elem)
 						}
 						f0f4f4f6.Items = f0f4f4f6f0
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity != nil {
-						f0f4f4f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity
 					}
 					f0f4f4.LambdaFunctionAssociations = f0f4f4f6
 				}
@@ -553,9 +508,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 						}
 						f0f4f4f13.Items = f0f4f4f13f1
 					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity != nil {
-						f0f4f4f13.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity
-					}
 					f0f4f4.TrustedKeyGroups = f0f4f4f13
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
@@ -571,9 +523,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							f0f4f4f14f1 = append(f0f4f4f14f1, &f0f4f4f14f1elem)
 						}
 						f0f4f4f14.Items = f0f4f4f14f1
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity != nil {
-						f0f4f4f14.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity
 					}
 					f0f4f4.TrustedSigners = f0f4f4f14
 				}
@@ -629,9 +578,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 									}
 									f0f4f10f0elemf0f0.Items = f0f4f10f0elemf0f0f0
 								}
-								if f0f4f10f0iter.FailoverCriteria.StatusCodes.Quantity != nil {
-									f0f4f10f0elemf0f0.Quantity = f0f4f10f0iter.FailoverCriteria.StatusCodes.Quantity
-								}
 								f0f4f10f0elemf0.StatusCodes = f0f4f10f0elemf0f0
 							}
 							f0f4f10f0elem.FailoverCriteria = f0f4f10f0elemf0
@@ -660,9 +606,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 						f0f4f10f0 = append(f0f4f10f0, f0f4f10f0elem)
 					}
 					f0f4f10.Items = f0f4f10f0
-				}
-				if resp.Distribution.DistributionConfig.OriginGroups.Quantity != nil {
-					f0f4f10.Quantity = resp.Distribution.DistributionConfig.OriginGroups.Quantity
 				}
 				f0f4.OriginGroups = f0f4f10
 			}
@@ -694,9 +637,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								}
 								f0f4f11f0elemf2.Items = f0f4f11f0elemf2f0
 							}
-							if f0f4f11f0iter.CustomHeaders.Quantity != nil {
-								f0f4f11f0elemf2.Quantity = f0f4f11f0iter.CustomHeaders.Quantity
-							}
 							f0f4f11f0elem.CustomHeaders = f0f4f11f0elemf2
 						}
 						if f0f4f11f0iter.CustomOriginConfig != nil {
@@ -726,9 +666,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 										f0f4f11f0elemf3f5f0 = append(f0f4f11f0elemf3f5f0, &f0f4f11f0elemf3f5f0elem)
 									}
 									f0f4f11f0elemf3f5.Items = f0f4f11f0elemf3f5f0
-								}
-								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity != nil {
-									f0f4f11f0elemf3f5.Quantity = f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Quantity
 								}
 								f0f4f11f0elemf3.OriginSSLProtocols = f0f4f11f0elemf3f5
 							}
@@ -781,9 +718,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							f0f4f13f0f0 = append(f0f4f13f0f0, &f0f4f13f0f0elem)
 						}
 						f0f4f13f0.Items = f0f4f13f0f0
-					}
-					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Quantity != nil {
-						f0f4f13f0.Quantity = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Quantity
 					}
 					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
 						f0f4f13f0.RestrictionType = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType
@@ -867,9 +801,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 				}
 				f0f0.SetItems(f0f0f0)
 			}
-			if cr.Spec.ForProvider.DistributionConfig.Aliases.Quantity != nil {
-				f0f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.Aliases.Quantity)
-			}
 			f0.SetAliases(f0f0)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
@@ -891,9 +822,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 								}
 								f0f1f0elemf0f0.SetItems(f0f1f0elemf0f0f0)
 							}
-							if f0f1f0iter.AllowedMethods.CachedMethods.Quantity != nil {
-								f0f1f0elemf0f0.SetQuantity(*f0f1f0iter.AllowedMethods.CachedMethods.Quantity)
-							}
 							f0f1f0elemf0.SetCachedMethods(f0f1f0elemf0f0)
 						}
 						if f0f1f0iter.AllowedMethods.Items != nil {
@@ -904,9 +832,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 								f0f1f0elemf0f1 = append(f0f1f0elemf0f1, &f0f1f0elemf0f1elem)
 							}
 							f0f1f0elemf0.SetItems(f0f1f0elemf0f1)
-						}
-						if f0f1f0iter.AllowedMethods.Quantity != nil {
-							f0f1f0elemf0.SetQuantity(*f0f1f0iter.AllowedMethods.Quantity)
 						}
 						f0f1f0elem.SetAllowedMethods(f0f1f0elemf0)
 					}
@@ -958,9 +883,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 								}
 								f0f1f0elemf5f1.SetItems(f0f1f0elemf5f1f0)
 							}
-							if f0f1f0iter.ForwardedValues.Headers.Quantity != nil {
-								f0f1f0elemf5f1.SetQuantity(*f0f1f0iter.ForwardedValues.Headers.Quantity)
-							}
 							f0f1f0elemf5.SetHeaders(f0f1f0elemf5f1)
 						}
 						if f0f1f0iter.ForwardedValues.QueryString != nil {
@@ -976,9 +898,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 									f0f1f0elemf5f3f0 = append(f0f1f0elemf5f3f0, &f0f1f0elemf5f3f0elem)
 								}
 								f0f1f0elemf5f3.SetItems(f0f1f0elemf5f3f0)
-							}
-							if f0f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-								f0f1f0elemf5f3.SetQuantity(*f0f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity)
 							}
 							f0f1f0elemf5.SetQueryStringCacheKeys(f0f1f0elemf5f3)
 						}
@@ -1002,9 +921,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 								f0f1f0elemf6f0 = append(f0f1f0elemf6f0, f0f1f0elemf6f0elem)
 							}
 							f0f1f0elemf6.SetItems(f0f1f0elemf6f0)
-						}
-						if f0f1f0iter.LambdaFunctionAssociations.Quantity != nil {
-							f0f1f0elemf6.SetQuantity(*f0f1f0iter.LambdaFunctionAssociations.Quantity)
 						}
 						f0f1f0elem.SetLambdaFunctionAssociations(f0f1f0elemf6)
 					}
@@ -1043,9 +959,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 							}
 							f0f1f0elemf14.SetItems(f0f1f0elemf14f1)
 						}
-						if f0f1f0iter.TrustedKeyGroups.Quantity != nil {
-							f0f1f0elemf14.SetQuantity(*f0f1f0iter.TrustedKeyGroups.Quantity)
-						}
 						f0f1f0elem.SetTrustedKeyGroups(f0f1f0elemf14)
 					}
 					if f0f1f0iter.TrustedSigners != nil {
@@ -1062,9 +975,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 							}
 							f0f1f0elemf15.SetItems(f0f1f0elemf15f1)
 						}
-						if f0f1f0iter.TrustedSigners.Quantity != nil {
-							f0f1f0elemf15.SetQuantity(*f0f1f0iter.TrustedSigners.Quantity)
-						}
 						f0f1f0elem.SetTrustedSigners(f0f1f0elemf15)
 					}
 					if f0f1f0iter.ViewerProtocolPolicy != nil {
@@ -1073,9 +983,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 					f0f1f0 = append(f0f1f0, f0f1f0elem)
 				}
 				f0f1.SetItems(f0f1f0)
-			}
-			if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Quantity != nil {
-				f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Quantity)
 			}
 			f0.SetCacheBehaviors(f0f1)
 		}
@@ -1104,9 +1011,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 				}
 				f0f3.SetItems(f0f3f0)
 			}
-			if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Quantity != nil {
-				f0f3.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Quantity)
-			}
 			f0.SetCustomErrorResponses(f0f3)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior != nil {
@@ -1124,9 +1028,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						}
 						f0f4f0f0.SetItems(f0f4f0f0f0)
 					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity != nil {
-						f0f4f0f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity)
-					}
 					f0f4f0.SetCachedMethods(f0f4f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
@@ -1137,9 +1038,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						f0f4f0f1 = append(f0f4f0f1, &f0f4f0f1elem)
 					}
 					f0f4f0.SetItems(f0f4f0f1)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity != nil {
-					f0f4f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity)
 				}
 				f0f4.SetAllowedMethods(f0f4f0)
 			}
@@ -1191,9 +1089,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						}
 						f0f4f5f1.SetItems(f0f4f5f1f0)
 					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity != nil {
-						f0f4f5f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity)
-					}
 					f0f4f5.SetHeaders(f0f4f5f1)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
@@ -1209,9 +1104,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 							f0f4f5f3f0 = append(f0f4f5f3f0, &f0f4f5f3f0elem)
 						}
 						f0f4f5f3.SetItems(f0f4f5f3f0)
-					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-						f0f4f5f3.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity)
 					}
 					f0f4f5.SetQueryStringCacheKeys(f0f4f5f3)
 				}
@@ -1235,9 +1127,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						f0f4f6f0 = append(f0f4f6f0, f0f4f6f0elem)
 					}
 					f0f4f6.SetItems(f0f4f6f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity != nil {
-					f0f4f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity)
 				}
 				f0f4.SetLambdaFunctionAssociations(f0f4f6)
 			}
@@ -1273,9 +1162,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 					}
 					f0f4f13.SetItems(f0f4f13f1)
 				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity != nil {
-					f0f4f13.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity)
-				}
 				f0f4.SetTrustedKeyGroups(f0f4f13)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
@@ -1291,9 +1177,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						f0f4f14f1 = append(f0f4f14f1, &f0f4f14f1elem)
 					}
 					f0f4f14.SetItems(f0f4f14f1)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity != nil {
-					f0f4f14.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity)
 				}
 				f0f4.SetTrustedSigners(f0f4f14)
 			}
@@ -1349,9 +1232,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 								}
 								f0f10f0elemf0f0.SetItems(f0f10f0elemf0f0f0)
 							}
-							if f0f10f0iter.FailoverCriteria.StatusCodes.Quantity != nil {
-								f0f10f0elemf0f0.SetQuantity(*f0f10f0iter.FailoverCriteria.StatusCodes.Quantity)
-							}
 							f0f10f0elemf0.SetStatusCodes(f0f10f0elemf0f0)
 						}
 						f0f10f0elem.SetFailoverCriteria(f0f10f0elemf0)
@@ -1380,9 +1260,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 					f0f10f0 = append(f0f10f0, f0f10f0elem)
 				}
 				f0f10.SetItems(f0f10f0)
-			}
-			if cr.Spec.ForProvider.DistributionConfig.OriginGroups.Quantity != nil {
-				f0f10.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.OriginGroups.Quantity)
 			}
 			f0.SetOriginGroups(f0f10)
 		}
@@ -1414,9 +1291,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 							}
 							f0f11f0elemf2.SetItems(f0f11f0elemf2f0)
 						}
-						if f0f11f0iter.CustomHeaders.Quantity != nil {
-							f0f11f0elemf2.SetQuantity(*f0f11f0iter.CustomHeaders.Quantity)
-						}
 						f0f11f0elem.SetCustomHeaders(f0f11f0elemf2)
 					}
 					if f0f11f0iter.CustomOriginConfig != nil {
@@ -1446,9 +1320,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
 								}
 								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
-							}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity != nil {
-								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity)
 							}
 							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
 						}
@@ -1501,9 +1372,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						f0f13f0f0 = append(f0f13f0f0, &f0f13f0f0elem)
 					}
 					f0f13f0.SetItems(f0f13f0f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Quantity != nil {
-					f0f13f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Quantity)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
 					f0f13f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
@@ -1563,9 +1431,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 				}
 				f0f0.SetItems(f0f0f0)
 			}
-			if cr.Spec.ForProvider.DistributionConfig.Aliases.Quantity != nil {
-				f0f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.Aliases.Quantity)
-			}
 			f0.SetAliases(f0f0)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
@@ -1587,9 +1452,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 								}
 								f0f1f0elemf0f0.SetItems(f0f1f0elemf0f0f0)
 							}
-							if f0f1f0iter.AllowedMethods.CachedMethods.Quantity != nil {
-								f0f1f0elemf0f0.SetQuantity(*f0f1f0iter.AllowedMethods.CachedMethods.Quantity)
-							}
 							f0f1f0elemf0.SetCachedMethods(f0f1f0elemf0f0)
 						}
 						if f0f1f0iter.AllowedMethods.Items != nil {
@@ -1600,9 +1462,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 								f0f1f0elemf0f1 = append(f0f1f0elemf0f1, &f0f1f0elemf0f1elem)
 							}
 							f0f1f0elemf0.SetItems(f0f1f0elemf0f1)
-						}
-						if f0f1f0iter.AllowedMethods.Quantity != nil {
-							f0f1f0elemf0.SetQuantity(*f0f1f0iter.AllowedMethods.Quantity)
 						}
 						f0f1f0elem.SetAllowedMethods(f0f1f0elemf0)
 					}
@@ -1654,9 +1513,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 								}
 								f0f1f0elemf5f1.SetItems(f0f1f0elemf5f1f0)
 							}
-							if f0f1f0iter.ForwardedValues.Headers.Quantity != nil {
-								f0f1f0elemf5f1.SetQuantity(*f0f1f0iter.ForwardedValues.Headers.Quantity)
-							}
 							f0f1f0elemf5.SetHeaders(f0f1f0elemf5f1)
 						}
 						if f0f1f0iter.ForwardedValues.QueryString != nil {
@@ -1672,9 +1528,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 									f0f1f0elemf5f3f0 = append(f0f1f0elemf5f3f0, &f0f1f0elemf5f3f0elem)
 								}
 								f0f1f0elemf5f3.SetItems(f0f1f0elemf5f3f0)
-							}
-							if f0f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-								f0f1f0elemf5f3.SetQuantity(*f0f1f0iter.ForwardedValues.QueryStringCacheKeys.Quantity)
 							}
 							f0f1f0elemf5.SetQueryStringCacheKeys(f0f1f0elemf5f3)
 						}
@@ -1698,9 +1551,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 								f0f1f0elemf6f0 = append(f0f1f0elemf6f0, f0f1f0elemf6f0elem)
 							}
 							f0f1f0elemf6.SetItems(f0f1f0elemf6f0)
-						}
-						if f0f1f0iter.LambdaFunctionAssociations.Quantity != nil {
-							f0f1f0elemf6.SetQuantity(*f0f1f0iter.LambdaFunctionAssociations.Quantity)
 						}
 						f0f1f0elem.SetLambdaFunctionAssociations(f0f1f0elemf6)
 					}
@@ -1739,9 +1589,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 							}
 							f0f1f0elemf14.SetItems(f0f1f0elemf14f1)
 						}
-						if f0f1f0iter.TrustedKeyGroups.Quantity != nil {
-							f0f1f0elemf14.SetQuantity(*f0f1f0iter.TrustedKeyGroups.Quantity)
-						}
 						f0f1f0elem.SetTrustedKeyGroups(f0f1f0elemf14)
 					}
 					if f0f1f0iter.TrustedSigners != nil {
@@ -1758,9 +1605,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 							}
 							f0f1f0elemf15.SetItems(f0f1f0elemf15f1)
 						}
-						if f0f1f0iter.TrustedSigners.Quantity != nil {
-							f0f1f0elemf15.SetQuantity(*f0f1f0iter.TrustedSigners.Quantity)
-						}
 						f0f1f0elem.SetTrustedSigners(f0f1f0elemf15)
 					}
 					if f0f1f0iter.ViewerProtocolPolicy != nil {
@@ -1769,9 +1613,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 					f0f1f0 = append(f0f1f0, f0f1f0elem)
 				}
 				f0f1.SetItems(f0f1f0)
-			}
-			if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Quantity != nil {
-				f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Quantity)
 			}
 			f0.SetCacheBehaviors(f0f1)
 		}
@@ -1800,9 +1641,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 				}
 				f0f3.SetItems(f0f3f0)
 			}
-			if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Quantity != nil {
-				f0f3.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Quantity)
-			}
 			f0.SetCustomErrorResponses(f0f3)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior != nil {
@@ -1820,9 +1658,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						}
 						f0f4f0f0.SetItems(f0f4f0f0f0)
 					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity != nil {
-						f0f4f0f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity)
-					}
 					f0f4f0.SetCachedMethods(f0f4f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
@@ -1833,9 +1668,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						f0f4f0f1 = append(f0f4f0f1, &f0f4f0f1elem)
 					}
 					f0f4f0.SetItems(f0f4f0f1)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity != nil {
-					f0f4f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity)
 				}
 				f0f4.SetAllowedMethods(f0f4f0)
 			}
@@ -1887,9 +1719,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						}
 						f0f4f5f1.SetItems(f0f4f5f1f0)
 					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity != nil {
-						f0f4f5f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity)
-					}
 					f0f4f5.SetHeaders(f0f4f5f1)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
@@ -1905,9 +1734,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 							f0f4f5f3f0 = append(f0f4f5f3f0, &f0f4f5f3f0elem)
 						}
 						f0f4f5f3.SetItems(f0f4f5f3f0)
-					}
-					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity != nil {
-						f0f4f5f3.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity)
 					}
 					f0f4f5.SetQueryStringCacheKeys(f0f4f5f3)
 				}
@@ -1931,9 +1757,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						f0f4f6f0 = append(f0f4f6f0, f0f4f6f0elem)
 					}
 					f0f4f6.SetItems(f0f4f6f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity != nil {
-					f0f4f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity)
 				}
 				f0f4.SetLambdaFunctionAssociations(f0f4f6)
 			}
@@ -1969,9 +1792,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 					}
 					f0f4f13.SetItems(f0f4f13f1)
 				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity != nil {
-					f0f4f13.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity)
-				}
 				f0f4.SetTrustedKeyGroups(f0f4f13)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
@@ -1987,9 +1807,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						f0f4f14f1 = append(f0f4f14f1, &f0f4f14f1elem)
 					}
 					f0f4f14.SetItems(f0f4f14f1)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity != nil {
-					f0f4f14.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity)
 				}
 				f0f4.SetTrustedSigners(f0f4f14)
 			}
@@ -2045,9 +1862,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 								}
 								f0f10f0elemf0f0.SetItems(f0f10f0elemf0f0f0)
 							}
-							if f0f10f0iter.FailoverCriteria.StatusCodes.Quantity != nil {
-								f0f10f0elemf0f0.SetQuantity(*f0f10f0iter.FailoverCriteria.StatusCodes.Quantity)
-							}
 							f0f10f0elemf0.SetStatusCodes(f0f10f0elemf0f0)
 						}
 						f0f10f0elem.SetFailoverCriteria(f0f10f0elemf0)
@@ -2076,9 +1890,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 					f0f10f0 = append(f0f10f0, f0f10f0elem)
 				}
 				f0f10.SetItems(f0f10f0)
-			}
-			if cr.Spec.ForProvider.DistributionConfig.OriginGroups.Quantity != nil {
-				f0f10.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.OriginGroups.Quantity)
 			}
 			f0.SetOriginGroups(f0f10)
 		}
@@ -2110,9 +1921,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 							}
 							f0f11f0elemf2.SetItems(f0f11f0elemf2f0)
 						}
-						if f0f11f0iter.CustomHeaders.Quantity != nil {
-							f0f11f0elemf2.SetQuantity(*f0f11f0iter.CustomHeaders.Quantity)
-						}
 						f0f11f0elem.SetCustomHeaders(f0f11f0elemf2)
 					}
 					if f0f11f0iter.CustomOriginConfig != nil {
@@ -2142,9 +1950,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
 								}
 								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
-							}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity != nil {
-								f0f11f0elemf3f5.SetQuantity(*f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Quantity)
 							}
 							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
 						}
@@ -2197,9 +2002,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						f0f13f0f0 = append(f0f13f0f0, &f0f13f0f0elem)
 					}
 					f0f13f0.SetItems(f0f13f0f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Quantity != nil {
-					f0f13f0.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Quantity)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
 					f0f13f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
