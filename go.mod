@@ -2,6 +2,8 @@ module github.com/crossplane/provider-aws
 
 go 1.17
 
+replace github.com/crossplane/crossplane-runtime => github.com/muvaf/crossplane-runtime v0.0.0-20220406214123-329609509245
+
 require (
 	github.com/aws/aws-sdk-go v1.42.0
 	github.com/aws/aws-sdk-go-v2 v1.11.2

@@ -185,8 +185,6 @@ github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfc
 github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/crossplane/crossplane-runtime v0.15.1-0.20220315141414-988c9ba9c255 h1:l9eAErqfcEzGpq5dMfO/4GTCG2qXgiQgH5J+xhBHqYc=
-github.com/crossplane/crossplane-runtime v0.15.1-0.20220315141414-988c9ba9c255/go.mod h1:IPT3HTsovwmbw3i+SdsOyaC3r3b7TW+otBMmZsHLnSU=
 github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e h1:HqLaMji3FRPwEBA5P6twPz0HbE6no0XOnByLU5O1noM=
 github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e/go.mod h1:xFf30hwHd5n0/a0D4ZomId8nxQTTjE0Hc1j4/rWxefc=
 github.com/dave/jennifer v1.4.1 h1:XyqG6cn5RQsTj3qlWQTKlRGAyrTcsk1kUmWdZBzRjDw=
@@ -528,6 +526,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
+github.com/muvaf/crossplane-runtime v0.0.0-20220406214123-329609509245 h1:cpkPfldvZBrmJdLhwRWun68FTS1HvPchMA8oLWtLztw=
+github.com/muvaf/crossplane-runtime v0.0.0-20220406214123-329609509245/go.mod h1:IPT3HTsovwmbw3i+SdsOyaC3r3b7TW+otBMmZsHLnSU=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=

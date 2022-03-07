@@ -24,6 +24,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
+
+	"github.com/crossplane/crossplane-runtime/pkg/webhook"
 )
 
 // Package type metadata.
@@ -46,6 +48,8 @@ var (
 	VPCGroupKind        = schema.GroupKind{Group: Group, Kind: VPCKind}.String()
 	VPCKindAPIVersion   = VPCKind + "." + SchemeGroupVersion.String()
 	VPCGroupVersionKind = SchemeGroupVersion.WithKind(VPCKind)
+
+	VPCValidator = webhook.NewValidator()
 )
 
 // Subnet type metadata.

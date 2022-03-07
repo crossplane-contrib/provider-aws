@@ -67,6 +67,13 @@ func SetupVPC(mgr ctrl.Manager, o controller.Options) error {
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
 	}
 
+	if err := ctrl.NewWebhookManagedBy(mgr).
+		For(&v1beta1.VPC{}).
+		WithValidator(v1beta1.VPCValidator).
+		Complete(); err != nil {
+		return errors.Wrap(err, "cannot set up webhooks")
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).

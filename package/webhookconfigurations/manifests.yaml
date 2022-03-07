@@ -1,0 +1,28 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-ec2-aws-crossplane-io-v1beta1-vpc
+  failurePolicy: Fail
+  name: vpcs.ec2.aws.crossplane.io
+  rules:
+  - apiGroups:
+    - ec2.aws.crossplane.io
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - vpcs
+  sideEffects: None
