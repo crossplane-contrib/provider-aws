@@ -87,6 +87,20 @@ func GenerateCreateCacheParameterGroupInput(cr *svcapitypes.CacheParameterGroup)
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f2 := []*svcsdk.Tag{}
+		for _, f2iter := range cr.Spec.ForProvider.Tags {
+			f2elem := &svcsdk.Tag{}
+			if f2iter.Key != nil {
+				f2elem.SetKey(*f2iter.Key)
+			}
+			if f2iter.Value != nil {
+				f2elem.SetValue(*f2iter.Value)
+			}
+			f2 = append(f2, f2elem)
+		}
+		res.SetTags(f2)
+	}
 
 	return res
 }

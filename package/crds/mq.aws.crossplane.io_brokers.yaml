@@ -240,6 +240,12 @@ spec:
                       type: object
                     type: array
                 required:
+                - autoMinorVersionUpgrade
+                - deploymentMode
+                - engineType
+                - engineVersion
+                - hostInstanceType
+                - publiclyAccessible
                 - region
                 type: object
               providerConfigRef:

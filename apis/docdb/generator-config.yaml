@@ -29,3 +29,5 @@ ignore:
     - DeleteDBClusterOutput.MasterUserPassword
   resource_names:
     - DBClusterSnapshot
+    - GlobalCluster
+    - EventSubscription

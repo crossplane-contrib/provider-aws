@@ -208,10 +208,26 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
 		}
+		if elem.ReadReplicaIdentifiers != nil {
+			f25 := []*string{}
+			for _, f25iter := range elem.ReadReplicaIdentifiers {
+				var f25elem string
+				f25elem = *f25iter
+				f25 = append(f25, &f25elem)
+			}
+			cr.Status.AtProvider.ReadReplicaIdentifiers = f25
+		} else {
+			cr.Status.AtProvider.ReadReplicaIdentifiers = nil
+		}
 		if elem.ReaderEndpoint != nil {
 			cr.Status.AtProvider.ReaderEndpoint = elem.ReaderEndpoint
 		} else {
 			cr.Status.AtProvider.ReaderEndpoint = nil
+		}
+		if elem.ReplicationSourceIdentifier != nil {
+			cr.Status.AtProvider.ReplicationSourceIdentifier = elem.ReplicationSourceIdentifier
+		} else {
+			cr.Status.AtProvider.ReplicationSourceIdentifier = nil
 		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
@@ -224,18 +240,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f28 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f28iter := range elem.VpcSecurityGroups {
-				f28elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f28iter.Status != nil {
-					f28elem.Status = f28iter.Status
+			f30 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f30iter := range elem.VpcSecurityGroups {
+				f30elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f30iter.Status != nil {
+					f30elem.Status = f30iter.Status
 				}
-				if f28iter.VpcSecurityGroupId != nil {
-					f28elem.VPCSecurityGroupID = f28iter.VpcSecurityGroupId
+				if f30iter.VpcSecurityGroupId != nil {
+					f30elem.VPCSecurityGroupID = f30iter.VpcSecurityGroupId
 				}
-				f28 = append(f28, f28elem)
+				f30 = append(f30, f30elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f28
+			cr.Status.AtProvider.VPCSecurityGroups = f30
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -274,20 +290,26 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.DeletionProtection != nil {
 		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
 	}
+	if cr.Spec.ForProvider.DestinationRegion != nil {
+		res.SetDestinationRegion(*cr.Spec.ForProvider.DestinationRegion)
+	}
 	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
-		f5 := []*string{}
-		for _, f5iter := range cr.Spec.ForProvider.EnableCloudwatchLogsExports {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.EnableCloudwatchLogsExports {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		res.SetEnableCloudwatchLogsExports(f5)
+		res.SetEnableCloudwatchLogsExports(f6)
 	}
 	if cr.Spec.ForProvider.Engine != nil {
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
 	}
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+	if cr.Spec.ForProvider.GlobalClusterIdentifier != nil {
+		res.SetGlobalClusterIdentifier(*cr.Spec.ForProvider.GlobalClusterIdentifier)
 	}
 	if cr.Spec.ForProvider.KMSKeyID != nil {
 		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
@@ -307,31 +329,34 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
+	if cr.Spec.ForProvider.SourceRegion != nil {
+		res.SetSourceRegion(*cr.Spec.ForProvider.SourceRegion)
+	}
 	if cr.Spec.ForProvider.StorageEncrypted != nil {
 		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f15 := []*svcsdk.Tag{}
-		for _, f15iter := range cr.Spec.ForProvider.Tags {
-			f15elem := &svcsdk.Tag{}
-			if f15iter.Key != nil {
-				f15elem.SetKey(*f15iter.Key)
+		f18 := []*svcsdk.Tag{}
+		for _, f18iter := range cr.Spec.ForProvider.Tags {
+			f18elem := &svcsdk.Tag{}
+			if f18iter.Key != nil {
+				f18elem.SetKey(*f18iter.Key)
 			}
-			if f15iter.Value != nil {
-				f15elem.SetValue(*f15iter.Value)
+			if f18iter.Value != nil {
+				f18elem.SetValue(*f18iter.Value)
 			}
-			f15 = append(f15, f15elem)
+			f18 = append(f18, f18elem)
 		}
-		res.SetTags(f15)
+		res.SetTags(f18)
 	}
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f16 := []*string{}
-		for _, f16iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f19 := []*string{}
+		for _, f19iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f19elem string
+			f19elem = *f19iter
+			f19 = append(f19, &f19elem)
 		}
-		res.SetVpcSecurityGroupIds(f16)
+		res.SetVpcSecurityGroupIds(f19)
 	}
 
 	return res

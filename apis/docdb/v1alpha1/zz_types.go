@@ -182,7 +182,11 @@ type DBCluster_SDK struct {
 
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 
+	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`
+
 	ReaderEndpoint *string `json:"readerEndpoint,omitempty"`
+
+	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
@@ -326,10 +330,57 @@ type EventCategoriesMap struct {
 }
 
 // +kubebuilder:skipversion
+type EventSubscription struct {
+	CustSubscriptionID *string `json:"custSubscriptionID,omitempty"`
+
+	CustomerAWSID *string `json:"customerAWSID,omitempty"`
+
+	Enabled *bool `json:"enabled,omitempty"`
+
+	EventSubscriptionARN *string `json:"eventSubscriptionARN,omitempty"`
+
+	SnsTopicARN *string `json:"snsTopicARN,omitempty"`
+
+	SourceType *string `json:"sourceType,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	SubscriptionCreationTime *string `json:"subscriptionCreationTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Filter struct {
 	Name *string `json:"name,omitempty"`
 
 	Values []*string `json:"values,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type GlobalCluster struct {
+	DatabaseName *string `json:"databaseName,omitempty"`
+
+	DeletionProtection *bool `json:"deletionProtection,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
+
+	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
+
+	GlobalClusterResourceID *string `json:"globalClusterResourceID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type GlobalClusterMember struct {
+	DBClusterARN *string `json:"dbClusterARN,omitempty"`
+
+	IsWriter *bool `json:"isWriter,omitempty"`
 }
 
 // +kubebuilder:skipversion

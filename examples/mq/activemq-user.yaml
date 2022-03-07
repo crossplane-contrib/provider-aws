@@ -8,7 +8,7 @@ metadata:
   name: example-activemq-user
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     brokerIDRef:
       name: example-activemq
     passwordSecretRef:

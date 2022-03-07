@@ -84,6 +84,10 @@ spec:
                   characterSetName:
                     description: (Not supported by Neptune)
                     type: string
+                  copyTagsToSnapshot:
+                    description: If set to true, tags are copied to any snapshot of
+                      the DB cluster that is created.
+                    type: boolean
                   databaseName:
                     description: The name for your database of up to 64 alpha-numeric
                       characters. If you do not provide a name, Amazon Neptune will
@@ -106,6 +110,10 @@ spec:
                       deletion protection is enabled. By default, deletion protection
                       is enabled.
                     type: boolean
+                  destinationRegion:
+                    description: DestinationRegion is used for presigning the request
+                      to a given region.
+                    type: string
                   enableCloudwatchLogsExports:
                     description: The list of log types that need to be enabled for
                       exporting to CloudWatch Logs.
@@ -113,7 +121,9 @@ spec:
                       type: string
                     type: array
                   enableIAMDatabaseAuthentication:
-                    description: Not supported by Neptune.
+                    description: "If set to true, enables Amazon Identity and Access
+                      Management (IAM) authentication for the entire DB cluster (this
+                      cannot be set at an instance level). \n Default: false."
                     type: boolean
                   engine:
                     description: "The name of the database engine to be used for this
@@ -124,37 +134,32 @@ spec:
                       for the new DB cluster. \n Example: 1.0.2.1"
                     type: string
                   kmsKeyID:
-                    description: "The AWS KMS key identifier for an encrypted DB cluster.
-                      \n The KMS key identifier is the Amazon Resource Name (ARN)
-                      for the KMS encryption key. If you are creating a DB cluster
-                      with the same AWS account that owns the KMS encryption key used
-                      to encrypt the new DB cluster, then you can use the KMS key
-                      alias instead of the ARN for the KMS encryption key. \n If an
-                      encryption key is not specified in KmsKeyId: \n    * If ReplicationSourceIdentifier
-                      identifies an encrypted source, then    Amazon Neptune will
-                      use the encryption key used to encrypt the source.    Otherwise,
-                      Amazon Neptune will use your default encryption key. \n    *
-                      If the StorageEncrypted parameter is true and ReplicationSourceIdentifier
-                      \   is not specified, then Amazon Neptune will use your default
-                      encryption    key. \n AWS KMS creates the default encryption
-                      key for your AWS account. Your AWS account has a different default
-                      encryption key for each AWS Region. \n If you create a Read
-                      Replica of an encrypted DB cluster in another AWS Region, you
-                      must set KmsKeyId to a KMS key ID that is valid in the destination
-                      AWS Region. This key is used to encrypt the Read Replica in
-                      that AWS Region."
+                    description: "The Amazon KMS key identifier for an encrypted DB
+                      cluster. \n The KMS key identifier is the Amazon Resource Name
+                      (ARN) for the KMS encryption key. If you are creating a DB cluster
+                      with the same Amazon account that owns the KMS encryption key
+                      used to encrypt the new DB cluster, then you can use the KMS
+                      key alias instead of the ARN for the KMS encryption key. \n
+                      If an encryption key is not specified in KmsKeyId: \n    * If
+                      ReplicationSourceIdentifier identifies an encrypted source,
+                      then    Amazon Neptune will use the encryption key used to encrypt
+                      the source.    Otherwise, Amazon Neptune will use your default
+                      encryption key. \n    * If the StorageEncrypted parameter is
+                      true and ReplicationSourceIdentifier    is not specified, then
+                      Amazon Neptune will use your default encryption    key. \n Amazon
+                      KMS creates the default encryption key for your Amazon account.
+                      Your Amazon account has a different default encryption key for
+                      each Amazon Region. \n If you create a Read Replica of an encrypted
+                      DB cluster in another Amazon Region, you must set KmsKeyId to
+                      a KMS key ID that is valid in the destination Amazon Region.
+                      This key is used to encrypt the Read Replica in that Amazon
+                      Region."
                     type: string
                   masterUserPassword:
-                    description: "The password for the master database user. This
-                      password can contain any printable ASCII character except \"/\",
-                      \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41
-                      characters."
+                    description: Not supported by Neptune.
                     type: string
                   masterUsername:
-                    description: "The name of the master user for the DB cluster.
-                      \n Constraints: \n    * Must be 1 to 16 letters or numbers.
-                      \n    * First character must be a letter. \n    * Cannot be
-                      a reserved word for the chosen database engine."
+                    description: Not supported by Neptune.
                     type: string
                   optionGroupName:
                     description: (Not supported by Neptune)
@@ -171,9 +176,9 @@ spec:
                     description: "The daily time range during which automated backups
                       are created if automated backups are enabled using the BackupRetentionPeriod
                       parameter. \n The default is a 30-minute window selected at
-                      random from an 8-hour block of time for each AWS Region. To
-                      see the time blocks available, see Adjusting the Preferred Maintenance
-                      Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+                      random from an 8-hour block of time for each Amazon Region.
+                      To see the time blocks available, see Adjusting the Preferred
+                      Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
                       in the Amazon Neptune User Guide. \n Constraints: \n    * Must
                       be in the format hh24:mi-hh24:mi. \n    * Must be in Universal
                       Coordinated Time (UTC). \n    * Must not conflict with the preferred
@@ -183,9 +188,9 @@ spec:
                     description: "The weekly time range during which system maintenance
                       can occur, in Universal Coordinated Time (UTC). \n Format: ddd:hh24:mi-ddd:hh24:mi
                       \n The default is a 30-minute window selected at random from
-                      an 8-hour block of time for each AWS Region, occurring on a
-                      random day of the week. To see the time blocks available, see
-                      Adjusting the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+                      an 8-hour block of time for each Amazon Region, occurring on
+                      a random day of the week. To see the time blocks available,
+                      see Adjusting the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
                       in the Amazon Neptune User Guide. \n Valid Days: Mon, Tue, Wed,
                       Thu, Fri, Sat, Sun. \n Constraints: Minimum 30-minute window."
                     type: string
@@ -204,6 +209,12 @@ spec:
                       \n You must specify a FinalDBSnapshotIdentifier parameter if
                       SkipFinalSnapshot is false. \n Default: false"
                     type: boolean
+                  sourceRegion:
+                    description: SourceRegion is the source region where the resource
+                      exists. This is not sent over the wire and is only used for
+                      presigning. This value should always have the same region as
+                      the source ARN.
+                    type: string
                   storageEncrypted:
                     description: Specifies whether the DB cluster is encrypted.
                     type: boolean
@@ -284,10 +295,10 @@ spec:
                     format: int64
                     type: integer
                   associatedRoles:
-                    description: Provides a list of the AWS Identity and Access Management
-                      (IAM) roles that are associated with the DB cluster. IAM roles
-                      that are associated with a DB cluster grant permission for the
-                      DB cluster to access other AWS services on your behalf.
+                    description: Provides a list of the Amazon Identity and Access
+                      Management (IAM) roles that are associated with the DB cluster.
+                      IAM roles that are associated with a DB cluster grant permission
+                      for the DB cluster to access other Amazon services on your behalf.
                     items:
                       properties:
                         featureName:
@@ -298,6 +309,11 @@ spec:
                           type: string
                       type: object
                     type: array
+                  automaticRestartTime:
+                    description: Time at which the DB cluster will be automatically
+                      restarted.
+                    format: date-time
+                    type: string
                   cloneGroupID:
                     description: Identifies the clone group to which the DB cluster
                       is associated.
@@ -307,6 +323,10 @@ spec:
                       in Universal Coordinated Time (UTC).
                     format: date-time
                     type: string
+                  crossAccountClone:
+                    description: If set to true, the DB cluster can be cloned across
+                      accounts.
+                    type: boolean
                   dbClusterARN:
                     description: The Amazon Resource Name (ARN) for the DB cluster.
                     type: string
@@ -331,7 +351,7 @@ spec:
                       type: object
                     type: array
                   dbClusterOptionGroupMemberships:
-                    description: (Not supported by Neptune)
+                    description: Not supported by Neptune.
                     items:
                       properties:
                         dbClusterOptionGroupName:
@@ -345,9 +365,10 @@ spec:
                       for the DB cluster.
                     type: string
                   dbClusterResourceID:
-                    description: The AWS Region-unique, immutable identifier for the
-                      DB cluster. This identifier is found in AWS CloudTrail log entries
-                      whenever the AWS KMS key for the DB cluster is accessed.
+                    description: The Amazon Region-unique, immutable identifier for
+                      the DB cluster. This identifier is found in Amazon CloudTrail
+                      log entries whenever the Amazon KMS key for the DB cluster is
+                      accessed.
                     type: string
                   dbSubnetGroup:
                     description: Specifies information on the subnet group associated
@@ -374,7 +395,7 @@ spec:
                       you create a hosted zone.
                     type: string
                   iamDatabaseAuthenticationEnabled:
-                    description: True if mapping of AWS Identity and Access Management
+                    description: True if mapping of Amazon Identity and Access Management
                       (IAM) accounts to database accounts is enabled, and otherwise
                       false.
                     type: boolean

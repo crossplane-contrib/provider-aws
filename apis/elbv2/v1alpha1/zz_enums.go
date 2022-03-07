@@ -94,6 +94,13 @@ const (
 	RedirectActionStatusCodeEnum_HTTP_302 RedirectActionStatusCodeEnum = "HTTP_302"
 )
 
+type TargetGroupIPAddressTypeEnum string
+
+const (
+	TargetGroupIPAddressTypeEnum_ipv4 TargetGroupIPAddressTypeEnum = "ipv4"
+	TargetGroupIPAddressTypeEnum_ipv6 TargetGroupIPAddressTypeEnum = "ipv6"
+)
+
 type TargetHealthReasonEnum string
 
 const (
@@ -128,4 +135,5 @@ const (
 	TargetTypeEnum_instance TargetTypeEnum = "instance"
 	TargetTypeEnum_ip       TargetTypeEnum = "ip"
 	TargetTypeEnum_lambda   TargetTypeEnum = "lambda"
+	TargetTypeEnum_alb      TargetTypeEnum = "alb"
 )

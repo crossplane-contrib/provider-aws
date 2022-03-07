@@ -38,20 +38,42 @@ func GenerateCreatePrivateDnsNamespaceInput(cr *svcapitypes.PrivateDNSNamespace)
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+	if cr.Spec.ForProvider.Properties != nil {
+		f2 := &svcsdk.PrivateDnsNamespaceProperties{}
+		if cr.Spec.ForProvider.Properties.DNSProperties != nil {
+			f2f0 := &svcsdk.PrivateDnsPropertiesMutable{}
+			if cr.Spec.ForProvider.Properties.DNSProperties.SOA != nil {
+				f2f0f0 := &svcsdk.SOA{}
+				if cr.Spec.ForProvider.Properties.DNSProperties.SOA.TTL != nil {
+					f2f0f0.SetTTL(*cr.Spec.ForProvider.Properties.DNSProperties.SOA.TTL)
+				}
+				f2f0.SetSOA(f2f0f0)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
-			}
-			f2 = append(f2, f2elem)
+			f2.SetDnsProperties(f2f0)
 		}
-		res.SetTags(f2)
+		res.SetProperties(f2)
 	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f3 := []*svcsdk.Tag{}
+		for _, f3iter := range cr.Spec.ForProvider.Tags {
+			f3elem := &svcsdk.Tag{}
+			if f3iter.Key != nil {
+				f3elem.SetKey(*f3iter.Key)
+			}
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetTags(f3)
+	}
+
+	return res
+}
+
+// GenerateUpdatePrivateDnsNamespaceInput returns an update input.
+func GenerateUpdatePrivateDnsNamespaceInput(cr *svcapitypes.PrivateDNSNamespace) *svcsdk.UpdatePrivateDnsNamespaceInput {
+	res := &svcsdk.UpdatePrivateDnsNamespaceInput{}
 
 	return res
 }

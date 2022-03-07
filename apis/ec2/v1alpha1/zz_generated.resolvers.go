@@ -428,6 +428,22 @@ func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.
 	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef = rsp.ResolvedReference
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID")
+	}
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef = rsp.ResolvedReference
+
 	return nil
 }
 

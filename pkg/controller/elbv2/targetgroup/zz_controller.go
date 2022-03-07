@@ -143,24 +143,27 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			if f0iter.HealthyThresholdCount != nil {
 				f0elem.HealthyThresholdCount = f0iter.HealthyThresholdCount
 			}
+			if f0iter.IpAddressType != nil {
+				f0elem.IPAddressType = f0iter.IpAddressType
+			}
 			if f0iter.LoadBalancerArns != nil {
-				f0elemf7 := []*string{}
-				for _, f0elemf7iter := range f0iter.LoadBalancerArns {
-					var f0elemf7elem string
-					f0elemf7elem = *f0elemf7iter
-					f0elemf7 = append(f0elemf7, &f0elemf7elem)
+				f0elemf8 := []*string{}
+				for _, f0elemf8iter := range f0iter.LoadBalancerArns {
+					var f0elemf8elem string
+					f0elemf8elem = *f0elemf8iter
+					f0elemf8 = append(f0elemf8, &f0elemf8elem)
 				}
-				f0elem.LoadBalancerARNs = f0elemf7
+				f0elem.LoadBalancerARNs = f0elemf8
 			}
 			if f0iter.Matcher != nil {
-				f0elemf8 := &svcapitypes.Matcher{}
+				f0elemf9 := &svcapitypes.Matcher{}
 				if f0iter.Matcher.GrpcCode != nil {
-					f0elemf8.GrpcCode = f0iter.Matcher.GrpcCode
+					f0elemf9.GrpcCode = f0iter.Matcher.GrpcCode
 				}
 				if f0iter.Matcher.HttpCode != nil {
-					f0elemf8.HTTPCode = f0iter.Matcher.HttpCode
+					f0elemf9.HTTPCode = f0iter.Matcher.HttpCode
 				}
-				f0elem.Matcher = f0elemf8
+				f0elem.Matcher = f0elemf9
 			}
 			if f0iter.Port != nil {
 				f0elem.Port = f0iter.Port

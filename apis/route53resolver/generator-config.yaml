@@ -1,6 +1,9 @@
 ignore:
   resource_names:
     - ResolverQueryLogConfig
+    - FirewallDomainList
+    - FirewallRule
+    - FirewallRuleGroup
   field_paths:
     - CreateResolverEndpointInput.SecurityGroupIds
     - CreateResolverEndpointInput.IpAddresses

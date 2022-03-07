@@ -116,6 +116,11 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 	} else {
 		cr.Status.AtProvider.KeyManager = nil
 	}
+	if resp.KeyMetadata.KeySpec != nil {
+		cr.Spec.ForProvider.KeySpec = resp.KeyMetadata.KeySpec
+	} else {
+		cr.Spec.ForProvider.KeySpec = nil
+	}
 	if resp.KeyMetadata.KeyState != nil {
 		cr.Status.AtProvider.KeyState = resp.KeyMetadata.KeyState
 	} else {
@@ -126,19 +131,62 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 	} else {
 		cr.Spec.ForProvider.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MultiRegion != nil {
+		cr.Spec.ForProvider.MultiRegion = resp.KeyMetadata.MultiRegion
+	} else {
+		cr.Spec.ForProvider.MultiRegion = nil
+	}
+	if resp.KeyMetadata.MultiRegionConfiguration != nil {
+		f17 := &svcapitypes.MultiRegionConfiguration{}
+		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
+			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
+			f17f1 := &svcapitypes.MultiRegionKey{}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
+				f17f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+			}
+			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
+				f17f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+			}
+			f17.PrimaryKey = f17f1
+		}
+		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
+			f17f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f17f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f17f2elem := &svcapitypes.MultiRegionKey{}
+				if f17f2iter.Arn != nil {
+					f17f2elem.ARN = f17f2iter.Arn
+				}
+				if f17f2iter.Region != nil {
+					f17f2elem.Region = f17f2iter.Region
+				}
+				f17f2 = append(f17f2, f17f2elem)
+			}
+			f17.ReplicaKeys = f17f2
+		}
+		cr.Status.AtProvider.MultiRegionConfiguration = f17
+	} else {
+		cr.Status.AtProvider.MultiRegionConfiguration = nil
+	}
 	if resp.KeyMetadata.Origin != nil {
 		cr.Spec.ForProvider.Origin = resp.KeyMetadata.Origin
 	} else {
 		cr.Spec.ForProvider.Origin = nil
 	}
+	if resp.KeyMetadata.PendingDeletionWindowInDays != nil {
+		cr.Status.AtProvider.PendingDeletionWindowInDays = resp.KeyMetadata.PendingDeletionWindowInDays
+	} else {
+		cr.Status.AtProvider.PendingDeletionWindowInDays = nil
+	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f20 := []*string{}
+		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f20elem string
+			f20elem = *f20iter
+			f20 = append(f20, &f20elem)
 		}
-		cr.Status.AtProvider.SigningAlgorithms = f16
+		cr.Status.AtProvider.SigningAlgorithms = f20
 	} else {
 		cr.Status.AtProvider.SigningAlgorithms = nil
 	}
@@ -167,8 +215,14 @@ func GenerateCreateKeyInput(cr *svcapitypes.Key) *svcsdk.CreateKeyInput {
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
+	if cr.Spec.ForProvider.KeySpec != nil {
+		res.SetKeySpec(*cr.Spec.ForProvider.KeySpec)
+	}
 	if cr.Spec.ForProvider.KeyUsage != nil {
 		res.SetKeyUsage(*cr.Spec.ForProvider.KeyUsage)
+	}
+	if cr.Spec.ForProvider.MultiRegion != nil {
+		res.SetMultiRegion(*cr.Spec.ForProvider.MultiRegion)
 	}
 	if cr.Spec.ForProvider.Origin != nil {
 		res.SetOrigin(*cr.Spec.ForProvider.Origin)
@@ -177,18 +231,18 @@ func GenerateCreateKeyInput(cr *svcapitypes.Key) *svcsdk.CreateKeyInput {
 		res.SetPolicy(*cr.Spec.ForProvider.Policy)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f7 := []*svcsdk.Tag{}
-		for _, f7iter := range cr.Spec.ForProvider.Tags {
-			f7elem := &svcsdk.Tag{}
-			if f7iter.TagKey != nil {
-				f7elem.SetTagKey(*f7iter.TagKey)
+		f9 := []*svcsdk.Tag{}
+		for _, f9iter := range cr.Spec.ForProvider.Tags {
+			f9elem := &svcsdk.Tag{}
+			if f9iter.TagKey != nil {
+				f9elem.SetTagKey(*f9iter.TagKey)
 			}
-			if f7iter.TagValue != nil {
-				f7elem.SetTagValue(*f7iter.TagValue)
+			if f9iter.TagValue != nil {
+				f9elem.SetTagValue(*f9iter.TagValue)
 			}
-			f7 = append(f7, f7elem)
+			f9 = append(f9, f9elem)
 		}
-		res.SetTags(f7)
+		res.SetTags(f9)
 	}
 
 	return res

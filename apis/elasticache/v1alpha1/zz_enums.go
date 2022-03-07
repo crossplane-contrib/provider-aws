@@ -63,6 +63,36 @@ const (
 	ChangeType_requires_reboot ChangeType = "requires-reboot"
 )
 
+type DestinationType string
+
+const (
+	DestinationType_cloudwatch_logs  DestinationType = "cloudwatch-logs"
+	DestinationType_kinesis_firehose DestinationType = "kinesis-firehose"
+)
+
+type LogDeliveryConfigurationStatus string
+
+const (
+	LogDeliveryConfigurationStatus_active    LogDeliveryConfigurationStatus = "active"
+	LogDeliveryConfigurationStatus_enabling  LogDeliveryConfigurationStatus = "enabling"
+	LogDeliveryConfigurationStatus_modifying LogDeliveryConfigurationStatus = "modifying"
+	LogDeliveryConfigurationStatus_disabling LogDeliveryConfigurationStatus = "disabling"
+	LogDeliveryConfigurationStatus_error     LogDeliveryConfigurationStatus = "error"
+)
+
+type LogFormat string
+
+const (
+	LogFormat_text LogFormat = "text"
+	LogFormat_json LogFormat = "json"
+)
+
+type LogType string
+
+const (
+	LogType_slow_log LogType = "slow-log"
+)
+
 type MultiAZStatus string
 
 const (

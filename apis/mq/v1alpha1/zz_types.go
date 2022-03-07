@@ -34,8 +34,7 @@ type AvailabilityZone struct {
 
 // +kubebuilder:skipversion
 type BrokerEngineType struct {
-	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
-	// RabbitMQ.
+	// The type of broker engine. Amazon MQ supports ActiveMQ and RabbitMQ.
 	EngineType *string `json:"engineType,omitempty"`
 }
 
@@ -50,13 +49,13 @@ type BrokerInstance struct {
 
 // +kubebuilder:skipversion
 type BrokerInstanceOption struct {
-	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
-	// RabbitMQ.
+	// The type of broker engine. Amazon MQ supports ActiveMQ and RabbitMQ.
 	EngineType *string `json:"engineType,omitempty"`
 
 	HostInstanceType *string `json:"hostInstanceType,omitempty"`
-	// The storage type of the broker. EFS is currently not Supported for RabbitMQ
-	// engine type.
+	// The broker's storage type.
+	//
+	// EFS is not supported for RabbitMQ engine type.
 	StorageType *string `json:"storageType,omitempty"`
 
 	SupportedEngineVersions []*string `json:"supportedEngineVersions,omitempty"`
@@ -69,14 +68,13 @@ type BrokerSummary struct {
 	BrokerID *string `json:"brokerID,omitempty"`
 
 	BrokerName *string `json:"brokerName,omitempty"`
-	// The status of the broker.
+	// The broker's status.
 	BrokerState *string `json:"brokerState,omitempty"`
 
 	Created *metav1.Time `json:"created,omitempty"`
-	// The deployment mode of the broker.
+	// The broker's deployment mode.
 	DeploymentMode *string `json:"deploymentMode,omitempty"`
-	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
-	// RabbitMQ.
+	// The type of broker engine. Amazon MQ supports ActiveMQ and RabbitMQ.
 	EngineType *string `json:"engineType,omitempty"`
 
 	HostInstanceType *string `json:"hostInstanceType,omitempty"`
@@ -85,14 +83,14 @@ type BrokerSummary struct {
 // +kubebuilder:skipversion
 type Configuration struct {
 	ARN *string `json:"arn,omitempty"`
-	// The authentication strategy used to secure the broker.
+	// Optional. The authentication strategy used to secure the broker. The default
+	// is SIMPLE.
 	AuthenticationStrategy *string `json:"authenticationStrategy,omitempty"`
 
 	Created *metav1.Time `json:"created,omitempty"`
 
 	Description *string `json:"description,omitempty"`
-	// The type of broker engine. Note: Currently, Amazon MQ supports ActiveMQ and
-	// RabbitMQ.
+	// The type of broker engine. Amazon MQ supports ActiveMQ and RabbitMQ.
 	EngineType *string `json:"engineType,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -122,13 +120,15 @@ type ConfigurationRevision struct {
 
 // +kubebuilder:skipversion
 type Configurations struct {
-	// A list of information about the configuration. Does not apply to RabbitMQ
-	// brokers.
+	// A list of information about the configuration.
+	//
+	// Does not apply to RabbitMQ brokers.
 	Current *ConfigurationID `json:"current,omitempty"`
 
 	History []*ConfigurationID `json:"history,omitempty"`
-	// A list of information about the configuration. Does not apply to RabbitMQ
-	// brokers.
+	// A list of information about the configuration.
+	//
+	// Does not apply to RabbitMQ brokers.
 	Pending *ConfigurationID `json:"pending,omitempty"`
 }
 

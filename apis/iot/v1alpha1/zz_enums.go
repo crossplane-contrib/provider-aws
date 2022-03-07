@@ -48,6 +48,14 @@ const (
 	ActionType_CONNECT   ActionType = "CONNECT"
 )
 
+type AggregationTypeName string
+
+const (
+	AggregationTypeName_Statistics  AggregationTypeName = "Statistics"
+	AggregationTypeName_Percentiles AggregationTypeName = "Percentiles"
+	AggregationTypeName_Cardinality AggregationTypeName = "Cardinality"
+)
+
 type AlertTargetType string
 
 const (
@@ -334,6 +342,38 @@ const (
 	FieldType_Boolean FieldType = "Boolean"
 )
 
+type FleetMetricUnit string
+
+const (
+	FleetMetricUnit_Seconds          FleetMetricUnit = "Seconds"
+	FleetMetricUnit_Microseconds     FleetMetricUnit = "Microseconds"
+	FleetMetricUnit_Milliseconds     FleetMetricUnit = "Milliseconds"
+	FleetMetricUnit_Bytes            FleetMetricUnit = "Bytes"
+	FleetMetricUnit_Kilobytes        FleetMetricUnit = "Kilobytes"
+	FleetMetricUnit_Megabytes        FleetMetricUnit = "Megabytes"
+	FleetMetricUnit_Gigabytes        FleetMetricUnit = "Gigabytes"
+	FleetMetricUnit_Terabytes        FleetMetricUnit = "Terabytes"
+	FleetMetricUnit_Bits             FleetMetricUnit = "Bits"
+	FleetMetricUnit_Kilobits         FleetMetricUnit = "Kilobits"
+	FleetMetricUnit_Megabits         FleetMetricUnit = "Megabits"
+	FleetMetricUnit_Gigabits         FleetMetricUnit = "Gigabits"
+	FleetMetricUnit_Terabits         FleetMetricUnit = "Terabits"
+	FleetMetricUnit_Percent          FleetMetricUnit = "Percent"
+	FleetMetricUnit_Count            FleetMetricUnit = "Count"
+	FleetMetricUnit_Bytes_Second     FleetMetricUnit = "Bytes/Second"
+	FleetMetricUnit_Kilobytes_Second FleetMetricUnit = "Kilobytes/Second"
+	FleetMetricUnit_Megabytes_Second FleetMetricUnit = "Megabytes/Second"
+	FleetMetricUnit_Gigabytes_Second FleetMetricUnit = "Gigabytes/Second"
+	FleetMetricUnit_Terabytes_Second FleetMetricUnit = "Terabytes/Second"
+	FleetMetricUnit_Bits_Second      FleetMetricUnit = "Bits/Second"
+	FleetMetricUnit_Kilobits_Second  FleetMetricUnit = "Kilobits/Second"
+	FleetMetricUnit_Megabits_Second  FleetMetricUnit = "Megabits/Second"
+	FleetMetricUnit_Gigabits_Second  FleetMetricUnit = "Gigabits/Second"
+	FleetMetricUnit_Terabits_Second  FleetMetricUnit = "Terabits/Second"
+	FleetMetricUnit_Count_Second     FleetMetricUnit = "Count/Second"
+	FleetMetricUnit_None             FleetMetricUnit = "None"
+)
+
 type IndexStatus string
 
 const (
@@ -520,6 +560,15 @@ const (
 	TopicRuleDestinationStatus_DISABLED    TopicRuleDestinationStatus = "DISABLED"
 	TopicRuleDestinationStatus_ERROR       TopicRuleDestinationStatus = "ERROR"
 	TopicRuleDestinationStatus_DELETING    TopicRuleDestinationStatus = "DELETING"
+)
+
+type VerificationState string
+
+const (
+	VerificationState_FALSE_POSITIVE  VerificationState = "FALSE_POSITIVE"
+	VerificationState_BENIGN_POSITIVE VerificationState = "BENIGN_POSITIVE"
+	VerificationState_TRUE_POSITIVE   VerificationState = "TRUE_POSITIVE"
+	VerificationState_UNKNOWN         VerificationState = "UNKNOWN"
 )
 
 type ViolationEventType string

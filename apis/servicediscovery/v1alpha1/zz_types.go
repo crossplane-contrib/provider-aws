@@ -28,27 +28,60 @@ var (
 )
 
 // +kubebuilder:skipversion
+type DNSConfig struct {
+	NamespaceID *string `json:"namespaceID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DNSProperties struct {
+	HostedZoneID *string `json:"hostedZoneID,omitempty"`
+	// Start of Authority (SOA) properties for a public or private DNS namespace.
+	SOA *SOA `json:"sOA,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DNSRecord struct {
+	TTL *int64 `json:"tTL,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type HTTPInstanceSummary struct {
+	InstanceID *string `json:"instanceID,omitempty"`
+
 	NamespaceName *string `json:"namespaceName,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type HTTPProperties struct {
-	HTTPName *string `json:"httpName,omitempty"`
+type HTTPNamespaceChange struct {
+	Description *string `json:"description,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Instance struct {
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceSummary struct {
+	ID *string `json:"id,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type Namespace struct {
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
-	Name *string `json:"name,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type NamespaceSummary struct {
 	Description *string `json:"description,omitempty"`
 
-	Name *string `json:"name,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -62,8 +95,86 @@ type OperationSummary struct {
 }
 
 // +kubebuilder:skipversion
-type Service struct {
+type PrivateDNSNamespaceChange struct {
 	Description *string `json:"description,omitempty"`
+	// Updated properties for the private DNS namespace.
+	Properties *PrivateDNSNamespacePropertiesChange `json:"properties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSNamespaceProperties struct {
+	// DNS properties for the private DNS namespace.
+	DNSProperties *PrivateDNSPropertiesMutable `json:"dnsProperties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSNamespacePropertiesChange struct {
+	// Updated DNS properties for the private DNS namespace.
+	DNSProperties *PrivateDNSPropertiesMutableChange `json:"dnsProperties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSPropertiesMutable struct {
+	// Start of Authority (SOA) properties for a public or private DNS namespace.
+	SOA *SOA `json:"sOA,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSPropertiesMutableChange struct {
+	// Updated Start of Authority (SOA) properties for a public or private DNS namespace.
+	SOA *SOAChange `json:"sOA,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicDNSNamespaceChange struct {
+	Description *string `json:"description,omitempty"`
+	// Updated properties for the public DNS namespace.
+	Properties *PublicDNSNamespacePropertiesChange `json:"properties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicDNSNamespaceProperties struct {
+	// DNS properties for the public DNS namespace.
+	DNSProperties *PublicDNSPropertiesMutable `json:"dnsProperties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicDNSNamespacePropertiesChange struct {
+	// Updated DNS properties for the public DNS namespace.
+	DNSProperties *PublicDNSPropertiesMutableChange `json:"dnsProperties,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicDNSPropertiesMutable struct {
+	// Start of Authority (SOA) properties for a public or private DNS namespace.
+	SOA *SOA `json:"sOA,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicDNSPropertiesMutableChange struct {
+	// Updated Start of Authority (SOA) properties for a public or private DNS namespace.
+	SOA *SOAChange `json:"sOA,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SOA struct {
+	TTL *int64 `json:"tTL,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SOAChange struct {
+	TTL *int64 `json:"tTL,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Service struct {
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	NamespaceID *string `json:"namespaceID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -74,6 +185,8 @@ type ServiceChange struct {
 // +kubebuilder:skipversion
 type ServiceSummary struct {
 	Description *string `json:"description,omitempty"`
+
+	ID *string `json:"id,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -8,7 +8,9 @@ ignore:
     - Dimension
     - DomainConfiguration
     - DynamicThingGroup
+    - FleetMetric
     - Job
+    - JobTemplate
     - KeysAndCertificate
     - MitigationAction
     - OTAUpdate

@@ -103,6 +103,11 @@ spec:
                         type: object
                     type: object
                   domain:
+                    description: "The domain of the storage system that is used for
+                      file transfers. There are two domains available: Amazon Simple
+                      Storage Service (Amazon S3) and Amazon Elastic File System (Amazon
+                      EFS). The default value is S3. \n After the server is created,
+                      the domain cannot be changed."
                     type: string
                   endpointDetails:
                     description: The virtual private cloud (VPC) endpoint settings
@@ -192,7 +197,7 @@ spec:
                           type: string
                         type: array
                       subnetIDRefs:
-                        description: SubnetIDsRefs is a list of references to Subnets
+                        description: SubnetIDRefs is a list of references to Subnets
                           used to set the SubnetIDs.
                         items:
                           description: A Reference to a named object.
@@ -205,7 +210,7 @@ spec:
                           type: object
                         type: array
                       subnetIDSelector:
-                        description: SubnetIDsSelector selects references to Subnets
+                        description: SubnetIDSelector selects references to Subnets
                           used to set the SubnetIds.
                         properties:
                           matchControllerRef:
@@ -288,13 +293,22 @@ spec:
                         type: object
                     type: object
                   endpointType:
-                    description: "The type of VPC endpoint that you want your server
-                      to connect to. You can choose to connect to the public internet
-                      or a VPC endpoint. With a VPC endpoint, you can restrict access
-                      to your server and resources only within your VPC. \n It is
-                      recommended that you use VPC as the EndpointType. With this
-                      endpoint type, you have the option to directly associate up
-                      to three Elastic IPv4 addresses (BYO IP included) with your
+                    description: "The type of endpoint that you want your server to
+                      use. You can choose to make your server's endpoint publicly
+                      accessible (PUBLIC) or host it inside your VPC. With an endpoint
+                      that is hosted in a VPC, you can restrict access to your server
+                      and resources only within your VPC or choose to make it internet
+                      facing by attaching Elastic IP addresses directly to it. \n
+                      After May 19, 2021, you won't be able to create a server using
+                      EndpointType=VPC_ENDPOINT in your Amazon Web Services account
+                      if your account hasn't already done so before May 19, 2021.
+                      If you have already created servers with EndpointType=VPC_ENDPOINT
+                      in your Amazon Web Services account on or before May 19, 2021,
+                      you will not be affected. After this date, use EndpointType=VPC.
+                      \n For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
+                      \n It is recommended that you use VPC as the EndpointType. With
+                      this endpoint type, you have the option to directly associate
+                      up to three Elastic IPv4 addresses (BYO IP included) with your
                       server's endpoint and use VPC security groups to restrict traffic
                       by the client's public IP address. This is not possible with
                       EndpointType set to VPC_ENDPOINT."
@@ -307,28 +321,36 @@ spec:
                       changing a server's host key can be disruptive. \n For more
                       information, see Change the host key for your SFTP-enabled server
                       (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
-                      in the AWS Transfer Family User Guide."
+                      in the Amazon Web Services Transfer Family User Guide."
                     type: string
                   identityProviderDetails:
-                    description: Required when IdentityProviderType is set to API_GATEWAY.
-                      Accepts an array containing all of the information required
-                      to call a customer-supplied authentication API, including the
-                      API Gateway URL. Not required when IdentityProviderType is set
-                      to SERVICE_MANAGED.
+                    description: Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE
+                      or API_GATEWAY. Accepts an array containing all of the information
+                      required to use a directory in AWS_DIRECTORY_SERVICE or invoke
+                      a customer-supplied authentication API, including the API Gateway
+                      URL. Not required when IdentityProviderType is set to SERVICE_MANAGED.
                     properties:
+                      directoryID:
+                        type: string
                       invocationRole:
                         type: string
                       url:
                         type: string
                     type: object
                   identityProviderType:
-                    description: Specifies the mode of authentication for a server.
+                    description: "Specifies the mode of authentication for a server.
                       The default value is SERVICE_MANAGED, which allows you to store
-                      and access user credentials within the AWS Transfer Family service.
-                      Use the API_GATEWAY value to integrate with an identity provider
-                      of your choosing. The API_GATEWAY setting requires you to provide
-                      an API Gateway endpoint URL to call for authentication using
-                      the IdentityProviderDetails parameter.
+                      and access user credentials within the Amazon Web Services Transfer
+                      Family service. \n Use AWS_DIRECTORY_SERVICE to provide access
+                      to Active Directory groups in Amazon Web Services Managed Active
+                      Directory or Microsoft Active Directory in your on-premises
+                      environment or in Amazon Web Services using AD Connectors. This
+                      option also requires you to provide a Directory ID using the
+                      IdentityProviderDetails parameter. \n Use the API_GATEWAY value
+                      to integrate with an identity provider of your choosing. The
+                      API_GATEWAY setting requires you to provide an API Gateway endpoint
+                      URL to call for authentication using the IdentityProviderDetails
+                      parameter."
                     type: string
                   loggingRole:
                     description: Allows the service to write your users' activity
@@ -365,14 +387,14 @@ spec:
                       over    SSH \n    * FTPS (File Transfer Protocol Secure): File
                       transfer with TLS encryption \n    * FTP (File Transfer Protocol):
                       Unencrypted file transfer \n If you select FTPS, you must choose
-                      a certificate stored in AWS Certificate Manager (ACM) which
-                      will be used to identify your server when clients connect to
-                      it over FTPS. \n If Protocol includes either FTP or FTPS, then
-                      the EndpointType must be VPC and the IdentityProviderType must
-                      be API_GATEWAY. \n If Protocol includes FTP, then AddressAllocationIds
-                      cannot be associated. \n If Protocol is set only to SFTP, the
-                      EndpointType can be set to PUBLIC and the IdentityProviderType
-                      can be set to SERVICE_MANAGED."
+                      a certificate stored in Amazon Web Services Certificate Manager
+                      (ACM) which is used to identify your server when clients connect
+                      to it over FTPS. \n If Protocol includes either FTP or FTPS,
+                      then the EndpointType must be VPC and the IdentityProviderType
+                      must be AWS_DIRECTORY_SERVICE or API_GATEWAY. \n If Protocol
+                      includes FTP, then AddressAllocationIds cannot be associated.
+                      \n If Protocol is set only to SFTP, the EndpointType can be
+                      set to PUBLIC and the IdentityProviderType can be set to SERVICE_MANAGED."
                     items:
                       type: string
                     type: array
@@ -394,6 +416,20 @@ spec:
                           type: string
                       type: object
                     type: array
+                  workflowDetails:
+                    description: Specifies the workflow ID for the workflow to assign
+                      and the execution role used for executing the workflow.
+                    properties:
+                      onUpload:
+                        items:
+                          properties:
+                            executionRole:
+                              type: string
+                            workflowID:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
                 required:
                 - region
                 type: object

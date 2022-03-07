@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
+type CustomStepStatus string
+
+const (
+	CustomStepStatus_SUCCESS CustomStepStatus = "SUCCESS"
+	CustomStepStatus_FAILURE CustomStepStatus = "FAILURE"
+)
+
 type Domain string
 
 const (
@@ -33,6 +40,21 @@ const (
 	EndpointType_VPC_ENDPOINT EndpointType = "VPC_ENDPOINT"
 )
 
+type ExecutionErrorType string
+
+const (
+	ExecutionErrorType_PERMISSION_DENIED ExecutionErrorType = "PERMISSION_DENIED"
+)
+
+type ExecutionStatus string
+
+const (
+	ExecutionStatus_IN_PROGRESS        ExecutionStatus = "IN_PROGRESS"
+	ExecutionStatus_COMPLETED          ExecutionStatus = "COMPLETED"
+	ExecutionStatus_EXCEPTION          ExecutionStatus = "EXCEPTION"
+	ExecutionStatus_HANDLING_EXCEPTION ExecutionStatus = "HANDLING_EXCEPTION"
+)
+
 type HomeDirectoryType string
 
 const (
@@ -43,8 +65,16 @@ const (
 type IdentityProviderType string
 
 const (
-	IdentityProviderType_SERVICE_MANAGED IdentityProviderType = "SERVICE_MANAGED"
-	IdentityProviderType_API_GATEWAY     IdentityProviderType = "API_GATEWAY"
+	IdentityProviderType_SERVICE_MANAGED       IdentityProviderType = "SERVICE_MANAGED"
+	IdentityProviderType_API_GATEWAY           IdentityProviderType = "API_GATEWAY"
+	IdentityProviderType_AWS_DIRECTORY_SERVICE IdentityProviderType = "AWS_DIRECTORY_SERVICE"
+)
+
+type OverwriteExisting string
+
+const (
+	OverwriteExisting_TRUE  OverwriteExisting = "TRUE"
+	OverwriteExisting_FALSE OverwriteExisting = "FALSE"
 )
 
 type Protocol string
@@ -64,4 +94,13 @@ const (
 	State_STOPPING     State = "STOPPING"
 	State_START_FAILED State = "START_FAILED"
 	State_STOP_FAILED  State = "STOP_FAILED"
+)
+
+type WorkflowStepType string
+
+const (
+	WorkflowStepType_COPY   WorkflowStepType = "COPY"
+	WorkflowStepType_CUSTOM WorkflowStepType = "CUSTOM"
+	WorkflowStepType_TAG    WorkflowStepType = "TAG"
+	WorkflowStepType_DELETE WorkflowStepType = "DELETE"
 )

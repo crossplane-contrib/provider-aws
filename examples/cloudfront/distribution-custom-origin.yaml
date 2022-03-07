@@ -3,7 +3,7 @@
 apiVersion: cloudfront.aws.crossplane.io/v1alpha1
 kind: Distribution
 metadata:
-  name: example-distribution
+  name: example-distribution-custom-origin
 spec:
   forProvider:
     region: us-east-1

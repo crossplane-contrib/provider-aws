@@ -33,6 +33,11 @@ type LogGroupParameters struct {
 	// +kubebuilder:validation:Required
 	LogGroupName *string `json:"logGroupName"`
 	// The key-value pairs to use for the tags.
+	//
+	// CloudWatch Logs doesn’t support IAM policies that prevent users from assigning
+	// specified tags to log groups using the aws:Resource/key-name or aws:TagKeys
+	// condition keys. For more information about using tags to control access,
+	// see Controlling access to Amazon Web Services resources using tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html).
 	Tags                     map[string]*string `json:"tags,omitempty"`
 	CustomLogGroupParameters `json:",inline"`
 }

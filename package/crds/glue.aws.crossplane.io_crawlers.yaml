@@ -78,8 +78,8 @@ spec:
                       be used by this crawler.
                     type: string
                   databaseName:
-                    description: 'The AWS Glue database where results are written,
-                      such as: arn:aws:daylight:us-east-1::database/sometable/*.'
+                    description: 'The Glue database where results are written, such
+                      as: arn:aws:daylight:us-east-1::database/sometable/*.'
                     type: string
                   description:
                     description: A description of the new crawler.
@@ -155,7 +155,7 @@ spec:
                       type: string
                     description: The tags to use with this crawler request. You may
                       use tags to limit access to the crawler. For more information
-                      about tags in AWS Glue, see AWS Tags in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
+                      about tags in Glue, see Amazon Web Services Tags in Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
                       in the developer guide.
                     type: object
                   targets:
@@ -212,12 +212,19 @@ spec:
                           properties:
                             connectionName:
                               type: string
+                            dlqEventQueueARN:
+                              type: string
+                            eventQueueARN:
+                              type: string
                             exclusions:
                               items:
                                 type: string
                               type: array
                             path:
                               type: string
+                            sampleSize:
+                              format: int64
+                              type: integer
                           type: object
                         type: array
                     type: object

@@ -29,9 +29,9 @@ type VPCPeeringConnectionParameters struct {
 	// Region is which region the VPCPeeringConnection will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The AWS account ID of the owner of the accepter VPC.
+	// The Amazon Web Services account ID of the owner of the accepter VPC.
 	//
-	// Default: Your AWS account ID
+	// Default: Your Amazon Web Services account ID
 	PeerOwnerID *string `json:"peerOwnerID,omitempty"`
 	// The Region code for the accepter VPC, if the accepter VPC is located in a
 	// Region other than the Region in which you make the request.

@@ -52,9 +52,10 @@ const (
 type HealthStatusFilter string
 
 const (
-	HealthStatusFilter_HEALTHY   HealthStatusFilter = "HEALTHY"
-	HealthStatusFilter_UNHEALTHY HealthStatusFilter = "UNHEALTHY"
-	HealthStatusFilter_ALL       HealthStatusFilter = "ALL"
+	HealthStatusFilter_HEALTHY             HealthStatusFilter = "HEALTHY"
+	HealthStatusFilter_UNHEALTHY           HealthStatusFilter = "UNHEALTHY"
+	HealthStatusFilter_ALL                 HealthStatusFilter = "ALL"
+	HealthStatusFilter_HEALTHY_OR_ELSE_ALL HealthStatusFilter = "HEALTHY_OR_ELSE_ALL"
 )
 
 type NamespaceFilterName string
@@ -103,6 +104,7 @@ type OperationType string
 const (
 	OperationType_CREATE_NAMESPACE    OperationType = "CREATE_NAMESPACE"
 	OperationType_DELETE_NAMESPACE    OperationType = "DELETE_NAMESPACE"
+	OperationType_UPDATE_NAMESPACE    OperationType = "UPDATE_NAMESPACE"
 	OperationType_UPDATE_SERVICE      OperationType = "UPDATE_SERVICE"
 	OperationType_REGISTER_INSTANCE   OperationType = "REGISTER_INSTANCE"
 	OperationType_DEREGISTER_INSTANCE OperationType = "DEREGISTER_INSTANCE"
@@ -128,4 +130,18 @@ type ServiceFilterName string
 
 const (
 	ServiceFilterName_NAMESPACE_ID ServiceFilterName = "NAMESPACE_ID"
+)
+
+type ServiceType string
+
+const (
+	ServiceType_HTTP     ServiceType = "HTTP"
+	ServiceType_DNS_HTTP ServiceType = "DNS_HTTP"
+	ServiceType_DNS      ServiceType = "DNS"
+)
+
+type ServiceTypeOption string
+
+const (
+	ServiceTypeOption_HTTP ServiceTypeOption = "HTTP"
 )

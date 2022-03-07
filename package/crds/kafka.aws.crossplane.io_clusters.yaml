@@ -150,6 +150,11 @@ spec:
                     properties:
                       sasl:
                         properties:
+                          iam:
+                            properties:
+                              enabled:
+                                type: boolean
+                            type: object
                           scram:
                             properties:
                               enabled:
@@ -163,6 +168,15 @@ spec:
                             items:
                               type: string
                             type: array
+                          enabled:
+                            type: boolean
+                        type: object
+                      unauthenticated:
+                        description: Contains information about unauthenticated traffic
+                          to the cluster.
+                        properties:
+                          enabled:
+                            type: boolean
                         type: object
                     type: object
                   configurationInfo:
@@ -300,14 +314,6 @@ spec:
                       type: string
                     description: Create tags when creating the cluster.
                     type: object
-                  zookeeperConnectString:
-                    description: The connection string to use to connect to the Apache
-                      ZooKeeper cluster.
-                    type: string
-                  zookeeperConnectStringTLS:
-                    description: The connection string to use to connect to zookeeper
-                      cluster on Tls port.
-                    type: string
                 required:
                 - kafkaVersion
                 - numberOfBrokerNodes

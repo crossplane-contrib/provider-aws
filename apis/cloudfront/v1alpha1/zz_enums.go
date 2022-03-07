@@ -73,6 +73,26 @@ const (
 	Format_URLEncoded Format = "URLEncoded"
 )
 
+type FrameOptionsList string
+
+const (
+	FrameOptionsList_DENY       FrameOptionsList = "DENY"
+	FrameOptionsList_SAMEORIGIN FrameOptionsList = "SAMEORIGIN"
+)
+
+type FunctionRuntime string
+
+const (
+	FunctionRuntime_cloudfront_js_1_0 FunctionRuntime = "cloudfront-js-1.0"
+)
+
+type FunctionStage string
+
+const (
+	FunctionStage_DEVELOPMENT FunctionStage = "DEVELOPMENT"
+	FunctionStage_LIVE        FunctionStage = "LIVE"
+)
+
 type GeoRestrictionType string
 
 const (
@@ -125,6 +145,7 @@ const (
 	MinimumProtocolVersion_TLSv1_1_2016 MinimumProtocolVersion = "TLSv1.1_2016"
 	MinimumProtocolVersion_TLSv1_2_2018 MinimumProtocolVersion = "TLSv1.2_2018"
 	MinimumProtocolVersion_TLSv1_2_2019 MinimumProtocolVersion = "TLSv1.2_2019"
+	MinimumProtocolVersion_TLSv1_2_2021 MinimumProtocolVersion = "TLSv1.2_2021"
 )
 
 type OriginProtocolPolicy string
@@ -180,6 +201,39 @@ type RealtimeMetricsSubscriptionStatus string
 const (
 	RealtimeMetricsSubscriptionStatus_Enabled  RealtimeMetricsSubscriptionStatus = "Enabled"
 	RealtimeMetricsSubscriptionStatus_Disabled RealtimeMetricsSubscriptionStatus = "Disabled"
+)
+
+type ReferrerPolicyList string
+
+const (
+	ReferrerPolicyList_no_referrer                     ReferrerPolicyList = "no-referrer"
+	ReferrerPolicyList_no_referrer_when_downgrade      ReferrerPolicyList = "no-referrer-when-downgrade"
+	ReferrerPolicyList_origin                          ReferrerPolicyList = "origin"
+	ReferrerPolicyList_origin_when_cross_origin        ReferrerPolicyList = "origin-when-cross-origin"
+	ReferrerPolicyList_same_origin                     ReferrerPolicyList = "same-origin"
+	ReferrerPolicyList_strict_origin                   ReferrerPolicyList = "strict-origin"
+	ReferrerPolicyList_strict_origin_when_cross_origin ReferrerPolicyList = "strict-origin-when-cross-origin"
+	ReferrerPolicyList_unsafe_url                      ReferrerPolicyList = "unsafe-url"
+)
+
+type ResponseHeadersPolicyAccessControlAllowMethodsValues string
+
+const (
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_GET     ResponseHeadersPolicyAccessControlAllowMethodsValues = "GET"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_POST    ResponseHeadersPolicyAccessControlAllowMethodsValues = "POST"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_OPTIONS ResponseHeadersPolicyAccessControlAllowMethodsValues = "OPTIONS"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_PUT     ResponseHeadersPolicyAccessControlAllowMethodsValues = "PUT"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_DELETE  ResponseHeadersPolicyAccessControlAllowMethodsValues = "DELETE"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_PATCH   ResponseHeadersPolicyAccessControlAllowMethodsValues = "PATCH"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_HEAD    ResponseHeadersPolicyAccessControlAllowMethodsValues = "HEAD"
+	ResponseHeadersPolicyAccessControlAllowMethodsValues_ALL     ResponseHeadersPolicyAccessControlAllowMethodsValues = "ALL"
+)
+
+type ResponseHeadersPolicyType string
+
+const (
+	ResponseHeadersPolicyType_managed ResponseHeadersPolicyType = "managed"
+	ResponseHeadersPolicyType_custom  ResponseHeadersPolicyType = "custom"
 )
 
 type SSLProtocol string

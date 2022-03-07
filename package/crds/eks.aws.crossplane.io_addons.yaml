@@ -62,7 +62,7 @@ spec:
                 properties:
                   addonName:
                     description: The name of the add-on. The name must match one of
-                      the names returned by ListAddons (https://docs.aws.amazon.com/eks/latest/APIReference/API_ListAddons.html).
+                      the names returned by DescribeAddonVersions (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html).
                     type: string
                   addonVersion:
                     description: The version of the add-on. The version must match

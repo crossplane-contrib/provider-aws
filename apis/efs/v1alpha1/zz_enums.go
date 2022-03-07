@@ -26,6 +26,7 @@ const (
 	LifeCycleState_updating  LifeCycleState = "updating"
 	LifeCycleState_deleting  LifeCycleState = "deleting"
 	LifeCycleState_deleted   LifeCycleState = "deleted"
+	LifeCycleState_error     LifeCycleState = "error"
 )
 
 type PerformanceMode string
@@ -33,6 +34,20 @@ type PerformanceMode string
 const (
 	PerformanceMode_generalPurpose PerformanceMode = "generalPurpose"
 	PerformanceMode_maxIO          PerformanceMode = "maxIO"
+)
+
+type Resource string
+
+const (
+	Resource_FILE_SYSTEM  Resource = "FILE_SYSTEM"
+	Resource_MOUNT_TARGET Resource = "MOUNT_TARGET"
+)
+
+type ResourceIDType string
+
+const (
+	ResourceIDType_LONG_ID  ResourceIDType = "LONG_ID"
+	ResourceIDType_SHORT_ID ResourceIDType = "SHORT_ID"
 )
 
 type Status string
@@ -59,4 +74,10 @@ const (
 	TransitionToIARules_AFTER_30_DAYS TransitionToIARules = "AFTER_30_DAYS"
 	TransitionToIARules_AFTER_60_DAYS TransitionToIARules = "AFTER_60_DAYS"
 	TransitionToIARules_AFTER_90_DAYS TransitionToIARules = "AFTER_90_DAYS"
+)
+
+type TransitionToPrimaryStorageClassRules string
+
+const (
+	TransitionToPrimaryStorageClassRules_AFTER_1_ACCESS TransitionToPrimaryStorageClassRules = "AFTER_1_ACCESS"
 )

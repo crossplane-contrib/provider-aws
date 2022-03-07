@@ -74,6 +74,18 @@ type NamedQuery struct {
 }
 
 // +kubebuilder:skipversion
+type PreparedStatement struct {
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+
+	WorkGroupName *string `json:"workGroupName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PreparedStatementSummary struct {
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type QueryExecution struct {
 	// The Athena engine version for running queries.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`

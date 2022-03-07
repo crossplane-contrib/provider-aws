@@ -38,7 +38,10 @@ type CacheParameterGroupParameters struct {
 	CacheParameterGroupFamily *string `json:"cacheParameterGroupFamily"`
 	// A user-specified description for the cache parameter group.
 	// +kubebuilder:validation:Required
-	Description                         *string `json:"description"`
+	Description *string `json:"description"`
+	// A list of tags to be added to this resource. A tag is a key-value pair. A
+	// tag key must be accompanied by a tag value, although null is accepted.
+	Tags                                []*Tag `json:"tags,omitempty"`
 	CustomCacheParameterGroupParameters `json:",inline"`
 }
 
@@ -54,7 +57,7 @@ type CacheParameterGroupObservation struct {
 	ARN *string `json:"arn,omitempty"`
 	// The name of the cache parameter group.
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
-	// Indicates whether the parameter group is associated with a Global Datastore
+	// Indicates whether the parameter group is associated with a Global datastore
 	IsGlobal *bool `json:"isGlobal,omitempty"`
 }
 

@@ -54,9 +54,9 @@ type VolumeParameters struct {
 	//
 	//    * io2: 100-64,000 IOPS
 	//
-	// For io1 and io2 volumes, we guarantee 64,000 IOPS only for Instances built
-	// on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-	// Other instance families guarantee performance up to 32,000 IOPS.
+	// io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
+	// the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+	// Other instance families support performance up to 32,000 IOPS.
 	//
 	// This parameter is required for io1 and io2 volumes. The default for gp3 volumes
 	// is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
@@ -131,9 +131,8 @@ type VolumeObservation struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 	// Indicates whether the volume was created using fast snapshot restore.
 	FastRestored *bool `json:"fastRestored,omitempty"`
-	// The Amazon Resource Name (ARN) of the AWS Key Management Service (AWS KMS)
-	// customer master key (CMK) that was used to protect the volume encryption
-	// key for the volume.
+	// The Amazon Resource Name (ARN) of the Key Management Service (KMS) KMS key
+	// that was used to protect the volume encryption key for the volume.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The volume state.
 	State *string `json:"state,omitempty"`

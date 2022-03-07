@@ -213,6 +213,11 @@ func (in *ResourceShareInvitation) DeepCopyInto(out *ResourceShareInvitation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ReceiverARN != nil {
+		in, out := &in.ReceiverARN, &out.ReceiverARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.ResourceShareARN != nil {
 		in, out := &in.ResourceShareARN, &out.ResourceShareARN
 		*out = new(string)
@@ -389,6 +394,11 @@ func (in *ResourceSharePermissionDetail) DeepCopyInto(out *ResourceSharePermissi
 		*out = new(bool)
 		**out = **in
 	}
+	if in.IsResourceTypeDefault != nil {
+		in, out := &in.IsResourceTypeDefault, &out.IsResourceTypeDefault
+		*out = new(bool)
+		**out = **in
+	}
 	if in.LastUpdatedTime != nil {
 		in, out := &in.LastUpdatedTime, &out.LastUpdatedTime
 		*out = (*in).DeepCopy()
@@ -439,6 +449,11 @@ func (in *ResourceSharePermissionSummary) DeepCopyInto(out *ResourceSharePermiss
 	}
 	if in.DefaultVersion != nil {
 		in, out := &in.DefaultVersion, &out.DefaultVersion
+		*out = new(bool)
+		**out = **in
+	}
+	if in.IsResourceTypeDefault != nil {
+		in, out := &in.IsResourceTypeDefault, &out.IsResourceTypeDefault
 		*out = new(bool)
 		**out = **in
 	}

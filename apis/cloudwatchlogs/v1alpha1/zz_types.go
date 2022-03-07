@@ -77,8 +77,8 @@ type LogGroup_SDK struct {
 	// values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731,
 	// 1827, and 3653.
 	//
-	// If you omit retentionInDays in a PutRetentionPolicy operation, the events
-	// in the log group are always retained and never expire.
+	// To set a log group to never have log events expire, use DeleteRetentionPolicy
+	// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_DeleteRetentionPolicy.html).
 	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
 
 	StoredBytes *int64 `json:"storedBytes,omitempty"`

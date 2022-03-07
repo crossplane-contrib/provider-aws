@@ -76,10 +76,11 @@ spec:
                           type: string
                         domainNameStatus:
                           description: The status of the domain name migration. The
-                            valid values are AVAILABLE and UPDATING. If the status
-                            is UPDATING, the domain cannot be modified further until
-                            the existing operation is complete. If it is AVAILABLE,
-                            the domain can be updated.
+                            valid values are AVAILABLE, UPDATING, PENDING_CERTIFICATE_REIMPORT,
+                            and PENDING_OWNERSHIP_VERIFICATION. If the status is UPDATING,
+                            the domain cannot be modified further until the existing
+                            operation is complete. If it is AVAILABLE, the domain
+                            can be updated.
                           type: string
                         domainNameStatusMessage:
                           type: string
@@ -87,6 +88,9 @@ spec:
                           description: Represents an endpoint type.
                           type: string
                         hostedZoneID:
+                          type: string
+                        ownershipVerificationCertificateARN:
+                          description: Represents an Amazon Resource Name (ARN).
                           type: string
                         securityPolicy:
                           description: The Transport Layer Security (TLS) version

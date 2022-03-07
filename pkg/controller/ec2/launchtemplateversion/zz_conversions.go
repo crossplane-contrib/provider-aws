@@ -211,6 +211,171 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 				}
 				f3.InstanceMarketOptions = f3f13
 			}
+			if elem.LaunchTemplateData.InstanceRequirements != nil {
+				f3f14 := &svcapitypes.InstanceRequirementsRequest{}
+				if elem.LaunchTemplateData.InstanceRequirements.AcceleratorCount != nil {
+					f3f14f0 := &svcapitypes.AcceleratorCountRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Max != nil {
+						f3f14f0.Max = elem.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Min != nil {
+						f3f14f0.Min = elem.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Min
+					}
+					f3f14.AcceleratorCount = f3f14f0
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.AcceleratorManufacturers != nil {
+					f3f14f1 := []*string{}
+					for _, f3f14f1iter := range elem.LaunchTemplateData.InstanceRequirements.AcceleratorManufacturers {
+						var f3f14f1elem string
+						f3f14f1elem = *f3f14f1iter
+						f3f14f1 = append(f3f14f1, &f3f14f1elem)
+					}
+					f3f14.AcceleratorManufacturers = f3f14f1
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.AcceleratorNames != nil {
+					f3f14f2 := []*string{}
+					for _, f3f14f2iter := range elem.LaunchTemplateData.InstanceRequirements.AcceleratorNames {
+						var f3f14f2elem string
+						f3f14f2elem = *f3f14f2iter
+						f3f14f2 = append(f3f14f2, &f3f14f2elem)
+					}
+					f3f14.AcceleratorNames = f3f14f2
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB != nil {
+					f3f14f3 := &svcapitypes.AcceleratorTotalMemoryMiBRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Max != nil {
+						f3f14f3.Max = elem.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Min != nil {
+						f3f14f3.Min = elem.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Min
+					}
+					f3f14.AcceleratorTotalMemoryMiB = f3f14f3
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.AcceleratorTypes != nil {
+					f3f14f4 := []*string{}
+					for _, f3f14f4iter := range elem.LaunchTemplateData.InstanceRequirements.AcceleratorTypes {
+						var f3f14f4elem string
+						f3f14f4elem = *f3f14f4iter
+						f3f14f4 = append(f3f14f4, &f3f14f4elem)
+					}
+					f3f14.AcceleratorTypes = f3f14f4
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.BareMetal != nil {
+					f3f14.BareMetal = elem.LaunchTemplateData.InstanceRequirements.BareMetal
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.BaselineEbsBandwidthMbps != nil {
+					f3f14f6 := &svcapitypes.BaselineEBSBandwidthMbpsRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.BaselineEbsBandwidthMbps.Max != nil {
+						f3f14f6.Max = elem.LaunchTemplateData.InstanceRequirements.BaselineEbsBandwidthMbps.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.BaselineEbsBandwidthMbps.Min != nil {
+						f3f14f6.Min = elem.LaunchTemplateData.InstanceRequirements.BaselineEbsBandwidthMbps.Min
+					}
+					f3f14.BaselineEBSBandwidthMbps = f3f14f6
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.BurstablePerformance != nil {
+					f3f14.BurstablePerformance = elem.LaunchTemplateData.InstanceRequirements.BurstablePerformance
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.CpuManufacturers != nil {
+					f3f14f8 := []*string{}
+					for _, f3f14f8iter := range elem.LaunchTemplateData.InstanceRequirements.CpuManufacturers {
+						var f3f14f8elem string
+						f3f14f8elem = *f3f14f8iter
+						f3f14f8 = append(f3f14f8, &f3f14f8elem)
+					}
+					f3f14.CPUManufacturers = f3f14f8
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.ExcludedInstanceTypes != nil {
+					f3f14f9 := []*string{}
+					for _, f3f14f9iter := range elem.LaunchTemplateData.InstanceRequirements.ExcludedInstanceTypes {
+						var f3f14f9elem string
+						f3f14f9elem = *f3f14f9iter
+						f3f14f9 = append(f3f14f9, &f3f14f9elem)
+					}
+					f3f14.ExcludedInstanceTypes = f3f14f9
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.InstanceGenerations != nil {
+					f3f14f10 := []*string{}
+					for _, f3f14f10iter := range elem.LaunchTemplateData.InstanceRequirements.InstanceGenerations {
+						var f3f14f10elem string
+						f3f14f10elem = *f3f14f10iter
+						f3f14f10 = append(f3f14f10, &f3f14f10elem)
+					}
+					f3f14.InstanceGenerations = f3f14f10
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.LocalStorage != nil {
+					f3f14.LocalStorage = elem.LaunchTemplateData.InstanceRequirements.LocalStorage
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.LocalStorageTypes != nil {
+					f3f14f12 := []*string{}
+					for _, f3f14f12iter := range elem.LaunchTemplateData.InstanceRequirements.LocalStorageTypes {
+						var f3f14f12elem string
+						f3f14f12elem = *f3f14f12iter
+						f3f14f12 = append(f3f14f12, &f3f14f12elem)
+					}
+					f3f14.LocalStorageTypes = f3f14f12
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCpu != nil {
+					f3f14f13 := &svcapitypes.MemoryGiBPerVCPURequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCpu.Max != nil {
+						f3f14f13.Max = elem.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCpu.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCpu.Min != nil {
+						f3f14f13.Min = elem.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCpu.Min
+					}
+					f3f14.MemoryGiBPerVCPU = f3f14f13
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.MemoryMiB != nil {
+					f3f14f14 := &svcapitypes.MemoryMiBRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.MemoryMiB.Max != nil {
+						f3f14f14.Max = elem.LaunchTemplateData.InstanceRequirements.MemoryMiB.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.MemoryMiB.Min != nil {
+						f3f14f14.Min = elem.LaunchTemplateData.InstanceRequirements.MemoryMiB.Min
+					}
+					f3f14.MemoryMiB = f3f14f14
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount != nil {
+					f3f14f15 := &svcapitypes.NetworkInterfaceCountRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Max != nil {
+						f3f14f15.Max = elem.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Min != nil {
+						f3f14f15.Min = elem.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Min
+					}
+					f3f14.NetworkInterfaceCount = f3f14f15
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+					f3f14.OnDemandMaxPricePercentageOverLowestPrice = elem.LaunchTemplateData.InstanceRequirements.OnDemandMaxPricePercentageOverLowestPrice
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.RequireHibernateSupport != nil {
+					f3f14.RequireHibernateSupport = elem.LaunchTemplateData.InstanceRequirements.RequireHibernateSupport
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.SpotMaxPricePercentageOverLowestPrice != nil {
+					f3f14.SpotMaxPricePercentageOverLowestPrice = elem.LaunchTemplateData.InstanceRequirements.SpotMaxPricePercentageOverLowestPrice
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB != nil {
+					f3f14f19 := &svcapitypes.TotalLocalStorageGBRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Max != nil {
+						f3f14f19.Max = elem.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Min != nil {
+						f3f14f19.Min = elem.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Min
+					}
+					f3f14.TotalLocalStorageGB = f3f14f19
+				}
+				if elem.LaunchTemplateData.InstanceRequirements.VCpuCount != nil {
+					f3f14f20 := &svcapitypes.VCPUCountRangeRequest{}
+					if elem.LaunchTemplateData.InstanceRequirements.VCpuCount.Max != nil {
+						f3f14f20.Max = elem.LaunchTemplateData.InstanceRequirements.VCpuCount.Max
+					}
+					if elem.LaunchTemplateData.InstanceRequirements.VCpuCount.Min != nil {
+						f3f14f20.Min = elem.LaunchTemplateData.InstanceRequirements.VCpuCount.Min
+					}
+					f3f14.VCPUCount = f3f14f20
+				}
+				f3.InstanceRequirements = f3f14
+			}
 			if elem.LaunchTemplateData.InstanceType != nil {
 				f3.InstanceType = elem.LaunchTemplateData.InstanceType
 			}
@@ -221,187 +386,218 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 				f3.KeyName = elem.LaunchTemplateData.KeyName
 			}
 			if elem.LaunchTemplateData.LicenseSpecifications != nil {
-				f3f17 := []*svcapitypes.LaunchTemplateLicenseConfigurationRequest{}
-				for _, f3f17iter := range elem.LaunchTemplateData.LicenseSpecifications {
-					f3f17elem := &svcapitypes.LaunchTemplateLicenseConfigurationRequest{}
-					if f3f17iter.LicenseConfigurationArn != nil {
-						f3f17elem.LicenseConfigurationARN = f3f17iter.LicenseConfigurationArn
+				f3f18 := []*svcapitypes.LaunchTemplateLicenseConfigurationRequest{}
+				for _, f3f18iter := range elem.LaunchTemplateData.LicenseSpecifications {
+					f3f18elem := &svcapitypes.LaunchTemplateLicenseConfigurationRequest{}
+					if f3f18iter.LicenseConfigurationArn != nil {
+						f3f18elem.LicenseConfigurationARN = f3f18iter.LicenseConfigurationArn
 					}
-					f3f17 = append(f3f17, f3f17elem)
+					f3f18 = append(f3f18, f3f18elem)
 				}
-				f3.LicenseSpecifications = f3f17
+				f3.LicenseSpecifications = f3f18
 			}
 			if elem.LaunchTemplateData.MetadataOptions != nil {
-				f3f18 := &svcapitypes.LaunchTemplateInstanceMetadataOptionsRequest{}
+				f3f19 := &svcapitypes.LaunchTemplateInstanceMetadataOptionsRequest{}
 				if elem.LaunchTemplateData.MetadataOptions.HttpEndpoint != nil {
-					f3f18.HTTPEndpoint = elem.LaunchTemplateData.MetadataOptions.HttpEndpoint
+					f3f19.HTTPEndpoint = elem.LaunchTemplateData.MetadataOptions.HttpEndpoint
+				}
+				if elem.LaunchTemplateData.MetadataOptions.HttpProtocolIpv6 != nil {
+					f3f19.HTTPProtocolIPv6 = elem.LaunchTemplateData.MetadataOptions.HttpProtocolIpv6
 				}
 				if elem.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit != nil {
-					f3f18.HTTPPutResponseHopLimit = elem.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit
+					f3f19.HTTPPutResponseHopLimit = elem.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit
 				}
 				if elem.LaunchTemplateData.MetadataOptions.HttpTokens != nil {
-					f3f18.HTTPTokens = elem.LaunchTemplateData.MetadataOptions.HttpTokens
+					f3f19.HTTPTokens = elem.LaunchTemplateData.MetadataOptions.HttpTokens
 				}
-				f3.MetadataOptions = f3f18
+				f3.MetadataOptions = f3f19
 			}
 			if elem.LaunchTemplateData.Monitoring != nil {
-				f3f19 := &svcapitypes.LaunchTemplatesMonitoringRequest{}
+				f3f20 := &svcapitypes.LaunchTemplatesMonitoringRequest{}
 				if elem.LaunchTemplateData.Monitoring.Enabled != nil {
-					f3f19.Enabled = elem.LaunchTemplateData.Monitoring.Enabled
+					f3f20.Enabled = elem.LaunchTemplateData.Monitoring.Enabled
 				}
-				f3.Monitoring = f3f19
+				f3.Monitoring = f3f20
 			}
 			if elem.LaunchTemplateData.NetworkInterfaces != nil {
-				f3f20 := []*svcapitypes.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
-				for _, f3f20iter := range elem.LaunchTemplateData.NetworkInterfaces {
-					f3f20elem := &svcapitypes.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
-					if f3f20iter.AssociateCarrierIpAddress != nil {
-						f3f20elem.AssociateCarrierIPAddress = f3f20iter.AssociateCarrierIpAddress
+				f3f21 := []*svcapitypes.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
+				for _, f3f21iter := range elem.LaunchTemplateData.NetworkInterfaces {
+					f3f21elem := &svcapitypes.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
+					if f3f21iter.AssociateCarrierIpAddress != nil {
+						f3f21elem.AssociateCarrierIPAddress = f3f21iter.AssociateCarrierIpAddress
 					}
-					if f3f20iter.AssociatePublicIpAddress != nil {
-						f3f20elem.AssociatePublicIPAddress = f3f20iter.AssociatePublicIpAddress
+					if f3f21iter.AssociatePublicIpAddress != nil {
+						f3f21elem.AssociatePublicIPAddress = f3f21iter.AssociatePublicIpAddress
 					}
-					if f3f20iter.DeleteOnTermination != nil {
-						f3f20elem.DeleteOnTermination = f3f20iter.DeleteOnTermination
+					if f3f21iter.DeleteOnTermination != nil {
+						f3f21elem.DeleteOnTermination = f3f21iter.DeleteOnTermination
 					}
-					if f3f20iter.Description != nil {
-						f3f20elem.Description = f3f20iter.Description
+					if f3f21iter.Description != nil {
+						f3f21elem.Description = f3f21iter.Description
 					}
-					if f3f20iter.DeviceIndex != nil {
-						f3f20elem.DeviceIndex = f3f20iter.DeviceIndex
+					if f3f21iter.DeviceIndex != nil {
+						f3f21elem.DeviceIndex = f3f21iter.DeviceIndex
 					}
-					if f3f20iter.Groups != nil {
-						f3f20elemf5 := []*string{}
-						for _, f3f20elemf5iter := range f3f20iter.Groups {
-							var f3f20elemf5elem string
-							f3f20elemf5elem = *f3f20elemf5iter
-							f3f20elemf5 = append(f3f20elemf5, &f3f20elemf5elem)
+					if f3f21iter.Groups != nil {
+						f3f21elemf5 := []*string{}
+						for _, f3f21elemf5iter := range f3f21iter.Groups {
+							var f3f21elemf5elem string
+							f3f21elemf5elem = *f3f21elemf5iter
+							f3f21elemf5 = append(f3f21elemf5, &f3f21elemf5elem)
 						}
-						f3f20elem.Groups = f3f20elemf5
+						f3f21elem.Groups = f3f21elemf5
 					}
-					if f3f20iter.InterfaceType != nil {
-						f3f20elem.InterfaceType = f3f20iter.InterfaceType
+					if f3f21iter.InterfaceType != nil {
+						f3f21elem.InterfaceType = f3f21iter.InterfaceType
 					}
-					if f3f20iter.Ipv6AddressCount != nil {
-						f3f20elem.IPv6AddressCount = f3f20iter.Ipv6AddressCount
+					if f3f21iter.Ipv4PrefixCount != nil {
+						f3f21elem.IPv4PrefixCount = f3f21iter.Ipv4PrefixCount
 					}
-					if f3f20iter.Ipv6Addresses != nil {
-						f3f20elemf8 := []*svcapitypes.InstanceIPv6AddressRequest{}
-						for _, f3f20elemf8iter := range f3f20iter.Ipv6Addresses {
-							f3f20elemf8elem := &svcapitypes.InstanceIPv6AddressRequest{}
-							if f3f20elemf8iter.Ipv6Address != nil {
-								f3f20elemf8elem.IPv6Address = f3f20elemf8iter.Ipv6Address
+					if f3f21iter.Ipv4Prefixes != nil {
+						f3f21elemf8 := []*svcapitypes.IPv4PrefixSpecificationRequest{}
+						for _, f3f21elemf8iter := range f3f21iter.Ipv4Prefixes {
+							f3f21elemf8elem := &svcapitypes.IPv4PrefixSpecificationRequest{}
+							if f3f21elemf8iter.Ipv4Prefix != nil {
+								f3f21elemf8elem.IPv4Prefix = f3f21elemf8iter.Ipv4Prefix
 							}
-							f3f20elemf8 = append(f3f20elemf8, f3f20elemf8elem)
+							f3f21elemf8 = append(f3f21elemf8, f3f21elemf8elem)
 						}
-						f3f20elem.IPv6Addresses = f3f20elemf8
+						f3f21elem.IPv4Prefixes = f3f21elemf8
 					}
-					if f3f20iter.NetworkCardIndex != nil {
-						f3f20elem.NetworkCardIndex = f3f20iter.NetworkCardIndex
+					if f3f21iter.Ipv6AddressCount != nil {
+						f3f21elem.IPv6AddressCount = f3f21iter.Ipv6AddressCount
 					}
-					if f3f20iter.NetworkInterfaceId != nil {
-						f3f20elem.NetworkInterfaceID = f3f20iter.NetworkInterfaceId
-					}
-					if f3f20iter.PrivateIpAddress != nil {
-						f3f20elem.PrivateIPAddress = f3f20iter.PrivateIpAddress
-					}
-					if f3f20iter.PrivateIpAddresses != nil {
-						f3f20elemf12 := []*svcapitypes.PrivateIPAddressSpecification{}
-						for _, f3f20elemf12iter := range f3f20iter.PrivateIpAddresses {
-							f3f20elemf12elem := &svcapitypes.PrivateIPAddressSpecification{}
-							if f3f20elemf12iter.Primary != nil {
-								f3f20elemf12elem.Primary = f3f20elemf12iter.Primary
+					if f3f21iter.Ipv6Addresses != nil {
+						f3f21elemf10 := []*svcapitypes.InstanceIPv6AddressRequest{}
+						for _, f3f21elemf10iter := range f3f21iter.Ipv6Addresses {
+							f3f21elemf10elem := &svcapitypes.InstanceIPv6AddressRequest{}
+							if f3f21elemf10iter.Ipv6Address != nil {
+								f3f21elemf10elem.IPv6Address = f3f21elemf10iter.Ipv6Address
 							}
-							if f3f20elemf12iter.PrivateIpAddress != nil {
-								f3f20elemf12elem.PrivateIPAddress = f3f20elemf12iter.PrivateIpAddress
-							}
-							f3f20elemf12 = append(f3f20elemf12, f3f20elemf12elem)
+							f3f21elemf10 = append(f3f21elemf10, f3f21elemf10elem)
 						}
-						f3f20elem.PrivateIPAddresses = f3f20elemf12
+						f3f21elem.IPv6Addresses = f3f21elemf10
 					}
-					if f3f20iter.SecondaryPrivateIpAddressCount != nil {
-						f3f20elem.SecondaryPrivateIPAddressCount = f3f20iter.SecondaryPrivateIpAddressCount
+					if f3f21iter.Ipv6PrefixCount != nil {
+						f3f21elem.IPv6PrefixCount = f3f21iter.Ipv6PrefixCount
 					}
-					if f3f20iter.SubnetId != nil {
-						f3f20elem.SubnetID = f3f20iter.SubnetId
+					if f3f21iter.Ipv6Prefixes != nil {
+						f3f21elemf12 := []*svcapitypes.IPv6PrefixSpecificationRequest{}
+						for _, f3f21elemf12iter := range f3f21iter.Ipv6Prefixes {
+							f3f21elemf12elem := &svcapitypes.IPv6PrefixSpecificationRequest{}
+							if f3f21elemf12iter.Ipv6Prefix != nil {
+								f3f21elemf12elem.IPv6Prefix = f3f21elemf12iter.Ipv6Prefix
+							}
+							f3f21elemf12 = append(f3f21elemf12, f3f21elemf12elem)
+						}
+						f3f21elem.IPv6Prefixes = f3f21elemf12
 					}
-					f3f20 = append(f3f20, f3f20elem)
+					if f3f21iter.NetworkCardIndex != nil {
+						f3f21elem.NetworkCardIndex = f3f21iter.NetworkCardIndex
+					}
+					if f3f21iter.NetworkInterfaceId != nil {
+						f3f21elem.NetworkInterfaceID = f3f21iter.NetworkInterfaceId
+					}
+					if f3f21iter.PrivateIpAddress != nil {
+						f3f21elem.PrivateIPAddress = f3f21iter.PrivateIpAddress
+					}
+					if f3f21iter.PrivateIpAddresses != nil {
+						f3f21elemf16 := []*svcapitypes.PrivateIPAddressSpecification{}
+						for _, f3f21elemf16iter := range f3f21iter.PrivateIpAddresses {
+							f3f21elemf16elem := &svcapitypes.PrivateIPAddressSpecification{}
+							if f3f21elemf16iter.Primary != nil {
+								f3f21elemf16elem.Primary = f3f21elemf16iter.Primary
+							}
+							if f3f21elemf16iter.PrivateIpAddress != nil {
+								f3f21elemf16elem.PrivateIPAddress = f3f21elemf16iter.PrivateIpAddress
+							}
+							f3f21elemf16 = append(f3f21elemf16, f3f21elemf16elem)
+						}
+						f3f21elem.PrivateIPAddresses = f3f21elemf16
+					}
+					if f3f21iter.SecondaryPrivateIpAddressCount != nil {
+						f3f21elem.SecondaryPrivateIPAddressCount = f3f21iter.SecondaryPrivateIpAddressCount
+					}
+					if f3f21iter.SubnetId != nil {
+						f3f21elem.SubnetID = f3f21iter.SubnetId
+					}
+					f3f21 = append(f3f21, f3f21elem)
 				}
-				f3.NetworkInterfaces = f3f20
+				f3.NetworkInterfaces = f3f21
 			}
 			if elem.LaunchTemplateData.Placement != nil {
-				f3f21 := &svcapitypes.LaunchTemplatePlacementRequest{}
+				f3f22 := &svcapitypes.LaunchTemplatePlacementRequest{}
 				if elem.LaunchTemplateData.Placement.Affinity != nil {
-					f3f21.Affinity = elem.LaunchTemplateData.Placement.Affinity
+					f3f22.Affinity = elem.LaunchTemplateData.Placement.Affinity
 				}
 				if elem.LaunchTemplateData.Placement.AvailabilityZone != nil {
-					f3f21.AvailabilityZone = elem.LaunchTemplateData.Placement.AvailabilityZone
+					f3f22.AvailabilityZone = elem.LaunchTemplateData.Placement.AvailabilityZone
 				}
 				if elem.LaunchTemplateData.Placement.GroupName != nil {
-					f3f21.GroupName = elem.LaunchTemplateData.Placement.GroupName
+					f3f22.GroupName = elem.LaunchTemplateData.Placement.GroupName
 				}
 				if elem.LaunchTemplateData.Placement.HostId != nil {
-					f3f21.HostID = elem.LaunchTemplateData.Placement.HostId
+					f3f22.HostID = elem.LaunchTemplateData.Placement.HostId
 				}
 				if elem.LaunchTemplateData.Placement.HostResourceGroupArn != nil {
-					f3f21.HostResourceGroupARN = elem.LaunchTemplateData.Placement.HostResourceGroupArn
+					f3f22.HostResourceGroupARN = elem.LaunchTemplateData.Placement.HostResourceGroupArn
 				}
 				if elem.LaunchTemplateData.Placement.PartitionNumber != nil {
-					f3f21.PartitionNumber = elem.LaunchTemplateData.Placement.PartitionNumber
+					f3f22.PartitionNumber = elem.LaunchTemplateData.Placement.PartitionNumber
 				}
 				if elem.LaunchTemplateData.Placement.SpreadDomain != nil {
-					f3f21.SpreadDomain = elem.LaunchTemplateData.Placement.SpreadDomain
+					f3f22.SpreadDomain = elem.LaunchTemplateData.Placement.SpreadDomain
 				}
 				if elem.LaunchTemplateData.Placement.Tenancy != nil {
-					f3f21.Tenancy = elem.LaunchTemplateData.Placement.Tenancy
+					f3f22.Tenancy = elem.LaunchTemplateData.Placement.Tenancy
 				}
-				f3.Placement = f3f21
+				f3.Placement = f3f22
 			}
 			if elem.LaunchTemplateData.RamDiskId != nil {
 				f3.RamDiskID = elem.LaunchTemplateData.RamDiskId
 			}
 			if elem.LaunchTemplateData.SecurityGroupIds != nil {
-				f3f23 := []*string{}
-				for _, f3f23iter := range elem.LaunchTemplateData.SecurityGroupIds {
-					var f3f23elem string
-					f3f23elem = *f3f23iter
-					f3f23 = append(f3f23, &f3f23elem)
-				}
-				f3.SecurityGroupIDs = f3f23
-			}
-			if elem.LaunchTemplateData.SecurityGroups != nil {
 				f3f24 := []*string{}
-				for _, f3f24iter := range elem.LaunchTemplateData.SecurityGroups {
+				for _, f3f24iter := range elem.LaunchTemplateData.SecurityGroupIds {
 					var f3f24elem string
 					f3f24elem = *f3f24iter
 					f3f24 = append(f3f24, &f3f24elem)
 				}
-				f3.SecurityGroups = f3f24
+				f3.SecurityGroupIDs = f3f24
+			}
+			if elem.LaunchTemplateData.SecurityGroups != nil {
+				f3f25 := []*string{}
+				for _, f3f25iter := range elem.LaunchTemplateData.SecurityGroups {
+					var f3f25elem string
+					f3f25elem = *f3f25iter
+					f3f25 = append(f3f25, &f3f25elem)
+				}
+				f3.SecurityGroups = f3f25
 			}
 			if elem.LaunchTemplateData.TagSpecifications != nil {
-				f3f25 := []*svcapitypes.LaunchTemplateTagSpecificationRequest{}
-				for _, f3f25iter := range elem.LaunchTemplateData.TagSpecifications {
-					f3f25elem := &svcapitypes.LaunchTemplateTagSpecificationRequest{}
-					if f3f25iter.ResourceType != nil {
-						f3f25elem.ResourceType = f3f25iter.ResourceType
+				f3f26 := []*svcapitypes.LaunchTemplateTagSpecificationRequest{}
+				for _, f3f26iter := range elem.LaunchTemplateData.TagSpecifications {
+					f3f26elem := &svcapitypes.LaunchTemplateTagSpecificationRequest{}
+					if f3f26iter.ResourceType != nil {
+						f3f26elem.ResourceType = f3f26iter.ResourceType
 					}
-					if f3f25iter.Tags != nil {
-						f3f25elemf1 := []*svcapitypes.Tag{}
-						for _, f3f25elemf1iter := range f3f25iter.Tags {
-							f3f25elemf1elem := &svcapitypes.Tag{}
-							if f3f25elemf1iter.Key != nil {
-								f3f25elemf1elem.Key = f3f25elemf1iter.Key
+					if f3f26iter.Tags != nil {
+						f3f26elemf1 := []*svcapitypes.Tag{}
+						for _, f3f26elemf1iter := range f3f26iter.Tags {
+							f3f26elemf1elem := &svcapitypes.Tag{}
+							if f3f26elemf1iter.Key != nil {
+								f3f26elemf1elem.Key = f3f26elemf1iter.Key
 							}
-							if f3f25elemf1iter.Value != nil {
-								f3f25elemf1elem.Value = f3f25elemf1iter.Value
+							if f3f26elemf1iter.Value != nil {
+								f3f26elemf1elem.Value = f3f26elemf1iter.Value
 							}
-							f3f25elemf1 = append(f3f25elemf1, f3f25elemf1elem)
+							f3f26elemf1 = append(f3f26elemf1, f3f26elemf1elem)
 						}
-						f3f25elem.Tags = f3f25elemf1
+						f3f26elem.Tags = f3f26elemf1
 					}
-					f3f25 = append(f3f25, f3f25elem)
+					f3f26 = append(f3f26, f3f26elem)
 				}
-				f3.TagSpecifications = f3f25
+				f3.TagSpecifications = f3f26
 			}
 			if elem.LaunchTemplateData.UserData != nil {
 				f3.UserData = elem.LaunchTemplateData.UserData
@@ -597,6 +793,171 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			}
 			f0.SetInstanceMarketOptions(f0f13)
 		}
+		if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements != nil {
+			f0f14 := &svcsdk.InstanceRequirementsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorCount != nil {
+				f0f14f0 := &svcsdk.AcceleratorCountRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Max != nil {
+					f0f14f0.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Min != nil {
+					f0f14f0.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorCount.Min)
+				}
+				f0f14.SetAcceleratorCount(f0f14f0)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorManufacturers != nil {
+				f0f14f1 := []*string{}
+				for _, f0f14f1iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorManufacturers {
+					var f0f14f1elem string
+					f0f14f1elem = *f0f14f1iter
+					f0f14f1 = append(f0f14f1, &f0f14f1elem)
+				}
+				f0f14.SetAcceleratorManufacturers(f0f14f1)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorNames != nil {
+				f0f14f2 := []*string{}
+				for _, f0f14f2iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorNames {
+					var f0f14f2elem string
+					f0f14f2elem = *f0f14f2iter
+					f0f14f2 = append(f0f14f2, &f0f14f2elem)
+				}
+				f0f14.SetAcceleratorNames(f0f14f2)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB != nil {
+				f0f14f3 := &svcsdk.AcceleratorTotalMemoryMiBRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Max != nil {
+					f0f14f3.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Min != nil {
+					f0f14f3.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTotalMemoryMiB.Min)
+				}
+				f0f14.SetAcceleratorTotalMemoryMiB(f0f14f3)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTypes != nil {
+				f0f14f4 := []*string{}
+				for _, f0f14f4iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.AcceleratorTypes {
+					var f0f14f4elem string
+					f0f14f4elem = *f0f14f4iter
+					f0f14f4 = append(f0f14f4, &f0f14f4elem)
+				}
+				f0f14.SetAcceleratorTypes(f0f14f4)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BareMetal != nil {
+				f0f14.SetBareMetal(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BareMetal)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BaselineEBSBandwidthMbps != nil {
+				f0f14f6 := &svcsdk.BaselineEbsBandwidthMbpsRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BaselineEBSBandwidthMbps.Max != nil {
+					f0f14f6.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BaselineEBSBandwidthMbps.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BaselineEBSBandwidthMbps.Min != nil {
+					f0f14f6.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BaselineEBSBandwidthMbps.Min)
+				}
+				f0f14.SetBaselineEbsBandwidthMbps(f0f14f6)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BurstablePerformance != nil {
+				f0f14.SetBurstablePerformance(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.BurstablePerformance)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.CPUManufacturers != nil {
+				f0f14f8 := []*string{}
+				for _, f0f14f8iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.CPUManufacturers {
+					var f0f14f8elem string
+					f0f14f8elem = *f0f14f8iter
+					f0f14f8 = append(f0f14f8, &f0f14f8elem)
+				}
+				f0f14.SetCpuManufacturers(f0f14f8)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.ExcludedInstanceTypes != nil {
+				f0f14f9 := []*string{}
+				for _, f0f14f9iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.ExcludedInstanceTypes {
+					var f0f14f9elem string
+					f0f14f9elem = *f0f14f9iter
+					f0f14f9 = append(f0f14f9, &f0f14f9elem)
+				}
+				f0f14.SetExcludedInstanceTypes(f0f14f9)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.InstanceGenerations != nil {
+				f0f14f10 := []*string{}
+				for _, f0f14f10iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.InstanceGenerations {
+					var f0f14f10elem string
+					f0f14f10elem = *f0f14f10iter
+					f0f14f10 = append(f0f14f10, &f0f14f10elem)
+				}
+				f0f14.SetInstanceGenerations(f0f14f10)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.LocalStorage != nil {
+				f0f14.SetLocalStorage(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.LocalStorage)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.LocalStorageTypes != nil {
+				f0f14f12 := []*string{}
+				for _, f0f14f12iter := range cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.LocalStorageTypes {
+					var f0f14f12elem string
+					f0f14f12elem = *f0f14f12iter
+					f0f14f12 = append(f0f14f12, &f0f14f12elem)
+				}
+				f0f14.SetLocalStorageTypes(f0f14f12)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCPU != nil {
+				f0f14f13 := &svcsdk.MemoryGiBPerVCpuRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCPU.Max != nil {
+					f0f14f13.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCPU.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCPU.Min != nil {
+					f0f14f13.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryGiBPerVCPU.Min)
+				}
+				f0f14.SetMemoryGiBPerVCpu(f0f14f13)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryMiB != nil {
+				f0f14f14 := &svcsdk.MemoryMiBRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryMiB.Max != nil {
+					f0f14f14.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryMiB.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryMiB.Min != nil {
+					f0f14f14.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.MemoryMiB.Min)
+				}
+				f0f14.SetMemoryMiB(f0f14f14)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount != nil {
+				f0f14f15 := &svcsdk.NetworkInterfaceCountRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Max != nil {
+					f0f14f15.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Min != nil {
+					f0f14f15.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.NetworkInterfaceCount.Min)
+				}
+				f0f14.SetNetworkInterfaceCount(f0f14f15)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+				f0f14.SetOnDemandMaxPricePercentageOverLowestPrice(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.OnDemandMaxPricePercentageOverLowestPrice)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.RequireHibernateSupport != nil {
+				f0f14.SetRequireHibernateSupport(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.RequireHibernateSupport)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.SpotMaxPricePercentageOverLowestPrice != nil {
+				f0f14.SetSpotMaxPricePercentageOverLowestPrice(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.SpotMaxPricePercentageOverLowestPrice)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB != nil {
+				f0f14f19 := &svcsdk.TotalLocalStorageGBRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Max != nil {
+					f0f14f19.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Min != nil {
+					f0f14f19.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.TotalLocalStorageGB.Min)
+				}
+				f0f14.SetTotalLocalStorageGB(f0f14f19)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.VCPUCount != nil {
+				f0f14f20 := &svcsdk.VCpuCountRangeRequest{}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.VCPUCount.Max != nil {
+					f0f14f20.SetMax(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.VCPUCount.Max)
+				}
+				if cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.VCPUCount.Min != nil {
+					f0f14f20.SetMin(*cr.Spec.ForProvider.LaunchTemplateData.InstanceRequirements.VCPUCount.Min)
+				}
+				f0f14.SetVCpuCount(f0f14f20)
+			}
+			f0.SetInstanceRequirements(f0f14)
+		}
 		if cr.Spec.ForProvider.LaunchTemplateData.InstanceType != nil {
 			f0.SetInstanceType(*cr.Spec.ForProvider.LaunchTemplateData.InstanceType)
 		}
@@ -607,187 +968,218 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			f0.SetKeyName(*cr.Spec.ForProvider.LaunchTemplateData.KeyName)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.LicenseSpecifications != nil {
-			f0f17 := []*svcsdk.LaunchTemplateLicenseConfigurationRequest{}
-			for _, f0f17iter := range cr.Spec.ForProvider.LaunchTemplateData.LicenseSpecifications {
-				f0f17elem := &svcsdk.LaunchTemplateLicenseConfigurationRequest{}
-				if f0f17iter.LicenseConfigurationARN != nil {
-					f0f17elem.SetLicenseConfigurationArn(*f0f17iter.LicenseConfigurationARN)
+			f0f18 := []*svcsdk.LaunchTemplateLicenseConfigurationRequest{}
+			for _, f0f18iter := range cr.Spec.ForProvider.LaunchTemplateData.LicenseSpecifications {
+				f0f18elem := &svcsdk.LaunchTemplateLicenseConfigurationRequest{}
+				if f0f18iter.LicenseConfigurationARN != nil {
+					f0f18elem.SetLicenseConfigurationArn(*f0f18iter.LicenseConfigurationARN)
 				}
-				f0f17 = append(f0f17, f0f17elem)
+				f0f18 = append(f0f18, f0f18elem)
 			}
-			f0.SetLicenseSpecifications(f0f17)
+			f0.SetLicenseSpecifications(f0f18)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions != nil {
-			f0f18 := &svcsdk.LaunchTemplateInstanceMetadataOptionsRequest{}
+			f0f19 := &svcsdk.LaunchTemplateInstanceMetadataOptionsRequest{}
 			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPEndpoint != nil {
-				f0f18.SetHttpEndpoint(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPEndpoint)
+				f0f19.SetHttpEndpoint(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPEndpoint)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPProtocolIPv6 != nil {
+				f0f19.SetHttpProtocolIpv6(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPProtocolIPv6)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPPutResponseHopLimit != nil {
-				f0f18.SetHttpPutResponseHopLimit(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPPutResponseHopLimit)
+				f0f19.SetHttpPutResponseHopLimit(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPPutResponseHopLimit)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPTokens != nil {
-				f0f18.SetHttpTokens(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPTokens)
+				f0f19.SetHttpTokens(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPTokens)
 			}
-			f0.SetMetadataOptions(f0f18)
+			f0.SetMetadataOptions(f0f19)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.Monitoring != nil {
-			f0f19 := &svcsdk.LaunchTemplatesMonitoringRequest{}
+			f0f20 := &svcsdk.LaunchTemplatesMonitoringRequest{}
 			if cr.Spec.ForProvider.LaunchTemplateData.Monitoring.Enabled != nil {
-				f0f19.SetEnabled(*cr.Spec.ForProvider.LaunchTemplateData.Monitoring.Enabled)
+				f0f20.SetEnabled(*cr.Spec.ForProvider.LaunchTemplateData.Monitoring.Enabled)
 			}
-			f0.SetMonitoring(f0f19)
+			f0.SetMonitoring(f0f20)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.NetworkInterfaces != nil {
-			f0f20 := []*svcsdk.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
-			for _, f0f20iter := range cr.Spec.ForProvider.LaunchTemplateData.NetworkInterfaces {
-				f0f20elem := &svcsdk.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
-				if f0f20iter.AssociateCarrierIPAddress != nil {
-					f0f20elem.SetAssociateCarrierIpAddress(*f0f20iter.AssociateCarrierIPAddress)
+			f0f21 := []*svcsdk.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
+			for _, f0f21iter := range cr.Spec.ForProvider.LaunchTemplateData.NetworkInterfaces {
+				f0f21elem := &svcsdk.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{}
+				if f0f21iter.AssociateCarrierIPAddress != nil {
+					f0f21elem.SetAssociateCarrierIpAddress(*f0f21iter.AssociateCarrierIPAddress)
 				}
-				if f0f20iter.AssociatePublicIPAddress != nil {
-					f0f20elem.SetAssociatePublicIpAddress(*f0f20iter.AssociatePublicIPAddress)
+				if f0f21iter.AssociatePublicIPAddress != nil {
+					f0f21elem.SetAssociatePublicIpAddress(*f0f21iter.AssociatePublicIPAddress)
 				}
-				if f0f20iter.DeleteOnTermination != nil {
-					f0f20elem.SetDeleteOnTermination(*f0f20iter.DeleteOnTermination)
+				if f0f21iter.DeleteOnTermination != nil {
+					f0f21elem.SetDeleteOnTermination(*f0f21iter.DeleteOnTermination)
 				}
-				if f0f20iter.Description != nil {
-					f0f20elem.SetDescription(*f0f20iter.Description)
+				if f0f21iter.Description != nil {
+					f0f21elem.SetDescription(*f0f21iter.Description)
 				}
-				if f0f20iter.DeviceIndex != nil {
-					f0f20elem.SetDeviceIndex(*f0f20iter.DeviceIndex)
+				if f0f21iter.DeviceIndex != nil {
+					f0f21elem.SetDeviceIndex(*f0f21iter.DeviceIndex)
 				}
-				if f0f20iter.Groups != nil {
-					f0f20elemf5 := []*string{}
-					for _, f0f20elemf5iter := range f0f20iter.Groups {
-						var f0f20elemf5elem string
-						f0f20elemf5elem = *f0f20elemf5iter
-						f0f20elemf5 = append(f0f20elemf5, &f0f20elemf5elem)
+				if f0f21iter.Groups != nil {
+					f0f21elemf5 := []*string{}
+					for _, f0f21elemf5iter := range f0f21iter.Groups {
+						var f0f21elemf5elem string
+						f0f21elemf5elem = *f0f21elemf5iter
+						f0f21elemf5 = append(f0f21elemf5, &f0f21elemf5elem)
 					}
-					f0f20elem.SetGroups(f0f20elemf5)
+					f0f21elem.SetGroups(f0f21elemf5)
 				}
-				if f0f20iter.InterfaceType != nil {
-					f0f20elem.SetInterfaceType(*f0f20iter.InterfaceType)
+				if f0f21iter.InterfaceType != nil {
+					f0f21elem.SetInterfaceType(*f0f21iter.InterfaceType)
 				}
-				if f0f20iter.IPv6AddressCount != nil {
-					f0f20elem.SetIpv6AddressCount(*f0f20iter.IPv6AddressCount)
+				if f0f21iter.IPv4PrefixCount != nil {
+					f0f21elem.SetIpv4PrefixCount(*f0f21iter.IPv4PrefixCount)
 				}
-				if f0f20iter.IPv6Addresses != nil {
-					f0f20elemf8 := []*svcsdk.InstanceIpv6AddressRequest{}
-					for _, f0f20elemf8iter := range f0f20iter.IPv6Addresses {
-						f0f20elemf8elem := &svcsdk.InstanceIpv6AddressRequest{}
-						if f0f20elemf8iter.IPv6Address != nil {
-							f0f20elemf8elem.SetIpv6Address(*f0f20elemf8iter.IPv6Address)
+				if f0f21iter.IPv4Prefixes != nil {
+					f0f21elemf8 := []*svcsdk.Ipv4PrefixSpecificationRequest{}
+					for _, f0f21elemf8iter := range f0f21iter.IPv4Prefixes {
+						f0f21elemf8elem := &svcsdk.Ipv4PrefixSpecificationRequest{}
+						if f0f21elemf8iter.IPv4Prefix != nil {
+							f0f21elemf8elem.SetIpv4Prefix(*f0f21elemf8iter.IPv4Prefix)
 						}
-						f0f20elemf8 = append(f0f20elemf8, f0f20elemf8elem)
+						f0f21elemf8 = append(f0f21elemf8, f0f21elemf8elem)
 					}
-					f0f20elem.SetIpv6Addresses(f0f20elemf8)
+					f0f21elem.SetIpv4Prefixes(f0f21elemf8)
 				}
-				if f0f20iter.NetworkCardIndex != nil {
-					f0f20elem.SetNetworkCardIndex(*f0f20iter.NetworkCardIndex)
+				if f0f21iter.IPv6AddressCount != nil {
+					f0f21elem.SetIpv6AddressCount(*f0f21iter.IPv6AddressCount)
 				}
-				if f0f20iter.NetworkInterfaceID != nil {
-					f0f20elem.SetNetworkInterfaceId(*f0f20iter.NetworkInterfaceID)
-				}
-				if f0f20iter.PrivateIPAddress != nil {
-					f0f20elem.SetPrivateIpAddress(*f0f20iter.PrivateIPAddress)
-				}
-				if f0f20iter.PrivateIPAddresses != nil {
-					f0f20elemf12 := []*svcsdk.PrivateIpAddressSpecification{}
-					for _, f0f20elemf12iter := range f0f20iter.PrivateIPAddresses {
-						f0f20elemf12elem := &svcsdk.PrivateIpAddressSpecification{}
-						if f0f20elemf12iter.Primary != nil {
-							f0f20elemf12elem.SetPrimary(*f0f20elemf12iter.Primary)
+				if f0f21iter.IPv6Addresses != nil {
+					f0f21elemf10 := []*svcsdk.InstanceIpv6AddressRequest{}
+					for _, f0f21elemf10iter := range f0f21iter.IPv6Addresses {
+						f0f21elemf10elem := &svcsdk.InstanceIpv6AddressRequest{}
+						if f0f21elemf10iter.IPv6Address != nil {
+							f0f21elemf10elem.SetIpv6Address(*f0f21elemf10iter.IPv6Address)
 						}
-						if f0f20elemf12iter.PrivateIPAddress != nil {
-							f0f20elemf12elem.SetPrivateIpAddress(*f0f20elemf12iter.PrivateIPAddress)
-						}
-						f0f20elemf12 = append(f0f20elemf12, f0f20elemf12elem)
+						f0f21elemf10 = append(f0f21elemf10, f0f21elemf10elem)
 					}
-					f0f20elem.SetPrivateIpAddresses(f0f20elemf12)
+					f0f21elem.SetIpv6Addresses(f0f21elemf10)
 				}
-				if f0f20iter.SecondaryPrivateIPAddressCount != nil {
-					f0f20elem.SetSecondaryPrivateIpAddressCount(*f0f20iter.SecondaryPrivateIPAddressCount)
+				if f0f21iter.IPv6PrefixCount != nil {
+					f0f21elem.SetIpv6PrefixCount(*f0f21iter.IPv6PrefixCount)
 				}
-				if f0f20iter.SubnetID != nil {
-					f0f20elem.SetSubnetId(*f0f20iter.SubnetID)
+				if f0f21iter.IPv6Prefixes != nil {
+					f0f21elemf12 := []*svcsdk.Ipv6PrefixSpecificationRequest{}
+					for _, f0f21elemf12iter := range f0f21iter.IPv6Prefixes {
+						f0f21elemf12elem := &svcsdk.Ipv6PrefixSpecificationRequest{}
+						if f0f21elemf12iter.IPv6Prefix != nil {
+							f0f21elemf12elem.SetIpv6Prefix(*f0f21elemf12iter.IPv6Prefix)
+						}
+						f0f21elemf12 = append(f0f21elemf12, f0f21elemf12elem)
+					}
+					f0f21elem.SetIpv6Prefixes(f0f21elemf12)
 				}
-				f0f20 = append(f0f20, f0f20elem)
+				if f0f21iter.NetworkCardIndex != nil {
+					f0f21elem.SetNetworkCardIndex(*f0f21iter.NetworkCardIndex)
+				}
+				if f0f21iter.NetworkInterfaceID != nil {
+					f0f21elem.SetNetworkInterfaceId(*f0f21iter.NetworkInterfaceID)
+				}
+				if f0f21iter.PrivateIPAddress != nil {
+					f0f21elem.SetPrivateIpAddress(*f0f21iter.PrivateIPAddress)
+				}
+				if f0f21iter.PrivateIPAddresses != nil {
+					f0f21elemf16 := []*svcsdk.PrivateIpAddressSpecification{}
+					for _, f0f21elemf16iter := range f0f21iter.PrivateIPAddresses {
+						f0f21elemf16elem := &svcsdk.PrivateIpAddressSpecification{}
+						if f0f21elemf16iter.Primary != nil {
+							f0f21elemf16elem.SetPrimary(*f0f21elemf16iter.Primary)
+						}
+						if f0f21elemf16iter.PrivateIPAddress != nil {
+							f0f21elemf16elem.SetPrivateIpAddress(*f0f21elemf16iter.PrivateIPAddress)
+						}
+						f0f21elemf16 = append(f0f21elemf16, f0f21elemf16elem)
+					}
+					f0f21elem.SetPrivateIpAddresses(f0f21elemf16)
+				}
+				if f0f21iter.SecondaryPrivateIPAddressCount != nil {
+					f0f21elem.SetSecondaryPrivateIpAddressCount(*f0f21iter.SecondaryPrivateIPAddressCount)
+				}
+				if f0f21iter.SubnetID != nil {
+					f0f21elem.SetSubnetId(*f0f21iter.SubnetID)
+				}
+				f0f21 = append(f0f21, f0f21elem)
 			}
-			f0.SetNetworkInterfaces(f0f20)
+			f0.SetNetworkInterfaces(f0f21)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.Placement != nil {
-			f0f21 := &svcsdk.LaunchTemplatePlacementRequest{}
+			f0f22 := &svcsdk.LaunchTemplatePlacementRequest{}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.Affinity != nil {
-				f0f21.SetAffinity(*cr.Spec.ForProvider.LaunchTemplateData.Placement.Affinity)
+				f0f22.SetAffinity(*cr.Spec.ForProvider.LaunchTemplateData.Placement.Affinity)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.AvailabilityZone != nil {
-				f0f21.SetAvailabilityZone(*cr.Spec.ForProvider.LaunchTemplateData.Placement.AvailabilityZone)
+				f0f22.SetAvailabilityZone(*cr.Spec.ForProvider.LaunchTemplateData.Placement.AvailabilityZone)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.GroupName != nil {
-				f0f21.SetGroupName(*cr.Spec.ForProvider.LaunchTemplateData.Placement.GroupName)
+				f0f22.SetGroupName(*cr.Spec.ForProvider.LaunchTemplateData.Placement.GroupName)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.HostID != nil {
-				f0f21.SetHostId(*cr.Spec.ForProvider.LaunchTemplateData.Placement.HostID)
+				f0f22.SetHostId(*cr.Spec.ForProvider.LaunchTemplateData.Placement.HostID)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.HostResourceGroupARN != nil {
-				f0f21.SetHostResourceGroupArn(*cr.Spec.ForProvider.LaunchTemplateData.Placement.HostResourceGroupARN)
+				f0f22.SetHostResourceGroupArn(*cr.Spec.ForProvider.LaunchTemplateData.Placement.HostResourceGroupARN)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.PartitionNumber != nil {
-				f0f21.SetPartitionNumber(*cr.Spec.ForProvider.LaunchTemplateData.Placement.PartitionNumber)
+				f0f22.SetPartitionNumber(*cr.Spec.ForProvider.LaunchTemplateData.Placement.PartitionNumber)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.SpreadDomain != nil {
-				f0f21.SetSpreadDomain(*cr.Spec.ForProvider.LaunchTemplateData.Placement.SpreadDomain)
+				f0f22.SetSpreadDomain(*cr.Spec.ForProvider.LaunchTemplateData.Placement.SpreadDomain)
 			}
 			if cr.Spec.ForProvider.LaunchTemplateData.Placement.Tenancy != nil {
-				f0f21.SetTenancy(*cr.Spec.ForProvider.LaunchTemplateData.Placement.Tenancy)
+				f0f22.SetTenancy(*cr.Spec.ForProvider.LaunchTemplateData.Placement.Tenancy)
 			}
-			f0.SetPlacement(f0f21)
+			f0.SetPlacement(f0f22)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.RamDiskID != nil {
 			f0.SetRamDiskId(*cr.Spec.ForProvider.LaunchTemplateData.RamDiskID)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs != nil {
-			f0f23 := []*string{}
-			for _, f0f23iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs {
-				var f0f23elem string
-				f0f23elem = *f0f23iter
-				f0f23 = append(f0f23, &f0f23elem)
-			}
-			f0.SetSecurityGroupIds(f0f23)
-		}
-		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups != nil {
 			f0f24 := []*string{}
-			for _, f0f24iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups {
+			for _, f0f24iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs {
 				var f0f24elem string
 				f0f24elem = *f0f24iter
 				f0f24 = append(f0f24, &f0f24elem)
 			}
-			f0.SetSecurityGroups(f0f24)
+			f0.SetSecurityGroupIds(f0f24)
+		}
+		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups != nil {
+			f0f25 := []*string{}
+			for _, f0f25iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups {
+				var f0f25elem string
+				f0f25elem = *f0f25iter
+				f0f25 = append(f0f25, &f0f25elem)
+			}
+			f0.SetSecurityGroups(f0f25)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications != nil {
-			f0f25 := []*svcsdk.LaunchTemplateTagSpecificationRequest{}
-			for _, f0f25iter := range cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications {
-				f0f25elem := &svcsdk.LaunchTemplateTagSpecificationRequest{}
-				if f0f25iter.ResourceType != nil {
-					f0f25elem.SetResourceType(*f0f25iter.ResourceType)
+			f0f26 := []*svcsdk.LaunchTemplateTagSpecificationRequest{}
+			for _, f0f26iter := range cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications {
+				f0f26elem := &svcsdk.LaunchTemplateTagSpecificationRequest{}
+				if f0f26iter.ResourceType != nil {
+					f0f26elem.SetResourceType(*f0f26iter.ResourceType)
 				}
-				if f0f25iter.Tags != nil {
-					f0f25elemf1 := []*svcsdk.Tag{}
-					for _, f0f25elemf1iter := range f0f25iter.Tags {
-						f0f25elemf1elem := &svcsdk.Tag{}
-						if f0f25elemf1iter.Key != nil {
-							f0f25elemf1elem.SetKey(*f0f25elemf1iter.Key)
+				if f0f26iter.Tags != nil {
+					f0f26elemf1 := []*svcsdk.Tag{}
+					for _, f0f26elemf1iter := range f0f26iter.Tags {
+						f0f26elemf1elem := &svcsdk.Tag{}
+						if f0f26elemf1iter.Key != nil {
+							f0f26elemf1elem.SetKey(*f0f26elemf1iter.Key)
 						}
-						if f0f25elemf1iter.Value != nil {
-							f0f25elemf1elem.SetValue(*f0f25elemf1iter.Value)
+						if f0f26elemf1iter.Value != nil {
+							f0f26elemf1elem.SetValue(*f0f26elemf1iter.Value)
 						}
-						f0f25elemf1 = append(f0f25elemf1, f0f25elemf1elem)
+						f0f26elemf1 = append(f0f26elemf1, f0f26elemf1elem)
 					}
-					f0f25elem.SetTags(f0f25elemf1)
+					f0f26elem.SetTags(f0f26elemf1)
 				}
-				f0f25 = append(f0f25, f0f25elem)
+				f0f26 = append(f0f26, f0f26elem)
 			}
-			f0.SetTagSpecifications(f0f25)
+			f0.SetTagSpecifications(f0f26)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.UserData != nil {
 			f0.SetUserData(*cr.Spec.ForProvider.LaunchTemplateData.UserData)
@@ -807,5 +1199,5 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "InvalidLaunchTemplateId.VersionNotFound"
+	return ok && awsErr.Code() == "InvalidLaunchTemplateName.NotFoundException"
 }

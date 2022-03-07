@@ -42,14 +42,15 @@ type MountTargetSpec struct {
 
 // MountTargetObservation defines the observed state of MountTarget
 type MountTargetObservation struct {
-	// The unique and consistent identifier of the Availability Zone (AZ) that the
-	// mount target resides in. For example, use1-az1 is an AZ ID for the us-east-1
-	// Region and it has the same location in every AWS account.
+	// The unique and consistent identifier of the Availability Zone that the mount
+	// target resides in. For example, use1-az1 is an AZ ID for the us-east-1 Region
+	// and it has the same location in every Amazon Web Services account.
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
-	// The name of the Availability Zone (AZ) that the mount target resides in.
-	// AZs are independently mapped to names for each AWS account. For example,
-	// the Availability Zone us-east-1a for your AWS account might not be the same
-	// location as us-east-1a for another AWS account.
+	// The name of the Availability Zone in which the mount target is located. Availability
+	// Zones are independently mapped to names for each Amazon Web Services account.
+	// For example, the Availability Zone us-east-1a for your Amazon Web Services
+	// account might not be the same location as us-east-1a for another Amazon Web
+	// Services account.
 	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
 	// The ID of the file system for which the mount target is intended.
 	FileSystemID *string `json:"fileSystemID,omitempty"`
@@ -60,11 +61,11 @@ type MountTargetObservation struct {
 	// The ID of the network interface that Amazon EFS created when it created the
 	// mount target.
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
-	// AWS account ID that owns the resource.
+	// Amazon Web Services account ID that owns the resource.
 	OwnerID *string `json:"ownerID,omitempty"`
 	// The ID of the mount target's subnet.
 	SubnetID *string `json:"subnetID,omitempty"`
-	// The Virtual Private Cloud (VPC) ID that the mount target is configured in.
+	// The virtual private cloud (VPC) ID that the mount target is configured in.
 	VPCID *string `json:"vpcID,omitempty"`
 }
 

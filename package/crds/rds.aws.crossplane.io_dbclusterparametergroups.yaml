@@ -70,7 +70,17 @@ spec:
                       to a DB cluster running a database engine and engine version
                       compatible with that DB cluster parameter group family. \n Aurora
                       MySQL \n Example: aurora5.6, aurora-mysql5.7 \n Aurora PostgreSQL
-                      \n Example: aurora-postgresql9.6"
+                      \n Example: aurora-postgresql9.6 \n To list all of the available
+                      parameter group families for a DB engine, use the following
+                      command: \n aws rds describe-db-engine-versions --query \"DBEngineVersions[].DBParameterGroupFamily\"
+                      --engine <engine> \n For example, to list all of the available
+                      parameter group families for the Aurora PostgreSQL DB engine,
+                      use the following command: \n aws rds describe-db-engine-versions
+                      --query \"DBEngineVersions[].DBParameterGroupFamily\" --engine
+                      aurora-postgresql \n The output contains duplicates. \n The
+                      following are the valid DB engine values: \n    * aurora (for
+                      MySQL 5.6-compatible Aurora) \n    * aurora-mysql (for MySQL
+                      5.7-compatible Aurora) \n    * aurora-postgresql"
                     type: string
                   description:
                     description: The description for the DB cluster parameter group.

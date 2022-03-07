@@ -26,6 +26,7 @@ import (
 	svcsdkapi "github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -118,6 +119,31 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.ARN = resp.ARN
 	} else {
 		cr.Status.AtProvider.ARN = nil
+	}
+	if resp.ReplicationStatus != nil {
+		f1 := []*svcapitypes.ReplicationStatusType{}
+		for _, f1iter := range resp.ReplicationStatus {
+			f1elem := &svcapitypes.ReplicationStatusType{}
+			if f1iter.KmsKeyId != nil {
+				f1elem.KMSKeyID = f1iter.KmsKeyId
+			}
+			if f1iter.LastAccessedDate != nil {
+				f1elem.LastAccessedDate = &metav1.Time{*f1iter.LastAccessedDate}
+			}
+			if f1iter.Region != nil {
+				f1elem.Region = f1iter.Region
+			}
+			if f1iter.Status != nil {
+				f1elem.Status = f1iter.Status
+			}
+			if f1iter.StatusMessage != nil {
+				f1elem.StatusMessage = f1iter.StatusMessage
+			}
+			f1 = append(f1, f1elem)
+		}
+		cr.Status.AtProvider.ReplicationStatus = f1
+	} else {
+		cr.Status.AtProvider.ReplicationStatus = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

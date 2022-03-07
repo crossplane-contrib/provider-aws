@@ -42,6 +42,10 @@ type AccessPointDescription struct {
 
 // +kubebuilder:skipversion
 type FileSystemDescription struct {
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	CreationToken *string `json:"creationToken,omitempty"`

@@ -6,6 +6,9 @@ ignore:
     - CreateServerInput.EndpointDetails
     - CreateServerInput.Certificate
     - CreateServerInput.LoggingRole
+  resource_names:
+    - Access
+    - Workflow
 resources:
   Server:
     exceptions:

@@ -83,15 +83,20 @@ func GenerateTargetGroup(resp *svcsdk.DescribeTargetGroupsOutput) *svcapitypes.T
 		} else {
 			cr.Spec.ForProvider.HealthyThresholdCount = nil
 		}
+		if elem.IpAddressType != nil {
+			cr.Spec.ForProvider.IPAddressType = elem.IpAddressType
+		} else {
+			cr.Spec.ForProvider.IPAddressType = nil
+		}
 		if elem.Matcher != nil {
-			f8 := &svcapitypes.Matcher{}
+			f9 := &svcapitypes.Matcher{}
 			if elem.Matcher.GrpcCode != nil {
-				f8.GrpcCode = elem.Matcher.GrpcCode
+				f9.GrpcCode = elem.Matcher.GrpcCode
 			}
 			if elem.Matcher.HttpCode != nil {
-				f8.HTTPCode = elem.Matcher.HttpCode
+				f9.HTTPCode = elem.Matcher.HttpCode
 			}
-			cr.Spec.ForProvider.Matcher = f8
+			cr.Spec.ForProvider.Matcher = f9
 		} else {
 			cr.Spec.ForProvider.Matcher = nil
 		}
@@ -160,15 +165,18 @@ func GenerateCreateTargetGroupInput(cr *svcapitypes.TargetGroup) *svcsdk.CreateT
 	if cr.Spec.ForProvider.HealthyThresholdCount != nil {
 		res.SetHealthyThresholdCount(*cr.Spec.ForProvider.HealthyThresholdCount)
 	}
+	if cr.Spec.ForProvider.IPAddressType != nil {
+		res.SetIpAddressType(*cr.Spec.ForProvider.IPAddressType)
+	}
 	if cr.Spec.ForProvider.Matcher != nil {
-		f7 := &svcsdk.Matcher{}
+		f8 := &svcsdk.Matcher{}
 		if cr.Spec.ForProvider.Matcher.GrpcCode != nil {
-			f7.SetGrpcCode(*cr.Spec.ForProvider.Matcher.GrpcCode)
+			f8.SetGrpcCode(*cr.Spec.ForProvider.Matcher.GrpcCode)
 		}
 		if cr.Spec.ForProvider.Matcher.HTTPCode != nil {
-			f7.SetHttpCode(*cr.Spec.ForProvider.Matcher.HTTPCode)
+			f8.SetHttpCode(*cr.Spec.ForProvider.Matcher.HTTPCode)
 		}
-		res.SetMatcher(f7)
+		res.SetMatcher(f8)
 	}
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
@@ -183,18 +191,18 @@ func GenerateCreateTargetGroupInput(cr *svcapitypes.TargetGroup) *svcsdk.CreateT
 		res.SetProtocolVersion(*cr.Spec.ForProvider.ProtocolVersion)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f12 := []*svcsdk.Tag{}
-		for _, f12iter := range cr.Spec.ForProvider.Tags {
-			f12elem := &svcsdk.Tag{}
-			if f12iter.Key != nil {
-				f12elem.SetKey(*f12iter.Key)
+		f13 := []*svcsdk.Tag{}
+		for _, f13iter := range cr.Spec.ForProvider.Tags {
+			f13elem := &svcsdk.Tag{}
+			if f13iter.Key != nil {
+				f13elem.SetKey(*f13iter.Key)
 			}
-			if f12iter.Value != nil {
-				f12elem.SetValue(*f12iter.Value)
+			if f13iter.Value != nil {
+				f13elem.SetValue(*f13iter.Value)
 			}
-			f12 = append(f12, f12elem)
+			f13 = append(f13, f13elem)
 		}
-		res.SetTags(f12)
+		res.SetTags(f13)
 	}
 	if cr.Spec.ForProvider.TargetType != nil {
 		res.SetTargetType(*cr.Spec.ForProvider.TargetType)

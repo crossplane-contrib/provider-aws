@@ -4,8 +4,10 @@ metadata:
   name: example-rabbitmq
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     engineType: RabbitMQ
+    publiclyAccessible: false
+    autoMinorVersionUpgrade: true
     engineVersion: 3.8.11
     hostInstanceType: mq.t3.micro
     deploymentMode: SINGLE_INSTANCE

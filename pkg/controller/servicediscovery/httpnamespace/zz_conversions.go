@@ -56,6 +56,13 @@ func GenerateCreateHttpNamespaceInput(cr *svcapitypes.HTTPNamespace) *svcsdk.Cre
 	return res
 }
 
+// GenerateUpdateHttpNamespaceInput returns an update input.
+func GenerateUpdateHttpNamespaceInput(cr *svcapitypes.HTTPNamespace) *svcsdk.UpdateHttpNamespaceInput {
+	res := &svcsdk.UpdateHttpNamespaceInput{}
+
+	return res
+}
+
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)

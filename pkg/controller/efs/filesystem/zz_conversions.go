@@ -50,6 +50,16 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 
 	found := false
 	for _, elem := range resp.FileSystems {
+		if elem.AvailabilityZoneId != nil {
+			cr.Status.AtProvider.AvailabilityZoneID = elem.AvailabilityZoneId
+		} else {
+			cr.Status.AtProvider.AvailabilityZoneID = nil
+		}
+		if elem.AvailabilityZoneName != nil {
+			cr.Spec.ForProvider.AvailabilityZoneName = elem.AvailabilityZoneName
+		} else {
+			cr.Spec.ForProvider.AvailabilityZoneName = nil
+		}
 		if elem.CreationTime != nil {
 			cr.Status.AtProvider.CreationTime = &metav1.Time{*elem.CreationTime}
 		} else {
@@ -106,36 +116,36 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 			cr.Spec.ForProvider.PerformanceMode = nil
 		}
 		if elem.SizeInBytes != nil {
-			f11 := &svcapitypes.FileSystemSize{}
+			f13 := &svcapitypes.FileSystemSize{}
 			if elem.SizeInBytes.Timestamp != nil {
-				f11.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
+				f13.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
 			}
 			if elem.SizeInBytes.Value != nil {
-				f11.Value = elem.SizeInBytes.Value
+				f13.Value = elem.SizeInBytes.Value
 			}
 			if elem.SizeInBytes.ValueInIA != nil {
-				f11.ValueInIA = elem.SizeInBytes.ValueInIA
+				f13.ValueInIA = elem.SizeInBytes.ValueInIA
 			}
 			if elem.SizeInBytes.ValueInStandard != nil {
-				f11.ValueInStandard = elem.SizeInBytes.ValueInStandard
+				f13.ValueInStandard = elem.SizeInBytes.ValueInStandard
 			}
-			cr.Status.AtProvider.SizeInBytes = f11
+			cr.Status.AtProvider.SizeInBytes = f13
 		} else {
 			cr.Status.AtProvider.SizeInBytes = nil
 		}
 		if elem.Tags != nil {
-			f12 := []*svcapitypes.Tag{}
-			for _, f12iter := range elem.Tags {
-				f12elem := &svcapitypes.Tag{}
-				if f12iter.Key != nil {
-					f12elem.Key = f12iter.Key
+			f14 := []*svcapitypes.Tag{}
+			for _, f14iter := range elem.Tags {
+				f14elem := &svcapitypes.Tag{}
+				if f14iter.Key != nil {
+					f14elem.Key = f14iter.Key
 				}
-				if f12iter.Value != nil {
-					f12elem.Value = f12iter.Value
+				if f14iter.Value != nil {
+					f14elem.Value = f14iter.Value
 				}
-				f12 = append(f12, f12elem)
+				f14 = append(f14, f14elem)
 			}
-			cr.Spec.ForProvider.Tags = f12
+			cr.Spec.ForProvider.Tags = f14
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}
@@ -158,6 +168,12 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 func GenerateCreateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.CreateFileSystemInput {
 	res := &svcsdk.CreateFileSystemInput{}
 
+	if cr.Spec.ForProvider.AvailabilityZoneName != nil {
+		res.SetAvailabilityZoneName(*cr.Spec.ForProvider.AvailabilityZoneName)
+	}
+	if cr.Spec.ForProvider.Backup != nil {
+		res.SetBackup(*cr.Spec.ForProvider.Backup)
+	}
 	if cr.Spec.ForProvider.Encrypted != nil {
 		res.SetEncrypted(*cr.Spec.ForProvider.Encrypted)
 	}
@@ -168,18 +184,18 @@ func GenerateCreateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.CreateFil
 		res.SetPerformanceMode(*cr.Spec.ForProvider.PerformanceMode)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := []*svcsdk.Tag{}
-		for _, f3iter := range cr.Spec.ForProvider.Tags {
-			f3elem := &svcsdk.Tag{}
-			if f3iter.Key != nil {
-				f3elem.SetKey(*f3iter.Key)
+		f5 := []*svcsdk.Tag{}
+		for _, f5iter := range cr.Spec.ForProvider.Tags {
+			f5elem := &svcsdk.Tag{}
+			if f5iter.Key != nil {
+				f5elem.SetKey(*f5iter.Key)
 			}
-			if f3iter.Value != nil {
-				f3elem.SetValue(*f3iter.Value)
+			if f5iter.Value != nil {
+				f5elem.SetValue(*f5iter.Value)
 			}
-			f3 = append(f3, f3elem)
+			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f3)
+		res.SetTags(f5)
 	}
 	if cr.Spec.ForProvider.ThroughputMode != nil {
 		res.SetThroughputMode(*cr.Spec.ForProvider.ThroughputMode)

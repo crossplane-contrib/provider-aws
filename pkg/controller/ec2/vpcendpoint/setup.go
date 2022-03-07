@@ -68,7 +68,7 @@ type custom struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointInput) error {
 	obj.VpcId = cr.Spec.ForProvider.VPCID
-
+	obj.ClientToken = awsclients.String(string(cr.UID))
 	// Clear SGs, RTs, and Subnets if they're empty
 	if len(cr.Spec.ForProvider.SecurityGroupIDs) == 0 {
 		obj.SecurityGroupIds = nil
@@ -113,7 +113,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.De
 		}
 	}
 
-	cr.Status.AtProvider.VPCEndpoint = generateVPCEndpointSDK(resp.VpcEndpoints[0])
+	cr.Status.AtProvider = generateVPCEndpointObservation(resp.VpcEndpoints[0])
 
 	switch awsclients.StringValue(resp.VpcEndpoints[0].State) {
 	case "available":
@@ -247,24 +247,24 @@ func filterList(cr *svcapitypes.VPCEndpoint, obj *svcsdk.DescribeVpcEndpointsOut
 	return resp
 }
 
-func generateVPCEndpointSDK(vpcEndpoint *svcsdk.VpcEndpoint) *svcapitypes.VPCEndpoint_SDK {
-	vpcEndpointSDK := &svcapitypes.VPCEndpoint_SDK{}
+func generateVPCEndpointObservation(vpcEndpoint *svcsdk.VpcEndpoint) svcapitypes.VPCEndpointObservation {
+	vpcEndpointObservation := svcapitypes.VPCEndpointObservation{}
 
 	// Mapping vpcEndpoint -> vpcEndpoint_SDK
-	vpcEndpointSDK.CreationTimestamp = &v1.Time{
+	vpcEndpointObservation.CreationTimestamp = &v1.Time{
 		Time: *vpcEndpoint.CreationTimestamp,
 	}
-	vpcEndpointSDK.DNSEntries = []*svcapitypes.DNSEntry{}
+	vpcEndpointObservation.DNSEntries = []*svcapitypes.DNSEntry{}
 	for _, dnsEntry := range vpcEndpoint.DnsEntries {
-		dnsEntrySDK := svcapitypes.DNSEntry{
+		dnsEntry := svcapitypes.DNSEntry{
 			DNSName:      dnsEntry.DnsName,
 			HostedZoneID: dnsEntry.HostedZoneId,
 		}
-		vpcEndpointSDK.DNSEntries = append(vpcEndpointSDK.DNSEntries, &dnsEntrySDK)
+		vpcEndpointObservation.DNSEntries = append(vpcEndpointObservation.DNSEntries, &dnsEntry)
 	}
-	vpcEndpointSDK.State = vpcEndpoint.State
+	vpcEndpointObservation.State = vpcEndpoint.State
 
-	return vpcEndpointSDK
+	return vpcEndpointObservation
 }
 
 // formatModifyVpcEndpointInput takes in a ModifyVpcEndpointInput, and sets

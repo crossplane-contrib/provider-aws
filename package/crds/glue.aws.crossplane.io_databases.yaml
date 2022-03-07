@@ -62,8 +62,8 @@ spec:
                 properties:
                   catalogID:
                     description: The ID of the Data Catalog in which to create the
-                      database. If none is provided, the AWS account ID is used by
-                      default.
+                      database. If none is provided, the Amazon Web Services account
+                      ID is used by default.
                     type: string
                   databaseInput:
                     description: The metadata for the database.

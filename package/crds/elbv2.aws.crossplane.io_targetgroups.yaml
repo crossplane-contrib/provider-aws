@@ -63,8 +63,8 @@ spec:
                   healthCheckEnabled:
                     description: Indicates whether health checks are enabled. If the
                       target type is lambda, health checks are disabled by default
-                      but can be enabled. If the target type is instance or ip, health
-                      checks are always enabled and cannot be disabled.
+                      but can be enabled. If the target type is instance, ip, or alb,
+                      health checks are always enabled and cannot be disabled.
                     type: boolean
                   healthCheckIntervalSeconds:
                     description: The approximate amount of time, in seconds, between
@@ -81,7 +81,7 @@ spec:
                       checks on the targets. \n [HTTP1 or HTTP2 protocol version]
                       The ping path. The default is /. \n [GRPC protocol version]
                       The path of a custom health check method with the format /package.service/method.
-                      The default is /AWS.ALB/healthcheck."
+                      The default is /Amazon Web Services.ALB/healthcheck."
                     type: string
                   healthCheckPort:
                     description: The port the load balancer uses when performing health
@@ -118,6 +118,11 @@ spec:
                       is 5.
                     format: int64
                     type: integer
+                  ipAddressType:
+                    description: The type of IP address used for this target group.
+                      The possible values are ipv4 and ipv6. This is an optional parameter.
+                      If not specified, the IP address type defaults to ipv4.
+                    type: string
                   matcher:
                     description: '[HTTP/HTTPS health checks] The HTTP or gRPC codes
                       to use when checking for a successful response from a target.'
@@ -179,7 +184,9 @@ spec:
                       (VPC) for the target group, the    RFC 1918 range (10.0.0.0/8,
                       172.16.0.0/12, and 192.168.0.0/16), and the    RFC 6598 range
                       (100.64.0.0/10). You can't specify publicly routable IP    addresses.
-                      \n    * lambda - Register a single Lambda function as a target."
+                      \n    * lambda - Register a single Lambda function as a target.
+                      \n    * alb - Register a single Application Load Balancer as
+                      a target."
                     type: string
                   unhealthyThresholdCount:
                     description: The number of consecutive health check failures required
@@ -294,6 +301,8 @@ spec:
                         healthyThresholdCount:
                           format: int64
                           type: integer
+                        ipAddressType:
+                          type: string
                         loadBalancerARNs:
                           items:
                             type: string

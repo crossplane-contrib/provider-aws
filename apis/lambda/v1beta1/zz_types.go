@@ -114,6 +114,8 @@ type FunctionCodeLocation struct {
 // +kubebuilder:skipversion
 type FunctionConfiguration struct {
 	
+	Architectures []*string `json:"architectures,omitempty"`
+	
 	CodeSHA256 *string `json:"codeSHA256,omitempty"`
 	
 	CodeSize *int64 `json:"codeSize,omitempty"`
@@ -170,7 +172,7 @@ type FunctionConfiguration struct {
 	StateReasonCode *string `json:"stateReasonCode,omitempty"`
 	
 	Timeout *int64 `json:"timeout,omitempty"`
-	// The function's AWS X-Ray tracing configuration.
+	// The function's X-Ray tracing configuration.
 	TracingConfig *TracingConfigResponse `json:"tracingConfig,omitempty"`
 	
 	Version *string `json:"version,omitempty"`

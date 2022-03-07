@@ -4,11 +4,10 @@ metadata:
   name: example-cluster
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     availabilityZones:
-      - eu-central-1a
-      # - eu-central-1b
-      - eu-central-1c
+      - us-east-1b
+      - us-east-1c
     dbClusterParameterGroupName: example-parameter-group
     dbSubnetGroupName: example-subnet-group
     engine: docdb
@@ -18,10 +17,19 @@ spec:
       namespace: crossplane-system
       name: my-docdb-creds
       key: password
-    vpcSecurityGroupIDs:
-      - sample-security-group
+    vpcSecurityGroupIDsRefs:
+      - name: sample-cluster-sg
     tags:
       - key: cluster
         value: "my-cluster"
   providerConfigRef:
     name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-docdb-creds
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

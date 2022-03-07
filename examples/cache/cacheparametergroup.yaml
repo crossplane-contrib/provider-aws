@@ -1,0 +1,11 @@
+apiVersion: elasticache.aws.crossplane.io/v1alpha1
+kind: CacheParameterGroup
+metadata:
+  name: cache-parameter-group
+spec:
+  forProvider:
+    region: us-east-1
+    cacheParameterGroupFamily: memcached1.6
+    description: cache-parameter-group
+  providerConfigRef:
+    name: example

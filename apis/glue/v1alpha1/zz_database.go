@@ -30,7 +30,7 @@ type DatabaseParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The ID of the Data Catalog in which to create the database. If none is provided,
-	// the AWS account ID is used by default.
+	// the Amazon Web Services account ID is used by default.
 	CatalogID                *string `json:"catalogID,omitempty"`
 	CustomDatabaseParameters `json:",inline"`
 }

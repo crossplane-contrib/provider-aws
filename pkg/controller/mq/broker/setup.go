@@ -36,6 +36,7 @@ func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 			e.preObserve = preObserve
 			e.preDelete = preDelete
 			e.postObserve = c.postObserve
+			e.lateInitialize = LateInitialize
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -130,4 +131,19 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 
 	meta.SetExternalName(cr, awsclients.StringValue(obj.BrokerId))
 	return cre, nil
+}
+
+// LateInitialize fills the empty fields in *svcapitypes.BrokerParameters with
+// the values seen in svcsdk.DescribeBrokerResponse.
+// nolint:gocyclo
+func LateInitialize(cr *svcapitypes.BrokerParameters, obj *svcsdk.DescribeBrokerResponse) error {
+	if cr.AutoMinorVersionUpgrade == nil && obj.AutoMinorVersionUpgrade != nil {
+		cr.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, obj.AutoMinorVersionUpgrade)
+	}
+
+	if cr.PubliclyAccessible == nil && obj.PubliclyAccessible != nil {
+		cr.PubliclyAccessible = awsclients.LateInitializeBoolPtr(cr.PubliclyAccessible, obj.PubliclyAccessible)
+	}
+
+	return nil
 }

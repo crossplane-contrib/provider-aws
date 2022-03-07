@@ -30,8 +30,8 @@ type DBClusterParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// A list of Availability Zones (AZs) where instances in the DB cluster can
-	// be created. For information on AWS Regions and Availability Zones, see Choosing
-	// the Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html)
+	// be created. For information on Amazon Web Services Regions and Availability
+	// Zones, see Choosing the Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html)
 	// in the Amazon Aurora User Guide.
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 	// The target backtrack window, in seconds. To disable backtracking, set this
@@ -107,7 +107,7 @@ type DBClusterParameters struct {
 	//
 	// Aurora PostgreSQL
 	//
-	// Possible values are postgresql and upgrade.
+	// Possible value is postgresql.
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
 	// A value that indicates whether to enable this DB cluster to forward write
 	// operations to the primary cluster of an Aurora global database (GlobalCluster).
@@ -131,8 +131,9 @@ type DBClusterParameters struct {
 	// For more information, see Using the Data API for Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	EnableHTTPEndpoint *bool `json:"enableHTTPEndpoint,omitempty"`
-	// A value that indicates whether to enable mapping of AWS Identity and Access
-	// Management (IAM) accounts to database accounts. By default, mapping is disabled.
+	// A value that indicates whether to enable mapping of Amazon Web Services Identity
+	// and Access Management (IAM) accounts to database accounts. By default, mapping
+	// is disabled.
 	//
 	// For more information, see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
 	// in the Amazon Aurora User Guide.
@@ -197,27 +198,29 @@ type DBClusterParameters struct {
 	// The global cluster ID of an Aurora cluster that becomes the primary cluster
 	// in the new global database cluster.
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
-	// The AWS KMS key identifier for an encrypted DB cluster.
+	// The Amazon Web Services KMS key identifier for an encrypted DB cluster.
 	//
-	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
-	// for the AWS KMS customer master key (CMK). To use a CMK in a different AWS
-	// account, specify the key ARN or alias ARN.
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+	// Web Services account, specify the key ARN or alias ARN.
 	//
-	// When a CMK isn't specified in KmsKeyId:
+	// When a KMS key isn't specified in KmsKeyId:
 	//
 	//    * If ReplicationSourceIdentifier identifies an encrypted source, then
-	//    Amazon RDS will use the CMK used to encrypt the source. Otherwise, Amazon
-	//    RDS will use your default CMK.
+	//    Amazon RDS will use the KMS key used to encrypt the source. Otherwise,
+	//    Amazon RDS will use your default KMS key.
 	//
 	//    * If the StorageEncrypted parameter is enabled and ReplicationSourceIdentifier
-	//    isn't specified, then Amazon RDS will use your default CMK.
+	//    isn't specified, then Amazon RDS will use your default KMS key.
 	//
-	// There is a default CMK for your AWS account. Your AWS account has a different
-	// default CMK for each AWS Region.
+	// There is a default KMS key for your Amazon Web Services account. Your Amazon
+	// Web Services account has a different default KMS key for each Amazon Web
+	// Services Region.
 	//
-	// If you create a read replica of an encrypted DB cluster in another AWS Region,
-	// you must set KmsKeyId to a AWS KMS key identifier that is valid in the destination
-	// AWS Region. This CMK is used to encrypt the read replica in that AWS Region.
+	// If you create a read replica of an encrypted DB cluster in another Amazon
+	// Web Services Region, you must set KmsKeyId to a KMS key identifier that is
+	// valid in the destination Amazon Web Services Region. This KMS key is used
+	// to encrypt the read replica in that Amazon Web Services Region.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The name of the master user for the DB cluster.
 	//
@@ -240,46 +243,49 @@ type DBClusterParameters struct {
 	// Default: 3306 if engine is set as aurora or 5432 if set to aurora-postgresql.
 	Port *int64 `json:"port,omitempty"`
 	// A URL that contains a Signature Version 4 signed request for the CreateDBCluster
-	// action to be called in the source AWS Region where the DB cluster is replicated
-	// from. You only need to specify PreSignedUrl when you are performing cross-region
-	// replication from an encrypted DB cluster.
+	// action to be called in the source Amazon Web Services Region where the DB
+	// cluster is replicated from. You only need to specify PreSignedUrl when you
+	// are performing cross-region replication from an encrypted DB cluster.
 	//
 	// The pre-signed URL must be a valid request for the CreateDBCluster API action
-	// that can be executed in the source AWS Region that contains the encrypted
-	// DB cluster to be copied.
+	// that can be executed in the source Amazon Web Services Region that contains
+	// the encrypted DB cluster to be copied.
 	//
 	// The pre-signed URL request must contain the following parameter values:
 	//
-	//    * KmsKeyId - The AWS KMS key identifier for the key to use to encrypt
-	//    the copy of the DB cluster in the destination AWS Region. This should
-	//    refer to the same AWS KMS CMK for both the CreateDBCluster action that
-	//    is called in the destination AWS Region, and the action contained in the
-	//    pre-signed URL.
+	//    * KmsKeyId - The Amazon Web Services KMS key identifier for the KMS key
+	//    to use to encrypt the copy of the DB cluster in the destination Amazon
+	//    Web Services Region. This should refer to the same KMS key for both the
+	//    CreateDBCluster action that is called in the destination Amazon Web Services
+	//    Region, and the action contained in the pre-signed URL.
 	//
-	//    * DestinationRegion - The name of the AWS Region that Aurora read replica
-	//    will be created in.
+	//    * DestinationRegion - The name of the Amazon Web Services Region that
+	//    Aurora read replica will be created in.
 	//
 	//    * ReplicationSourceIdentifier - The DB cluster identifier for the encrypted
 	//    DB cluster to be copied. This identifier must be in the Amazon Resource
-	//    Name (ARN) format for the source AWS Region. For example, if you are copying
-	//    an encrypted DB cluster from the us-west-2 AWS Region, then your ReplicationSourceIdentifier
-	//    would look like Example: arn:aws:rds:us-west-2:123456789012:cluster:aurora-cluster1.
+	//    Name (ARN) format for the source Amazon Web Services Region. For example,
+	//    if you are copying an encrypted DB cluster from the us-west-2 Amazon Web
+	//    Services Region, then your ReplicationSourceIdentifier would look like
+	//    Example: arn:aws:rds:us-west-2:123456789012:cluster:aurora-cluster1.
 	//
 	// To learn how to generate a Signature Version 4 signed request, see Authenticating
-	// Requests: Using Query Parameters (AWS Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
+	// Requests: Using Query Parameters (Amazon Web Services Signature Version 4)
+	// (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
 	// and Signature Version 4 Signing Process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 	//
-	// If you are using an AWS SDK tool or the AWS CLI, you can specify SourceRegion
-	// (or --source-region for the AWS CLI) instead of specifying PreSignedUrl manually.
-	// Specifying SourceRegion autogenerates a pre-signed URL that is a valid request
-	// for the operation that can be executed in the source AWS Region.
+	// If you are using an Amazon Web Services SDK tool or the CLI, you can specify
+	// SourceRegion (or --source-region for the CLI) instead of specifying PreSignedUrl
+	// manually. Specifying SourceRegion autogenerates a pre-signed URL that is
+	// a valid request for the operation that can be executed in the source Amazon
+	// Web Services Region.
 	PreSignedURL *string `json:"preSignedURL,omitempty"`
 	// The daily time range during which automated backups are created if automated
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region. To see the time blocks available, see Adjusting
-	// the Preferred DB Cluster Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow.Aurora)
+	// of time for each Amazon Web Services Region. To view the time blocks available,
+	// see Backup window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.Backups.BackupWindow)
 	// in the Amazon Aurora User Guide.
 	//
 	// Constraints:
@@ -298,9 +304,9 @@ type DBClusterParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region, occurring on a random day of the week. To see
-	// the time blocks available, see Adjusting the Preferred DB Cluster Maintenance
-	// Window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow.Aurora)
+	// of time for each Amazon Web Services Region, occurring on a random day of
+	// the week. To see the time blocks available, see Adjusting the Preferred DB
+	// Cluster Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow.Aurora)
 	// in the Amazon Aurora User Guide.
 	//
 	// Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
@@ -335,11 +341,11 @@ type DBClusterObservation struct {
 	// The name of the Amazon Kinesis data stream used for the database activity
 	// stream.
 	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
-	// The AWS KMS key identifier used for encrypting messages in the database activity
-	// stream.
+	// The Amazon Web Services KMS key identifier used for encrypting messages in
+	// the database activity stream.
 	//
-	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
-	// for the AWS KMS customer master key (CMK).
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key.
 	ActivityStreamKMSKeyID *string `json:"activityStreamKMSKeyID,omitempty"`
 	// The mode of the database activity stream. Database events such as a change
 	// or access generate an activity stream event. The database session can handle
@@ -352,11 +358,13 @@ type DBClusterObservation struct {
 	// always returns 1, because Aurora DB cluster storage size isn't fixed, but
 	// instead automatically adjusts as needed.
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
-	// Provides a list of the AWS Identity and Access Management (IAM) roles that
-	// are associated with the DB cluster. IAM roles that are associated with a
-	// DB cluster grant permission for the DB cluster to access other AWS services
-	// on your behalf.
+	// Provides a list of the Amazon Web Services Identity and Access Management
+	// (IAM) roles that are associated with the DB cluster. IAM roles that are associated
+	// with a DB cluster grant permission for the DB cluster to access other Amazon
+	// Web Services on your behalf.
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
+	// The time when a stopped DB cluster is restarted automatically.
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
 	// The number of change records stored for Backtrack.
 	BacktrackConsumedChangeRecords *int64 `json:"backtrackConsumedChangeRecords,omitempty"`
 	// The current capacity of an Aurora Serverless DB cluster. The capacity is
@@ -372,7 +380,7 @@ type DBClusterObservation struct {
 	// Time (UTC).
 	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`
 	// Specifies whether the DB cluster is a clone of a DB cluster owned by a different
-	// AWS account.
+	// Amazon Web Services account.
 	CrossAccountClone *bool `json:"crossAccountClone,omitempty"`
 	// Identifies all custom endpoints associated with the cluster.
 	CustomEndpoints []*string `json:"customEndpoints,omitempty"`
@@ -390,9 +398,9 @@ type DBClusterObservation struct {
 	// Specifies information on the subnet group associated with the DB cluster,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
-	// The AWS Region-unique, immutable identifier for the DB cluster. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS CMK for the DB
-	// cluster is accessed.
+	// The Amazon Web Services Region-unique, immutable identifier for the DB cluster.
+	// This identifier is found in Amazon Web Services CloudTrail log entries whenever
+	// the KMS key for the DB cluster is accessed.
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 	// The Active Directory Domain membership records associated with the DB cluster.
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
@@ -431,8 +439,8 @@ type DBClusterObservation struct {
 	// For more information, see Using the Data API for Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	HTTPEndpointEnabled *bool `json:"httpEndpointEnabled,omitempty"`
-	// A value that indicates whether the mapping of AWS Identity and Access Management
-	// (IAM) accounts to database accounts is enabled.
+	// A value that indicates whether the mapping of Amazon Web Services Identity
+	// and Access Management (IAM) accounts to database accounts is enabled.
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.

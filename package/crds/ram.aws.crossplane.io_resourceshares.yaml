@@ -62,8 +62,8 @@ spec:
                   ResourceShare
                 properties:
                   allowExternalPrincipals:
-                    description: Indicates whether principals outside your AWS organization
-                      can be associated with a resource share.
+                    description: Indicates whether principals outside your organization
+                      in Organizations can be associated with a resource share.
                     type: boolean
                   clientToken:
                     description: A unique, case-sensitive identifier that you provide
@@ -73,17 +73,24 @@ spec:
                     description: The name of the resource share.
                     type: string
                   permissionARNs:
-                    description: The ARNs of the permissions to associate with the
-                      resource share. If you do not specify an ARN for the permission,
-                      AWS RAM automatically attaches the default version of the permission
-                      for each resource type.
+                    description: The Amazon Resource Names (ARNs) of the permissions
+                      to associate with the resource share. If you do not specify
+                      an ARN for the permission, RAM automatically attaches the default
+                      version of the permission for each resource type. Only one permission
+                      can be associated with each resource type in a resource share.
                     items:
                       type: string
                     type: array
                   principals:
-                    description: The principals to associate with the resource share.
-                      The possible values are IDs of AWS accounts, the ARN of an OU
-                      or organization from AWS Organizations.
+                    description: "The principals to associate with the resource share.
+                      The possible values are: \n    * An Amazon Web Services account
+                      ID \n    * An Amazon Resource Name (ARN) of an organization
+                      in Organizations \n    * An ARN of an organizational unit (OU)
+                      in Organizations \n    * An ARN of an IAM role \n    * An ARN
+                      of an IAM user \n Not all resource types can be shared with
+                      IAM roles and IAM users. For more information, see Sharing with
+                      IAM roles and IAM users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)
+                      in the Resource Access Manager User Guide."
                     items:
                       type: string
                     type: array
@@ -92,8 +99,8 @@ spec:
                       created.
                     type: string
                   resourceARNs:
-                    description: The Amazon Resource Names (ARN) of the resources
-                      to associate with the resource share.
+                    description: The ARNs of the resources to associate with the resource
+                      share.
                     items:
                       type: string
                     type: array

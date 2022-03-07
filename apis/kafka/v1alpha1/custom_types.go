@@ -26,15 +26,6 @@ type CustomConfigurationParameters struct {
 
 // CustomClusterParameters contains the additional fields for ClusterParameters.
 type CustomClusterParameters struct {
-
-	// The connection string to use to connect to the Apache ZooKeeper cluster.
-	// +optional
-	ZookeeperConnectString *string `json:"zookeeperConnectString,omitempty"`
-
-	// The connection string to use to connect to zookeeper cluster on Tls port.
-	// +optional
-	ZookeeperConnectStringTLS *string `json:"zookeeperConnectStringTLS,omitempty"`
-
 	// Information about the brokers
 	CustomBrokerNodeGroupInfo *CustomBrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
 

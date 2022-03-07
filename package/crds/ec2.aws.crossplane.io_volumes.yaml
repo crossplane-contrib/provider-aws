@@ -82,10 +82,10 @@ spec:
                       at which the volume accumulates I/O credits for bursting. \n
                       The following are the supported values for each volume type:
                       \n    * gp3: 3,000-16,000 IOPS \n    * io1: 100-64,000 IOPS
-                      \n    * io2: 100-64,000 IOPS \n For io1 and io2 volumes, we
-                      guarantee 64,000 IOPS only for Instances built on the Nitro
-                      System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-                      Other instance families guarantee performance up to 32,000 IOPS.
+                      \n    * io2: 100-64,000 IOPS \n io1 and io2 volumes support
+                      up to 64,000 IOPS only on Instances built on the Nitro System
+                      (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+                      Other instance families support performance up to 32,000 IOPS.
                       \n This parameter is required for io1 and io2 volumes. The default
                       for gp3 volumes is 3,000 IOPS. This parameter is not supported
                       for gp2, st1, sc1, or standard volumes."
@@ -274,9 +274,9 @@ spec:
                       snapshot restore.
                     type: boolean
                   kmsKeyID:
-                    description: The Amazon Resource Name (ARN) of the AWS Key Management
-                      Service (AWS KMS) customer master key (CMK) that was used to
-                      protect the volume encryption key for the volume.
+                    description: The Amazon Resource Name (ARN) of the Key Management
+                      Service (KMS) KMS key that was used to protect the volume encryption
+                      key for the volume.
                     type: string
                   state:
                     description: The volume state.

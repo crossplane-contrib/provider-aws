@@ -4,7 +4,7 @@ metadata:
   name: example-parameter-group
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     dbParameterGroupFamily: docdb4.0
     description: "Example parameter group"
     parameters:

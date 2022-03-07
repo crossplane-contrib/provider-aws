@@ -300,6 +300,10 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 			}
 		}
 	}
+	if in.AutomaticRestartTime != nil {
+		in, out := &in.AutomaticRestartTime, &out.AutomaticRestartTime
+		*out = (*in).DeepCopy()
+	}
 	if in.CloneGroupID != nil {
 		in, out := &in.CloneGroupID, &out.CloneGroupID
 		*out = new(string)
@@ -308,6 +312,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 	if in.ClusterCreateTime != nil {
 		in, out := &in.ClusterCreateTime, &out.ClusterCreateTime
 		*out = (*in).DeepCopy()
+	}
+	if in.CrossAccountClone != nil {
+		in, out := &in.CrossAccountClone, &out.CrossAccountClone
+		*out = new(bool)
+		**out = **in
 	}
 	if in.DBClusterARN != nil {
 		in, out := &in.DBClusterARN, &out.DBClusterARN
@@ -528,6 +537,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CopyTagsToSnapshot != nil {
+		in, out := &in.CopyTagsToSnapshot, &out.CopyTagsToSnapshot
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DBClusterParameterGroupName != nil {
 		in, out := &in.DBClusterParameterGroupName, &out.DBClusterParameterGroupName
 		*out = new(string)
@@ -546,6 +560,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)
+		**out = **in
+	}
+	if in.DestinationRegion != nil {
+		in, out := &in.DestinationRegion, &out.DestinationRegion
+		*out = new(string)
 		**out = **in
 	}
 	if in.EnableCloudwatchLogsExports != nil {
@@ -616,6 +635,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 	}
 	if in.ReplicationSourceIdentifier != nil {
 		in, out := &in.ReplicationSourceIdentifier, &out.ReplicationSourceIdentifier
+		*out = new(string)
+		**out = **in
+	}
+	if in.SourceRegion != nil {
+		in, out := &in.SourceRegion, &out.SourceRegion
 		*out = new(string)
 		**out = **in
 	}
@@ -886,6 +910,10 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 			}
 		}
 	}
+	if in.AutomaticRestartTime != nil {
+		in, out := &in.AutomaticRestartTime, &out.AutomaticRestartTime
+		*out = (*in).DeepCopy()
+	}
 	if in.AvailabilityZones != nil {
 		in, out := &in.AvailabilityZones, &out.AvailabilityZones
 		*out = make([]*string, len(*in))
@@ -915,6 +943,16 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 	if in.ClusterCreateTime != nil {
 		in, out := &in.ClusterCreateTime, &out.ClusterCreateTime
 		*out = (*in).DeepCopy()
+	}
+	if in.CopyTagsToSnapshot != nil {
+		in, out := &in.CopyTagsToSnapshot, &out.CopyTagsToSnapshot
+		*out = new(bool)
+		**out = **in
+	}
+	if in.CrossAccountClone != nil {
+		in, out := &in.CrossAccountClone, &out.CrossAccountClone
+		*out = new(bool)
+		**out = **in
 	}
 	if in.DBClusterARN != nil {
 		in, out := &in.DBClusterARN, &out.DBClusterARN

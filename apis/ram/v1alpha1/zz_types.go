@@ -80,6 +80,8 @@ type ResourceShareInvitation struct {
 
 	ReceiverAccountID *string `json:"receiverAccountID,omitempty"`
 
+	ReceiverARN *string `json:"receiverARN,omitempty"`
+
 	ResourceShareARN *string `json:"resourceShareARN,omitempty"`
 
 	ResourceShareInvitationARN *string `json:"resourceShareInvitationARN,omitempty"`
@@ -96,6 +98,8 @@ type ResourceSharePermissionDetail struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	DefaultVersion *bool `json:"defaultVersion,omitempty"`
+
+	IsResourceTypeDefault *bool `json:"isResourceTypeDefault,omitempty"`
 
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 
@@ -115,6 +119,8 @@ type ResourceSharePermissionSummary struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	DefaultVersion *bool `json:"defaultVersion,omitempty"`
+
+	IsResourceTypeDefault *bool `json:"isResourceTypeDefault,omitempty"`
 
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 

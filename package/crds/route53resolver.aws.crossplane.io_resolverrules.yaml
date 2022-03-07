@@ -131,7 +131,7 @@ spec:
                   targetIPs:
                     description: "The IPs that you want Resolver to forward DNS queries
                       to. You can specify only IPv4 addresses. Separate IP addresses
-                      with a comma. \n TargetIps is available only when the value
+                      with a space. \n TargetIps is available only when the value
                       of Rule type is FORWARD."
                     items:
                       properties:
@@ -209,7 +209,7 @@ spec:
                   creatorRequestID:
                     description: A unique string that you specified when you created
                       the Resolver rule. CreatorRequestId identifies the request and
-                      allows failed requests to be retried without the risk of executing
+                      allows failed requests to be retried without the risk of running
                       the operation twice.
                     type: string
                   id:
@@ -222,11 +222,12 @@ spec:
                       (UTC).
                     type: string
                   ownerID:
-                    description: When a rule is shared with another AWS account, the
-                      account ID of the account that the rule is shared with.
+                    description: When a rule is shared with another Amazon Web Services
+                      account, the account ID of the account that the rule is shared
+                      with.
                     type: string
                   shareStatus:
-                    description: Whether the rules is shared and, if so, whether the
+                    description: Whether the rule is shared and, if so, whether the
                       current account is sharing the rule with another account, or
                       another account is sharing the rule with the current account.
                     type: string

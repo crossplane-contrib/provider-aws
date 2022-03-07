@@ -92,7 +92,27 @@ type Certificate struct {
 type Compatibility struct {
 	ClusterVersion *string `json:"clusterVersion,omitempty"`
 
+	DefaultVersion *bool `json:"defaultVersion,omitempty"`
+
 	PlatformVersions []*string `json:"platformVersions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConnectorConfigRequest struct {
+	RoleARN *string `json:"roleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConnectorConfigResponse struct {
+	ActivationCode *string `json:"activationCode,omitempty"`
+
+	ActivationExpiry *metav1.Time `json:"activationExpiry,omitempty"`
+
+	ActivationID *string `json:"activationID,omitempty"`
+
+	Provider *string `json:"provider,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -236,6 +256,10 @@ type VPCConfigRequest struct {
 // +kubebuilder:skipversion
 type VPCConfigResponse struct {
 	ClusterSecurityGroupID *string `json:"clusterSecurityGroupID,omitempty"`
+
+	EndpointPrivateAccess *bool `json:"endpointPrivateAccess,omitempty"`
+
+	EndpointPublicAccess *bool `json:"endpointPublicAccess,omitempty"`
 
 	PublicAccessCIDRs []*string `json:"publicAccessCIDRs,omitempty"`
 
