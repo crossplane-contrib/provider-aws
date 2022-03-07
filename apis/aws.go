@@ -57,6 +57,7 @@ import (
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	prometheusservice "github.com/crossplane/provider-aws/apis/prometheusservice/v1alpha1"
 	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
@@ -133,6 +134,7 @@ func init() {
 		kinesisv1alpha1.SchemeBuilder.AddToScheme,
 		neptunev1alpha1.SchemeBuilder.AddToScheme,
 		snsv1beta1.SchemeBuilder.AddToScheme,
+		prometheusservice.SchemeBuilder.AddToScheme,
 	)
 }
 
