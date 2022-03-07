@@ -20,6 +20,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
@@ -128,5 +129,40 @@ func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 		f(cr)
 	}
 	meta.SetExternalName(cr, BucketName)
+	return cr
+}
+
+// Object creates a v1beta1 Object for use in testing
+func Object(key, body string, condition xpv1.ConditionReason) *v1alpha1.Object {
+	cr := &v1alpha1.Object{
+		Spec: v1alpha1.ObjectSpec{
+			ForProvider: v1alpha1.ObjectParameters{
+				Region:           Region,
+				ACL:              &acl,
+				Key:              &key,
+				Body:             &body,
+				GrantFullControl: &grantFullControl,
+				GrantRead:        &grantRead,
+				GrantReadACP:     &grantReadACP,
+				GrantWriteACP:    &grantWriteACP,
+			},
+		},
+	}
+	meta.SetExternalName(cr, BucketName)
+	switch condition {
+	case xpv1.ReasonAvailable:
+		c := xpv1.Available()
+		cr.Status.ConditionedStatus.Conditions = []xpv1.Condition{c}
+	case xpv1.ReasonCreating:
+		c := xpv1.Creating()
+		cr.Status.ConditionedStatus.Conditions = []xpv1.Condition{c}
+	case xpv1.ReasonDeleting:
+		c := xpv1.Deleting()
+		cr.Status.ConditionedStatus.Conditions = []xpv1.Condition{c}
+	case xpv1.ReasonReconcileError:
+	case xpv1.ReasonReconcileSuccess:
+	case xpv1.ReasonUnavailable:
+	default:
+	}
 	return cr
 }

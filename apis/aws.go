@@ -63,6 +63,7 @@ import (
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	route53resolvermanualv1alpha1 "github.com/crossplane/provider-aws/apis/route53resolver/manualv1alpha1"
 	route53resolverv1alpha1 "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
+	s3v1alpha1 "github.com/crossplane/provider-aws/apis/s3/v1alpha1"
 	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	secretsmanagerv1alpha1 "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
@@ -96,6 +97,7 @@ func init() {
 		acmv1beta1.SchemeBuilder.AddToScheme,
 		s3v1alpha2.SchemeBuilder.AddToScheme,
 		s3v1beta1.SchemeBuilder.AddToScheme,
+		s3v1alpha1.SchemeBuilder.AddToScheme,
 		secretsmanagerv1alpha1.SchemeBuilder.AddToScheme,
 		secretsmanagerv1beta1.SchemeBuilder.AddToScheme,
 		servicediscoveryv1alpha1.SchemeBuilder.AddToScheme,

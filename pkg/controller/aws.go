@@ -22,8 +22,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
@@ -135,6 +133,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverruleassociation"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/object"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
@@ -146,6 +145,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 	transferserver "github.com/crossplane/provider-aws/pkg/controller/transfer/server"
 	transferuser "github.com/crossplane/provider-aws/pkg/controller/transfer/user"
+
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -169,6 +170,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
+		object.SetupObject,
 		accesskey.SetupAccessKey,
 		user.SetupUser,
 		group.SetupGroup,

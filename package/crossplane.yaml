@@ -54,6 +54,7 @@ metadata:
     friendly-kind-name.meta.crossplane.io/backup.dynamodb.aws.crossplane.io: Backup
     friendly-kind-name.meta.crossplane.io/bucketpolicy.s3.aws.crossplane.io: Bucket Policy
     friendly-kind-name.meta.crossplane.io/bucket.s3.aws.crossplane.io: Bucket
+    friendly-kind-name.meta.crossplane.io/object.s3.aws.crossplane.io: Object
     friendly-kind-name.meta.crossplane.io/cachecluster.cache.aws.crossplane.io: Cache Cluster
     friendly-kind-name.meta.crossplane.io/cachesubnetgroup.cache.aws.crossplane.io: Cache Subnet Group
     friendly-kind-name.meta.crossplane.io/certificateauthority.acmpca.aws.crossplane.io: CA
