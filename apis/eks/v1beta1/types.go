@@ -247,6 +247,9 @@ type ClusterObservation struct {
 	// The endpoint for your Kubernetes API server.
 	Endpoint string `json:"endpoint,omitempty"`
 
+	// The Base64-encoded certificate data required to communicate with your cluster.
+	CertificateAuthorityData string `json:"certificateAuthorityData,omitempty"`
+
 	// The identity provider information for the cluster.
 	Identity Identity `json:"identity,omitempty"`
 
