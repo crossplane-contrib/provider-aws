@@ -30,8 +30,10 @@ type ConnectionParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The ID of the Data Catalog in which to create the connection. If none is
-	// provided, the AWS account ID is used by default.
-	CatalogID                  *string `json:"catalogID,omitempty"`
+	// provided, the Amazon Web Services account ID is used by default.
+	CatalogID *string `json:"catalogID,omitempty"`
+	// The tags you assign to the connection.
+	Tags                       map[string]*string `json:"tags,omitempty"`
 	CustomConnectionParameters `json:",inline"`
 }
 

@@ -31,7 +31,7 @@ type TargetGroupParameters struct {
 	Region string `json:"region"`
 	// Indicates whether health checks are enabled. If the target type is lambda,
 	// health checks are disabled by default but can be enabled. If the target type
-	// is instance or ip, health checks are always enabled and cannot be disabled.
+	// is instance, ip, or alb, health checks are always enabled and cannot be disabled.
 	HealthCheckEnabled *bool `json:"healthCheckEnabled,omitempty"`
 	// The approximate amount of time, in seconds, between health checks of an individual
 	// target. If the target group protocol is TCP, TLS, UDP, or TCP_UDP, the supported
@@ -44,7 +44,7 @@ type TargetGroupParameters struct {
 	// [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
 	//
 	// [GRPC protocol version] The path of a custom health check method with the
-	// format /package.service/method. The default is /AWS.ALB/healthcheck.
+	// format /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
 	HealthCheckPath *string `json:"healthCheckPath,omitempty"`
 	// The port the load balancer uses when performing health checks on targets.
 	// If the protocol is HTTP, HTTPS, TCP, TLS, UDP, or TCP_UDP, the default is
@@ -69,6 +69,10 @@ type TargetGroupParameters struct {
 	// HTTPS, the default is 5. For target groups with a protocol of TCP, TLS, or
 	// GENEVE, the default is 3. If the target type is lambda, the default is 5.
 	HealthyThresholdCount *int64 `json:"healthyThresholdCount,omitempty"`
+	// The type of IP address used for this target group. The possible values are
+	// ipv4 and ipv6. This is an optional parameter. If not specified, the IP address
+	// type defaults to ipv4.
+	IPAddressType *string `json:"ipAddressType,omitempty"`
 	// [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for
 	// a successful response from a target.
 	Matcher *Matcher `json:"matcher,omitempty"`
@@ -110,6 +114,8 @@ type TargetGroupParameters struct {
 	//    addresses.
 	//
 	//    * lambda - Register a single Lambda function as a target.
+	//
+	//    * alb - Register a single Application Load Balancer as a target.
 	TargetType *string `json:"targetType,omitempty"`
 	// The number of consecutive health check failures required before considering
 	// a target unhealthy. If the target group protocol is HTTP or HTTPS, the default

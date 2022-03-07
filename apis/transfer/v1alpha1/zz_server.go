@@ -29,11 +29,25 @@ type ServerParameters struct {
 	// Region is which region the Server will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-
+	// The domain of the storage system that is used for file transfers. There are
+	// two domains available: Amazon Simple Storage Service (Amazon S3) and Amazon
+	// Elastic File System (Amazon EFS). The default value is S3.
+	//
+	// After the server is created, the domain cannot be changed.
 	Domain *string `json:"domain,omitempty"`
-	// The type of VPC endpoint that you want your server to connect to. You can
-	// choose to connect to the public internet or a VPC endpoint. With a VPC endpoint,
-	// you can restrict access to your server and resources only within your VPC.
+	// The type of endpoint that you want your server to use. You can choose to
+	// make your server's endpoint publicly accessible (PUBLIC) or host it inside
+	// your VPC. With an endpoint that is hosted in a VPC, you can restrict access
+	// to your server and resources only within your VPC or choose to make it internet
+	// facing by attaching Elastic IP addresses directly to it.
+	//
+	// After May 19, 2021, you won't be able to create a server using EndpointType=VPC_ENDPOINT
+	// in your Amazon Web Services account if your account hasn't already done so
+	// before May 19, 2021. If you have already created servers with EndpointType=VPC_ENDPOINT
+	// in your Amazon Web Services account on or before May 19, 2021, you will not
+	// be affected. After this date, use EndpointType=VPC.
+	//
+	// For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
 	//
 	// It is recommended that you use VPC as the EndpointType. With this endpoint
 	// type, you have the option to directly associate up to three Elastic IPv4
@@ -50,18 +64,27 @@ type ServerParameters struct {
 	//
 	// For more information, see Change the host key for your SFTP-enabled server
 	// (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
-	// in the AWS Transfer Family User Guide.
+	// in the Amazon Web Services Transfer Family User Guide.
 	HostKey *string `json:"hostKey,omitempty"`
-	// Required when IdentityProviderType is set to API_GATEWAY. Accepts an array
-	// containing all of the information required to call a customer-supplied authentication
-	// API, including the API Gateway URL. Not required when IdentityProviderType
-	// is set to SERVICE_MANAGED.
+	// Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE or API_GATEWAY.
+	// Accepts an array containing all of the information required to use a directory
+	// in AWS_DIRECTORY_SERVICE or invoke a customer-supplied authentication API,
+	// including the API Gateway URL. Not required when IdentityProviderType is
+	// set to SERVICE_MANAGED.
 	IdentityProviderDetails *IdentityProviderDetails `json:"identityProviderDetails,omitempty"`
 	// Specifies the mode of authentication for a server. The default value is SERVICE_MANAGED,
-	// which allows you to store and access user credentials within the AWS Transfer
-	// Family service. Use the API_GATEWAY value to integrate with an identity provider
-	// of your choosing. The API_GATEWAY setting requires you to provide an API
-	// Gateway endpoint URL to call for authentication using the IdentityProviderDetails
+	// which allows you to store and access user credentials within the Amazon Web
+	// Services Transfer Family service.
+	//
+	// Use AWS_DIRECTORY_SERVICE to provide access to Active Directory groups in
+	// Amazon Web Services Managed Active Directory or Microsoft Active Directory
+	// in your on-premises environment or in Amazon Web Services using AD Connectors.
+	// This option also requires you to provide a Directory ID using the IdentityProviderDetails
+	// parameter.
+	//
+	// Use the API_GATEWAY value to integrate with an identity provider of your
+	// choosing. The API_GATEWAY setting requires you to provide an API Gateway
+	// endpoint URL to call for authentication using the IdentityProviderDetails
 	// parameter.
 	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 	// Specifies the file transfer protocol or protocols over which your file transfer
@@ -75,12 +98,12 @@ type ServerParameters struct {
 	//
 	//    * FTP (File Transfer Protocol): Unencrypted file transfer
 	//
-	// If you select FTPS, you must choose a certificate stored in AWS Certificate
-	// Manager (ACM) which will be used to identify your server when clients connect
-	// to it over FTPS.
+	// If you select FTPS, you must choose a certificate stored in Amazon Web Services
+	// Certificate Manager (ACM) which is used to identify your server when clients
+	// connect to it over FTPS.
 	//
 	// If Protocol includes either FTP or FTPS, then the EndpointType must be VPC
-	// and the IdentityProviderType must be API_GATEWAY.
+	// and the IdentityProviderType must be AWS_DIRECTORY_SERVICE or API_GATEWAY.
 	//
 	// If Protocol includes FTP, then AddressAllocationIds cannot be associated.
 	//
@@ -90,7 +113,10 @@ type ServerParameters struct {
 	// Specifies the name of the security policy that is attached to the server.
 	SecurityPolicyName *string `json:"securityPolicyName,omitempty"`
 	// Key-value pairs that can be used to group and search for servers.
-	Tags                   []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
+	// Specifies the workflow ID for the workflow to assign and the execution role
+	// used for executing the workflow.
+	WorkflowDetails        *WorkflowDetails `json:"workflowDetails,omitempty"`
 	CustomServerParameters `json:",inline"`
 }
 

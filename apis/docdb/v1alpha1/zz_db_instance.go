@@ -29,15 +29,14 @@ type DBInstanceParameters struct {
 	// Region is which region the DBInstance will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Indicates that minor engine upgrades are applied automatically to the instance
-	// during the maintenance window.
+	// This parameter does not apply to Amazon DocumentDB. Amazon DocumentDB does
+	// not perform minor version upgrades regardless of the value set.
 	//
-	// Default: true
+	// Default: false
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 	// The Amazon EC2 Availability Zone that the instance is created in.
 	//
-	// Default: A random, system-chosen Availability Zone in the endpoint's AWS
-	// Region.
+	// Default: A random, system-chosen Availability Zone in the endpoint's Region.
 	//
 	// Example: us-east-1d
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
@@ -55,7 +54,7 @@ type DBInstanceParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region, occurring on a random day of the week.
+	// of time for each Region, occurring on a random day of the week.
 	//
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
@@ -100,12 +99,12 @@ type DBInstanceObservation struct {
 	// Specifies information on the subnet group that is associated with the instance,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *DBSubnetGroup_SDK `json:"dbSubnetGroup,omitempty"`
-	// The AWS Region-unique, immutable identifier for the instance. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the instance
+	// The Region-unique, immutable identifier for the instance. This identifier
+	// is found in CloudTrail log entries whenever the KMS key for the instance
 	// is accessed.
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
-	// A list of log types that this instance is configured to export to Amazon
-	// CloudWatch Logs.
+	// A list of log types that this instance is configured to export to CloudWatch
+	// Logs.
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
 	// Specifies the connection endpoint.
 	Endpoint *Endpoint `json:"endpoint,omitempty"`
@@ -113,8 +112,7 @@ type DBInstanceObservation struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// Provides the date and time that the instance was created.
 	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
-	// If StorageEncrypted is true, the AWS KMS key identifier for the encrypted
-	// instance.
+	// If StorageEncrypted is true, the KMS key identifier for the encrypted instance.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.

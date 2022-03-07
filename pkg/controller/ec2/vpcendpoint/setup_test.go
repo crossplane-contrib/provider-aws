@@ -20,7 +20,6 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -40,7 +39,7 @@ const (
 type args struct {
 	vpcendpoint *fake.MockVPCEndpointClient
 	kube        client.Client
-	cr          *svcapitypes.VPCEndpoint
+	cr          *v1alpha1.VPCEndpoint
 }
 
 type vpcEndpointModifier func(*v1alpha1.VPCEndpoint)
@@ -71,7 +70,7 @@ func vpcEndpoint(m ...vpcEndpointModifier) *v1alpha1.VPCEndpoint {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *svcapitypes.VPCEndpoint
+		cr     *v1alpha1.VPCEndpoint
 		result managed.ExternalCreation
 		err    error
 	}
@@ -108,9 +107,7 @@ func TestCreate(t *testing.T) {
 					}),
 					withConditions(xpv1.Creating()),
 					withStatusAtProvider(v1alpha1.VPCEndpointObservation{
-						VPCEndpoint: &svcapitypes.VPCEndpoint_SDK{
-							VPCEndpointID: aws.String(testVPCEndpointID),
-						},
+						VPCEndpointID: aws.String(testVPCEndpointID),
 					}),
 				),
 			},
@@ -167,7 +164,7 @@ func TestCreate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *svcapitypes.VPCEndpoint
+		cr  *v1alpha1.VPCEndpoint
 		err error
 	}
 
@@ -252,7 +249,7 @@ func TestDelete(t *testing.T) {
 
 func TestModify(t *testing.T) {
 	type want struct {
-		cr     *svcapitypes.VPCEndpoint
+		cr     *v1alpha1.VPCEndpoint
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -366,7 +363,7 @@ func TestModify(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *svcapitypes.VPCEndpoint
+		cr     *v1alpha1.VPCEndpoint
 		result managed.ExternalObservation
 		err    error
 	}
@@ -408,11 +405,9 @@ func TestObserve(t *testing.T) {
 						},
 					}),
 					withConditions(xpv1.Available()),
-					withStatusAtProvider(svcapitypes.VPCEndpointObservation{
-						VPCEndpoint: &svcapitypes.VPCEndpoint_SDK{
-							CreationTimestamp: &v1.Time{},
-							DNSEntries:        []*svcapitypes.DNSEntry{},
-						},
+					withStatusAtProvider(v1alpha1.VPCEndpointObservation{
+						CreationTimestamp: &v1.Time{},
+						DNSEntries:        []*v1alpha1.DNSEntry{},
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -454,12 +449,10 @@ func TestObserve(t *testing.T) {
 						},
 					}),
 					withConditions(xpv1.Deleting()),
-					withStatusAtProvider(svcapitypes.VPCEndpointObservation{
-						VPCEndpoint: &svcapitypes.VPCEndpoint_SDK{
-							CreationTimestamp: &v1.Time{},
-							DNSEntries:        []*svcapitypes.DNSEntry{},
-							State:             aws.String("deleting"),
-						},
+					withStatusAtProvider(v1alpha1.VPCEndpointObservation{
+						CreationTimestamp: &v1.Time{},
+						DNSEntries:        []*v1alpha1.DNSEntry{},
+						State:             aws.String("deleting"),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -501,12 +494,10 @@ func TestObserve(t *testing.T) {
 						},
 					}),
 					withConditions(xpv1.Available()),
-					withStatusAtProvider(svcapitypes.VPCEndpointObservation{
-						VPCEndpoint: &svcapitypes.VPCEndpoint_SDK{
-							CreationTimestamp: &v1.Time{},
-							DNSEntries:        []*svcapitypes.DNSEntry{},
-							State:             aws.String("available"),
-						},
+					withStatusAtProvider(v1alpha1.VPCEndpointObservation{
+						CreationTimestamp: &v1.Time{},
+						DNSEntries:        []*v1alpha1.DNSEntry{},
+						State:             aws.String("available"),
 					}),
 				),
 				result: managed.ExternalObservation{

@@ -48,12 +48,19 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		f2 := &svcapitypes.ClientAuthentication{}
 		if resp.ClusterInfo.ClientAuthentication.Sasl != nil {
 			f2f0 := &svcapitypes.Sasl{}
-			if resp.ClusterInfo.ClientAuthentication.Sasl.Scram != nil {
-				f2f0f0 := &svcapitypes.Scram{}
-				if resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled != nil {
-					f2f0f0.Enabled = resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled
+			if resp.ClusterInfo.ClientAuthentication.Sasl.Iam != nil {
+				f2f0f0 := &svcapitypes.IAM{}
+				if resp.ClusterInfo.ClientAuthentication.Sasl.Iam.Enabled != nil {
+					f2f0f0.Enabled = resp.ClusterInfo.ClientAuthentication.Sasl.Iam.Enabled
 				}
-				f2f0.Scram = f2f0f0
+				f2f0.IAM = f2f0f0
+			}
+			if resp.ClusterInfo.ClientAuthentication.Sasl.Scram != nil {
+				f2f0f1 := &svcapitypes.Scram{}
+				if resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled != nil {
+					f2f0f1.Enabled = resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled
+				}
+				f2f0.Scram = f2f0f1
 			}
 			f2.Sasl = f2f0
 		}
@@ -68,7 +75,17 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 				}
 				f2f1.CertificateAuthorityARNList = f2f1f0
 			}
+			if resp.ClusterInfo.ClientAuthentication.Tls.Enabled != nil {
+				f2f1.Enabled = resp.ClusterInfo.ClientAuthentication.Tls.Enabled
+			}
 			f2.TLS = f2f1
+		}
+		if resp.ClusterInfo.ClientAuthentication.Unauthenticated != nil {
+			f2f2 := &svcapitypes.Unauthenticated{}
+			if resp.ClusterInfo.ClientAuthentication.Unauthenticated.Enabled != nil {
+				f2f2.Enabled = resp.ClusterInfo.ClientAuthentication.Unauthenticated.Enabled
+			}
+			f2.Unauthenticated = f2f2
 		}
 		cr.Spec.ForProvider.ClientAuthentication = f2
 	} else {
@@ -190,13 +207,13 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Status.AtProvider.State = nil
 	}
 	if resp.ClusterInfo.Tags != nil {
-		f14 := map[string]*string{}
-		for f14key, f14valiter := range resp.ClusterInfo.Tags {
-			var f14val string
-			f14val = *f14valiter
-			f14[f14key] = &f14val
+		f15 := map[string]*string{}
+		for f15key, f15valiter := range resp.ClusterInfo.Tags {
+			var f15val string
+			f15val = *f15valiter
+			f15[f15key] = &f15val
 		}
-		cr.Spec.ForProvider.Tags = f14
+		cr.Spec.ForProvider.Tags = f15
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -212,12 +229,19 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		f0 := &svcsdk.ClientAuthentication{}
 		if cr.Spec.ForProvider.ClientAuthentication.Sasl != nil {
 			f0f0 := &svcsdk.Sasl{}
-			if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram != nil {
-				f0f0f0 := &svcsdk.Scram{}
-				if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled != nil {
-					f0f0f0.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled)
+			if cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM != nil {
+				f0f0f0 := &svcsdk.Iam{}
+				if cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM.Enabled != nil {
+					f0f0f0.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM.Enabled)
 				}
-				f0f0.SetScram(f0f0f0)
+				f0f0.SetIam(f0f0f0)
+			}
+			if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram != nil {
+				f0f0f1 := &svcsdk.Scram{}
+				if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled != nil {
+					f0f0f1.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled)
+				}
+				f0f0.SetScram(f0f0f1)
 			}
 			f0.SetSasl(f0f0)
 		}
@@ -232,7 +256,17 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 				}
 				f0f1.SetCertificateAuthorityArnList(f0f1f0)
 			}
+			if cr.Spec.ForProvider.ClientAuthentication.TLS.Enabled != nil {
+				f0f1.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.TLS.Enabled)
+			}
 			f0.SetTls(f0f1)
+		}
+		if cr.Spec.ForProvider.ClientAuthentication.Unauthenticated != nil {
+			f0f2 := &svcsdk.Unauthenticated{}
+			if cr.Spec.ForProvider.ClientAuthentication.Unauthenticated.Enabled != nil {
+				f0f2.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Unauthenticated.Enabled)
+			}
+			f0.SetUnauthenticated(f0f2)
 		}
 		res.SetClientAuthentication(f0)
 	}

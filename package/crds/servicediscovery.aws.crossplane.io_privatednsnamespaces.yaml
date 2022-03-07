@@ -67,19 +67,35 @@ spec:
                     type: string
                   name:
                     description: The name that you want to assign to this namespace.
-                      When you create a private DNS namespace, AWS Cloud Map automatically
+                      When you create a private DNS namespace, Cloud Map automatically
                       creates an Amazon Route 53 private hosted zone that has the
                       same name as the namespace.
                     type: string
+                  properties:
+                    description: Properties for the private DNS namespace.
+                    properties:
+                      dnsProperties:
+                        description: DNS properties for the private DNS namespace.
+                        properties:
+                          sOA:
+                            description: Start of Authority (SOA) properties for a
+                              public or private DNS namespace.
+                            properties:
+                              tTL:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the PrivateDNSNamespace will
                       be created.
                     type: string
                   tags:
                     description: The tags to add to the namespace. Each tag consists
-                      of a key and an optional value, both of which you define. Tag
-                      keys can have a maximum character length of 128 characters,
-                      and tag values can have a maximum length of 256 characters.
+                      of a key and an optional value that you define. Tags keys can
+                      be up to 128 characters in length, and tag values can be up
+                      to 256 characters in length.
                     items:
                       properties:
                         key:

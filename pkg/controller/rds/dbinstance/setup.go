@@ -225,7 +225,11 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
 	in.LicenseModel = aws.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
-	in.MonitoringInterval = aws.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
+
+	if aws.Int64Value(db.MonitoringInterval) > 0 {
+		in.MonitoringInterval = aws.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
+	}
+
 	in.MonitoringRoleARN = aws.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
 	in.MultiAZ = aws.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
 	in.PerformanceInsightsKMSKeyID = aws.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)

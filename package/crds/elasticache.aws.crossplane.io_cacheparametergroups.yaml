@@ -87,6 +87,18 @@ spec:
                     description: Region is which region the CacheParameterGroup will
                       be created.
                     type: string
+                  tags:
+                    description: A list of tags to be added to this resource. A tag
+                      is a key-value pair. A tag key must be accompanied by a tag
+                      value, although null is accepted.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
                 required:
                 - cacheParameterGroupFamily
                 - description
@@ -152,7 +164,7 @@ spec:
                     type: string
                   isGlobal:
                     description: Indicates whether the parameter group is associated
-                      with a Global Datastore
+                      with a Global datastore
                     type: boolean
                 type: object
               conditions:

@@ -29,21 +29,27 @@ type SecretParameters struct {
 	// Region is which region the Secret will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// (Optional) Add a list of regions to replicate secrets. Secrets Manager replicates
+// the KMSKeyID objects to the list of regions specified in the parameter.
+	 AddReplicaRegions []*ReplicaRegionType `json:"addReplicaRegions,omitempty"` 
 	// (Optional) Specifies a user-provided description of the secret.
 	 Description *string `json:"description,omitempty"` 
-	// (Optional) Specifies the ARN, Key ID, or alias of the AWS KMS customer master
-// key (CMK) to be used to encrypt the SecretString or SecretBinary values in
-// the versions stored in this secret.
+	// (Optional) If set, the replication overwrites a secret with the same name
+// in the destination region.
+	 ForceOverwriteReplicaSecret *bool `json:"forceOverwriteReplicaSecret,omitempty"` 
+	// (Optional) Specifies the ARN, Key ID, or alias of the Amazon Web Services
+// KMS customer master key (CMK) to be used to encrypt the SecretString or SecretBinary
+// values in the versions stored in this secret.
 // 
-// You can specify any of the supported ways to identify a AWS KMS key ID. If
-// you need to reference a CMK in a different account, you can use only the
-// key ARN or the alias ARN.
+// You can specify any of the supported ways to identify a Amazon Web Services
+// KMS key ID. If you need to reference a CMK in a different account, you can
+// use only the key ARN or the alias ARN.
 // 
 // If you don't specify this value, then Secrets Manager defaults to using the
-// AWS account's default CMK (the one named aws/secretsmanager). If a AWS KMS
-// CMK with that name doesn't yet exist, then Secrets Manager creates it for
-// you automatically the first time it needs to encrypt a version's SecretString
-// or SecretBinary fields.
+// Amazon Web Services account's default CMK (the one named aws/secretsmanager).
+// If a Amazon Web Services KMS CMK with that name doesn't yet exist, then Secrets
+// Manager creates it for you automatically the first time it needs to encrypt
+// a version's SecretString or SecretBinary fields.
 // 
 // You can use the account default CMK to encrypt and decrypt only if you call
 // this operation using credentials from the same account that owns the secret.
@@ -66,7 +72,7 @@ type SecretParameters struct {
 // This parameter requires a JSON text string argument. For information on how
 // to format a JSON parameter for the various command line tool environments,
 // see Using JSON for Parameters (https://docs.aws.amazon.com/cli/latest/userguide/cli-using-param.html#cli-using-param-json)
-// in the AWS CLI User Guide. For example:
+// in the CLI User Guide. For example:
 // 
 // [{"Key":"CostCenter","Value":"12345"},{"Key":"environment","Value":"production"}]
 // 
@@ -84,10 +90,10 @@ type SecretParameters struct {
 // 
 //    * Tag keys and values are case sensitive.
 // 
-//    * Do not use the aws: prefix in your tag names or values because AWS reserves
-//    it for AWS use. You can't edit or delete tag names or values with this
-//    prefix. Tags with this prefix do not count against your tags per secret
-//    limit.
+//    * Do not use the aws: prefix in your tag names or values because Amazon
+//    Web Services reserves it for Amazon Web Services use. You can't edit or
+//    delete tag names or values with this prefix. Tags with this prefix do
+//    not count against your tags per secret limit.
 // 
 //    * If you use your tagging schema across multiple services and resources,
 //    remember other services might have restrictions on allowed characters.
@@ -114,6 +120,8 @@ type SecretObservation struct {
 // then users with access to the old secret don't automatically get access to
 // the new secret because the ARNs are different.
 	ARN *string `json:"arn,omitempty"`
+	// Describes a list of replication status objects as InProgress, Failed or InSync.
+	ReplicationStatus []*ReplicationStatusType `json:"replicationStatus,omitempty"`
 }
 
 // SecretStatus defines the observed state of Secret.

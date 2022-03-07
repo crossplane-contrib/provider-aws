@@ -170,32 +170,10 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 	} else {
 		cr.Spec.ForProvider.PubliclyAccessible = nil
 	}
-	if resp.SecurityGroups != nil {
-		f23 := []*string{}
-		for _, f23iter := range resp.SecurityGroups {
-			var f23elem string
-			f23elem = *f23iter
-			f23 = append(f23, &f23elem)
-		}
-		cr.Spec.ForProvider.SecurityGroups = f23
-	} else {
-		cr.Spec.ForProvider.SecurityGroups = nil
-	}
 	if resp.StorageType != nil {
 		cr.Spec.ForProvider.StorageType = resp.StorageType
 	} else {
 		cr.Spec.ForProvider.StorageType = nil
-	}
-	if resp.SubnetIds != nil {
-		f25 := []*string{}
-		for _, f25iter := range resp.SubnetIds {
-			var f25elem string
-			f25elem = *f25iter
-			f25 = append(f25, &f25elem)
-		}
-		cr.Spec.ForProvider.SubnetIDs = f25
-	} else {
-		cr.Spec.ForProvider.SubnetIDs = nil
 	}
 	if resp.Tags != nil {
 		f26 := map[string]*string{}
@@ -326,35 +304,17 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 	if cr.Spec.ForProvider.PubliclyAccessible != nil {
 		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
 	}
-	if cr.Spec.ForProvider.SecurityGroups != nil {
-		f13 := []*string{}
-		for _, f13iter := range cr.Spec.ForProvider.SecurityGroups {
-			var f13elem string
-			f13elem = *f13iter
-			f13 = append(f13, &f13elem)
-		}
-		res.SetSecurityGroups(f13)
-	}
 	if cr.Spec.ForProvider.StorageType != nil {
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
 	}
-	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f15 := []*string{}
-		for _, f15iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
-		}
-		res.SetSubnetIds(f15)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f16 := map[string]*string{}
-		for f16key, f16valiter := range cr.Spec.ForProvider.Tags {
-			var f16val string
-			f16val = *f16valiter
-			f16[f16key] = &f16val
+		f14 := map[string]*string{}
+		for f14key, f14valiter := range cr.Spec.ForProvider.Tags {
+			var f14val string
+			f14val = *f14valiter
+			f14[f14key] = &f14val
 		}
-		res.SetTags(f16)
+		res.SetTags(f14)
 	}
 
 	return res
@@ -442,14 +402,18 @@ func GenerateUpdateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.UpdateBrokerReq
 		}
 		res.SetLogs(f7)
 	}
-	if cr.Spec.ForProvider.SecurityGroups != nil {
-		f8 := []*string{}
-		for _, f8iter := range cr.Spec.ForProvider.SecurityGroups {
-			var f8elem string
-			f8elem = *f8iter
-			f8 = append(f8, &f8elem)
+	if cr.Spec.ForProvider.MaintenanceWindowStartTime != nil {
+		f8 := &svcsdk.WeeklyStartTime{}
+		if cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek != nil {
+			f8.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
 		}
-		res.SetSecurityGroups(f8)
+		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay != nil {
+			f8.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
+		}
+		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone != nil {
+			f8.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
+		}
+		res.SetMaintenanceWindowStartTime(f8)
 	}
 
 	return res

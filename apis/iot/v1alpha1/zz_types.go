@@ -144,6 +144,11 @@ type JobSummary struct {
 }
 
 // +kubebuilder:skipversion
+type JobTemplateSummary struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type OTAUpdateInfo struct {
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 

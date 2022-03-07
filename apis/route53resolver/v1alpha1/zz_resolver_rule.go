@@ -60,7 +60,7 @@ type ResolverRuleParameters struct {
 	// A list of the tag keys and values that you want to associate with the endpoint.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The IPs that you want Resolver to forward DNS queries to. You can specify
-	// only IPv4 addresses. Separate IP addresses with a comma.
+	// only IPv4 addresses. Separate IP addresses with a space.
 	//
 	// TargetIps is available only when the value of Rule type is FORWARD.
 	TargetIPs                    []*TargetAddress `json:"targetIPs,omitempty"`
@@ -82,17 +82,17 @@ type ResolverRuleObservation struct {
 	CreationTime *string `json:"creationTime,omitempty"`
 	// A unique string that you specified when you created the Resolver rule. CreatorRequestId
 	// identifies the request and allows failed requests to be retried without the
-	// risk of executing the operation twice.
+	// risk of running the operation twice.
 	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 	// The ID that Resolver assigned to the Resolver rule when you created it.
 	ID *string `json:"id,omitempty"`
 	// The date and time that the Resolver rule was last updated, in Unix time format
 	// and Coordinated Universal Time (UTC).
 	ModificationTime *string `json:"modificationTime,omitempty"`
-	// When a rule is shared with another AWS account, the account ID of the account
-	// that the rule is shared with.
+	// When a rule is shared with another Amazon Web Services account, the account
+	// ID of the account that the rule is shared with.
 	OwnerID *string `json:"ownerID,omitempty"`
-	// Whether the rules is shared and, if so, whether the current account is sharing
+	// Whether the rule is shared and, if so, whether the current account is sharing
 	// the rule with another account, or another account is sharing the rule with
 	// the current account.
 	ShareStatus *string `json:"shareStatus,omitempty"`

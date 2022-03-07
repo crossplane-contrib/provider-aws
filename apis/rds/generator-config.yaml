@@ -33,11 +33,13 @@ ignore:
     - CreateGlobalClusterInput.GlobalClusterIdentifier
     - DeleteGlobalClusterInput.GlobalClusterIdentifier
   resource_names:
-    - DBClusterEndpoint
     - CustomAvailabilityZone
+    - CustomDBEngineVersion
+    - DBClusterEndpoint
     - DBClusterSnapshot
     - DBInstanceReadReplica
     - DBProxy
+    - DBProxyEndpoint
     - DBSecurityGroup
     - DBSnapshot
     - DBSubnetGroup

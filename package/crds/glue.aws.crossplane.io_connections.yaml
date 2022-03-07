@@ -62,8 +62,8 @@ spec:
                 properties:
                   catalogID:
                     description: The ID of the Data Catalog in which to create the
-                      connection. If none is provided, the AWS account ID is used
-                      by default.
+                      connection. If none is provided, the Amazon Web Services account
+                      ID is used by default.
                     type: string
                   connectionInput:
                     description: A ConnectionInput object defining the connection
@@ -163,6 +163,11 @@ spec:
                   region:
                     description: Region is which region the Connection will be created.
                     type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: The tags you assign to the connection.
+                    type: object
                 required:
                 - connectionInput
                 - region

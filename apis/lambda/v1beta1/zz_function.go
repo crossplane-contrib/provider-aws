@@ -29,6 +29,9 @@ type FunctionParameters struct {
 	// Region is which region the Function will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// The instruction set architecture that the function supports. Enter a string
+// array with one of the valid values. The default value is x86_64.
+	 Architectures []*string `json:"architectures,omitempty"` 
 	// To enable code signing for this function, specify the ARN of a code-signing
 // configuration. A code-signing configuration includes a set of signing profiles,
 // which define the trusted publishers for this function.
@@ -48,20 +51,20 @@ type FunctionParameters struct {
 // and other qualifiers, depending on the runtime. For more information, see
 // Programming Model (https://docs.aws.amazon.com/lambda/latest/dg/programming-model-v2.html).
 	 Handler *string `json:"handler,omitempty"` 
-	// Container image configuration values (https://docs.aws.amazon.com/lambda/latest/dg/images-parms.html)
+	// Container image configuration values (https://docs.aws.amazon.com/lambda/latest/dg/configuration-images.html#configuration-images-settings)
 // that override the values in the container image Dockerfile.
 	 ImageConfig *ImageConfig `json:"imageConfig,omitempty"` 
-	// The ARN of the AWS Key Management Service (AWS KMS) key that's used to encrypt
-// your function's environment variables. If it's not provided, AWS Lambda uses
-// a default service key.
+	// The ARN of the Amazon Web Services Key Management Service (KMS) key that's
+// used to encrypt your function's environment variables. If it's not provided,
+// Lambda uses a default service key.
 	 KMSKeyARN *string `json:"kmsKeyARN,omitempty"` 
 	// A list of function layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html)
 // to add to the function's execution environment. Specify each layer by its
 // ARN, including the version.
 	 Layers []*string `json:"layers,omitempty"` 
-	// The amount of memory available to the function at runtime. Increasing the
-// function's memory also increases its CPU allocation. The default value is
-// 128 MB. The value can be any multiple of 1 MB.
+	// The amount of memory available to the function (https://docs.aws.amazon.com/lambda/latest/dg/configuration-memory.html)
+// at runtime. Increasing the function memory also increases its CPU allocation.
+// The default value is 128 MB. The value can be any multiple of 1 MB.
 	 MemorySize *int64 `json:"memorySize,omitempty"` 
 	// The type of deployment package. Set to Image for container image and set
 // Zip for ZIP archive.
@@ -74,10 +77,11 @@ type FunctionParameters struct {
 // to apply to the function.
 	 Tags map[string]*string `json:"tags,omitempty"` 
 	// The amount of time that Lambda allows a function to run before stopping it.
-// The default is 3 seconds. The maximum allowed value is 900 seconds.
+// The default is 3 seconds. The maximum allowed value is 900 seconds. For additional
+// information, see Lambda execution environment (https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html).
 	 Timeout *int64 `json:"timeout,omitempty"` 
 	// Set Mode to Active to sample and trace a subset of incoming requests with
-// AWS X-Ray.
+// X-Ray (https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html).
 	 TracingConfig *TracingConfig `json:"tracingConfig,omitempty"` 
 	CustomFunctionParameters `json:",inline"`
 }

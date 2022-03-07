@@ -15,7 +15,7 @@ spec:
           - domainName: crossplane-example-bucket.s3.amazonaws.com
             id: s3Origin
             s3OriginConfig:
-              originAccessIDentity: ""
+              originAccessIdentity: ""
       defaultCacheBehavior:
         targetOriginID: s3Origin
         viewerProtocolPolicy: allow-all

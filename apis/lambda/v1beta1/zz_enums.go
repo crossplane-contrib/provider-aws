@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1beta1
 
+type Architecture string
+
+const (
+	Architecture_x86_64 Architecture = "x86_64"
+	Architecture_arm64 Architecture = "arm64"
+)
+
 type CodeSigningPolicy string
 
 const (
@@ -121,6 +128,7 @@ const (
 	Runtime_python3_6 Runtime = "python3.6"
 	Runtime_python3_7 Runtime = "python3.7"
 	Runtime_python3_8 Runtime = "python3.8"
+	Runtime_python3_9 Runtime = "python3.9"
 	Runtime_dotnetcore1_0 Runtime = "dotnetcore1.0"
 	Runtime_dotnetcore2_0 Runtime = "dotnetcore2.0"
 	Runtime_dotnetcore2_1 Runtime = "dotnetcore2.1"
@@ -141,6 +149,7 @@ const (
 	SourceAccessType_VPC_SECURITY_GROUP SourceAccessType = "VPC_SECURITY_GROUP"
 	SourceAccessType_SASL_SCRAM_512_AUTH SourceAccessType = "SASL_SCRAM_512_AUTH"
 	SourceAccessType_SASL_SCRAM_256_AUTH SourceAccessType = "SASL_SCRAM_256_AUTH"
+	SourceAccessType_VIRTUAL_HOST SourceAccessType = "VIRTUAL_HOST"
 )
 
 type State string

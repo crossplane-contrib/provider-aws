@@ -192,17 +192,26 @@ func GenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 				if f16f4iter.ConnectionName != nil {
 					f16f4elem.ConnectionName = f16f4iter.ConnectionName
 				}
+				if f16f4iter.DlqEventQueueArn != nil {
+					f16f4elem.DlqEventQueueARN = f16f4iter.DlqEventQueueArn
+				}
+				if f16f4iter.EventQueueArn != nil {
+					f16f4elem.EventQueueARN = f16f4iter.EventQueueArn
+				}
 				if f16f4iter.Exclusions != nil {
-					f16f4elemf1 := []*string{}
-					for _, f16f4elemf1iter := range f16f4iter.Exclusions {
-						var f16f4elemf1elem string
-						f16f4elemf1elem = *f16f4elemf1iter
-						f16f4elemf1 = append(f16f4elemf1, &f16f4elemf1elem)
+					f16f4elemf3 := []*string{}
+					for _, f16f4elemf3iter := range f16f4iter.Exclusions {
+						var f16f4elemf3elem string
+						f16f4elemf3elem = *f16f4elemf3iter
+						f16f4elemf3 = append(f16f4elemf3, &f16f4elemf3elem)
 					}
-					f16f4elem.Exclusions = f16f4elemf1
+					f16f4elem.Exclusions = f16f4elemf3
 				}
 				if f16f4iter.Path != nil {
 					f16f4elem.Path = f16f4iter.Path
+				}
+				if f16f4iter.SampleSize != nil {
+					f16f4elem.SampleSize = f16f4iter.SampleSize
 				}
 				f16f4 = append(f16f4, f16f4elem)
 			}
@@ -366,17 +375,26 @@ func GenerateCreateCrawlerInput(cr *svcapitypes.Crawler) *svcsdk.CreateCrawlerIn
 				if f11f4iter.ConnectionName != nil {
 					f11f4elem.SetConnectionName(*f11f4iter.ConnectionName)
 				}
+				if f11f4iter.DlqEventQueueARN != nil {
+					f11f4elem.SetDlqEventQueueArn(*f11f4iter.DlqEventQueueARN)
+				}
+				if f11f4iter.EventQueueARN != nil {
+					f11f4elem.SetEventQueueArn(*f11f4iter.EventQueueARN)
+				}
 				if f11f4iter.Exclusions != nil {
-					f11f4elemf1 := []*string{}
-					for _, f11f4elemf1iter := range f11f4iter.Exclusions {
-						var f11f4elemf1elem string
-						f11f4elemf1elem = *f11f4elemf1iter
-						f11f4elemf1 = append(f11f4elemf1, &f11f4elemf1elem)
+					f11f4elemf3 := []*string{}
+					for _, f11f4elemf3iter := range f11f4iter.Exclusions {
+						var f11f4elemf3elem string
+						f11f4elemf3elem = *f11f4elemf3iter
+						f11f4elemf3 = append(f11f4elemf3, &f11f4elemf3elem)
 					}
-					f11f4elem.SetExclusions(f11f4elemf1)
+					f11f4elem.SetExclusions(f11f4elemf3)
 				}
 				if f11f4iter.Path != nil {
 					f11f4elem.SetPath(*f11f4iter.Path)
+				}
+				if f11f4iter.SampleSize != nil {
+					f11f4elem.SetSampleSize(*f11f4iter.SampleSize)
 				}
 				f11f4 = append(f11f4, f11f4elem)
 			}
@@ -529,17 +547,26 @@ func GenerateUpdateCrawlerInput(cr *svcapitypes.Crawler) *svcsdk.UpdateCrawlerIn
 				if f12f4iter.ConnectionName != nil {
 					f12f4elem.SetConnectionName(*f12f4iter.ConnectionName)
 				}
+				if f12f4iter.DlqEventQueueARN != nil {
+					f12f4elem.SetDlqEventQueueArn(*f12f4iter.DlqEventQueueARN)
+				}
+				if f12f4iter.EventQueueARN != nil {
+					f12f4elem.SetEventQueueArn(*f12f4iter.EventQueueARN)
+				}
 				if f12f4iter.Exclusions != nil {
-					f12f4elemf1 := []*string{}
-					for _, f12f4elemf1iter := range f12f4iter.Exclusions {
-						var f12f4elemf1elem string
-						f12f4elemf1elem = *f12f4elemf1iter
-						f12f4elemf1 = append(f12f4elemf1, &f12f4elemf1elem)
+					f12f4elemf3 := []*string{}
+					for _, f12f4elemf3iter := range f12f4iter.Exclusions {
+						var f12f4elemf3elem string
+						f12f4elemf3elem = *f12f4elemf3iter
+						f12f4elemf3 = append(f12f4elemf3, &f12f4elemf3elem)
 					}
-					f12f4elem.SetExclusions(f12f4elemf1)
+					f12f4elem.SetExclusions(f12f4elemf3)
 				}
 				if f12f4iter.Path != nil {
 					f12f4elem.SetPath(*f12f4iter.Path)
+				}
+				if f12f4iter.SampleSize != nil {
+					f12f4elem.SetSampleSize(*f12f4iter.SampleSize)
 				}
 				f12f4 = append(f12f4, f12f4elem)
 			}

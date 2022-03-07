@@ -4,8 +4,10 @@ metadata:
   name: example-activemq
 spec:
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     engineType: ActiveMQ
+    publiclyAccessible: false
+    autoMinorVersionUpgrade: true
     storageType: EFS
     engineVersion: 5.16.3
     hostInstanceType: mq.t3.micro

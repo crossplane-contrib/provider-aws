@@ -48,7 +48,7 @@ type TransitGatewaySpec struct {
 type TransitGatewayObservation struct {
 	// The creation time.
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
-	// The ID of the AWS account ID that owns the transit gateway.
+	// The ID of the Amazon Web Services account that owns the transit gateway.
 	OwnerID *string `json:"ownerID,omitempty"`
 	// The state of the transit gateway.
 	State *string `json:"state,omitempty"`

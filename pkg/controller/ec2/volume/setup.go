@@ -74,6 +74,7 @@ func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcs
 
 func preCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.CreateVolumeInput) error {
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
+	obj.ClientToken = awsclients.String(string(cr.UID))
 	return nil
 }
 

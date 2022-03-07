@@ -1619,6 +1619,11 @@ func (in *DomainNameConfiguration) DeepCopyInto(out *DomainNameConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.OwnershipVerificationCertificateARN != nil {
+		in, out := &in.OwnershipVerificationCertificateARN, &out.OwnershipVerificationCertificateARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.SecurityPolicy != nil {
 		in, out := &in.SecurityPolicy, &out.SecurityPolicy
 		*out = new(string)

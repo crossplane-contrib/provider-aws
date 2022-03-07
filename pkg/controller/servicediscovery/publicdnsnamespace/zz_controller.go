@@ -91,8 +91,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
-
+	cr, ok := mg.(*svcapitypes.PublicDNSNamespace)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+	input := GenerateUpdatePublicDnsNamespaceInput(cr)
+	if err := e.preUpdate(ctx, cr, input); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
+	}
+	resp, err := e.client.UpdatePublicDnsNamespaceWithContext(ctx, input)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -115,7 +123,8 @@ func newExternal(kube client.Client, client svcsdkapi.ServiceDiscoveryAPI, opts 
 		preCreate:  nopPreCreate,
 		postCreate: nopPostCreate,
 		delete:     nopDelete,
-		update:     nopUpdate,
+		preUpdate:  nopPreUpdate,
+		postUpdate: nopPostUpdate,
 	}
 	for _, f := range opts {
 		f(e)
@@ -130,7 +139,8 @@ type external struct {
 	preCreate  func(context.Context, *svcapitypes.PublicDNSNamespace, *svcsdk.CreatePublicDnsNamespaceInput) error
 	postCreate func(context.Context, *svcapitypes.PublicDNSNamespace, *svcsdk.CreatePublicDnsNamespaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	delete     func(context.Context, cpresource.Managed) error
-	update     func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	preUpdate  func(context.Context, *svcapitypes.PublicDNSNamespace, *svcsdk.UpdatePublicDnsNamespaceInput) error
+	postUpdate func(context.Context, *svcapitypes.PublicDNSNamespace, *svcsdk.UpdatePublicDnsNamespaceOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
 func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
@@ -146,6 +156,9 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.PublicDNSNamespace, _ *svcs
 func nopDelete(context.Context, cpresource.Managed) error {
 	return nil
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPreUpdate(context.Context, *svcapitypes.PublicDNSNamespace, *svcsdk.UpdatePublicDnsNamespaceInput) error {
+	return nil
+}
+func nopPostUpdate(_ context.Context, _ *svcapitypes.PublicDNSNamespace, _ *svcsdk.UpdatePublicDnsNamespaceOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

@@ -73,6 +73,8 @@ spec:
                       type: string
                     type: array
                   subnetIDsRefs:
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to subnetIdRefs'
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -84,7 +86,8 @@ spec:
                       type: object
                     type: array
                   subnetIDsSelector:
-                    description: A Selector selects an object.
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to subnetIdSelector'
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the

@@ -2,6 +2,7 @@ ignore:
   resource_names:
     - DataCatalog
     - NamedQuery
+    - PreparedStatement
   field_paths:
     - CreateWorkGroupInput.Name
 resources:

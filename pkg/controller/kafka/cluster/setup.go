@@ -102,11 +102,11 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/client-access.html
 		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
-		"zookeeperEndpointPlain": []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString)),
-		"zookeeperEndpointTls":   []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectStringTLS)),
-		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9092")),
-		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9094")),
-		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9098")),
+		"zookeeperEndpointPlain": []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
+		"zookeeperEndpointTls":   []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
+		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9092")),
+		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9094")),
+		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9098")),
 	}
 
 	return obs, nil
@@ -146,14 +146,6 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
 		cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
-	}
-
-	if cr.CustomClusterParameters.ZookeeperConnectString == nil && obj.ClusterInfo.ZookeeperConnectString != nil {
-		cr.CustomClusterParameters.ZookeeperConnectString = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectString, obj.ClusterInfo.ZookeeperConnectString)
-	}
-
-	if cr.CustomClusterParameters.ZookeeperConnectStringTLS == nil && obj.ClusterInfo.ZookeeperConnectStringTls != nil {
-		cr.CustomClusterParameters.ZookeeperConnectStringTLS = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectStringTLS, obj.ClusterInfo.ZookeeperConnectStringTls)
 	}
 
 	if cr.CustomBrokerNodeGroupInfo.SecurityGroups == nil && obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups != nil {

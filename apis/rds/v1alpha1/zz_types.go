@@ -261,6 +261,8 @@ type DBCluster_SDK struct {
 
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
+
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 
 	BacktrackConsumedChangeRecords *int64 `json:"backtrackConsumedChangeRecords,omitempty"`
@@ -368,17 +370,29 @@ type DBCluster_SDK struct {
 
 // +kubebuilder:skipversion
 type DBEngineVersion struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
 	DBEngineDescription *string `json:"dbEngineDescription,omitempty"`
+
+	DBEngineVersionARN *string `json:"dbEngineVersionARN,omitempty"`
 
 	DBEngineVersionDescription *string `json:"dbEngineVersionDescription,omitempty"`
 
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
+
+	DatabaseInstallationFilesS3BucketName *string `json:"databaseInstallationFilesS3BucketName,omitempty"`
+
+	DatabaseInstallationFilesS3Prefix *string `json:"databaseInstallationFilesS3Prefix,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	ExportableLogTypes []*string `json:"exportableLogTypes,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
@@ -391,6 +405,9 @@ type DBEngineVersion struct {
 	SupportsParallelQuery *bool `json:"supportsParallelQuery,omitempty"`
 
 	SupportsReadReplica *bool `json:"supportsReadReplica,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -473,13 +490,29 @@ type DBInstanceStatusInfo struct {
 
 // +kubebuilder:skipversion
 type DBInstance_SDK struct {
+	ActivityStreamEngineNativeAuditFieldsIncluded *bool `json:"activityStreamEngineNativeAuditFieldsIncluded,omitempty"`
+
+	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
+
+	ActivityStreamKMSKeyID *string `json:"activityStreamKMSKeyID,omitempty"`
+
+	ActivityStreamMode *string `json:"activityStreamMode,omitempty"`
+
+	ActivityStreamStatus *string `json:"activityStreamStatus,omitempty"`
+
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
 	AssociatedRoles []*DBInstanceRole `json:"associatedRoles,omitempty"`
 
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
+
+	AutomationMode *string `json:"automationMode,omitempty"`
+
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
@@ -488,6 +521,8 @@ type DBInstance_SDK struct {
 	CharacterSetName *string `json:"characterSetName,omitempty"`
 
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
+
+	CustomIAMInstanceProfile *string `json:"customIAMInstanceProfile,omitempty"`
 
 	CustomerOwnedIPEnabled *bool `json:"customerOwnedIPEnabled,omitempty"`
 
@@ -610,6 +645,8 @@ type DBInstance_SDK struct {
 
 	ReplicaMode *string `json:"replicaMode,omitempty"`
 
+	ResumeFullAutomationModeTime *metav1.Time `json:"resumeFullAutomationModeTime,omitempty"`
+
 	SecondaryAvailabilityZone *string `json:"secondaryAvailabilityZone,omitempty"`
 
 	StatusInfos []*DBInstanceStatusInfo `json:"statusInfos,omitempty"`
@@ -667,6 +704,29 @@ type DBProxy struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	UpdatedDate *metav1.Time `json:"updatedDate,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+
+	VPCSecurityGroupIDs []*string `json:"vpcSecurityGroupIDs,omitempty"`
+
+	VPCSubnetIDs []*string `json:"vpcSubnetIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DBProxyEndpoint struct {
+	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
+
+	DBProxyEndpointARN *string `json:"dbProxyEndpointARN,omitempty"`
+
+	DBProxyEndpointName *string `json:"dbProxyEndpointName,omitempty"`
+
+	DBProxyName *string `json:"dbProxyName,omitempty"`
+
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
 
 	VPCSecurityGroupIDs []*string `json:"vpcSecurityGroupIDs,omitempty"`
 
@@ -756,6 +816,8 @@ type DBSnapshot struct {
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
+
+	OriginalSnapshotCreateTime *metav1.Time `json:"originalSnapshotCreateTime,omitempty"`
 
 	PercentProgress *int64 `json:"percentProgress,omitempty"`
 
@@ -1242,6 +1304,8 @@ type PendingMaintenanceAction struct {
 type PendingModifiedValues struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
+	AutomationMode *string `json:"automationMode,omitempty"`
+
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
@@ -1270,6 +1334,8 @@ type PendingModifiedValues struct {
 	Port *int64 `json:"port,omitempty"`
 
 	ProcessorFeatures []*ProcessorFeature `json:"processorFeatures,omitempty"`
+
+	ResumeFullAutomationModeTime *metav1.Time `json:"resumeFullAutomationModeTime,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 }
@@ -1361,6 +1427,8 @@ type ScalingConfiguration struct {
 
 	MinCapacity *int64 `json:"minCapacity,omitempty"`
 
+	SecondsBeforeTimeout *int64 `json:"secondsBeforeTimeout,omitempty"`
+
 	SecondsUntilAutoPause *int64 `json:"secondsUntilAutoPause,omitempty"`
 
 	TimeoutAction *string `json:"timeoutAction,omitempty"`
@@ -1373,6 +1441,8 @@ type ScalingConfigurationInfo struct {
 	MaxCapacity *int64 `json:"maxCapacity,omitempty"`
 
 	MinCapacity *int64 `json:"minCapacity,omitempty"`
+
+	SecondsBeforeTimeout *int64 `json:"secondsBeforeTimeout,omitempty"`
 
 	SecondsUntilAutoPause *int64 `json:"secondsUntilAutoPause,omitempty"`
 
@@ -1401,8 +1471,8 @@ type Subnet struct {
 	SubnetIdentifier *string `json:"subnetIdentifier,omitempty"`
 	// A data type that represents an Outpost.
 	//
-	// For more information about RDS on Outposts, see Amazon RDS on AWS Outposts
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
+	// For more information about RDS on Outposts, see Amazon RDS on Amazon Web
+	// Services Outposts (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
 	// in the Amazon RDS User Guide.
 	SubnetOutpost *Outpost `json:"subnetOutpost,omitempty"`
 

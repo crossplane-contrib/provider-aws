@@ -1542,6 +1542,11 @@ func (in *TargetGroupParameters) DeepCopyInto(out *TargetGroupParameters) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.IPAddressType != nil {
+		in, out := &in.IPAddressType, &out.IPAddressType
+		*out = new(string)
+		**out = **in
+	}
 	if in.Matcher != nil {
 		in, out := &in.Matcher, &out.Matcher
 		*out = new(Matcher)
@@ -1726,6 +1731,11 @@ func (in *TargetGroup_SDK) DeepCopyInto(out *TargetGroup_SDK) {
 	if in.HealthyThresholdCount != nil {
 		in, out := &in.HealthyThresholdCount, &out.HealthyThresholdCount
 		*out = new(int64)
+		**out = **in
+	}
+	if in.IPAddressType != nil {
+		in, out := &in.IPAddressType, &out.IPAddressType
+		*out = new(string)
 		**out = **in
 	}
 	if in.LoadBalancerARNs != nil {

@@ -47,6 +47,39 @@ const (
 	AuthScheme_SECRETS AuthScheme = "SECRETS"
 )
 
+type AutomationMode string
+
+const (
+	AutomationMode_full       AutomationMode = "full"
+	AutomationMode_all_paused AutomationMode = "all-paused"
+)
+
+type CustomEngineVersionStatus string
+
+const (
+	CustomEngineVersionStatus_available               CustomEngineVersionStatus = "available"
+	CustomEngineVersionStatus_inactive                CustomEngineVersionStatus = "inactive"
+	CustomEngineVersionStatus_inactive_except_restore CustomEngineVersionStatus = "inactive-except-restore"
+)
+
+type DBProxyEndpointStatus string
+
+const (
+	DBProxyEndpointStatus_available                    DBProxyEndpointStatus = "available"
+	DBProxyEndpointStatus_modifying                    DBProxyEndpointStatus = "modifying"
+	DBProxyEndpointStatus_incompatible_network         DBProxyEndpointStatus = "incompatible-network"
+	DBProxyEndpointStatus_insufficient_resource_limits DBProxyEndpointStatus = "insufficient-resource-limits"
+	DBProxyEndpointStatus_creating                     DBProxyEndpointStatus = "creating"
+	DBProxyEndpointStatus_deleting                     DBProxyEndpointStatus = "deleting"
+)
+
+type DBProxyEndpointTargetRole string
+
+const (
+	DBProxyEndpointTargetRole_READ_WRITE DBProxyEndpointTargetRole = "READ_WRITE"
+	DBProxyEndpointTargetRole_READ_ONLY  DBProxyEndpointTargetRole = "READ_ONLY"
+)
+
 type DBProxyStatus string
 
 const (
@@ -93,21 +126,31 @@ const (
 type SourceType string
 
 const (
-	SourceType_db_instance         SourceType = "db-instance"
-	SourceType_db_parameter_group  SourceType = "db-parameter-group"
-	SourceType_db_security_group   SourceType = "db-security-group"
-	SourceType_db_snapshot         SourceType = "db-snapshot"
-	SourceType_db_cluster          SourceType = "db-cluster"
-	SourceType_db_cluster_snapshot SourceType = "db-cluster-snapshot"
+	SourceType_db_instance           SourceType = "db-instance"
+	SourceType_db_parameter_group    SourceType = "db-parameter-group"
+	SourceType_db_security_group     SourceType = "db-security-group"
+	SourceType_db_snapshot           SourceType = "db-snapshot"
+	SourceType_db_cluster            SourceType = "db-cluster"
+	SourceType_db_cluster_snapshot   SourceType = "db-cluster-snapshot"
+	SourceType_custom_engine_version SourceType = "custom-engine-version"
 )
 
 type TargetHealthReason string
 
 const (
-	TargetHealthReason_UNREACHABLE            TargetHealthReason = "UNREACHABLE"
-	TargetHealthReason_CONNECTION_FAILED      TargetHealthReason = "CONNECTION_FAILED"
-	TargetHealthReason_AUTH_FAILURE           TargetHealthReason = "AUTH_FAILURE"
-	TargetHealthReason_PENDING_PROXY_CAPACITY TargetHealthReason = "PENDING_PROXY_CAPACITY"
+	TargetHealthReason_UNREACHABLE               TargetHealthReason = "UNREACHABLE"
+	TargetHealthReason_CONNECTION_FAILED         TargetHealthReason = "CONNECTION_FAILED"
+	TargetHealthReason_AUTH_FAILURE              TargetHealthReason = "AUTH_FAILURE"
+	TargetHealthReason_PENDING_PROXY_CAPACITY    TargetHealthReason = "PENDING_PROXY_CAPACITY"
+	TargetHealthReason_INVALID_REPLICATION_STATE TargetHealthReason = "INVALID_REPLICATION_STATE"
+)
+
+type TargetRole string
+
+const (
+	TargetRole_READ_WRITE TargetRole = "READ_WRITE"
+	TargetRole_READ_ONLY  TargetRole = "READ_ONLY"
+	TargetRole_UNKNOWN    TargetRole = "UNKNOWN"
 )
 
 type TargetState string

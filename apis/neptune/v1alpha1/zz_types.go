@@ -156,6 +156,8 @@ type DBCluster_SDK struct {
 
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
+
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
@@ -165,6 +167,10 @@ type DBCluster_SDK struct {
 	CloneGroupID *string `json:"cloneGroupID,omitempty"`
 
 	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`
+
+	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
+
+	CrossAccountClone *bool `json:"crossAccountClone,omitempty"`
 
 	DBClusterARN *string `json:"dbClusterARN,omitempty"`
 

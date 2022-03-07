@@ -83,6 +83,9 @@ func GenerateDomainName(resp *svcsdk.GetDomainNameOutput) *svcapitypes.DomainNam
 			if f2iter.HostedZoneId != nil {
 				f2elem.HostedZoneID = f2iter.HostedZoneId
 			}
+			if f2iter.OwnershipVerificationCertificateArn != nil {
+				f2elem.OwnershipVerificationCertificateARN = f2iter.OwnershipVerificationCertificateArn
+			}
 			if f2iter.SecurityPolicy != nil {
 				f2elem.SecurityPolicy = f2iter.SecurityPolicy
 			}
@@ -151,6 +154,9 @@ func GenerateCreateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.CreateDom
 			if f0iter.HostedZoneID != nil {
 				f0elem.SetHostedZoneId(*f0iter.HostedZoneID)
 			}
+			if f0iter.OwnershipVerificationCertificateARN != nil {
+				f0elem.SetOwnershipVerificationCertificateArn(*f0iter.OwnershipVerificationCertificateARN)
+			}
 			if f0iter.SecurityPolicy != nil {
 				f0elem.SetSecurityPolicy(*f0iter.SecurityPolicy)
 			}
@@ -215,6 +221,9 @@ func GenerateUpdateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.UpdateDom
 			}
 			if f1iter.HostedZoneID != nil {
 				f1elem.SetHostedZoneId(*f1iter.HostedZoneID)
+			}
+			if f1iter.OwnershipVerificationCertificateARN != nil {
+				f1elem.SetOwnershipVerificationCertificateArn(*f1iter.OwnershipVerificationCertificateARN)
 			}
 			if f1iter.SecurityPolicy != nil {
 				f1elem.SetSecurityPolicy(*f1iter.SecurityPolicy)

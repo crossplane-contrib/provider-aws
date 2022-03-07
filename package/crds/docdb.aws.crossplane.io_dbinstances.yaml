@@ -70,14 +70,14 @@ spec:
                       on the next reboot. \n Default: false"
                     type: boolean
                   autoMinorVersionUpgrade:
-                    description: "Indicates that minor engine upgrades are applied
-                      automatically to the instance during the maintenance window.
-                      \n Default: true"
+                    description: "This parameter does not apply to Amazon DocumentDB.
+                      Amazon DocumentDB does not perform minor version upgrades regardless
+                      of the value set. \n Default: false"
                     type: boolean
                   availabilityZone:
                     description: "The Amazon EC2 Availability Zone that the instance
                       is created in. \n Default: A random, system-chosen Availability
-                      Zone in the endpoint's AWS Region. \n Example: us-east-1d"
+                      Zone in the endpoint's Region. \n Example: us-east-1d"
                     type: string
                   caCertificateIdentifier:
                     description: The identifier of the CA certificate for this DB
@@ -122,9 +122,9 @@ spec:
                     description: "The time range each week during which system maintenance
                       can occur, in Universal Coordinated Time (UTC). \n Format: ddd:hh24:mi-ddd:hh24:mi
                       \n The default is a 30-minute window selected at random from
-                      an 8-hour block of time for each AWS Region, occurring on a
-                      random day of the week. \n Valid days: Mon, Tue, Wed, Thu, Fri,
-                      Sat, Sun \n Constraints: Minimum 30-minute window."
+                      an 8-hour block of time for each Region, occurring on a random
+                      day of the week. \n Valid days: Mon, Tue, Wed, Thu, Fri, Sat,
+                      Sun \n Constraints: Minimum 30-minute window."
                     type: string
                   promotionTier:
                     description: "A value that specifies the order in which an Amazon
@@ -257,13 +257,13 @@ spec:
                         type: string
                     type: object
                   dbiResourceID:
-                    description: The AWS Region-unique, immutable identifier for the
-                      instance. This identifier is found in AWS CloudTrail log entries
-                      whenever the AWS KMS key for the instance is accessed.
+                    description: The Region-unique, immutable identifier for the instance.
+                      This identifier is found in CloudTrail log entries whenever
+                      the KMS key for the instance is accessed.
                     type: string
                   enabledCloudwatchLogsExports:
                     description: A list of log types that this instance is configured
-                      to export to Amazon CloudWatch Logs.
+                      to export to CloudWatch Logs.
                     items:
                       type: string
                     type: array
@@ -287,7 +287,7 @@ spec:
                     format: date-time
                     type: string
                   kmsKeyID:
-                    description: If StorageEncrypted is true, the AWS KMS key identifier
+                    description: If StorageEncrypted is true, the KMS key identifier
                       for the encrypted instance.
                     type: string
                   latestRestorableTime:

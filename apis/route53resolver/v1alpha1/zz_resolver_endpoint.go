@@ -61,7 +61,7 @@ type ResolverEndpointObservation struct {
 	CreationTime *string `json:"creationTime,omitempty"`
 	// A unique string that identifies the request that created the Resolver endpoint.
 	// The CreatorRequestId allows failed requests to be retried without the risk
-	// of executing the operation twice.
+	// of running the operation twice.
 	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 	// The ID of the VPC that you want to create the Resolver endpoint in.
 	HostVPCID *string `json:"hostVPCID,omitempty"`

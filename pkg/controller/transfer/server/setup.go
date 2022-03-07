@@ -112,12 +112,36 @@ func postCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateSer
 func preCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateServerInput) error {
 	obj.Certificate = cr.Spec.ForProvider.Certificate
 	obj.LoggingRole = cr.Spec.ForProvider.LoggingRole
-	obj.EndpointDetails = &svcsdk.EndpointDetails{
-		AddressAllocationIds: cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs,
-		SecurityGroupIds:     cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs,
-		SubnetIds:            cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs,
-		VpcEndpointId:        cr.Spec.ForProvider.CustomEndpointDetails.VPCEndpointID,
-		VpcId:                cr.Spec.ForProvider.CustomEndpointDetails.VPCID,
+	obj.EndpointDetails = &svcsdk.EndpointDetails{}
+
+	if len(cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs) > 0 {
+		obj.EndpointDetails.SecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs))
+		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs {
+			obj.EndpointDetails.SecurityGroupIds[i] = v
+		}
 	}
+
+	if len(cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs) > 0 {
+		obj.EndpointDetails.SubnetIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs))
+		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs {
+			obj.EndpointDetails.SubnetIds[i] = v
+		}
+	}
+
+	if len(cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs) > 0 {
+		obj.EndpointDetails.AddressAllocationIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs))
+		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs {
+			obj.EndpointDetails.AddressAllocationIds[i] = v
+		}
+	}
+
+	if cr.Spec.ForProvider.CustomEndpointDetails.VPCEndpointID != nil {
+		obj.EndpointDetails.VpcEndpointId = cr.Spec.ForProvider.CustomEndpointDetails.VPCEndpointID
+	}
+
+	if cr.Spec.ForProvider.CustomEndpointDetails.VPCID != nil {
+		obj.EndpointDetails.VpcId = cr.Spec.ForProvider.CustomEndpointDetails.VPCID
+	}
+
 	return nil
 }

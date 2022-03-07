@@ -153,6 +153,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			if f2iter.HostedZoneId != nil {
 				f2elem.HostedZoneID = f2iter.HostedZoneId
 			}
+			if f2iter.OwnershipVerificationCertificateArn != nil {
+				f2elem.OwnershipVerificationCertificateARN = f2iter.OwnershipVerificationCertificateArn
+			}
 			if f2iter.SecurityPolicy != nil {
 				f2elem.SecurityPolicy = f2iter.SecurityPolicy
 			}

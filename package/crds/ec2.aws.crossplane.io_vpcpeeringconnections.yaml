@@ -69,8 +69,9 @@ spec:
                       an active connection if both VPCs are in the same tenant.
                     type: boolean
                   peerOwnerID:
-                    description: "The AWS account ID of the owner of the accepter
-                      VPC. \n Default: Your AWS account ID"
+                    description: "The Amazon Web Services account ID of the owner
+                      of the accepter VPC. \n Default: Your Amazon Web Services account
+                      ID"
                     type: string
                   peerRegion:
                     description: "The Region code for the accepter VPC, if the accepter

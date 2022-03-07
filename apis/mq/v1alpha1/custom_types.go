@@ -20,6 +20,11 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // CustomBrokerParameters contains the additional fields for CustomBrokerParameters
 type CustomBrokerParameters struct {
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
 	// SubnetIDRefs is a list of references to Subnets used to set
 	// the SubnetIDs.
@@ -30,6 +35,11 @@ type CustomBrokerParameters struct {
 	// to set the SubnetIDs.
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
+
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
+	SecurityGroups []*string `json:"securityGroups,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupsIDs.
@@ -58,6 +68,7 @@ type CustomUser struct {
 // CustomUserParameters contains the additional fields for CustomUserParameters
 type CustomUserParameters struct {
 	// +optional
+	// +crossplane:generate:reference:type=Broker
 	BrokerID *string `json:"brokerID,omitempty"`
 
 	// BrokerIDRef is a reference to a Broker used to set BrokerID.

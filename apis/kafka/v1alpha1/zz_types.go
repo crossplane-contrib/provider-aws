@@ -88,6 +88,8 @@ type ClientAuthentication struct {
 	Sasl *Sasl `json:"sasl,omitempty"`
 	// Details for client authentication using TLS.
 	TLS *TLS `json:"tls,omitempty"`
+	// Contains information about unauthenticated traffic to the cluster.
+	Unauthenticated *Unauthenticated `json:"unauthenticated,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -133,6 +135,8 @@ type ClusterInfo struct {
 	OpenMonitoring *OpenMonitoring `json:"openMonitoring,omitempty"`
 	// The state of a Kafka cluster.
 	State *string `json:"state,omitempty"`
+	// Contains information about the state of the Amazon MSK cluster.
+	StateInfo *StateInfo `json:"stateInfo,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
 
@@ -249,6 +253,11 @@ type Firehose struct {
 }
 
 // +kubebuilder:skipversion
+type IAM struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type JmxExporter struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
 }
@@ -271,6 +280,12 @@ type LoggingInfo struct {
 
 // +kubebuilder:skipversion
 type MutableClusterInfo struct {
+	// Includes all client authentication information.
+	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
+	// Includes encryption-related information, such as the AWS KMS key used for
+	// encrypting data at rest and whether you want MSK to encrypt your data in
+	// transit.
+	EncryptionInfo *EncryptionInfo `json:"encryptionInfo,omitempty"`
 	// Specifies which metrics are gathered for the MSK cluster. This property has
 	// the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
 	// and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
@@ -348,12 +363,21 @@ type S3 struct {
 
 // +kubebuilder:skipversion
 type Sasl struct {
+	IAM *IAM `json:"iam,omitempty"`
+
 	Scram *Scram `json:"scram,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type Scram struct {
 	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StateInfo struct {
+	Code *string `json:"code,omitempty"`
+
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -366,6 +390,13 @@ type StorageInfo struct {
 // +kubebuilder:skipversion
 type TLS struct {
 	CertificateAuthorityARNList []*string `json:"certificateAuthorityARNList,omitempty"`
+
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Unauthenticated struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // +kubebuilder:skipversion

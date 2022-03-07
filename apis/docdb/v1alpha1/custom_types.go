@@ -60,9 +60,13 @@ type CustomDBInstanceParameters struct {
 
 // CustomDBSubnetGroupParameters for DBSubnetGroupParameters
 type CustomDBSubnetGroupParameters struct {
-	SubnetIDs         []*string        `json:"subnetIDs,omitempty"`
-	SubnetIDsRefs     []xpv1.Reference `json:"subnetIDsRefs,omitempty"`
-	SUbnetIDsSelector *xpv1.Selector   `json:"subnetIDsSelector,omitempty"`
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to subnetIdRefs
+	SubnetIDsRefs []xpv1.Reference `json:"subnetIDsRefs,omitempty"`
+
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to subnetIdSelector
+	SUbnetIDsSelector *xpv1.Selector `json:"subnetIDsSelector,omitempty"`
 }
 
 // CustomDBClusterParameterGroupParameters for DBClusterParameterGroup
@@ -128,9 +132,13 @@ type CustomDBClusterParameters struct {
 	DBClusterParameterGroupNameRef      *xpv1.Reference `json:"dbClusterParameterGroupNameRef,omitempty"`
 	DBClusterParameterGroupNameSelector *xpv1.Selector  `json:"dbClusterParameterGroupNameSelector,omitempty"`
 
-	KMSKeyIDRef      *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
-	KMSKeyIDSelector *xpv1.Selector  `json:"kmsKeyIDSelector,omitempty"`
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to kmsKeyIdRef
+	KMSKeyIDRef *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to kmsKeyIdSelector
+	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
 
-	VPCSecurityGroupIDsRefs     []xpv1.Reference `json:"vpcSecurityGroupIDsRefs,omitempty"`
-	VPCSecurityGroupIDsSelector *xpv1.Selector   `json:"vpcSecurityGroupIDsSelector,omitempty"`
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to vpcSecurityGroupIdRefs
+	VPCSecurityGroupIDsRefs []xpv1.Reference `json:"vpcSecurityGroupIDsRefs,omitempty"`
+	// TODO(haarchri): when resource is bumped to beta we will convert this field to vpcSecurityGroupIdSelector
+	VPCSecurityGroupIDsSelector *xpv1.Selector `json:"vpcSecurityGroupIDsSelector,omitempty"`
 }

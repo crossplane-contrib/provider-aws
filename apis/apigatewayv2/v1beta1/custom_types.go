@@ -21,6 +21,9 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomVPCLinkParameters includes the custom fields.
 type CustomVPCLinkParameters struct {
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
@@ -34,6 +37,9 @@ type CustomVPCLinkParameters struct {
 	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs is a list of references to Subnets used to set

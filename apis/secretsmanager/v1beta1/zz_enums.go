@@ -25,6 +25,7 @@ const (
 	FilterNameStringType_name FilterNameStringType = "name"
 	FilterNameStringType_tag_key FilterNameStringType = "tag-key"
 	FilterNameStringType_tag_value FilterNameStringType = "tag-value"
+	FilterNameStringType_primary_region FilterNameStringType = "primary-region"
 	FilterNameStringType_all FilterNameStringType = "all"
 )
 
@@ -33,4 +34,12 @@ type SortOrderType string
 const (
 	SortOrderType_asc SortOrderType = "asc"
 	SortOrderType_desc SortOrderType = "desc"
+)
+
+type StatusType string
+
+const (
+	StatusType_InSync StatusType = "InSync"
+	StatusType_Failed StatusType = "Failed"
+	StatusType_InProgress StatusType = "InProgress"
 )

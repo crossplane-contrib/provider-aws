@@ -28,6 +28,24 @@ const (
 	BackfillErrorCode_UNSUPPORTED_PARTITION_CHARACTER_ERROR BackfillErrorCode = "UNSUPPORTED_PARTITION_CHARACTER_ERROR"
 )
 
+type BlueprintRunState string
+
+const (
+	BlueprintRunState_RUNNING      BlueprintRunState = "RUNNING"
+	BlueprintRunState_SUCCEEDED    BlueprintRunState = "SUCCEEDED"
+	BlueprintRunState_FAILED       BlueprintRunState = "FAILED"
+	BlueprintRunState_ROLLING_BACK BlueprintRunState = "ROLLING_BACK"
+)
+
+type BlueprintStatus string
+
+const (
+	BlueprintStatus_CREATING BlueprintStatus = "CREATING"
+	BlueprintStatus_ACTIVE   BlueprintStatus = "ACTIVE"
+	BlueprintStatus_UPDATING BlueprintStatus = "UPDATING"
+	BlueprintStatus_FAILED   BlueprintStatus = "FAILED"
+)
+
 type CatalogEncryptionMode string
 
 const (
@@ -80,31 +98,36 @@ const (
 type ConnectionPropertyKey string
 
 const (
-	ConnectionPropertyKey_HOST                              ConnectionPropertyKey = "HOST"
-	ConnectionPropertyKey_PORT                              ConnectionPropertyKey = "PORT"
-	ConnectionPropertyKey_USERNAME                          ConnectionPropertyKey = "USERNAME"
-	ConnectionPropertyKey_PASSWORD                          ConnectionPropertyKey = "PASSWORD"
-	ConnectionPropertyKey_ENCRYPTED_PASSWORD                ConnectionPropertyKey = "ENCRYPTED_PASSWORD"
-	ConnectionPropertyKey_JDBC_DRIVER_JAR_URI               ConnectionPropertyKey = "JDBC_DRIVER_JAR_URI"
-	ConnectionPropertyKey_JDBC_DRIVER_CLASS_NAME            ConnectionPropertyKey = "JDBC_DRIVER_CLASS_NAME"
-	ConnectionPropertyKey_JDBC_ENGINE                       ConnectionPropertyKey = "JDBC_ENGINE"
-	ConnectionPropertyKey_JDBC_ENGINE_VERSION               ConnectionPropertyKey = "JDBC_ENGINE_VERSION"
-	ConnectionPropertyKey_CONFIG_FILES                      ConnectionPropertyKey = "CONFIG_FILES"
-	ConnectionPropertyKey_INSTANCE_ID                       ConnectionPropertyKey = "INSTANCE_ID"
-	ConnectionPropertyKey_JDBC_CONNECTION_URL               ConnectionPropertyKey = "JDBC_CONNECTION_URL"
-	ConnectionPropertyKey_JDBC_ENFORCE_SSL                  ConnectionPropertyKey = "JDBC_ENFORCE_SSL"
-	ConnectionPropertyKey_CUSTOM_JDBC_CERT                  ConnectionPropertyKey = "CUSTOM_JDBC_CERT"
-	ConnectionPropertyKey_SKIP_CUSTOM_JDBC_CERT_VALIDATION  ConnectionPropertyKey = "SKIP_CUSTOM_JDBC_CERT_VALIDATION"
-	ConnectionPropertyKey_CUSTOM_JDBC_CERT_STRING           ConnectionPropertyKey = "CUSTOM_JDBC_CERT_STRING"
-	ConnectionPropertyKey_CONNECTION_URL                    ConnectionPropertyKey = "CONNECTION_URL"
-	ConnectionPropertyKey_KAFKA_BOOTSTRAP_SERVERS           ConnectionPropertyKey = "KAFKA_BOOTSTRAP_SERVERS"
-	ConnectionPropertyKey_KAFKA_SSL_ENABLED                 ConnectionPropertyKey = "KAFKA_SSL_ENABLED"
-	ConnectionPropertyKey_KAFKA_CUSTOM_CERT                 ConnectionPropertyKey = "KAFKA_CUSTOM_CERT"
-	ConnectionPropertyKey_KAFKA_SKIP_CUSTOM_CERT_VALIDATION ConnectionPropertyKey = "KAFKA_SKIP_CUSTOM_CERT_VALIDATION"
-	ConnectionPropertyKey_SECRET_ID                         ConnectionPropertyKey = "SECRET_ID"
-	ConnectionPropertyKey_CONNECTOR_URL                     ConnectionPropertyKey = "CONNECTOR_URL"
-	ConnectionPropertyKey_CONNECTOR_TYPE                    ConnectionPropertyKey = "CONNECTOR_TYPE"
-	ConnectionPropertyKey_CONNECTOR_CLASS_NAME              ConnectionPropertyKey = "CONNECTOR_CLASS_NAME"
+	ConnectionPropertyKey_HOST                                     ConnectionPropertyKey = "HOST"
+	ConnectionPropertyKey_PORT                                     ConnectionPropertyKey = "PORT"
+	ConnectionPropertyKey_USERNAME                                 ConnectionPropertyKey = "USERNAME"
+	ConnectionPropertyKey_PASSWORD                                 ConnectionPropertyKey = "PASSWORD"
+	ConnectionPropertyKey_ENCRYPTED_PASSWORD                       ConnectionPropertyKey = "ENCRYPTED_PASSWORD"
+	ConnectionPropertyKey_JDBC_DRIVER_JAR_URI                      ConnectionPropertyKey = "JDBC_DRIVER_JAR_URI"
+	ConnectionPropertyKey_JDBC_DRIVER_CLASS_NAME                   ConnectionPropertyKey = "JDBC_DRIVER_CLASS_NAME"
+	ConnectionPropertyKey_JDBC_ENGINE                              ConnectionPropertyKey = "JDBC_ENGINE"
+	ConnectionPropertyKey_JDBC_ENGINE_VERSION                      ConnectionPropertyKey = "JDBC_ENGINE_VERSION"
+	ConnectionPropertyKey_CONFIG_FILES                             ConnectionPropertyKey = "CONFIG_FILES"
+	ConnectionPropertyKey_INSTANCE_ID                              ConnectionPropertyKey = "INSTANCE_ID"
+	ConnectionPropertyKey_JDBC_CONNECTION_URL                      ConnectionPropertyKey = "JDBC_CONNECTION_URL"
+	ConnectionPropertyKey_JDBC_ENFORCE_SSL                         ConnectionPropertyKey = "JDBC_ENFORCE_SSL"
+	ConnectionPropertyKey_CUSTOM_JDBC_CERT                         ConnectionPropertyKey = "CUSTOM_JDBC_CERT"
+	ConnectionPropertyKey_SKIP_CUSTOM_JDBC_CERT_VALIDATION         ConnectionPropertyKey = "SKIP_CUSTOM_JDBC_CERT_VALIDATION"
+	ConnectionPropertyKey_CUSTOM_JDBC_CERT_STRING                  ConnectionPropertyKey = "CUSTOM_JDBC_CERT_STRING"
+	ConnectionPropertyKey_CONNECTION_URL                           ConnectionPropertyKey = "CONNECTION_URL"
+	ConnectionPropertyKey_KAFKA_BOOTSTRAP_SERVERS                  ConnectionPropertyKey = "KAFKA_BOOTSTRAP_SERVERS"
+	ConnectionPropertyKey_KAFKA_SSL_ENABLED                        ConnectionPropertyKey = "KAFKA_SSL_ENABLED"
+	ConnectionPropertyKey_KAFKA_CUSTOM_CERT                        ConnectionPropertyKey = "KAFKA_CUSTOM_CERT"
+	ConnectionPropertyKey_KAFKA_SKIP_CUSTOM_CERT_VALIDATION        ConnectionPropertyKey = "KAFKA_SKIP_CUSTOM_CERT_VALIDATION"
+	ConnectionPropertyKey_KAFKA_CLIENT_KEYSTORE                    ConnectionPropertyKey = "KAFKA_CLIENT_KEYSTORE"
+	ConnectionPropertyKey_KAFKA_CLIENT_KEYSTORE_PASSWORD           ConnectionPropertyKey = "KAFKA_CLIENT_KEYSTORE_PASSWORD"
+	ConnectionPropertyKey_KAFKA_CLIENT_KEY_PASSWORD                ConnectionPropertyKey = "KAFKA_CLIENT_KEY_PASSWORD"
+	ConnectionPropertyKey_ENCRYPTED_KAFKA_CLIENT_KEYSTORE_PASSWORD ConnectionPropertyKey = "ENCRYPTED_KAFKA_CLIENT_KEYSTORE_PASSWORD"
+	ConnectionPropertyKey_ENCRYPTED_KAFKA_CLIENT_KEY_PASSWORD      ConnectionPropertyKey = "ENCRYPTED_KAFKA_CLIENT_KEY_PASSWORD"
+	ConnectionPropertyKey_SECRET_ID                                ConnectionPropertyKey = "SECRET_ID"
+	ConnectionPropertyKey_CONNECTOR_URL                            ConnectionPropertyKey = "CONNECTOR_URL"
+	ConnectionPropertyKey_CONNECTOR_TYPE                           ConnectionPropertyKey = "CONNECTOR_TYPE"
+	ConnectionPropertyKey_CONNECTOR_CLASS_NAME                     ConnectionPropertyKey = "CONNECTOR_CLASS_NAME"
 )
 
 type ConnectionType string
@@ -156,6 +179,7 @@ type DataFormat string
 
 const (
 	DataFormat_AVRO DataFormat = "AVRO"
+	DataFormat_JSON DataFormat = "JSON"
 )
 
 type DeleteBehavior string
@@ -279,6 +303,7 @@ type RecrawlBehavior string
 const (
 	RecrawlBehavior_CRAWL_EVERYTHING       RecrawlBehavior = "CRAWL_EVERYTHING"
 	RecrawlBehavior_CRAWL_NEW_FOLDERS_ONLY RecrawlBehavior = "CRAWL_NEW_FOLDERS_ONLY"
+	RecrawlBehavior_CRAWL_EVENT_MODE       RecrawlBehavior = "CRAWL_EVENT_MODE"
 )
 
 type RegistryStatus string
@@ -429,6 +454,7 @@ const (
 	TriggerType_SCHEDULED   TriggerType = "SCHEDULED"
 	TriggerType_CONDITIONAL TriggerType = "CONDITIONAL"
 	TriggerType_ON_DEMAND   TriggerType = "ON_DEMAND"
+	TriggerType_EVENT       TriggerType = "EVENT"
 )
 
 type UpdateBehavior string

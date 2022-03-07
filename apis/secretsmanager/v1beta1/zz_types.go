@@ -38,6 +38,28 @@ type Filter struct {
 }
 
 // +kubebuilder:skipversion
+type ReplicaRegionType struct {
+	
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	
+	Region *string `json:"region,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationStatusType struct {
+	
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	
+	LastAccessedDate *metav1.Time `json:"lastAccessedDate,omitempty"`
+	
+	Region *string `json:"region,omitempty"`
+	
+	Status *string `json:"status,omitempty"`
+	
+	StatusMessage *string `json:"statusMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type RotationRulesType struct {
 	
 	AutomaticallyAfterDays *int64 `json:"automaticallyAfterDays,omitempty"`
@@ -65,6 +87,8 @@ type SecretListEntry struct {
 	Name *string `json:"name,omitempty"`
 	
 	OwningService *string `json:"owningService,omitempty"`
+	
+	PrimaryRegion *string `json:"primaryRegion,omitempty"`
 	
 	RotationEnabled *bool `json:"rotationEnabled,omitempty"`
 	

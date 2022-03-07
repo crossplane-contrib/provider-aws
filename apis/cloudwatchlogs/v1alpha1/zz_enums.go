@@ -51,4 +51,38 @@ const (
 	QueryStatus_Complete  QueryStatus = "Complete"
 	QueryStatus_Failed    QueryStatus = "Failed"
 	QueryStatus_Cancelled QueryStatus = "Cancelled"
+	QueryStatus_Timeout   QueryStatus = "Timeout"
+	QueryStatus_Unknown   QueryStatus = "Unknown"
+)
+
+type StandardUnit string
+
+const (
+	StandardUnit_Seconds          StandardUnit = "Seconds"
+	StandardUnit_Microseconds     StandardUnit = "Microseconds"
+	StandardUnit_Milliseconds     StandardUnit = "Milliseconds"
+	StandardUnit_Bytes            StandardUnit = "Bytes"
+	StandardUnit_Kilobytes        StandardUnit = "Kilobytes"
+	StandardUnit_Megabytes        StandardUnit = "Megabytes"
+	StandardUnit_Gigabytes        StandardUnit = "Gigabytes"
+	StandardUnit_Terabytes        StandardUnit = "Terabytes"
+	StandardUnit_Bits             StandardUnit = "Bits"
+	StandardUnit_Kilobits         StandardUnit = "Kilobits"
+	StandardUnit_Megabits         StandardUnit = "Megabits"
+	StandardUnit_Gigabits         StandardUnit = "Gigabits"
+	StandardUnit_Terabits         StandardUnit = "Terabits"
+	StandardUnit_Percent          StandardUnit = "Percent"
+	StandardUnit_Count            StandardUnit = "Count"
+	StandardUnit_Bytes_Second     StandardUnit = "Bytes/Second"
+	StandardUnit_Kilobytes_Second StandardUnit = "Kilobytes/Second"
+	StandardUnit_Megabytes_Second StandardUnit = "Megabytes/Second"
+	StandardUnit_Gigabytes_Second StandardUnit = "Gigabytes/Second"
+	StandardUnit_Terabytes_Second StandardUnit = "Terabytes/Second"
+	StandardUnit_Bits_Second      StandardUnit = "Bits/Second"
+	StandardUnit_Kilobits_Second  StandardUnit = "Kilobits/Second"
+	StandardUnit_Megabits_Second  StandardUnit = "Megabits/Second"
+	StandardUnit_Gigabits_Second  StandardUnit = "Gigabits/Second"
+	StandardUnit_Terabits_Second  StandardUnit = "Terabits/Second"
+	StandardUnit_Count_Second     StandardUnit = "Count/Second"
+	StandardUnit_None             StandardUnit = "None"
 )

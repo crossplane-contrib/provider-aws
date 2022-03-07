@@ -62,15 +62,15 @@ spec:
                 properties:
                   allocatedCapacity:
                     description: "This parameter is deprecated. Use MaxCapacity instead.
-                      \n The number of AWS Glue data processing units (DPUs) to allocate
+                      \n The number of Glue data processing units (DPUs) to allocate
                       to this Job. You can allocate from 2 to 100 DPUs; the default
                       is 10. A DPU is a relative measure of processing power that
                       consists of 4 vCPUs of compute capacity and 16 GB of memory.
-                      For more information, see the AWS Glue pricing page (https://aws.amazon.com/glue/pricing/)."
+                      For more information, see the Glue pricing page (https://aws.amazon.com/glue/pricing/)."
                     format: int64
                     type: integer
                   command:
-                    description: The JobCommand that executes this job.
+                    description: The JobCommand that runs this job.
                     properties:
                       name:
                         type: string
@@ -92,12 +92,12 @@ spec:
                       type: string
                     description: "The default arguments for this job. \n You can specify
                       arguments here that your own job-execution script consumes,
-                      as well as arguments that AWS Glue itself consumes. \n For information
+                      as well as arguments that Glue itself consumes. \n For information
                       about how to specify and consume your own Job arguments, see
-                      the Calling AWS Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
+                      the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
                       topic in the developer guide. \n For information about the key-value
-                      pairs that AWS Glue consumes to set up your job, see the Special
-                      Parameters Used by AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
+                      pairs that Glue consumes to set up your job, see the Special
+                      Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
                       topic in the developer guide."
                     type: object
                   description:
@@ -113,10 +113,10 @@ spec:
                     type: object
                   glueVersion:
                     description: "Glue version determines the versions of Apache Spark
-                      and Python that AWS Glue supports. The Python version indicates
+                      and Python that Glue supports. The Python version indicates
                       the version supported for jobs of type Spark. \n For more information
-                      about the available AWS Glue versions and corresponding Spark
-                      and Python versions, see Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
+                      about the available Glue versions and corresponding Spark and
+                      Python versions, see Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
                       in the developer guide. \n Jobs that are created without specifying
                       a Glue version default to Glue 0.9."
                     type: string
@@ -124,11 +124,12 @@ spec:
                     description: This field is reserved for future use.
                     type: string
                   maxCapacity:
-                    description: "The number of AWS Glue data processing units (DPUs)
-                      that can be allocated when this job runs. A DPU is a relative
-                      measure of processing power that consists of 4 vCPUs of compute
-                      capacity and 16 GB of memory. For more information, see the
-                      AWS Glue pricing page (https://aws.amazon.com/glue/pricing/).
+                    description: "For Glue version 1.0 or earlier jobs, using the
+                      standard worker type, the number of Glue data processing units
+                      (DPUs) that can be allocated when this job runs. A DPU is a
+                      relative measure of processing power that consists of 4 vCPUs
+                      of compute capacity and 16 GB of memory. For more information,
+                      see the Glue pricing page (https://aws.amazon.com/glue/pricing/).
                       \n Do not set Max Capacity if using WorkerType and NumberOfWorkers.
                       \n The value that can be allocated for MaxCapacity depends on
                       whether you are running a Python shell job or an Apache Spark
@@ -138,7 +139,9 @@ spec:
                       (JobCommand.Name=\"glueetl\")    or Apache Spark streaming ETL
                       job (JobCommand.Name=\"gluestreaming\"), you    can allocate
                       from 2 to 100 DPUs. The default is 10 DPUs. This job type    cannot
-                      have a fractional DPU allocation."
+                      have a fractional DPU allocation. \n For Glue version 2.0 jobs,
+                      you cannot instead specify a Maximum capacity. Instead, you
+                      should specify a Worker type and the Number of workers."
                     type: number
                   maxRetries:
                     description: The maximum number of times to retry this job if
@@ -205,7 +208,7 @@ spec:
                       type: string
                     description: The tags to use with this job. You may use tags to
                       limit access to the job. For more information about tags in
-                      AWS Glue, see AWS Tags in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
+                      Glue, see Amazon Web Services Tags in Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
                       in the developer guide.
                     type: object
                   timeout:

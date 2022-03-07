@@ -123,14 +123,30 @@ const (
 	KeyManagerType_CUSTOMER KeyManagerType = "CUSTOMER"
 )
 
+type KeySpec_SDK string
+
+const (
+	KeySpec_SDK_RSA_2048          KeySpec_SDK = "RSA_2048"
+	KeySpec_SDK_RSA_3072          KeySpec_SDK = "RSA_3072"
+	KeySpec_SDK_RSA_4096          KeySpec_SDK = "RSA_4096"
+	KeySpec_SDK_ECC_NIST_P256     KeySpec_SDK = "ECC_NIST_P256"
+	KeySpec_SDK_ECC_NIST_P384     KeySpec_SDK = "ECC_NIST_P384"
+	KeySpec_SDK_ECC_NIST_P521     KeySpec_SDK = "ECC_NIST_P521"
+	KeySpec_SDK_ECC_SECG_P256K1   KeySpec_SDK = "ECC_SECG_P256K1"
+	KeySpec_SDK_SYMMETRIC_DEFAULT KeySpec_SDK = "SYMMETRIC_DEFAULT"
+)
+
 type KeyState string
 
 const (
-	KeyState_Enabled         KeyState = "Enabled"
-	KeyState_Disabled        KeyState = "Disabled"
-	KeyState_PendingDeletion KeyState = "PendingDeletion"
-	KeyState_PendingImport   KeyState = "PendingImport"
-	KeyState_Unavailable     KeyState = "Unavailable"
+	KeyState_Creating               KeyState = "Creating"
+	KeyState_Enabled                KeyState = "Enabled"
+	KeyState_Disabled               KeyState = "Disabled"
+	KeyState_PendingDeletion        KeyState = "PendingDeletion"
+	KeyState_PendingImport          KeyState = "PendingImport"
+	KeyState_PendingReplicaDeletion KeyState = "PendingReplicaDeletion"
+	KeyState_Unavailable            KeyState = "Unavailable"
+	KeyState_Updating               KeyState = "Updating"
 )
 
 type KeyUsageType string
@@ -145,6 +161,13 @@ type MessageType string
 const (
 	MessageType_RAW    MessageType = "RAW"
 	MessageType_DIGEST MessageType = "DIGEST"
+)
+
+type MultiRegionKeyType string
+
+const (
+	MultiRegionKeyType_PRIMARY MultiRegionKeyType = "PRIMARY"
+	MultiRegionKeyType_REPLICA MultiRegionKeyType = "REPLICA"
 )
 
 type OriginType string

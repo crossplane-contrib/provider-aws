@@ -175,12 +175,12 @@ type CustomEndpointDetails struct {
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
-	// SubnetIDsRefs is a list of references to Subnets used to set
+	// SubnetIDRefs is a list of references to Subnets used to set
 	// the SubnetIDs.
 	// +optional
 	SubnetIDRefs []xpv1.Reference `json:"subnetIDRefs,omitempty"`
 
-	// SubnetIDsSelector selects references to Subnets used
+	// SubnetIDSelector selects references to Subnets used
 	// to set the SubnetIds.
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`

@@ -144,6 +144,7 @@ type CustomVPCPeeringConnectionParameters struct {
 	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
 	// The ID of the VPC with which you are creating the VPC peering connection.
 	// You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
 	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// PeerVPCIDRef is a reference to an API used to set
 	// the PeerVPCID.
