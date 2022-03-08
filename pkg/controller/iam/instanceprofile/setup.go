@@ -20,7 +20,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	svcsdk "github.com/aws/aws-sdk-go/service/iam"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"k8s.io/client-go/util/workqueue"
@@ -48,8 +47,8 @@ func SetupInstanceProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateL
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
-			e.postCreate = postCreate
-			e.preDelete = preDelete
+			e.postCreate = u.postCreate
+			e.preDelete = u.preDelete
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
