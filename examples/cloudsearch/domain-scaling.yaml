@@ -5,10 +5,10 @@ metadata:
 spec:
   forProvider:
     domainName: cloudsearch-test-domain
-    region: us-west-1
+    region: us-east-1
     desiredReplicationCount: 4
   providerConfigRef:
-    name: default
+    name: example
   writeConnectionSecretToRef:
     namespace: crossplane-system
     name: cloudsearch-secret
