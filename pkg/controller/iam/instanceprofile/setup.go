@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
 	svcsdk "github.com/aws/aws-sdk-go/service/iam"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -44,6 +44,7 @@ func SetupInstanceProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateL
 	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
 	opts := []option{
 		func(e *external) {
+			u := &updater{client: e.client}
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
@@ -83,36 +84,31 @@ func preCreate(_ context.Context, cr *svcapitypes.InstanceProfile, obj *svcsdk.C
 	return nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.InstanceProfile, resp *svcsdk.CreateInstanceProfileOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+type updater struct {
+	client svcsdkapi.IAMAPI
+}
+
+func (u *updater) postCreate(ctx context.Context, cr *svcapitypes.InstanceProfile, resp *svcsdk.CreateInstanceProfileOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	sess, err := session.NewSession()
-	if err != nil {
-		return cre, err
-	}
-	svc := iam.New(sess)
-	input := &iam.AddRoleToInstanceProfileInput{
-		InstanceProfileName: aws.String(cr.Name),
+
+	input := &svcsdk.AddRoleToInstanceProfileInput{
+		InstanceProfileName: aws.String(meta.GetExternalName(cr)),
 		RoleName:            cr.Spec.ForProvider.Role,
 	}
 
-	_, err = svc.AddRoleToInstanceProfile(input)
+	_, err = u.client.AddRoleToInstanceProfileWithContext(ctx, input)
 	return cre, err
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.InstanceProfile, obj *svcsdk.DeleteInstanceProfileInput) (bool, error) {
+func (u *updater) preDelete(ctx context.Context, cr *svcapitypes.InstanceProfile, obj *svcsdk.DeleteInstanceProfileInput) (bool, error) {
 	obj.InstanceProfileName = aws.String(meta.GetExternalName(cr))
-	sess, err := session.NewSession()
-	if err != nil {
-		return false, err
-	}
-	svc := iam.New(sess)
-	input := &iam.RemoveRoleFromInstanceProfileInput{
-		InstanceProfileName: aws.String(cr.Name),
+	input := &svcsdk.RemoveRoleFromInstanceProfileInput{
+		InstanceProfileName: aws.String(meta.GetExternalName(cr)),
 		RoleName:            cr.Spec.ForProvider.Role,
 	}
 
-	_, err = svc.RemoveRoleFromInstanceProfile(input)
+	_, err := u.client.RemoveRoleFromInstanceProfileWithContext(ctx, input)
 	return false, err
 }
