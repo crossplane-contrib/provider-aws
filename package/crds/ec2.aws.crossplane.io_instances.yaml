@@ -155,6 +155,32 @@ spec:
                                 RequestSpotFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet.html),
                                 and RequestSpotInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html)."
                               type: string
+                            kmsKeyIdRef:
+                              description: KMSKeyIDRef is a reference to a KMS Key
+                                used to set KMSKeyID.
+                              properties:
+                                name:
+                                  description: Name of the referenced object.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            kmsKeyIdSelector:
+                              description: KMSKeyIDSelector selects a reference to
+                                a KMS Key used to set KMSKeyID.
+                              properties:
+                                matchControllerRef:
+                                  description: MatchControllerRef ensures an object
+                                    with the same controller reference as the selecting
+                                    object is selected.
+                                  type: boolean
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: MatchLabels ensures an object with
+                                    matching labels is selected.
+                                  type: object
+                              type: object
                             snapshotId:
                               description: The ID of the snapshot.
                               type: string
