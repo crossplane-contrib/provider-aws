@@ -1,0 +1,19 @@
+model_name: amp
+ignore:
+  field_paths:
+    - CreateWorkspaceInput.ClientToken
+  resource_names:
+    - AlertManagerDefinition
+    - RuleGroupsNamespace
+resources:
+  Workspace:
+    fields:
+      PrometheusEndpoint:
+        is_read_only: true
+        from:
+          operation: DescribeWorkspace
+          path: Workspace.PrometheusEndpoint
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException

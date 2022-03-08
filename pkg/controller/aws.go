@@ -121,6 +121,7 @@ import (
 	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	prometheusserviceworkspace "github.com/crossplane/provider-aws/pkg/controller/prometheusservice/workspace"
 	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
@@ -275,6 +276,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		subscription.SetupSubscription,
 		nottopic.SetupSNSTopic,
 		notsubscription.SetupSubscription,
+		prometheusserviceworkspace.SetupWorkspace,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
