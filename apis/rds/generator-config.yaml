@@ -1,3 +1,17 @@
+operations:
+  AddRoleToDBInstance:
+    resource_name: DBInstanceRoleAssociation
+    operation_type: Create
+  RemoveRoleFromDBInstance:
+    resource_name: DBInstanceRoleAssociation
+    operation_type: Delete
+
+resources:
+  DBInstanceRoleAssociation:
+    exceptions:
+      errors:
+        404:
+          code: DBInstanceNotFound
 ignore:
   field_paths:
     - DescribeDBClustersInput.DBClusterIdentifier
@@ -32,6 +46,10 @@ ignore:
     - ModifyGlobalClusterInput.GlobalClusterIdentifier
     - CreateGlobalClusterInput.GlobalClusterIdentifier
     - DeleteGlobalClusterInput.GlobalClusterIdentifier
+    - AddRoleToDBInstanceInput.DBInstanceIdentifier
+    - AddRoleToDBInstanceInput.RoleArn
+    - RemoveRoleFromDBInstanceInput.DBInstanceIdentifier
+    - RemoveRoleFromDBInstanceInput.RoleArn
   resource_names:
     - CustomAvailabilityZone
     - CustomDBEngineVersion

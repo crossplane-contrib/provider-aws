@@ -128,6 +128,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstanceroleassociation"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
@@ -229,6 +230,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		dbcluster.SetupDBCluster,
 		dbclusterparametergroup.SetupDBClusterParameterGroup,
 		dbinstance.SetupDBInstance,
+		dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
 		dbparametergroup.SetupDBParameterGroup,
 		globalcluster.SetupGlobalCluster,
 		vpccidrblock.SetupVPCCIDRBlock,
