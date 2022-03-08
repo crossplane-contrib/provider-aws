@@ -1073,7 +1073,7 @@ spec:
                                     eventThreshold:
                                       description: A container specifying the time
                                         threshold for emitting the s3:Replication:OperationMissedThreshold
-                                        event. EventThreshold is a required field
+                                        event.
                                       properties:
                                         minutes:
                                           description: "Contains an integer specifying
@@ -1092,7 +1092,6 @@ spec:
                                       - Disabled
                                       type: string
                                   required:
-                                  - eventThreshold
                                   - status
                                   type: object
                                 replicationTime:
