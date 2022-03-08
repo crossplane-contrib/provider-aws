@@ -6,6 +6,12 @@ operations:
     resource_name: DBInstanceRoleAssociation
     operation_type: Delete
 
+resources:
+  DBInstanceRoleAssociation:
+    exceptions:
+      errors:
+        404:
+          code: DBInstanceNotFound
 ignore:
   field_paths:
     - DescribeDBClustersInput.DBClusterIdentifier

@@ -53,5 +53,5 @@ func GenerateRemoveRoleFromDBInstanceInput(cr *svcapitypes.DBInstanceRoleAssocia
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "UNKNOWN"
+	return ok && awsErr.Code() == "DBInstanceNotFound"
 }
