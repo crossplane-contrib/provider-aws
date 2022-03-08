@@ -55,6 +55,20 @@ func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
 	}
 }
 
+func generateSSEConfigWithBucketEncryption() *v1beta1.ServerSideEncryptionConfiguration {
+	return &v1beta1.ServerSideEncryptionConfiguration{
+		Rules: []v1beta1.ServerSideEncryptionRule{
+			{
+				BucketKeyEnabled: *awsclient.Bool(true),
+				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+					KMSMasterKeyID: awsclient.String(keyID),
+					SSEAlgorithm:   sseAlgo,
+				},
+			},
+		},
+	}
+}
+
 func generateAWSSSE() *s3types.ServerSideEncryptionConfiguration {
 	return &s3types.ServerSideEncryptionConfiguration{
 		Rules: []s3types.ServerSideEncryptionRule{
@@ -164,6 +178,20 @@ func TestSSEObserve(t *testing.T) {
 			},
 			want: want{
 				status: Updated,
+				err:    nil,
+			},
+		},
+		"NeedsUpdateEnableBucketKey": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithSSEConfig(generateSSEConfigWithBucketEncryption())),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryption: func(ctx context.Context, input *s3.GetBucketEncryptionInput, opts []func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
+						return &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}, nil
+					},
+				}),
+			},
+			want: want{
+				status: NeedsUpdate,
 				err:    nil,
 			},
 		},
