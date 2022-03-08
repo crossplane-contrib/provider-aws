@@ -1,0 +1,26 @@
+apiVersion: cloudsearch.aws.crossplane.io/v1alpha1
+kind: Domain
+metadata:
+  name: cloudsearch-test-anonym
+spec:
+  forProvider:
+    # Member must have length less than or equal to 28, Member must have length
+    # greater than or equal to 3, Member must satisfy 
+    # regular expression pattern: [a-z][a-z0-9\\-]+]
+    domainName: cloudsearch-test-anonym
+    region: us-east-1
+    accessPolicies: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "*"
+            },
+            "Action": "cloudsearch:*"
+          }
+        ]
+      }
+  providerConfigRef:
+    name: example
