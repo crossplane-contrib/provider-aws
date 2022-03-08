@@ -856,6 +856,32 @@ func StringValue(v *string) string {
 	return aws.ToString(v)
 }
 
+// StringSliceToPtr converts the supplied string array to an array of string pointers.
+func StringSliceToPtr(slice []string) []*string {
+	if slice == nil {
+		return nil
+	}
+
+	res := make([]*string, len(slice))
+	for i, s := range slice {
+		res[i] = String(s)
+	}
+	return res
+}
+
+// StringPtrSliceToValue converts the supplied string pointer array to an array of strings.
+func StringPtrSliceToValue(slice []*string) []string {
+	if slice == nil {
+		return nil
+	}
+
+	res := make([]string, len(slice))
+	for i, s := range slice {
+		res[i] = StringValue(s)
+	}
+	return res
+}
+
 // BoolValue calls underlying aws ToBool
 func BoolValue(v *bool) bool {
 	return aws.ToBool(v)

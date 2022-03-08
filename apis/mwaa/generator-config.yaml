@@ -1,0 +1,32 @@
+ignore:
+  field_paths:
+    - CreateEnvironmentInput.Name
+    - CreateEnvironmentInput.KmsKey
+    - CreateEnvironmentInput.SourceBucketArn
+    - CreateEnvironmentInput.ExecutionRoleArn
+    - CreateEnvironmentInput.NetworkConfiguration
+    - UpdateEnvironmentInput.Name
+    - UpdateEnvironmentInput.KmsKey
+    - UpdateEnvironmentInput.SourceBucketArn
+    - UpdateEnvironmentInput.ExecutionRoleArn
+    - UpdateEnvironmentInput.NetworkConfiguration
+    - GetEnvironmentOutput.Environment.NetworkConfiguration
+    - GetEnvironmentOutput.Environment.LastUpdate.CreatedAt
+  resource_names:
+    - WebLoginToken
+    - CliToken
+resources:
+  Environment:
+    fields:
+      LastUpdate:
+        is_read_only: true
+        from:
+          operation: GetEnvironment
+          path: Environment.LastUpdate
+      Status:
+        is_read_only: true
+        print:
+          name: STATUS
+        from:
+          operation: GetEnvironment
+          path: Environment.Status
