@@ -1,0 +1,11 @@
+apiVersion: cognitoidentityprovider.aws.crossplane.io/v1alpha1
+kind: UserPoolDomain
+metadata:
+  name: example-domain
+spec:
+  forProvider:
+    region: us-east-1
+    userPoolIdRef:
+      name: example
+  providerConfigRef:
+    name: example

@@ -48,6 +48,11 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
 	domain "github.com/crossplane/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
+	cognitogroup "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/group"
+	cognitoidentityprovider "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/identityprovider"
+	cognitouserpool "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpool"
+	cognitouserpoolclient "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpoolclient"
+	cognitouserpooldomain "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpooldomain"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -277,6 +282,11 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 		kinesisstream.SetupStream,
 		resolverruleassociation.SetupResolverRuleAssociation,
+		cognitouserpool.SetupUserPool,
+		cognitouserpooldomain.SetupUserPoolDomain,
+		cognitogroup.SetupGroup,
+		cognitouserpoolclient.SetupUserPoolClient,
+		cognitoidentityprovider.SetupIdentityProvider,
 		neptunecluster.SetupDBCluster,
 		topic.SetupSNSTopic,
 		subscription.SetupSubscription,
