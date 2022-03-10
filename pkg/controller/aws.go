@@ -82,6 +82,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/efs/accesspoint"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
 	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
@@ -228,6 +229,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		globaltable.SetupGlobalTable,
 		key.SetupKey,
 		alias.SetupAlias,
+		accesspoint.SetupAccessPoint,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
 		dbclusterparametergroup.SetupDBClusterParameterGroup,
