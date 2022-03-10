@@ -12,7 +12,7 @@ spec:
     dbInstanceClass: db.t2.micro
     dbName: example
     engine: postgres
-    engineVersion: "12.4"
+    engineVersion: "12.9"
     masterUsername: adminuser
     masterUserPasswordSecretRef:
       key: password
