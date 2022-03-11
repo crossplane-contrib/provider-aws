@@ -53,9 +53,8 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			e.lateInitialize = lateInitialize
 			e.isUpToDate = c.isUpToDate
 			e.preObserve = preObserve
-			e.postObserve = postObserve
+			e.postObserve = c.postObserve
 			e.preCreate = c.preCreate
-			e.postCreate = c.postCreate
 			e.preDelete = c.preDelete
 			e.filterList = filterList
 			e.preUpdate = c.preUpdate
@@ -140,19 +139,6 @@ func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.
 	return conn, nil
 }
 
-func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.CreateDBInstanceOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	conn, err := e.assembleConnectionDetails(ctx, cr)
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	return managed.ExternalCreation{
-		ConnectionDetails: conn,
-	}, nil
-}
-
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
@@ -189,7 +175,7 @@ func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return false, nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -201,6 +187,8 @@ func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Des
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
 	}
+
+	obs.ConnectionDetails, _ = e.assembleConnectionDetails(ctx, cr)
 	return obs, nil
 }
 
@@ -210,13 +198,17 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.DBInstanceClass = aws.LateInitializeStringPtr(in.DBInstanceClass, db.DBInstanceClass)
 	in.Engine = aws.LateInitializeStringPtr(in.Engine, db.Engine)
 
-	in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
+	in.DBClusterIdentifier = aws.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
+	if in.DBClusterIdentifier == nil {
+		in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
+		in.StorageEncrypted = aws.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
+		in.StorageType = aws.LateInitializeStringPtr(in.StorageType, db.StorageType)
+	}
 	in.AutoMinorVersionUpgrade = aws.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
 	in.AvailabilityZone = aws.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
 	in.BackupRetentionPeriod = aws.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
 	in.CharacterSetName = aws.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
 	in.CopyTagsToSnapshot = aws.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
-	in.DBClusterIdentifier = aws.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
 	in.DBName = aws.LateInitializeStringPtr(in.DBName, db.DBName)
 	in.DeletionProtection = aws.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
 	in.EnableIAMDatabaseAuthentication = aws.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
@@ -238,8 +230,6 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.PreferredMaintenanceWindow = aws.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	in.PromotionTier = aws.LateInitializeInt64Ptr(in.PromotionTier, db.PromotionTier)
 	in.PubliclyAccessible = aws.LateInitializeBoolPtr(in.PubliclyAccessible, db.PubliclyAccessible)
-	in.StorageEncrypted = aws.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
-	in.StorageType = aws.LateInitializeStringPtr(in.StorageType, db.StorageType)
 	in.Timezone = aws.LateInitializeStringPtr(in.Timezone, db.Timezone)
 
 	if db.Endpoint != nil {

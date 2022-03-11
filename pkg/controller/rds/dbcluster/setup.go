@@ -31,12 +31,11 @@ func SetupDBCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve
-			e.postObserve = postObserve
 			c := &custom{client: e.client, kube: e.kube}
+			e.postObserve = c.postObserve
 			e.isUpToDate = isUpToDate
 			e.preUpdate = preUpdate
 			e.preCreate = c.preCreate
-			e.postCreate = c.postCreate
 			e.preDelete = preDelete
 			e.filterList = filterList
 		},
@@ -64,7 +63,7 @@ func preObserve(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.Descri
 // described here https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Status.html
 // Need to get help from community on how to deal with this. Ideally the status should reflect
 // the true status value as described by the provider.
-func postObserve(_ context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -76,6 +75,16 @@ func postObserve(_ context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.Desc
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
 	}
+
+	obs.ConnectionDetails = managed.ConnectionDetails{
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(cr.Status.AtProvider.Endpoint)),
+		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
+	}
+	pw, _, _ := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if pw != "" {
+		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	}
+
 	return obs, nil
 }
 
@@ -96,26 +105,6 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 		obj.VpcSecurityGroupIds[i] = aws.String(v)
 	}
 	return nil
-}
-
-func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, _ *svcsdk.CreateDBClusterOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(cr.Status.AtProvider.Endpoint)),
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
-	}
-	pw, _, err := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "cannot get password from the given secret")
-	}
-	if pw != "" {
-		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
-	}
-	return managed.ExternalCreation{
-		ConnectionDetails: conn,
-	}, nil
 }
 
 func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) {
