@@ -136,8 +136,10 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 		return manualv1alpha1.NodeGroupObservation{}
 	}
 	o := manualv1alpha1.NodeGroupObservation{
-		NodeGroupArn: awsclient.StringValue(ng.NodegroupArn),
-		Status:       manualv1alpha1.NodeGroupStatusType(ng.Status),
+		NodeGroupArn:   awsclient.StringValue(ng.NodegroupArn),
+		Version:        awsclient.StringValue(ng.Version),
+		ReleaseVersion: awsclient.StringValue(ng.ReleaseVersion),
+		Status:         manualv1alpha1.NodeGroupStatusType(ng.Status),
 	}
 	if ng.CreatedAt != nil {
 		o.CreatedAt = &metav1.Time{Time: *ng.CreatedAt}

@@ -253,6 +253,11 @@ type ClusterObservation struct {
 	// The identity provider information for the cluster.
 	Identity Identity `json:"identity,omitempty"`
 
+	// The kubernetes version of your Amazon EKS cluster. For more information, see
+	// Kubernetes Versions (https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html)
+	// in the Amazon EKS User Guide .
+	Version string `json:"version,omitempty"`
+
 	// The platform version of your Amazon EKS cluster. For more information, see
 	// Platform Versions (https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html)
 	// in the Amazon EKS User Guide .

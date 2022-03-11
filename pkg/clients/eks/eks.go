@@ -219,6 +219,7 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 		Arn:             awsclients.StringValue(cluster.Arn),
 		Endpoint:        awsclients.StringValue(cluster.Endpoint),
 		PlatformVersion: awsclients.StringValue(cluster.PlatformVersion),
+		Version:         awsclients.StringValue(cluster.Version),
 		Status:          v1beta1.ClusterStatusType(cluster.Status),
 	}
 
