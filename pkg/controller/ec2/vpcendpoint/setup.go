@@ -367,11 +367,8 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 		}
 	}
 
-	tagMap := map[string]string{}
+	tagMap := cr.Spec.ForProvider.Tags
 	tagMap["Name"] = cr.Name
-	for _, t := range vpcEndpointTags.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
 	for k, v := range cpresource.GetExternalTags(mgd) {
 		tagMap[k] = v
 	}

@@ -11,5 +11,7 @@ spec:
       name: dev-key
     volumeType: gp3
     size: 1
+    tags:
+      Type: gp3
   providerConfigRef:
     name: example

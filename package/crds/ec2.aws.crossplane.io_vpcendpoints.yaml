@@ -371,6 +371,11 @@ spec:
                           type: array
                       type: object
                     type: array
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: Metadata tagging key value pairs
+                    type: object
                   vpcEndpointType:
                     description: "The type of endpoint. \n Default: Gateway"
                     type: string
