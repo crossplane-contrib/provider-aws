@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: userpoolclients.cognitoidentityprovider.aws.crossplane.io
 spec:
@@ -114,9 +115,9 @@ spec:
                     type: object
                   callbackURLs:
                     description: "A list of allowed redirect (callback) URLs for the
-                      identity providers. \n A redirect URI must: \n    * Be an absolute
-                      URI. \n    * Be registered with the authorization server. \n
-                      \   * Not include a fragment component. \n See OAuth 2.0 - Redirection
+                      identity providers. \n A redirect URI must: \n * Be an absolute
+                      URI. \n * Be registered with the authorization server. \n *
+                      Not include a fragment component. \n See OAuth 2.0 - Redirection
                       Endpoint (https://tools.ietf.org/html/rfc6749#section-3.1.2).
                       \n Amazon Cognito requires HTTPS over HTTP except for http://localhost
                       for testing purposes only. \n App callback URLs such as myapp://example
@@ -130,11 +131,11 @@ spec:
                     type: string
                   defaultRedirectURI:
                     description: "The default redirect URI. Must be in the CallbackURLs
-                      list. \n A redirect URI must: \n    * Be an absolute URI. \n
-                      \   * Be registered with the authorization server. \n    * Not
-                      include a fragment component. \n See OAuth 2.0 - Redirection
-                      Endpoint (https://tools.ietf.org/html/rfc6749#section-3.1.2).
-                      \n Amazon Cognito requires HTTPS over HTTP except for http://localhost
+                      list. \n A redirect URI must: \n * Be an absolute URI. \n *
+                      Be registered with the authorization server. \n * Not include
+                      a fragment component. \n See OAuth 2.0 - Redirection Endpoint
+                      (https://tools.ietf.org/html/rfc6749#section-3.1.2). \n Amazon
+                      Cognito requires HTTPS over HTTP except for http://localhost
                       for testing purposes only. \n App callback URLs such as myapp://example
                       are also supported."
                     type: string
@@ -149,18 +150,18 @@ spec:
                       user pool clients. Flow names without the ALLOW_ prefix are
                       deprecated in favor of new names with the ALLOW_ prefix. Note
                       that values with ALLOW_ prefix cannot be used along with values
-                      without ALLOW_ prefix. \n Valid values include: \n    * ALLOW_ADMIN_USER_PASSWORD_AUTH:
-                      Enable admin based user password authentication    flow ADMIN_USER_PASSWORD_AUTH.
-                      This setting replaces the ADMIN_NO_SRP_AUTH    setting. With
-                      this authentication flow, Cognito receives the password    in
-                      the request instead of using the SRP (Secure Remote Password
-                      protocol)    protocol to verify passwords. \n    * ALLOW_CUSTOM_AUTH:
-                      Enable Lambda trigger based authentication. \n    * ALLOW_USER_PASSWORD_AUTH:
-                      Enable user password-based authentication.    In this flow,
-                      Cognito receives the password in the request instead of    using
-                      the SRP protocol to verify passwords. \n    * ALLOW_USER_SRP_AUTH:
-                      Enable SRP based authentication. \n    * ALLOW_REFRESH_TOKEN_AUTH:
-                      Enable authflow to refresh tokens."
+                      without ALLOW_ prefix. \n Valid values include: \n * ALLOW_ADMIN_USER_PASSWORD_AUTH:
+                      Enable admin based user password authentication flow ADMIN_USER_PASSWORD_AUTH.
+                      This setting replaces the ADMIN_NO_SRP_AUTH setting. With this
+                      authentication flow, Cognito receives the password in the request
+                      instead of using the SRP (Secure Remote Password protocol) protocol
+                      to verify passwords. \n * ALLOW_CUSTOM_AUTH: Enable Lambda trigger
+                      based authentication. \n * ALLOW_USER_PASSWORD_AUTH: Enable
+                      user password-based authentication. In this flow, Cognito receives
+                      the password in the request instead of using the SRP protocol
+                      to verify passwords. \n * ALLOW_USER_SRP_AUTH: Enable SRP based
+                      authentication. \n * ALLOW_REFRESH_TOKEN_AUTH: Enable authflow
+                      to refresh tokens."
                     items:
                       type: string
                     type: array
@@ -189,13 +190,12 @@ spec:
                       and password recovery return a response indicating a code was
                       sent to a simulated destination. When set to LEGACY, those APIs
                       will return a UserNotFoundException exception if the user does
-                      not exist in the user pool. \n Valid values include: \n    *
-                      ENABLED - This prevents user existence-related errors. \n    *
-                      LEGACY - This represents the old behavior of Cognito where user
-                      existence    related errors are not prevented. \n After February
-                      15th 2020, the value of PreventUserExistenceErrors will default
-                      to ENABLED for newly created user pool clients if no value is
-                      provided."
+                      not exist in the user pool. \n Valid values include: \n * ENABLED
+                      - This prevents user existence-related errors. \n * LEGACY -
+                      This represents the old behavior of Cognito where user existence
+                      related errors are not prevented. \n After February 15th 2020,
+                      the value of PreventUserExistenceErrors will default to ENABLED
+                      for newly created user pool clients if no value is provided."
                     type: string
                   readAttributes:
                     description: The read attributes.

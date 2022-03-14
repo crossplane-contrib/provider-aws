@@ -3,22 +3,19 @@ package workspace
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/prometheusservice"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/prometheusservice/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -30,7 +27,7 @@ const (
 )
 
 // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
-func SetupWorkspace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.WorkspaceGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -43,16 +40,14 @@ func SetupWorkspace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Workspace{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.WorkspaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: userpools.cognitoidentityprovider.aws.crossplane.io
 spec:
@@ -453,16 +454,15 @@ spec:
                     description: "The reason why the SMS configuration cannot send
                       the messages to your users. \n This message might include comma-separated
                       values to describe why your SMS configuration can't send messages
-                      to user pool end users. \n    * InvalidSmsRoleAccessPolicyException
-                      - The IAM role which Cognito uses    to send SMS messages is
-                      not properly configured. For more information,    see SmsConfigurationType
+                      to user pool end users. \n * InvalidSmsRoleAccessPolicyException
+                      - The IAM role which Cognito uses to send SMS messages is not
+                      properly configured. For more information, see SmsConfigurationType
                       (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
-                      \n    * SNSSandbox - The account is in SNS Sandbox and messages
-                      won’t reach    unverified end users. This parameter won’t get
-                      populated with SNSSandbox    if the IAM user creating the user
-                      pool doesn’t have SNS permissions.    To learn how to move your
-                      account out of the sandbox, see Moving out of    the SMS sandbox
-                      (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
+                      \n * SNSSandbox - The account is in SNS Sandbox and messages
+                      won’t reach unverified end users. This parameter won’t get populated
+                      with SNSSandbox if the IAM user creating the user pool doesn’t
+                      have SNS permissions. To learn how to move your account out
+                      of the sandbox, see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
                     type: string
                   status:
                     description: The status of a user pool.

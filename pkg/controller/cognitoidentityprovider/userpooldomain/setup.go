@@ -15,18 +15,14 @@ package userpooldomain
 
 import (
 	"context"
-	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -35,7 +31,7 @@ import (
 )
 
 // SetupUserPoolDomain adds a controller that reconciles User.
-func SetupUserPoolDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupUserPoolDomain(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
 
 	opts := []option{
@@ -48,16 +44,12 @@ func SetupUserPoolDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.UserPoolDomain{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.UserPoolDomainGroupVersionKind),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
