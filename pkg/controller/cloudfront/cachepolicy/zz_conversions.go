@@ -78,9 +78,6 @@ func GenerateCachePolicy(resp *svcsdk.GetCachePolicyOutput) *svcapitypes.CachePo
 							}
 							f0f0f5f0f1.Items = f0f0f5f0f1f0
 						}
-						if resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity != nil {
-							f0f0f5f0f1.Quantity = resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity
-						}
 						f0f0f5f0.Cookies = f0f0f5f0f1
 					}
 					f0f0f5.CookiesConfig = f0f0f5f0
@@ -196,9 +193,6 @@ func GenerateCreateCachePolicyInput(cr *svcapitypes.CachePolicy) *svcsdk.CreateC
 						}
 						f0f5f0f1.SetItems(f0f5f0f1f0)
 					}
-					if cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity != nil {
-						f0f5f0f1.SetQuantity(*cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity)
-					}
 					f0f5f0.SetCookies(f0f5f0f1)
 				}
 				f0f5.SetCookiesConfig(f0f5f0)
@@ -298,9 +292,6 @@ func GenerateUpdateCachePolicyInput(cr *svcapitypes.CachePolicy) *svcsdk.UpdateC
 							f0f5f0f1f0 = append(f0f5f0f1f0, &f0f5f0f1f0elem)
 						}
 						f0f5f0f1.SetItems(f0f5f0f1f0)
-					}
-					if cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity != nil {
-						f0f5f0f1.SetQuantity(*cr.Spec.ForProvider.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity)
 					}
 					f0f5f0.SetCookies(f0f5f0f1)
 				}

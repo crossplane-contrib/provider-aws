@@ -31,3 +31,6 @@ ignore:
     - CustomHeaders.Quantity
     - OriginSslProtocols.Quantity
     - OriginAccessIdentityConfig.CallerReference
+    - OriginGroupMembers.Quantity
+    - FunctionAssociations.Quantity
+    - CookieNames.Quantity

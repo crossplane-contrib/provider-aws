@@ -152,9 +152,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							}
 							f0f0f5f0f1.Items = f0f0f5f0f1f0
 						}
-						if resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity != nil {
-							f0f0f5f0f1.Quantity = resp.CachePolicy.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.Cookies.Quantity
-						}
 						f0f0f5f0.Cookies = f0f0f5f0f1
 					}
 					f0f0f5.CookiesConfig = f0f0f5f0

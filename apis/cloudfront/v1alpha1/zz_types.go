@@ -312,8 +312,6 @@ type ContentTypeProfiles struct {
 // +kubebuilder:skipversion
 type CookieNames struct {
 	Items []*string `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -818,8 +816,6 @@ type FunctionAssociation struct {
 // +kubebuilder:skipversion
 type FunctionAssociations struct {
 	Items []*FunctionAssociation `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1072,8 +1068,6 @@ type OriginGroupMember struct {
 type OriginGroupMembers struct {
 	// List of origins in an origin group.
 	Items []*OriginGroupMember `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion

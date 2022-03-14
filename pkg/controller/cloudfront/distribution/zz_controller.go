@@ -285,9 +285,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 										}
 										f0f4f1f0elemf5f0f1.Items = f0f4f1f0elemf5f0f1f0
 									}
-									if f0f4f1f0iter.ForwardedValues.Cookies.WhitelistedNames.Quantity != nil {
-										f0f4f1f0elemf5f0f1.Quantity = f0f4f1f0iter.ForwardedValues.Cookies.WhitelistedNames.Quantity
-									}
 									f0f4f1f0elemf5f0.WhitelistedNames = f0f4f1f0elemf5f0f1
 								}
 								f0f4f1f0elemf5.Cookies = f0f4f1f0elemf5f0
@@ -338,9 +335,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									f0f4f1f0elemf6f0 = append(f0f4f1f0elemf6f0, f0f4f1f0elemf6f0elem)
 								}
 								f0f4f1f0elemf6.Items = f0f4f1f0elemf6f0
-							}
-							if f0f4f1f0iter.FunctionAssociations.Quantity != nil {
-								f0f4f1f0elemf6.Quantity = f0f4f1f0iter.FunctionAssociations.Quantity
 							}
 							f0f4f1f0elem.FunctionAssociations = f0f4f1f0elemf6
 						}
@@ -515,9 +509,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								}
 								f0f4f4f5f0f1.Items = f0f4f4f5f0f1f0
 							}
-							if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity != nil {
-								f0f4f4f5f0f1.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity
-							}
 							f0f4f4f5f0.WhitelistedNames = f0f4f4f5f0f1
 						}
 						f0f4f4f5.Cookies = f0f4f4f5f0
@@ -568,9 +559,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f4f6f0 = append(f0f4f4f6f0, f0f4f4f6f0elem)
 						}
 						f0f4f4f6.Items = f0f4f4f6f0
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-						f0f4f4f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity
 					}
 					f0f4f4.FunctionAssociations = f0f4f4f6
 				}
@@ -719,9 +707,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 									f0f4f10f0elemf2f0 = append(f0f4f10f0elemf2f0, f0f4f10f0elemf2f0elem)
 								}
 								f0f4f10f0elemf2.Items = f0f4f10f0elemf2f0
-							}
-							if f0f4f10f0iter.Members.Quantity != nil {
-								f0f4f10f0elemf2.Quantity = f0f4f10f0iter.Members.Quantity
 							}
 							f0f4f10f0elem.Members = f0f4f10f0elemf2
 						}
