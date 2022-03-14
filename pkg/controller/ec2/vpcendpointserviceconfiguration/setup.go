@@ -3,16 +3,14 @@ package vpcendpointserviceconfiguration
 import (
 	"context"
 	"sort"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -21,10 +19,8 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
 const (
@@ -32,7 +28,7 @@ const (
 )
 
 // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
-func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -49,14 +45,12 @@ func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, l logging.Logger, rl
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.VPCEndpointServiceConfiguration{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.VPCEndpointServiceConfigurationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

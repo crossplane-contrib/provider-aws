@@ -25,6 +25,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	xpcontroller "github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 
@@ -34,11 +35,12 @@ import (
 
 func main() {
 	var (
-		app            = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
-		debug          = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncInterval   = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
-		pollInterval   = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
-		leaderElection = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		app              = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
+		debug            = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncInterval     = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
+		pollInterval     = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
+		leaderElection   = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		maxReconcileRate = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -63,8 +65,15 @@ func main() {
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
+	o := xpcontroller.Options{
+		Logger:                  log,
+		MaxConcurrentReconciles: *maxReconcileRate,
+		PollInterval:            *pollInterval,
+		GlobalRateLimiter:       ratelimiter.NewGlobal(*maxReconcileRate),
+	}
+
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS APIs to scheme")
-	kingpin.FatalIfError(controller.Setup(mgr, log, ratelimiter.NewGlobal(ratelimiter.DefaultGlobalRPS), *pollInterval), "Cannot setup AWS controllers")
+	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 
 }

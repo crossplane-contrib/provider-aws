@@ -2,20 +2,16 @@ package broker
 
 import (
 	"context"
-	"time"
 
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/mq/mqiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -26,7 +22,7 @@ import (
 )
 
 // SetupBroker adds a controller that reconciles Broker.
-func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.BrokerGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -41,16 +37,14 @@ func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Broker{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BrokerGroupVersionKind),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

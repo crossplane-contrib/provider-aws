@@ -18,23 +18,19 @@ package acm
 
 import (
 	"context"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
 	awsacmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -59,23 +55,21 @@ const (
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
-func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupCertificate(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.CertificateGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&v1beta1.Certificate{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.CertificateGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
-			managed.WithPollInterval(poll),
+			managed.WithPollInterval(o.PollInterval),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

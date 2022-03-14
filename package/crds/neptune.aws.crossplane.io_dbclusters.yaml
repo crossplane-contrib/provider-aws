@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: dbclusters.neptune.aws.crossplane.io
 spec:
@@ -78,7 +79,7 @@ spec:
                   backupRetentionPeriod:
                     description: "The number of days for which automated backups are
                       retained. You must specify a minimum value of 1. \n Default:
-                      1 \n Constraints: \n    * Must be a value from 1 to 35"
+                      1 \n Constraints: \n * Must be a value from 1 to 35"
                     format: int64
                     type: integer
                   characterSetName:
@@ -96,8 +97,8 @@ spec:
                   dbClusterParameterGroupName:
                     description: "The name of the DB cluster parameter group to associate
                       with this DB cluster. If this argument is omitted, the default
-                      is used. \n Constraints: \n    * If supplied, must match the
-                      name of an existing DBClusterParameterGroup."
+                      is used. \n Constraints: \n * If supplied, must match the name
+                      of an existing DBClusterParameterGroup."
                     type: string
                   dbSubnetGroupName:
                     description: "A DB subnet group to associate with this DB cluster.
@@ -140,20 +141,19 @@ spec:
                       with the same Amazon account that owns the KMS encryption key
                       used to encrypt the new DB cluster, then you can use the KMS
                       key alias instead of the ARN for the KMS encryption key. \n
-                      If an encryption key is not specified in KmsKeyId: \n    * If
-                      ReplicationSourceIdentifier identifies an encrypted source,
-                      then    Amazon Neptune will use the encryption key used to encrypt
-                      the source.    Otherwise, Amazon Neptune will use your default
-                      encryption key. \n    * If the StorageEncrypted parameter is
-                      true and ReplicationSourceIdentifier    is not specified, then
-                      Amazon Neptune will use your default encryption    key. \n Amazon
-                      KMS creates the default encryption key for your Amazon account.
-                      Your Amazon account has a different default encryption key for
-                      each Amazon Region. \n If you create a Read Replica of an encrypted
-                      DB cluster in another Amazon Region, you must set KmsKeyId to
-                      a KMS key ID that is valid in the destination Amazon Region.
-                      This key is used to encrypt the Read Replica in that Amazon
-                      Region."
+                      If an encryption key is not specified in KmsKeyId: \n * If ReplicationSourceIdentifier
+                      identifies an encrypted source, then Amazon Neptune will use
+                      the encryption key used to encrypt the source. Otherwise, Amazon
+                      Neptune will use your default encryption key. \n * If the StorageEncrypted
+                      parameter is true and ReplicationSourceIdentifier is not specified,
+                      then Amazon Neptune will use your default encryption key. \n
+                      Amazon KMS creates the default encryption key for your Amazon
+                      account. Your Amazon account has a different default encryption
+                      key for each Amazon Region. \n If you create a Read Replica
+                      of an encrypted DB cluster in another Amazon Region, you must
+                      set KmsKeyId to a KMS key ID that is valid in the destination
+                      Amazon Region. This key is used to encrypt the Read Replica
+                      in that Amazon Region."
                     type: string
                   masterUserPassword:
                     description: Not supported by Neptune.
@@ -179,10 +179,10 @@ spec:
                       random from an 8-hour block of time for each Amazon Region.
                       To see the time blocks available, see Adjusting the Preferred
                       Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
-                      in the Amazon Neptune User Guide. \n Constraints: \n    * Must
-                      be in the format hh24:mi-hh24:mi. \n    * Must be in Universal
-                      Coordinated Time (UTC). \n    * Must not conflict with the preferred
-                      maintenance window. \n    * Must be at least 30 minutes."
+                      in the Amazon Neptune User Guide. \n Constraints: \n * Must
+                      be in the format hh24:mi-hh24:mi. \n * Must be in Universal
+                      Coordinated Time (UTC). \n * Must not conflict with the preferred
+                      maintenance window. \n * Must be at least 30 minutes."
                     type: string
                   preferredMaintenanceWindow:
                     description: "The weekly time range during which system maintenance

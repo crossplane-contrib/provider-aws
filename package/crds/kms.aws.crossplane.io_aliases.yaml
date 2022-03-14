@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: aliases.kms.aws.crossplane.io
 spec:
@@ -72,8 +73,8 @@ spec:
                       Finding the Key ID and ARN (https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html#find-cmk-id-arn)
                       in the AWS Key Management Service Developer Guide. \n Specify
                       the key ID or the Amazon Resource Name (ARN) of the CMK. \n
-                      For example: \n    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
-                      \n    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+                      For example: \n * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+                      \n * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
                       \n To get the key ID and key ARN for a CMK, use ListKeys or
                       DescribeKey."
                     type: string

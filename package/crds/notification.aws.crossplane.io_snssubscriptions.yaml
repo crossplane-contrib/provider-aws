@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: snssubscriptions.notification.aws.crossplane.io
 spec:
@@ -76,33 +77,33 @@ spec:
                   a AWS SNS Topic
                 properties:
                   deliveryPolicy:
-                    description: ' DeliveryPolicy defines how Amazon SNS retries failed  deliveries
-                      to HTTP/S endpoints.'
+                    description: DeliveryPolicy defines how Amazon SNS retries failed
+                      deliveries to HTTP/S endpoints.
                     type: string
                   endpoint:
                     description: The subscription's endpoint
                     type: string
                   filterPolicy:
-                    description: ' The simple JSON object that lets your subscriber
-                      receive  only a subset of messages, rather than receiving every
-                      message published  to the topic.'
+                    description: The simple JSON object that lets your subscriber
+                      receive only a subset of messages, rather than receiving every
+                      message published to the topic.
                     type: string
                   protocol:
                     description: The subscription's protocol.
                     type: string
                   rawMessageDelivery:
-                    description: ' When set to true, enables raw message delivery  to
+                    description: When set to true, enables raw message delivery to
                       Amazon SQS or HTTP/S endpoints. This eliminates the need for
-                      the endpoints  to process JSON formatting, which is otherwise
-                      created for Amazon SNS  metadata.'
+                      the endpoints to process JSON formatting, which is otherwise
+                      created for Amazon SNS metadata.
                     type: string
                   redrivePolicy:
-                    description: ' When specified, sends undeliverable messages to
-                      the  specified Amazon SQS dead-letter queue. Messages that can''t
-                      be delivered  due to client errors (for example, when the subscribed
-                      endpoint is unreachable)  or server errors (for example, when
-                      the service that powers the subscribed  endpoint becomes unavailable)
-                      are held in the dead-letter queue for further  analysis or reprocessing.'
+                    description: When specified, sends undeliverable messages to the
+                      specified Amazon SQS dead-letter queue. Messages that can't
+                      be delivered due to client errors (for example, when the subscribed
+                      endpoint is unreachable) or server errors (for example, when
+                      the service that powers the subscribed endpoint becomes unavailable)
+                      are held in the dead-letter queue for further analysis or reprocessing.
                     type: string
                   region:
                     description: Region is the region you'd like your SNSSubscription

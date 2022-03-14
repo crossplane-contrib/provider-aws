@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: connections.glue.aws.crossplane.io
 spec:
@@ -77,13 +78,13 @@ spec:
                         type: object
                       connectionType:
                         description: "The type of the connection. Currently, these
-                          types are supported: \n    * JDBC - Designates a connection
-                          to a database through Java Database Connectivity    (JDBC).
-                          \n    * KAFKA - Designates a connection to an Apache Kafka
-                          streaming platform. \n    * MONGODB - Designates a connection
-                          to a MongoDB document database. \n    * NETWORK - Designates
-                          a network connection to a data source within an    Amazon
-                          Virtual Private Cloud environment (Amazon VPC)."
+                          types are supported: \n * JDBC - Designates a connection
+                          to a database through Java Database Connectivity (JDBC).
+                          \n * KAFKA - Designates a connection to an Apache Kafka
+                          streaming platform. \n * MONGODB - Designates a connection
+                          to a MongoDB document database. \n * NETWORK - Designates
+                          a network connection to a data source within an Amazon Virtual
+                          Private Cloud environment (Amazon VPC)."
                         type: string
                       description:
                         description: The description of the connection.

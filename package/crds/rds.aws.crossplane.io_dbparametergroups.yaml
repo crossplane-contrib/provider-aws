@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: dbparametergroups.rds.aws.crossplane.io
 spec:
@@ -73,12 +74,12 @@ spec:
                       parameter group families for the MySQL DB engine, use the following
                       command: \n aws rds describe-db-engine-versions --query \"DBEngineVersions[].DBParameterGroupFamily\"
                       --engine mysql \n The output contains duplicates. \n The following
-                      are the valid DB engine values: \n    * aurora (for MySQL 5.6-compatible
-                      Aurora) \n    * aurora-mysql (for MySQL 5.7-compatible Aurora)
-                      \n    * aurora-postgresql \n    * mariadb \n    * mysql \n    *
-                      oracle-ee \n    * oracle-ee-cdb \n    * oracle-se2 \n    * oracle-se2-cdb
-                      \n    * postgres \n    * sqlserver-ee \n    * sqlserver-se \n
-                      \   * sqlserver-ex \n    * sqlserver-web"
+                      are the valid DB engine values: \n * aurora (for MySQL 5.6-compatible
+                      Aurora) \n * aurora-mysql (for MySQL 5.7-compatible Aurora)
+                      \n * aurora-postgresql \n * mariadb \n * mysql \n * oracle-ee
+                      \n * oracle-ee-cdb \n * oracle-se2 \n * oracle-se2-cdb \n *
+                      postgres \n * sqlserver-ee \n * sqlserver-se \n * sqlserver-ex
+                      \n * sqlserver-web"
                     type: string
                   description:
                     description: The description for the DB parameter group.

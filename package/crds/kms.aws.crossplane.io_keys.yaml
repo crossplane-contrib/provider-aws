@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: keys.kms.aws.crossplane.io
 spec:
@@ -130,24 +131,24 @@ spec:
                       a KMS key is symmetric or asymmetric, see Identifying Symmetric
                       and Asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/find-symm-asymm.html)
                       in the Key Management Service Developer Guide. \n KMS supports
-                      the following key specs for KMS keys: \n    * Symmetric key
-                      (default) SYMMETRIC_DEFAULT (AES-256-GCM) \n    * Asymmetric
-                      RSA key pairs RSA_2048 RSA_3072 RSA_4096 \n    * Asymmetric
-                      NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
-                      \   ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1) \n    *
-                      Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
-                      \   commonly used for cryptocurrencies."
+                      the following key specs for KMS keys: \n * Symmetric key (default)
+                      SYMMETRIC_DEFAULT (AES-256-GCM) \n * Asymmetric RSA key pairs
+                      RSA_2048 RSA_3072 RSA_4096 \n * Asymmetric NIST-recommended
+                      elliptic curve key pairs ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+                      (secp384r1) ECC_NIST_P521 (secp521r1) \n * Other asymmetric
+                      elliptic curve key pairs ECC_SECG_P256K1 (secp256k1), commonly
+                      used for cryptocurrencies."
                     type: string
                   keyUsage:
                     description: "Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
                       for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
                       This parameter is required only for asymmetric KMS keys. You
                       can't change the KeyUsage value after the KMS key is created.
-                      \n Select only one valid value. \n    * For symmetric KMS keys,
-                      omit the parameter or specify ENCRYPT_DECRYPT. \n    * For asymmetric
-                      KMS keys with RSA key material, specify ENCRYPT_DECRYPT    or
-                      SIGN_VERIFY. \n    * For asymmetric KMS keys with ECC key material,
-                      specify SIGN_VERIFY."
+                      \n Select only one valid value. \n * For symmetric KMS keys,
+                      omit the parameter or specify ENCRYPT_DECRYPT. \n * For asymmetric
+                      KMS keys with RSA key material, specify ENCRYPT_DECRYPT or SIGN_VERIFY.
+                      \n * For asymmetric KMS keys with ECC key material, specify
+                      SIGN_VERIFY."
                     type: string
                   multiRegion:
                     description: "Creates a multi-Region primary key that you can
@@ -195,24 +196,24 @@ spec:
                   policy:
                     description: "The key policy to attach to the KMS key. \n If you
                       provide a key policy, it must meet the following criteria: \n
-                      \   * If you don't set BypassPolicyLockoutSafetyCheck to true,
-                      the key policy    must allow the principal that is making the
-                      CreateKey request to make    a subsequent PutKeyPolicy request
-                      on the KMS key. This reduces the risk    that the KMS key becomes
-                      unmanageable. For more information, refer to    the scenario
-                      in the Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
-                      \   section of the Key Management Service Developer Guide .
-                      \n    * Each statement in the key policy must contain one or
-                      more principals.    The principals in the key policy must exist
-                      and be visible to KMS. When    you create a new Amazon Web Services
-                      principal (for example, an IAM user    or role), you might need
-                      to enforce a delay before including the new principal    in
-                      a key policy because the new principal might not be immediately
-                      visible    to KMS. For more information, see Changes that I
-                      make are not always immediately    visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
-                      \   in the Amazon Web Services Identity and Access Management
-                      User Guide. \n If you do not provide a key policy, KMS attaches
-                      a default key policy to the KMS key. For more information, see
+                      * If you don't set BypassPolicyLockoutSafetyCheck to true, the
+                      key policy must allow the principal that is making the CreateKey
+                      request to make a subsequent PutKeyPolicy request on the KMS
+                      key. This reduces the risk that the KMS key becomes unmanageable.
+                      For more information, refer to the scenario in the Default Key
+                      Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default-allow-root-enable-iam)
+                      section of the Key Management Service Developer Guide . \n *
+                      Each statement in the key policy must contain one or more principals.
+                      The principals in the key policy must exist and be visible to
+                      KMS. When you create a new Amazon Web Services principal (for
+                      example, an IAM user or role), you might need to enforce a delay
+                      before including the new principal in a key policy because the
+                      new principal might not be immediately visible to KMS. For more
+                      information, see Changes that I make are not always immediately
+                      visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
+                      in the Amazon Web Services Identity and Access Management User
+                      Guide. \n If you do not provide a key policy, KMS attaches a
+                      default key policy to the KMS key. For more information, see
                       Default Key Policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
                       in the Key Management Service Developer Guide. \n The key policy
                       size quota is 32 kilobytes (32768 bytes). \n For help writing
@@ -371,13 +372,13 @@ spec:
                     description: "Lists the primary and replica keys in same multi-Region
                       key. This field is present only when the value of the MultiRegion
                       field is True. \n For more information about any listed KMS
-                      key, use the DescribeKey operation. \n    * MultiRegionKeyType
-                      indicates whether the KMS key is a PRIMARY or REPLICA    key.
-                      \n    * PrimaryKey displays the key ARN and Region of the primary
-                      key. This    field displays the current KMS key if it is the
-                      primary key. \n    * ReplicaKeys displays the key ARNs and Regions
-                      of all replica keys. This    field includes the current KMS
-                      key if it is a replica key."
+                      key, use the DescribeKey operation. \n * MultiRegionKeyType
+                      indicates whether the KMS key is a PRIMARY or REPLICA key. \n
+                      * PrimaryKey displays the key ARN and Region of the primary
+                      key. This field displays the current KMS key if it is the primary
+                      key. \n * ReplicaKeys displays the key ARNs and Regions of all
+                      replica keys. This field includes the current KMS key if it
+                      is a replica key."
                     properties:
                       multiRegionKeyType:
                         type: string

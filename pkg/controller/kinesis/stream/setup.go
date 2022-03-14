@@ -15,20 +15,16 @@ package stream
 
 import (
 	"context"
-	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/kinesis"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -37,7 +33,7 @@ import (
 )
 
 // SetupStream adds a controller that reconciles Stream.
-func SetupStream(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter, poll time.Duration) error {
+func SetupStream(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StreamGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -53,15 +49,13 @@ func SetupStream(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimit
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(limiter),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Stream{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StreamGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

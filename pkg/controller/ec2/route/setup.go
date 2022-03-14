@@ -2,14 +2,12 @@ package route
 
 import (
 	"context"
-	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -18,9 +16,7 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
 const (
@@ -28,7 +24,7 @@ const (
 )
 
 // SetupRoute adds a controller that reconciles Route.
-func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -39,15 +35,13 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Route{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.RouteGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

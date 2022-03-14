@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: globaltables.dynamodb.aws.crossplane.io
 spec:
@@ -137,11 +138,10 @@ spec:
                     description: The global table name.
                     type: string
                   globalTableStatus:
-                    description: "The current state of the global table: \n    * CREATING
-                      - The global table is being created. \n    * UPDATING - The
-                      global table is being updated. \n    * DELETING - The global
-                      table is being deleted. \n    * ACTIVE - The global table is
-                      ready for use."
+                    description: "The current state of the global table: \n * CREATING
+                      - The global table is being created. \n * UPDATING - The global
+                      table is being updated. \n * DELETING - The global table is
+                      being deleted. \n * ACTIVE - The global table is ready for use."
                     type: string
                 type: object
               conditions:

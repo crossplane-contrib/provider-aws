@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: listeners.elbv2.aws.crossplane.io
 spec:
@@ -63,9 +64,9 @@ spec:
                   alpnPolicy:
                     description: "[TLS listeners] The name of the Application-Layer
                       Protocol Negotiation (ALPN) policy. You can specify one policy
-                      name. The following are the possible values: \n    * HTTP1Only
-                      \n    * HTTP2Only \n    * HTTP2Optional \n    * HTTP2Preferred
-                      \n    * None \n For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
+                      name. The following are the possible values: \n * HTTP1Only
+                      \n * HTTP2Only \n * HTTP2Optional \n * HTTP2Preferred \n * None
+                      \n For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
                       in the Network Load Balancers Guide."
                     items:
                       type: string
@@ -229,11 +230,11 @@ spec:
                             to avoid a redirect loop: protocol, hostname, port, or
                             path. Any components that you do not modify retain their
                             original values. \n You can reuse URI components using
-                            the following reserved keywords: \n    * #{protocol} \n
-                            \   * #{host} \n    * #{port} \n    * #{path} (the leading
-                            \"/\" is removed) \n    * #{query} \n For example, you
-                            can change the path to \"/new/#{path}\", the hostname
-                            to \"example.#{host}\", or the query to \"#{query}&value=xyz\"."
+                            the following reserved keywords: \n * #{protocol} \n *
+                            #{host} \n * #{port} \n * #{path} (the leading \"/\" is
+                            removed) \n * #{query} \n For example, you can change
+                            the path to \"/new/#{path}\", the hostname to \"example.#{host}\",
+                            or the query to \"#{query}&value=xyz\"."
                           properties:
                             host:
                               type: string
@@ -519,12 +520,12 @@ spec:
                                   to avoid a redirect loop: protocol, hostname, port,
                                   or path. Any components that you do not modify retain
                                   their original values. \n You can reuse URI components
-                                  using the following reserved keywords: \n    * #{protocol}
-                                  \n    * #{host} \n    * #{port} \n    * #{path}
-                                  (the leading \"/\" is removed) \n    * #{query}
-                                  \n For example, you can change the path to \"/new/#{path}\",
-                                  the hostname to \"example.#{host}\", or the query
-                                  to \"#{query}&value=xyz\"."
+                                  using the following reserved keywords: \n * #{protocol}
+                                  \n * #{host} \n * #{port} \n * #{path} (the leading
+                                  \"/\" is removed) \n * #{query} \n For example,
+                                  you can change the path to \"/new/#{path}\", the
+                                  hostname to \"example.#{host}\", or the query to
+                                  \"#{query}&value=xyz\"."
                                 properties:
                                   host:
                                     type: string
