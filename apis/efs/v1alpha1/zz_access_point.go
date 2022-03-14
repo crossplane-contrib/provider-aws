@@ -29,10 +29,6 @@ type AccessPointParameters struct {
 	// Region is which region the AccessPoint will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// A string of up to 64 ASCII characters that Amazon EFS uses to ensure idempotent
-	// creation.
-	// +kubebuilder:validation:Required
-	ClientToken *string `json:"clientToken"`
 	// The operating system user and group applied to all file system requests made
 	// using the access point.
 	PosixUser *PosixUser `json:"posixUser,omitempty"`
@@ -69,6 +65,8 @@ type AccessPointObservation struct {
 	AccessPointARN *string `json:"accessPointARN,omitempty"`
 	// The ID of the access point, assigned by Amazon EFS.
 	AccessPointID *string `json:"accessPointID,omitempty"`
+	// The opaque string specified in the request to ensure idempotent creation.
+	ClientToken *string `json:"clientToken,omitempty"`
 	// The ID of the EFS file system that the access point applies to.
 	FileSystemID *string `json:"fileSystemID,omitempty"`
 	// Identifies the lifecycle phase of the access point.

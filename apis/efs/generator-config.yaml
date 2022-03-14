@@ -1,5 +1,6 @@
 ignore:
   field_paths:
+    - CreateAccessPointInput.ClientToken
     - CreateAccessPointInput.FileSystemId
     - CreateFileSystemInput.CreationToken
     - CreateFileSystemInput.ProvisionedThroughputInMibps

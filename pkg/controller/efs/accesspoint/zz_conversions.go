@@ -60,9 +60,9 @@ func GenerateAccessPoint(resp *svcsdk.DescribeAccessPointsOutput) *svcapitypes.A
 			cr.Status.AtProvider.AccessPointID = nil
 		}
 		if elem.ClientToken != nil {
-			cr.Spec.ForProvider.ClientToken = elem.ClientToken
+			cr.Status.AtProvider.ClientToken = elem.ClientToken
 		} else {
-			cr.Spec.ForProvider.ClientToken = nil
+			cr.Status.AtProvider.ClientToken = nil
 		}
 		if elem.FileSystemId != nil {
 			cr.Status.AtProvider.FileSystemID = elem.FileSystemId
@@ -157,61 +157,58 @@ func GenerateAccessPoint(resp *svcsdk.DescribeAccessPointsOutput) *svcapitypes.A
 func GenerateCreateAccessPointInput(cr *svcapitypes.AccessPoint) *svcsdk.CreateAccessPointInput {
 	res := &svcsdk.CreateAccessPointInput{}
 
-	if cr.Spec.ForProvider.ClientToken != nil {
-		res.SetClientToken(*cr.Spec.ForProvider.ClientToken)
-	}
 	if cr.Spec.ForProvider.PosixUser != nil {
-		f1 := &svcsdk.PosixUser{}
+		f0 := &svcsdk.PosixUser{}
 		if cr.Spec.ForProvider.PosixUser.Gid != nil {
-			f1.SetGid(*cr.Spec.ForProvider.PosixUser.Gid)
+			f0.SetGid(*cr.Spec.ForProvider.PosixUser.Gid)
 		}
 		if cr.Spec.ForProvider.PosixUser.SecondaryGids != nil {
-			f1f1 := []*int64{}
-			for _, f1f1iter := range cr.Spec.ForProvider.PosixUser.SecondaryGids {
-				var f1f1elem int64
-				f1f1elem = *f1f1iter
-				f1f1 = append(f1f1, &f1f1elem)
+			f0f1 := []*int64{}
+			for _, f0f1iter := range cr.Spec.ForProvider.PosixUser.SecondaryGids {
+				var f0f1elem int64
+				f0f1elem = *f0f1iter
+				f0f1 = append(f0f1, &f0f1elem)
 			}
-			f1.SetSecondaryGids(f1f1)
+			f0.SetSecondaryGids(f0f1)
 		}
 		if cr.Spec.ForProvider.PosixUser.Uid != nil {
-			f1.SetUid(*cr.Spec.ForProvider.PosixUser.Uid)
+			f0.SetUid(*cr.Spec.ForProvider.PosixUser.Uid)
 		}
-		res.SetPosixUser(f1)
+		res.SetPosixUser(f0)
 	}
 	if cr.Spec.ForProvider.RootDirectory != nil {
-		f2 := &svcsdk.RootDirectory{}
+		f1 := &svcsdk.RootDirectory{}
 		if cr.Spec.ForProvider.RootDirectory.CreationInfo != nil {
-			f2f0 := &svcsdk.CreationInfo{}
+			f1f0 := &svcsdk.CreationInfo{}
 			if cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerGid != nil {
-				f2f0.SetOwnerGid(*cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerGid)
+				f1f0.SetOwnerGid(*cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerGid)
 			}
 			if cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerUid != nil {
-				f2f0.SetOwnerUid(*cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerUid)
+				f1f0.SetOwnerUid(*cr.Spec.ForProvider.RootDirectory.CreationInfo.OwnerUid)
 			}
 			if cr.Spec.ForProvider.RootDirectory.CreationInfo.Permissions != nil {
-				f2f0.SetPermissions(*cr.Spec.ForProvider.RootDirectory.CreationInfo.Permissions)
+				f1f0.SetPermissions(*cr.Spec.ForProvider.RootDirectory.CreationInfo.Permissions)
 			}
-			f2.SetCreationInfo(f2f0)
+			f1.SetCreationInfo(f1f0)
 		}
 		if cr.Spec.ForProvider.RootDirectory.Path != nil {
-			f2.SetPath(*cr.Spec.ForProvider.RootDirectory.Path)
+			f1.SetPath(*cr.Spec.ForProvider.RootDirectory.Path)
 		}
-		res.SetRootDirectory(f2)
+		res.SetRootDirectory(f1)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := []*svcsdk.Tag{}
-		for _, f3iter := range cr.Spec.ForProvider.Tags {
-			f3elem := &svcsdk.Tag{}
-			if f3iter.Key != nil {
-				f3elem.SetKey(*f3iter.Key)
+		f2 := []*svcsdk.Tag{}
+		for _, f2iter := range cr.Spec.ForProvider.Tags {
+			f2elem := &svcsdk.Tag{}
+			if f2iter.Key != nil {
+				f2elem.SetKey(*f2iter.Key)
 			}
-			if f3iter.Value != nil {
-				f3elem.SetValue(*f3iter.Value)
+			if f2iter.Value != nil {
+				f2elem.SetValue(*f2iter.Value)
 			}
-			f3 = append(f3, f3elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetTags(f3)
+		res.SetTags(f2)
 	}
 
 	return res

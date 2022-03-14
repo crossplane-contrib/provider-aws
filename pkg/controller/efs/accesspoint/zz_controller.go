@@ -129,9 +129,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.AccessPointID = nil
 	}
 	if resp.ClientToken != nil {
-		cr.Spec.ForProvider.ClientToken = resp.ClientToken
+		cr.Status.AtProvider.ClientToken = resp.ClientToken
 	} else {
-		cr.Spec.ForProvider.ClientToken = nil
+		cr.Status.AtProvider.ClientToken = nil
 	}
 	if resp.FileSystemId != nil {
 		cr.Status.AtProvider.FileSystemID = resp.FileSystemId

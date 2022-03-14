@@ -66,6 +66,7 @@ func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.CreateAccessPointInput) error {
 	obj.FileSystemId = cr.Spec.ForProvider.FileSystemID
+	obj.ClientToken = awsclients.String(string(cr.UID))
 	return nil
 }
 
