@@ -18,19 +18,15 @@ package instanceprofile
 
 import (
 	"context"
-	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/iam"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/iam/iamiface"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -39,7 +35,7 @@ import (
 )
 
 // SetupInstanceProfile adds a controller that reconciles InstanceProfile.
-func SetupInstanceProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -53,15 +49,13 @@ func SetupInstanceProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateL
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.InstanceProfile{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.InstanceProfileGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

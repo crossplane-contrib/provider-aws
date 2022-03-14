@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: identityproviders.cognitoidentityprovider.aws.crossplane.io
 spec:
@@ -76,18 +77,18 @@ spec:
                     description: "ProviderDetailsSecretRef contins a reference to
                       a secret containing keys according to ProviderDetails. The following
                       list describes the provider detail keys for each identity provider
-                      type. \n    * For Google and Login with Amazon: client_id client_secret
-                      authorize_scopes \n    * For Facebook: client_id client_secret
-                      authorize_scopes api_version \n    * For Sign in with Apple:
-                      client_id team_id key_id private_key authorize_scopes \n    *
-                      For OIDC providers: client_id client_secret attributes_request_method
-                      \   oidc_issuer authorize_scopes authorize_url if not available
-                      from discovery    URL specified by oidc_issuer key token_url
-                      if not available from discovery    URL specified by oidc_issuer
-                      key attributes_url if not available from    discovery URL specified
-                      by oidc_issuer key jwks_uri if not available from    discovery
-                      URL specified by oidc_issuer key \n    * For SAML providers:
-                      MetadataFile OR MetadataURL IDPSignout optional"
+                      type. \n * For Google and Login with Amazon: client_id client_secret
+                      authorize_scopes \n * For Facebook: client_id client_secret
+                      authorize_scopes api_version \n * For Sign in with Apple: client_id
+                      team_id key_id private_key authorize_scopes \n * For OIDC providers:
+                      client_id client_secret attributes_request_method oidc_issuer
+                      authorize_scopes authorize_url if not available from discovery
+                      URL specified by oidc_issuer key token_url if not available
+                      from discovery URL specified by oidc_issuer key attributes_url
+                      if not available from discovery URL specified by oidc_issuer
+                      key jwks_uri if not available from discovery URL specified by
+                      oidc_issuer key \n * For SAML providers: MetadataFile OR MetadataURL
+                      IDPSignout optional"
                     properties:
                       name:
                         description: Name of the secret.
