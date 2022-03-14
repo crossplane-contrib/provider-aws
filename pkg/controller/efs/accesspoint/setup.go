@@ -5,6 +5,7 @@ import (
 	"golang.org/x/net/context"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -22,6 +23,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve
+			e.postObserve = postObserve
 			e.preCreate = preCreate
 			e.postCreate = postCreate
 		},
@@ -43,6 +45,23 @@ func preObserve(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.Desc
 	obj.FileSystemId = nil
 	obj.AccessPointId = awsclients.String(meta.GetExternalName(cr))
 	return nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.DescribeAccessPointsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	switch awsclients.StringValue(resp.AccessPoints[0].LifeCycleState) {
+	case string(svcapitypes.LifeCycleState_available):
+		cr.SetConditions(xpv1.Available())
+	case string(svcapitypes.LifeCycleState_creating):
+		cr.SetConditions(xpv1.Creating())
+	case string(svcapitypes.LifeCycleState_deleting):
+		cr.SetConditions(xpv1.Deleting())
+	case string(svcapitypes.LifeCycleState_error):
+		cr.SetConditions(xpv1.Unavailable())
+	}
+	return obs, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.CreateAccessPointInput) error {
