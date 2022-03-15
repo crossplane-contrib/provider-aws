@@ -620,6 +620,23 @@ spec:
                       restore when creating a new RDS instance. (If the RDS instance
                       already exists, this property will be ignored.)
                     properties:
+                      pointInTime:
+                        description: PointInTime specifies the details of the point
+                          in time to restore from.
+                        properties:
+                          restoreTime:
+                            description: RestoreTime is the date and time (UTC) to
+                              restore from. Must be before the latest restorable time
+                              for the DB instance Can't be specified if the UseLatestRestorableTime
+                              parameter is enabled
+                            format: date-time
+                            type: string
+                          useLatestRestorableTime:
+                            description: UseLatestRestorableTime indicates that the
+                              DB instance is restored from the latest backup Can't
+                              be specified if the RestoreTime parameter is provided.
+                            type: boolean
+                        type: object
                       s3:
                         description: S3 specifies the details of the S3 backup to
                           restore from.
@@ -714,11 +731,12 @@ spec:
                         type: object
                       source:
                         description: Source is the type of the backup to restore when
-                          creating a new RDS instance. Only S3 and Snapshot are supported
-                          at present.
+                          creating a new RDS instance. S3, Snapshot and PointInTime
+                          are supported.
                         enum:
                         - S3
                         - Snapshot
+                        - PointInTime
                         type: string
                     required:
                     - source

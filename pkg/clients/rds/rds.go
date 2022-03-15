@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
@@ -50,6 +51,7 @@ type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
 	RestoreDBInstanceFromS3(context.Context, *rds.RestoreDBInstanceFromS3Input, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
 	RestoreDBInstanceFromDBSnapshot(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
+	RestoreDBInstanceToPointInTime(context.Context, *rds.RestoreDBInstanceToPointInTimeInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceToPointInTimeOutput, error)
 	DescribeDBInstances(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -229,6 +231,63 @@ func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInsta
 		PubliclyAccessible:              p.PubliclyAccessible,
 		StorageType:                     p.StorageType,
 		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
+// GenerateRestoreDBInstanceToPointInTimeInput from RDSInstanceSpec
+func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceToPointInTimeInput {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
+	// Need to convert restoreTime from *metav1.Time to *time.Time
+	var restoreTime *time.Time
+	if p.RestoreFrom.PointInTime.RestoreTime != nil {
+		t, _ := time.Parse(time.RFC3339, p.RestoreFrom.PointInTime.RestoreTime.Format(time.RFC3339))
+		restoreTime = &t
+	}
+	c := &rds.RestoreDBInstanceToPointInTimeInput{
+		AutoMinorVersionUpgrade:         p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                p.AvailabilityZone,
+		CopyTagsToSnapshot:              p.CopyTagsToSnapshot,
+		DBInstanceClass:                 aws.String(p.DBInstanceClass),
+		DBName:                          p.DBName,
+		DBParameterGroupName:            p.DBParameterGroupName,
+		DBSubnetGroupName:               p.DBSubnetGroupName,
+		DeletionProtection:              p.DeletionProtection,
+		Domain:                          p.Domain,
+		DomainIAMRoleName:               p.DomainIAMRoleName,
+		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		Engine:                          aws.String(p.Engine),
+		Iops:                            awsclients.Int32Address(p.IOPS),
+		LicenseModel:                    p.LicenseModel,
+		MultiAZ:                         p.MultiAZ,
+		OptionGroupName:                 p.OptionGroupName,
+		Port:                            awsclients.Int32Address(p.Port),
+		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageType:                     p.StorageType,
+		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
+
+		TargetDBInstanceIdentifier: aws.String(name),
+		RestoreTime:                restoreTime,
+		UseLatestRestorableTime:    p.RestoreFrom.PointInTime.UseLatestRestorableTime,
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))

@@ -162,6 +162,20 @@ type SnapshotRestoreBackupConfiguration struct {
 	SnapshotIdentifier *string `json:"snapshotIdentifier"`
 }
 
+// PointInTimeRestoreBackupConfiguration defines the details of the point in time to restore from.
+type PointInTimeRestoreBackupConfiguration struct {
+	// RestoreTime is the date and time (UTC) to restore from.
+	// Must be before the latest restorable time for the DB instance
+	// Can't be specified if the UseLatestRestorableTime parameter is enabled
+	// +optional
+	RestoreTime *metav1.Time `json:"restoreTime"`
+
+	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
+	// Can't be specified if the RestoreTime parameter is provided.
+	// +optional
+	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
+}
+
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
 type RestoreBackupConfiguration struct {
 	// S3 specifies the details of the S3 backup to restore from.
@@ -172,9 +186,13 @@ type RestoreBackupConfiguration struct {
 	// +optional
 	Snapshot *SnapshotRestoreBackupConfiguration `json:"snapshot,omitempty"`
 
+	// PointInTime specifies the details of the point in time to restore from.
+	// +optional
+	PointInTime *PointInTimeRestoreBackupConfiguration `json:"pointInTime,omitempty"`
+
 	// Source is the type of the backup to restore when creating a new RDS instance.
-	// Only S3 and Snapshot are supported at present.
-	// +kubebuilder:validation:Enum=S3;Snapshot
+	// S3, Snapshot and PointInTime are supported.
+	// +kubebuilder:validation:Enum=S3;Snapshot;PointInTime
 	Source *string `json:"source"`
 }
 
