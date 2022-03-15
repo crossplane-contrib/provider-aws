@@ -285,7 +285,7 @@ func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1beta1.RDSInst
 		StorageType:                     p.StorageType,
 		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
 
-		TargetDBInstanceIdentifier: aws.String(name),
+		TargetDBInstanceIdentifier: p.RestoreFrom.PointInTime.TargetDBInstanceIdentifier,
 		RestoreTime:                restoreTime,
 		UseLatestRestorableTime:    p.RestoreFrom.PointInTime.UseLatestRestorableTime,
 	}

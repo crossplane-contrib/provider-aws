@@ -631,11 +631,17 @@ spec:
                               parameter is enabled
                             format: date-time
                             type: string
+                          targetDBInstanceIdentifier:
+                            description: TargetDBInstanceIdentifier indicates the
+                              DB instance to be restored from.
+                            type: string
                           useLatestRestorableTime:
                             description: UseLatestRestorableTime indicates that the
                               DB instance is restored from the latest backup Can't
                               be specified if the RestoreTime parameter is provided.
                             type: boolean
+                        required:
+                        - targetDBInstanceIdentifier
                         type: object
                       s3:
                         description: S3 specifies the details of the S3 backup to

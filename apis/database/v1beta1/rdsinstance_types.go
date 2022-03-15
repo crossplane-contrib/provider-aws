@@ -174,6 +174,9 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// Can't be specified if the RestoreTime parameter is provided.
 	// +optional
 	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
+
+	// TargetDBInstanceIdentifier indicates the DB instance to be restored from.
+	TargetDBInstanceIdentifier *string `json:"targetDBInstanceIdentifier"`
 }
 
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
