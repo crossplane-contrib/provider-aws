@@ -3,6 +3,7 @@ ignore:
   field_paths:
     - CreateListenerInput.LoadBalancerArn
     - CreateListenerInput.DefaultActions
+    - CreateListenerInput.Certificates
     # Type has a json key of type_, so it's reimplemented with loadBalancerType
     - CreateLoadBalancerInput.Type
   resource_names:

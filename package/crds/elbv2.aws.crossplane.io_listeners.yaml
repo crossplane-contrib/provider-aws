@@ -71,18 +71,33 @@ spec:
                     items:
                       type: string
                     type: array
-                  certificates:
+                  certificateArn:
                     description: '[HTTPS and TLS listeners] The default certificate
-                      for the listener. You must provide exactly one certificate.
-                      Set CertificateArn to the certificate ARN but do not set IsDefault.'
-                    items:
-                      properties:
-                        certificateARN:
+                      for the listener.'
+                    type: string
+                  certificateArnRef:
+                    description: Reference to Certificates for Certificate ARN
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  certificateArnSelector:
+                    description: Selector for references to Certificate for CertificateArn
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
                           type: string
-                        isDefault:
-                          type: boolean
-                      type: object
-                    type: array
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   defaultActions:
                     description: The actions for the default rule.
                     items:

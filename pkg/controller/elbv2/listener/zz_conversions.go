@@ -53,22 +53,6 @@ func GenerateListener(resp *svcsdk.DescribeListenersOutput) *svcapitypes.Listene
 		} else {
 			cr.Spec.ForProvider.AlpnPolicy = nil
 		}
-		if elem.Certificates != nil {
-			f1 := []*svcapitypes.Certificate{}
-			for _, f1iter := range elem.Certificates {
-				f1elem := &svcapitypes.Certificate{}
-				if f1iter.CertificateArn != nil {
-					f1elem.CertificateARN = f1iter.CertificateArn
-				}
-				if f1iter.IsDefault != nil {
-					f1elem.IsDefault = f1iter.IsDefault
-				}
-				f1 = append(f1, f1elem)
-			}
-			cr.Spec.ForProvider.Certificates = f1
-		} else {
-			cr.Spec.ForProvider.Certificates = nil
-		}
 		if elem.Port != nil {
 			cr.Spec.ForProvider.Port = elem.Port
 		} else {
@@ -107,20 +91,6 @@ func GenerateCreateListenerInput(cr *svcapitypes.Listener) *svcsdk.CreateListene
 		}
 		res.SetAlpnPolicy(f0)
 	}
-	if cr.Spec.ForProvider.Certificates != nil {
-		f1 := []*svcsdk.Certificate{}
-		for _, f1iter := range cr.Spec.ForProvider.Certificates {
-			f1elem := &svcsdk.Certificate{}
-			if f1iter.CertificateARN != nil {
-				f1elem.SetCertificateArn(*f1iter.CertificateARN)
-			}
-			if f1iter.IsDefault != nil {
-				f1elem.SetIsDefault(*f1iter.IsDefault)
-			}
-			f1 = append(f1, f1elem)
-		}
-		res.SetCertificates(f1)
-	}
 	if cr.Spec.ForProvider.Port != nil {
 		res.SetPort(*cr.Spec.ForProvider.Port)
 	}
@@ -131,18 +101,18 @@ func GenerateCreateListenerInput(cr *svcapitypes.Listener) *svcsdk.CreateListene
 		res.SetSslPolicy(*cr.Spec.ForProvider.SSLPolicy)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f5 := []*svcsdk.Tag{}
-		for _, f5iter := range cr.Spec.ForProvider.Tags {
-			f5elem := &svcsdk.Tag{}
-			if f5iter.Key != nil {
-				f5elem.SetKey(*f5iter.Key)
+		f4 := []*svcsdk.Tag{}
+		for _, f4iter := range cr.Spec.ForProvider.Tags {
+			f4elem := &svcsdk.Tag{}
+			if f4iter.Key != nil {
+				f4elem.SetKey(*f4iter.Key)
 			}
-			if f5iter.Value != nil {
-				f5elem.SetValue(*f5iter.Value)
+			if f4iter.Value != nil {
+				f4elem.SetValue(*f4iter.Value)
 			}
-			f5 = append(f5, f5elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTags(f5)
+		res.SetTags(f4)
 	}
 
 	return res
@@ -160,20 +130,6 @@ func GenerateModifyListenerInput(cr *svcapitypes.Listener) *svcsdk.ModifyListene
 			f0 = append(f0, &f0elem)
 		}
 		res.SetAlpnPolicy(f0)
-	}
-	if cr.Spec.ForProvider.Certificates != nil {
-		f1 := []*svcsdk.Certificate{}
-		for _, f1iter := range cr.Spec.ForProvider.Certificates {
-			f1elem := &svcsdk.Certificate{}
-			if f1iter.CertificateARN != nil {
-				f1elem.SetCertificateArn(*f1iter.CertificateARN)
-			}
-			if f1iter.IsDefault != nil {
-				f1elem.SetIsDefault(*f1iter.IsDefault)
-			}
-			f1 = append(f1, f1elem)
-		}
-		res.SetCertificates(f1)
 	}
 	if cr.Spec.ForProvider.Port != nil {
 		res.SetPort(*cr.Spec.ForProvider.Port)

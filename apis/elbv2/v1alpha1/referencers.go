@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	acm "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
@@ -28,8 +29,22 @@ import (
 func (mg *Listener) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// resolve loadbalancer ARN reference
+	// resolve certificate ARN reference
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CertificateARN),
+		Reference:    mg.Spec.ForProvider.CertificateARNRef,
+		Selector:     mg.Spec.ForProvider.CertificateARNSelector,
+		To:           reference.To{Managed: &acm.Certificate{}, List: &acm.CertificateList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.certificateArn")
+	}
+	mg.Spec.ForProvider.CertificateARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CertificateARNRef = rsp.ResolvedReference
+
+	// resolve loadbalancer ARN reference
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LoadBalancerARN),
 		Reference:    mg.Spec.ForProvider.LoadBalancerARNRef,
 		Selector:     mg.Spec.ForProvider.LoadBalancerARNSelector,

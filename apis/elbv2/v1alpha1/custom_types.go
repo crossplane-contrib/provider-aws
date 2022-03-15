@@ -91,6 +91,16 @@ type CustomAction struct {
 
 // CustomListenerParameters includes the custom fields of Listener.
 type CustomListenerParameters struct {
+	// [HTTPS and TLS listeners] The default certificate for the listener.
+	// +optional
+	CertificateARN *string `json:"certificateArn,omitempty"`
+
+	// Reference to Certificates for Certificate ARN
+	CertificateARNRef *xpv1.Reference `json:"certificateArnRef,omitempty"`
+
+	// Selector for references to Certificate for CertificateArn
+	CertificateARNSelector *xpv1.Selector `json:"certificateArnSelector,omitempty"`
+
 	// The actions for the default rule.
 	// +kubebuilder:validation:Required
 	DefaultActions []*CustomAction `json:"defaultActions"`
