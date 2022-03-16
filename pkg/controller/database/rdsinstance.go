@@ -178,7 +178,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error {
+func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error { // nolint:gocyclo
 	if cr.Spec.ForProvider.RestoreFrom == nil {
 		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
@@ -199,7 +199,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 			return awsclient.Wrap(err, errSnapshotRestoreFailed)
 		}
 	case "PointInTime":
-		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceId == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
+		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceID == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
 			return errors.New(errPointInTimeRestoreSourceNotDefined)
 		}
 		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))

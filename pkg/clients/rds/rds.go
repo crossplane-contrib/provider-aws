@@ -290,7 +290,7 @@ func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1beta1.RDSInst
 		UseLatestRestorableTime:             p.RestoreFrom.PointInTime.UseLatestRestorableTime,
 		SourceDBInstanceAutomatedBackupsArn: p.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn,
 		SourceDBInstanceIdentifier:          p.RestoreFrom.PointInTime.SourceDBInstanceIdentifier,
-		SourceDbiResourceId:                 p.RestoreFrom.PointInTime.SourceDbiResourceId,
+		SourceDbiResourceId:                 p.RestoreFrom.PointInTime.SourceDbiResourceID,
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))

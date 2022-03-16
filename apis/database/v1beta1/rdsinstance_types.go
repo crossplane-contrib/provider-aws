@@ -167,8 +167,9 @@ type SnapshotRestoreBackupConfiguration struct {
 // sourceDBInstanceIdentifier or sourceDbiResourceId.
 type PointInTimeRestoreBackupConfiguration struct {
 	// RestoreTime is the date and time (UTC) to restore from.
-	// Must be before the latest restorable time for the DB instance
-	// Can't be specified if the useLatestRestorableTime parameter is enabled
+	// Must be before the latest restorable time for the DB instance.
+	// Can't be specified if the useLatestRestorableTime parameter is enabled.
+	// Example: 2011-09-07T23:45:00Z
 	// +optional
 	RestoreTime *metav1.Time `json:"restoreTime"`
 
@@ -178,8 +179,7 @@ type PointInTimeRestoreBackupConfiguration struct {
 	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
 
 	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
-	// from which to restore, for example,
-	// arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE.
+	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
 	// +optional
 	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
 
@@ -188,9 +188,9 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// +optional
 	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier"`
 
-	// SourceDbiResourceId specifies the resource ID of the source DB instance from which to restore.
+	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
 	// +optional
-	SourceDbiResourceId *string `json:"sourceDbiResourceId"`
+	SourceDbiResourceID *string `json:"sourceDbiResourceId"`
 }
 
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
@@ -203,7 +203,7 @@ type RestoreBackupConfiguration struct {
 	// +optional
 	Snapshot *SnapshotRestoreBackupConfiguration `json:"snapshot,omitempty"`
 
-	// PointInTime specifies the details of the point in time to restore from.
+	// PointInTime specifies the details of the point in time restore.
 	// +optional
 	PointInTime *PointInTimeRestoreBackupConfiguration `json:"pointInTime,omitempty"`
 

@@ -392,8 +392,8 @@ func (in *PointInTimeRestoreBackupConfiguration) DeepCopyInto(out *PointInTimeRe
 		*out = new(string)
 		**out = **in
 	}
-	if in.SourceDbiResourceId != nil {
-		in, out := &in.SourceDbiResourceId, &out.SourceDbiResourceId
+	if in.SourceDbiResourceID != nil {
+		in, out := &in.SourceDbiResourceID, &out.SourceDbiResourceID
 		*out = new(string)
 		**out = **in
 	}
