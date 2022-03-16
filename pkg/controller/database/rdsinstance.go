@@ -42,20 +42,21 @@ import (
 )
 
 const (
-	errNotRDSInstance           = "managed resource is not an RDS instance custom resource"
-	errKubeUpdateFailed         = "cannot update RDS instance custom resource"
-	errCreateFailed             = "cannot create RDS instance"
-	errS3RestoreFailed          = "cannot restore RDS instance from S3 backup"
-	errSnapshotRestoreFailed    = "cannot restore RDS instance from snapshot"
-	errPointInTimeRestoreFailed = "cannot restore RDS instance from point in time"
-	errUnknownRestoreSource     = "unknown RDS restore souce"
-	errModifyFailed             = "cannot modify RDS instance"
-	errAddTagsFailed            = "cannot add tags to RDS instance"
-	errDeleteFailed             = "cannot delete RDS instance"
-	errDescribeFailed           = "cannot describe RDS instance"
-	errPatchCreationFailed      = "cannot create a patch object"
-	errUpToDateFailed           = "cannot check whether object is up-to-date"
-	errGetPasswordSecretFailed  = "cannot get password secret"
+	errNotRDSInstance                     = "managed resource is not an RDS instance custom resource"
+	errKubeUpdateFailed                   = "cannot update RDS instance custom resource"
+	errCreateFailed                       = "cannot create RDS instance"
+	errS3RestoreFailed                    = "cannot restore RDS instance from S3 backup"
+	errSnapshotRestoreFailed              = "cannot restore RDS instance from snapshot"
+	errPointInTimeRestoreFailed           = "cannot restore RDS instance from point in time"
+	errPointInTimeRestoreSourceNotDefined = "sourceDBInstanceAutomatedBackupsArn, sourceDBInstanceIdentifier or sourceDbiResourceId must be defined"
+	errUnknownRestoreSource               = "unknown RDS restore source"
+	errModifyFailed                       = "cannot modify RDS instance"
+	errAddTagsFailed                      = "cannot add tags to RDS instance"
+	errDeleteFailed                       = "cannot delete RDS instance"
+	errDescribeFailed                     = "cannot describe RDS instance"
+	errPatchCreationFailed                = "cannot create a patch object"
+	errUpToDateFailed                     = "cannot check whether object is up-to-date"
+	errGetPasswordSecretFailed            = "cannot get password secret"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -198,6 +199,9 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 			return awsclient.Wrap(err, errSnapshotRestoreFailed)
 		}
 	case "PointInTime":
+		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceId == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
+			return errors.New(errPointInTimeRestoreSourceNotDefined)
+		}
 		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errPointInTimeRestoreFailed)

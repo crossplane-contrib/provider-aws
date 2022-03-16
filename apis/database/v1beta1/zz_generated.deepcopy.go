@@ -382,8 +382,18 @@ func (in *PointInTimeRestoreBackupConfiguration) DeepCopyInto(out *PointInTimeRe
 		in, out := &in.RestoreTime, &out.RestoreTime
 		*out = (*in).DeepCopy()
 	}
-	if in.TargetDBInstanceIdentifier != nil {
-		in, out := &in.TargetDBInstanceIdentifier, &out.TargetDBInstanceIdentifier
+	if in.SourceDBInstanceAutomatedBackupsArn != nil {
+		in, out := &in.SourceDBInstanceAutomatedBackupsArn, &out.SourceDBInstanceAutomatedBackupsArn
+		*out = new(string)
+		**out = **in
+	}
+	if in.SourceDBInstanceIdentifier != nil {
+		in, out := &in.SourceDBInstanceIdentifier, &out.SourceDBInstanceIdentifier
+		*out = new(string)
+		**out = **in
+	}
+	if in.SourceDbiResourceId != nil {
+		in, out := &in.SourceDbiResourceId, &out.SourceDbiResourceId
 		*out = new(string)
 		**out = **in
 	}

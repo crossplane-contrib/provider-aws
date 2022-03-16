@@ -50,14 +50,15 @@ const (
 )
 
 var (
-	masterUsername        = "root"
-	engineVersion         = "5.6"
-	s3SourceType          = "S3"
-	snapshotSourceType    = "Snapshot"
-	pointInTimeSourceType = "PointInTime"
-	s3BucketName          = "database-backup"
-	snapshotIdentifier    = "my-snapshot"
-	s3Backup              = v1beta1.RestoreBackupConfiguration{
+	masterUsername                  = "root"
+	engineVersion                   = "5.6"
+	s3SourceType                    = "S3"
+	snapshotSourceType              = "Snapshot"
+	pointInTimeSourceType           = "PointInTime"
+	s3BucketName                    = "database-backup"
+	snapshotIdentifier              = "my-snapshot"
+	pointInTimeDBInstanceIdentifier = "my-instance"
+	s3Backup                        = v1beta1.RestoreBackupConfiguration{
 		Source: &s3SourceType,
 		S3: &v1beta1.S3RestoreBackupConfiguration{
 			BucketName: &s3BucketName,
@@ -73,13 +74,15 @@ var (
 	pointInTimeBackup         = v1beta1.RestoreBackupConfiguration{
 		Source: &pointInTimeSourceType,
 		PointInTime: &v1beta1.PointInTimeRestoreBackupConfiguration{
-			RestoreTime: FromTimePtr(&pointInTimeRestoreFrom),
+			RestoreTime:                FromTimePtr(&pointInTimeRestoreFrom),
+			SourceDBInstanceIdentifier: &pointInTimeDBInstanceIdentifier,
 		},
 	}
 	pointInTimeLatestRestorableBackup = v1beta1.RestoreBackupConfiguration{
 		Source: &pointInTimeSourceType,
 		PointInTime: &v1beta1.PointInTimeRestoreBackupConfiguration{
-			UseLatestRestorableTime: true,
+			UseLatestRestorableTime:    true,
+			SourceDBInstanceIdentifier: &pointInTimeDBInstanceIdentifier,
 		},
 	}
 
@@ -452,7 +455,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 		},
-		"SuccessfulPointInTimeLatestRestorableBackupRestore": {
+		"SuccessfulPointInTimeLatestRestorable": {
 			args: args{
 				rds: &fake.MockRDSClient{
 					MockPointInTimeRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceToPointInTimeInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceToPointInTimeOutput, error) {

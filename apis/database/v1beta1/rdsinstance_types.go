@@ -163,20 +163,34 @@ type SnapshotRestoreBackupConfiguration struct {
 }
 
 // PointInTimeRestoreBackupConfiguration defines the details of the point in time to restore from.
+// restoreTime or useLatestRestorableTime must be defined together with one of sourceDBInstanceAutomatedBackupArn,
+// sourceDBInstanceIdentifier or sourceDbiResourceId.
 type PointInTimeRestoreBackupConfiguration struct {
 	// RestoreTime is the date and time (UTC) to restore from.
 	// Must be before the latest restorable time for the DB instance
-	// Can't be specified if the UseLatestRestorableTime parameter is enabled
+	// Can't be specified if the useLatestRestorableTime parameter is enabled
 	// +optional
 	RestoreTime *metav1.Time `json:"restoreTime"`
 
 	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
-	// Can't be specified if the RestoreTime parameter is provided.
+	// Can't be specified if the restoreTime parameter is provided.
 	// +optional
 	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
 
-	// TargetDBInstanceIdentifier indicates the DB instance to be restored from.
-	TargetDBInstanceIdentifier *string `json:"targetDBInstanceIdentifier"`
+	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
+	// from which to restore, for example,
+	// arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE.
+	// +optional
+	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
+
+	// SourceDBInstanceIdentifier specifies the identifier of the source DB instance from which to restore. Constraints:
+	// Must match the identifier of an existing DB instance.
+	// +optional
+	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier"`
+
+	// SourceDbiResourceId specifies the resource ID of the source DB instance from which to restore.
+	// +optional
+	SourceDbiResourceId *string `json:"sourceDbiResourceId"`
 }
 
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
