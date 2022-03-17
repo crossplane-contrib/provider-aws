@@ -332,7 +332,20 @@ type RecoveryOptionType struct {
 }
 
 // +kubebuilder:skipversion
+type ResourceServerScopeType struct {
+	ScopeDescription *string `json:"scopeDescription,omitempty"`
+
+	ScopeName *string `json:"scopeName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ResourceServerType struct {
+	Identifier *string `json:"identifier,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Scopes []*ResourceServerScopeType `json:"scopes,omitempty"`
+
 	UserPoolID *string `json:"userPoolID,omitempty"`
 }
 
