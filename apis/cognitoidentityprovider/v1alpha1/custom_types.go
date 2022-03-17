@@ -119,3 +119,6 @@ type CustomUserPoolClientParameters struct {
 	// +optional
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
+
+// CustomResourceServerParameters
+type CustomResourceServerParameters struct{}
