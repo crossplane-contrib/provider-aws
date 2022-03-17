@@ -166,6 +166,18 @@ type CustomDBInstanceParameters struct {
 	// +optional
 	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
 
+	// DBClusterIdentifierRef is a reference to a DBCluster used to set
+	// DBClusterIdentifier.
+	// +immutable
+	// +optional
+	DBClusterIdentifierRef *xpv1.Reference `json:"dbClusterIdentifierRef,omitempty"`
+
+	// DBClusterIdentifierSelector selects a reference to a DBCluster used to
+	// set DBClusterIdentifier.
+	// +immutable
+	// +optional
+	DBClusterIdentifierSelector *xpv1.Selector `json:"dbClusterIdentifierSelector,omitempty"`
+
 	// A list of database security groups to associate with this DB instance
 	DBSecurityGroups []string `json:"dbSecurityGroups,omitempty"`
 

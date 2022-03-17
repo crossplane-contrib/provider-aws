@@ -145,8 +145,22 @@ func DBClusterARN() reference.ExtractValueFn {
 func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.dbSubnetGroupName
+	// Resolve spec.forProvider.dbClusterIdentifier
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBClusterIdentifier),
+		Reference:    mg.Spec.ForProvider.DBClusterIdentifierRef,
+		Selector:     mg.Spec.ForProvider.DBClusterIdentifierSelector,
+		To:           reference.To{Managed: &DBCluster{}, List: &DBClusterList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.dbClusterIdentifier")
+	}
+	mg.Spec.ForProvider.DBClusterIdentifier = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBClusterIdentifierRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.dbSubnetGroupName
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBSubnetGroupName),
 		Reference:    mg.Spec.ForProvider.DBSubnetGroupNameRef,
 		Selector:     mg.Spec.ForProvider.DBSubnetGroupNameSelector,

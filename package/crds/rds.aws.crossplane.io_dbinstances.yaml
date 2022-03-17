@@ -188,6 +188,31 @@ spec:
                     description: "The identifier of the DB cluster that the instance
                       will belong to. \n This setting doesn't apply to RDS Custom."
                     type: string
+                  dbClusterIdentifierRef:
+                    description: DBClusterIdentifierRef is a reference to a DBCluster
+                      used to set DBClusterIdentifier.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  dbClusterIdentifierSelector:
+                    description: DBClusterIdentifierSelector selects a reference to
+                      a DBCluster used to set DBClusterIdentifier.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   dbInstanceClass:
                     description: The compute and memory capacity of the DB instance,
                       for example, db.m4.large. Not all DB instance classes are available
