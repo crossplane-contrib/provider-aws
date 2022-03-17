@@ -24,3 +24,5 @@ type CustomCachePolicyParameters struct{}
 
 // CustomCloudFrontOriginAccessIdentityParameters includes the custom fields of CloudFrontOriginAccessIDentityParameters.
 type CustomCloudFrontOriginAccessIdentityParameters struct{}
+
+type CustomFunctionParameters struct{}
