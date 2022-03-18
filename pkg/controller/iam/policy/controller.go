@@ -43,14 +43,17 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not a Policy resource"
 
-	errGet           = "failed to get IAM Policy"
-	errCreate        = "failed to create the IAM Policy"
-	errDelete        = "failed to delete the IAM Policy"
-	errUpdate        = "failed to update the IAM Policy"
-	errExternalName  = "failed to update the IAM Policy external-name"
-	errEmptyPolicy   = "empty IAM Policy received from IAM API"
-	errPolicyVersion = "No version for policy received from IAM API"
-	errUpToDate      = "cannot check if policy is up to date"
+	errGet              = "failed to get IAM Policy"
+	errCreate           = "failed to create the IAM Policy"
+	errDelete           = "failed to delete the IAM Policy"
+	errUpdate           = "failed to update the IAM Policy"
+	errExternalName     = "failed to update the IAM Policy external-name"
+	errEmptyPolicy      = "empty IAM Policy received from IAM API"
+	errPolicyVersion    = "No version for policy received from IAM API"
+	errUpToDate         = "cannot check if policy is up to date"
+	errKubeUpdateFailed = "cannot late initialize IAM Policy"
+	errTag              = "cannot tag policy"
+	errUntag            = "cannot untag policy"
 )
 
 // SetupPolicy adds a controller that reconciles IAM Policy.
@@ -64,7 +67,7 @@ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.PolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
-			managed.WithInitializers(),
+			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -224,18 +227,13 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
-	for _, v := range cr.Spec.ForProvider.Tags {
-		crTagMap[v.Key] = v.Value
-	}
-
-	add, remove, _ := iam.DiffIAMTags(crTagMap, observed.Policy.Tags)
+	add, remove, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observed.Policy.Tags)
 	if len(add) != 0 {
 		if _, err := e.client.TagPolicy(ctx, &awsiam.TagPolicyInput{
 			PolicyArn: aws.String(meta.GetExternalName(cr)),
 			Tags:      add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot tag policy")
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
 		}
 	}
 
@@ -244,7 +242,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			PolicyArn: aws.String(meta.GetExternalName(cr)),
 			TagKeys:   remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot untag policy")
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUntag)
 		}
 	}
 
@@ -370,4 +368,37 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.Policy)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	added := false
+	defaultTags := resource.GetExternalTags(mgd)
+
+	for i, t := range cr.Spec.ForProvider.Tags {
+		v, ok := defaultTags[t.Key]
+		if ok {
+			if v != t.Value {
+				cr.Spec.ForProvider.Tags[i].Value = v
+				added = true
+			}
+			delete(defaultTags, t.Key)
+		}
+	}
+
+	for k, v := range defaultTags {
+		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+		added = true
+	}
+	if !added {
+		return nil
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
