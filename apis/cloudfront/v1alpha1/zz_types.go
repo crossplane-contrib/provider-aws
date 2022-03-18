@@ -825,10 +825,14 @@ type FunctionAssociations struct {
 // +kubebuilder:skipversion
 type FunctionConfig struct {
 	Comment *string `json:"comment,omitempty"`
+
+	Runtime *string `json:"runtime,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type FunctionList struct {
+type FunctionList_SDK struct {
+	Items []*FunctionSummary `json:"items,omitempty"`
+
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
 	NextMarker *string `json:"nextMarker,omitempty"`
@@ -843,10 +847,19 @@ type FunctionMetadata struct {
 	FunctionARN *string `json:"functionARN,omitempty"`
 
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+
+	Stage *string `json:"stage,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FunctionSummary struct {
+	// Contains configuration information about a CloudFront function.
+	FunctionConfig *FunctionConfig `json:"functionConfig,omitempty"`
+	// Contains metadata about a CloudFront function.
+	FunctionMetadata *FunctionMetadata `json:"functionMetadata,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
 	Status *string `json:"status,omitempty"`
 }
 
@@ -1608,6 +1621,8 @@ type TestResult struct {
 	FunctionErrorMessage *string `json:"functionErrorMessage,omitempty"`
 
 	FunctionOutput *string `json:"functionOutput,omitempty"`
+	// Contains configuration information and metadata about a CloudFront function.
+	FunctionSummary *FunctionSummary `json:"functionSummary,omitempty"`
 }
 
 // +kubebuilder:skipversion

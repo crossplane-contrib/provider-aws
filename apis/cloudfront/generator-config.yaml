@@ -9,7 +9,6 @@ ignore:
     - RealtimeLogConfig
     - MonitoringSubscription
     - FieldLevelEncryptionConfig
-    - Function
   field_paths:
     - DistributionConfig.CallerReference
     - Origins.Quantity
