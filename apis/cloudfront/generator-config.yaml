@@ -9,7 +9,6 @@ ignore:
     - RealtimeLogConfig
     - MonitoringSubscription
     - FieldLevelEncryptionConfig
-    - ResponseHeadersPolicy
     - Function
   field_paths:
     - DistributionConfig.CallerReference
@@ -30,4 +29,9 @@ ignore:
     - StatusCodes.Quantity
     - CustomHeaders.Quantity
     - OriginSslProtocols.Quantity
+    - ResponseHeadersPolicyAccessControlAllowHeaders.Quantity
+    - ResponseHeadersPolicyAccessControlAllowMethods.Quantity
+    - ResponseHeadersPolicyAccessControlAllowOrigins.Quantity
+    - ResponseHeadersPolicyAccessControlExposeHeaders.Quantity
+    - ResponseHeadersPolicyCustomHeadersConfig.Quantity
     - OriginAccessIdentityConfig.CallerReference

@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cloudfrontresponseheaderspolicy "github.com/crossplane/provider-aws/pkg/controller/cloudfront/responseheaderspolicy"
 	domain "github.com/crossplane/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	cognitogroup "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/group"
@@ -244,6 +245,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
 		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
+		cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,

@@ -1,0 +1,23 @@
+apiVersion: cloudfront.aws.crossplane.io/v1alpha1
+kind: ResponseHeadersPolicy
+metadata:
+  name: ezgi-response-headers-policy
+spec:
+  forProvider:
+    region: us-east-1
+    responseHeadersPolicyConfig:
+      comment: Example CloudFront Response Header Policy
+      corsConfig:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders:
+          items:
+            - test
+        accessControlAllowMethods:
+          items:
+            - GET
+        accessControlAllowOrigins:
+          items:
+            - test.example.comtest
+        originOverride: true
+  providerConfigRef:
+    name: example
