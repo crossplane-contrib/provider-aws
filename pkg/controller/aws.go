@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cloudfrontfunction "github.com/crossplane/provider-aws/pkg/controller/cloudfront/function"
 	cloudfrontresponseheaderspolicy "github.com/crossplane/provider-aws/pkg/controller/cloudfront/responseheaderspolicy"
 	domain "github.com/crossplane/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
@@ -246,6 +247,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cachepolicy.SetupCachePolicy,
 		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
 		cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
+		cloudfrontfunction.SetupCloudFrontFunction,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
