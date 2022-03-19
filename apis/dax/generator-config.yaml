@@ -1,0 +1,14 @@
+ignore:
+  field_paths:
+    - CreateClusterInput.ClusterName
+    - CreateClusterInput.IamRoleArn
+    - CreateClusterInput.ParameterGroupName
+    - UpdateClusterInput.ParameterGroupName
+    - CreateClusterInput.SubnetGroupName
+    - CreateClusterInput.SecurityGroupIds
+    - UpdateClusterInput.SecurityGroupIds
+    - CreateParameterGroupInput.ParameterGroupName
+    - UpdateParameterGroupInput.ParameterNameValues
+    - CreateSubnetGroupInput.SubnetGroupName
+    - CreateSubnetGroupInput.SubnetIds
+    - UpdateSubnetGroupInput.SubnetIds

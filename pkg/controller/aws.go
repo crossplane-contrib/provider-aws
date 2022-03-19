@@ -56,6 +56,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	daxcluster "github.com/crossplane/provider-aws/pkg/controller/dax/cluster"
+	daxparametergroup "github.com/crossplane/provider-aws/pkg/controller/dax/parametergroup"
+	daxsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/dax/subnetgroup"
 	docdbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
 	docdbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
 	docdbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
@@ -169,6 +172,9 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cacheparametergroup.SetupCacheParameterGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
+		daxcluster.SetupCluster,
+		daxparametergroup.SetupParameterGroup,
+		daxsubnetgroup.SetupSubnetGroup,
 		domain.SetupDomain,
 		docdbinstance.SetupDBInstance,
 		docdbcluster.SetupDBCluster,
