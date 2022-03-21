@@ -75,11 +75,11 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			ResourceExists: false,
 		}, nil
 	}
-	input := GenerateGetFunctionInput(cr)
+	input := GenerateDescribeFunctionInput(cr)
 	if err := e.preObserve(ctx, cr, input); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
 	}
-	resp, err := e.client.GetFunctionWithContext(ctx, input)
+	resp, err := e.client.DescribeFunctionWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
@@ -224,10 +224,10 @@ func newExternal(kube client.Client, client svcsdkapi.CloudFrontAPI, opts []opti
 type external struct {
 	kube           client.Client
 	client         svcsdkapi.CloudFrontAPI
-	preObserve     func(context.Context, *svcapitypes.Function, *svcsdk.GetFunctionInput) error
-	postObserve    func(context.Context, *svcapitypes.Function, *svcsdk.GetFunctionOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
-	lateInitialize func(*svcapitypes.FunctionParameters, *svcsdk.GetFunctionOutput) error
-	isUpToDate     func(*svcapitypes.Function, *svcsdk.GetFunctionOutput) (bool, error)
+	preObserve     func(context.Context, *svcapitypes.Function, *svcsdk.DescribeFunctionInput) error
+	postObserve    func(context.Context, *svcapitypes.Function, *svcsdk.DescribeFunctionOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
+	lateInitialize func(*svcapitypes.FunctionParameters, *svcsdk.DescribeFunctionOutput) error
+	isUpToDate     func(*svcapitypes.Function, *svcsdk.DescribeFunctionOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Function, *svcsdk.CreateFunctionInput) error
 	postCreate     func(context.Context, *svcapitypes.Function, *svcsdk.CreateFunctionOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Function, *svcsdk.DeleteFunctionInput) (bool, error)
@@ -236,17 +236,17 @@ type external struct {
 	postUpdate     func(context.Context, *svcapitypes.Function, *svcsdk.UpdateFunctionOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
-func nopPreObserve(context.Context, *svcapitypes.Function, *svcsdk.GetFunctionInput) error {
+func nopPreObserve(context.Context, *svcapitypes.Function, *svcsdk.DescribeFunctionInput) error {
 	return nil
 }
 
-func nopPostObserve(_ context.Context, _ *svcapitypes.Function, _ *svcsdk.GetFunctionOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func nopPostObserve(_ context.Context, _ *svcapitypes.Function, _ *svcsdk.DescribeFunctionOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	return obs, err
 }
-func nopLateInitialize(*svcapitypes.FunctionParameters, *svcsdk.GetFunctionOutput) error {
+func nopLateInitialize(*svcapitypes.FunctionParameters, *svcsdk.DescribeFunctionOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Function, *svcsdk.GetFunctionOutput) (bool, error) {
+func alwaysUpToDate(*svcapitypes.Function, *svcsdk.DescribeFunctionOutput) (bool, error) {
 	return true, nil
 }
 

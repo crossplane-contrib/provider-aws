@@ -21,6 +21,7 @@ package function
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
 )
@@ -28,10 +29,10 @@ import (
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
 
-// GenerateGetFunctionInput returns input for read
+// GenerateDescribeFunctionInput returns input for read
 // operation.
-func GenerateGetFunctionInput(cr *svcapitypes.Function) *svcsdk.GetFunctionInput {
-	res := &svcsdk.GetFunctionInput{}
+func GenerateDescribeFunctionInput(cr *svcapitypes.Function) *svcsdk.DescribeFunctionInput {
+	res := &svcsdk.DescribeFunctionInput{}
 
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
@@ -41,7 +42,7 @@ func GenerateGetFunctionInput(cr *svcapitypes.Function) *svcsdk.GetFunctionInput
 }
 
 // GenerateFunction returns the current state in the form of *svcapitypes.Function.
-func GenerateFunction(resp *svcsdk.GetFunctionOutput) *svcapitypes.Function {
+func GenerateFunction(resp *svcsdk.DescribeFunctionOutput) *svcapitypes.Function {
 	cr := &svcapitypes.Function{}
 
 	if resp.ETag != nil {
@@ -49,10 +50,43 @@ func GenerateFunction(resp *svcsdk.GetFunctionOutput) *svcapitypes.Function {
 	} else {
 		cr.Status.AtProvider.ETag = nil
 	}
-	if resp.FunctionCode != nil {
-		cr.Spec.ForProvider.FunctionCode = resp.FunctionCode
+	if resp.FunctionSummary != nil {
+		f1 := &svcapitypes.FunctionSummary{}
+		if resp.FunctionSummary.FunctionConfig != nil {
+			f1f0 := &svcapitypes.FunctionConfig{}
+			if resp.FunctionSummary.FunctionConfig.Comment != nil {
+				f1f0.Comment = resp.FunctionSummary.FunctionConfig.Comment
+			}
+			if resp.FunctionSummary.FunctionConfig.Runtime != nil {
+				f1f0.Runtime = resp.FunctionSummary.FunctionConfig.Runtime
+			}
+			f1.FunctionConfig = f1f0
+		}
+		if resp.FunctionSummary.FunctionMetadata != nil {
+			f1f1 := &svcapitypes.FunctionMetadata{}
+			if resp.FunctionSummary.FunctionMetadata.CreatedTime != nil {
+				f1f1.CreatedTime = &metav1.Time{*resp.FunctionSummary.FunctionMetadata.CreatedTime}
+			}
+			if resp.FunctionSummary.FunctionMetadata.FunctionARN != nil {
+				f1f1.FunctionARN = resp.FunctionSummary.FunctionMetadata.FunctionARN
+			}
+			if resp.FunctionSummary.FunctionMetadata.LastModifiedTime != nil {
+				f1f1.LastModifiedTime = &metav1.Time{*resp.FunctionSummary.FunctionMetadata.LastModifiedTime}
+			}
+			if resp.FunctionSummary.FunctionMetadata.Stage != nil {
+				f1f1.Stage = resp.FunctionSummary.FunctionMetadata.Stage
+			}
+			f1.FunctionMetadata = f1f1
+		}
+		if resp.FunctionSummary.Name != nil {
+			f1.Name = resp.FunctionSummary.Name
+		}
+		if resp.FunctionSummary.Status != nil {
+			f1.Status = resp.FunctionSummary.Status
+		}
+		cr.Status.AtProvider.FunctionSummary = f1
 	} else {
-		cr.Spec.ForProvider.FunctionCode = nil
+		cr.Status.AtProvider.FunctionSummary = nil
 	}
 
 	return cr
