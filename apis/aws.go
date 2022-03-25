@@ -24,6 +24,7 @@ import (
 	acmv1beta1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	acmpcav1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
+	apigatewayv1alpha1 "github.com/crossplane/provider-aws/apis/apigateway/v1alpha1"
 	apigatewayv2v1alpha1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 	apigatewayv2v1beta1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1beta1"
 	athenav1alpha1 "github.com/crossplane/provider-aws/apis/athena/v1alpha1"
@@ -143,6 +144,7 @@ func init() {
 		snsv1beta1.SchemeBuilder.AddToScheme,
 		prometheusservice.SchemeBuilder.AddToScheme,
 		cloudsearchv1alpha1.AddToScheme,
+		apigatewayv1alpha1.AddToScheme,
 	)
 }
 
