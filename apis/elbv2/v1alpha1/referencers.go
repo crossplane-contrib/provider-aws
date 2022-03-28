@@ -30,21 +30,23 @@ func (mg *Listener) ResolveReferences(ctx context.Context, c client.Reader) erro
 	r := reference.NewAPIResolver(c, mg)
 
 	// resolve certificate ARN reference
-	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CertificateARN),
-		Reference:    mg.Spec.ForProvider.CertificateARNRef,
-		Selector:     mg.Spec.ForProvider.CertificateARNSelector,
-		To:           reference.To{Managed: &acm.Certificate{}, List: &acm.CertificateList{}},
-		Extract:      reference.ExternalName(),
-	})
-	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.certificateArn")
+	for i := range mg.Spec.ForProvider.Certificates {
+		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Certificates[i].CertificateARN),
+			Reference:    mg.Spec.ForProvider.Certificates[i].CertificateARNRef,
+			Selector:     mg.Spec.ForProvider.Certificates[i].CertificateARNSelector,
+			To:           reference.To{Managed: &acm.Certificate{}, List: &acm.CertificateList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "spec.forProvider.certificateArn")
+		}
+		mg.Spec.ForProvider.Certificates[i].CertificateARN = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Certificates[i].CertificateARNRef = rsp.ResolvedReference
 	}
-	mg.Spec.ForProvider.CertificateARN = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.CertificateARNRef = rsp.ResolvedReference
 
 	// resolve loadbalancer ARN reference
-	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LoadBalancerARN),
 		Reference:    mg.Spec.ForProvider.LoadBalancerARNRef,
 		Selector:     mg.Spec.ForProvider.LoadBalancerARNSelector,

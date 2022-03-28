@@ -45,8 +45,9 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    certificateArnRef:
-      name: dev.crossplane.io
+    certificates:
+      - certificateARNRef:
+          name: dev.crossplane.io
     defaultActions:
       - actionType: forward
         forwardConfig:

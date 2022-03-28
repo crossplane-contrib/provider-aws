@@ -220,11 +220,11 @@ func generateDefaultActions(cr *svcapitypes.Listener) []*svcsdk.Action { //nolin
 func preCreate(_ context.Context, cr *svcapitypes.Listener, obs *svcsdk.CreateListenerInput) error {
 	obs.DefaultActions = generateDefaultActions(cr)
 	obs.LoadBalancerArn = cr.Spec.ForProvider.LoadBalancerARN
-	if cr.Spec.ForProvider.CertificateARN != nil {
-		obs.Certificates = []*svcsdk.Certificate{
-			{
-				CertificateArn: cr.Spec.ForProvider.CertificateARN,
-			},
+	for i := range cr.Spec.ForProvider.Certificates {
+		if cr.Spec.ForProvider.Certificates[i].CertificateARN != nil {
+			obs.Certificates = append(obs.Certificates, &svcsdk.Certificate{
+				CertificateArn: cr.Spec.ForProvider.Certificates[i].CertificateARN,
+			})
 		}
 	}
 	return nil
