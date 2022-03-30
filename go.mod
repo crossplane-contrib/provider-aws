@@ -24,8 +24,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.9.0
 	github.com/aws/smithy-go v1.9.0
-	github.com/crossplane/crossplane-runtime v0.15.1-0.20220106140106-428b7c390375
-	github.com/crossplane/crossplane-tools v0.0.0-20210916125540-071de511ae8e
+	github.com/crossplane/crossplane-runtime v0.15.1-0.20220315141414-988c9ba9c255
+	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/go-ini/ini v1.46.0
 	github.com/golang/mock v1.5.0
@@ -85,7 +85,7 @@ require (
 	github.com/spf13/afero v1.8.0 // indirect
 	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/mod v0.4.2 // indirect
