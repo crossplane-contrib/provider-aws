@@ -76,6 +76,7 @@ import (
 	snsv1beta1 "github.com/crossplane/provider-aws/apis/sns/v1beta1"
 	sqsv1beta1 "github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	transferv1alpha1 "github.com/crossplane/provider-aws/apis/transfer/v1alpha1"
+	awsv1alpha1 "github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsv1beta1 "github.com/crossplane/provider-aws/apis/v1beta1"
 )
@@ -95,6 +96,7 @@ func init() {
 		route53v1alpha1.SchemeBuilder.AddToScheme,
 		notificationv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
+		awsv1alpha1.SchemeBuilder.AddToScheme,
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1beta1.SchemeBuilder.AddToScheme,
 		acmv1alpha1.SchemeBuilder.AddToScheme,

@@ -22,7 +22,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-
 // A StoreConfigSpec defines the desired state of a ProviderConfig.
 type StoreConfigSpec struct {
 	xpv1.SecretStoreConfig `json:",inline"`
