@@ -89,8 +89,9 @@ spec:
                     type: array
                 type: object
               assumeRoleARN:
-                description: 'Deprecated: AssumeRoleARN to assume with provider credentials
-                  Use the RoleARN setting in AssumeRole'
+                description: AssumeRoleARN to assume with provider credentials This
+                  setting will be deprecated. Use the roleARN field under assumeRole
+                  instead.
                 type: string
               credentials:
                 description: Credentials required to authenticate to this provider.
@@ -250,8 +251,9 @@ spec:
                 - url
                 type: object
               externalID:
-                description: Deprecated. ExternalID is the external ID used when assuming
-                  role. Use the ExternalID setting in AssumeRole
+                description: ExternalID is the external ID used when assuming role.
+                  This setting will be deprecated. Use the externalID field under
+                  assumeRole instead.
                 type: string
             required:
             - credentials

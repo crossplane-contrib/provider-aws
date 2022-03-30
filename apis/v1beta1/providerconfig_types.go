@@ -30,13 +30,13 @@ type ProviderConfigSpec struct {
 	// AssumeRole defines the options for assuming an IAM role
 	AssumeRole *AssumeRoleOptions `json:"assumeRole,omitempty"`
 
-	// Deprecated: AssumeRoleARN to assume with provider credentials
-	// Use the RoleARN setting in AssumeRole
+	// AssumeRoleARN to assume with provider credentials
+	// This setting will be deprecated. Use the roleARN field under assumeRole instead.
 	// +optional
 	AssumeRoleARN *string `json:"assumeRoleARN,omitempty"`
 
-	// Deprecated. ExternalID is the external ID used when assuming role.
-	// Use the ExternalID setting in AssumeRole
+	// ExternalID is the external ID used when assuming role.
+	// This setting will be deprecated. Use the externalID field under assumeRole instead.
 	// +optional
 	ExternalID *string `json:"externalID,omitempty"`
 
