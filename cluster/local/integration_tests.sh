@@ -91,11 +91,6 @@ echo "${KIND_CONFIG}" | "${KIND}" create cluster --name="${K8S_CLUSTER}" --wait=
 docker tag "${CONTROLLER_IMAGE}" "${PACKAGE_CONTROLLER_IMAGE}"
 "${KIND}" load docker-image "${PACKAGE_CONTROLLER_IMAGE}" --name="${K8S_CLUSTER}"
 
-# files are not synced properly from host to kind node container on Jenkins, so
-# we must manually copy image from host to node
-echo_step "pre-cache package by copying to kind node"
-docker cp "${CACHE_PATH}/${PACKAGE_NAME}.gz" "${K8S_CLUSTER}-control-plane":"/cache/${PACKAGE_NAME}.gz"
-
 echo_step "create crossplane-system namespace"
 "${KUBECTL}" create ns crossplane-system
 
