@@ -42,6 +42,7 @@ eval $(make --no-print-directory -C ${projectdir} build.vars)
 
 SAFEHOSTARCH="${SAFEHOSTARCH:-amd64}"
 BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${SAFEHOSTARCH}"
+PACKAGE_IMAGE="crossplane.io/inttests/${PROJECT_NAME}:${VERSION}"
 CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-controller-${SAFEHOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
@@ -68,7 +69,8 @@ echo_step "setting up local package cache"
 CACHE_PATH="${projectdir}/.work/inttest-package-cache"
 mkdir -p "${CACHE_PATH}"
 echo "created cache dir at ${CACHE_PATH}"
-docker save "${BUILD_IMAGE}" -o "${CACHE_PATH}/${PACKAGE_NAME}.xpkg" && chmod 644 "${CACHE_PATH}/${PACKAGE_NAME}.xpkg"
+docker tag "${BUILD_IMAGE}" "${PACKAGE_IMAGE}"
+"${UP}" xpkg xp-extract --from-daemon "${PACKAGE_IMAGE}" -o "${CACHE_PATH}/${PACKAGE_NAME}.gz" && chmod 644 "${CACHE_PATH}/${PACKAGE_NAME}.gz"
 
 # create kind cluster with extra mounts
 KIND_NODE_IMAGE="kindest/node:${KIND_NODE_IMAGE_TAG}"
@@ -92,7 +94,7 @@ docker tag "${CONTROLLER_IMAGE}" "${PACKAGE_CONTROLLER_IMAGE}"
 # files are not synced properly from host to kind node container on Jenkins, so
 # we must manually copy image from host to node
 echo_step "pre-cache package by copying to kind node"
-docker cp "${CACHE_PATH}/${PACKAGE_NAME}.xpkg" "${K8S_CLUSTER}-control-plane":"/cache/${PACKAGE_NAME}.xpkg"
+docker cp "${CACHE_PATH}/${PACKAGE_NAME}.gz" "${K8S_CLUSTER}-control-plane":"/cache/${PACKAGE_NAME}.gz"
 
 echo_step "create crossplane-system namespace"
 "${KUBECTL}" create ns crossplane-system
