@@ -95,6 +95,20 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  policyArn:
+                    description: 'PolicyARN is the Amazon Resource Name (ARN) of the
+                      IAM policy you want to attach. Deprecated: use PolicyARNs.'
+                    type: string
+                  policyArnRef:
+                    description: 'PolicyARNRef references a Policy to retrieve its
+                      Policy ARN. Deprecated: use PolicyARNRefs.'
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   policyArnRefs:
                     description: PolicyARNRef references an Policy to retrieve its
                       Policy ARN.
@@ -124,8 +138,8 @@ spec:
                         type: object
                     type: object
                   policyArns:
-                    description: PolicyARN is the Amazon Resource Name (ARN) of the
-                      IAM policy you want to attach.
+                    description: PolicyARNs is an array of Amazon Resource Names (ARNs)
+                      of the IAM policies you want to attach.
                     items:
                       type: string
                     type: array

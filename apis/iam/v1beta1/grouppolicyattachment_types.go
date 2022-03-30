@@ -24,9 +24,23 @@ import (
 
 // GroupPolicyAttachmentParameters define the desired state of an AWS GroupPolicyAttachment.
 type GroupPolicyAttachmentParameters struct {
-
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
+	// Deprecated: use PolicyARNs.
+	// +immutable
+	// +crossplane:generate:reference:type=Policy
+	// +crossplane:generate:reference:extractor=PolicyARN()
+	// +crossplane:generate:reference:refFieldName=PolicyARNRef
+	// +crossplane:generate:reference:selectorFieldName=PolicyARNSelector
+	PolicyARN string `json:"policyArn,omitempty"`
+
+	// PolicyARNRef references a Policy to retrieve its Policy ARN.
+	// Deprecated: use PolicyARNRefs.
+	// +optional
+	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
+
+	// PolicyARNs is an array of Amazon Resource Names (ARNs) of the IAM
+	// policies you want to attach.
 	// +crossplane:generate:reference:type=Policy
 	// +crossplane:generate:reference:extractor=PolicyARN()
 	// +crossplane:generate:reference:refFieldName=PolicyARNRefs

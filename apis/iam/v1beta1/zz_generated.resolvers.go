@@ -59,6 +59,22 @@ func (mg *GroupPolicyAttachment) ResolveReferences(ctx context.Context, c client
 	var mrsp reference.MultiResolutionResponse
 	var err error
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PolicyARN,
+		Extract:      PolicyARN(),
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To: reference.To{
+			List:    &PolicyList{},
+			Managed: &Policy{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.PolicyARN")
+	}
+	mg.Spec.ForProvider.PolicyARN = rsp.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = rsp.ResolvedReference
+
 	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.PolicyARNs,
 		Extract:       PolicyARN(),
@@ -144,6 +160,22 @@ func (mg *RolePolicyAttachment) ResolveReferences(ctx context.Context, c client.
 	var mrsp reference.MultiResolutionResponse
 	var err error
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PolicyARN,
+		Extract:      PolicyARN(),
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To: reference.To{
+			List:    &PolicyList{},
+			Managed: &Policy{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.PolicyARN")
+	}
+	mg.Spec.ForProvider.PolicyARN = rsp.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = rsp.ResolvedReference
+
 	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.PolicyARNs,
 		Extract:       PolicyARN(),
@@ -186,6 +218,22 @@ func (mg *UserPolicyAttachment) ResolveReferences(ctx context.Context, c client.
 	var rsp reference.ResolutionResponse
 	var mrsp reference.MultiResolutionResponse
 	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PolicyARN,
+		Extract:      PolicyARN(),
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To: reference.To{
+			List:    &PolicyList{},
+			Managed: &Policy{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.PolicyARN")
+	}
+	mg.Spec.ForProvider.PolicyARN = rsp.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = rsp.ResolvedReference
 
 	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.PolicyARNs,

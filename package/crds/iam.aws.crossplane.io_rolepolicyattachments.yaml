@@ -67,9 +67,23 @@ spec:
                 description: RolePolicyAttachmentParameters define the desired state
                   of an AWS IAM Role policy attachment.
                 properties:
+                  policyArn:
+                    description: 'PolicyARN is the Amazon Resource Name (ARN) of the
+                      IAM policy you want to attach. Deprecated: Use PolicyARNs'
+                    type: string
+                  policyArnRef:
+                    description: 'PolicyARNRef references an Policy to retrieve its
+                      Policy ARN. Deprecated: Use PolicyARNRefs'
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   policyArnRefs:
-                    description: PolicyARNRef references an Policy to retrieve its
-                      Policy ARN.
+                    description: PolicyARNRef references Policies to retrieve their
+                      Policy ARNs.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -81,8 +95,8 @@ spec:
                       type: object
                     type: array
                   policyArnSelector:
-                    description: PolicyARNSelector selects a reference to an Policy
-                      to retrieve its Policy ARN
+                    description: PolicyARNSelector selects a reference to Policies
+                      to retrieve their Policy ARNs
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the
@@ -96,8 +110,8 @@ spec:
                         type: object
                     type: object
                   policyArns:
-                    description: PolicyARN is the Amazon Resource Name (ARN) of the
-                      IAM policy you want to attach.
+                    description: PolicyARNs is an array of Amazon Resource Names (ARNs)
+                      of the IAM policies you want to attach.
                     items:
                       type: string
                     type: array

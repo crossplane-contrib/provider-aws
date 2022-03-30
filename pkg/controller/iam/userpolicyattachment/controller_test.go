@@ -284,6 +284,25 @@ func TestCreate(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
+		"DeprecatedInput": {
+			args: args{
+				iam: &fake.MockUserPolicyAttachmentClient{
+					MockAttachUserPolicy: func(ctx context.Context, input *awsiam.AttachUserPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachUserPolicyOutput, error) {
+						return &awsiam.AttachUserPolicyOutput{}, nil
+					},
+				},
+				cr: userPolicy(withUserName(userName),
+					func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = policyArn }),
+			},
+			want: want{
+				cr: userPolicy(
+					withUserName(userName),
+					withSpecPolicyArns(policyArn),
+					func(r *v1beta1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = policyArn },
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
 	}
 
 	for name, tc := range cases {

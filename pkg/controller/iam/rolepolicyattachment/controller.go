@@ -136,6 +136,11 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
+	// Handle instances where the deprecated PolicyARN field is supplied
+	if len(cr.Spec.ForProvider.PolicyARNs) == 0 && cr.Spec.ForProvider.PolicyARN != "" {
+		cr.Spec.ForProvider.PolicyARNs = []string{cr.Spec.ForProvider.PolicyARN}
+	}
+
 	for _, policy := range cr.Spec.ForProvider.PolicyARNs {
 		_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
 			PolicyArn: aws.String(policy),

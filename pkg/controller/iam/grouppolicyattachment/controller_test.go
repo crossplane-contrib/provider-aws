@@ -287,6 +287,25 @@ func TestCreate(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
+		"DeprecatedInput": {
+			args: args{
+				iam: &fake.MockGroupPolicyAttachmentClient{
+					MockAttachGroupPolicy: func(ctx context.Context, input *awsiam.AttachGroupPolicyInput, opts []func(*awsiam.Options)) (*awsiam.AttachGroupPolicyOutput, error) {
+						return &awsiam.AttachGroupPolicyOutput{}, nil
+					},
+				},
+				cr: groupPolicy(withSpecGroupName(groupName),
+					func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = policyArn }),
+			},
+			want: want{
+				cr: groupPolicy(
+					withSpecGroupName(groupName),
+					withSpecPolicyArns(policyArn),
+					func(r *v1beta1.GroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = policyArn },
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
 	}
 
 	for name, tc := range cases {

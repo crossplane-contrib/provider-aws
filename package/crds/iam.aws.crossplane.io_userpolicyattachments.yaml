@@ -67,6 +67,20 @@ spec:
                 description: UserPolicyAttachmentParameters define the desired state
                   of an AWS UserPolicyAttachment.
                 properties:
+                  policyArn:
+                    description: 'PolicyARN is the Amazon Resource Name (ARN) of the
+                      IAM policy you want to attach. Deprecated: Use PolicyARNs.'
+                    type: string
+                  policyArnRef:
+                    description: 'PolicyARNRef references an Policy to retrieve its
+                      Policy ARN. Deprecated: Use PolicyARNRefs'
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   policyArnRefs:
                     description: PolicyARNRef references an Policy to retrieve its
                       Policy ARN.

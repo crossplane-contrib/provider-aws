@@ -27,6 +27,20 @@ type UserPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
+	// Deprecated: Use PolicyARNs.
+	// +crossplane:generate:reference:type=Policy
+	// +crossplane:generate:reference:extractor=PolicyARN()
+	// +crossplane:generate:reference:refFieldName=PolicyARNRef
+	// +crossplane:generate:reference:selectorFieldName=PolicyARNSelector
+	PolicyARN string `json:"policyArn,omitempty"`
+
+	// PolicyARNRef references an Policy to retrieve its Policy ARN.
+	// Deprecated: Use PolicyARNRefs
+	// +optional
+	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
+
+	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
+	// attach.
 	// +crossplane:generate:reference:type=Policy
 	// +crossplane:generate:reference:extractor=PolicyARN()
 	// +crossplane:generate:reference:refFieldName=PolicyARNRefs
