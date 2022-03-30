@@ -48,8 +48,49 @@ spec:
           spec:
             description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
             properties:
+              assumeRole:
+                description: AssumeRole defines the options for assuming an IAM role
+                properties:
+                  externalID:
+                    description: ExternalID is the external ID used when assuming
+                      role.
+                    type: string
+                  roleARN:
+                    description: AssumeRoleARN to assume with provider credentials
+                    type: string
+                  tags:
+                    description: Tags is list of session tags that you want to pass.
+                      Each session tag consists of a key name and an associated value.
+                      For more information about session tags, see Tagging STS Sessions
+                      (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html).
+                    items:
+                      description: Tag is session tag that can be used to assume an
+                        IAM Role
+                      properties:
+                        key:
+                          description: Name of the tag. Key is a required field
+                          type: string
+                        value:
+                          description: Value of the tag. Value is a required field
+                          type: string
+                      required:
+                      - key
+                      - value
+                      type: object
+                    type: array
+                  transitiveTagKeys:
+                    description: TransitiveTagKeys is a list of keys for session tags
+                      that you want to set as transitive. If you set a tag key as
+                      transitive, the corresponding key and value passes to subsequent
+                      sessions in a role chain. For more information, see Chaining
+                      Roles with Session Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining).
+                    items:
+                      type: string
+                    type: array
+                type: object
               assumeRoleARN:
-                description: AssumeRoleARN to assume with provider credentials
+                description: 'Deprecated: AssumeRoleARN to assume with provider credentials
+                  Use the RoleARN setting in AssumeRole'
                 type: string
               credentials:
                 description: Credentials required to authenticate to this provider.
@@ -209,7 +250,8 @@ spec:
                 - url
                 type: object
               externalID:
-                description: ExternalID is the external ID used when assuming role.
+                description: Deprecated. ExternalID is the external ID used when assuming
+                  role. Use the ExternalID setting in AssumeRole
                 type: string
             required:
             - credentials
