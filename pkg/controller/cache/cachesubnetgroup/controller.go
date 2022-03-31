@@ -26,15 +26,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
+	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // Error strings.
@@ -48,20 +51,25 @@ const (
 
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
 func SetupCacheSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1alpha1.CacheSubnetGroupGroupKind)
+	name := managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
-		For(&v1alpha1.CacheSubnetGroup{}).
+		For(&cachev1alpha1.CacheSubnetGroup{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.CacheSubnetGroupGroupVersionKind),
+			resource.ManagedKind(cachev1alpha1.CacheSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-		))
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -70,7 +78,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.CacheSubnetGroup)
+	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
 		return nil, errors.New(errNotSubnetGroup)
 	}
@@ -86,7 +94,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.CacheSubnetGroup)
+	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotSubnetGroup)
 	}
@@ -100,7 +108,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	sg := resp.CacheSubnetGroups[0]
 
-	cr.Status.AtProvider = v1alpha1.CacheSubnetGroupExternalStatus{
+	cr.Status.AtProvider = cachev1alpha1.CacheSubnetGroupExternalStatus{
 		VPCID: awsclient.StringValue(sg.VpcId),
 	}
 
@@ -113,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.CacheSubnetGroup)
+	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotSubnetGroup)
 	}
@@ -133,7 +141,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.CacheSubnetGroup)
+	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotSubnetGroup)
 	}
@@ -148,7 +156,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.CacheSubnetGroup)
+	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
 		return errors.New(errNotSubnetGroup)
 	}

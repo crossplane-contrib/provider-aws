@@ -7,6 +7,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -14,7 +15,9 @@ import (
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupMountTarget adds a controller that reconciles MountTarget.
@@ -28,6 +31,12 @@ func SetupMountTarget(mgr ctrl.Manager, o controller.Options) error {
 			e.preCreate = preCreate
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -37,7 +46,8 @@ func SetupMountTarget(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithInitializers(),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.CreateMountTargetInput) error {

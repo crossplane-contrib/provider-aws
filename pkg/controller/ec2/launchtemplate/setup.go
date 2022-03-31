@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -17,7 +18,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupLaunchTemplate adds a controller that reconciles LaunchTemplate.
@@ -32,6 +35,12 @@ func SetupLaunchTemplate(mgr ctrl.Manager, o controller.Options) error {
 			e.postObserve = postObserve
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -42,7 +51,8 @@ func SetupLaunchTemplate(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.LaunchTemplate, obj *svcsdk.DescribeLaunchTemplatesInput) error {

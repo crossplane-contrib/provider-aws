@@ -3,22 +3,25 @@ package broker
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/mq/mqiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/mq"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupBroker adds a controller that reconciles Broker.
@@ -35,6 +38,12 @@ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 			e.lateInitialize = LateInitialize
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -45,7 +54,8 @@ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type custom struct {

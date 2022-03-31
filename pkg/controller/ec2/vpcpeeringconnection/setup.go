@@ -8,19 +8,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -40,6 +43,12 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 			e.filterList = filterList
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -50,7 +59,8 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type custom struct {

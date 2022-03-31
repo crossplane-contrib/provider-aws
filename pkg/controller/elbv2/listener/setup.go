@@ -5,15 +5,19 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupListener adds a controller that reconciles Listener.
@@ -28,6 +32,12 @@ func SetupListener(mgr ctrl.Manager, o controller.Options) error {
 			e.preDelete = preDelete
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -38,7 +48,8 @@ func SetupListener(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithInitializers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Listener, obj *svcsdk.DescribeListenersInput) error {
