@@ -1,0 +1,19 @@
+apiVersion: aws.crossplane.io/v1alpha1
+kind: StoreConfig
+metadata:
+  name: vault
+spec:
+  type: Vault
+  defaultScope: crossplane-system
+  vault:
+    server: http://vault.vault-system:8200
+    mountPath: secret/
+    version: v2
+    auth:
+      method: Token
+      token:
+        source: Secret
+        secretRef:
+          namespace: crossplane-system
+          name: vault-token
+          key: token
