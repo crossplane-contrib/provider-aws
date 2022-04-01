@@ -2,10 +2,14 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Using IAM Roles for `ServiceAccounts`](#using-iam-roles-for-serviceaccounts)
-- [Using kube2iam](#using-kube2iam)
-- [Using `assumeRoleARN`](#using-assumerolearn)
+- [Authenticating to AWS API](#authenticating-to-aws-api)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Using IAM Roles for `ServiceAccounts`](#using-iam-roles-for-serviceaccounts)
+    - [Steps](#steps)
+  - [Using kube2iam](#using-kube2iam)
+    - [Steps](#steps-1)
+  - [Using `assumeRole`](#using-assumerole)
 
 ## Overview
 
@@ -285,22 +289,22 @@ EOF
 
 *Note: Because the name of the `ProviderConfig` is `default` it will be used by any managed resources that do not explicitly reference a `ProviderConfig`.*
 
-## Using `assumeRoleARN`
+## Using `assumeRole`
 
 `provider-aws` will be configured to connect to AWS Account *A* via `InjectedIdentity`,
-request temporary security credentials, and then `assumeRoleARN` to assume
+request temporary security credentials, and then setting `RoleARN` to assume
 a role in AWS Account *B* to manage the resources within AWS Account *B*.
 
-The first thing that needs to be done is to create an IAM role within AWS Account *B* that `provider-aws` will `assumeRoleARN` into.
+The first thing that needs to be done is to create an IAM role within AWS Account *B* that `provider-aws` will Assume into.
 
 - From within the AWS console of AWS Account *B*, navigate to `IAM > Roles > Create role > Another AWS account`.
-  - Enter the Account ID of Account *A* (the account `provider-aws` will call `assumeRoleARN` from).
+  - Enter the Account ID of Account *A* (the account `provider-aws` will call `roleARN` from).
   - (Optional) Check the box for `Require external ID`. This ensures requests
     coming from Account *A* can only use 'assumeRoleARN' if these requests pass the specified `externalID`.
 
-Next, the `provider-aws` must be configured to use `assumeRoleARN`.
+Next, the `provider-aws` must be configured to use `assumeRole`.
 The code snippet below shows how to configure `provider-aws` to connect to
-AWS Account *A* and `assumeRoleARN` into a role within AWS Account *B*.
+AWS Account *A* and `assumeRole` into a role within AWS Account *B*.
 
 ```console
 $ cat <<EOF | kubectl apply -f -
@@ -309,7 +313,32 @@ kind: ProviderConfig
 metadata:
   name: account-b
 spec:
-  assumeRoleARN: "arn:aws:iam::999999999999:role/account-b"
+  assumeRole:
+    roleARN: "arn:aws:iam::999999999999:role/account_b"
+    externalID: "my-optional-id"
+  credentials:
+    source: InjectedIdentity
+EOF
+```
+
+Session tags and TransitiveKey tags are supported (see <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html>).
+
+```console
+$ cat <<EOF | kubectl apply -f -
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: account-b
+spec:
+  assumeRole:
+    roleARN: "arn:aws:iam::999999999999:role/account_b"
+    externalID: "my-optional-id"
+    tags:
+      - key: Project
+        value: Crossplane
+      - key: Department
+        value: Infrastructure   
+    transitiveTagKeys: [ "Project", "Department"]
   credentials:
     source: InjectedIdentity
 EOF

@@ -30,6 +30,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
+
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
@@ -108,7 +110,7 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UsePodServiceAccountAssumeRole(ctx, []byte{}, DefaultSection, region, pc)
 			if err != nil {
 				return nil, err
@@ -125,7 +127,7 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UseProviderSecretAssumeRole(ctx, data, DefaultSection, region, pc)
 			if err != nil {
 				return nil, err
@@ -296,12 +298,22 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 		Value: creds,
 	}))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
 
 	stsSvc := sts.NewFromConfig(config)
+
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(pc.Spec.AssumeRoleARN),
-		func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+		StringValue(roleArn),
+		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
 
@@ -316,15 +328,22 @@ func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region str
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
+
 	stsclient := sts.NewFromConfig(cfg)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(pc.Spec.AssumeRoleARN),
-				func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+				StringValue(roleArn),
+				stsAssumeRoleOptions,
 			)),
 		),
 	)
@@ -385,7 +404,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
 
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UseProviderSecretV1AssumeRole(ctx, data, pc, DefaultSection, region)
 			if err != nil {
 				return nil, errors.Wrap(err, "cannot use secret")
@@ -415,11 +434,17 @@ func UseProviderSecretV1AssumeRole(ctx context.Context, data []byte, pc *v1beta1
 		return nil, errors.Wrap(err, "failed to load credentials")
 	}
 
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to assume IAM Role")
+	}
+
 	stsSvc := sts.NewFromConfig(config)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(pc.Spec.AssumeRoleARN),
-		func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+		StringValue(roleArn),
+		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
 
@@ -476,15 +501,21 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to assume IAM Role")
+	}
 	stsclient := sts.NewFromConfig(cfg)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(pc.Spec.AssumeRoleARN),
-				func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+				StringValue(roleArn),
+				stsAssumeRoleOptions,
 			)),
 		),
 	)
@@ -571,6 +602,52 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		return e, nil
 	})
 	return cfg
+}
+
+// GetAssumeRoleARN gets the AssumeRoleArn from a ProviderConfigSpec
+func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
+	if pcs.AssumeRole != nil {
+		if pcs.AssumeRole.RoleARN != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
+			return pcs.AssumeRole.RoleARN, nil
+		}
+	}
+
+	// Deprecated. Use AssumeRole.RoleARN
+	if pcs.AssumeRoleARN != nil {
+		return pcs.AssumeRoleARN, nil
+	}
+
+	return nil, errors.New("a RoleARN must be set to assume an IAM Role")
+}
+
+// SetAssumeRoleOptions sets options when Assuming an IAM Role
+func SetAssumeRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.AssumeRoleOptions) {
+	if pc.Spec.AssumeRole != nil {
+		return func(opt *stscreds.AssumeRoleOptions) {
+			if pc.Spec.AssumeRole.ExternalID != nil {
+				opt.ExternalID = pc.Spec.AssumeRole.ExternalID
+			}
+
+			if pc.Spec.AssumeRole.Tags != nil && len(pc.Spec.AssumeRole.Tags) > 0 {
+				for _, t := range pc.Spec.AssumeRole.Tags {
+					opt.Tags = append(
+						opt.Tags,
+						stscredstypesv2.Tag{Key: t.Key, Value: t.Value})
+				}
+			}
+
+			if pc.Spec.AssumeRole.TransitiveTagKeys != nil && len(pc.Spec.AssumeRole.TransitiveTagKeys) > 0 {
+				opt.TransitiveTagKeys = pc.Spec.AssumeRole.TransitiveTagKeys
+			}
+		}
+	}
+
+	// Deprecated. Use AssumeRole.ExternalID
+	if pc.Spec.ExternalID != nil {
+		return func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID }
+	}
+
+	return func(opt *stscreds.AssumeRoleOptions) {}
 }
 
 // TODO(muvaf): All the types that use CreateJSONPatch are known during
