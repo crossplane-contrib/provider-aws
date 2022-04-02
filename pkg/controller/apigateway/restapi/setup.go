@@ -19,10 +19,6 @@ package restapi
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigateway"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -99,32 +95,27 @@ func postCreate(_ context.Context, cr *svcapitypes.RestAPI, resp *svcsdk.RestApi
 }
 
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.UpdateRestApiInput) error {
-	cur := &svcapitypes.RestAPIParameters{
-		Region: cr.Spec.ForProvider.Region,
-	}
 
 	rapi, err := c.Client.GetRestAPIByID(ctx, aws.String(meta.GetExternalName(cr)))
 	if err != nil {
 		return errors.Wrap(err, "cant get rest api")
 	}
 
-	cur.Name = rapi.Name
-	rapi.Policy = unescapePolicy(rapi.Policy)
+	cur := &svcapitypes.RestAPIParameters{
+		Name:   rapi.Name,
+		Region: cr.Spec.ForProvider.Region,
+	}
 
 	if err := lateInitialize(cur, rapi); err != nil {
 		return errors.Wrap(err, "cant late init current restApi")
 	}
 
-	if cr.Spec.ForProvider.Policy != nil {
-		pol, err := normalizePolicy(cr.Spec.ForProvider.Policy)
-		if err != nil {
-			return errors.Wrap(err, "cant normalize managed resource policy")
-		}
-
-		cr.Spec.ForProvider.Policy = pol
+	err = lateInitializePolicies(&cr.Spec.ForProvider, rapi)
+	if err != nil {
+		return errors.Wrap(err, "comparing spec and current policies post late init")
 	}
 
-	pOps, err := apigwclient.GetPatchOperations(&cur, &cr.Spec.ForProvider)
+	pOps, err := apigwclient.GetPatchOperations(&cur, cr.Spec.ForProvider)
 	if err != nil {
 		return errors.Wrap(err, "cant compute patch preUpdate")
 	}
@@ -133,36 +124,6 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *sv
 	obj.RestApiId = aws.String(meta.GetExternalName(cr))
 
 	return nil
-}
-
-func policiesAreKindOfTheSame(a *string, b *string) (bool, error) {
-	if a != nil && b != nil {
-		aPol, bPol, err := parsePolicies(a, b)
-		if err != nil {
-			return false, errors.Wrap(err, "cant parse policies")
-		}
-		polPatch, err := apigwclient.GetJSONPatch(aPol, bPol)
-		if err != nil {
-			return false, errors.Wrap(err, "cant compute jsonpatch")
-		}
-
-		for _, p := range polPatch {
-			re := regexp.MustCompile(`/Statement/(\d+)/Resource`)
-			if p.Operation != "replace" || !re.MatchString(p.Path) {
-				return false, nil
-			}
-
-			index, _ := strconv.Atoi(re.FindString(p.Path))
-			fmt.Println(aPol["Statement"].([]interface{})[index].(map[string]interface{})["Resource"])
-			if aPol["Statement"].([]interface{})[index].(map[string]interface{})["Resource"] != "execute-api:/*/*/*" {
-				return false, nil
-			}
-		}
-
-		return true, nil
-	}
-
-	return cmp.Equal(a, b), nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.DeleteRestApiInput) (bool, error) {
@@ -176,11 +137,9 @@ func isUpToDate(cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, error) {
 		Region: cr.Spec.ForProvider.Region,
 	}
 
-	if cur.Policy != nil {
-		cur.Policy = unescapePolicy(cur.Policy)
-	}
+	var err error
 
-	if err := lateInitialize(s, cur); err != nil {
+	if err = lateInitialize(s, cur); err != nil {
 		return false, errors.Wrap(err, "cant lateinit")
 	}
 
@@ -200,66 +159,12 @@ func isUpToDate(cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, error) {
 	), nil
 }
 
-func normalizePolicy(p *string) (*string, error) {
-	if p == nil {
-		return p, nil
-	}
-	var mappedPol map[string]interface{}
-	if err := json.Unmarshal([]byte(*p), &mappedPol); err != nil {
-		return nil, errors.Wrap(err, "cant unmarshal policy")
-	}
-
-	parsed, err := json.Marshal(mappedPol)
-	if err != nil {
-		return nil, err
-	}
-
-	return aws.String(string(parsed)), nil
-}
-
-func unescapePolicy(p *string) *string {
-	if p == nil {
-		return p
-	}
-
-	s := strings.ReplaceAll(*p, "\\\"", "\"")
-	return &s
-}
-
-func parsePolicies(a *string, b *string) (map[string]interface{}, map[string]interface{}, error) {
-	var aPol, bPol map[string]interface{}
-	if err := json.Unmarshal([]byte(*a), &aPol); err != nil {
-		return nil, nil, errors.Wrap(err, "cant unmarshal policy")
-	}
-	if err := json.Unmarshal([]byte(*b), &bPol); err != nil {
-		return nil, nil, errors.Wrap(err, "cant unmarshal policy")
-	}
-
-	return aPol, bPol, nil
-}
-
 func lateInitialize(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestApi) error {
 	in.APIKeySource = aws.LateInitializeStringPtr(in.APIKeySource, cur.ApiKeySource)
 	in.BinaryMediaTypes = aws.LateInitializeStringPtrSlice(in.BinaryMediaTypes, cur.BinaryMediaTypes)
 	in.Description = aws.LateInitializeStringPtr(in.Description, cur.Description)
 	in.DisableExecuteAPIEndpoint = aws.LateInitializeBoolPtr(in.DisableExecuteAPIEndpoint, cur.DisableExecuteApiEndpoint)
 	in.MinimumCompressionSize = aws.LateInitializeInt64Ptr(in.MinimumCompressionSize, cur.MinimumCompressionSize)
-
-	// this is a hack since AWS does minor adaptions to the policy after creation. We want to treat just that case
-	// and avoid copying from the AWS status of a resources as the source of truth
-	res, err := policiesAreKindOfTheSame(in.Policy, cur.Policy)
-	if err != nil {
-		return errors.Wrap(err, "policies couldnt be compared")
-	} else if res {
-		in.Policy = cur.Policy
-	}
-
-	pol, err := normalizePolicy(aws.LateInitializeStringPtr(in.Policy, cur.Policy))
-	if err != nil {
-		return errors.Wrap(err, "cant normalize policy")
-	}
-
-	in.Policy = pol
 
 	if cur.EndpointConfiguration != nil {
 		if in.EndpointConfiguration == nil {
@@ -269,5 +174,44 @@ func lateInitialize(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestApi) erro
 		in.EndpointConfiguration.VPCEndpointIDs = aws.LateInitializeStringPtrSlice(in.EndpointConfiguration.VPCEndpointIDs, cur.EndpointConfiguration.VpcEndpointIds)
 	}
 
-	return nil
+	return lateInitializePolicies(in, cur)
+}
+
+func lateInitializePolicies(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestApi) error {
+	inPol, err := policyStringToMap(in.Policy)
+	if err != nil {
+		return errors.Wrap(err, "converting spec policy to map")
+	}
+
+	curPol, err := policyEscapedStringToMap(cur.Policy)
+	if err != nil {
+		curPol, err = policyStringToMap(cur.Policy)
+		if err != nil {
+			return errors.Wrap(err, "converting current policy to map")
+		}
+	}
+
+	// this is a hack since AWS does minor adaptions to the policy after creation. We want to treat just that case
+	// and avoid copying from the AWS status of a resources as the source of truth
+	res, err := policiesAreKindOfTheSame(inPol, curPol)
+	if err != nil {
+		return errors.Wrap(err, "policies couldnt be compared")
+	}
+
+	cur.Policy, err = policyMapToString(curPol)
+
+	if err != nil {
+		return err
+	}
+	if res {
+		in.Policy = cur.Policy
+	} else {
+		in.Policy, err = policyMapToString(inPol)
+		if err != nil {
+			return err
+		}
+	}
+	in.Policy = aws.LateInitializeStringPtr(in.Policy, cur.Policy)
+
+	return err
 }

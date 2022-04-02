@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/apigateway"
 	svcksdkapi "github.com/aws/aws-sdk-go/service/apigateway/apigatewayiface"
@@ -87,16 +88,16 @@ func GetPatchOperations(source interface{}, dest interface{}) ([]*svcsdk.PatchOp
 
 	ops := make([]*svcsdk.PatchOperation, 0)
 	for _, v := range patchJSON {
+		val := v
 		op := &svcsdk.PatchOperation{
-			Op:   &v.Operation,
-			Path: &v.Path,
+			Op:   &val.Operation,
+			Path: &val.Path,
 		}
 		if v.Operation == "add" || v.Operation == "replace" || v.Operation == "copy" {
-			val := fmt.Sprintf("%v", v.Value)
-			op.Value = &val
+			op.Value = aws.String(fmt.Sprintf("%v", v.Value))
 		}
-
 		ops = append(ops, op)
 	}
+
 	return ops, nil
 }

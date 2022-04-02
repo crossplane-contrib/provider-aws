@@ -23,16 +23,6 @@ type CustomAuthorizerParameters struct {
 	// to set the RestAPIID.
 	// +optional
 	RestAPIIDSelector *xpv1.Selector `json:"restApiIdSelector,omitempty"`
-
-	// // +immutable
-	// // +crossplane:generate:reference:type=cognitoidentityprovider.UserPool
-	// ProviderARNs []*string `json:"providerARNs,omitempty"`
-
-	// // +optional
-	// ProviderARNsRefs []*xpv1.Reference `json:"providerARNsRef,omitempty"`
-
-	// // +optional
-	// ProviderARNsSelectors []*xpv1.Selector `json:"providerARNsSelector,omitempty"`
 }
 
 // CustomBasePathMappingParameters includes the custom fields of BasePathMapping

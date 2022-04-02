@@ -31,42 +31,71 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/apigateway/fake"
 )
 
+type policyExample struct {
+	FromSpec *string
+	FromAws  *string
+	Result   *string
+}
+
 var (
-	submittedPolSimple = `{
-		"Version": "2012-10-17",
-		"Statement": [
-			{
-				"Effect": "Allow",
-				"Principal": "*",
-				"Action": "execute-api:Invoke",
-				"Resource": "execute-api:/*/*/*"
-			}
-		]
-	}`
-	submittedPolComplex = `{
-		"Effect": "Deny",
-		"Principal": "*",
-		"Action": "execute-api:Invoke",
-		"Resource": "execute-api:/*/*/*",
-		"Condition": {
-				"StringNotEquals": {
-						"aws:sourceVpc": "vpc-1234ab123456789ab"
+	polNoDetails = policyExample{
+		FromSpec: aws.String(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Effect": "Allow",
+					"Principal": "*",
+					"Action": "execute-api:Invoke",
+					"Resource": "execute-api:/*/*/*"
 				}
-		}
-	},
-	{
-		"Version": "2012-10-17",
-		"Statement": [
-			{
-				"Effect": "Allow",
-				"Principal": "*",
-				"Action": "execute-api:Invoke",
-				"Resource": "execute-api:/*/*/*"
-			}
-		]
-	}`
-	expectedPolSimple  = `{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234\/*\/*\/*\"}]}`
-	expectedPolComplex = `{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:eu-central-1:272371606098:tgcv8l3668\/*\/*\/*\",\"Condition\":{\"StringNotEquals\":{\"aws:sourceVpc\":\"vpc-0929e10bf326f116a\"}}},{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:eu-central-1:272371606098:tgcv8l3668\/*\/*\/*\"}]}`
+			]
+		}`),
+		FromAws: aws.String(`{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"execute-api:Invoke\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*\"}]}`),
+		Result:  aws.String(`{"Statement":[{"Action":"execute-api:Invoke","Effect":"Allow","Principal":"*","Resource":"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*"}],"Version":"2012-10-17"}`),
+	}
+
+	polWithDetails = policyExample{
+		FromSpec: aws.String(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Effect": "Allow",
+					"Principal": "*",
+					"Action": "execute-api:Invoke",
+					"Resource": "arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*"
+				}
+			]
+		}`),
+		FromAws: polNoDetails.FromAws,
+		Result:  polNoDetails.Result,
+	}
+
+	polMultipleStmts = policyExample{
+		FromSpec: aws.String(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Effect": "Deny",
+					"Principal": "*",
+					"Action": "execute-api:Invoke",
+					"Resource": "arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*",
+					"Condition": {
+							"StringNotEquals": {
+									"aws:sourceVpc": "vpc-1234ab123456789ab"
+							}
+					}
+				},
+				{
+					"Effect": "Allow",
+					"Principal": "*",
+					"Action": "execute-api:Invoke",
+					"Resource": "arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*"
+				}
+			]
+		}`),
+		FromAws: aws.String(`{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"execute-api:Invoke\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Resource\":\"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*\",\"Condition\":{\"StringNotEquals\":{\"aws:sourceVpc\":\"vpc-1234ab123456789ab\"}}},{\"Action\":\"execute-api:Invoke\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*\"}]}`),
+		Result:  aws.String(`{"Statement":[{"Action":"execute-api:Invoke","Condition":{"StringNotEquals":{"aws:sourceVpc":"vpc-1234ab123456789ab"}},"Effect":"Deny","Principal":"*","Resource":"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*"},{"Action":"execute-api:Invoke","Effect":"Allow","Principal":"*","Resource":"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234/*/*/*"}],"Version":"2012-10-17"}`),
+	}
 )
 
 type args struct {
@@ -106,11 +135,28 @@ func TestPreUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"DiffNameUpdate": {
+		"EqualsNoUpdate": {
 			args: args{
 				cr: restAPI([]apiModifier{
 					withSpec(v1alpha1.RestAPIParameters{
-						Name: aws.String("test-b"),
+						Name:   aws.String("test-a"),
+						Policy: polNoDetails.FromSpec,
+					}),
+					withExternalName("1234567"),
+				}...),
+				obj: nil,
+			},
+			want: want{
+				ops: []*svcsdk.PatchOperation{},
+				err: nil,
+			},
+		},
+		"NameUpdate": {
+			args: args{
+				cr: restAPI([]apiModifier{
+					withSpec(v1alpha1.RestAPIParameters{
+						Name:   aws.String("test-b"),
+						Policy: polNoDetails.FromSpec,
 					}),
 					withExternalName("1234567"),
 				}...),
@@ -131,7 +177,8 @@ func TestPreUpdate(t *testing.T) {
 			args: args{
 				cr: restAPI([]apiModifier{
 					withSpec(v1alpha1.RestAPIParameters{
-						Name: aws.String("test-b"),
+						Name:   aws.String("test-a"),
+						Policy: polMultipleStmts.FromSpec,
 					}),
 					withExternalName("1234567"),
 				}...),
@@ -141,8 +188,8 @@ func TestPreUpdate(t *testing.T) {
 				ops: []*svcsdk.PatchOperation{
 					{
 						Op:    aws.String("replace"),
-						Path:  aws.String("/name"),
-						Value: aws.String("test-b"),
+						Path:  aws.String("/policy"),
+						Value: polMultipleStmts.Result,
 					},
 				},
 				err: nil,
@@ -156,8 +203,9 @@ func TestPreUpdate(t *testing.T) {
 				Client: &fake.MockAPIGatewayClient{
 					MockGetRestAPIByID: func(_ context.Context, apiId *string) (*svcsdk.RestApi, error) {
 						return &svcsdk.RestApi{
-							Name: aws.String("test-a"),
-							Id:   apiId,
+							Name:   aws.String("test-a"),
+							Id:     apiId,
+							Policy: polNoDetails.FromAws,
 						}, nil
 					},
 				},
@@ -184,8 +232,7 @@ func TestLateInitialize(t *testing.T) {
 		err    error
 	}
 
-	fixedPolResult, _ := normalizePolicy(aws.String(`{"Statement":[{"Effect":"Allow","Principal":"*","Action":"execute-api:Invoke","Resource":"arn:aws:execute-api:eu-central-1:123456789012:abcdef1234\/*\/*\/*"}],"Version":"2012-10-17"}`))
-	normSubmittedPolSimple, _ := normalizePolicy(aws.String(submittedPolSimple))
+	normalized, _ := normalizePolicy(polNoDetails.FromSpec)
 	cases := map[string]struct {
 		args
 		want
@@ -193,15 +240,31 @@ func TestLateInitialize(t *testing.T) {
 		"PolicyFixedByAws": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Policy: &submittedPolSimple,
+					Policy: polNoDetails.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Policy: unescapePolicy(aws.String(expectedPolSimple)),
+					Policy: polNoDetails.FromAws,
 				},
 			},
 			want: want{
 				result: v1alpha1.RestAPIParameters{
-					Policy: fixedPolResult,
+					Policy: polNoDetails.Result,
+				},
+				err: nil,
+			},
+		},
+		"SamePolicy": {
+			args: args{
+				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
+					Policy: polWithDetails.FromSpec,
+				})),
+				obj: &svcsdk.RestApi{
+					Policy: polWithDetails.FromAws,
+				},
+			},
+			want: want{
+				result: v1alpha1.RestAPIParameters{
+					Policy: polWithDetails.Result,
 				},
 				err: nil,
 			},
@@ -209,15 +272,15 @@ func TestLateInitialize(t *testing.T) {
 		"DiffPolicy": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Policy: &submittedPolSimple,
+					Policy: polNoDetails.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Policy: unescapePolicy(aws.String(expectedPolComplex)),
+					Policy: polMultipleStmts.FromAws,
 				},
 			},
 			want: want{
 				result: v1alpha1.RestAPIParameters{
-					Policy: normSubmittedPolSimple,
+					Policy: normalized,
 				},
 				err: nil,
 			},
@@ -252,10 +315,10 @@ func TestIsUpToDate(t *testing.T) {
 		"PolDiffUpdate": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Policy: &submittedPolSimple,
+					Policy: polNoDetails.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Policy: &expectedPolSimple,
+					Policy: polNoDetails.FromAws,
 				},
 			},
 			want: want{
@@ -266,10 +329,10 @@ func TestIsUpToDate(t *testing.T) {
 		"PolicyAddStmtUpdate": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Policy: &submittedPolSimple,
+					Policy: polMultipleStmts.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Policy: &expectedPolComplex,
+					Policy: polNoDetails.FromAws,
 				},
 			},
 			want: want{
@@ -280,10 +343,10 @@ func TestIsUpToDate(t *testing.T) {
 		"PolicyRemStmtUpdate": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Policy: &submittedPolComplex,
+					Policy: polNoDetails.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Policy: &expectedPolSimple,
+					Policy: polMultipleStmts.FromAws,
 				},
 			},
 			want: want{
@@ -294,10 +357,12 @@ func TestIsUpToDate(t *testing.T) {
 		"DiffNameUpdate": {
 			args: args{
 				cr: restAPI(withSpec(v1alpha1.RestAPIParameters{
-					Name: aws.String("test-a"),
+					Name:   aws.String("test-a"),
+					Policy: polNoDetails.FromSpec,
 				})),
 				obj: &svcsdk.RestApi{
-					Name: aws.String("test-b"),
+					Name:   aws.String("test-b"),
+					Policy: polNoDetails.FromAws,
 				},
 			},
 			want: want{
