@@ -103,6 +103,12 @@ add the setup function like the following:
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -112,7 +118,8 @@ func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 ```
 

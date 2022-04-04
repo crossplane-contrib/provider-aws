@@ -16,10 +16,11 @@ package database
 import (
 	"context"
 
+	svcsdk "github.com/aws/aws-sdk-go/service/glue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	svcsdk "github.com/aws/aws-sdk-go/service/glue"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -27,7 +28,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupDatabase adds a controller that reconciles Database.
@@ -42,6 +45,12 @@ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 			e.preCreate = preCreate
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
@@ -51,7 +60,8 @@ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.DeleteDatabaseInput) (bool, error) {

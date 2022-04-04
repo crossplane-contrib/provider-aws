@@ -18,7 +18,6 @@ package cluster
 
 import (
 	"context"
-
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -28,15 +27,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
+	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // Error strings.
@@ -51,20 +53,25 @@ const (
 
 // SetupCacheCluster adds a controller that reconciles CacheCluster.
 func SetupCacheCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1alpha1.CacheClusterGroupKind)
+	name := managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
-		For(&v1alpha1.CacheCluster{}).
+		For(&cachev1alpha1.CacheCluster{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.CacheClusterGroupVersionKind),
+			resource.ManagedKind(cachev1alpha1.CacheClusterGroupVersionKind),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-		))
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -73,7 +80,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.CacheCluster)
+	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
 		return nil, errors.New(errNotCacheCluster)
 	}
@@ -90,7 +97,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.CacheCluster)
+	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotCacheCluster)
 	}
@@ -112,11 +119,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = elasticache.GenerateClusterObservation(cluster)
 
 	switch cr.Status.AtProvider.CacheClusterStatus {
-	case v1alpha1.StatusAvailable:
+	case cachev1alpha1.StatusAvailable:
 		cr.Status.SetConditions(xpv1.Available())
-	case v1alpha1.StatusCreating:
+	case cachev1alpha1.StatusCreating:
 		cr.Status.SetConditions(xpv1.Creating())
-	case v1alpha1.StatusDeleting:
+	case cachev1alpha1.StatusDeleting:
 		cr.Status.SetConditions(xpv1.Deleting())
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
@@ -134,7 +141,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.CacheCluster)
+	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotCacheCluster)
 	}
@@ -147,13 +154,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.CacheCluster)
+	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotCacheCluster)
 	}
 
 	// AWS API rejects modification requests if the state is not `available`
-	if cr.Status.AtProvider.CacheClusterStatus != v1alpha1.StatusAvailable {
+	if cr.Status.AtProvider.CacheClusterStatus != cachev1alpha1.StatusAvailable {
 		return managed.ExternalUpdate{}, nil
 	}
 
@@ -162,14 +169,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.CacheCluster)
+	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
 		return errors.New(errNotCacheCluster)
 	}
 
 	cr.SetConditions(xpv1.Deleting())
-	if cr.Status.AtProvider.CacheClusterStatus == v1alpha1.StatusDeleted ||
-		cr.Status.AtProvider.CacheClusterStatus == v1alpha1.StatusDeleting {
+	if cr.Status.AtProvider.CacheClusterStatus == cachev1alpha1.StatusDeleted ||
+		cr.Status.AtProvider.CacheClusterStatus == cachev1alpha1.StatusDeleting {
 		return nil
 	}
 
