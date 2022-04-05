@@ -18,19 +18,23 @@ package cluster
 
 import (
 	"context"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/dax"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+
 	svcapitypes "github.com/crossplane/provider-aws/apis/dax/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/dax/fake"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 const (
@@ -45,10 +49,10 @@ const (
 	testClusterARN                = "test-cluster-ARN"
 	testIamRoleARN                = "test-iam-role-ARN"
 	testOtherIamRoleARN           = "test-other-iam-role-ARN"
-	testNodeIdToRemove            = "test-node-id-to-remove"
-	testOtherNodeIdToRemove       = "test-other-node-id-to-remove"
-	testNodeId                    = "test-node-id"
-	testOtherNodeId               = "test-other-node-id"
+	testNodeIDToRemove            = "test-node-id-to-remove"
+	testOtherNodeIDToRemove       = "test-other-node-id-to-remove"
+	testNodeID                    = "test-node-id"
+	testOtherNodeID               = "test-other-node-id"
 	testNodeStatus                = "test-node-status"
 	testOtherNodeStatus           = "test-other-node-status"
 	testParameterGroupStatus      = "test-parameter-group-status"
@@ -66,7 +70,7 @@ const (
 	testParameterGroupName           = "test-parameter-group-name"
 	testOtherParameterGroupName      = "test-other-parameter-group-name"
 	testParameterApplyStatus         = "test-parameter-apply-status"
-	testNodeIdToReboot               = "test-node-id"
+	testNodeIDToReboot               = "test-node-id"
 	testSubnetGroup                  = "test-subnet-group"
 	testSecurityGroupIdentifier      = "test-security-group-identifier"
 	testOtherSecurityGroupIdentifier = "test-other-security-group-identifier"
@@ -227,18 +231,18 @@ func baseCluster() *dax.Cluster {
 		ClusterName:                   awsclient.String(testClusterName),
 		Description:                   awsclient.String(testDescription),
 		IamRoleArn:                    awsclient.String(testIamRoleARN),
-		NodeIdsToRemove:               []*string{awsclient.String(testNodeIdToRemove), awsclient.String(testOtherNodeIdToRemove)},
+		NodeIdsToRemove:               []*string{awsclient.String(testNodeIDToRemove), awsclient.String(testOtherNodeIDToRemove)},
 		NodeType:                      awsclient.String(testNodeType),
 		Nodes: []*dax.Node{
 			{
 				AvailabilityZone:     awsclient.String(testAvailabilityZone),
-				NodeId:               awsclient.String(testNodeId),
+				NodeId:               awsclient.String(testNodeID),
 				NodeStatus:           awsclient.String(testNodeStatus),
 				ParameterGroupStatus: awsclient.String(testParameterGroupStatus),
 			},
 			{
 				AvailabilityZone:     awsclient.String(testOtherAvailabilityZone),
-				NodeId:               awsclient.String(testOtherNodeId),
+				NodeId:               awsclient.String(testOtherNodeID),
 				NodeStatus:           awsclient.String(testOtherNodeStatus),
 				ParameterGroupStatus: awsclient.String(testOtherParameterGroupStatus),
 			},
@@ -248,7 +252,7 @@ func baseCluster() *dax.Cluster {
 			TopicStatus: awsclient.String(testTopicStatus),
 		},
 		ParameterGroup: &dax.ParameterGroupStatus{
-			NodeIdsToReboot:      []*string{awsclient.String(testNodeIdToReboot)},
+			NodeIdsToReboot:      []*string{awsclient.String(testNodeIDToReboot)},
 			ParameterApplyStatus: awsclient.String(testParameterApplyStatus),
 			ParameterGroupName:   awsclient.String(testParameterGroupName),
 		},
@@ -301,17 +305,17 @@ func baseClusterObservation() svcapitypes.ClusterObservation {
 		},
 		ClusterName:     awsclient.String(testClusterName),
 		IAMRoleARN:      awsclient.String(testIamRoleARN),
-		NodeIDsToRemove: []*string{awsclient.String(testNodeIdToRemove), awsclient.String(testOtherNodeIdToRemove)},
+		NodeIDsToRemove: []*string{awsclient.String(testNodeIDToRemove), awsclient.String(testOtherNodeIDToRemove)},
 		Nodes: []*svcapitypes.Node{
 			{
 				AvailabilityZone:     awsclient.String(testAvailabilityZone),
-				NodeID:               awsclient.String(testNodeId),
+				NodeID:               awsclient.String(testNodeID),
 				NodeStatus:           awsclient.String(testNodeStatus),
 				ParameterGroupStatus: awsclient.String(testParameterGroupStatus),
 			},
 			{
 				AvailabilityZone:     awsclient.String(testOtherAvailabilityZone),
-				NodeID:               awsclient.String(testOtherNodeId),
+				NodeID:               awsclient.String(testOtherNodeID),
 				NodeStatus:           awsclient.String(testOtherNodeStatus),
 				ParameterGroupStatus: awsclient.String(testOtherParameterGroupStatus),
 			},
@@ -321,7 +325,7 @@ func baseClusterObservation() svcapitypes.ClusterObservation {
 			TopicStatus: awsclient.String(testTopicStatus),
 		},
 		ParameterGroup: &svcapitypes.ParameterGroupStatus_SDK{
-			NodeIDsToReboot:      []*string{awsclient.String(testNodeIdToReboot)},
+			NodeIDsToReboot:      []*string{awsclient.String(testNodeIDToReboot)},
 			ParameterApplyStatus: awsclient.String(testParameterApplyStatus),
 			ParameterGroupName:   awsclient.String(testParameterGroupName),
 		},

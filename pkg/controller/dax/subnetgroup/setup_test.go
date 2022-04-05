@@ -18,19 +18,23 @@ package subnetgroup
 
 import (
 	"context"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/dax"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+
 	svcapitypes "github.com/crossplane/provider-aws/apis/dax/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/dax/fake"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 const (
@@ -93,7 +97,7 @@ func withDescription(value string) daxModifier {
 	}
 }
 
-func withSubnetId(value string) daxModifier {
+func withSubnetID(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
 		o.Spec.ForProvider.SubnetIds = append(o.Spec.ForProvider.SubnetIds, awsclient.String(value))
 	}
@@ -150,14 +154,14 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 					withStatusSubnetGroupName(testSubnetGroupName),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
 					withConditions(xpv1.Available()),
@@ -197,7 +201,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testOtherDescription),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 				),
 			},
 			want: want{
@@ -205,7 +209,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testSubnetGroupName),
 					withStatusSubnetGroupName(testSubnetGroupName),
 					withDescription(testOtherDescription),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
 					withConditions(xpv1.Available()),
 				),
@@ -244,14 +248,14 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 					withStatusSubnetGroupName(testSubnetGroupName),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
 					withConditions(xpv1.Available()),
@@ -356,13 +360,13 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: instance(
 					withExternalName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
 				),
 				result: managed.ExternalUpdate{},
 				dax: fake.MockDaxClientCall{
@@ -397,16 +401,16 @@ func TestUpdate(t *testing.T) {
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testSubnetGroupName),
 					withDescription(testDescription),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 				),
 				result: managed.ExternalUpdate{},
 				dax: fake.MockDaxClientCall{
@@ -551,15 +555,15 @@ func TestCreate(t *testing.T) {
 				},
 				cr: instance(
 					withName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 					withConditions(xpv1.Creating()),
 					withStatusSubnetGroupName(testSubnetGroupName),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
@@ -619,15 +623,15 @@ func TestCreate(t *testing.T) {
 				},
 				cr: instance(
 					withName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 				),
 			},
 			want: want{
 				cr: instance(
 					withName(testSubnetGroupName),
-					withSubnetId(testSubnetIdentifier),
-					withSubnetId(testOtherSubnetIdentifier),
+					withSubnetID(testSubnetIdentifier),
+					withSubnetID(testOtherSubnetIdentifier),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},

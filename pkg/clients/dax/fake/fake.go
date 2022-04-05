@@ -18,6 +18,7 @@ package fake
 
 import (
 	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/dax"
@@ -114,234 +115,253 @@ type MockDaxClient struct {
 	Called MockDaxClientCall
 }
 
-// ParameterGroup Mocks
-
+// CallDescribeParameterGroupsWithContext to log calls
 type CallDescribeParameterGroupsWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DescribeParameterGroupsInput
 	Opts []request.Option
 }
 
-// DescribeParameterGroupsWithContext calls MockDescribeParameterGroupsWithContext
+// DescribeParameterGroupsWithContext mocks DescribeParameterGroupsWithContext method
 func (m *MockDaxClient) DescribeParameterGroupsWithContext(ctx aws.Context, i *dax.DescribeParameterGroupsInput, opts ...request.Option) (*dax.DescribeParameterGroupsOutput, error) {
 	m.Called.DescribeParameterGroupsWithContext = append(m.Called.DescribeParameterGroupsWithContext, &CallDescribeParameterGroupsWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDescribeParameterGroupsWithContext(ctx, i, opts)
 }
 
+// CallDescribeParameterGroups to log calls
 type CallDescribeParameterGroups struct {
 	I *dax.DescribeParameterGroupsInput
 }
 
-// DescribeParameterGroups calls MockDescribeParameterGroups
+// DescribeParameterGroups mocks DescribeParameterGroups method
 func (m *MockDaxClient) DescribeParameterGroups(i *dax.DescribeParameterGroupsInput) (*dax.DescribeParameterGroupsOutput, error) {
 	m.Called.DescribeParameterGroups = append(m.Called.DescribeParameterGroups, &CallDescribeParameterGroups{I: i})
 	return m.MockDescribeParameterGroups(i)
 }
 
+// CallUpdateParameterGroupsWithContext to log calls
 type CallUpdateParameterGroupsWithContext struct {
 	Ctx  aws.Context
 	I    *dax.UpdateParameterGroupInput
 	Opts []request.Option
 }
 
-// UpdateParameterGroupWithContext calls MockUpdateParameterGroupWithContext
+// UpdateParameterGroupWithContext mocks UpdateParameterGroupWithContext method
 func (m *MockDaxClient) UpdateParameterGroupWithContext(ctx aws.Context, i *dax.UpdateParameterGroupInput, opts ...request.Option) (*dax.UpdateParameterGroupOutput, error) {
 	m.Called.UpdateParameterGroupsWithContext = append(m.Called.UpdateParameterGroupsWithContext, &CallUpdateParameterGroupsWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockUpdateParameterGroupWithContext(ctx, i, opts)
 }
 
+// CallUpdateParameterGroups to log calls
 type CallUpdateParameterGroups struct {
 	I *dax.UpdateParameterGroupInput
 }
 
-// UpdateParameterGroups calls MockUpdateParameterGroups
+// UpdateParameterGroups mocks UpdateParameterGroups method
 func (m *MockDaxClient) UpdateParameterGroups(i *dax.UpdateParameterGroupInput) (*dax.UpdateParameterGroupOutput, error) {
 	m.Called.UpdateParameterGroups = append(m.Called.UpdateParameterGroups, &CallUpdateParameterGroups{I: i})
 	return m.MockUpdateParameterGroup(i)
 }
 
+// CallDescribeParameters to log calls
 type CallDescribeParameters struct {
 	I *dax.DescribeParametersInput
 }
 
-// DescribeParameters calls MockDescribeParameters
+// DescribeParameters mocks DescribeParameters method
 func (m *MockDaxClient) DescribeParameters(i *dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error) {
 	m.Called.DescribeParameters = append(m.Called.DescribeParameters, &CallDescribeParameters{I: i})
 
 	return m.MockDescribeParameters(i)
 }
 
+// CallCreateParameterGroupWithContext to log calls
 type CallCreateParameterGroupWithContext struct {
 	Ctx  aws.Context
 	I    *dax.CreateParameterGroupInput
 	Opts []request.Option
 }
 
+// CreateParameterGroupWithContext mocks CreateParameterGroupWithContext method
 func (m *MockDaxClient) CreateParameterGroupWithContext(ctx aws.Context, i *dax.CreateParameterGroupInput, opts ...request.Option) (*dax.CreateParameterGroupOutput, error) {
 	m.Called.CreateParameterGroupWithContext = append(m.Called.CreateParameterGroupWithContext, &CallCreateParameterGroupWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockCreateParameterGroupWithContext(ctx, i, opts)
 }
 
+// CallDeleteParameterGroupWithContext to log calls
 type CallDeleteParameterGroupWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DeleteParameterGroupInput
 	Opts []request.Option
 }
 
+// DeleteParameterGroupWithContext mocks DeleteParameterGroupWithContext method
 func (m *MockDaxClient) DeleteParameterGroupWithContext(ctx aws.Context, i *dax.DeleteParameterGroupInput, opts ...request.Option) (*dax.DeleteParameterGroupOutput, error) {
 	m.Called.DeleteParameterGroupWithContext = append(m.Called.DeleteParameterGroupWithContext, &CallDeleteParameterGroupWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDeleteParameterGroupWithContext(ctx, i, opts)
 }
 
-// SubnetGroup Mocks
-
+// CallDescribeSubnetGroupsWithContext to log calls
 type CallDescribeSubnetGroupsWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DescribeSubnetGroupsInput
 	Opts []request.Option
 }
 
-// DescribeSubnetGroupsWithContext calls MockDescribeSubnetGroupsWithContext
+// DescribeSubnetGroupsWithContext mocks DescribeSubnetGroupsWithContext method
 func (m *MockDaxClient) DescribeSubnetGroupsWithContext(ctx aws.Context, i *dax.DescribeSubnetGroupsInput, opts ...request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 	m.Called.DescribeSubnetGroupsWithContext = append(m.Called.DescribeSubnetGroupsWithContext, &CallDescribeSubnetGroupsWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDescribeSubnetGroupsWithContext(ctx, i, opts)
 }
 
+// CallDescribeSubnetGroups to log calls
 type CallDescribeSubnetGroups struct {
 	I *dax.DescribeSubnetGroupsInput
 }
 
-// DescribeSubnetGroups calls MockDescribeSubnetGroups
+// DescribeSubnetGroups mocks DescribeSubnetGroups method
 func (m *MockDaxClient) DescribeSubnetGroups(i *dax.DescribeSubnetGroupsInput) (*dax.DescribeSubnetGroupsOutput, error) {
 	m.Called.DescribeSubnetGroups = append(m.Called.DescribeSubnetGroups, &CallDescribeSubnetGroups{I: i})
-	return m.DescribeSubnetGroups(i)
+	return m.MockDescribeSubnetGroups(i)
 }
 
+// CallUpdateSubnetGroupsWithContext to log calls
 type CallUpdateSubnetGroupsWithContext struct {
 	Ctx  aws.Context
 	I    *dax.UpdateSubnetGroupInput
 	Opts []request.Option
 }
 
-// UpdateSubnetGroupWithContext calls MockUpdateSubnetGroupWithContext
+// UpdateSubnetGroupWithContext mocks UpdateSubnetGroupWithContext method
 func (m *MockDaxClient) UpdateSubnetGroupWithContext(ctx aws.Context, i *dax.UpdateSubnetGroupInput, opts ...request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 	m.Called.UpdateSubnetGroupsWithContext = append(m.Called.UpdateSubnetGroupsWithContext, &CallUpdateSubnetGroupsWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockUpdateSubnetGroupWithContext(ctx, i, opts)
 }
 
+// CallUpdateSubnetGroups to log calls
 type CallUpdateSubnetGroups struct {
 	I *dax.UpdateSubnetGroupInput
 }
 
-// UpdateSubnetGroups calls MockUpdateSubnetGroups
+// UpdateSubnetGroups mocks UpdateSubnetGroups method
 func (m *MockDaxClient) UpdateSubnetGroups(i *dax.UpdateSubnetGroupInput) (*dax.UpdateSubnetGroupOutput, error) {
 	m.Called.UpdateSubnetGroups = append(m.Called.UpdateSubnetGroups, &CallUpdateSubnetGroups{I: i})
 	return m.MockUpdateSubnetGroup(i)
 }
 
+// CallCreateSubnetGroupWithContext to log calls
 type CallCreateSubnetGroupWithContext struct {
 	Ctx  aws.Context
 	I    *dax.CreateSubnetGroupInput
 	Opts []request.Option
 }
 
+// CreateSubnetGroupWithContext mocks CreateSubnetGroupWithContext method
 func (m *MockDaxClient) CreateSubnetGroupWithContext(ctx aws.Context, i *dax.CreateSubnetGroupInput, opts ...request.Option) (*dax.CreateSubnetGroupOutput, error) {
 	m.Called.CreateSubnetGroupWithContext = append(m.Called.CreateSubnetGroupWithContext, &CallCreateSubnetGroupWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockCreateSubnetGroupWithContext(ctx, i, opts)
 }
 
+// CallDeleteSubnetGroupWithContext to log calls
 type CallDeleteSubnetGroupWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DeleteSubnetGroupInput
 	Opts []request.Option
 }
 
+// DeleteSubnetGroupWithContext mocks DeleteSubnetGroupWithContext method
 func (m *MockDaxClient) DeleteSubnetGroupWithContext(ctx aws.Context, i *dax.DeleteSubnetGroupInput, opts ...request.Option) (*dax.DeleteSubnetGroupOutput, error) {
 	m.Called.DeleteSubnetGroupWithContext = append(m.Called.DeleteSubnetGroupWithContext, &CallDeleteSubnetGroupWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDeleteSubnetGroupWithContext(ctx, i, opts)
 }
 
-// Cluster Mocks
-
+// CallDescribeClustersWithContext to log calls
 type CallDescribeClustersWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DescribeClustersInput
 	Opts []request.Option
 }
 
-// DescribeClustersWithContext calls MockDescribeClustersWithContext
+// DescribeClustersWithContext mocks DescribeClustersWithContext method
 func (m *MockDaxClient) DescribeClustersWithContext(ctx aws.Context, i *dax.DescribeClustersInput, opts ...request.Option) (*dax.DescribeClustersOutput, error) {
 	m.Called.DescribeClustersWithContext = append(m.Called.DescribeClustersWithContext, &CallDescribeClustersWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDescribeClustersWithContext(ctx, i, opts)
 }
 
+// CallDescribeClusters to log calls
 type CallDescribeClusters struct {
 	I *dax.DescribeClustersInput
 }
 
-// DescribeClusters calls MockDescribeClusters
+// DescribeClusters mocks DescribeClusters method
 func (m *MockDaxClient) DescribeClusters(i *dax.DescribeClustersInput) (*dax.DescribeClustersOutput, error) {
 	m.Called.DescribeClusters = append(m.Called.DescribeClusters, &CallDescribeClusters{I: i})
 	return m.MockDescribeClusters(i)
 }
 
+// CallUpdateClusterWithContext to log calls
 type CallUpdateClusterWithContext struct {
 	Ctx  aws.Context
 	I    *dax.UpdateClusterInput
 	Opts []request.Option
 }
 
-// UpdateClusterWithContext calls MockUpdateClusterWithContext
+// UpdateClusterWithContext mocks UpdateClusterWithContext method
 func (m *MockDaxClient) UpdateClusterWithContext(ctx aws.Context, i *dax.UpdateClusterInput, opts ...request.Option) (*dax.UpdateClusterOutput, error) {
 	m.Called.UpdateClusterWithContext = append(m.Called.UpdateClusterWithContext, &CallUpdateClusterWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockUpdateClusterWithContext(ctx, i, opts)
 }
 
+// CallUpdateCluster to log calls
 type CallUpdateCluster struct {
 	I *dax.UpdateClusterInput
 }
 
-// UpdateCluster calls MockUpdateCluster
+// UpdateCluster mocks UpdateCluster method
 func (m *MockDaxClient) UpdateCluster(i *dax.UpdateClusterInput) (*dax.UpdateClusterOutput, error) {
 	m.Called.UpdateCluster = append(m.Called.UpdateCluster, &CallUpdateCluster{I: i})
 	return m.MockUpdateCluster(i)
 }
 
+// CallCreateClusterWithContext to log calls
 type CallCreateClusterWithContext struct {
 	Ctx  aws.Context
 	I    *dax.CreateClusterInput
 	Opts []request.Option
 }
 
+// CreateClusterWithContext mocks CreateClusterWithContext method
 func (m *MockDaxClient) CreateClusterWithContext(ctx aws.Context, i *dax.CreateClusterInput, opts ...request.Option) (*dax.CreateClusterOutput, error) {
 	m.Called.CreateClusterWithContext = append(m.Called.CreateClusterWithContext, &CallCreateClusterWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockCreateClusterWithContext(ctx, i, opts)
 }
 
+// CallDeleteClusterWithContext to log calls
 type CallDeleteClusterWithContext struct {
 	Ctx  aws.Context
 	I    *dax.DeleteClusterInput
 	Opts []request.Option
 }
 
+// DeleteClusterWithContext mocks DeleteClusterWithContext method
 func (m *MockDaxClient) DeleteClusterWithContext(ctx aws.Context, i *dax.DeleteClusterInput, opts ...request.Option) (*dax.DeleteClusterOutput, error) {
 	m.Called.DeleteClusterWithContext = append(m.Called.DeleteClusterWithContext, &CallDeleteClusterWithContext{Ctx: ctx, I: i, Opts: opts})
 
 	return m.MockDeleteClusterWithContext(ctx, i, opts)
 }
 
-// MockDaxClientCall to log calls
+// MockDaxClientCall is a type that implements all the methods for the Dax Client interface
 type MockDaxClientCall struct {
 	UpdateParameterGroupsWithContext   []*CallUpdateParameterGroupsWithContext
 	UpdateParameterGroups              []*CallUpdateParameterGroups

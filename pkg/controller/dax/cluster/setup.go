@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/dax"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
@@ -54,7 +55,6 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, resp *svcsdk.Descri
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	// TODO: Return to this when you have the full list of Dax Cluster Status values
 	switch awsclients.StringValue(resp.Clusters[0].Status) {
 	case "available":
 		cr.SetConditions(xpv1.Available())
@@ -135,64 +135,92 @@ func isUpToDate(cr *svcapitypes.Cluster, output *svcsdk.DescribeClustersOutput) 
 	in := cr.Spec.ForProvider
 	out := output.Clusters[0]
 
-	if !cmp.Equal(in.Description, out.Description) {
+	unequal := isUnequal(in, out)
+
+	parameterGroupNotEqualNotNil := isUpToDateParameterGroup(in, out)
+
+	notificationTopicArnNotEqualNotNil := isUpToDateNotificationTopicArn(in, out)
+
+	if unequal || parameterGroupNotEqualNotNil || notificationTopicArnNotEqualNotNil {
 		return false, nil
 	}
 
-	if !cmp.Equal(in.IAMRoleARN, out.IamRoleArn) {
-		return false, nil
-	}
-
-	if !cmp.Equal(in.NodeType, out.NodeType) {
-		return false, nil
-	}
-
-	if !cmp.Equal(in.ClusterEndpointEncryptionType, out.ClusterEndpointEncryptionType) {
-		return false, nil
-	}
-
-	if !cmp.Equal(in.SubnetGroupName, out.SubnetGroup) {
-		return false, nil
-	}
-
-	if !cmp.Equal(in.PreferredMaintenanceWindow, out.PreferredMaintenanceWindow) {
-		return false, nil
-	}
-
-	if out.ParameterGroup != nil {
-		if !cmp.Equal(in.ParameterGroupName, out.ParameterGroup.ParameterGroupName) {
-			return false, nil
-		}
-	}
-
-	if out.NotificationConfiguration != nil {
-		if !cmp.Equal(in.NotificationTopicARN, out.NotificationConfiguration.TopicArn) {
-			return false, nil
-		}
-	}
-
-	var outSecurityGroupIds []*string
-	if len(out.SecurityGroups) > 0 {
-		outSecurityGroupIds = make([]*string, len(out.SecurityGroups))
-		for i, outSecurityGroupId := range out.SecurityGroups {
-			outSecurityGroupIds[i] = outSecurityGroupId.SecurityGroupIdentifier
-		}
-	}
-
+	outSecurityGroupIds := getOutSecurityIds(out)
 	if !cmp.Equal(in.SecurityGroupIDs, outSecurityGroupIds) {
 		return false, nil
 	}
 
-	var outAvailabilityZones []*string
-	if len(out.Nodes) > 0 {
-		outAvailabilityZones = make([]*string, len(out.Nodes))
-		for i, node := range out.Nodes {
-			outAvailabilityZones[i] = node.AvailabilityZone
-		}
-	}
+	outAvailabilityZones := getOutAvailabilityZones(out)
 	if !cmp.Equal(in.AvailabilityZones, outAvailabilityZones) {
 		return false, nil
 	}
 
 	return true, nil
+}
+
+func isUnequal(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (unequal bool) {
+	if !cmp.Equal(in.Description, out.Description) {
+		return true
+	}
+
+	if !cmp.Equal(in.IAMRoleARN, out.IamRoleArn) {
+		return true
+	}
+
+	if !cmp.Equal(in.NodeType, out.NodeType) {
+		return true
+	}
+
+	if !cmp.Equal(in.ClusterEndpointEncryptionType, out.ClusterEndpointEncryptionType) {
+		return true
+	}
+
+	if !cmp.Equal(in.SubnetGroupName, out.SubnetGroup) {
+		return true
+	}
+
+	if !cmp.Equal(in.PreferredMaintenanceWindow, out.PreferredMaintenanceWindow) {
+		return true
+	}
+	return false
+}
+
+func isUpToDateNotificationTopicArn(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (equalNotNil bool) {
+	if out.NotificationConfiguration == nil {
+		return false
+	}
+	if !cmp.Equal(in.NotificationTopicARN, out.NotificationConfiguration.TopicArn) {
+		return true
+	}
+	return false
+}
+
+func isUpToDateParameterGroup(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (equalNotNil bool) {
+	if out.ParameterGroup == nil {
+		return false
+	}
+	if !cmp.Equal(in.ParameterGroupName, out.ParameterGroup.ParameterGroupName) {
+		return true
+	}
+	return false
+}
+
+func getOutSecurityIds(out *svcsdk.Cluster) []*string {
+	outSecurityGroupIds := make([]*string, len(out.SecurityGroups))
+	if len(out.SecurityGroups) > 0 {
+		for i, outSecurityGroupID := range out.SecurityGroups {
+			outSecurityGroupIds[i] = outSecurityGroupID.SecurityGroupIdentifier
+		}
+	}
+	return outSecurityGroupIds
+}
+
+func getOutAvailabilityZones(out *svcsdk.Cluster) []*string {
+	outAvailabilityZones := make([]*string, len(out.Nodes))
+	if len(out.Nodes) > 0 {
+		for i, node := range out.Nodes {
+			outAvailabilityZones[i] = node.AvailabilityZone
+		}
+	}
+	return outAvailabilityZones
 }
