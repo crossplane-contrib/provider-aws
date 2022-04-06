@@ -28,89 +28,37 @@ import (
 // MockDaxClient for testing
 type MockDaxClient struct {
 	daxiface.DAXAPI
-	MockCreateCluster            func(*dax.CreateClusterInput) (*dax.CreateClusterOutput, error)
 	MockCreateClusterWithContext func(context.Context, *dax.CreateClusterInput, []request.Option) (*dax.CreateClusterOutput, error)
-	MockCreateClusterRequest     func(*dax.CreateClusterInput) (*request.Request, *dax.CreateClusterOutput)
 
-	MockCreateParameterGroup            func(*dax.CreateParameterGroupInput) (*dax.CreateParameterGroupOutput, error)
 	MockCreateParameterGroupWithContext func(context.Context, *dax.CreateParameterGroupInput, []request.Option) (*dax.CreateParameterGroupOutput, error)
-	MockCreateParameterGroupRequest     func(*dax.CreateParameterGroupInput) (*request.Request, *dax.CreateParameterGroupOutput)
 
-	MockCreateSubnetGroup            func(*dax.CreateSubnetGroupInput) (*dax.CreateSubnetGroupOutput, error)
 	MockCreateSubnetGroupWithContext func(context.Context, *dax.CreateSubnetGroupInput, []request.Option) (*dax.CreateSubnetGroupOutput, error)
-	MockCreateSubnetGroupRequest     func(*dax.CreateSubnetGroupInput) (*request.Request, *dax.CreateSubnetGroupOutput)
 
-	MockDecreaseReplicationFactor            func(*dax.DecreaseReplicationFactorInput) (*dax.DecreaseReplicationFactorOutput, error)
-	MockDecreaseReplicationFactorWithContext func(context.Context, *dax.DecreaseReplicationFactorInput, ...request.Option) (*dax.DecreaseReplicationFactorOutput, error)
-	MockDecreaseReplicationFactorRequest     func(*dax.DecreaseReplicationFactorInput) (*request.Request, *dax.DecreaseReplicationFactorOutput)
-
-	MockDeleteCluster            func(*dax.DeleteClusterInput) (*dax.DeleteClusterOutput, error)
 	MockDeleteClusterWithContext func(context.Context, *dax.DeleteClusterInput, []request.Option) (*dax.DeleteClusterOutput, error)
-	MockDeleteClusterRequest     func(*dax.DeleteClusterInput) (*request.Request, *dax.DeleteClusterOutput)
 
-	MockDeleteParameterGroup            func(*dax.DeleteParameterGroupInput) (*dax.DeleteParameterGroupOutput, error)
 	MockDeleteParameterGroupWithContext func(context.Context, *dax.DeleteParameterGroupInput, []request.Option) (*dax.DeleteParameterGroupOutput, error)
-	MockDeleteParameterGroupRequest     func(*dax.DeleteParameterGroupInput) (*request.Request, *dax.DeleteParameterGroupOutput)
 
-	MockDeleteSubnetGroup            func(*dax.DeleteSubnetGroupInput) (*dax.DeleteSubnetGroupOutput, error)
 	MockDeleteSubnetGroupWithContext func(context.Context, *dax.DeleteSubnetGroupInput, []request.Option) (*dax.DeleteSubnetGroupOutput, error)
-	MockDeleteSubnetGroupRequest     func(*dax.DeleteSubnetGroupInput) (*request.Request, *dax.DeleteSubnetGroupOutput)
 
 	MockDescribeClusters            func(*dax.DescribeClustersInput) (*dax.DescribeClustersOutput, error)
 	MockDescribeClustersWithContext func(context.Context, *dax.DescribeClustersInput, []request.Option) (*dax.DescribeClustersOutput, error)
-	MockDescribeClustersRequest     func(*dax.DescribeClustersInput) (*request.Request, *dax.DescribeClustersOutput)
-
-	MockDescribeDefaultParameters            func(*dax.DescribeDefaultParametersInput) (*dax.DescribeDefaultParametersOutput, error)
-	MockDescribeDefaultParametersWithContext func(context.Context, *dax.DescribeDefaultParametersInput, ...request.Option) (*dax.DescribeDefaultParametersOutput, error)
-	MockDescribeDefaultParametersRequest     func(*dax.DescribeDefaultParametersInput) (*request.Request, *dax.DescribeDefaultParametersOutput)
-
-	MockDescribeEvents            func(*dax.DescribeEventsInput) (*dax.DescribeEventsOutput, error)
-	MockDescribeEventsWithContext func(context.Context, *dax.DescribeEventsInput, ...request.Option) (*dax.DescribeEventsOutput, error)
-	MockDescribeEventsRequest     func(*dax.DescribeEventsInput) (*request.Request, *dax.DescribeEventsOutput)
 
 	MockDescribeParameterGroups            func(*dax.DescribeParameterGroupsInput) (*dax.DescribeParameterGroupsOutput, error)
 	MockDescribeParameterGroupsWithContext func(context.Context, *dax.DescribeParameterGroupsInput, []request.Option) (*dax.DescribeParameterGroupsOutput, error)
-	MockDescribeParameterGroupsRequest     func(*dax.DescribeParameterGroupsInput) (*request.Request, *dax.DescribeParameterGroupsOutput)
 
-	MockDescribeParameters            func(*dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error)
-	MockDescribeParametersWithContext func(context.Context, *dax.DescribeParametersInput, ...request.Option) (*dax.DescribeParametersOutput, error)
-	MockDescribeParametersRequest     func(*dax.DescribeParametersInput) (*request.Request, *dax.DescribeParametersOutput)
+	MockDescribeParameters func(*dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error)
 
 	MockDescribeSubnetGroups            func(*dax.DescribeSubnetGroupsInput) (*dax.DescribeSubnetGroupsOutput, error)
 	MockDescribeSubnetGroupsWithContext func(context.Context, *dax.DescribeSubnetGroupsInput, []request.Option) (*dax.DescribeSubnetGroupsOutput, error)
-	MockDescribeSubnetGroupsRequest     func(*dax.DescribeSubnetGroupsInput) (*request.Request, *dax.DescribeSubnetGroupsOutput)
-
-	MockIncreaseReplicationFactor            func(*dax.IncreaseReplicationFactorInput) (*dax.IncreaseReplicationFactorOutput, error)
-	MockIncreaseReplicationFactorWithContext func(context.Context, *dax.IncreaseReplicationFactorInput, ...request.Option) (*dax.IncreaseReplicationFactorOutput, error)
-	MockIncreaseReplicationFactorRequest     func(*dax.IncreaseReplicationFactorInput) (*request.Request, *dax.IncreaseReplicationFactorOutput)
-
-	MockListTags            func(*dax.ListTagsInput) (*dax.ListTagsOutput, error)
-	MockListTagsWithContext func(context.Context, *dax.ListTagsInput, ...request.Option) (*dax.ListTagsOutput, error)
-	MockListTagsRequest     func(*dax.ListTagsInput) (*request.Request, *dax.ListTagsOutput)
-
-	MockRebootNode            func(*dax.RebootNodeInput) (*dax.RebootNodeOutput, error)
-	MockRebootNodeWithContext func(context.Context, *dax.RebootNodeInput, ...request.Option) (*dax.RebootNodeOutput, error)
-	MockRebootNodeRequest     func(*dax.RebootNodeInput) (*request.Request, *dax.RebootNodeOutput)
-
-	MockTagResource            func(*dax.TagResourceInput) (*dax.TagResourceOutput, error)
-	MockTagResourceWithContext func(context.Context, *dax.TagResourceInput, ...request.Option) (*dax.TagResourceOutput, error)
-	MockTagResourceRequest     func(*dax.TagResourceInput) (*request.Request, *dax.TagResourceOutput)
-
-	MockUntagResource            func(*dax.UntagResourceInput) (*dax.UntagResourceOutput, error)
-	MockUntagResourceWithContext func(context.Context, *dax.UntagResourceInput, ...request.Option) (*dax.UntagResourceOutput, error)
-	MockUntagResourceRequest     func(*dax.UntagResourceInput) (*request.Request, *dax.UntagResourceOutput)
 
 	MockUpdateCluster            func(*dax.UpdateClusterInput) (*dax.UpdateClusterOutput, error)
 	MockUpdateClusterWithContext func(context.Context, *dax.UpdateClusterInput, []request.Option) (*dax.UpdateClusterOutput, error)
-	MockUpdateClusterRequest     func(*dax.UpdateClusterInput) (*request.Request, *dax.UpdateClusterOutput)
 
 	MockUpdateParameterGroup            func(*dax.UpdateParameterGroupInput) (*dax.UpdateParameterGroupOutput, error)
 	MockUpdateParameterGroupWithContext func(context.Context, *dax.UpdateParameterGroupInput, []request.Option) (*dax.UpdateParameterGroupOutput, error)
-	MockUpdateParameterGroupRequest     func(*dax.UpdateParameterGroupInput) (*request.Request, *dax.UpdateParameterGroupOutput)
 
 	MockUpdateSubnetGroup            func(*dax.UpdateSubnetGroupInput) (*dax.UpdateSubnetGroupOutput, error)
 	MockUpdateSubnetGroupWithContext func(context.Context, *dax.UpdateSubnetGroupInput, []request.Option) (*dax.UpdateSubnetGroupOutput, error)
-	MockUpdateSubnetGroupRequest     func(*dax.UpdateSubnetGroupInput) (*request.Request, *dax.UpdateSubnetGroupOutput)
 
 	Called MockDaxClientCall
 }

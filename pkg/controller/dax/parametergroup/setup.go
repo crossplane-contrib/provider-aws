@@ -3,7 +3,10 @@ package parametergroup
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/dax"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/dax/daxiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -27,8 +30,10 @@ func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.preUpdate = preUpdate
+			e.postUpdate = postUpdate
 			e.preDelete = preDelete
-			e.isUpToDate = isUpToDate
+			c := &custom{client: e.client, kube: e.kube}
+			e.isUpToDate = c.isUpToDate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -42,6 +47,11 @@ func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+type custom struct {
+	client svcsdkapi.DAXAPI
+	kube   client.Client
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DescribeParameterGroupsInput) error {
@@ -83,12 +93,21 @@ func preUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.Up
 	return nil
 }
 
+func postUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.UpdateParameterGroupOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return upd, err
+	}
+
+	cr.Status.SetConditions(xpv1.Available())
+	return upd, nil
+}
+
 func preDelete(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DeleteParameterGroupInput) (bool, error) {
 	obj.ParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
-func isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.DescribeParameterGroupsOutput) (bool, error) {
+func (c *custom) isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.DescribeParameterGroupsOutput) (bool, error) {
 	in := cr.Spec.ForProvider
 	out := output.ParameterGroups[0]
 
@@ -96,5 +115,32 @@ func isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.DescribeParameter
 		return false, nil
 	}
 
-	return true, nil
+	input := &svcsdk.DescribeParametersInput{
+		ParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
+		MaxResults:         awsclients.Int64(100),
+	}
+
+	results, err := c.client.DescribeParameters(input)
+	if err != nil {
+		return false, err
+	}
+	observed := make(map[string]svcsdk.Parameter, len(results.Parameters))
+
+	for _, p := range results.Parameters {
+		observed[awsclients.StringValue(p.ParameterName)] = *p
+	}
+
+	for _, v := range cr.Spec.ForProvider.ParameterNameValues {
+		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+		if !ok {
+			return false, nil
+		}
+
+		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
+			return false, nil
+		}
+
+	}
+	return true, err
+
 }

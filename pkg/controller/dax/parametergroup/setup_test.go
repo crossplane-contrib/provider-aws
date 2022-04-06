@@ -67,7 +67,8 @@ func setupExternal(e *external) {
 	e.postCreate = postCreate
 	e.preUpdate = preUpdate
 	e.preDelete = preDelete
-	e.isUpToDate = isUpToDate
+	c := &custom{client: e.client, kube: e.kube}
+	e.isUpToDate = c.isUpToDate
 }
 
 func instance(m ...daxModifier) *svcapitypes.ParameterGroup {
@@ -141,16 +142,26 @@ func TestObserve(t *testing.T) {
 							},
 						}}, nil
 					},
+					MockDescribeParameters: func(input *dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error) {
+						return &dax.DescribeParametersOutput{
+							Parameters: []*dax.Parameter{{
+								ParameterName:  awsclient.String(testParameterName),
+								ParameterValue: awsclient.String(testParameterValue),
+							}},
+						}, nil
+					},
 				},
 				cr: instance(
 					withExternalName(testParameterGroupName),
 					withDescription(testDescription),
+					withParameters(testParameterName, testParameterValue),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testParameterGroupName),
 					withDescription(testDescription),
+					withParameters(testParameterName, testParameterValue),
 					withStatusParameterGroupName(testParameterGroupName),
 					withConditions(xpv1.Available()),
 				),
@@ -166,6 +177,73 @@ func TestObserve(t *testing.T) {
 								withName(testParameterGroupName),
 								withStatusParameterGroupName(testParameterGroupName))),
 							Opts: nil,
+						},
+					},
+					DescribeParameters: []*fake.CallDescribeParameters{
+						{
+							I: &dax.DescribeParametersInput{
+								MaxResults:         awsclient.Int64(100),
+								ParameterGroupName: awsclient.String(testParameterGroupName),
+							},
+						},
+					},
+				},
+			},
+		},
+		"AvailableStateAndOutdatedValue": {
+			args: args{
+				dax: &fake.MockDaxClient{
+					MockDescribeParameterGroupsWithContext: func(c context.Context, dpgi *dax.DescribeParameterGroupsInput, o []request.Option) (*dax.DescribeParameterGroupsOutput, error) {
+						return &dax.DescribeParameterGroupsOutput{ParameterGroups: []*dax.ParameterGroup{
+							{
+								ParameterGroupName: awsclient.String(testParameterGroupName),
+								Description:        awsclient.String(testDescription),
+							},
+						}}, nil
+					},
+					MockDescribeParameters: func(input *dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error) {
+						return &dax.DescribeParametersOutput{
+							Parameters: []*dax.Parameter{{
+								ParameterName:  awsclient.String(testParameterName),
+								ParameterValue: awsclient.String(testParameterValue),
+							}},
+						}, nil
+					},
+				},
+				cr: instance(
+					withExternalName(testParameterGroupName),
+					withDescription(testDescription),
+					withParameters(testOtherParameterName, testOtherParameterValue),
+				),
+			},
+			want: want{
+				cr: instance(
+					withExternalName(testParameterGroupName),
+					withDescription(testDescription),
+					withParameters(testOtherParameterName, testOtherParameterValue),
+					withStatusParameterGroupName(testParameterGroupName),
+					withConditions(xpv1.Available()),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+				dax: fake.MockDaxClientCall{
+					DescribeParameterGroupsWithContext: []*fake.CallDescribeParameterGroupsWithContext{
+						{
+							Ctx: context.Background(),
+							I: GenerateDescribeParameterGroupsInput(instance(
+								withName(testParameterGroupName),
+								withStatusParameterGroupName(testParameterGroupName))),
+							Opts: nil,
+						},
+					},
+					DescribeParameters: []*fake.CallDescribeParameters{
+						{
+							I: &dax.DescribeParametersInput{
+								MaxResults:         awsclient.Int64(100),
+								ParameterGroupName: awsclient.String(testParameterGroupName),
+							},
 						},
 					},
 				},

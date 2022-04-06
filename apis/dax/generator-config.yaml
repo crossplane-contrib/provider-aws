@@ -12,3 +12,27 @@ ignore:
     - CreateSubnetGroupInput.SubnetGroupName
     - CreateSubnetGroupInput.SubnetIds
     - UpdateSubnetGroupInput.SubnetIds
+resources:
+  ParameterGroup:
+    exceptions:
+      errors:
+        # The API does not define a status code for this error, but we have to define a 404 error here,
+        # so the IsNotFound() function is generated correctly
+        404:
+          code: ParameterGroupNotFoundFault
+  SubnetGroup:
+    exceptions:
+      errors:
+        # The API does not define a status code for this error, but we have to define a 404 error here,
+        # so the IsNotFound() function is generated correctly
+        404:
+          code: SubnetGroupNotFoundFault
+  Cluster:
+    exceptions:
+      errors:
+        # The API does not define a status code for this error, but we have to define a 404 error here,
+        # so the IsNotFound() function is generated correctly
+        404:
+          code: ClusterNotFoundFault
+
+
