@@ -19,7 +19,7 @@ func normalizePolicy(p *string) (*string, error) {
 
 	mappedPol, err := policyStringToMap(p)
 	if err != nil {
-		return nil, errors.Wrap(err, "cant conv to normalize")
+		return nil, errors.Wrap(err, "cannot conv to normalize")
 	}
 
 	return policyMapToString(mappedPol)
@@ -37,12 +37,12 @@ func policyEscapedStringToMap(p *string) (map[string]interface{}, error) {
 	var wrapper wrapper
 	val := []byte("{\"data\":" + `"` + *p + `"` + "}")
 	if err := json.Unmarshal(val, &wrapper); err != nil {
-		return nil, errors.Wrap(err, "cant unmarshal policy")
+		return nil, errors.Wrap(err, "cannot unmarshal policy")
 	}
 
 	var pol map[string]interface{}
 	if err := json.Unmarshal([]byte(wrapper.Data), &pol); err != nil {
-		return nil, errors.Wrap(err, "cant unmarshal policy")
+		return nil, errors.Wrap(err, "cannot unmarshal policy")
 	}
 
 	return pol, nil
@@ -66,7 +66,7 @@ func policyMapToString(p map[string]interface{}) (*string, error) {
 	}
 	parsed, err := json.Marshal(p)
 	if err != nil {
-		return nil, errors.Wrap(err, "cant marshal policy")
+		return nil, errors.Wrap(err, "cannot marshal policy")
 	}
 
 	return aws.String(string(parsed)), nil
@@ -76,7 +76,7 @@ func policiesAreKindOfTheSame(a map[string]interface{}, b map[string]interface{}
 	if a != nil && b != nil {
 		polPatch, err := apigwclient.GetJSONPatch(a, b)
 		if err != nil {
-			return false, errors.Wrap(err, "cant compute jsonpatch")
+			return false, errors.Wrap(err, "cannot compute jsonpatch")
 		}
 
 		for _, p := range polPatch {

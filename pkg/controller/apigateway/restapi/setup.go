@@ -98,7 +98,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *sv
 
 	rapi, err := c.Client.GetRestAPIByID(ctx, aws.String(meta.GetExternalName(cr)))
 	if err != nil {
-		return errors.Wrap(err, "cant get rest api")
+		return errors.Wrap(err, "cannot get rest api")
 	}
 
 	cur := &svcapitypes.RestAPIParameters{
@@ -107,7 +107,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *sv
 	}
 
 	if err := lateInitialize(cur, rapi); err != nil {
-		return errors.Wrap(err, "cant late init current restApi")
+		return errors.Wrap(err, "cannot late init current restApi")
 	}
 
 	err = lateInitializePolicies(&cr.Spec.ForProvider, rapi)
@@ -117,7 +117,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *sv
 
 	pOps, err := apigwclient.GetPatchOperations(&cur, cr.Spec.ForProvider)
 	if err != nil {
-		return errors.Wrap(err, "cant compute patch preUpdate")
+		return errors.Wrap(err, "cannot compute patch preUpdate")
 	}
 
 	obj.PatchOperations = pOps
@@ -140,7 +140,7 @@ func isUpToDate(cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, error) {
 	var err error
 
 	if err = lateInitialize(s, cur); err != nil {
-		return false, errors.Wrap(err, "cant lateinit")
+		return false, errors.Wrap(err, "cannot lateinit")
 	}
 
 	patchJSON, err := aws.CreateJSONPatch(cr.Spec.ForProvider, &s)
@@ -195,7 +195,7 @@ func lateInitializePolicies(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestA
 	// and avoid copying from the AWS status of a resources as the source of truth
 	res, err := policiesAreKindOfTheSame(inPol, curPol)
 	if err != nil {
-		return errors.Wrap(err, "policies couldnt be compared")
+		return errors.Wrap(err, "policies could not be compared")
 	}
 
 	cur.Policy, err = policyMapToString(curPol)

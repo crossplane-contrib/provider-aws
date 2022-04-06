@@ -78,7 +78,7 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 	if cr.Spec.ForProvider.ParentResourceID != nil {
 		obj.ParentId = cr.Spec.ForProvider.ParentResourceID
 	} else if resourceID, err := c.Client.GetRestAPIRootResource(ctx, obj.RestApiId); err != nil {
-		return errors.Wrap(err, "couldnt get root resource for api")
+		return errors.Wrap(err, "could not get root resource for api")
 	} else {
 		obj.ParentId = resourceID
 	}
@@ -99,14 +99,14 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 		},
 	}
 	if r, err := c.Client.GetResource(ctx, in); err != nil {
-		return errors.Wrap(err, "cant retrieve resource")
+		return errors.Wrap(err, "cannot retrieve resource")
 	} else if err := lateInitialize(cur, r); err != nil {
-		return errors.Wrap(err, "cant late init")
+		return errors.Wrap(err, "cannot late init")
 	}
 
 	pOps, err := apigwclient.GetPatchOperations(cur, &cr.Spec.ForProvider)
 	if err != nil {
-		return errors.Wrap(err, "cant compute patch")
+		return errors.Wrap(err, "cannot compute patch")
 	}
 	obj.PatchOperations = pOps
 
