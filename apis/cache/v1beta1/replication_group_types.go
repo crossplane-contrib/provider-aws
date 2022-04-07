@@ -386,10 +386,13 @@ type ReplicationGroupParameters struct {
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
-	// MultiAZ specifies if Multi-AZ is enabled to enhance fault tolerance.
+	// MultiAZ
 	// +optional
 
-	// MultiAZEnabled is a flag to indicate if Multt-AZ is enabled.
+	// MultiAZEnabled specifies if Multi-AZ is enabled to enhance fault tolerance
+	// You must have nodes across two or more Availability Zones in order to enable
+	// this feature.
+	// +optional
 	MultiAZEnabled *bool `json:"multiAZEnabled,omitempty"`
 
 	// NodeGroupConfigurationSpec specifies a list of node group (shard)
