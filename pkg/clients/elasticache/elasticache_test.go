@@ -53,6 +53,7 @@ var (
 	cacheSubnetGroupName      = "coolSubnet"
 	engine                    = "redis"
 	engineVersion             = "5.0.0"
+	multiAZ                   = true
 	notificationTopicARN      = "arn:aws:sns:cooltopic"
 	notificationTopicStatus   = "active"
 	numCacheClusters          = 2
@@ -103,6 +104,7 @@ var (
 				CacheSubnetGroupName:          &cacheSubnetGroupName,
 				Engine:                        engine,
 				EngineVersion:                 &engineVersion,
+				MultiAZEnabled:                &multiAZ,
 				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
 					{
 						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
@@ -168,6 +170,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
 				CacheSubnetGroupName:        aws.String(cacheSubnetGroupName),
 				EngineVersion:               aws.String(engineVersion),
+				MultiAZEnabled:              aws.Bool(multiAZ),
 				NodeGroupConfiguration: []elasticachetypes.NodeGroupConfiguration{
 					{
 						PrimaryAvailabilityZone:  aws.String(nodeGroupPrimaryAZ),
@@ -242,6 +245,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				CacheParameterGroupName:     aws.String(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
 				EngineVersion:               aws.String(engineVersion),
+				MultiAZEnabled:              aws.Bool(true),
 				NotificationTopicArn:        aws.String(notificationTopicARN),
 				NotificationTopicStatus:     aws.String(notificationTopicStatus),
 				PreferredMaintenanceWindow:  aws.String(maintenanceWindow),
@@ -714,6 +718,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
 				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
 				SnapshotWindow:         aws.String(snapshotWindow),
 			},
@@ -740,6 +745,17 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 				},
 			},
 			want: false,
+		},
+		{
+			name: "NeedsNewMultiAZ",
+			kube: replicationGroup.Spec.ForProvider,
+			rg: elasticachetypes.ReplicationGroup{
+				//AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				//CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ: elasticachetypes.MultiAZStatusDisabled,
+				//SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+			},
+			want: true,
 		},
 	}
 
@@ -1134,6 +1150,49 @@ func TestVersionMatches(t *testing.T) {
 			got := versionMatches(tc.kubeVersion, tc.awsVersion)
 			if got != tc.want {
 				t.Errorf("versionMatches(%+v) - got %v", tc, got)
+			}
+		})
+	}
+}
+
+func TestMultiAZEnabled(t *testing.T) {
+	f := false
+	tr := true
+	cases := []struct {
+		name string
+		maz  elasticachetypes.MultiAZStatus
+		want *bool
+	}{
+		{
+			name: "empty status",
+			maz:  elasticachetypes.MultiAZStatus(""),
+			want: nil,
+		},
+		{
+			name: "enabled",
+			maz:  elasticachetypes.MultiAZStatusEnabled,
+			want: &tr,
+		},
+		{
+			name: "disabled",
+			maz:  elasticachetypes.MultiAZStatusDisabled,
+			want: &f,
+		},
+		{
+			name: "unknown status",
+			maz:  elasticachetypes.MultiAZStatus("unknown"),
+			want: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := multiAZEnabled(tc.maz)
+			if tc.want == nil && got != nil {
+				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
+			}
+			if aws.BoolValue(got) != aws.BoolValue(tc.want) {
+				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
 			}
 		})
 	}

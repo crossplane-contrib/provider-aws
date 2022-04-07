@@ -227,6 +227,10 @@ spec:
                       version, you must delete the existing cluster or replication
                       group and create it anew with the earlier engine version."
                     type: string
+                  multiAZEnabled:
+                    description: MultiAZEnabled is a flag to indicate if Multt-AZ
+                      is enabled.
+                    type: boolean
                   nodeGroupConfiguration:
                     description: "NodeGroupConfigurationSpec specifies a list of node
                       group (shard) configuration options. \n If you're creating a
@@ -287,6 +291,7 @@ spec:
                       (it will default to 1), or you can explicitly set it to a value
                       between 2 and 6. \n The maximum permitted value for NumCacheClusters
                       is 6 (1 primary plus 5 replicas)."
+                    maximum: 6
                     type: integer
                   numNodeGroups:
                     description: "NumNodeGroups specifies the number of node groups

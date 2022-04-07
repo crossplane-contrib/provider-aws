@@ -18,12 +18,14 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselasticache "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	awselasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -117,7 +119,8 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// ask for one group by name, so we should get either a single element list
 	// or an error.
 	rg := rsp.ReplicationGroups[0]
-
+	fmt.Println("OBSERVE RG")
+	spew.Dump(rg)
 	ccList, err := getCacheClusterList(ctx, e.client, rg.MemberClusters)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGetCacheClusterList)

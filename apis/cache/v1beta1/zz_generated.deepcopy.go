@@ -269,6 +269,11 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 		*out = new(string)
 		**out = **in
 	}
+	if in.MultiAZEnabled != nil {
+		in, out := &in.MultiAZEnabled, &out.MultiAZEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.NodeGroupConfiguration != nil {
 		in, out := &in.NodeGroupConfiguration, &out.NodeGroupConfiguration
 		*out = make([]NodeGroupConfigurationSpec, len(*in))

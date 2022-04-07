@@ -88,6 +88,7 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheSecurityGroupNames:    g.CacheSecurityGroupNames,
 		CacheSubnetGroupName:       g.CacheSubnetGroupName,
 		EngineVersion:              g.EngineVersion,
+		MultiAZEnabled:             g.MultiAZEnabled,
 		NotificationTopicArn:       g.NotificationTopicARN,
 		NumCacheClusters:           clients.Int32Address(g.NumCacheClusters),
 		NumNodeGroups:              clients.Int32Address(g.NumNodeGroups),
@@ -137,6 +138,7 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
 		EngineVersion:               g.EngineVersion,
+		MultiAZEnabled:              g.MultiAZEnabled,
 		NotificationTopicArn:        g.NotificationTopicARN,
 		NotificationTopicStatus:     g.NotificationTopicStatus,
 		PreferredMaintenanceWindow:  g.PreferredMaintenanceWindow,
@@ -239,6 +241,11 @@ func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroup
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
 // the configuration of its member clusters differ from given desired state.
 func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) bool {
+	// fmt.Printf("KUBE:")
+	// spew.Dump(kube)
+	// fmt.Printf("OBSERVED:")
+	// spew.Dump(rg)
+
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return true
@@ -247,6 +254,8 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, clients.IntFrom32Address(rg.SnapshotRetentionLimit)):
 		return true
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
+		return true
+	case !reflect.DeepEqual(kube.MultiAZEnabled, multiAZEnabled(rg.MultiAZ)):
 		return true
 	}
 	for _, cc := range ccList {
@@ -263,6 +272,17 @@ func automaticFailoverEnabled(af elasticachetypes.AutomaticFailoverStatus) *bool
 	}
 	r := af == elasticachetypes.AutomaticFailoverStatusEnabled || af == elasticachetypes.AutomaticFailoverStatusEnabling
 	return &r
+}
+
+func multiAZEnabled(maz elasticachetypes.MultiAZStatus) *bool {
+	switch maz {
+	case elasticachetypes.MultiAZStatusEnabled:
+		return aws.Bool(true)
+	case elasticachetypes.MultiAZStatusDisabled:
+		return aws.Bool(false)
+	default:
+		return nil
+	}
 }
 
 func versionMatches(kubeVersion *string, awsVersion *string) bool {

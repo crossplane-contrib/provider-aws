@@ -386,6 +386,12 @@ type ReplicationGroupParameters struct {
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
+	// MultiAZ specifies if Multi-AZ is enabled to enhance fault tolerance.
+	// +optional
+
+	// MultiAZEnabled is a flag to indicate if Multt-AZ is enabled.
+	MultiAZEnabled *bool `json:"multiAZEnabled,omitempty"`
+
 	// NodeGroupConfigurationSpec specifies a list of node group (shard)
 	// configuration options.
 	//
@@ -423,7 +429,7 @@ type ReplicationGroupParameters struct {
 	// between 2 and 6.
 	//
 	// The maximum permitted value for NumCacheClusters is 6 (1 primary plus 5 replicas).
-	// +immutable
+	// +kubebuilder:validation:Maximum=6
 	// +optional
 	NumCacheClusters *int `json:"numCacheClusters,omitempty"`
 
