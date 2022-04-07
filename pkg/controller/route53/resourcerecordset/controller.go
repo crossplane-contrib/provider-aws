@@ -164,5 +164,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.
-	return awsclient.Wrap(err, errDelete)
+	return awsclient.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errDelete)
 }
