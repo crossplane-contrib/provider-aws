@@ -56,6 +56,7 @@ import (
 	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
 	kinesisv1alpha1 "github.com/crossplane/provider-aws/apis/kinesis/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	lambdamanualv1alpha1 "github.com/crossplane/provider-aws/apis/lambda/manualv1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	lambdav1beta1 "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
@@ -126,6 +127,7 @@ func init() {
 		ec2manualv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1alpha1.SchemeBuilder.AddToScheme,
+		lambdamanualv1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1beta1.SchemeBuilder.AddToScheme,
 		cloudfrontv1alpha1.SchemeBuilder.AddToScheme,
 		route53resolverv1alpha1.SchemeBuilder.AddToScheme,

@@ -123,7 +123,8 @@ import (
 	kinesisstream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
-	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	lambdafunction "github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	lambdapermission "github.com/crossplane/provider-aws/pkg/controller/lambda/permission"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
 	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
@@ -244,7 +245,8 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		privatednsnamespace.SetupPrivateDNSNamespace,
 		publicdnsnamespace.SetupPublicDNSNamespace,
 		httpnamespace.SetupHTTPNamespace,
-		function.SetupFunction,
+		lambdafunction.SetupFunction,
+		lambdapermission.SetupPermission,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
