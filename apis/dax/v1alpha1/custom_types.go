@@ -5,6 +5,7 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomClusterParameters includes the custom fields of Cluster.
 type CustomClusterParameters struct {
 	// IAMRoleARN contains the ARN of an IAMRole
+	// +required
 	// +immutable
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
 	IAMRoleARN *string `json:"iamRoleARN,omitempty"`
@@ -81,6 +82,7 @@ type CustomParameterGroupParameters struct {
 // CustomSubnetGroupParameters includes the custom fields of SubnetGroup
 type CustomSubnetGroupParameters struct {
 	// SubnetIds is the list of Ids for the Subnets.
+	// +required
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
