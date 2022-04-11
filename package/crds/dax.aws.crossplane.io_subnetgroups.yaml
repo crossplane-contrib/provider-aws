@@ -102,6 +102,7 @@ spec:
                     type: array
                 required:
                 - region
+                - subnetIds
                 type: object
               providerConfigRef:
                 default:

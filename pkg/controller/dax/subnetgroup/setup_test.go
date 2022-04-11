@@ -206,11 +206,11 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withExternalName(testSubnetGroupName),
-					withStatusSubnetGroupName(testSubnetGroupName),
 					withDescription(testOtherDescription),
 					withSubnetID(testSubnetIdentifier),
+					withStatusSubnetGroupName(testSubnetGroupName),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
+					withExternalName(testSubnetGroupName),
 					withConditions(xpv1.Available()),
 				),
 				result: managed.ExternalObservation{
@@ -385,15 +385,21 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateSomeParameters": {
 			args: args{
 				dax: &fake.MockDaxClient{
-					MockUpdateSubnetGroupWithContext: func(c context.Context, upgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
+					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return &dax.UpdateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
 								SubnetGroupName: awsclient.String(testSubnetGroupName),
 								Description:     awsclient.String(testDescription),
-								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone),
-								}},
+								Subnets: []*dax.Subnet{
+									{
+										SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
+										SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone),
+									},
+									{
+										SubnetIdentifier:       awsclient.String(testOtherSubnetIdentifier),
+										SubnetAvailabilityZone: awsclient.String(testOtherSubnetAvailabilityZone),
+									},
+								},
 							},
 						}, nil
 					},
@@ -433,7 +439,7 @@ func TestUpdate(t *testing.T) {
 		"testErrUpdateSubnetGroupFailed": {
 			args: args{
 				dax: &fake.MockDaxClient{
-					MockUpdateSubnetGroupWithContext: func(c context.Context, upgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
+					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return nil, errors.New(testErrUpdateSubnetGroupFailed)
 					},
 				},
@@ -516,8 +522,8 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withName(testSubnetGroupName),
 					withStatusSubnetGroupName(testSubnetGroupName),
-					withConditions(xpv1.Creating()),
 					withExternalName(testSubnetGroupName),
+					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
 				dax: fake.MockDaxClientCall{
@@ -564,11 +570,11 @@ func TestCreate(t *testing.T) {
 					withName(testSubnetGroupName),
 					withSubnetID(testSubnetIdentifier),
 					withSubnetID(testOtherSubnetIdentifier),
-					withConditions(xpv1.Creating()),
 					withStatusSubnetGroupName(testSubnetGroupName),
 					withStatusSubnets(testSubnetIdentifier, testSubnetAvailabilityZone),
 					withStatusSubnets(testOtherSubnetIdentifier, testOtherSubnetAvailabilityZone),
 					withExternalName(testSubnetGroupName),
+					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
 				dax: fake.MockDaxClientCall{

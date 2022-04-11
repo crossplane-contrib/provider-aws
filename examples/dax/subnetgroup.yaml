@@ -1,0 +1,11 @@
+apiVersion: dax.aws.crossplane.io/v1alpha1
+kind: SubnetGroup
+metadata:
+  name: example-subnet-group
+spec:
+  forProvider:
+    region: us-east-1
+    description: "Test subnet group description."
+    subnetIds:
+      - "subnet-0999fa999bef99a99"
+---

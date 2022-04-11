@@ -70,8 +70,7 @@ spec:
                       in the group. Each element in the array represents a single
                       parameter. \n record-ttl-millis and query-ttl-millis are the
                       only supported parameter names. For more details, see Configuring
-                      TTL Settings (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.cluster-management.html#DAX.cluster-management.custom-settings.ttl).
-                      \n ParameterNameValues is a required field"
+                      TTL Settings (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.cluster-management.html#DAX.cluster-management.custom-settings.ttl)."
                     items:
                       properties:
                         parameterName:

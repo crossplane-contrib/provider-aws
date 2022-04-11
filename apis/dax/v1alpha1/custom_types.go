@@ -5,10 +5,10 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomClusterParameters includes the custom fields of Cluster.
 type CustomClusterParameters struct {
 	// IAMRoleARN contains the ARN of an IAMRole
-	// +required
 	// +immutable
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	IAMRoleARN *string `json:"iamRoleARN,omitempty"`
+	// +kubebuilder:validation:Required
+	IAMRoleARN *string `json:"iamRoleARN"`
 
 	// IAMRoleARNRef is a reference to an IAMRole used to set
 	// the IAMRoleARN.
@@ -74,19 +74,17 @@ type CustomParameterGroupParameters struct {
 	//
 	// record-ttl-millis and query-ttl-millis are the only supported parameter names.
 	// For more details, see Configuring TTL Settings (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.cluster-management.html#DAX.cluster-management.custom-settings.ttl).
-	//
-	// ParameterNameValues is a required field
 	ParameterNameValues []*ParameterNameValue `json:"parameterNameValues,omitempty"`
 }
 
 // CustomSubnetGroupParameters includes the custom fields of SubnetGroup
 type CustomSubnetGroupParameters struct {
 	// SubnetIds is the list of Ids for the Subnets.
-	// +required
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
-	SubnetIds []*string `json:"subnetIds,omitempty"`
+	// +kubebuilder:validation:Required
+	SubnetIds []*string `json:"subnetIds"`
 
 	// SubnetIDRefs is a list of references to Subnets used to set
 	// the SubnetIDs.

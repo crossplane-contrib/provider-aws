@@ -56,11 +56,11 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, resp *svcsdk.Descri
 		return managed.ExternalObservation{}, err
 	}
 	switch awsclients.StringValue(resp.Clusters[0].Status) {
-	case "available":
+	case "available", "modifying":
 		cr.SetConditions(xpv1.Available())
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
-	case "modifying", "deleting":
+	case "deleting", "stopped", "stopping":
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
@@ -77,7 +77,6 @@ func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClu
 	if cr.Spec.ForProvider.SubnetGroupName != nil {
 		obj.SubnetGroupName = awsclients.String(*cr.Spec.ForProvider.SubnetGroupName)
 	}
-
 	if cr.Spec.ForProvider.SecurityGroupIDs != nil {
 		for _, s := range cr.Spec.ForProvider.SecurityGroupIDs {
 			obj.SecurityGroupIds = append(obj.SecurityGroupIds, awsclients.String(*s))
@@ -135,13 +134,21 @@ func isUpToDate(cr *svcapitypes.Cluster, output *svcsdk.DescribeClustersOutput) 
 	in := cr.Spec.ForProvider
 	out := output.Clusters[0]
 
-	unequal := isUnequal(in, out)
+	notUpToDate := isNotUpToDate(in, out)
+
+	if notUpToDate {
+		return false, nil
+	}
 
 	parameterGroupNotEqualNotNil := isUpToDateParameterGroup(in, out)
 
+	if parameterGroupNotEqualNotNil {
+		return false, nil
+	}
+
 	notificationTopicArnNotEqualNotNil := isUpToDateNotificationTopicArn(in, out)
 
-	if unequal || parameterGroupNotEqualNotNil || notificationTopicArnNotEqualNotNil {
+	if notificationTopicArnNotEqualNotNil {
 		return false, nil
 	}
 
@@ -158,7 +165,7 @@ func isUpToDate(cr *svcapitypes.Cluster, output *svcsdk.DescribeClustersOutput) 
 	return true, nil
 }
 
-func isUnequal(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (unequal bool) {
+func isNotUpToDate(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (unequal bool) {
 	if !cmp.Equal(in.Description, out.Description) {
 		return true
 	}

@@ -879,7 +879,7 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateOneParameter": {
 			args: args{
 				dax: &fake.MockDaxClient{
-					MockUpdateClusterWithContext: func(c context.Context, ugi *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
+					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
 							ClusterName: awsclient.String(testClusterName),
 						}}, nil
@@ -912,7 +912,7 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateSomeParameters": {
 			args: args{
 				dax: &fake.MockDaxClient{
-					MockUpdateClusterWithContext: func(c context.Context, ugi *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
+					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
 							ClusterName: awsclient.String(testClusterName),
 						}}, nil
@@ -926,7 +926,6 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withExternalName(testClusterName),
-					withDescription(testDescription),
 					withSpec(baseClusterParameters()),
 				),
 				result: managed.ExternalUpdate{},
@@ -950,7 +949,7 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdateSecurityGroupId": {
 			args: args{
 				dax: &fake.MockDaxClient{
-					MockUpdateClusterWithContext: func(c context.Context, ugi *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
+					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
 							ClusterName: awsclient.String(testClusterName),
 						}}, nil

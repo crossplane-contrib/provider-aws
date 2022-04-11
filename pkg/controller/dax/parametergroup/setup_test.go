@@ -269,8 +269,8 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withExternalName(testParameterGroupName),
-					withStatusParameterGroupName(testParameterGroupName),
 					withDescription(testOtherDescription),
+					withStatusParameterGroupName(testParameterGroupName),
 					withConditions(xpv1.Available()),
 				),
 				result: managed.ExternalObservation{
@@ -365,25 +365,25 @@ func TestUpdate(t *testing.T) {
 					MockUpdateParameterGroupWithContext: func(c context.Context, upgi *dax.UpdateParameterGroupInput, o []request.Option) (*dax.UpdateParameterGroupOutput, error) {
 						return &dax.UpdateParameterGroupOutput{
 							ParameterGroup: &dax.ParameterGroup{
-								Description:        awsclient.String(testDescription),
 								ParameterGroupName: awsclient.String(testParameterGroupName),
+								Description:        awsclient.String(testDescription),
 							},
 						}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testParameterGroupName),
-					withStatusParameterGroupName(testParameterGroupName),
 					withDescription(testDescription),
 					withParameters(testParameterName, testParameterValue),
+					withStatusParameterGroupName(testParameterGroupName),
 				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(testParameterGroupName),
-					withStatusParameterGroupName(testParameterGroupName),
 					withDescription(testDescription),
 					withParameters(testParameterName, testParameterValue),
+					withStatusParameterGroupName(testParameterGroupName),
 				),
 				result: managed.ExternalUpdate{},
 				dax: fake.MockDaxClientCall{
@@ -547,8 +547,8 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withStatusParameterGroupName(testParameterGroupName),
 					withName(testParameterGroupName),
+					withStatusParameterGroupName(testParameterGroupName),
 					withExternalName(testParameterGroupName),
 					withConditions(xpv1.Creating()),
 				),
@@ -584,10 +584,10 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withStatusParameterGroupName(testParameterGroupName),
 					withName(testParameterGroupName),
 					withParameters(testParameterName, testParameterValue),
 					withParameters(testOtherParameterName, testOtherParameterValue),
+					withStatusParameterGroupName(testParameterGroupName),
 					withExternalName(testParameterGroupName),
 					withConditions(xpv1.Creating()),
 				),

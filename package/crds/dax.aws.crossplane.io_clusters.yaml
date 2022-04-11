@@ -248,6 +248,7 @@ spec:
                       type: object
                     type: array
                 required:
+                - iamRoleARN
                 - nodeType
                 - region
                 - replicationFactor
