@@ -2,6 +2,24 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+// CustomCertificate includes custom fields about certificates.
+type CustomCertificate struct {
+	// [HTTPS and TLS listeners] The default certificate for the listener.
+	// +optional
+	CertificateARN *string `json:"certificateARN,omitempty"`
+
+	// Reference to Certificates for Certificate ARN
+	// +optional
+	CertificateARNRef *xpv1.Reference `json:"certificateARNRef,omitempty"`
+
+	// Selector for references to Certificate for CertificateArn
+	// +optional
+	CertificateARNSelector *xpv1.Selector `json:"certificateARNSelector,omitempty"`
+
+	// +optional
+	IsDefault bool `json:"isDefault,omitempty"`
+}
+
 // CustomTargetGroupTuple includes custom fields about target groups.
 // Only used with ForwardActionConfig to route to multiple target groups.
 type CustomTargetGroupTuple struct { // inject refs and selectors into TargetGroupTuple
@@ -91,6 +109,12 @@ type CustomAction struct {
 
 // CustomListenerParameters includes the custom fields of Listener.
 type CustomListenerParameters struct {
+	// [HTTPS and TLS listeners] The default certificate
+	// for the listener. You must provide exactly one certificate.
+	// Set CertificateArn to the certificate ARN but do not set IsDefault.
+	// +optional
+	Certificates []*CustomCertificate `json:"certificates,omitempty"`
+
 	// The actions for the default rule.
 	// +kubebuilder:validation:Required
 	DefaultActions []*CustomAction `json:"defaultActions"`
