@@ -463,6 +463,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 			}
 			return GetSessionV1(cfg)
 		}
+    if pc.Spec.AssumeRoleWithWebIdentity != nil && pc.Spec.AssumeRoleWithWebIdentity.RoleARN != nil {
+			cfg, err := UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx, []byte{}, pc, DefaultSection, region)
+			if err != nil {
+				return nil, err
+			}
+			return SetResolver(pc, cfg), nil
+		}
 		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
@@ -602,6 +609,50 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 				stsclient,
 				StringValue(roleArn),
 				stsAssumeRoleOptions,
+			)),
+		),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
+	}
+	v2creds, err := cnf.Credentials.Retrieve(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+	v1creds := credentialsv1.NewStaticCredentials(
+		v2creds.AccessKeyID,
+		v2creds.SecretAccessKey,
+		v2creds.SessionToken)
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
+}
+
+// UsePodServiceAccountV1AssumeRoleWithWebIdentity assumes an IAM role configured via a ServiceAccount and
+// assume Cross account IAM role
+// https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
+func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	roleArn, err := GetAssumeRoleWithWebIdentityARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get role arn for assume role with web identity")
+	}
+
+	stsclient := sts.NewFromConfig(cfg)
+  webIdentityRoleOptions := SetWebIdentityRoleOptions(pc)
+
+	cnf, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(aws.NewCredentialsCache(
+			stscreds.NewWebIdentityRoleProvider(
+				stsclient,
+				StringValue(roleArn),
+				stscreds.IdentityTokenFile("/var/run/secrets/eks.amazonaws.com/serviceaccount/token"),
+				webIdentityRoleOptions,
 			)),
 		),
 	)
