@@ -30,6 +30,9 @@ type ProviderConfigSpec struct {
 	// AssumeRole defines the options for assuming an IAM role
 	AssumeRole *AssumeRoleOptions `json:"assumeRole,omitempty"`
 
+	// AssumeRoleWithWebIdentity defines the options for assuming an IAM role with a Web Identity
+	AssumeRoleWithWebIdentity *AssumeRoleWithWebIdentityOptions `json:"assumeRoleWithWebIdentity,omitempty"`
+
 	// AssumeRoleARN to assume with provider credentials
 	// This setting will be deprecated. Use the roleARN field under assumeRole instead.
 	// +optional
@@ -89,6 +92,17 @@ type AssumeRoleOptions struct {
 	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining).
 	// +optional
 	TransitiveTagKeys []string `json:"transitiveTagKeys,omitempty"`
+}
+
+// AssumeRoleWithWebIdentityOptions define the options for assuming an IAM Role
+// Fields are similar to the STS WebIdentityRoleOptions in the AWS SDK
+type AssumeRoleWithWebIdentityOptions struct {
+	// AssumeRoleARN to assume with provider credentials
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleSessionName is the session name, if you wish to uniquely identify this session.
+	// +optional
+	RoleSessionName string `json:"roleSessionName,omitempty"`
 }
 
 // EndpointConfig is used to configure the AWS client for a custom endpoint.

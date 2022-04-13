@@ -10,6 +10,7 @@
   - [Using kube2iam](#using-kube2iam)
     - [Steps](#steps-1)
   - [Using `assumeRole`](#using-assumerole)
+  - [Using `assumeRoleWithWebIdentity`](#using-assumerolewithwebidentity)
 
 ## Overview
 
@@ -339,6 +340,52 @@ spec:
       - key: Department
         value: Infrastructure   
     transitiveTagKeys: [ "Project", "Department"]
+  credentials:
+    source: InjectedIdentity
+EOF
+```
+
+## Using `assumeRoleWithWebIdentity`
+
+`provider-aws` will be configured to connect to the aws account in `RoleARN` and request
+a session for `RoleARN` using it's `InjectedIdentity` 
+
+This is most useful when "sts chaining" (see [Using `assumeRole`](#using-assumerole)) 
+is not allowed between accounts or when cross account IRSA is more suitable.
+
+IRSA will need to be configured between the account hosting the `RoleARN` and the
+K8s cluster hosting the provider pod. See [Using IAM Roles for `ServiceAccounts`](#using-iam-roles-for-serviceaccounts)
+for more info on how to setup IRSA.
+
+Next, the `provider-aws` must be configured to use `assumeRoleWithWebIdentity`.
+The code snippet below shows how to configure `provider-aws` to do so.
+
+```console
+$ cat <<EOF | kubectl apply -f -
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: account-b
+spec:
+  assumeRoleWithWebIdentity:
+    roleARN: "arn:aws:iam::999999999999:role/account_b"
+  credentials:
+    source: InjectedIdentity
+EOF
+```
+
+Role session name is supported (see <https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html#API_AssumeRoleWithWebIdentity_RequestParameters>).
+
+```console
+$ cat <<EOF | kubectl apply -f -
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: account-b
+spec:
+  assumeRoleWithWebIdentity:
+    roleARN: "arn:aws:iam::999999999999:role/account_b"
+    roleSessionName: "my-optional-session-name"
   credentials:
     source: InjectedIdentity
 EOF
