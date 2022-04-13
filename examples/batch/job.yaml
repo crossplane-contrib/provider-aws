@@ -1,0 +1,23 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: Job
+metadata:
+  name: example-job
+spec:
+  forProvider:
+    region: us-east-1
+    ## Defined in examples/batch
+    jobDefinitionRef:
+      name: example-jobdefinition
+    ## Defined in examples/batch
+    jobQueueRef:
+      name: example-jobqueue
+    containerOverrides:
+     command: ["echo","Thanks world"]
+    propagateTags: true
+    retryStrategy:
+      attempts: 2
+    tags: 
+      job : "my-job"
+      other: "bla"
+  providerConfigRef:
+    name: example

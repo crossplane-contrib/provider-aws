@@ -1,0 +1,31 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: ComputeEnvironment
+metadata:
+  name: example-managed-ec2spot-computeenvironment
+spec:
+  forProvider:
+    region: us-east-1
+    type_: MANAGED
+    ## Defined in examples/ec2
+    subnetIdRefs:
+      - name: sample-subnet1
+    ## Defined in examples/batch
+    securityGroupIdRefs:
+      - name: batch-ce-sg
+    ## Defined in examples/batch
+    instanceRoleRef:
+      name: ecsinstance-role-profile
+    ## Defined in examples/batch
+    spotIAMFleetRoleRef:
+      name: spot-fleet-tagging-role
+    tags:
+      ce: "my-spotec2-ce"
+    computeResources:
+      type_: SPOT
+      allocationStrategy: BEST_FIT
+      maxvCPUs: 24
+      minvCPUs: 1
+      instanceTypes:
+        - "optimal"
+  providerConfigRef:
+    name: example

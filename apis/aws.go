@@ -28,6 +28,8 @@ import (
 	apigatewayv2v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/apigatewayv2/v1alpha1"
 	apigatewayv2v1beta1 "github.com/crossplane-contrib/provider-aws/apis/apigatewayv2/v1beta1"
 	athenav1alpha1 "github.com/crossplane-contrib/provider-aws/apis/athena/v1alpha1"
+	batchmanualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/batch/manualv1alpha1"
+	batchv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/batch/v1alpha1"
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
 	cloudfrontv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
@@ -161,6 +163,8 @@ func init() {
 		apigatewayv1alpha1.AddToScheme,
 		cognitoidentityv1alpha1.AddToScheme,
 		opensearchv1alpha1.AddToScheme,
+		batchv1alpha1.AddToScheme,
+		batchmanualv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
