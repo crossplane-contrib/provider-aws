@@ -463,12 +463,12 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 			}
 			return GetSessionV1(cfg)
 		}
-    if pc.Spec.AssumeRoleWithWebIdentity != nil && pc.Spec.AssumeRoleWithWebIdentity.RoleARN != nil {
+		if pc.Spec.AssumeRoleWithWebIdentity != nil && pc.Spec.AssumeRoleWithWebIdentity.RoleARN != nil {
 			cfg, err := UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx, []byte{}, pc, DefaultSection, region)
 			if err != nil {
 				return nil, err
 			}
-			return SetResolver(pc, cfg), nil
+			return GetSessionV1(cfg)
 		}
 		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
@@ -641,7 +641,7 @@ func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []by
 	}
 
 	stsclient := sts.NewFromConfig(cfg)
-  webIdentityRoleOptions := SetWebIdentityRoleOptions(pc)
+	webIdentityRoleOptions := SetWebIdentityRoleOptions(pc)
 
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
