@@ -48,6 +48,10 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 	in := dp.DistributionConfig
 	from := gdo.Distribution.DistributionConfig
 
+	// "CallerReference" is not exposed to users from the console, therefore we need to derive it from the AWS output
+	// during import scenarios
+	in.CallerReference = awsclients.LateInitializeStringPtr(in.CallerReference, from.CallerReference)
+
 	if from.Aliases != nil {
 		if in.Aliases == nil {
 			in.Aliases = &svcapitypes.Aliases{}

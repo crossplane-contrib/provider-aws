@@ -299,6 +299,8 @@ spec:
                               type: object
                             type: array
                         type: object
+                      callerReference:
+                        type: string
                       comment:
                         type: string
                       customErrorResponses:
@@ -1207,6 +1209,8 @@ spec:
                                   type: object
                                 type: array
                             type: object
+                          callerReference:
+                            type: string
                           comment:
                             type: string
                           customErrorResponses:
