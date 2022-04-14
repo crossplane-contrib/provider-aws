@@ -449,6 +449,8 @@ type DistributionConfig struct {
 	// A complex type that contains zero or more CacheBehavior elements.
 	CacheBehaviors *CacheBehaviors `json:"cacheBehaviors,omitempty"`
 
+	CallerReference *string `json:"callerReference,omitempty"`
+
 	Comment *string `json:"comment,omitempty"`
 	// A complex type that controls:
 	//
