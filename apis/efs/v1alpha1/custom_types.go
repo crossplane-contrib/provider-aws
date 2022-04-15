@@ -26,6 +26,26 @@ const (
 	ResourceCredentialsSecretIDKey = "id"
 )
 
+// CustomAccessPointParameters contains the additional fields for AccessPointParameters.
+type CustomAccessPointParameters struct {
+	// The ID of the file system for which to create the mount target.
+	// +immutable
+	// +optional
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
+	// FileSystemIDRef are references to Filesystem used to set
+	// the FileSystemID.
+	// +immutable
+	// +optional
+	FileSystemIDRef *xpv1.Reference `json:"fileSystemIDRef,omitempty"`
+
+	// FileSystemIDSelector selects references to Filesystem used
+	// to set the FileSystemID.
+	// +immutable
+	// +optional
+	FileSystemIDSelector *xpv1.Selector `json:"fileSystemIDSelector,omitempty"`
+}
+
 // CustomFileSystemParameters contains the additional fields for FileSystemParameters.
 type CustomFileSystemParameters struct {
 
