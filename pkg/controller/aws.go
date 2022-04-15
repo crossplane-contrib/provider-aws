@@ -24,6 +24,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane/provider-aws/pkg/controller/apigateway/resource"
+	"github.com/crossplane/provider-aws/pkg/controller/apigateway/restapi"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/apimapping"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
@@ -292,6 +294,8 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		nottopic.SetupSNSTopic,
 		notsubscription.SetupSubscription,
 		prometheusserviceworkspace.SetupWorkspace,
+		resource.SetupResource,
+		restapi.SetupRestAPI,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

@@ -30,6 +30,7 @@ require (
 	github.com/go-ini/ini v1.46.0
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.6
+	github.com/mattbaird/jsonpatch v0.0.0-20200820163806-098863c1fc24
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1

@@ -1,0 +1,12 @@
+---
+apiVersion: apigateway.aws.crossplane.io/v1alpha1
+kind: Resource
+metadata:
+  name: test
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    restApiIdRef:
+      name: test
+    region: eu-central-1
+    pathPart: test

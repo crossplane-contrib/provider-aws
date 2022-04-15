@@ -1,0 +1,73 @@
+---
+operations:
+  PutMethod:
+    resource_name: Method
+    operation_type: Create
+  PutMethodResponse:
+    resource_name: MethodResponse
+    operation_type: Create
+  PutIntegration:
+    resource_name: Integration
+    operation_type: Create
+  PutIntegrationResponse:
+    resource_name: IntegrationResponse
+    operation_type: Create
+  PutGatewayResponse:
+    resource_name: GatewayResponse
+    operation_type: Create
+          
+ignore:
+  field_paths:
+    - CreateApiKeyInput.StageKeys
+    - DeleteApiKeyInput.StageKeys
+    - CreateAuthorizerInput.RestApiId
+    - DeleteAuthorizerInput.RestApiId
+    - CreateAuthorizerInput.ProviderARNs
+    - CreateBasePathMappingInput.RestApiId
+    - DeleteBasePathMappingInput.RestApiId
+    - CreateDocumentationPartInput.RestApiId
+    - DeleteDocumentationPartInput.RestApiId
+    - CreateDocumentationVersionInput.RestApiId
+    - DeleteDocumentationVersionInput.RestApiId
+    - CreateModelInput.RestApiId
+    - DeleteModelInput.RestApiId
+    - PutMethodInput.RestApiId
+    - DeleteMethodInput.RestApiId
+    - PutMethodInput.ResourceId
+    - DeleteMethodInput.ResourceId
+    - PutMethodResponseInput.RestApiId
+    - DeleteMethodResponseInput.RestApiId
+    - PutMethodResponseInput.ResourceId
+    - DeleteMethodResponseInput.ResourceId
+    - CreateRequestValidatorInput.RestApiId
+    - DeleteRequestValidatorInput.RestApiId
+    - CreateResourceInput.RestApiId
+    - DeleteResourceInput.RestApiId
+    - CreateResourceInput.ParentId
+    - DeleteResourceInput.ParentId
+    - CreateStageInput.RestApiId
+    - DeleteStageInput.RestApiId
+    - CreateStageInput.DeploymentId
+    - DeleteStageInput.DeploymentId
+    - CreateStageInput.CanarySettings
+    - UpdateStageInput.CanarySettings
+    - CreateDeploymentInput.RestApiId
+    - DeleteDeploymentInput.RestApiId
+    - PutIntegrationInput.RestApiId
+    - DeleteIntegrationInput.RestApiId
+    - PutIntegrationInput.ResourceId
+    - DeleteIntegrationInput.ResourceId
+    - PutIntegrationResponseInput.RestApiId
+    - DeleteIntegrationResponseInput.RestApiId
+    - PutIntegrationResponseInput.ResourceId
+    - DeleteIntegrationResponseInput.ResourceId
+    - PutGatewayResponseInput.RestApiId
+    - DeleteGatewayResponseInput.RestApiId
+    - CreateUsagePlanKeyInput.UsagePlanId
+    - DeleteUsagePlanKeyInput.UsagePlanId
+    - CreateUsagePlanInput.ApiStages
+    - UpdateUsagePlanInput.ApiStages
+    - Method.MethodIntegration
+    - Method.MethodResponses
+    - Resource.ResourceMethods
+    - Integration.IntegrationResponses

@@ -1,0 +1,28 @@
+---
+apiVersion: apigateway.aws.crossplane.io/v1alpha1
+kind: RestAPI
+metadata:
+  name: test
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    apiKeySource: HEADER
+    endpointConfiguration:
+      types:
+        - PRIVATE
+    minimumCompressionSize: 1024
+    description: "Test "
+    name: crossplane-b-api
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "execute-api:Invoke",
+            "Resource": "execute-api:/*/*/*"
+          }
+        ]
+      }
+    region: eu-central-1

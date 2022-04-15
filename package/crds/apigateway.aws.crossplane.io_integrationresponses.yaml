@@ -1,0 +1,323 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: integrationresponses.apigateway.aws.crossplane.io
+spec:
+  group: apigateway.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: IntegrationResponse
+    listKind: IntegrationResponseList
+    plural: integrationresponses
+    singular: integrationresponse
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: IntegrationResponse is the Schema for the IntegrationResponses
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: IntegrationResponseSpec defines the desired state of IntegrationResponse
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: IntegrationResponseParameters defines the desired state
+                  of IntegrationResponse
+                properties:
+                  contentHandling:
+                    description: "Specifies how to handle response payload content
+                      type conversions. Supported values are CONVERT_TO_BINARY and
+                      CONVERT_TO_TEXT, with the following behaviors: \n * CONVERT_TO_BINARY:
+                      Converts a response payload from a Base64-encoded string to
+                      the corresponding binary blob. \n * CONVERT_TO_TEXT: Converts
+                      a response payload from a binary blob to a Base64-encoded string.
+                      \n If this property is not defined, the response payload will
+                      be passed through from the integration response to the method
+                      response without modification."
+                    type: string
+                  httpMethod:
+                    description: '[Required] Specifies a put integration response
+                      request''s HTTP method.'
+                    type: string
+                  region:
+                    description: Region is which region the IntegrationResponse will
+                      be created.
+                    type: string
+                  resourceId:
+                    description: ResourceID is the ID for the Resource.
+                    type: string
+                  resourceIdRef:
+                    description: ResourceIDRef is a reference to an Parent used to
+                      set the ResourceID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  resourceIdSelector:
+                    description: ResourceIDSelector selects references to Parent used
+                      to set the ResourceID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  responseParameters:
+                    additionalProperties:
+                      type: string
+                    description: A key-value map specifying response parameters that
+                      are passed to the method response from the back end. The key
+                      is a method response header parameter name and the mapped value
+                      is an integration response header value, a static value enclosed
+                      within a pair of single quotes, or a JSON expression from the
+                      integration response body. The mapping key must match the pattern
+                      of method.response.header.{name}, where name is a valid and
+                      unique header name. The mapped non-static value must match the
+                      pattern of integration.response.header.{name} or integration.response.body.{JSON-expression},
+                      where name must be a valid and unique response header name and
+                      JSON-expression a valid JSON expression without the $ prefix.
+                    type: object
+                  responseTemplates:
+                    additionalProperties:
+                      type: string
+                    description: Specifies a put integration response's templates.
+                    type: object
+                  restApiId:
+                    description: RestAPIID is the ID for the RestAPI.
+                    type: string
+                  restApiIdRef:
+                    description: RestAPIIDRef is a reference to an RestAPI used to
+                      set the RestAPIID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  restApiIdSelector:
+                    description: RestApiIdSelector selects references to RestAPI used
+                      to set the RestAPIID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  selectionPattern:
+                    description: Specifies the selection pattern of a put integration
+                      response.
+                    type: string
+                  statusCode:
+                    description: '[Required] Specifies the status code that is used
+                      to map the integration response to an existing MethodResponse.'
+                    type: string
+                required:
+                - httpMethod
+                - region
+                - statusCode
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: IntegrationResponseStatus defines the observed state of IntegrationResponse.
+            properties:
+              atProvider:
+                description: IntegrationResponseObservation defines the observed state
+                  of IntegrationResponse
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
