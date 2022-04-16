@@ -70,6 +70,10 @@ func withVersion(v *string) nodeGroupModifier {
 	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.Version = v }
 }
 
+func withStatusVersion(v *string) nodeGroupModifier {
+	return func(r *manualv1alpha1.NodeGroup) { r.Status.AtProvider.Version = *v }
+}
+
 func withStatus(s manualv1alpha1.NodeGroupStatusType) nodeGroupModifier {
 	return func(r *manualv1alpha1.NodeGroup) { r.Status.AtProvider.Status = s }
 }
@@ -218,6 +222,7 @@ func TestObserve(t *testing.T) {
 					withStatus(manualv1alpha1.NodeGroupStatusCreating),
 					withConditions(xpv1.Creating()),
 					withVersion(&version),
+					withStatusVersion(&version),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,

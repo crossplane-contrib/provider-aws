@@ -328,6 +328,17 @@ type NodeGroupObservation struct {
 	// The Amazon Resource Name (ARN) associated with the managed node group.
 	NodeGroupArn string `json:"nodeGroupArn,omitempty"`
 
+	// The Kubernetes version to use for your managed nodes. By default, the Kubernetes
+	// version of the cluster is used, and this is the only accepted specified value.
+	Version string `json:"version,omitempty"`
+
+	// The AMI version of the Amazon EKS-optimized AMI to use with your node group. By
+	// default, the latest available AMI version for the node group's current Kubernetes
+	// version is used. For more information, see Amazon EKS-Optimized Linux AMI Versions
+	// (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html) in
+	// the Amazon EKS User Guide.
+	ReleaseVersion string `json:"releaseVersion,omitempty"`
+
 	// The resources associated with the node group, such as Auto Scaling groups
 	// and security groups for remote access.
 	Resources NodeGroupResources `json:"resources,omitempty"`

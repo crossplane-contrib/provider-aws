@@ -343,6 +343,7 @@ func TestGenerateObservation(t *testing.T) {
 	endpoint := "https://my-endpoint.com"
 	caData := "Y2VydGlmaWNhdGUtYXV0aG9yaXR5LWRhdGE="
 	oidcIssuer := "secret-issuer"
+	version := "1.21"
 	platformVersion := "eks1.0"
 	securityGrp := "sg-1234"
 	vpc := "vpc-1234"
@@ -364,6 +365,7 @@ func TestGenerateObservation(t *testing.T) {
 						Issuer: &oidcIssuer,
 					},
 				},
+				Version:         &version,
 				PlatformVersion: &platformVersion,
 				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
@@ -381,6 +383,7 @@ func TestGenerateObservation(t *testing.T) {
 						Issuer: oidcIssuer,
 					},
 				},
+				Version:         version,
 				PlatformVersion: platformVersion,
 				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
 					ClusterSecurityGroupID: securityGrp,
@@ -393,6 +396,7 @@ func TestGenerateObservation(t *testing.T) {
 			cluster: &ekstypes.Cluster{
 				Arn:             &clusterArn,
 				CreatedAt:       &createTime,
+				Version:         &version,
 				PlatformVersion: &platformVersion,
 				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
@@ -403,6 +407,7 @@ func TestGenerateObservation(t *testing.T) {
 			want: v1beta1.ClusterObservation{
 				Arn:             clusterArn,
 				CreatedAt:       &metav1.Time{Time: createTime},
+				Version:         version,
 				PlatformVersion: platformVersion,
 				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
 					ClusterSecurityGroupID: securityGrp,
