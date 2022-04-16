@@ -183,6 +183,8 @@ type RouteTableParameters struct {
 	Associations []Association `json:"associations"`
 
 	// inline routes in the route table
+	// Deprecated: Routes inline exists for historical compatibility
+	// and should not be used. Please use seperate route resource.
 	// +optional
 	Routes []RouteBeta `json:"routes,omitempty"`
 
