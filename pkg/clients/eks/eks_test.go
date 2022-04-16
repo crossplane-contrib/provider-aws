@@ -365,7 +365,7 @@ func TestGenerateObservation(t *testing.T) {
 						Issuer: &oidcIssuer,
 					},
 				},
-				Version: &version,
+				Version:         &version,
 				PlatformVersion: &platformVersion,
 				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
@@ -383,7 +383,7 @@ func TestGenerateObservation(t *testing.T) {
 						Issuer: oidcIssuer,
 					},
 				},
-				Version: version,
+				Version:         version,
 				PlatformVersion: platformVersion,
 				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
 					ClusterSecurityGroupID: securityGrp,
