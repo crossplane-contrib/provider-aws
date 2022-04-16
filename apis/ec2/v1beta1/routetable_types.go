@@ -184,7 +184,7 @@ type RouteTableParameters struct {
 
 	// inline routes in the route table
 	// Deprecated: Routes inline exists for historical compatibility
-	// and should not be used. Please use seperate route resource.
+	// and should not be used. Please use separate route resource.
 	// +optional
 	Routes []RouteBeta `json:"routes,omitempty"`
 
