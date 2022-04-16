@@ -460,6 +460,11 @@ spec:
                   status:
                     description: The current status of the cluster.
                     type: string
+                  version:
+                    description: The kubernetes version of your Amazon EKS cluster.
+                      For more information, see Kubernetes Versions (https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html)
+                      in the Amazon EKS User Guide .
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
