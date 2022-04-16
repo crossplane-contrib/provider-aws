@@ -107,12 +107,17 @@ spec:
                           type: object
                       type: object
                     type: array
+                  ignoreRoutes:
+                    description: Indicates whether we reconcile inline routes
+                    type: boolean
                   region:
                     description: Region is the region you'd like your VPC to be created
                       in.
                     type: string
                   routes:
-                    description: the routes in the route table
+                    description: 'inline routes in the route table Deprecated: Routes
+                      inline exists for historical compatibility and should not be
+                      used. Please use separate route resource.'
                     items:
                       description: RouteBeta describes a route in a route table. provider-aws
                         currently provides both a standalone Route resource and a
@@ -257,7 +262,6 @@ spec:
                 required:
                 - associations
                 - region
-                - routes
                 type: object
               providerConfigRef:
                 default:

@@ -72,6 +72,7 @@ type SubnetParameters struct {
 	// VPCID is the ID of the VPC.
 	// +optional
 	// +immutable
+	// +crossplane:generate:reference:type=VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId

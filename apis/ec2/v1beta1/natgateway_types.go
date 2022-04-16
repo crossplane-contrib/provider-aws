@@ -29,6 +29,7 @@ type NATGatewayParameters struct {
 	// AllocationID is the Elastic IP allocation ID
 	// +immutable
 	// +optional
+	// +crossplane:generate:reference:type=Address
 	AllocationID *string `json:"allocationId,omitempty"`
 
 	// AllocationIDRef references an EIP and retrieves it's allocation id
@@ -44,6 +45,7 @@ type NATGatewayParameters struct {
 	// SubnetID is the subnet the NAT gateways needs to be associated to
 	// +immutable
 	// +optional
+	// +crossplane:generate:reference:type=Subnet
 	SubnetID *string `json:"subnetId,omitempty"`
 
 	// SubnetIDRef references a subnet and retrives it's subnet id

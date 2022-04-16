@@ -127,6 +127,22 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDRef = rsp.ResolvedReference
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.RouteTableID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDSelector,
+		To: reference.To{
+			List:    &v1beta1.RouteTableList{},
+			Managed: &v1beta1.RouteTable{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.RouteTableID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.RouteTableID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.InstanceID),
 		Extract:      reference.ExternalName(),
 		Reference:    mg.Spec.ForProvider.CustomRouteParameters.InstanceIDRef,
