@@ -418,6 +418,7 @@ $ THUMBPRINT=$(openssl s_client -servername oidc.eks.${PROVIDER_POD_REGION}.amaz
 ```
 
 4. Create IAM Role that `provider-aws` will use in the TARGET aws account
+
 **NOTE:** Switch your command line to credentials for the target account.
 
 Get AWS account information and pick an IAM role name. These will be used to
@@ -484,6 +485,7 @@ $ aws iam attach-role-policy --role-name "${IAM_ROLE_NAME}" --policy-arn=arn:aws
 ```
 
 5. Create `ProviderConfig`
+
 Set current kubectl context to provider pod cluster
 
 ```console
