@@ -93,6 +93,18 @@ spec:
                   setting will be deprecated. Use the roleARN field under assumeRole
                   instead.
                 type: string
+              assumeRoleWithWebIdentity:
+                description: AssumeRoleWithWebIdentity defines the options for assuming
+                  an IAM role with a Web Identity
+                properties:
+                  roleARN:
+                    description: AssumeRoleARN to assume with provider credentials
+                    type: string
+                  roleSessionName:
+                    description: RoleSessionName is the session name, if you wish
+                      to uniquely identify this session.
+                    type: string
+                type: object
               credentials:
                 description: Credentials required to authenticate to this provider.
                 properties:

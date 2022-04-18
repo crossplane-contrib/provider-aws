@@ -190,6 +190,67 @@ func TestGetAssumeRoleARN(t *testing.T) {
 	}
 }
 
+func TestGetAssumeRoleWithWebIdentityARN(t *testing.T) {
+	roleARN := "test-arn"
+
+	type args struct {
+		pcs v1beta1.ProviderConfigSpec
+	}
+	type want struct {
+		arn string
+		err error
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoArnSetError": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume with web identity"),
+			},
+		},
+		"EmptyAssumeRoleWithWebIdentityOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{},
+				},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume with web identity"),
+			},
+		},
+		"AssumeRoleWithWebIdentityOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{
+						RoleARN: &roleARN,
+					},
+				},
+			},
+			want: want{
+				arn: "test-arn",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			roleArn, err := GetAssumeRoleWithWebIdentityARN(&tc.args.pcs)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.want.arn, StringValue(roleArn)); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestSetAssumeroleOptions(t *testing.T) {
 	externalID := "test-id"
 	externalIDDep := "test-id-deprecated"
@@ -291,6 +352,61 @@ func TestSetAssumeroleOptions(t *testing.T) {
 
 			aro := stscreds.AssumeRoleOptions{}
 			f := SetAssumeRoleOptions(&tc.args.pc)
+			f(&aro)
+
+			if diff := cmp.Diff(tc.want.aro, aro, cmpopts.IgnoreUnexported(stscredstypesv2.Tag{})); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSetWebIdentityRoleOptions(t *testing.T) {
+	sessionName := "test-id"
+
+	type args struct {
+		pc v1beta1.ProviderConfig
+	}
+	type want struct {
+		aro stscreds.WebIdentityRoleOptions
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoOptionsSet": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{},
+				},
+			},
+			want: want{
+				aro: stscreds.WebIdentityRoleOptions{},
+			},
+		},
+		"BasicAssumeRoleWithWebIdentity": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{
+							RoleSessionName: sessionName,
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.WebIdentityRoleOptions{
+					RoleSessionName: sessionName,
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			aro := stscreds.WebIdentityRoleOptions{}
+			f := SetWebIdentityRoleOptions(&tc.args.pc)
 			f(&aro)
 
 			if diff := cmp.Diff(tc.want.aro, aro, cmpopts.IgnoreUnexported(stscredstypesv2.Tag{})); diff != "" {
