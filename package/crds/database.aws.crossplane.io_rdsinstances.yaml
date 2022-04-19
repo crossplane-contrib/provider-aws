@@ -620,6 +620,38 @@ spec:
                       restore when creating a new RDS instance. (If the RDS instance
                       already exists, this property will be ignored.)
                     properties:
+                      pointInTime:
+                        description: PointInTime specifies the details of the point
+                          in time restore.
+                        properties:
+                          restoreTime:
+                            description: 'RestoreTime is the date and time (UTC) to
+                              restore from. Must be before the latest restorable time
+                              for the DB instance. Can''t be specified if the useLatestRestorableTime
+                              parameter is enabled. Example: 2011-09-07T23:45:00Z'
+                            format: date-time
+                            type: string
+                          sourceDBInstanceAutomatedBackupsArn:
+                            description: 'SourceDBInstanceAutomatedBackupsArn specifies
+                              the Amazon Resource Name (ARN) of the replicated automated
+                              backups from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE'
+                            type: string
+                          sourceDBInstanceIdentifier:
+                            description: 'SourceDBInstanceIdentifier specifies the
+                              identifier of the source DB instance from which to restore.
+                              Constraints: Must match the identifier of an existing
+                              DB instance.'
+                            type: string
+                          sourceDbiResourceId:
+                            description: SourceDbiResourceID specifies the resource
+                              ID of the source DB instance from which to restore.
+                            type: string
+                          useLatestRestorableTime:
+                            description: UseLatestRestorableTime indicates that the
+                              DB instance is restored from the latest backup Can't
+                              be specified if the restoreTime parameter is provided.
+                            type: boolean
+                        type: object
                       s3:
                         description: S3 specifies the details of the S3 backup to
                           restore from.
@@ -714,11 +746,12 @@ spec:
                         type: object
                       source:
                         description: Source is the type of the backup to restore when
-                          creating a new RDS instance. Only S3 and Snapshot are supported
-                          at present.
+                          creating a new RDS instance. S3, Snapshot and PointInTime
+                          are supported.
                         enum:
                         - S3
                         - Snapshot
+                        - PointInTime
                         type: string
                     required:
                     - source
