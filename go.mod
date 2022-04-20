@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/aws/aws-sdk-go v1.42.0
-	github.com/aws/aws-sdk-go-v2 v1.11.2
+	github.com/aws/aws-sdk-go-v2 v1.16.2
 	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.0
 	github.com/aws/aws-sdk-go-v2/service/acm v1.8.0
@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticache v1.13.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.12.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.21.1
 	github.com/aws/aws-sdk-go-v2/service/rds v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/redshift v1.13.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.13.0
@@ -23,13 +24,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.9.0
-	github.com/aws/smithy-go v1.9.0
+	github.com/aws/smithy-go v1.11.2
 	github.com/crossplane/crossplane-runtime v0.15.1-0.20220315141414-988c9ba9c255
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/go-ini/ini v1.46.0
 	github.com/golang/mock v1.5.0
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/mattbaird/jsonpatch v0.0.0-20200820163806-098863c1fc24
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.17.0
@@ -41,6 +42,7 @@ require (
 	k8s.io/client-go v0.23.0
 	sigs.k8s.io/controller-runtime v0.11.0
 	sigs.k8s.io/controller-tools v0.8.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -50,8 +52,8 @@ require (
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.0.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.9 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.5.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.0 // indirect
@@ -144,5 +146,4 @@ require (
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
