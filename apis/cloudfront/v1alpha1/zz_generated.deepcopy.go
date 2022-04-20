@@ -1362,6 +1362,11 @@ func (in *DistributionConfig) DeepCopyInto(out *DistributionConfig) {
 		*out = new(CacheBehaviors)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.CallerReference != nil {
+		in, out := &in.CallerReference, &out.CallerReference
+		*out = new(string)
+		**out = **in
+	}
 	if in.Comment != nil {
 		in, out := &in.Comment, &out.Comment
 		*out = new(string)

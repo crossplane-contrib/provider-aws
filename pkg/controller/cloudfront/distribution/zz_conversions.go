@@ -356,228 +356,231 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 				}
 				f0f4.CacheBehaviors = f0f4f1
 			}
+			if resp.Distribution.DistributionConfig.CallerReference != nil {
+				f0f4.CallerReference = resp.Distribution.DistributionConfig.CallerReference
+			}
 			if resp.Distribution.DistributionConfig.Comment != nil {
 				f0f4.Comment = resp.Distribution.DistributionConfig.Comment
 			}
 			if resp.Distribution.DistributionConfig.CustomErrorResponses != nil {
-				f0f4f3 := &svcapitypes.CustomErrorResponses{}
+				f0f4f4 := &svcapitypes.CustomErrorResponses{}
 				if resp.Distribution.DistributionConfig.CustomErrorResponses.Items != nil {
-					f0f4f3f0 := []*svcapitypes.CustomErrorResponse{}
-					for _, f0f4f3f0iter := range resp.Distribution.DistributionConfig.CustomErrorResponses.Items {
-						f0f4f3f0elem := &svcapitypes.CustomErrorResponse{}
-						if f0f4f3f0iter.ErrorCachingMinTTL != nil {
-							f0f4f3f0elem.ErrorCachingMinTTL = f0f4f3f0iter.ErrorCachingMinTTL
+					f0f4f4f0 := []*svcapitypes.CustomErrorResponse{}
+					for _, f0f4f4f0iter := range resp.Distribution.DistributionConfig.CustomErrorResponses.Items {
+						f0f4f4f0elem := &svcapitypes.CustomErrorResponse{}
+						if f0f4f4f0iter.ErrorCachingMinTTL != nil {
+							f0f4f4f0elem.ErrorCachingMinTTL = f0f4f4f0iter.ErrorCachingMinTTL
 						}
-						if f0f4f3f0iter.ErrorCode != nil {
-							f0f4f3f0elem.ErrorCode = f0f4f3f0iter.ErrorCode
+						if f0f4f4f0iter.ErrorCode != nil {
+							f0f4f4f0elem.ErrorCode = f0f4f4f0iter.ErrorCode
 						}
-						if f0f4f3f0iter.ResponseCode != nil {
-							f0f4f3f0elem.ResponseCode = f0f4f3f0iter.ResponseCode
+						if f0f4f4f0iter.ResponseCode != nil {
+							f0f4f4f0elem.ResponseCode = f0f4f4f0iter.ResponseCode
 						}
-						if f0f4f3f0iter.ResponsePagePath != nil {
-							f0f4f3f0elem.ResponsePagePath = f0f4f3f0iter.ResponsePagePath
+						if f0f4f4f0iter.ResponsePagePath != nil {
+							f0f4f4f0elem.ResponsePagePath = f0f4f4f0iter.ResponsePagePath
 						}
-						f0f4f3f0 = append(f0f4f3f0, f0f4f3f0elem)
+						f0f4f4f0 = append(f0f4f4f0, f0f4f4f0elem)
 					}
-					f0f4f3.Items = f0f4f3f0
+					f0f4f4.Items = f0f4f4f0
 				}
-				f0f4.CustomErrorResponses = f0f4f3
+				f0f4.CustomErrorResponses = f0f4f4
 			}
 			if resp.Distribution.DistributionConfig.DefaultCacheBehavior != nil {
-				f0f4f4 := &svcapitypes.DefaultCacheBehavior{}
+				f0f4f5 := &svcapitypes.DefaultCacheBehavior{}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods != nil {
-					f0f4f4f0 := &svcapitypes.AllowedMethods{}
+					f0f4f5f0 := &svcapitypes.AllowedMethods{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods != nil {
-						f0f4f4f0f0 := &svcapitypes.CachedMethods{}
+						f0f4f5f0f0 := &svcapitypes.CachedMethods{}
 						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items != nil {
-							f0f4f4f0f0f0 := []*string{}
-							for _, f0f4f4f0f0f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
-								var f0f4f4f0f0f0elem string
-								f0f4f4f0f0f0elem = *f0f4f4f0f0f0iter
-								f0f4f4f0f0f0 = append(f0f4f4f0f0f0, &f0f4f4f0f0f0elem)
+							f0f4f5f0f0f0 := []*string{}
+							for _, f0f4f5f0f0f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
+								var f0f4f5f0f0f0elem string
+								f0f4f5f0f0f0elem = *f0f4f5f0f0f0iter
+								f0f4f5f0f0f0 = append(f0f4f5f0f0f0, &f0f4f5f0f0f0elem)
 							}
-							f0f4f4f0f0.Items = f0f4f4f0f0f0
+							f0f4f5f0f0.Items = f0f4f5f0f0f0
 						}
-						f0f4f4f0.CachedMethods = f0f4f4f0f0
+						f0f4f5f0.CachedMethods = f0f4f5f0f0
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
-						f0f4f4f0f1 := []*string{}
-						for _, f0f4f4f0f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
-							var f0f4f4f0f1elem string
-							f0f4f4f0f1elem = *f0f4f4f0f1iter
-							f0f4f4f0f1 = append(f0f4f4f0f1, &f0f4f4f0f1elem)
+						f0f4f5f0f1 := []*string{}
+						for _, f0f4f5f0f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
+							var f0f4f5f0f1elem string
+							f0f4f5f0f1elem = *f0f4f5f0f1iter
+							f0f4f5f0f1 = append(f0f4f5f0f1, &f0f4f5f0f1elem)
 						}
-						f0f4f4f0.Items = f0f4f4f0f1
+						f0f4f5f0.Items = f0f4f5f0f1
 					}
-					f0f4f4.AllowedMethods = f0f4f4f0
+					f0f4f5.AllowedMethods = f0f4f5f0
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.CachePolicyId != nil {
-					f0f4f4.CachePolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.CachePolicyId
+					f0f4f5.CachePolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.CachePolicyId
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.Compress != nil {
-					f0f4f4.Compress = resp.Distribution.DistributionConfig.DefaultCacheBehavior.Compress
+					f0f4f5.Compress = resp.Distribution.DistributionConfig.DefaultCacheBehavior.Compress
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.DefaultTTL != nil {
-					f0f4f4.DefaultTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.DefaultTTL
+					f0f4f5.DefaultTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.DefaultTTL
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionId != nil {
-					f0f4f4.FieldLevelEncryptionID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionId
+					f0f4f5.FieldLevelEncryptionID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionId
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues != nil {
-					f0f4f4f5 := &svcapitypes.ForwardedValues{}
+					f0f4f5f5 := &svcapitypes.ForwardedValues{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies != nil {
-						f0f4f4f5f0 := &svcapitypes.CookiePreference{}
+						f0f4f5f5f0 := &svcapitypes.CookiePreference{}
 						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward != nil {
-							f0f4f4f5f0.Forward = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward
+							f0f4f5f5f0.Forward = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward
 						}
 						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames != nil {
-							f0f4f4f5f0f1 := &svcapitypes.CookieNames{}
+							f0f4f5f5f0f1 := &svcapitypes.CookieNames{}
 							if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items != nil {
-								f0f4f4f5f0f1f0 := []*string{}
-								for _, f0f4f4f5f0f1f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
-									var f0f4f4f5f0f1f0elem string
-									f0f4f4f5f0f1f0elem = *f0f4f4f5f0f1f0iter
-									f0f4f4f5f0f1f0 = append(f0f4f4f5f0f1f0, &f0f4f4f5f0f1f0elem)
+								f0f4f5f5f0f1f0 := []*string{}
+								for _, f0f4f5f5f0f1f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
+									var f0f4f5f5f0f1f0elem string
+									f0f4f5f5f0f1f0elem = *f0f4f5f5f0f1f0iter
+									f0f4f5f5f0f1f0 = append(f0f4f5f5f0f1f0, &f0f4f5f5f0f1f0elem)
 								}
-								f0f4f4f5f0f1.Items = f0f4f4f5f0f1f0
+								f0f4f5f5f0f1.Items = f0f4f5f5f0f1f0
 							}
 							if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity != nil {
-								f0f4f4f5f0f1.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity
+								f0f4f5f5f0f1.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity
 							}
-							f0f4f4f5f0.WhitelistedNames = f0f4f4f5f0f1
+							f0f4f5f5f0.WhitelistedNames = f0f4f5f5f0f1
 						}
-						f0f4f4f5.Cookies = f0f4f4f5f0
+						f0f4f5f5.Cookies = f0f4f5f5f0
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers != nil {
-						f0f4f4f5f1 := &svcapitypes.Headers{}
+						f0f4f5f5f1 := &svcapitypes.Headers{}
 						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items != nil {
-							f0f4f4f5f1f0 := []*string{}
-							for _, f0f4f4f5f1f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
-								var f0f4f4f5f1f0elem string
-								f0f4f4f5f1f0elem = *f0f4f4f5f1f0iter
-								f0f4f4f5f1f0 = append(f0f4f4f5f1f0, &f0f4f4f5f1f0elem)
+							f0f4f5f5f1f0 := []*string{}
+							for _, f0f4f5f5f1f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
+								var f0f4f5f5f1f0elem string
+								f0f4f5f5f1f0elem = *f0f4f5f5f1f0iter
+								f0f4f5f5f1f0 = append(f0f4f5f5f1f0, &f0f4f5f5f1f0elem)
 							}
-							f0f4f4f5f1.Items = f0f4f4f5f1f0
+							f0f4f5f5f1.Items = f0f4f5f5f1f0
 						}
-						f0f4f4f5.Headers = f0f4f4f5f1
+						f0f4f5f5.Headers = f0f4f5f5f1
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
-						f0f4f4f5.QueryString = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString
+						f0f4f5f5.QueryString = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys != nil {
-						f0f4f4f5f3 := &svcapitypes.QueryStringCacheKeys{}
+						f0f4f5f5f3 := &svcapitypes.QueryStringCacheKeys{}
 						if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items != nil {
-							f0f4f4f5f3f0 := []*string{}
-							for _, f0f4f4f5f3f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
-								var f0f4f4f5f3f0elem string
-								f0f4f4f5f3f0elem = *f0f4f4f5f3f0iter
-								f0f4f4f5f3f0 = append(f0f4f4f5f3f0, &f0f4f4f5f3f0elem)
+							f0f4f5f5f3f0 := []*string{}
+							for _, f0f4f5f5f3f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
+								var f0f4f5f5f3f0elem string
+								f0f4f5f5f3f0elem = *f0f4f5f5f3f0iter
+								f0f4f5f5f3f0 = append(f0f4f5f5f3f0, &f0f4f5f5f3f0elem)
 							}
-							f0f4f4f5f3.Items = f0f4f4f5f3f0
+							f0f4f5f5f3.Items = f0f4f5f5f3f0
 						}
-						f0f4f4f5.QueryStringCacheKeys = f0f4f4f5f3
+						f0f4f5f5.QueryStringCacheKeys = f0f4f5f5f3
 					}
-					f0f4f4.ForwardedValues = f0f4f4f5
+					f0f4f5.ForwardedValues = f0f4f5f5
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations != nil {
-					f0f4f4f6 := &svcapitypes.FunctionAssociations{}
+					f0f4f5f6 := &svcapitypes.FunctionAssociations{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items != nil {
-						f0f4f4f6f0 := []*svcapitypes.FunctionAssociation{}
-						for _, f0f4f4f6f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
-							f0f4f4f6f0elem := &svcapitypes.FunctionAssociation{}
-							if f0f4f4f6f0iter.EventType != nil {
-								f0f4f4f6f0elem.EventType = f0f4f4f6f0iter.EventType
+						f0f4f5f6f0 := []*svcapitypes.FunctionAssociation{}
+						for _, f0f4f5f6f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
+							f0f4f5f6f0elem := &svcapitypes.FunctionAssociation{}
+							if f0f4f5f6f0iter.EventType != nil {
+								f0f4f5f6f0elem.EventType = f0f4f5f6f0iter.EventType
 							}
-							if f0f4f4f6f0iter.FunctionARN != nil {
-								f0f4f4f6f0elem.FunctionARN = f0f4f4f6f0iter.FunctionARN
+							if f0f4f5f6f0iter.FunctionARN != nil {
+								f0f4f5f6f0elem.FunctionARN = f0f4f5f6f0iter.FunctionARN
 							}
-							f0f4f4f6f0 = append(f0f4f4f6f0, f0f4f4f6f0elem)
+							f0f4f5f6f0 = append(f0f4f5f6f0, f0f4f5f6f0elem)
 						}
-						f0f4f4f6.Items = f0f4f4f6f0
+						f0f4f5f6.Items = f0f4f5f6f0
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-						f0f4f4f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity
+						f0f4f5f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity
 					}
-					f0f4f4.FunctionAssociations = f0f4f4f6
+					f0f4f5.FunctionAssociations = f0f4f5f6
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations != nil {
-					f0f4f4f7 := &svcapitypes.LambdaFunctionAssociations{}
+					f0f4f5f7 := &svcapitypes.LambdaFunctionAssociations{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items != nil {
-						f0f4f4f7f0 := []*svcapitypes.LambdaFunctionAssociation{}
-						for _, f0f4f4f7f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
-							f0f4f4f7f0elem := &svcapitypes.LambdaFunctionAssociation{}
-							if f0f4f4f7f0iter.EventType != nil {
-								f0f4f4f7f0elem.EventType = f0f4f4f7f0iter.EventType
+						f0f4f5f7f0 := []*svcapitypes.LambdaFunctionAssociation{}
+						for _, f0f4f5f7f0iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
+							f0f4f5f7f0elem := &svcapitypes.LambdaFunctionAssociation{}
+							if f0f4f5f7f0iter.EventType != nil {
+								f0f4f5f7f0elem.EventType = f0f4f5f7f0iter.EventType
 							}
-							if f0f4f4f7f0iter.IncludeBody != nil {
-								f0f4f4f7f0elem.IncludeBody = f0f4f4f7f0iter.IncludeBody
+							if f0f4f5f7f0iter.IncludeBody != nil {
+								f0f4f5f7f0elem.IncludeBody = f0f4f5f7f0iter.IncludeBody
 							}
-							if f0f4f4f7f0iter.LambdaFunctionARN != nil {
-								f0f4f4f7f0elem.LambdaFunctionARN = f0f4f4f7f0iter.LambdaFunctionARN
+							if f0f4f5f7f0iter.LambdaFunctionARN != nil {
+								f0f4f5f7f0elem.LambdaFunctionARN = f0f4f5f7f0iter.LambdaFunctionARN
 							}
-							f0f4f4f7f0 = append(f0f4f4f7f0, f0f4f4f7f0elem)
+							f0f4f5f7f0 = append(f0f4f5f7f0, f0f4f5f7f0elem)
 						}
-						f0f4f4f7.Items = f0f4f4f7f0
+						f0f4f5f7.Items = f0f4f5f7f0
 					}
-					f0f4f4.LambdaFunctionAssociations = f0f4f4f7
+					f0f4f5.LambdaFunctionAssociations = f0f4f5f7
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.MaxTTL != nil {
-					f0f4f4.MaxTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.MaxTTL
+					f0f4f5.MaxTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.MaxTTL
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.MinTTL != nil {
-					f0f4f4.MinTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.MinTTL
+					f0f4f5.MinTTL = resp.Distribution.DistributionConfig.DefaultCacheBehavior.MinTTL
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyId != nil {
-					f0f4f4.OriginRequestPolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyId
+					f0f4f5.OriginRequestPolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyId
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigArn != nil {
-					f0f4f4.RealtimeLogConfigARN = resp.Distribution.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigArn
+					f0f4f5.RealtimeLogConfigARN = resp.Distribution.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigArn
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId != nil {
-					f0f4f4.ResponseHeadersPolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId
+					f0f4f5.ResponseHeadersPolicyID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.SmoothStreaming != nil {
-					f0f4f4.SmoothStreaming = resp.Distribution.DistributionConfig.DefaultCacheBehavior.SmoothStreaming
+					f0f4f5.SmoothStreaming = resp.Distribution.DistributionConfig.DefaultCacheBehavior.SmoothStreaming
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TargetOriginId != nil {
-					f0f4f4.TargetOriginID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TargetOriginId
+					f0f4f5.TargetOriginID = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TargetOriginId
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups != nil {
-					f0f4f4f15 := &svcapitypes.TrustedKeyGroups{}
+					f0f4f5f15 := &svcapitypes.TrustedKeyGroups{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled != nil {
-						f0f4f4f15.Enabled = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled
+						f0f4f5f15.Enabled = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items != nil {
-						f0f4f4f15f1 := []*string{}
-						for _, f0f4f4f15f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
-							var f0f4f4f15f1elem string
-							f0f4f4f15f1elem = *f0f4f4f15f1iter
-							f0f4f4f15f1 = append(f0f4f4f15f1, &f0f4f4f15f1elem)
+						f0f4f5f15f1 := []*string{}
+						for _, f0f4f5f15f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
+							var f0f4f5f15f1elem string
+							f0f4f5f15f1elem = *f0f4f5f15f1iter
+							f0f4f5f15f1 = append(f0f4f5f15f1, &f0f4f5f15f1elem)
 						}
-						f0f4f4f15.Items = f0f4f4f15f1
+						f0f4f5f15.Items = f0f4f5f15f1
 					}
-					f0f4f4.TrustedKeyGroups = f0f4f4f15
+					f0f4f5.TrustedKeyGroups = f0f4f5f15
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
-					f0f4f4f16 := &svcapitypes.TrustedSigners{}
+					f0f4f5f16 := &svcapitypes.TrustedSigners{}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled != nil {
-						f0f4f4f16.Enabled = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled
+						f0f4f5f16.Enabled = resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled
 					}
 					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items != nil {
-						f0f4f4f16f1 := []*string{}
-						for _, f0f4f4f16f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
-							var f0f4f4f16f1elem string
-							f0f4f4f16f1elem = *f0f4f4f16f1iter
-							f0f4f4f16f1 = append(f0f4f4f16f1, &f0f4f4f16f1elem)
+						f0f4f5f16f1 := []*string{}
+						for _, f0f4f5f16f1iter := range resp.Distribution.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
+							var f0f4f5f16f1elem string
+							f0f4f5f16f1elem = *f0f4f5f16f1iter
+							f0f4f5f16f1 = append(f0f4f5f16f1, &f0f4f5f16f1elem)
 						}
-						f0f4f4f16.Items = f0f4f4f16f1
+						f0f4f5f16.Items = f0f4f5f16f1
 					}
-					f0f4f4.TrustedSigners = f0f4f4f16
+					f0f4f5.TrustedSigners = f0f4f5f16
 				}
 				if resp.Distribution.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy != nil {
-					f0f4f4.ViewerProtocolPolicy = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy
+					f0f4f5.ViewerProtocolPolicy = resp.Distribution.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy
 				}
-				f0f4.DefaultCacheBehavior = f0f4f4
+				f0f4.DefaultCacheBehavior = f0f4f5
 			}
 			if resp.Distribution.DistributionConfig.DefaultRootObject != nil {
 				f0f4.DefaultRootObject = resp.Distribution.DistributionConfig.DefaultRootObject
@@ -592,212 +595,212 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 				f0f4.IsIPV6Enabled = resp.Distribution.DistributionConfig.IsIPV6Enabled
 			}
 			if resp.Distribution.DistributionConfig.Logging != nil {
-				f0f4f9 := &svcapitypes.LoggingConfig{}
+				f0f4f10 := &svcapitypes.LoggingConfig{}
 				if resp.Distribution.DistributionConfig.Logging.Bucket != nil {
-					f0f4f9.Bucket = resp.Distribution.DistributionConfig.Logging.Bucket
+					f0f4f10.Bucket = resp.Distribution.DistributionConfig.Logging.Bucket
 				}
 				if resp.Distribution.DistributionConfig.Logging.Enabled != nil {
-					f0f4f9.Enabled = resp.Distribution.DistributionConfig.Logging.Enabled
+					f0f4f10.Enabled = resp.Distribution.DistributionConfig.Logging.Enabled
 				}
 				if resp.Distribution.DistributionConfig.Logging.IncludeCookies != nil {
-					f0f4f9.IncludeCookies = resp.Distribution.DistributionConfig.Logging.IncludeCookies
+					f0f4f10.IncludeCookies = resp.Distribution.DistributionConfig.Logging.IncludeCookies
 				}
 				if resp.Distribution.DistributionConfig.Logging.Prefix != nil {
-					f0f4f9.Prefix = resp.Distribution.DistributionConfig.Logging.Prefix
+					f0f4f10.Prefix = resp.Distribution.DistributionConfig.Logging.Prefix
 				}
-				f0f4.Logging = f0f4f9
+				f0f4.Logging = f0f4f10
 			}
 			if resp.Distribution.DistributionConfig.OriginGroups != nil {
-				f0f4f10 := &svcapitypes.OriginGroups{}
+				f0f4f11 := &svcapitypes.OriginGroups{}
 				if resp.Distribution.DistributionConfig.OriginGroups.Items != nil {
-					f0f4f10f0 := []*svcapitypes.OriginGroup{}
-					for _, f0f4f10f0iter := range resp.Distribution.DistributionConfig.OriginGroups.Items {
-						f0f4f10f0elem := &svcapitypes.OriginGroup{}
-						if f0f4f10f0iter.FailoverCriteria != nil {
-							f0f4f10f0elemf0 := &svcapitypes.OriginGroupFailoverCriteria{}
-							if f0f4f10f0iter.FailoverCriteria.StatusCodes != nil {
-								f0f4f10f0elemf0f0 := &svcapitypes.StatusCodes{}
-								if f0f4f10f0iter.FailoverCriteria.StatusCodes.Items != nil {
-									f0f4f10f0elemf0f0f0 := []*int64{}
-									for _, f0f4f10f0elemf0f0f0iter := range f0f4f10f0iter.FailoverCriteria.StatusCodes.Items {
-										var f0f4f10f0elemf0f0f0elem int64
-										f0f4f10f0elemf0f0f0elem = *f0f4f10f0elemf0f0f0iter
-										f0f4f10f0elemf0f0f0 = append(f0f4f10f0elemf0f0f0, &f0f4f10f0elemf0f0f0elem)
+					f0f4f11f0 := []*svcapitypes.OriginGroup{}
+					for _, f0f4f11f0iter := range resp.Distribution.DistributionConfig.OriginGroups.Items {
+						f0f4f11f0elem := &svcapitypes.OriginGroup{}
+						if f0f4f11f0iter.FailoverCriteria != nil {
+							f0f4f11f0elemf0 := &svcapitypes.OriginGroupFailoverCriteria{}
+							if f0f4f11f0iter.FailoverCriteria.StatusCodes != nil {
+								f0f4f11f0elemf0f0 := &svcapitypes.StatusCodes{}
+								if f0f4f11f0iter.FailoverCriteria.StatusCodes.Items != nil {
+									f0f4f11f0elemf0f0f0 := []*int64{}
+									for _, f0f4f11f0elemf0f0f0iter := range f0f4f11f0iter.FailoverCriteria.StatusCodes.Items {
+										var f0f4f11f0elemf0f0f0elem int64
+										f0f4f11f0elemf0f0f0elem = *f0f4f11f0elemf0f0f0iter
+										f0f4f11f0elemf0f0f0 = append(f0f4f11f0elemf0f0f0, &f0f4f11f0elemf0f0f0elem)
 									}
-									f0f4f10f0elemf0f0.Items = f0f4f10f0elemf0f0f0
+									f0f4f11f0elemf0f0.Items = f0f4f11f0elemf0f0f0
 								}
-								f0f4f10f0elemf0.StatusCodes = f0f4f10f0elemf0f0
+								f0f4f11f0elemf0.StatusCodes = f0f4f11f0elemf0f0
 							}
-							f0f4f10f0elem.FailoverCriteria = f0f4f10f0elemf0
+							f0f4f11f0elem.FailoverCriteria = f0f4f11f0elemf0
 						}
-						if f0f4f10f0iter.Id != nil {
-							f0f4f10f0elem.ID = f0f4f10f0iter.Id
+						if f0f4f11f0iter.Id != nil {
+							f0f4f11f0elem.ID = f0f4f11f0iter.Id
 						}
-						if f0f4f10f0iter.Members != nil {
-							f0f4f10f0elemf2 := &svcapitypes.OriginGroupMembers{}
-							if f0f4f10f0iter.Members.Items != nil {
-								f0f4f10f0elemf2f0 := []*svcapitypes.OriginGroupMember{}
-								for _, f0f4f10f0elemf2f0iter := range f0f4f10f0iter.Members.Items {
-									f0f4f10f0elemf2f0elem := &svcapitypes.OriginGroupMember{}
-									if f0f4f10f0elemf2f0iter.OriginId != nil {
-										f0f4f10f0elemf2f0elem.OriginID = f0f4f10f0elemf2f0iter.OriginId
-									}
-									f0f4f10f0elemf2f0 = append(f0f4f10f0elemf2f0, f0f4f10f0elemf2f0elem)
-								}
-								f0f4f10f0elemf2.Items = f0f4f10f0elemf2f0
-							}
-							if f0f4f10f0iter.Members.Quantity != nil {
-								f0f4f10f0elemf2.Quantity = f0f4f10f0iter.Members.Quantity
-							}
-							f0f4f10f0elem.Members = f0f4f10f0elemf2
-						}
-						f0f4f10f0 = append(f0f4f10f0, f0f4f10f0elem)
-					}
-					f0f4f10.Items = f0f4f10f0
-				}
-				f0f4.OriginGroups = f0f4f10
-			}
-			if resp.Distribution.DistributionConfig.Origins != nil {
-				f0f4f11 := &svcapitypes.Origins{}
-				if resp.Distribution.DistributionConfig.Origins.Items != nil {
-					f0f4f11f0 := []*svcapitypes.Origin{}
-					for _, f0f4f11f0iter := range resp.Distribution.DistributionConfig.Origins.Items {
-						f0f4f11f0elem := &svcapitypes.Origin{}
-						if f0f4f11f0iter.ConnectionAttempts != nil {
-							f0f4f11f0elem.ConnectionAttempts = f0f4f11f0iter.ConnectionAttempts
-						}
-						if f0f4f11f0iter.ConnectionTimeout != nil {
-							f0f4f11f0elem.ConnectionTimeout = f0f4f11f0iter.ConnectionTimeout
-						}
-						if f0f4f11f0iter.CustomHeaders != nil {
-							f0f4f11f0elemf2 := &svcapitypes.CustomHeaders{}
-							if f0f4f11f0iter.CustomHeaders.Items != nil {
-								f0f4f11f0elemf2f0 := []*svcapitypes.OriginCustomHeader{}
-								for _, f0f4f11f0elemf2f0iter := range f0f4f11f0iter.CustomHeaders.Items {
-									f0f4f11f0elemf2f0elem := &svcapitypes.OriginCustomHeader{}
-									if f0f4f11f0elemf2f0iter.HeaderName != nil {
-										f0f4f11f0elemf2f0elem.HeaderName = f0f4f11f0elemf2f0iter.HeaderName
-									}
-									if f0f4f11f0elemf2f0iter.HeaderValue != nil {
-										f0f4f11f0elemf2f0elem.HeaderValue = f0f4f11f0elemf2f0iter.HeaderValue
+						if f0f4f11f0iter.Members != nil {
+							f0f4f11f0elemf2 := &svcapitypes.OriginGroupMembers{}
+							if f0f4f11f0iter.Members.Items != nil {
+								f0f4f11f0elemf2f0 := []*svcapitypes.OriginGroupMember{}
+								for _, f0f4f11f0elemf2f0iter := range f0f4f11f0iter.Members.Items {
+									f0f4f11f0elemf2f0elem := &svcapitypes.OriginGroupMember{}
+									if f0f4f11f0elemf2f0iter.OriginId != nil {
+										f0f4f11f0elemf2f0elem.OriginID = f0f4f11f0elemf2f0iter.OriginId
 									}
 									f0f4f11f0elemf2f0 = append(f0f4f11f0elemf2f0, f0f4f11f0elemf2f0elem)
 								}
 								f0f4f11f0elemf2.Items = f0f4f11f0elemf2f0
 							}
-							f0f4f11f0elem.CustomHeaders = f0f4f11f0elemf2
-						}
-						if f0f4f11f0iter.CustomOriginConfig != nil {
-							f0f4f11f0elemf3 := &svcapitypes.CustomOriginConfig{}
-							if f0f4f11f0iter.CustomOriginConfig.HTTPPort != nil {
-								f0f4f11f0elemf3.HTTPPort = f0f4f11f0iter.CustomOriginConfig.HTTPPort
+							if f0f4f11f0iter.Members.Quantity != nil {
+								f0f4f11f0elemf2.Quantity = f0f4f11f0iter.Members.Quantity
 							}
-							if f0f4f11f0iter.CustomOriginConfig.HTTPSPort != nil {
-								f0f4f11f0elemf3.HTTPSPort = f0f4f11f0iter.CustomOriginConfig.HTTPSPort
-							}
-							if f0f4f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
-								f0f4f11f0elemf3.OriginKeepaliveTimeout = f0f4f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout
-							}
-							if f0f4f11f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
-								f0f4f11f0elemf3.OriginProtocolPolicy = f0f4f11f0iter.CustomOriginConfig.OriginProtocolPolicy
-							}
-							if f0f4f11f0iter.CustomOriginConfig.OriginReadTimeout != nil {
-								f0f4f11f0elemf3.OriginReadTimeout = f0f4f11f0iter.CustomOriginConfig.OriginReadTimeout
-							}
-							if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols != nil {
-								f0f4f11f0elemf3f5 := &svcapitypes.OriginSSLProtocols{}
-								if f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
-									f0f4f11f0elemf3f5f0 := []*string{}
-									for _, f0f4f11f0elemf3f5f0iter := range f0f4f11f0iter.CustomOriginConfig.OriginSslProtocols.Items {
-										var f0f4f11f0elemf3f5f0elem string
-										f0f4f11f0elemf3f5f0elem = *f0f4f11f0elemf3f5f0iter
-										f0f4f11f0elemf3f5f0 = append(f0f4f11f0elemf3f5f0, &f0f4f11f0elemf3f5f0elem)
-									}
-									f0f4f11f0elemf3f5.Items = f0f4f11f0elemf3f5f0
-								}
-								f0f4f11f0elemf3.OriginSSLProtocols = f0f4f11f0elemf3f5
-							}
-							f0f4f11f0elem.CustomOriginConfig = f0f4f11f0elemf3
-						}
-						if f0f4f11f0iter.DomainName != nil {
-							f0f4f11f0elem.DomainName = f0f4f11f0iter.DomainName
-						}
-						if f0f4f11f0iter.Id != nil {
-							f0f4f11f0elem.ID = f0f4f11f0iter.Id
-						}
-						if f0f4f11f0iter.OriginPath != nil {
-							f0f4f11f0elem.OriginPath = f0f4f11f0iter.OriginPath
-						}
-						if f0f4f11f0iter.OriginShield != nil {
-							f0f4f11f0elemf7 := &svcapitypes.OriginShield{}
-							if f0f4f11f0iter.OriginShield.Enabled != nil {
-								f0f4f11f0elemf7.Enabled = f0f4f11f0iter.OriginShield.Enabled
-							}
-							if f0f4f11f0iter.OriginShield.OriginShieldRegion != nil {
-								f0f4f11f0elemf7.OriginShieldRegion = f0f4f11f0iter.OriginShield.OriginShieldRegion
-							}
-							f0f4f11f0elem.OriginShield = f0f4f11f0elemf7
-						}
-						if f0f4f11f0iter.S3OriginConfig != nil {
-							f0f4f11f0elemf8 := &svcapitypes.S3OriginConfig{}
-							if f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
-								f0f4f11f0elemf8.OriginAccessIdentity = f0f4f11f0iter.S3OriginConfig.OriginAccessIdentity
-							}
-							f0f4f11f0elem.S3OriginConfig = f0f4f11f0elemf8
+							f0f4f11f0elem.Members = f0f4f11f0elemf2
 						}
 						f0f4f11f0 = append(f0f4f11f0, f0f4f11f0elem)
 					}
 					f0f4f11.Items = f0f4f11f0
 				}
-				f0f4.Origins = f0f4f11
+				f0f4.OriginGroups = f0f4f11
+			}
+			if resp.Distribution.DistributionConfig.Origins != nil {
+				f0f4f12 := &svcapitypes.Origins{}
+				if resp.Distribution.DistributionConfig.Origins.Items != nil {
+					f0f4f12f0 := []*svcapitypes.Origin{}
+					for _, f0f4f12f0iter := range resp.Distribution.DistributionConfig.Origins.Items {
+						f0f4f12f0elem := &svcapitypes.Origin{}
+						if f0f4f12f0iter.ConnectionAttempts != nil {
+							f0f4f12f0elem.ConnectionAttempts = f0f4f12f0iter.ConnectionAttempts
+						}
+						if f0f4f12f0iter.ConnectionTimeout != nil {
+							f0f4f12f0elem.ConnectionTimeout = f0f4f12f0iter.ConnectionTimeout
+						}
+						if f0f4f12f0iter.CustomHeaders != nil {
+							f0f4f12f0elemf2 := &svcapitypes.CustomHeaders{}
+							if f0f4f12f0iter.CustomHeaders.Items != nil {
+								f0f4f12f0elemf2f0 := []*svcapitypes.OriginCustomHeader{}
+								for _, f0f4f12f0elemf2f0iter := range f0f4f12f0iter.CustomHeaders.Items {
+									f0f4f12f0elemf2f0elem := &svcapitypes.OriginCustomHeader{}
+									if f0f4f12f0elemf2f0iter.HeaderName != nil {
+										f0f4f12f0elemf2f0elem.HeaderName = f0f4f12f0elemf2f0iter.HeaderName
+									}
+									if f0f4f12f0elemf2f0iter.HeaderValue != nil {
+										f0f4f12f0elemf2f0elem.HeaderValue = f0f4f12f0elemf2f0iter.HeaderValue
+									}
+									f0f4f12f0elemf2f0 = append(f0f4f12f0elemf2f0, f0f4f12f0elemf2f0elem)
+								}
+								f0f4f12f0elemf2.Items = f0f4f12f0elemf2f0
+							}
+							f0f4f12f0elem.CustomHeaders = f0f4f12f0elemf2
+						}
+						if f0f4f12f0iter.CustomOriginConfig != nil {
+							f0f4f12f0elemf3 := &svcapitypes.CustomOriginConfig{}
+							if f0f4f12f0iter.CustomOriginConfig.HTTPPort != nil {
+								f0f4f12f0elemf3.HTTPPort = f0f4f12f0iter.CustomOriginConfig.HTTPPort
+							}
+							if f0f4f12f0iter.CustomOriginConfig.HTTPSPort != nil {
+								f0f4f12f0elemf3.HTTPSPort = f0f4f12f0iter.CustomOriginConfig.HTTPSPort
+							}
+							if f0f4f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
+								f0f4f12f0elemf3.OriginKeepaliveTimeout = f0f4f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout
+							}
+							if f0f4f12f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
+								f0f4f12f0elemf3.OriginProtocolPolicy = f0f4f12f0iter.CustomOriginConfig.OriginProtocolPolicy
+							}
+							if f0f4f12f0iter.CustomOriginConfig.OriginReadTimeout != nil {
+								f0f4f12f0elemf3.OriginReadTimeout = f0f4f12f0iter.CustomOriginConfig.OriginReadTimeout
+							}
+							if f0f4f12f0iter.CustomOriginConfig.OriginSslProtocols != nil {
+								f0f4f12f0elemf3f5 := &svcapitypes.OriginSSLProtocols{}
+								if f0f4f12f0iter.CustomOriginConfig.OriginSslProtocols.Items != nil {
+									f0f4f12f0elemf3f5f0 := []*string{}
+									for _, f0f4f12f0elemf3f5f0iter := range f0f4f12f0iter.CustomOriginConfig.OriginSslProtocols.Items {
+										var f0f4f12f0elemf3f5f0elem string
+										f0f4f12f0elemf3f5f0elem = *f0f4f12f0elemf3f5f0iter
+										f0f4f12f0elemf3f5f0 = append(f0f4f12f0elemf3f5f0, &f0f4f12f0elemf3f5f0elem)
+									}
+									f0f4f12f0elemf3f5.Items = f0f4f12f0elemf3f5f0
+								}
+								f0f4f12f0elemf3.OriginSSLProtocols = f0f4f12f0elemf3f5
+							}
+							f0f4f12f0elem.CustomOriginConfig = f0f4f12f0elemf3
+						}
+						if f0f4f12f0iter.DomainName != nil {
+							f0f4f12f0elem.DomainName = f0f4f12f0iter.DomainName
+						}
+						if f0f4f12f0iter.Id != nil {
+							f0f4f12f0elem.ID = f0f4f12f0iter.Id
+						}
+						if f0f4f12f0iter.OriginPath != nil {
+							f0f4f12f0elem.OriginPath = f0f4f12f0iter.OriginPath
+						}
+						if f0f4f12f0iter.OriginShield != nil {
+							f0f4f12f0elemf7 := &svcapitypes.OriginShield{}
+							if f0f4f12f0iter.OriginShield.Enabled != nil {
+								f0f4f12f0elemf7.Enabled = f0f4f12f0iter.OriginShield.Enabled
+							}
+							if f0f4f12f0iter.OriginShield.OriginShieldRegion != nil {
+								f0f4f12f0elemf7.OriginShieldRegion = f0f4f12f0iter.OriginShield.OriginShieldRegion
+							}
+							f0f4f12f0elem.OriginShield = f0f4f12f0elemf7
+						}
+						if f0f4f12f0iter.S3OriginConfig != nil {
+							f0f4f12f0elemf8 := &svcapitypes.S3OriginConfig{}
+							if f0f4f12f0iter.S3OriginConfig.OriginAccessIdentity != nil {
+								f0f4f12f0elemf8.OriginAccessIdentity = f0f4f12f0iter.S3OriginConfig.OriginAccessIdentity
+							}
+							f0f4f12f0elem.S3OriginConfig = f0f4f12f0elemf8
+						}
+						f0f4f12f0 = append(f0f4f12f0, f0f4f12f0elem)
+					}
+					f0f4f12.Items = f0f4f12f0
+				}
+				f0f4.Origins = f0f4f12
 			}
 			if resp.Distribution.DistributionConfig.PriceClass != nil {
 				f0f4.PriceClass = resp.Distribution.DistributionConfig.PriceClass
 			}
 			if resp.Distribution.DistributionConfig.Restrictions != nil {
-				f0f4f13 := &svcapitypes.Restrictions{}
+				f0f4f14 := &svcapitypes.Restrictions{}
 				if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction != nil {
-					f0f4f13f0 := &svcapitypes.GeoRestriction{}
+					f0f4f14f0 := &svcapitypes.GeoRestriction{}
 					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Items != nil {
-						f0f4f13f0f0 := []*string{}
-						for _, f0f4f13f0f0iter := range resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Items {
-							var f0f4f13f0f0elem string
-							f0f4f13f0f0elem = *f0f4f13f0f0iter
-							f0f4f13f0f0 = append(f0f4f13f0f0, &f0f4f13f0f0elem)
+						f0f4f14f0f0 := []*string{}
+						for _, f0f4f14f0f0iter := range resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.Items {
+							var f0f4f14f0f0elem string
+							f0f4f14f0f0elem = *f0f4f14f0f0iter
+							f0f4f14f0f0 = append(f0f4f14f0f0, &f0f4f14f0f0elem)
 						}
-						f0f4f13f0.Items = f0f4f13f0f0
+						f0f4f14f0.Items = f0f4f14f0f0
 					}
 					if resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
-						f0f4f13f0.RestrictionType = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType
+						f0f4f14f0.RestrictionType = resp.Distribution.DistributionConfig.Restrictions.GeoRestriction.RestrictionType
 					}
-					f0f4f13.GeoRestriction = f0f4f13f0
+					f0f4f14.GeoRestriction = f0f4f14f0
 				}
-				f0f4.Restrictions = f0f4f13
+				f0f4.Restrictions = f0f4f14
 			}
 			if resp.Distribution.DistributionConfig.ViewerCertificate != nil {
-				f0f4f14 := &svcapitypes.ViewerCertificate{}
+				f0f4f15 := &svcapitypes.ViewerCertificate{}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.ACMCertificateArn != nil {
-					f0f4f14.ACMCertificateARN = resp.Distribution.DistributionConfig.ViewerCertificate.ACMCertificateArn
+					f0f4f15.ACMCertificateARN = resp.Distribution.DistributionConfig.ViewerCertificate.ACMCertificateArn
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.Certificate != nil {
-					f0f4f14.Certificate = resp.Distribution.DistributionConfig.ViewerCertificate.Certificate
+					f0f4f15.Certificate = resp.Distribution.DistributionConfig.ViewerCertificate.Certificate
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.CertificateSource != nil {
-					f0f4f14.CertificateSource = resp.Distribution.DistributionConfig.ViewerCertificate.CertificateSource
+					f0f4f15.CertificateSource = resp.Distribution.DistributionConfig.ViewerCertificate.CertificateSource
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate != nil {
-					f0f4f14.CloudFrontDefaultCertificate = resp.Distribution.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate
+					f0f4f15.CloudFrontDefaultCertificate = resp.Distribution.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.IAMCertificateId != nil {
-					f0f4f14.IAMCertificateID = resp.Distribution.DistributionConfig.ViewerCertificate.IAMCertificateId
+					f0f4f15.IAMCertificateID = resp.Distribution.DistributionConfig.ViewerCertificate.IAMCertificateId
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.MinimumProtocolVersion != nil {
-					f0f4f14.MinimumProtocolVersion = resp.Distribution.DistributionConfig.ViewerCertificate.MinimumProtocolVersion
+					f0f4f15.MinimumProtocolVersion = resp.Distribution.DistributionConfig.ViewerCertificate.MinimumProtocolVersion
 				}
 				if resp.Distribution.DistributionConfig.ViewerCertificate.SSLSupportMethod != nil {
-					f0f4f14.SSLSupportMethod = resp.Distribution.DistributionConfig.ViewerCertificate.SSLSupportMethod
+					f0f4f15.SSLSupportMethod = resp.Distribution.DistributionConfig.ViewerCertificate.SSLSupportMethod
 				}
-				f0f4.ViewerCertificate = f0f4f14
+				f0f4.ViewerCertificate = f0f4f15
 			}
 			if resp.Distribution.DistributionConfig.WebACLId != nil {
 				f0f4.WebACLID = resp.Distribution.DistributionConfig.WebACLId
@@ -1058,228 +1061,231 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 			}
 			f0.SetCacheBehaviors(f0f1)
 		}
+		if cr.Spec.ForProvider.DistributionConfig.CallerReference != nil {
+			f0.SetCallerReference(*cr.Spec.ForProvider.DistributionConfig.CallerReference)
+		}
 		if cr.Spec.ForProvider.DistributionConfig.Comment != nil {
 			f0.SetComment(*cr.Spec.ForProvider.DistributionConfig.Comment)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
-			f0f3 := &svcsdk.CustomErrorResponses{}
+			f0f4 := &svcsdk.CustomErrorResponses{}
 			if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items != nil {
-				f0f3f0 := []*svcsdk.CustomErrorResponse{}
-				for _, f0f3f0iter := range cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items {
-					f0f3f0elem := &svcsdk.CustomErrorResponse{}
-					if f0f3f0iter.ErrorCachingMinTTL != nil {
-						f0f3f0elem.SetErrorCachingMinTTL(*f0f3f0iter.ErrorCachingMinTTL)
+				f0f4f0 := []*svcsdk.CustomErrorResponse{}
+				for _, f0f4f0iter := range cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items {
+					f0f4f0elem := &svcsdk.CustomErrorResponse{}
+					if f0f4f0iter.ErrorCachingMinTTL != nil {
+						f0f4f0elem.SetErrorCachingMinTTL(*f0f4f0iter.ErrorCachingMinTTL)
 					}
-					if f0f3f0iter.ErrorCode != nil {
-						f0f3f0elem.SetErrorCode(*f0f3f0iter.ErrorCode)
+					if f0f4f0iter.ErrorCode != nil {
+						f0f4f0elem.SetErrorCode(*f0f4f0iter.ErrorCode)
 					}
-					if f0f3f0iter.ResponseCode != nil {
-						f0f3f0elem.SetResponseCode(*f0f3f0iter.ResponseCode)
+					if f0f4f0iter.ResponseCode != nil {
+						f0f4f0elem.SetResponseCode(*f0f4f0iter.ResponseCode)
 					}
-					if f0f3f0iter.ResponsePagePath != nil {
-						f0f3f0elem.SetResponsePagePath(*f0f3f0iter.ResponsePagePath)
+					if f0f4f0iter.ResponsePagePath != nil {
+						f0f4f0elem.SetResponsePagePath(*f0f4f0iter.ResponsePagePath)
 					}
-					f0f3f0 = append(f0f3f0, f0f3f0elem)
+					f0f4f0 = append(f0f4f0, f0f4f0elem)
 				}
-				f0f3.SetItems(f0f3f0)
+				f0f4.SetItems(f0f4f0)
 			}
-			f0.SetCustomErrorResponses(f0f3)
+			f0.SetCustomErrorResponses(f0f4)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior != nil {
-			f0f4 := &svcsdk.DefaultCacheBehavior{}
+			f0f5 := &svcsdk.DefaultCacheBehavior{}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods != nil {
-				f0f4f0 := &svcsdk.AllowedMethods{}
+				f0f5f0 := &svcsdk.AllowedMethods{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods != nil {
-					f0f4f0f0 := &svcsdk.CachedMethods{}
+					f0f5f0f0 := &svcsdk.CachedMethods{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items != nil {
-						f0f4f0f0f0 := []*string{}
-						for _, f0f4f0f0f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
-							var f0f4f0f0f0elem string
-							f0f4f0f0f0elem = *f0f4f0f0f0iter
-							f0f4f0f0f0 = append(f0f4f0f0f0, &f0f4f0f0f0elem)
+						f0f5f0f0f0 := []*string{}
+						for _, f0f5f0f0f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
+							var f0f5f0f0f0elem string
+							f0f5f0f0f0elem = *f0f5f0f0f0iter
+							f0f5f0f0f0 = append(f0f5f0f0f0, &f0f5f0f0f0elem)
 						}
-						f0f4f0f0.SetItems(f0f4f0f0f0)
+						f0f5f0f0.SetItems(f0f5f0f0f0)
 					}
-					f0f4f0.SetCachedMethods(f0f4f0f0)
+					f0f5f0.SetCachedMethods(f0f5f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
-					f0f4f0f1 := []*string{}
-					for _, f0f4f0f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
-						var f0f4f0f1elem string
-						f0f4f0f1elem = *f0f4f0f1iter
-						f0f4f0f1 = append(f0f4f0f1, &f0f4f0f1elem)
+					f0f5f0f1 := []*string{}
+					for _, f0f5f0f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
+						var f0f5f0f1elem string
+						f0f5f0f1elem = *f0f5f0f1iter
+						f0f5f0f1 = append(f0f5f0f1, &f0f5f0f1elem)
 					}
-					f0f4f0.SetItems(f0f4f0f1)
+					f0f5f0.SetItems(f0f5f0f1)
 				}
-				f0f4.SetAllowedMethods(f0f4f0)
+				f0f5.SetAllowedMethods(f0f5f0)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID != nil {
-				f0f4.SetCachePolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID)
+				f0f5.SetCachePolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress != nil {
-				f0f4.SetCompress(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress)
+				f0f5.SetCompress(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL != nil {
-				f0f4.SetDefaultTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL)
+				f0f5.SetDefaultTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID != nil {
-				f0f4.SetFieldLevelEncryptionId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID)
+				f0f5.SetFieldLevelEncryptionId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues != nil {
-				f0f4f5 := &svcsdk.ForwardedValues{}
+				f0f5f5 := &svcsdk.ForwardedValues{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies != nil {
-					f0f4f5f0 := &svcsdk.CookiePreference{}
+					f0f5f5f0 := &svcsdk.CookiePreference{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward != nil {
-						f0f4f5f0.SetForward(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward)
+						f0f5f5f0.SetForward(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward)
 					}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames != nil {
-						f0f4f5f0f1 := &svcsdk.CookieNames{}
+						f0f5f5f0f1 := &svcsdk.CookieNames{}
 						if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items != nil {
-							f0f4f5f0f1f0 := []*string{}
-							for _, f0f4f5f0f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
-								var f0f4f5f0f1f0elem string
-								f0f4f5f0f1f0elem = *f0f4f5f0f1f0iter
-								f0f4f5f0f1f0 = append(f0f4f5f0f1f0, &f0f4f5f0f1f0elem)
+							f0f5f5f0f1f0 := []*string{}
+							for _, f0f5f5f0f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
+								var f0f5f5f0f1f0elem string
+								f0f5f5f0f1f0elem = *f0f5f5f0f1f0iter
+								f0f5f5f0f1f0 = append(f0f5f5f0f1f0, &f0f5f5f0f1f0elem)
 							}
-							f0f4f5f0f1.SetItems(f0f4f5f0f1f0)
+							f0f5f5f0f1.SetItems(f0f5f5f0f1f0)
 						}
 						if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity != nil {
-							f0f4f5f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity)
+							f0f5f5f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity)
 						}
-						f0f4f5f0.SetWhitelistedNames(f0f4f5f0f1)
+						f0f5f5f0.SetWhitelistedNames(f0f5f5f0f1)
 					}
-					f0f4f5.SetCookies(f0f4f5f0)
+					f0f5f5.SetCookies(f0f5f5f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers != nil {
-					f0f4f5f1 := &svcsdk.Headers{}
+					f0f5f5f1 := &svcsdk.Headers{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items != nil {
-						f0f4f5f1f0 := []*string{}
-						for _, f0f4f5f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
-							var f0f4f5f1f0elem string
-							f0f4f5f1f0elem = *f0f4f5f1f0iter
-							f0f4f5f1f0 = append(f0f4f5f1f0, &f0f4f5f1f0elem)
+						f0f5f5f1f0 := []*string{}
+						for _, f0f5f5f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
+							var f0f5f5f1f0elem string
+							f0f5f5f1f0elem = *f0f5f5f1f0iter
+							f0f5f5f1f0 = append(f0f5f5f1f0, &f0f5f5f1f0elem)
 						}
-						f0f4f5f1.SetItems(f0f4f5f1f0)
+						f0f5f5f1.SetItems(f0f5f5f1f0)
 					}
-					f0f4f5.SetHeaders(f0f4f5f1)
+					f0f5f5.SetHeaders(f0f5f5f1)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
-					f0f4f5.SetQueryString(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString)
+					f0f5f5.SetQueryString(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys != nil {
-					f0f4f5f3 := &svcsdk.QueryStringCacheKeys{}
+					f0f5f5f3 := &svcsdk.QueryStringCacheKeys{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items != nil {
-						f0f4f5f3f0 := []*string{}
-						for _, f0f4f5f3f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
-							var f0f4f5f3f0elem string
-							f0f4f5f3f0elem = *f0f4f5f3f0iter
-							f0f4f5f3f0 = append(f0f4f5f3f0, &f0f4f5f3f0elem)
+						f0f5f5f3f0 := []*string{}
+						for _, f0f5f5f3f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
+							var f0f5f5f3f0elem string
+							f0f5f5f3f0elem = *f0f5f5f3f0iter
+							f0f5f5f3f0 = append(f0f5f5f3f0, &f0f5f5f3f0elem)
 						}
-						f0f4f5f3.SetItems(f0f4f5f3f0)
+						f0f5f5f3.SetItems(f0f5f5f3f0)
 					}
-					f0f4f5.SetQueryStringCacheKeys(f0f4f5f3)
+					f0f5f5.SetQueryStringCacheKeys(f0f5f5f3)
 				}
-				f0f4.SetForwardedValues(f0f4f5)
+				f0f5.SetForwardedValues(f0f5f5)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations != nil {
-				f0f4f6 := &svcsdk.FunctionAssociations{}
+				f0f5f6 := &svcsdk.FunctionAssociations{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items != nil {
-					f0f4f6f0 := []*svcsdk.FunctionAssociation{}
-					for _, f0f4f6f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
-						f0f4f6f0elem := &svcsdk.FunctionAssociation{}
-						if f0f4f6f0iter.EventType != nil {
-							f0f4f6f0elem.SetEventType(*f0f4f6f0iter.EventType)
+					f0f5f6f0 := []*svcsdk.FunctionAssociation{}
+					for _, f0f5f6f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
+						f0f5f6f0elem := &svcsdk.FunctionAssociation{}
+						if f0f5f6f0iter.EventType != nil {
+							f0f5f6f0elem.SetEventType(*f0f5f6f0iter.EventType)
 						}
-						if f0f4f6f0iter.FunctionARN != nil {
-							f0f4f6f0elem.SetFunctionARN(*f0f4f6f0iter.FunctionARN)
+						if f0f5f6f0iter.FunctionARN != nil {
+							f0f5f6f0elem.SetFunctionARN(*f0f5f6f0iter.FunctionARN)
 						}
-						f0f4f6f0 = append(f0f4f6f0, f0f4f6f0elem)
+						f0f5f6f0 = append(f0f5f6f0, f0f5f6f0elem)
 					}
-					f0f4f6.SetItems(f0f4f6f0)
+					f0f5f6.SetItems(f0f5f6f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-					f0f4f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
+					f0f5f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
 				}
-				f0f4.SetFunctionAssociations(f0f4f6)
+				f0f5.SetFunctionAssociations(f0f5f6)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations != nil {
-				f0f4f7 := &svcsdk.LambdaFunctionAssociations{}
+				f0f5f7 := &svcsdk.LambdaFunctionAssociations{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items != nil {
-					f0f4f7f0 := []*svcsdk.LambdaFunctionAssociation{}
-					for _, f0f4f7f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
-						f0f4f7f0elem := &svcsdk.LambdaFunctionAssociation{}
-						if f0f4f7f0iter.EventType != nil {
-							f0f4f7f0elem.SetEventType(*f0f4f7f0iter.EventType)
+					f0f5f7f0 := []*svcsdk.LambdaFunctionAssociation{}
+					for _, f0f5f7f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
+						f0f5f7f0elem := &svcsdk.LambdaFunctionAssociation{}
+						if f0f5f7f0iter.EventType != nil {
+							f0f5f7f0elem.SetEventType(*f0f5f7f0iter.EventType)
 						}
-						if f0f4f7f0iter.IncludeBody != nil {
-							f0f4f7f0elem.SetIncludeBody(*f0f4f7f0iter.IncludeBody)
+						if f0f5f7f0iter.IncludeBody != nil {
+							f0f5f7f0elem.SetIncludeBody(*f0f5f7f0iter.IncludeBody)
 						}
-						if f0f4f7f0iter.LambdaFunctionARN != nil {
-							f0f4f7f0elem.SetLambdaFunctionARN(*f0f4f7f0iter.LambdaFunctionARN)
+						if f0f5f7f0iter.LambdaFunctionARN != nil {
+							f0f5f7f0elem.SetLambdaFunctionARN(*f0f5f7f0iter.LambdaFunctionARN)
 						}
-						f0f4f7f0 = append(f0f4f7f0, f0f4f7f0elem)
+						f0f5f7f0 = append(f0f5f7f0, f0f5f7f0elem)
 					}
-					f0f4f7.SetItems(f0f4f7f0)
+					f0f5f7.SetItems(f0f5f7f0)
 				}
-				f0f4.SetLambdaFunctionAssociations(f0f4f7)
+				f0f5.SetLambdaFunctionAssociations(f0f5f7)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL != nil {
-				f0f4.SetMaxTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL)
+				f0f5.SetMaxTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL != nil {
-				f0f4.SetMinTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL)
+				f0f5.SetMinTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID != nil {
-				f0f4.SetOriginRequestPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID)
+				f0f5.SetOriginRequestPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN != nil {
-				f0f4.SetRealtimeLogConfigArn(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN)
+				f0f5.SetRealtimeLogConfigArn(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID != nil {
-				f0f4.SetResponseHeadersPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID)
+				f0f5.SetResponseHeadersPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming != nil {
-				f0f4.SetSmoothStreaming(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming)
+				f0f5.SetSmoothStreaming(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID != nil {
-				f0f4.SetTargetOriginId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID)
+				f0f5.SetTargetOriginId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups != nil {
-				f0f4f15 := &svcsdk.TrustedKeyGroups{}
+				f0f5f15 := &svcsdk.TrustedKeyGroups{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled != nil {
-					f0f4f15.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled)
+					f0f5f15.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items != nil {
-					f0f4f15f1 := []*string{}
-					for _, f0f4f15f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
-						var f0f4f15f1elem string
-						f0f4f15f1elem = *f0f4f15f1iter
-						f0f4f15f1 = append(f0f4f15f1, &f0f4f15f1elem)
+					f0f5f15f1 := []*string{}
+					for _, f0f5f15f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
+						var f0f5f15f1elem string
+						f0f5f15f1elem = *f0f5f15f1iter
+						f0f5f15f1 = append(f0f5f15f1, &f0f5f15f1elem)
 					}
-					f0f4f15.SetItems(f0f4f15f1)
+					f0f5f15.SetItems(f0f5f15f1)
 				}
-				f0f4.SetTrustedKeyGroups(f0f4f15)
+				f0f5.SetTrustedKeyGroups(f0f5f15)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
-				f0f4f16 := &svcsdk.TrustedSigners{}
+				f0f5f16 := &svcsdk.TrustedSigners{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled != nil {
-					f0f4f16.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled)
+					f0f5f16.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items != nil {
-					f0f4f16f1 := []*string{}
-					for _, f0f4f16f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
-						var f0f4f16f1elem string
-						f0f4f16f1elem = *f0f4f16f1iter
-						f0f4f16f1 = append(f0f4f16f1, &f0f4f16f1elem)
+					f0f5f16f1 := []*string{}
+					for _, f0f5f16f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
+						var f0f5f16f1elem string
+						f0f5f16f1elem = *f0f5f16f1iter
+						f0f5f16f1 = append(f0f5f16f1, &f0f5f16f1elem)
 					}
-					f0f4f16.SetItems(f0f4f16f1)
+					f0f5f16.SetItems(f0f5f16f1)
 				}
-				f0f4.SetTrustedSigners(f0f4f16)
+				f0f5.SetTrustedSigners(f0f5f16)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy != nil {
-				f0f4.SetViewerProtocolPolicy(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy)
+				f0f5.SetViewerProtocolPolicy(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy)
 			}
-			f0.SetDefaultCacheBehavior(f0f4)
+			f0.SetDefaultCacheBehavior(f0f5)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultRootObject != nil {
 			f0.SetDefaultRootObject(*cr.Spec.ForProvider.DistributionConfig.DefaultRootObject)
@@ -1294,212 +1300,212 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 			f0.SetIsIPV6Enabled(*cr.Spec.ForProvider.DistributionConfig.IsIPV6Enabled)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.Logging != nil {
-			f0f9 := &svcsdk.LoggingConfig{}
+			f0f10 := &svcsdk.LoggingConfig{}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Bucket != nil {
-				f0f9.SetBucket(*cr.Spec.ForProvider.DistributionConfig.Logging.Bucket)
+				f0f10.SetBucket(*cr.Spec.ForProvider.DistributionConfig.Logging.Bucket)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Enabled != nil {
-				f0f9.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.Logging.Enabled)
+				f0f10.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.Logging.Enabled)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies != nil {
-				f0f9.SetIncludeCookies(*cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies)
+				f0f10.SetIncludeCookies(*cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Prefix != nil {
-				f0f9.SetPrefix(*cr.Spec.ForProvider.DistributionConfig.Logging.Prefix)
+				f0f10.SetPrefix(*cr.Spec.ForProvider.DistributionConfig.Logging.Prefix)
 			}
-			f0.SetLogging(f0f9)
+			f0.SetLogging(f0f10)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
-			f0f10 := &svcsdk.OriginGroups{}
+			f0f11 := &svcsdk.OriginGroups{}
 			if cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items != nil {
-				f0f10f0 := []*svcsdk.OriginGroup{}
-				for _, f0f10f0iter := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
-					f0f10f0elem := &svcsdk.OriginGroup{}
-					if f0f10f0iter.FailoverCriteria != nil {
-						f0f10f0elemf0 := &svcsdk.OriginGroupFailoverCriteria{}
-						if f0f10f0iter.FailoverCriteria.StatusCodes != nil {
-							f0f10f0elemf0f0 := &svcsdk.StatusCodes{}
-							if f0f10f0iter.FailoverCriteria.StatusCodes.Items != nil {
-								f0f10f0elemf0f0f0 := []*int64{}
-								for _, f0f10f0elemf0f0f0iter := range f0f10f0iter.FailoverCriteria.StatusCodes.Items {
-									var f0f10f0elemf0f0f0elem int64
-									f0f10f0elemf0f0f0elem = *f0f10f0elemf0f0f0iter
-									f0f10f0elemf0f0f0 = append(f0f10f0elemf0f0f0, &f0f10f0elemf0f0f0elem)
+				f0f11f0 := []*svcsdk.OriginGroup{}
+				for _, f0f11f0iter := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
+					f0f11f0elem := &svcsdk.OriginGroup{}
+					if f0f11f0iter.FailoverCriteria != nil {
+						f0f11f0elemf0 := &svcsdk.OriginGroupFailoverCriteria{}
+						if f0f11f0iter.FailoverCriteria.StatusCodes != nil {
+							f0f11f0elemf0f0 := &svcsdk.StatusCodes{}
+							if f0f11f0iter.FailoverCriteria.StatusCodes.Items != nil {
+								f0f11f0elemf0f0f0 := []*int64{}
+								for _, f0f11f0elemf0f0f0iter := range f0f11f0iter.FailoverCriteria.StatusCodes.Items {
+									var f0f11f0elemf0f0f0elem int64
+									f0f11f0elemf0f0f0elem = *f0f11f0elemf0f0f0iter
+									f0f11f0elemf0f0f0 = append(f0f11f0elemf0f0f0, &f0f11f0elemf0f0f0elem)
 								}
-								f0f10f0elemf0f0.SetItems(f0f10f0elemf0f0f0)
+								f0f11f0elemf0f0.SetItems(f0f11f0elemf0f0f0)
 							}
-							f0f10f0elemf0.SetStatusCodes(f0f10f0elemf0f0)
+							f0f11f0elemf0.SetStatusCodes(f0f11f0elemf0f0)
 						}
-						f0f10f0elem.SetFailoverCriteria(f0f10f0elemf0)
+						f0f11f0elem.SetFailoverCriteria(f0f11f0elemf0)
 					}
-					if f0f10f0iter.ID != nil {
-						f0f10f0elem.SetId(*f0f10f0iter.ID)
+					if f0f11f0iter.ID != nil {
+						f0f11f0elem.SetId(*f0f11f0iter.ID)
 					}
-					if f0f10f0iter.Members != nil {
-						f0f10f0elemf2 := &svcsdk.OriginGroupMembers{}
-						if f0f10f0iter.Members.Items != nil {
-							f0f10f0elemf2f0 := []*svcsdk.OriginGroupMember{}
-							for _, f0f10f0elemf2f0iter := range f0f10f0iter.Members.Items {
-								f0f10f0elemf2f0elem := &svcsdk.OriginGroupMember{}
-								if f0f10f0elemf2f0iter.OriginID != nil {
-									f0f10f0elemf2f0elem.SetOriginId(*f0f10f0elemf2f0iter.OriginID)
-								}
-								f0f10f0elemf2f0 = append(f0f10f0elemf2f0, f0f10f0elemf2f0elem)
-							}
-							f0f10f0elemf2.SetItems(f0f10f0elemf2f0)
-						}
-						if f0f10f0iter.Members.Quantity != nil {
-							f0f10f0elemf2.SetQuantity(*f0f10f0iter.Members.Quantity)
-						}
-						f0f10f0elem.SetMembers(f0f10f0elemf2)
-					}
-					f0f10f0 = append(f0f10f0, f0f10f0elem)
-				}
-				f0f10.SetItems(f0f10f0)
-			}
-			f0.SetOriginGroups(f0f10)
-		}
-		if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
-			f0f11 := &svcsdk.Origins{}
-			if cr.Spec.ForProvider.DistributionConfig.Origins.Items != nil {
-				f0f11f0 := []*svcsdk.Origin{}
-				for _, f0f11f0iter := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
-					f0f11f0elem := &svcsdk.Origin{}
-					if f0f11f0iter.ConnectionAttempts != nil {
-						f0f11f0elem.SetConnectionAttempts(*f0f11f0iter.ConnectionAttempts)
-					}
-					if f0f11f0iter.ConnectionTimeout != nil {
-						f0f11f0elem.SetConnectionTimeout(*f0f11f0iter.ConnectionTimeout)
-					}
-					if f0f11f0iter.CustomHeaders != nil {
-						f0f11f0elemf2 := &svcsdk.CustomHeaders{}
-						if f0f11f0iter.CustomHeaders.Items != nil {
-							f0f11f0elemf2f0 := []*svcsdk.OriginCustomHeader{}
-							for _, f0f11f0elemf2f0iter := range f0f11f0iter.CustomHeaders.Items {
-								f0f11f0elemf2f0elem := &svcsdk.OriginCustomHeader{}
-								if f0f11f0elemf2f0iter.HeaderName != nil {
-									f0f11f0elemf2f0elem.SetHeaderName(*f0f11f0elemf2f0iter.HeaderName)
-								}
-								if f0f11f0elemf2f0iter.HeaderValue != nil {
-									f0f11f0elemf2f0elem.SetHeaderValue(*f0f11f0elemf2f0iter.HeaderValue)
+					if f0f11f0iter.Members != nil {
+						f0f11f0elemf2 := &svcsdk.OriginGroupMembers{}
+						if f0f11f0iter.Members.Items != nil {
+							f0f11f0elemf2f0 := []*svcsdk.OriginGroupMember{}
+							for _, f0f11f0elemf2f0iter := range f0f11f0iter.Members.Items {
+								f0f11f0elemf2f0elem := &svcsdk.OriginGroupMember{}
+								if f0f11f0elemf2f0iter.OriginID != nil {
+									f0f11f0elemf2f0elem.SetOriginId(*f0f11f0elemf2f0iter.OriginID)
 								}
 								f0f11f0elemf2f0 = append(f0f11f0elemf2f0, f0f11f0elemf2f0elem)
 							}
 							f0f11f0elemf2.SetItems(f0f11f0elemf2f0)
 						}
-						f0f11f0elem.SetCustomHeaders(f0f11f0elemf2)
-					}
-					if f0f11f0iter.CustomOriginConfig != nil {
-						f0f11f0elemf3 := &svcsdk.CustomOriginConfig{}
-						if f0f11f0iter.CustomOriginConfig.HTTPPort != nil {
-							f0f11f0elemf3.SetHTTPPort(*f0f11f0iter.CustomOriginConfig.HTTPPort)
+						if f0f11f0iter.Members.Quantity != nil {
+							f0f11f0elemf2.SetQuantity(*f0f11f0iter.Members.Quantity)
 						}
-						if f0f11f0iter.CustomOriginConfig.HTTPSPort != nil {
-							f0f11f0elemf3.SetHTTPSPort(*f0f11f0iter.CustomOriginConfig.HTTPSPort)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
-							f0f11f0elemf3.SetOriginKeepaliveTimeout(*f0f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
-							f0f11f0elemf3.SetOriginProtocolPolicy(*f0f11f0iter.CustomOriginConfig.OriginProtocolPolicy)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginReadTimeout != nil {
-							f0f11f0elemf3.SetOriginReadTimeout(*f0f11f0iter.CustomOriginConfig.OriginReadTimeout)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
-							f0f11f0elemf3f5 := &svcsdk.OriginSslProtocols{}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
-								f0f11f0elemf3f5f0 := []*string{}
-								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
-									var f0f11f0elemf3f5f0elem string
-									f0f11f0elemf3f5f0elem = *f0f11f0elemf3f5f0iter
-									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
-								}
-								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
-							}
-							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
-						}
-						f0f11f0elem.SetCustomOriginConfig(f0f11f0elemf3)
-					}
-					if f0f11f0iter.DomainName != nil {
-						f0f11f0elem.SetDomainName(*f0f11f0iter.DomainName)
-					}
-					if f0f11f0iter.ID != nil {
-						f0f11f0elem.SetId(*f0f11f0iter.ID)
-					}
-					if f0f11f0iter.OriginPath != nil {
-						f0f11f0elem.SetOriginPath(*f0f11f0iter.OriginPath)
-					}
-					if f0f11f0iter.OriginShield != nil {
-						f0f11f0elemf7 := &svcsdk.OriginShield{}
-						if f0f11f0iter.OriginShield.Enabled != nil {
-							f0f11f0elemf7.SetEnabled(*f0f11f0iter.OriginShield.Enabled)
-						}
-						if f0f11f0iter.OriginShield.OriginShieldRegion != nil {
-							f0f11f0elemf7.SetOriginShieldRegion(*f0f11f0iter.OriginShield.OriginShieldRegion)
-						}
-						f0f11f0elem.SetOriginShield(f0f11f0elemf7)
-					}
-					if f0f11f0iter.S3OriginConfig != nil {
-						f0f11f0elemf8 := &svcsdk.S3OriginConfig{}
-						if f0f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
-							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIdentity)
-						}
-						f0f11f0elem.SetS3OriginConfig(f0f11f0elemf8)
+						f0f11f0elem.SetMembers(f0f11f0elemf2)
 					}
 					f0f11f0 = append(f0f11f0, f0f11f0elem)
 				}
 				f0f11.SetItems(f0f11f0)
 			}
-			f0.SetOrigins(f0f11)
+			f0.SetOriginGroups(f0f11)
+		}
+		if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
+			f0f12 := &svcsdk.Origins{}
+			if cr.Spec.ForProvider.DistributionConfig.Origins.Items != nil {
+				f0f12f0 := []*svcsdk.Origin{}
+				for _, f0f12f0iter := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
+					f0f12f0elem := &svcsdk.Origin{}
+					if f0f12f0iter.ConnectionAttempts != nil {
+						f0f12f0elem.SetConnectionAttempts(*f0f12f0iter.ConnectionAttempts)
+					}
+					if f0f12f0iter.ConnectionTimeout != nil {
+						f0f12f0elem.SetConnectionTimeout(*f0f12f0iter.ConnectionTimeout)
+					}
+					if f0f12f0iter.CustomHeaders != nil {
+						f0f12f0elemf2 := &svcsdk.CustomHeaders{}
+						if f0f12f0iter.CustomHeaders.Items != nil {
+							f0f12f0elemf2f0 := []*svcsdk.OriginCustomHeader{}
+							for _, f0f12f0elemf2f0iter := range f0f12f0iter.CustomHeaders.Items {
+								f0f12f0elemf2f0elem := &svcsdk.OriginCustomHeader{}
+								if f0f12f0elemf2f0iter.HeaderName != nil {
+									f0f12f0elemf2f0elem.SetHeaderName(*f0f12f0elemf2f0iter.HeaderName)
+								}
+								if f0f12f0elemf2f0iter.HeaderValue != nil {
+									f0f12f0elemf2f0elem.SetHeaderValue(*f0f12f0elemf2f0iter.HeaderValue)
+								}
+								f0f12f0elemf2f0 = append(f0f12f0elemf2f0, f0f12f0elemf2f0elem)
+							}
+							f0f12f0elemf2.SetItems(f0f12f0elemf2f0)
+						}
+						f0f12f0elem.SetCustomHeaders(f0f12f0elemf2)
+					}
+					if f0f12f0iter.CustomOriginConfig != nil {
+						f0f12f0elemf3 := &svcsdk.CustomOriginConfig{}
+						if f0f12f0iter.CustomOriginConfig.HTTPPort != nil {
+							f0f12f0elemf3.SetHTTPPort(*f0f12f0iter.CustomOriginConfig.HTTPPort)
+						}
+						if f0f12f0iter.CustomOriginConfig.HTTPSPort != nil {
+							f0f12f0elemf3.SetHTTPSPort(*f0f12f0iter.CustomOriginConfig.HTTPSPort)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
+							f0f12f0elemf3.SetOriginKeepaliveTimeout(*f0f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
+							f0f12f0elemf3.SetOriginProtocolPolicy(*f0f12f0iter.CustomOriginConfig.OriginProtocolPolicy)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginReadTimeout != nil {
+							f0f12f0elemf3.SetOriginReadTimeout(*f0f12f0iter.CustomOriginConfig.OriginReadTimeout)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
+							f0f12f0elemf3f5 := &svcsdk.OriginSslProtocols{}
+							if f0f12f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
+								f0f12f0elemf3f5f0 := []*string{}
+								for _, f0f12f0elemf3f5f0iter := range f0f12f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
+									var f0f12f0elemf3f5f0elem string
+									f0f12f0elemf3f5f0elem = *f0f12f0elemf3f5f0iter
+									f0f12f0elemf3f5f0 = append(f0f12f0elemf3f5f0, &f0f12f0elemf3f5f0elem)
+								}
+								f0f12f0elemf3f5.SetItems(f0f12f0elemf3f5f0)
+							}
+							f0f12f0elemf3.SetOriginSslProtocols(f0f12f0elemf3f5)
+						}
+						f0f12f0elem.SetCustomOriginConfig(f0f12f0elemf3)
+					}
+					if f0f12f0iter.DomainName != nil {
+						f0f12f0elem.SetDomainName(*f0f12f0iter.DomainName)
+					}
+					if f0f12f0iter.ID != nil {
+						f0f12f0elem.SetId(*f0f12f0iter.ID)
+					}
+					if f0f12f0iter.OriginPath != nil {
+						f0f12f0elem.SetOriginPath(*f0f12f0iter.OriginPath)
+					}
+					if f0f12f0iter.OriginShield != nil {
+						f0f12f0elemf7 := &svcsdk.OriginShield{}
+						if f0f12f0iter.OriginShield.Enabled != nil {
+							f0f12f0elemf7.SetEnabled(*f0f12f0iter.OriginShield.Enabled)
+						}
+						if f0f12f0iter.OriginShield.OriginShieldRegion != nil {
+							f0f12f0elemf7.SetOriginShieldRegion(*f0f12f0iter.OriginShield.OriginShieldRegion)
+						}
+						f0f12f0elem.SetOriginShield(f0f12f0elemf7)
+					}
+					if f0f12f0iter.S3OriginConfig != nil {
+						f0f12f0elemf8 := &svcsdk.S3OriginConfig{}
+						if f0f12f0iter.S3OriginConfig.OriginAccessIdentity != nil {
+							f0f12f0elemf8.SetOriginAccessIdentity(*f0f12f0iter.S3OriginConfig.OriginAccessIdentity)
+						}
+						f0f12f0elem.SetS3OriginConfig(f0f12f0elemf8)
+					}
+					f0f12f0 = append(f0f12f0, f0f12f0elem)
+				}
+				f0f12.SetItems(f0f12f0)
+			}
+			f0.SetOrigins(f0f12)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.PriceClass != nil {
 			f0.SetPriceClass(*cr.Spec.ForProvider.DistributionConfig.PriceClass)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil {
-			f0f13 := &svcsdk.Restrictions{}
+			f0f14 := &svcsdk.Restrictions{}
 			if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
-				f0f13f0 := &svcsdk.GeoRestriction{}
+				f0f14f0 := &svcsdk.GeoRestriction{}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items != nil {
-					f0f13f0f0 := []*string{}
-					for _, f0f13f0f0iter := range cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items {
-						var f0f13f0f0elem string
-						f0f13f0f0elem = *f0f13f0f0iter
-						f0f13f0f0 = append(f0f13f0f0, &f0f13f0f0elem)
+					f0f14f0f0 := []*string{}
+					for _, f0f14f0f0iter := range cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items {
+						var f0f14f0f0elem string
+						f0f14f0f0elem = *f0f14f0f0iter
+						f0f14f0f0 = append(f0f14f0f0, &f0f14f0f0elem)
 					}
-					f0f13f0.SetItems(f0f13f0f0)
+					f0f14f0.SetItems(f0f14f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
-					f0f13f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
+					f0f14f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
 				}
-				f0f13.SetGeoRestriction(f0f13f0)
+				f0f14.SetGeoRestriction(f0f14f0)
 			}
-			f0.SetRestrictions(f0f13)
+			f0.SetRestrictions(f0f14)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate != nil {
-			f0f14 := &svcsdk.ViewerCertificate{}
+			f0f15 := &svcsdk.ViewerCertificate{}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN != nil {
-				f0f14.SetACMCertificateArn(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN)
+				f0f15.SetACMCertificateArn(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate != nil {
-				f0f14.SetCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate)
+				f0f15.SetCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource != nil {
-				f0f14.SetCertificateSource(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource)
+				f0f15.SetCertificateSource(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate != nil {
-				f0f14.SetCloudFrontDefaultCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate)
+				f0f15.SetCloudFrontDefaultCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID != nil {
-				f0f14.SetIAMCertificateId(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID)
+				f0f15.SetIAMCertificateId(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion != nil {
-				f0f14.SetMinimumProtocolVersion(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion)
+				f0f15.SetMinimumProtocolVersion(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod != nil {
-				f0f14.SetSSLSupportMethod(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod)
+				f0f15.SetSSLSupportMethod(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod)
 			}
-			f0.SetViewerCertificate(f0f14)
+			f0.SetViewerCertificate(f0f15)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.WebACLID != nil {
 			f0.SetWebACLId(*cr.Spec.ForProvider.DistributionConfig.WebACLID)
@@ -1736,228 +1742,231 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 			}
 			f0.SetCacheBehaviors(f0f1)
 		}
+		if cr.Spec.ForProvider.DistributionConfig.CallerReference != nil {
+			f0.SetCallerReference(*cr.Spec.ForProvider.DistributionConfig.CallerReference)
+		}
 		if cr.Spec.ForProvider.DistributionConfig.Comment != nil {
 			f0.SetComment(*cr.Spec.ForProvider.DistributionConfig.Comment)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
-			f0f3 := &svcsdk.CustomErrorResponses{}
+			f0f4 := &svcsdk.CustomErrorResponses{}
 			if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items != nil {
-				f0f3f0 := []*svcsdk.CustomErrorResponse{}
-				for _, f0f3f0iter := range cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items {
-					f0f3f0elem := &svcsdk.CustomErrorResponse{}
-					if f0f3f0iter.ErrorCachingMinTTL != nil {
-						f0f3f0elem.SetErrorCachingMinTTL(*f0f3f0iter.ErrorCachingMinTTL)
+				f0f4f0 := []*svcsdk.CustomErrorResponse{}
+				for _, f0f4f0iter := range cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items {
+					f0f4f0elem := &svcsdk.CustomErrorResponse{}
+					if f0f4f0iter.ErrorCachingMinTTL != nil {
+						f0f4f0elem.SetErrorCachingMinTTL(*f0f4f0iter.ErrorCachingMinTTL)
 					}
-					if f0f3f0iter.ErrorCode != nil {
-						f0f3f0elem.SetErrorCode(*f0f3f0iter.ErrorCode)
+					if f0f4f0iter.ErrorCode != nil {
+						f0f4f0elem.SetErrorCode(*f0f4f0iter.ErrorCode)
 					}
-					if f0f3f0iter.ResponseCode != nil {
-						f0f3f0elem.SetResponseCode(*f0f3f0iter.ResponseCode)
+					if f0f4f0iter.ResponseCode != nil {
+						f0f4f0elem.SetResponseCode(*f0f4f0iter.ResponseCode)
 					}
-					if f0f3f0iter.ResponsePagePath != nil {
-						f0f3f0elem.SetResponsePagePath(*f0f3f0iter.ResponsePagePath)
+					if f0f4f0iter.ResponsePagePath != nil {
+						f0f4f0elem.SetResponsePagePath(*f0f4f0iter.ResponsePagePath)
 					}
-					f0f3f0 = append(f0f3f0, f0f3f0elem)
+					f0f4f0 = append(f0f4f0, f0f4f0elem)
 				}
-				f0f3.SetItems(f0f3f0)
+				f0f4.SetItems(f0f4f0)
 			}
-			f0.SetCustomErrorResponses(f0f3)
+			f0.SetCustomErrorResponses(f0f4)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior != nil {
-			f0f4 := &svcsdk.DefaultCacheBehavior{}
+			f0f5 := &svcsdk.DefaultCacheBehavior{}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods != nil {
-				f0f4f0 := &svcsdk.AllowedMethods{}
+				f0f5f0 := &svcsdk.AllowedMethods{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods != nil {
-					f0f4f0f0 := &svcsdk.CachedMethods{}
+					f0f5f0f0 := &svcsdk.CachedMethods{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items != nil {
-						f0f4f0f0f0 := []*string{}
-						for _, f0f4f0f0f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
-							var f0f4f0f0f0elem string
-							f0f4f0f0f0elem = *f0f4f0f0f0iter
-							f0f4f0f0f0 = append(f0f4f0f0f0, &f0f4f0f0f0elem)
+						f0f5f0f0f0 := []*string{}
+						for _, f0f5f0f0f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Items {
+							var f0f5f0f0f0elem string
+							f0f5f0f0f0elem = *f0f5f0f0f0iter
+							f0f5f0f0f0 = append(f0f5f0f0f0, &f0f5f0f0f0elem)
 						}
-						f0f4f0f0.SetItems(f0f4f0f0f0)
+						f0f5f0f0.SetItems(f0f5f0f0f0)
 					}
-					f0f4f0.SetCachedMethods(f0f4f0f0)
+					f0f5f0.SetCachedMethods(f0f5f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items != nil {
-					f0f4f0f1 := []*string{}
-					for _, f0f4f0f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
-						var f0f4f0f1elem string
-						f0f4f0f1elem = *f0f4f0f1iter
-						f0f4f0f1 = append(f0f4f0f1, &f0f4f0f1elem)
+					f0f5f0f1 := []*string{}
+					for _, f0f5f0f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Items {
+						var f0f5f0f1elem string
+						f0f5f0f1elem = *f0f5f0f1iter
+						f0f5f0f1 = append(f0f5f0f1, &f0f5f0f1elem)
 					}
-					f0f4f0.SetItems(f0f4f0f1)
+					f0f5f0.SetItems(f0f5f0f1)
 				}
-				f0f4.SetAllowedMethods(f0f4f0)
+				f0f5.SetAllowedMethods(f0f5f0)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID != nil {
-				f0f4.SetCachePolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID)
+				f0f5.SetCachePolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.CachePolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress != nil {
-				f0f4.SetCompress(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress)
+				f0f5.SetCompress(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.Compress)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL != nil {
-				f0f4.SetDefaultTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL)
+				f0f5.SetDefaultTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.DefaultTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID != nil {
-				f0f4.SetFieldLevelEncryptionId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID)
+				f0f5.SetFieldLevelEncryptionId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FieldLevelEncryptionID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues != nil {
-				f0f4f5 := &svcsdk.ForwardedValues{}
+				f0f5f5 := &svcsdk.ForwardedValues{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies != nil {
-					f0f4f5f0 := &svcsdk.CookiePreference{}
+					f0f5f5f0 := &svcsdk.CookiePreference{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward != nil {
-						f0f4f5f0.SetForward(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward)
+						f0f5f5f0.SetForward(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.Forward)
 					}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames != nil {
-						f0f4f5f0f1 := &svcsdk.CookieNames{}
+						f0f5f5f0f1 := &svcsdk.CookieNames{}
 						if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items != nil {
-							f0f4f5f0f1f0 := []*string{}
-							for _, f0f4f5f0f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
-								var f0f4f5f0f1f0elem string
-								f0f4f5f0f1f0elem = *f0f4f5f0f1f0iter
-								f0f4f5f0f1f0 = append(f0f4f5f0f1f0, &f0f4f5f0f1f0elem)
+							f0f5f5f0f1f0 := []*string{}
+							for _, f0f5f5f0f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Items {
+								var f0f5f5f0f1f0elem string
+								f0f5f5f0f1f0elem = *f0f5f5f0f1f0iter
+								f0f5f5f0f1f0 = append(f0f5f5f0f1f0, &f0f5f5f0f1f0elem)
 							}
-							f0f4f5f0f1.SetItems(f0f4f5f0f1f0)
+							f0f5f5f0f1.SetItems(f0f5f5f0f1f0)
 						}
 						if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity != nil {
-							f0f4f5f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity)
+							f0f5f5f0f1.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity)
 						}
-						f0f4f5f0.SetWhitelistedNames(f0f4f5f0f1)
+						f0f5f5f0.SetWhitelistedNames(f0f5f5f0f1)
 					}
-					f0f4f5.SetCookies(f0f4f5f0)
+					f0f5f5.SetCookies(f0f5f5f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers != nil {
-					f0f4f5f1 := &svcsdk.Headers{}
+					f0f5f5f1 := &svcsdk.Headers{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items != nil {
-						f0f4f5f1f0 := []*string{}
-						for _, f0f4f5f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
-							var f0f4f5f1f0elem string
-							f0f4f5f1f0elem = *f0f4f5f1f0iter
-							f0f4f5f1f0 = append(f0f4f5f1f0, &f0f4f5f1f0elem)
+						f0f5f5f1f0 := []*string{}
+						for _, f0f5f5f1f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Items {
+							var f0f5f5f1f0elem string
+							f0f5f5f1f0elem = *f0f5f5f1f0iter
+							f0f5f5f1f0 = append(f0f5f5f1f0, &f0f5f5f1f0elem)
 						}
-						f0f4f5f1.SetItems(f0f4f5f1f0)
+						f0f5f5f1.SetItems(f0f5f5f1f0)
 					}
-					f0f4f5.SetHeaders(f0f4f5f1)
+					f0f5f5.SetHeaders(f0f5f5f1)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString != nil {
-					f0f4f5.SetQueryString(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString)
+					f0f5f5.SetQueryString(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryString)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys != nil {
-					f0f4f5f3 := &svcsdk.QueryStringCacheKeys{}
+					f0f5f5f3 := &svcsdk.QueryStringCacheKeys{}
 					if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items != nil {
-						f0f4f5f3f0 := []*string{}
-						for _, f0f4f5f3f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
-							var f0f4f5f3f0elem string
-							f0f4f5f3f0elem = *f0f4f5f3f0iter
-							f0f4f5f3f0 = append(f0f4f5f3f0, &f0f4f5f3f0elem)
+						f0f5f5f3f0 := []*string{}
+						for _, f0f5f5f3f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Items {
+							var f0f5f5f3f0elem string
+							f0f5f5f3f0elem = *f0f5f5f3f0iter
+							f0f5f5f3f0 = append(f0f5f5f3f0, &f0f5f5f3f0elem)
 						}
-						f0f4f5f3.SetItems(f0f4f5f3f0)
+						f0f5f5f3.SetItems(f0f5f5f3f0)
 					}
-					f0f4f5.SetQueryStringCacheKeys(f0f4f5f3)
+					f0f5f5.SetQueryStringCacheKeys(f0f5f5f3)
 				}
-				f0f4.SetForwardedValues(f0f4f5)
+				f0f5.SetForwardedValues(f0f5f5)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations != nil {
-				f0f4f6 := &svcsdk.FunctionAssociations{}
+				f0f5f6 := &svcsdk.FunctionAssociations{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items != nil {
-					f0f4f6f0 := []*svcsdk.FunctionAssociation{}
-					for _, f0f4f6f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
-						f0f4f6f0elem := &svcsdk.FunctionAssociation{}
-						if f0f4f6f0iter.EventType != nil {
-							f0f4f6f0elem.SetEventType(*f0f4f6f0iter.EventType)
+					f0f5f6f0 := []*svcsdk.FunctionAssociation{}
+					for _, f0f5f6f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Items {
+						f0f5f6f0elem := &svcsdk.FunctionAssociation{}
+						if f0f5f6f0iter.EventType != nil {
+							f0f5f6f0elem.SetEventType(*f0f5f6f0iter.EventType)
 						}
-						if f0f4f6f0iter.FunctionARN != nil {
-							f0f4f6f0elem.SetFunctionARN(*f0f4f6f0iter.FunctionARN)
+						if f0f5f6f0iter.FunctionARN != nil {
+							f0f5f6f0elem.SetFunctionARN(*f0f5f6f0iter.FunctionARN)
 						}
-						f0f4f6f0 = append(f0f4f6f0, f0f4f6f0elem)
+						f0f5f6f0 = append(f0f5f6f0, f0f5f6f0elem)
 					}
-					f0f4f6.SetItems(f0f4f6f0)
+					f0f5f6.SetItems(f0f5f6f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-					f0f4f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
+					f0f5f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
 				}
-				f0f4.SetFunctionAssociations(f0f4f6)
+				f0f5.SetFunctionAssociations(f0f5f6)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations != nil {
-				f0f4f7 := &svcsdk.LambdaFunctionAssociations{}
+				f0f5f7 := &svcsdk.LambdaFunctionAssociations{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items != nil {
-					f0f4f7f0 := []*svcsdk.LambdaFunctionAssociation{}
-					for _, f0f4f7f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
-						f0f4f7f0elem := &svcsdk.LambdaFunctionAssociation{}
-						if f0f4f7f0iter.EventType != nil {
-							f0f4f7f0elem.SetEventType(*f0f4f7f0iter.EventType)
+					f0f5f7f0 := []*svcsdk.LambdaFunctionAssociation{}
+					for _, f0f5f7f0iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items {
+						f0f5f7f0elem := &svcsdk.LambdaFunctionAssociation{}
+						if f0f5f7f0iter.EventType != nil {
+							f0f5f7f0elem.SetEventType(*f0f5f7f0iter.EventType)
 						}
-						if f0f4f7f0iter.IncludeBody != nil {
-							f0f4f7f0elem.SetIncludeBody(*f0f4f7f0iter.IncludeBody)
+						if f0f5f7f0iter.IncludeBody != nil {
+							f0f5f7f0elem.SetIncludeBody(*f0f5f7f0iter.IncludeBody)
 						}
-						if f0f4f7f0iter.LambdaFunctionARN != nil {
-							f0f4f7f0elem.SetLambdaFunctionARN(*f0f4f7f0iter.LambdaFunctionARN)
+						if f0f5f7f0iter.LambdaFunctionARN != nil {
+							f0f5f7f0elem.SetLambdaFunctionARN(*f0f5f7f0iter.LambdaFunctionARN)
 						}
-						f0f4f7f0 = append(f0f4f7f0, f0f4f7f0elem)
+						f0f5f7f0 = append(f0f5f7f0, f0f5f7f0elem)
 					}
-					f0f4f7.SetItems(f0f4f7f0)
+					f0f5f7.SetItems(f0f5f7f0)
 				}
-				f0f4.SetLambdaFunctionAssociations(f0f4f7)
+				f0f5.SetLambdaFunctionAssociations(f0f5f7)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL != nil {
-				f0f4.SetMaxTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL)
+				f0f5.SetMaxTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MaxTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL != nil {
-				f0f4.SetMinTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL)
+				f0f5.SetMinTTL(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.MinTTL)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID != nil {
-				f0f4.SetOriginRequestPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID)
+				f0f5.SetOriginRequestPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.OriginRequestPolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN != nil {
-				f0f4.SetRealtimeLogConfigArn(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN)
+				f0f5.SetRealtimeLogConfigArn(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.RealtimeLogConfigARN)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID != nil {
-				f0f4.SetResponseHeadersPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID)
+				f0f5.SetResponseHeadersPolicyId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming != nil {
-				f0f4.SetSmoothStreaming(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming)
+				f0f5.SetSmoothStreaming(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.SmoothStreaming)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID != nil {
-				f0f4.SetTargetOriginId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID)
+				f0f5.SetTargetOriginId(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TargetOriginID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups != nil {
-				f0f4f15 := &svcsdk.TrustedKeyGroups{}
+				f0f5f15 := &svcsdk.TrustedKeyGroups{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled != nil {
-					f0f4f15.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled)
+					f0f5f15.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Enabled)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items != nil {
-					f0f4f15f1 := []*string{}
-					for _, f0f4f15f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
-						var f0f4f15f1elem string
-						f0f4f15f1elem = *f0f4f15f1iter
-						f0f4f15f1 = append(f0f4f15f1, &f0f4f15f1elem)
+					f0f5f15f1 := []*string{}
+					for _, f0f5f15f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Items {
+						var f0f5f15f1elem string
+						f0f5f15f1elem = *f0f5f15f1iter
+						f0f5f15f1 = append(f0f5f15f1, &f0f5f15f1elem)
 					}
-					f0f4f15.SetItems(f0f4f15f1)
+					f0f5f15.SetItems(f0f5f15f1)
 				}
-				f0f4.SetTrustedKeyGroups(f0f4f15)
+				f0f5.SetTrustedKeyGroups(f0f5f15)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners != nil {
-				f0f4f16 := &svcsdk.TrustedSigners{}
+				f0f5f16 := &svcsdk.TrustedSigners{}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled != nil {
-					f0f4f16.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled)
+					f0f5f16.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Enabled)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items != nil {
-					f0f4f16f1 := []*string{}
-					for _, f0f4f16f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
-						var f0f4f16f1elem string
-						f0f4f16f1elem = *f0f4f16f1iter
-						f0f4f16f1 = append(f0f4f16f1, &f0f4f16f1elem)
+					f0f5f16f1 := []*string{}
+					for _, f0f5f16f1iter := range cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Items {
+						var f0f5f16f1elem string
+						f0f5f16f1elem = *f0f5f16f1iter
+						f0f5f16f1 = append(f0f5f16f1, &f0f5f16f1elem)
 					}
-					f0f4f16.SetItems(f0f4f16f1)
+					f0f5f16.SetItems(f0f5f16f1)
 				}
-				f0f4.SetTrustedSigners(f0f4f16)
+				f0f5.SetTrustedSigners(f0f5f16)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy != nil {
-				f0f4.SetViewerProtocolPolicy(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy)
+				f0f5.SetViewerProtocolPolicy(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy)
 			}
-			f0.SetDefaultCacheBehavior(f0f4)
+			f0.SetDefaultCacheBehavior(f0f5)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.DefaultRootObject != nil {
 			f0.SetDefaultRootObject(*cr.Spec.ForProvider.DistributionConfig.DefaultRootObject)
@@ -1972,212 +1981,212 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 			f0.SetIsIPV6Enabled(*cr.Spec.ForProvider.DistributionConfig.IsIPV6Enabled)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.Logging != nil {
-			f0f9 := &svcsdk.LoggingConfig{}
+			f0f10 := &svcsdk.LoggingConfig{}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Bucket != nil {
-				f0f9.SetBucket(*cr.Spec.ForProvider.DistributionConfig.Logging.Bucket)
+				f0f10.SetBucket(*cr.Spec.ForProvider.DistributionConfig.Logging.Bucket)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Enabled != nil {
-				f0f9.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.Logging.Enabled)
+				f0f10.SetEnabled(*cr.Spec.ForProvider.DistributionConfig.Logging.Enabled)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies != nil {
-				f0f9.SetIncludeCookies(*cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies)
+				f0f10.SetIncludeCookies(*cr.Spec.ForProvider.DistributionConfig.Logging.IncludeCookies)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.Logging.Prefix != nil {
-				f0f9.SetPrefix(*cr.Spec.ForProvider.DistributionConfig.Logging.Prefix)
+				f0f10.SetPrefix(*cr.Spec.ForProvider.DistributionConfig.Logging.Prefix)
 			}
-			f0.SetLogging(f0f9)
+			f0.SetLogging(f0f10)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
-			f0f10 := &svcsdk.OriginGroups{}
+			f0f11 := &svcsdk.OriginGroups{}
 			if cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items != nil {
-				f0f10f0 := []*svcsdk.OriginGroup{}
-				for _, f0f10f0iter := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
-					f0f10f0elem := &svcsdk.OriginGroup{}
-					if f0f10f0iter.FailoverCriteria != nil {
-						f0f10f0elemf0 := &svcsdk.OriginGroupFailoverCriteria{}
-						if f0f10f0iter.FailoverCriteria.StatusCodes != nil {
-							f0f10f0elemf0f0 := &svcsdk.StatusCodes{}
-							if f0f10f0iter.FailoverCriteria.StatusCodes.Items != nil {
-								f0f10f0elemf0f0f0 := []*int64{}
-								for _, f0f10f0elemf0f0f0iter := range f0f10f0iter.FailoverCriteria.StatusCodes.Items {
-									var f0f10f0elemf0f0f0elem int64
-									f0f10f0elemf0f0f0elem = *f0f10f0elemf0f0f0iter
-									f0f10f0elemf0f0f0 = append(f0f10f0elemf0f0f0, &f0f10f0elemf0f0f0elem)
+				f0f11f0 := []*svcsdk.OriginGroup{}
+				for _, f0f11f0iter := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
+					f0f11f0elem := &svcsdk.OriginGroup{}
+					if f0f11f0iter.FailoverCriteria != nil {
+						f0f11f0elemf0 := &svcsdk.OriginGroupFailoverCriteria{}
+						if f0f11f0iter.FailoverCriteria.StatusCodes != nil {
+							f0f11f0elemf0f0 := &svcsdk.StatusCodes{}
+							if f0f11f0iter.FailoverCriteria.StatusCodes.Items != nil {
+								f0f11f0elemf0f0f0 := []*int64{}
+								for _, f0f11f0elemf0f0f0iter := range f0f11f0iter.FailoverCriteria.StatusCodes.Items {
+									var f0f11f0elemf0f0f0elem int64
+									f0f11f0elemf0f0f0elem = *f0f11f0elemf0f0f0iter
+									f0f11f0elemf0f0f0 = append(f0f11f0elemf0f0f0, &f0f11f0elemf0f0f0elem)
 								}
-								f0f10f0elemf0f0.SetItems(f0f10f0elemf0f0f0)
+								f0f11f0elemf0f0.SetItems(f0f11f0elemf0f0f0)
 							}
-							f0f10f0elemf0.SetStatusCodes(f0f10f0elemf0f0)
+							f0f11f0elemf0.SetStatusCodes(f0f11f0elemf0f0)
 						}
-						f0f10f0elem.SetFailoverCriteria(f0f10f0elemf0)
+						f0f11f0elem.SetFailoverCriteria(f0f11f0elemf0)
 					}
-					if f0f10f0iter.ID != nil {
-						f0f10f0elem.SetId(*f0f10f0iter.ID)
+					if f0f11f0iter.ID != nil {
+						f0f11f0elem.SetId(*f0f11f0iter.ID)
 					}
-					if f0f10f0iter.Members != nil {
-						f0f10f0elemf2 := &svcsdk.OriginGroupMembers{}
-						if f0f10f0iter.Members.Items != nil {
-							f0f10f0elemf2f0 := []*svcsdk.OriginGroupMember{}
-							for _, f0f10f0elemf2f0iter := range f0f10f0iter.Members.Items {
-								f0f10f0elemf2f0elem := &svcsdk.OriginGroupMember{}
-								if f0f10f0elemf2f0iter.OriginID != nil {
-									f0f10f0elemf2f0elem.SetOriginId(*f0f10f0elemf2f0iter.OriginID)
-								}
-								f0f10f0elemf2f0 = append(f0f10f0elemf2f0, f0f10f0elemf2f0elem)
-							}
-							f0f10f0elemf2.SetItems(f0f10f0elemf2f0)
-						}
-						if f0f10f0iter.Members.Quantity != nil {
-							f0f10f0elemf2.SetQuantity(*f0f10f0iter.Members.Quantity)
-						}
-						f0f10f0elem.SetMembers(f0f10f0elemf2)
-					}
-					f0f10f0 = append(f0f10f0, f0f10f0elem)
-				}
-				f0f10.SetItems(f0f10f0)
-			}
-			f0.SetOriginGroups(f0f10)
-		}
-		if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
-			f0f11 := &svcsdk.Origins{}
-			if cr.Spec.ForProvider.DistributionConfig.Origins.Items != nil {
-				f0f11f0 := []*svcsdk.Origin{}
-				for _, f0f11f0iter := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
-					f0f11f0elem := &svcsdk.Origin{}
-					if f0f11f0iter.ConnectionAttempts != nil {
-						f0f11f0elem.SetConnectionAttempts(*f0f11f0iter.ConnectionAttempts)
-					}
-					if f0f11f0iter.ConnectionTimeout != nil {
-						f0f11f0elem.SetConnectionTimeout(*f0f11f0iter.ConnectionTimeout)
-					}
-					if f0f11f0iter.CustomHeaders != nil {
-						f0f11f0elemf2 := &svcsdk.CustomHeaders{}
-						if f0f11f0iter.CustomHeaders.Items != nil {
-							f0f11f0elemf2f0 := []*svcsdk.OriginCustomHeader{}
-							for _, f0f11f0elemf2f0iter := range f0f11f0iter.CustomHeaders.Items {
-								f0f11f0elemf2f0elem := &svcsdk.OriginCustomHeader{}
-								if f0f11f0elemf2f0iter.HeaderName != nil {
-									f0f11f0elemf2f0elem.SetHeaderName(*f0f11f0elemf2f0iter.HeaderName)
-								}
-								if f0f11f0elemf2f0iter.HeaderValue != nil {
-									f0f11f0elemf2f0elem.SetHeaderValue(*f0f11f0elemf2f0iter.HeaderValue)
+					if f0f11f0iter.Members != nil {
+						f0f11f0elemf2 := &svcsdk.OriginGroupMembers{}
+						if f0f11f0iter.Members.Items != nil {
+							f0f11f0elemf2f0 := []*svcsdk.OriginGroupMember{}
+							for _, f0f11f0elemf2f0iter := range f0f11f0iter.Members.Items {
+								f0f11f0elemf2f0elem := &svcsdk.OriginGroupMember{}
+								if f0f11f0elemf2f0iter.OriginID != nil {
+									f0f11f0elemf2f0elem.SetOriginId(*f0f11f0elemf2f0iter.OriginID)
 								}
 								f0f11f0elemf2f0 = append(f0f11f0elemf2f0, f0f11f0elemf2f0elem)
 							}
 							f0f11f0elemf2.SetItems(f0f11f0elemf2f0)
 						}
-						f0f11f0elem.SetCustomHeaders(f0f11f0elemf2)
-					}
-					if f0f11f0iter.CustomOriginConfig != nil {
-						f0f11f0elemf3 := &svcsdk.CustomOriginConfig{}
-						if f0f11f0iter.CustomOriginConfig.HTTPPort != nil {
-							f0f11f0elemf3.SetHTTPPort(*f0f11f0iter.CustomOriginConfig.HTTPPort)
+						if f0f11f0iter.Members.Quantity != nil {
+							f0f11f0elemf2.SetQuantity(*f0f11f0iter.Members.Quantity)
 						}
-						if f0f11f0iter.CustomOriginConfig.HTTPSPort != nil {
-							f0f11f0elemf3.SetHTTPSPort(*f0f11f0iter.CustomOriginConfig.HTTPSPort)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
-							f0f11f0elemf3.SetOriginKeepaliveTimeout(*f0f11f0iter.CustomOriginConfig.OriginKeepaliveTimeout)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
-							f0f11f0elemf3.SetOriginProtocolPolicy(*f0f11f0iter.CustomOriginConfig.OriginProtocolPolicy)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginReadTimeout != nil {
-							f0f11f0elemf3.SetOriginReadTimeout(*f0f11f0iter.CustomOriginConfig.OriginReadTimeout)
-						}
-						if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
-							f0f11f0elemf3f5 := &svcsdk.OriginSslProtocols{}
-							if f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
-								f0f11f0elemf3f5f0 := []*string{}
-								for _, f0f11f0elemf3f5f0iter := range f0f11f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
-									var f0f11f0elemf3f5f0elem string
-									f0f11f0elemf3f5f0elem = *f0f11f0elemf3f5f0iter
-									f0f11f0elemf3f5f0 = append(f0f11f0elemf3f5f0, &f0f11f0elemf3f5f0elem)
-								}
-								f0f11f0elemf3f5.SetItems(f0f11f0elemf3f5f0)
-							}
-							f0f11f0elemf3.SetOriginSslProtocols(f0f11f0elemf3f5)
-						}
-						f0f11f0elem.SetCustomOriginConfig(f0f11f0elemf3)
-					}
-					if f0f11f0iter.DomainName != nil {
-						f0f11f0elem.SetDomainName(*f0f11f0iter.DomainName)
-					}
-					if f0f11f0iter.ID != nil {
-						f0f11f0elem.SetId(*f0f11f0iter.ID)
-					}
-					if f0f11f0iter.OriginPath != nil {
-						f0f11f0elem.SetOriginPath(*f0f11f0iter.OriginPath)
-					}
-					if f0f11f0iter.OriginShield != nil {
-						f0f11f0elemf7 := &svcsdk.OriginShield{}
-						if f0f11f0iter.OriginShield.Enabled != nil {
-							f0f11f0elemf7.SetEnabled(*f0f11f0iter.OriginShield.Enabled)
-						}
-						if f0f11f0iter.OriginShield.OriginShieldRegion != nil {
-							f0f11f0elemf7.SetOriginShieldRegion(*f0f11f0iter.OriginShield.OriginShieldRegion)
-						}
-						f0f11f0elem.SetOriginShield(f0f11f0elemf7)
-					}
-					if f0f11f0iter.S3OriginConfig != nil {
-						f0f11f0elemf8 := &svcsdk.S3OriginConfig{}
-						if f0f11f0iter.S3OriginConfig.OriginAccessIdentity != nil {
-							f0f11f0elemf8.SetOriginAccessIdentity(*f0f11f0iter.S3OriginConfig.OriginAccessIdentity)
-						}
-						f0f11f0elem.SetS3OriginConfig(f0f11f0elemf8)
+						f0f11f0elem.SetMembers(f0f11f0elemf2)
 					}
 					f0f11f0 = append(f0f11f0, f0f11f0elem)
 				}
 				f0f11.SetItems(f0f11f0)
 			}
-			f0.SetOrigins(f0f11)
+			f0.SetOriginGroups(f0f11)
+		}
+		if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
+			f0f12 := &svcsdk.Origins{}
+			if cr.Spec.ForProvider.DistributionConfig.Origins.Items != nil {
+				f0f12f0 := []*svcsdk.Origin{}
+				for _, f0f12f0iter := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
+					f0f12f0elem := &svcsdk.Origin{}
+					if f0f12f0iter.ConnectionAttempts != nil {
+						f0f12f0elem.SetConnectionAttempts(*f0f12f0iter.ConnectionAttempts)
+					}
+					if f0f12f0iter.ConnectionTimeout != nil {
+						f0f12f0elem.SetConnectionTimeout(*f0f12f0iter.ConnectionTimeout)
+					}
+					if f0f12f0iter.CustomHeaders != nil {
+						f0f12f0elemf2 := &svcsdk.CustomHeaders{}
+						if f0f12f0iter.CustomHeaders.Items != nil {
+							f0f12f0elemf2f0 := []*svcsdk.OriginCustomHeader{}
+							for _, f0f12f0elemf2f0iter := range f0f12f0iter.CustomHeaders.Items {
+								f0f12f0elemf2f0elem := &svcsdk.OriginCustomHeader{}
+								if f0f12f0elemf2f0iter.HeaderName != nil {
+									f0f12f0elemf2f0elem.SetHeaderName(*f0f12f0elemf2f0iter.HeaderName)
+								}
+								if f0f12f0elemf2f0iter.HeaderValue != nil {
+									f0f12f0elemf2f0elem.SetHeaderValue(*f0f12f0elemf2f0iter.HeaderValue)
+								}
+								f0f12f0elemf2f0 = append(f0f12f0elemf2f0, f0f12f0elemf2f0elem)
+							}
+							f0f12f0elemf2.SetItems(f0f12f0elemf2f0)
+						}
+						f0f12f0elem.SetCustomHeaders(f0f12f0elemf2)
+					}
+					if f0f12f0iter.CustomOriginConfig != nil {
+						f0f12f0elemf3 := &svcsdk.CustomOriginConfig{}
+						if f0f12f0iter.CustomOriginConfig.HTTPPort != nil {
+							f0f12f0elemf3.SetHTTPPort(*f0f12f0iter.CustomOriginConfig.HTTPPort)
+						}
+						if f0f12f0iter.CustomOriginConfig.HTTPSPort != nil {
+							f0f12f0elemf3.SetHTTPSPort(*f0f12f0iter.CustomOriginConfig.HTTPSPort)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout != nil {
+							f0f12f0elemf3.SetOriginKeepaliveTimeout(*f0f12f0iter.CustomOriginConfig.OriginKeepaliveTimeout)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginProtocolPolicy != nil {
+							f0f12f0elemf3.SetOriginProtocolPolicy(*f0f12f0iter.CustomOriginConfig.OriginProtocolPolicy)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginReadTimeout != nil {
+							f0f12f0elemf3.SetOriginReadTimeout(*f0f12f0iter.CustomOriginConfig.OriginReadTimeout)
+						}
+						if f0f12f0iter.CustomOriginConfig.OriginSSLProtocols != nil {
+							f0f12f0elemf3f5 := &svcsdk.OriginSslProtocols{}
+							if f0f12f0iter.CustomOriginConfig.OriginSSLProtocols.Items != nil {
+								f0f12f0elemf3f5f0 := []*string{}
+								for _, f0f12f0elemf3f5f0iter := range f0f12f0iter.CustomOriginConfig.OriginSSLProtocols.Items {
+									var f0f12f0elemf3f5f0elem string
+									f0f12f0elemf3f5f0elem = *f0f12f0elemf3f5f0iter
+									f0f12f0elemf3f5f0 = append(f0f12f0elemf3f5f0, &f0f12f0elemf3f5f0elem)
+								}
+								f0f12f0elemf3f5.SetItems(f0f12f0elemf3f5f0)
+							}
+							f0f12f0elemf3.SetOriginSslProtocols(f0f12f0elemf3f5)
+						}
+						f0f12f0elem.SetCustomOriginConfig(f0f12f0elemf3)
+					}
+					if f0f12f0iter.DomainName != nil {
+						f0f12f0elem.SetDomainName(*f0f12f0iter.DomainName)
+					}
+					if f0f12f0iter.ID != nil {
+						f0f12f0elem.SetId(*f0f12f0iter.ID)
+					}
+					if f0f12f0iter.OriginPath != nil {
+						f0f12f0elem.SetOriginPath(*f0f12f0iter.OriginPath)
+					}
+					if f0f12f0iter.OriginShield != nil {
+						f0f12f0elemf7 := &svcsdk.OriginShield{}
+						if f0f12f0iter.OriginShield.Enabled != nil {
+							f0f12f0elemf7.SetEnabled(*f0f12f0iter.OriginShield.Enabled)
+						}
+						if f0f12f0iter.OriginShield.OriginShieldRegion != nil {
+							f0f12f0elemf7.SetOriginShieldRegion(*f0f12f0iter.OriginShield.OriginShieldRegion)
+						}
+						f0f12f0elem.SetOriginShield(f0f12f0elemf7)
+					}
+					if f0f12f0iter.S3OriginConfig != nil {
+						f0f12f0elemf8 := &svcsdk.S3OriginConfig{}
+						if f0f12f0iter.S3OriginConfig.OriginAccessIdentity != nil {
+							f0f12f0elemf8.SetOriginAccessIdentity(*f0f12f0iter.S3OriginConfig.OriginAccessIdentity)
+						}
+						f0f12f0elem.SetS3OriginConfig(f0f12f0elemf8)
+					}
+					f0f12f0 = append(f0f12f0, f0f12f0elem)
+				}
+				f0f12.SetItems(f0f12f0)
+			}
+			f0.SetOrigins(f0f12)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.PriceClass != nil {
 			f0.SetPriceClass(*cr.Spec.ForProvider.DistributionConfig.PriceClass)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil {
-			f0f13 := &svcsdk.Restrictions{}
+			f0f14 := &svcsdk.Restrictions{}
 			if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
-				f0f13f0 := &svcsdk.GeoRestriction{}
+				f0f14f0 := &svcsdk.GeoRestriction{}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items != nil {
-					f0f13f0f0 := []*string{}
-					for _, f0f13f0f0iter := range cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items {
-						var f0f13f0f0elem string
-						f0f13f0f0elem = *f0f13f0f0iter
-						f0f13f0f0 = append(f0f13f0f0, &f0f13f0f0elem)
+					f0f14f0f0 := []*string{}
+					for _, f0f14f0f0iter := range cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items {
+						var f0f14f0f0elem string
+						f0f14f0f0elem = *f0f14f0f0iter
+						f0f14f0f0 = append(f0f14f0f0, &f0f14f0f0elem)
 					}
-					f0f13f0.SetItems(f0f13f0f0)
+					f0f14f0.SetItems(f0f14f0f0)
 				}
 				if cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType != nil {
-					f0f13f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
+					f0f14f0.SetRestrictionType(*cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.RestrictionType)
 				}
-				f0f13.SetGeoRestriction(f0f13f0)
+				f0f14.SetGeoRestriction(f0f14f0)
 			}
-			f0.SetRestrictions(f0f13)
+			f0.SetRestrictions(f0f14)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate != nil {
-			f0f14 := &svcsdk.ViewerCertificate{}
+			f0f15 := &svcsdk.ViewerCertificate{}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN != nil {
-				f0f14.SetACMCertificateArn(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN)
+				f0f15.SetACMCertificateArn(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.ACMCertificateARN)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate != nil {
-				f0f14.SetCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate)
+				f0f15.SetCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.Certificate)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource != nil {
-				f0f14.SetCertificateSource(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource)
+				f0f15.SetCertificateSource(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CertificateSource)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate != nil {
-				f0f14.SetCloudFrontDefaultCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate)
+				f0f15.SetCloudFrontDefaultCertificate(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.CloudFrontDefaultCertificate)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID != nil {
-				f0f14.SetIAMCertificateId(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID)
+				f0f15.SetIAMCertificateId(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.IAMCertificateID)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion != nil {
-				f0f14.SetMinimumProtocolVersion(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion)
+				f0f15.SetMinimumProtocolVersion(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.MinimumProtocolVersion)
 			}
 			if cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod != nil {
-				f0f14.SetSSLSupportMethod(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod)
+				f0f15.SetSSLSupportMethod(*cr.Spec.ForProvider.DistributionConfig.ViewerCertificate.SSLSupportMethod)
 			}
-			f0.SetViewerCertificate(f0f14)
+			f0.SetViewerCertificate(f0f15)
 		}
 		if cr.Spec.ForProvider.DistributionConfig.WebACLID != nil {
 			f0.SetWebACLId(*cr.Spec.ForProvider.DistributionConfig.WebACLID)
