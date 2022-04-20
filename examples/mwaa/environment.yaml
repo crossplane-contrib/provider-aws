@@ -1,0 +1,41 @@
+---
+apiVersion: mwaa.aws.crossplane.io/v1alpha1
+kind: Environment
+metadata:
+  name: sample-environment
+spec:
+  forProvider:
+    region: us-east-1
+    environmentClass: mw1.small
+    webserverAccessMode: PRIVATE_ONLY
+    networkConfiguration:
+      securityGroupIDRefs:
+        - name: sample-environment-sg
+      subnetIdRefss:
+        - name: sample-subnet-1
+        - name: sample-subnet-2
+    sourceBucketARNRef:
+      name: sample-environment-bucket-123
+    dagS3Path: dags
+    executionRoleARNRef:
+      name: sample-environment-role
+    kmsKeyRef:
+      name: dev-key
+    loggingConfiguration:
+      dagProcessingLogs:
+        enabled: true
+        logLevel: INFO
+      schedulerLogs:
+        enabled: true
+        logLevel: INFO
+      taskLogs:
+        enabled: true
+        logLevel: INFO
+      webserverLogs:
+        enabled: true
+        logLevel: INFO
+      workerLogs:
+        enabled: true
+        logLevel: INFO
+  providerConfigRef:
+    name: example

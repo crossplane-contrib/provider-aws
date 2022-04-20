@@ -126,6 +126,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
+	mwaaenvironment "github.com/crossplane/provider-aws/pkg/controller/mwaa/environment"
 	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
@@ -267,6 +268,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		glueclassifier.SetupClassifier,
 		mqbroker.SetupBroker,
 		mquser.SetupUser,
+		mwaaenvironment.SetupEnvironment,
 		cwloggroup.SetupLogGroup,
 		volume.SetupVolume,
 		transitgateway.SetupTransitGateway,

@@ -59,6 +59,7 @@ import (
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	lambdav1beta1 "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
+	mwaav1alpha1 "github.com/crossplane/provider-aws/apis/mwaa/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	prometheusservice "github.com/crossplane/provider-aws/apis/prometheusservice/v1alpha1"
@@ -134,6 +135,7 @@ func init() {
 		transferv1alpha1.SchemeBuilder.AddToScheme,
 		gluev1alpha1.SchemeBuilder.AddToScheme,
 		mqv1alpha1.SchemeBuilder.AddToScheme,
+		mwaav1alpha1.SchemeBuilder.AddToScheme,
 		cloudwatchlogsv1alpha1.SchemeBuilder.AddToScheme,
 		iotv1alpha1.SchemeBuilder.AddToScheme,
 		athenav1alpha1.SchemeBuilder.AddToScheme,
