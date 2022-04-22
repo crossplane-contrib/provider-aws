@@ -68,20 +68,10 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, resp *svcsdk.Descri
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
 	meta.SetExternalName(cr, cr.Name)
 	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
-	if cr.Spec.ForProvider.IAMRoleARN != nil {
-		obj.IamRoleArn = awsclients.String(*cr.Spec.ForProvider.IAMRoleARN)
-	}
-	if cr.Spec.ForProvider.ParameterGroupName != nil {
-		obj.ParameterGroupName = awsclients.String(*cr.Spec.ForProvider.ParameterGroupName)
-	}
-	if cr.Spec.ForProvider.SubnetGroupName != nil {
-		obj.SubnetGroupName = awsclients.String(*cr.Spec.ForProvider.SubnetGroupName)
-	}
-	if cr.Spec.ForProvider.SecurityGroupIDs != nil {
-		for _, s := range cr.Spec.ForProvider.SecurityGroupIDs {
-			obj.SecurityGroupIds = append(obj.SecurityGroupIds, awsclients.String(*s))
-		}
-	}
+	obj.IamRoleArn = cr.Spec.ForProvider.IAMRoleARN
+	obj.ParameterGroupName = cr.Spec.ForProvider.ParameterGroupName
+	obj.SubnetGroupName = cr.Spec.ForProvider.SubnetGroupName
+	obj.SecurityGroupIds = append(obj.SecurityGroupIds, cr.Spec.ForProvider.SecurityGroupIDs...)
 	return nil
 }
 
