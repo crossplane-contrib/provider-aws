@@ -64,7 +64,6 @@ func setupExternal(e *external) {
 	e.preObserve = preObserve
 	e.postObserve = postObserve
 	e.preCreate = preCreate
-	e.postCreate = postCreate
 	e.preUpdate = preUpdate
 	e.preDelete = preDelete
 	c := &custom{client: e.client, kube: e.kube}
@@ -618,6 +617,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withName(testParameterGroupName),
+					withExternalName(testParameterGroupName),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
@@ -650,6 +650,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withName(testParameterGroupName),
 					withParameters(testParameterName, testParameterValue),
+					withExternalName(testParameterGroupName),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},

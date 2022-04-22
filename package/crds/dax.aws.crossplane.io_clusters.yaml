@@ -169,7 +169,7 @@ spec:
                       at least two read replicas per cluster."
                     format: int64
                     type: integer
-                  securityGroupIDRefs:
+                  securityGroupIdRefs:
                     description: SecurityGroupIDRefs is a list of references to SecurityGroups
                       used to set the SecurityGroupIDs.
                     items:
@@ -182,12 +182,7 @@ spec:
                       - name
                       type: object
                     type: array
-                  securityGroupIDs:
-                    description: SecurityGroupIDs is the list of IDs for the SecurityGroups
-                    items:
-                      type: string
-                    type: array
-                  securityGroupIDsSelector:
+                  securityGroupIdSelector:
                     description: SecurityGroupIDsSelector selects references to SecurityGroupID
                       used to set the SecurityGroupIDs.
                     properties:
@@ -202,6 +197,11 @@ spec:
                           is selected.
                         type: object
                     type: object
+                  securityGroupIds:
+                    description: SecurityGroupIDs is the list of IDs for the SecurityGroups
+                    items:
+                      type: string
+                    type: array
                   sseSpecification:
                     description: Represents the settings used to enable server-side
                       encryption on the cluster.
@@ -248,7 +248,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - iamRoleARN
                 - nodeType
                 - region
                 - replicationFactor

@@ -26,7 +26,6 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
-			e.postCreate = postCreate
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
 			e.lateInitialize = lateInitialize
@@ -67,7 +66,8 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, resp *svcsdk.Descri
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
-	obj.ClusterName = awsclients.String(cr.Name)
+	meta.SetExternalName(cr, cr.Name)
+	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
 	if cr.Spec.ForProvider.IAMRoleARN != nil {
 		obj.IamRoleArn = awsclients.String(*cr.Spec.ForProvider.IAMRoleARN)
 	}
@@ -83,14 +83,6 @@ func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClu
 		}
 	}
 	return nil
-}
-
-func postCreate(_ context.Context, cr *svcapitypes.Cluster, _ *svcsdk.CreateClusterOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, cr.Name)
-	return cre, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.UpdateClusterInput) error {

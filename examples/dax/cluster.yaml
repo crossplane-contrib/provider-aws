@@ -4,49 +4,24 @@ metadata:
   name: example-dax-cluster
 spec:
   forProvider:
-    description: "This is an example dax cluster."
-    tags:
-      - key: "testKey"
-        value: "testValue"
-    sseSpecification:
-      enabled: true
-    securityGroupIDs:
-      - "sg-0ab0000ff000000d0"
-    iamRoleARN: "arn:aws:iam::999999999999:role/dax-us-east-1"
-    nodeType: "dax.t2.small"
-    region: "us-east-1"
-    replicationFactor: 2
-    parameterGroupName: "example-parameter-group"
-    subnetGroupName: "example-subnet-group"
-    availabilityZones:
-      - "us-east-1a"
-      - "us-east-1b"
-    preferredMaintenanceWindow: "tue:06:30-tue:07:30"
-    clusterEndpointEncryptionType: "NONE"
----
-apiVersion: dax.aws.crossplane.io/v1alpha1
-kind: Cluster
-metadata:
-  name: example-dax-cluster-with-ref
-spec:
-  forProvider:
     description: "This is an example dax cluster with references."
     tags:
       - key: "testKeyRef"
         value: "testValueRef"
     sseSpecification:
       enabled: false
-    securityGroupIDs:
-      - "sg-0ab0000ff000000d0"
-    iamRoleARN: "arn:aws:iam::999999999999:role/dax-us-east-1"
     nodeType: "dax.t2.small"
     region: "us-east-1"
     replicationFactor: 1
+    preferredMaintenanceWindow: "tue:06:30-tue:07:30"
+    clusterEndpointEncryptionType: "NONE"
+    availabilityZones:
+      - "us-east-1a"
+    securityGroupIdRefs:
+      - name: "sample-cluster-sg"
+    iamRoleARNRef:
+      name: "somerole"
     subnetGroupNameRef:
       name: "example-subnet-group"
     parameterGroupNameRef:
       name: "example-parameter-group"
-    availabilityZones:
-      - "us-east-1a"
-    preferredMaintenanceWindow: "tue:06:30-tue:07:30"
-    clusterEndpointEncryptionType: "NONE"

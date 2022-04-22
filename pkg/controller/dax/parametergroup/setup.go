@@ -28,7 +28,6 @@ func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
-			e.postCreate = postCreate
 			e.preUpdate = preUpdate
 			e.postUpdate = postUpdate
 			e.preDelete = preDelete
@@ -68,16 +67,9 @@ func postObserve(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.De
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.CreateParameterGroupInput) error {
-	obj.ParameterGroupName = awsclients.String(cr.Name)
+	meta.SetExternalName(cr, cr.Name)
+	obj.ParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return nil
-}
-
-func postCreate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.CreateParameterGroupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.ParameterGroup.ParameterGroupName))
-	return cre, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.UpdateParameterGroupInput) error {

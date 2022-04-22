@@ -107,7 +107,6 @@ func setupExternal(e *external) {
 	e.preObserve = preObserve
 	e.postObserve = postObserve
 	e.preCreate = preCreate
-	e.postCreate = postCreate
 	e.preUpdate = preUpdate
 	e.preDelete = preDelete
 	e.isUpToDate = isUpToDate
@@ -1043,37 +1042,6 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"SuccessfulCreateNoParameters": {
-			args: args{
-				dax: &fake.MockDaxClient{
-					MockCreateClusterWithContext: func(c context.Context, cci *dax.CreateClusterInput, o []request.Option) (*dax.CreateClusterOutput, error) {
-						return &dax.CreateClusterOutput{
-							Cluster: &dax.Cluster{ClusterName: awsclient.String(testClusterName)},
-						}, nil
-					},
-				},
-				cr: instance(
-					withName(testClusterName),
-				),
-			},
-			want: want{
-				cr: instance(
-					withName(testClusterName),
-					withConditions(xpv1.Creating()),
-					withExternalName(testClusterName),
-					withStatusName(testClusterName),
-				),
-				result: managed.ExternalCreation{},
-				dax: fake.MockDaxClientCall{
-					CreateClusterWithContext: []*fake.CallCreateClusterWithContext{
-						{
-							Ctx: context.Background(),
-							I:   &dax.CreateClusterInput{ClusterName: awsclient.String(testClusterName)},
-						},
-					},
-				},
-			},
-		},
 		"SuccessfulCreateWithParameters": {
 			args: args{
 				dax: &fake.MockDaxClient{
@@ -1132,41 +1100,14 @@ func TestCreate(t *testing.T) {
 				},
 				cr: instance(
 					withName(testClusterName),
+					withSpec(baseClusterParameters()),
 				),
 			},
 			want: want{
 				cr: instance(
 					withName(testClusterName),
-					withConditions(xpv1.Creating()),
-				),
-				result: managed.ExternalCreation{},
-				err:    errors.Wrap(errors.New(testErrCreateClusterFailed), errCreate),
-				dax: fake.MockDaxClientCall{
-					CreateClusterWithContext: []*fake.CallCreateClusterWithContext{
-						{
-							Ctx: context.Background(),
-							I:   &dax.CreateClusterInput{ClusterName: awsclient.String(testClusterName)},
-						},
-					},
-				},
-			},
-		},
-		"ErrorCreateDescription": {
-			args: args{
-				dax: &fake.MockDaxClient{
-					MockCreateClusterWithContext: func(c context.Context, cci *dax.CreateClusterInput, o []request.Option) (*dax.CreateClusterOutput, error) {
-						return &dax.CreateClusterOutput{}, errors.New(testErrCreateClusterFailed)
-					},
-				},
-				cr: instance(
-					withName(testClusterName),
-					withDescription(testDescription),
-				),
-			},
-			want: want{
-				cr: instance(
-					withName(testClusterName),
-					withDescription(testDescription),
+					withSpec(baseClusterParameters()),
+					withExternalName(testClusterName),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
@@ -1176,8 +1117,23 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateClusterInput{
-								ClusterName: awsclient.String(testClusterName),
-								Description: awsclient.String(testDescription),
+								AvailabilityZones:             []*string{awsclient.String(testAvailabilityZone), awsclient.String(testOtherAvailabilityZone)},
+								ClusterEndpointEncryptionType: awsclient.String(testClusterEndpointEncryptionType),
+								ClusterName:                   awsclient.String(testClusterName),
+								Description:                   awsclient.String(testDescription),
+								IamRoleArn:                    awsclient.String(testIamRoleARN),
+								NodeType:                      awsclient.String(testNodeType),
+								NotificationTopicArn:          awsclient.String(testTopicARN),
+								ParameterGroupName:            awsclient.String(testParameterGroupName),
+								PreferredMaintenanceWindow:    awsclient.String(testPreferredMaintenanceWindow),
+								ReplicationFactor:             awsclient.Int64(testReplicationFactor),
+								SSESpecification:              &dax.SSESpecification{Enabled: awsclient.Bool(testSSESpecificationEnabled)},
+								SecurityGroupIds:              []*string{awsclient.String(testSecurityGroupIdentifier)},
+								SubnetGroupName:               awsclient.String(testSubnetGroupName),
+								Tags: []*dax.Tag{{
+									Key:   awsclient.String(testTagKey),
+									Value: awsclient.String(testTagValue),
+								}},
 							},
 						},
 					},

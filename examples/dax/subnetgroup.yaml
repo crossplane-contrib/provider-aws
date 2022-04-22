@@ -6,6 +6,5 @@ spec:
   forProvider:
     region: us-east-1
     description: "Test subnet group description."
-    subnetIds:
-      - "subnet-0999fa999bef99a99"
----
+    subnetIDRefs:
+      - name: "sample-subnet1"

@@ -87,7 +87,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDs),
 		Extract:       reference.ExternalName(),
 		References:    mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDRefs,
-		Selector:      mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDsSelector,
+		Selector:      mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDSelector,
 		To: reference.To{
 			List:    &v1beta11.SecurityGroupList{},
 			Managed: &v1beta11.SecurityGroup{},

@@ -64,7 +64,6 @@ func setupExternal(e *external) {
 	e.preObserve = preObserve
 	e.postObserve = postObserve
 	e.preCreate = preCreate
-	e.postCreate = postCreate
 	e.preUpdate = preUpdate
 	e.preDelete = preDelete
 	e.isUpToDate = isUpToDate
@@ -604,6 +603,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withName(testSubnetGroupName),
+					withExternalName(testSubnetGroupName),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
@@ -638,6 +638,7 @@ func TestCreate(t *testing.T) {
 					withName(testSubnetGroupName),
 					withSubnetID(testSubnetIdentifier),
 					withSubnetID(testOtherSubnetIdentifier),
+					withExternalName(testSubnetGroupName),
 					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},

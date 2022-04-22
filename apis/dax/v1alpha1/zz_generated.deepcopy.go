@@ -482,8 +482,8 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
-	if in.SecurityGroupIDsSelector != nil {
-		in, out := &in.SecurityGroupIDsSelector, &out.SecurityGroupIDsSelector
+	if in.SecurityGroupIDSelector != nil {
+		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}

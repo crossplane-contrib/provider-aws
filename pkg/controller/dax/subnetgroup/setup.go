@@ -25,7 +25,6 @@ func SetupSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = preCreate
-			e.postCreate = postCreate
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
 			e.isUpToDate = isUpToDate
@@ -58,19 +57,12 @@ func postObserve(_ context.Context, cr *svcapitypes.SubnetGroup, _ *svcsdk.Descr
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.CreateSubnetGroupInput) error {
-	obj.SubnetGroupName = awsclients.String(cr.Name)
+	meta.SetExternalName(cr, cr.Name)
+	obj.SubnetGroupName = awsclients.String(meta.GetExternalName(cr))
 	for _, s := range cr.Spec.ForProvider.SubnetIds {
 		obj.SubnetIds = append(obj.SubnetIds, awsclients.String(*s))
 	}
 	return nil
-}
-
-func postCreate(_ context.Context, cr *svcapitypes.SubnetGroup, _ *svcsdk.CreateSubnetGroupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, cr.Name)
-	return cre, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.UpdateSubnetGroupInput) error {
