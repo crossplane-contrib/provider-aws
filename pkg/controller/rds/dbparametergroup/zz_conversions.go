@@ -48,9 +48,9 @@ func GenerateDBParameterGroup(resp *svcsdk.DescribeDBParameterGroupsOutput) *svc
 			cr.Status.AtProvider.DBParameterGroupARN = nil
 		}
 		if elem.DBParameterGroupFamily != nil {
-			cr.Spec.ForProvider.DBParameterGroupFamily = elem.DBParameterGroupFamily
+			cr.Status.AtProvider.DBParameterGroupFamily = elem.DBParameterGroupFamily
 		} else {
-			cr.Spec.ForProvider.DBParameterGroupFamily = nil
+			cr.Status.AtProvider.DBParameterGroupFamily = nil
 		}
 		if elem.DBParameterGroupName != nil {
 			cr.Status.AtProvider.DBParameterGroupName = elem.DBParameterGroupName
@@ -76,25 +76,22 @@ func GenerateDBParameterGroup(resp *svcsdk.DescribeDBParameterGroupsOutput) *svc
 func GenerateCreateDBParameterGroupInput(cr *svcapitypes.DBParameterGroup) *svcsdk.CreateDBParameterGroupInput {
 	res := &svcsdk.CreateDBParameterGroupInput{}
 
-	if cr.Spec.ForProvider.DBParameterGroupFamily != nil {
-		res.SetDBParameterGroupFamily(*cr.Spec.ForProvider.DBParameterGroupFamily)
-	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+		f1 := []*svcsdk.Tag{}
+		for _, f1iter := range cr.Spec.ForProvider.Tags {
+			f1elem := &svcsdk.Tag{}
+			if f1iter.Key != nil {
+				f1elem.SetKey(*f1iter.Key)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
+			if f1iter.Value != nil {
+				f1elem.SetValue(*f1iter.Value)
 			}
-			f2 = append(f2, f2elem)
+			f1 = append(f1, f1elem)
 		}
-		res.SetTags(f2)
+		res.SetTags(f1)
 	}
 
 	return res

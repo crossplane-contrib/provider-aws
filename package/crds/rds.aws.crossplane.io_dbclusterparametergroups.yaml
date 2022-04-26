@@ -81,8 +81,26 @@ spec:
                       aurora-postgresql \n The output contains duplicates. \n The
                       following are the valid DB engine values: \n * aurora (for MySQL
                       5.6-compatible Aurora) \n * aurora-mysql (for MySQL 5.7-compatible
-                      Aurora) \n * aurora-postgresql"
+                      Aurora) \n * aurora-postgresql \n One of DBParameterGroupFamily
+                      or DBParameterGroupFamilySelector is required."
                     type: string
+                  dbParameterGroupFamilySelector:
+                    description: "DBParameterGroupFamilySelector determines DBParameterGroupFamily
+                      from the engine and engine version. \n One of DBParameterGroupFamily
+                      or DBParameterGroupFamilySelector is required. \n Will not be
+                      used if DBParameterGroupFamily is already set."
+                    properties:
+                      engine:
+                        description: Engine is the name of the database engine.
+                        type: string
+                      engineVersion:
+                        description: EngineVersion is the version of the database
+                          engine. If it is nil, the default engine version given by
+                          AWS will be used.
+                        type: string
+                    required:
+                    - engine
+                    type: object
                   description:
                     description: The description for the DB cluster parameter group.
                     type: string
@@ -132,7 +150,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - dbParameterGroupFamily
                 - description
                 - region
                 type: object
@@ -246,6 +263,10 @@ spec:
                     type: string
                   dbClusterParameterGroupName:
                     description: The name of the DB cluster parameter group.
+                    type: string
+                  dbParameterGroupFamily:
+                    description: The name of the DB parameter group family that this
+                      DB cluster parameter group is compatible with.
                     type: string
                 type: object
               conditions:

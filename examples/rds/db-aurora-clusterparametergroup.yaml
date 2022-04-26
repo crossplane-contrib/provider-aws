@@ -5,7 +5,8 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    dbParameterGroupFamily: aurora-mysql5.7
+    dbParameterGroupFamilySelector:
+      engine: aurora-mysql
     description: example
     tags:
       - key: created-by
