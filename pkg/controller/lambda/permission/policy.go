@@ -20,17 +20,23 @@ import (
 	"encoding/json"
 )
 
-// type statementAction []string
+func (p *policyPrincipal) UnmarshalJSON(data []byte) error {
+	// Check if its a single action
+	var str string
 
-// func (s *statementAction) UnmarshalJSON(data []byte) (err error) {
-// 	// Check if its a single action
-// 	var str string
-// 	if err := json.Unmarshal(data, &str); err == nil {
-// 		_ = append(*s, str)
-// 		return nil
-// 	}
-// 	return json.Unmarshal(data, s)
-// }
+	if err := json.Unmarshal(data, &str); err == nil {
+		p.Service = &str
+		return nil
+	}
+
+	pp := _policyPrincipal{}
+	if err := json.Unmarshal(data, &pp); err != nil {
+		return err
+	}
+
+	p.Service = pp.Service
+	return nil
+}
 
 type policyCondition struct {
 	ArnLike      map[string]string `json:"ArnLike,omitempty"`
@@ -40,6 +46,8 @@ type policyCondition struct {
 type policyPrincipal struct {
 	Service *string `json:"Service,omitempty"`
 }
+
+type _policyPrincipal policyPrincipal
 
 type policyStatement struct {
 	Sid       string          `json:"Sid"`
