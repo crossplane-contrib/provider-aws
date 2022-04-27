@@ -61,6 +61,8 @@ type Client interface {
 	ModifyCacheCluster(context.Context, *elasticache.ModifyCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
 
 	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
+
+	ListTagsForResource(context.Context, *elasticache.ListTagsForResourceInput, ...func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error)
 }
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
@@ -189,6 +191,12 @@ func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheC
 	return &elasticache.DescribeCacheClustersInput{CacheClusterId: &clusterID}
 }
 
+// NewListTagsForResourceInput returns ElastiCache list tags input usable with the
+// AWS API
+func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceInput {
+	return &elasticache.ListTagsForResourceInput{ResourceName: arn}
+}
+
 // LateInitialize assigns the observed configurations and assigns them to the
 // corresponding fields in ReplicationGroupParameters in order to let user
 // know the defaults and make the changes as wished on that value.
@@ -241,11 +249,6 @@ func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroup
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
 // the configuration of its member clusters differ from given desired state.
 func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) bool {
-	// fmt.Printf("KUBE:")
-	// spew.Dump(kube)
-	// fmt.Printf("OBSERVED:")
-	// spew.Dump(rg)
-
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return true
@@ -352,6 +355,33 @@ func sgNamesNeedUpdate(kube []string, cc []elasticachetypes.CacheSecurityGroupMe
 		}
 	}
 	return false
+}
+
+// ReplicationGroupTagsNeedUpdate
+func ReplicationGroupTagsNeedUpdate(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) bool {
+	if len(rgtags) != len(tags) {
+		return true
+	}
+
+	add, remove := DiffTags(rgtags, tags)
+
+	return len(add) != 0 || len(remove) != 0
+}
+
+// DiffTags returns tags that should be added or removed.
+func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string]string, remove []string) {
+
+	local := make(map[string]string, len(rgtags))
+	for _, t := range rgtags {
+		local[t.Key] = t.Value
+	}
+
+	remote := make(map[string]string, len(tags))
+	for _, t := range tags {
+		remote[aws.ToString(t.Key)] = aws.ToString(t.Value)
+	}
+
+	return clients.DiffTags(local, remote)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of

@@ -17,6 +17,7 @@ limitations under the License.
 package elasticache
 
 import (
+	"sort"
 	"strconv"
 	"testing"
 
@@ -1193,6 +1194,212 @@ func TestMultiAZEnabled(t *testing.T) {
 			}
 			if aws.BoolValue(got) != aws.BoolValue(tc.want) {
 				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
+			}
+		})
+	}
+}
+
+func TestDiffTags(t *testing.T) {
+	type args struct {
+		local  []v1beta1.Tag
+		remote []elasticachetypes.Tag
+	}
+	type want struct {
+		add    map[string]string
+		remove []string
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"AllNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+			},
+			want: want{
+				add:    map[string]string{"key": "val"},
+				remove: []string{},
+			},
+		},
+		"SomeNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+			want: want{
+				add: map[string]string{
+					"key1": "val1",
+					"key2": "val2",
+				},
+				remove: []string{},
+			},
+		},
+		"Update": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "different"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				add:    map[string]string{"key": "different"},
+				remove: []string{"key"},
+			},
+		},
+		"RemoveAll": {
+			args: args{
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				add:    map[string]string{},
+				remove: []string{"key", "key1", "key2"},
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			tagCmp := cmpopts.SortSlices(func(i, j elasticachetypes.Tag) bool {
+				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+			})
+			add, remove := DiffTags(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("add: -want, +got:\n%s", diff)
+			}
+			sort.Strings(tc.want.remove)
+			sort.Strings(remove)
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
+				t.Errorf("remove: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestReplicationGroupTagsNeedUpdate(t *testing.T) {
+	type args struct {
+		local  []v1beta1.Tag
+		remote []elasticachetypes.Tag
+	}
+	type want struct {
+		res bool
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"AllNewRemoteNil": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"AllNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+				remote: []elasticachetypes.Tag{},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"SomeNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"Update": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "different"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"Equal": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: false,
+			},
+		},
+		"EqualEmpty": {
+			args: args{
+				local:  []v1beta1.Tag{},
+				remote: []elasticachetypes.Tag{},
+			},
+			want: want{
+				res: false,
+			},
+		},
+		"RemoveAll": {
+			args: args{
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			res := ReplicationGroupTagsNeedUpdate(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.res, res); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}
