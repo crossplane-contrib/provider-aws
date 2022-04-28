@@ -1292,7 +1292,7 @@ func TestDiffTags(t *testing.T) {
 	}
 }
 
-func TestReplicationGroupTagsNeedUpdate(t *testing.T) {
+func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 	type args struct {
 		local  []v1beta1.Tag
 		remote []elasticachetypes.Tag
@@ -1397,7 +1397,7 @@ func TestReplicationGroupTagsNeedUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			res := ReplicationGroupTagsNeedUpdate(tc.args.local, tc.args.remote)
+			res := ReplicationGroupTagsNeedsUpdate(tc.args.local, tc.args.remote)
 			if diff := cmp.Diff(tc.want.res, res); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

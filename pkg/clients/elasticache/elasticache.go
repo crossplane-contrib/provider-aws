@@ -63,6 +63,8 @@ type Client interface {
 	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
 
 	ListTagsForResource(context.Context, *elasticache.ListTagsForResourceInput, ...func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error)
+	AddTagsToResource(context.Context, *elasticache.AddTagsToResourceInput, ...func(*elasticache.Options)) (*elasticache.AddTagsToResourceOutput, error)
+	RemoveTagsFromResource(context.Context, *elasticache.RemoveTagsFromResourceInput, ...func(*elasticache.Options)) (*elasticache.RemoveTagsFromResourceOutput, error)
 }
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
@@ -258,7 +260,7 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 		return true
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
 		return true
-	case !reflect.DeepEqual(kube.MultiAZEnabled, multiAZEnabled(rg.MultiAZ)):
+	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
 		return true
 	}
 	for _, cc := range ccList {
@@ -357,13 +359,13 @@ func sgNamesNeedUpdate(kube []string, cc []elasticachetypes.CacheSecurityGroupMe
 	return false
 }
 
-// ReplicationGroupTagsNeedUpdate
-func ReplicationGroupTagsNeedUpdate(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) bool {
-	if len(rgtags) != len(tags) {
+// ReplicationGroupTagsNeedsUpdate indicates whether tags need updating
+func ReplicationGroupTagsNeedsUpdate(kube []v1beta1.Tag, tags []elasticachetypes.Tag) bool {
+	if len(kube) != len(tags) {
 		return true
 	}
 
-	add, remove := DiffTags(rgtags, tags)
+	add, remove := DiffTags(kube, tags)
 
 	return len(add) != 0 || len(remove) != 0
 }
