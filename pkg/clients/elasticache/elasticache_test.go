@@ -748,13 +748,36 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "NeedsNewMultiAZ",
+			name: "NeedsMultiAZUpdate",
 			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticachetypes.ReplicationGroup{
-				//AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				//CacheNodeType:          aws.String(cacheNodeType),
-				MultiAZ: elasticachetypes.MultiAZStatusDisabled,
-				//SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusDisabled, // trigger Update
+				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         aws.String(snapshotWindow),
+			},
+			ccList: []elasticachetypes.CacheCluster{
+				{
+					EngineVersion:              aws.String(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
+					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
+						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
+						for i, id := range securityGroupIDs {
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						}
+						return ids
+					}(),
+					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
+						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+						for i, n := range cacheSecurityGroupNames {
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+						}
+						return names
+					}(),
+				},
 			},
 			want: true,
 		},
