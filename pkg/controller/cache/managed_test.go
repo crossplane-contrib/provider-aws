@@ -265,6 +265,14 @@ func TestObserve(t *testing.T) {
 						}},
 					}, nil
 				},
+				MockListTagsForResource: func(ctx context.Context, _ *elasticache.ListTagsForResourceInput, opts []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+					return &elasticache.ListTagsForResourceOutput{
+						TagList: []types.Tag{
+							{Key: aws.String("key1"), Value: aws.String("val1")},
+							{Key: aws.String("key2"), Value: aws.String("val2")},
+						},
+					}, nil
+				},
 			}},
 			r: replicationGroup(
 				withReplicationGroupID(name),
