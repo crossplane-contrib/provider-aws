@@ -282,8 +282,8 @@ type ReplicationGroupParameters struct {
 
 	// AutomaticFailoverEnabled specifies whether a read-only replica is
 	// automatically promoted to read/write primary if the existing primary
-	// fails. If true, Multi-AZ is enabled for this replication group. If false,
-	// Multi-AZ is disabled for this replication group.
+	// fails. Must be set to true if Multi-AZ is enabled for this replication group.
+	// If false, Multi-AZ cannot be enabled for this replication group.
 	//
 	// AutomaticFailoverEnabled must be enabled for Redis (cluster mode enabled)
 	// replication groups.
@@ -386,12 +386,10 @@ type ReplicationGroupParameters struct {
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
-	// MultiAZ
-	// +optional
-
 	// MultiAZEnabled specifies if Multi-AZ is enabled to enhance fault tolerance
 	// You must have nodes across two or more Availability Zones in order to enable
 	// this feature.
+	// If this feature is set, automaticFailoverEnabled must be set to true.
 	// +optional
 	MultiAZEnabled *bool `json:"multiAZEnabled,omitempty"`
 
@@ -559,7 +557,6 @@ type ReplicationGroupParameters struct {
 
 	// A list of cost allocation tags to be added to this resource. A tag is a key-value
 	// pair.
-	// +immutable
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
