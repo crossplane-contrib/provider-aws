@@ -60,6 +60,9 @@ type Client interface {
 	DeleteCacheCluster(context.Context, *elasticache.DeleteCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
 	ModifyCacheCluster(context.Context, *elasticache.ModifyCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
 
+	DecreaseReplicaCount(ctx context.Context, params *elasticache.DecreaseReplicaCountInput, optFns ...func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error)
+	IncreaseReplicaCount(ctx context.Context, params *elasticache.IncreaseReplicaCountInput, optFns ...func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error)
+
 	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
 
 	ListTagsForResource(context.Context, *elasticache.ListTagsForResourceInput, ...func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error)
@@ -197,6 +200,28 @@ func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheC
 // AWS API
 func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceInput {
 	return &elasticache.ListTagsForResourceInput{ResourceName: arn}
+}
+
+// NewDecreaseReplicaCountInput returns Elasticache replication group decrease
+// the number of replicaGroup cache clusters
+func NewDecreaseReplicaCountInput(replicationGroupId string, newReplicaCount *int32) *elasticache.DecreaseReplicaCountInput {
+	return &elasticache.DecreaseReplicaCountInput{
+		ApplyImmediately:   true, // false is not supported by the API
+		ReplicationGroupId: &replicationGroupId,
+		NewReplicaCount:    newReplicaCount,
+	}
+
+}
+
+// NewIncreaseReplicaCountInput returns Elasticache replication group increase
+// the number of replicaGroup cache clusters
+func NewIncreaseReplicaCountInput(replicationGroupId string, newReplicaCount *int32) *elasticache.IncreaseReplicaCountInput {
+	return &elasticache.IncreaseReplicaCountInput{
+		ApplyImmediately:   true, // false is not supported by the API
+		ReplicationGroupId: &replicationGroupId,
+		NewReplicaCount:    newReplicaCount,
+	}
+
 }
 
 // LateInitialize assigns the observed configurations and assigns them to the
@@ -384,6 +409,12 @@ func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string
 	}
 
 	return clients.DiffTags(local, remote)
+}
+
+// ReplicationGroupNumCacheClustersNeedsUpdate determines of the number of Cache Clusters
+// in a replication group needs to be updated
+func ReplicationGroupNumCacheClustersNeedsUpdate(kube v1beta1.ReplicationGroupParameters, ccList []elasticachetypes.CacheCluster) bool {
+	return aws.ToInt(kube.NumCacheClusters) != len(ccList)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of
