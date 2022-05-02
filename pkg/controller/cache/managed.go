@@ -163,7 +163,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		ResourceExists: true,
 		ResourceUpToDate: !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) &&
 			!elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg) &&
-			!elasticache.ReplicationGroupNumCacheClustersNeedsUpdate(cr.Spec.ForProvider, ccList) &&
 			!tagsNeedUpdate,
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
 	}, nil
@@ -234,22 +233,21 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetCacheClusterList)
 	}
 
-	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
-		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
-		}
-		// perform one update at a time
-		return managed.ExternalUpdate{}, nil
-
-	}
-
 	if elasticache.ReplicationGroupNumCacheClustersNeedsUpdate(cr.Spec.ForProvider, ccList) {
 		err := e.updateReplicationGroupNumCacheClusters(ctx, meta.GetExternalName(cr), len(ccList), aws.ToInt(cr.Spec.ForProvider.NumCacheClusters))
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
 		}
 		return managed.ExternalUpdate{}, nil
+	}
+
+	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
+		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+		}
+		return managed.ExternalUpdate{}, nil
+
 	}
 
 	err = e.updateTags(ctx, cr.Spec.ForProvider.Tags, rg.ARN)

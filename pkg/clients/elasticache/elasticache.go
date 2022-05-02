@@ -287,7 +287,10 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 		return true
 	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
 		return true
+	case ReplicationGroupNumCacheClustersNeedsUpdate(kube, ccList):
+		return true
 	}
+
 	for _, cc := range ccList {
 		if cacheClusterNeedsUpdate(kube, cc) {
 			return true
