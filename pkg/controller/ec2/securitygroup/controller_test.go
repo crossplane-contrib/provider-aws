@@ -150,6 +150,73 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
+		"EmptyExternalNameExistingSG": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{GroupId: aws.String(sgID)}},
+						}, nil
+					},
+				},
+				cr: sg(withExternalName("")),
+			},
+			want: want{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"EmptyExternalNameNonExistingSG": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{},
+						}, nil
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr: sg(),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"EmptyExternalNameClientError": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr: sg(),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+				err: awsclient.Wrap(errBoom, errGetSecurityGroup),
+			},
+		},
 		"MultipleSGs": {
 			args: args{
 				sg: &fake.MockSecurityGroupClient{
