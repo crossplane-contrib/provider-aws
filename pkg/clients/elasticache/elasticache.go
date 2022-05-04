@@ -204,10 +204,10 @@ func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceIn
 
 // NewDecreaseReplicaCountInput returns Elasticache replication group decrease
 // the number of replicaGroup cache clusters
-func NewDecreaseReplicaCountInput(replicationGroupId string, newReplicaCount *int32) *elasticache.DecreaseReplicaCountInput {
+func NewDecreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.DecreaseReplicaCountInput {
 	return &elasticache.DecreaseReplicaCountInput{
 		ApplyImmediately:   true, // false is not supported by the API
-		ReplicationGroupId: &replicationGroupId,
+		ReplicationGroupId: &replicationGroupID,
 		NewReplicaCount:    newReplicaCount,
 	}
 
@@ -215,10 +215,10 @@ func NewDecreaseReplicaCountInput(replicationGroupId string, newReplicaCount *in
 
 // NewIncreaseReplicaCountInput returns Elasticache replication group increase
 // the number of replicaGroup cache clusters
-func NewIncreaseReplicaCountInput(replicationGroupId string, newReplicaCount *int32) *elasticache.IncreaseReplicaCountInput {
+func NewIncreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.IncreaseReplicaCountInput {
 	return &elasticache.IncreaseReplicaCountInput{
 		ApplyImmediately:   true, // false is not supported by the API
-		ReplicationGroupId: &replicationGroupId,
+		ReplicationGroupId: &replicationGroupID,
 		NewReplicaCount:    newReplicaCount,
 	}
 
