@@ -249,7 +249,6 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 
 	}
-
 	err = e.updateTags(ctx, cr.Spec.ForProvider.Tags, rg.ARN)
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateReplicationGroupTags)
 }
@@ -338,7 +337,6 @@ func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, r
 	// Cache clusters consist of 1 primary and 1-5 replicas.
 	// The AWS API modifies the number of replicas
 	newReplicaCount := desiredClusterSize - 1
-
 	switch {
 	case newReplicaCount < 1:
 		return errors.New(errReplicationGroupCacheClusterMinimum)
