@@ -49,6 +49,7 @@ const (
 	errUnexpectedObject = "The managed resource is not an SecurityGroup resource"
 
 	errDescribe         = "failed to describe SecurityGroup"
+	errGetSecurityGroup = "failed to get SecurityGroup based on groupName"
 	errMultipleItems    = "retrieved multiple SecurityGroups for the given securityGroupId"
 	errCreate           = "failed to create the SecurityGroup resource"
 	errAuthorizeIngress = "failed to authorize ingress rules"
@@ -117,7 +118,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{}, nil
+		securityGroupArn, err := e.getSecurityGroupByName(ctx, cr.Spec.ForProvider.GroupName)
+		if securityGroupArn == nil || err != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errGetSecurityGroup)
+		}
+
+		meta.SetExternalName(cr, aws.ToString(securityGroupArn))
+		_ = e.kube.Update(ctx, cr)
 	}
 
 	response, err := e.sg.DescribeSecurityGroups(ctx, &awsec2.DescribeSecurityGroupsInput{
@@ -291,4 +298,18 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)
+}
+
+func (e *external) getSecurityGroupByName(ctx context.Context, groupName string) (*string, error) {
+	groups, err := e.sg.DescribeSecurityGroups(ctx, &awsec2.DescribeSecurityGroupsInput{
+		Filters: []awsec2types.Filter{
+			{Name: aws.String("group-name"), Values: []string{groupName}},
+		},
+	})
+
+	if err != nil || len(groups.SecurityGroups) == 0 {
+		return nil, err
+	}
+
+	return groups.SecurityGroups[0].GroupId, nil
 }
