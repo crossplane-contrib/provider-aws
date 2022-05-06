@@ -61,6 +61,10 @@ type Client interface {
 	ModifyCacheCluster(context.Context, *elasticache.ModifyCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
 
 	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
+
+	ListTagsForResource(context.Context, *elasticache.ListTagsForResourceInput, ...func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error)
+	AddTagsToResource(context.Context, *elasticache.AddTagsToResourceInput, ...func(*elasticache.Options)) (*elasticache.AddTagsToResourceOutput, error)
+	RemoveTagsFromResource(context.Context, *elasticache.RemoveTagsFromResourceInput, ...func(*elasticache.Options)) (*elasticache.RemoveTagsFromResourceOutput, error)
 }
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
@@ -88,6 +92,7 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheSecurityGroupNames:    g.CacheSecurityGroupNames,
 		CacheSubnetGroupName:       g.CacheSubnetGroupName,
 		EngineVersion:              g.EngineVersion,
+		MultiAZEnabled:             g.MultiAZEnabled,
 		NotificationTopicArn:       g.NotificationTopicARN,
 		NumCacheClusters:           clients.Int32Address(g.NumCacheClusters),
 		NumNodeGroups:              clients.Int32Address(g.NumNodeGroups),
@@ -137,6 +142,7 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
 		EngineVersion:               g.EngineVersion,
+		MultiAZEnabled:              g.MultiAZEnabled,
 		NotificationTopicArn:        g.NotificationTopicARN,
 		NotificationTopicStatus:     g.NotificationTopicStatus,
 		PreferredMaintenanceWindow:  g.PreferredMaintenanceWindow,
@@ -185,6 +191,12 @@ func NewDescribeReplicationGroupsInput(id string) *elasticache.DescribeReplicati
 // input suitable for use with the AWS API.
 func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheClustersInput {
 	return &elasticache.DescribeCacheClustersInput{CacheClusterId: &clusterID}
+}
+
+// NewListTagsForResourceInput returns ElastiCache list tags input usable with the
+// AWS API
+func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceInput {
+	return &elasticache.ListTagsForResourceInput{ResourceName: arn}
 }
 
 // LateInitialize assigns the observed configurations and assigns them to the
@@ -248,6 +260,8 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 		return true
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
 		return true
+	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
+		return true
 	}
 	for _, cc := range ccList {
 		if cacheClusterNeedsUpdate(kube, cc) {
@@ -263,6 +277,17 @@ func automaticFailoverEnabled(af elasticachetypes.AutomaticFailoverStatus) *bool
 	}
 	r := af == elasticachetypes.AutomaticFailoverStatusEnabled || af == elasticachetypes.AutomaticFailoverStatusEnabling
 	return &r
+}
+
+func multiAZEnabled(maz elasticachetypes.MultiAZStatus) *bool {
+	switch maz {
+	case elasticachetypes.MultiAZStatusEnabled:
+		return aws.Bool(true)
+	case elasticachetypes.MultiAZStatusDisabled:
+		return aws.Bool(false)
+	default:
+		return nil
+	}
 }
 
 func versionMatches(kubeVersion *string, awsVersion *string) bool {
@@ -332,6 +357,33 @@ func sgNamesNeedUpdate(kube []string, cc []elasticachetypes.CacheSecurityGroupMe
 		}
 	}
 	return false
+}
+
+// ReplicationGroupTagsNeedsUpdate indicates whether tags need updating
+func ReplicationGroupTagsNeedsUpdate(kube []v1beta1.Tag, tags []elasticachetypes.Tag) bool {
+	if len(kube) != len(tags) {
+		return true
+	}
+
+	add, remove := DiffTags(kube, tags)
+
+	return len(add) != 0 || len(remove) != 0
+}
+
+// DiffTags returns tags that should be added or removed.
+func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string]string, remove []string) {
+
+	local := make(map[string]string, len(rgtags))
+	for _, t := range rgtags {
+		local[t.Key] = t.Value
+	}
+
+	remote := make(map[string]string, len(tags))
+	for _, t := range tags {
+		remote[aws.ToString(t.Key)] = aws.ToString(t.Value)
+	}
+
+	return clients.DiffTags(local, remote)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of

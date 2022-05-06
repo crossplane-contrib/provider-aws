@@ -46,15 +46,17 @@ import (
 
 // Error strings.
 const (
-	errUpdateReplicationGroupCR = "cannot update ReplicationGroup Custom Resource"
-	errGetCacheClusterList      = "cannot get cache cluster list"
-	errNotReplicationGroup      = "managed resource is not an ElastiCache replication group"
-	errDescribeReplicationGroup = "cannot describe ElastiCache replication group"
-	errGenerateAuthToken        = "cannot generate ElastiCache auth token"
-	errCreateReplicationGroup   = "cannot create ElastiCache replication group"
-	errModifyReplicationGroup   = "cannot modify ElastiCache replication group"
-	errDeleteReplicationGroup   = "cannot delete ElastiCache replication group"
-	errModifyReplicationGroupSC = "cannot modify ElastiCache replication group shard configuration"
+	errUpdateReplicationGroupCR   = "cannot update ReplicationGroup Custom Resource"
+	errGetCacheClusterList        = "cannot get cache cluster list"
+	errNotReplicationGroup        = "managed resource is not an ElastiCache replication group"
+	errDescribeReplicationGroup   = "cannot describe ElastiCache replication group"
+	errGenerateAuthToken          = "cannot generate ElastiCache auth token"
+	errCreateReplicationGroup     = "cannot create ElastiCache replication group"
+	errModifyReplicationGroup     = "cannot modify ElastiCache replication group"
+	errDeleteReplicationGroup     = "cannot delete ElastiCache replication group"
+	errModifyReplicationGroupSC   = "cannot modify ElastiCache replication group shard configuration"
+	errListReplicationGroupTags   = "cannot list ElastiCache replication group tags"
+	errUpdateReplicationGroupTags = "cannot update ElastiCache replication group tags"
 )
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
@@ -117,7 +119,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// ask for one group by name, so we should get either a single element list
 	// or an error.
 	rg := rsp.ReplicationGroups[0]
-
 	ccList, err := getCacheClusterList(ctx, e.client, rg.MemberClusters)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGetCacheClusterList)
@@ -147,9 +148,20 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
+	var tagsNeedUpdate bool
+	if cr.Status.AtProvider.Status == v1beta1.StatusAvailable {
+		tags, err := e.client.ListTagsForResource(ctx, elasticache.NewListTagsForResourceInput(rg.ARN))
+		if err != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errListReplicationGroupTags)
+		}
+		tagsNeedUpdate = elasticache.ReplicationGroupTagsNeedsUpdate(cr.Spec.ForProvider.Tags, tags.TagList)
+	}
+
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) && !elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg),
+		ResourceExists: true,
+		ResourceUpToDate: !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) &&
+			!elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg) &&
+			!tagsNeedUpdate,
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
 	}, nil
 }
@@ -214,8 +226,23 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+	ccList, err := getCacheClusterList(ctx, e.client, rg.MemberClusters)
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetCacheClusterList)
+	}
+
+	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
+		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+		}
+		// perform one update at a time
+		return managed.ExternalUpdate{}, nil
+
+	}
+
+	err = e.updateTags(ctx, cr.Spec.ForProvider.Tags, rg.ARN)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateReplicationGroupTags)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -229,6 +256,29 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err := e.client.DeleteReplicationGroup(ctx, elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
 	return awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
+}
+
+func (e *external) updateTags(ctx context.Context, tags []v1beta1.Tag, arn *string) error {
+	resp, err := e.client.ListTagsForResource(ctx, elasticache.NewListTagsForResourceInput(arn))
+	if err != nil {
+		return awsclient.Wrap(err, errListReplicationGroupTags)
+	}
+	add, remove := elasticache.DiffTags(tags, resp.TagList)
+	if len(remove) != 0 {
+		if _, err := e.client.RemoveTagsFromResource(ctx, &awselasticache.RemoveTagsFromResourceInput{ResourceName: arn, TagKeys: remove}); err != nil {
+			return awsclient.Wrap(err, errUpdateReplicationGroupTags)
+		}
+	}
+	if len(add) != 0 {
+		addTags := []awselasticachetypes.Tag{}
+		for k, v := range add {
+			addTags = append(addTags, awselasticachetypes.Tag{Key: aws.String(k), Value: aws.String(v)})
+		}
+		if _, err := e.client.AddTagsToResource(ctx, &awselasticache.AddTagsToResourceInput{ResourceName: arn, Tags: addTags}); err != nil {
+			return awsclient.Wrap(err, errUpdateReplicationGroupTags)
+		}
+	}
+	return nil
 }
 
 type tagger struct {
