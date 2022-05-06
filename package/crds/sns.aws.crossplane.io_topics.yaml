@@ -76,6 +76,9 @@ spec:
                   displayName:
                     description: The display name to use for a topic with SNS subscriptions.
                     type: string
+                  fifoTopic:
+                    description: Whether or not this should be a fifo-topic
+                    type: boolean
                   kmsMasterKeyId:
                     description: "Setting this enables server side encryption at-rest
                       to your topic. The ID of an AWS-managed customer master key
