@@ -23,17 +23,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/features"
 )
 
+const (
+	errRequireDBParameterGroupFamilyOrFromEngine = "either spec.forProvider.dbParameterGroupFamily or spec.forProvider.dbParameterGroupFamilyFromEngine is required"
+	errDetermineDBParameterGroupFamily           = "cannot determine DB parametergroup family"
+	errGetDBEngineVersion                        = "cannot decsribe DB engine versions"
+	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
+)
+
 // SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
 func SetupDBParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.preCreate = preCreate
+			c := &custom{client: e.client, kube: e.kube}
+			e.preCreate = c.preCreate
 			e.preObserve = preObserve
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
-			c := &custom{client: e.client, kube: e.kube}
+			e.lateInitialize = lateInitialize
 			e.isUpToDate = c.isUpToDate
 		},
 	}
@@ -74,8 +82,12 @@ func postObserve(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsd
 	return obs, err
 }
 
-func preCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
+	if err := e.ensureParameterGroupFamily(ctx, cr); err != nil {
+		return errors.Wrap(err, errDetermineDBParameterGroupFamily)
+	}
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBParameterGroupFamily = cr.Spec.ForProvider.DBParameterGroupFamily
 	return nil
 }
 
@@ -108,6 +120,13 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 func preDelete(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.DeleteDBParameterGroupInput) (bool, error) {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func lateInitialize(spec *svcapitypes.DBParameterGroupParameters, current *svcsdk.DescribeDBParameterGroupsOutput) error {
+	// Len > 0 is ensured by the generated controller.
+	obj := current.DBParameterGroups[0]
+	spec.DBParameterGroupFamily = obj.DBParameterGroupFamily
+	return nil
 }
 
 func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
@@ -151,4 +170,34 @@ func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBP
 		return results, err
 	}
 	return results, nil
+}
+
+func (e *custom) ensureParameterGroupFamily(ctx context.Context, cr *svcapitypes.DBParameterGroup) error {
+	if cr.Spec.ForProvider.DBParameterGroupFamily == nil {
+		engineVersion, err := e.getDBEngineVersion(ctx, cr.Spec.ForProvider.DBParameterGroupFamilySelector)
+		if err != nil {
+			return errors.Wrap(err, errGetDBEngineVersion)
+		}
+		cr.Spec.ForProvider.DBParameterGroupFamily = engineVersion.DBParameterGroupFamily
+	}
+	return nil
+}
+
+func (e *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.DBParameterGroupFamilyNameSelector) (*svcsdk.DBEngineVersion, error) {
+	if selector == nil {
+		return nil, errors.New(errRequireDBParameterGroupFamilyOrFromEngine)
+	}
+
+	resp, err := e.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
+		Engine:        &selector.Engine,
+		EngineVersion: selector.EngineVersion,
+		DefaultOnly:   awsclients.Bool(selector.EngineVersion == nil),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp.DBEngineVersions == nil || len(resp.DBEngineVersions) == 0 || resp.DBEngineVersions[0] == nil {
+		return nil, errors.New(errNoDBEngineVersions)
+	}
+	return resp.DBEngineVersions[0], nil
 }

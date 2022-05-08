@@ -2,7 +2,8 @@ package dbclusterparametergroup
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -23,17 +24,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/features"
 )
 
+const (
+	errRequireDBParameterGroupFamilyOrFromEngine = "either spec.forProvider.dbParameterGroupFamily or spec.forProvider.dbParameterGroupFamilyFromEngine is required"
+	errDetermineDBParameterGroupFamily           = "cannot determine DB parametergroup family"
+	errGetDBEngineVersion                        = "cannot decsribe DB engine versions"
+	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
+)
+
 // SetupDBClusterParameterGroup adds a controller that reconciles DBClusterParameterGroup.
 func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.preCreate = preCreate
+			c := &custom{client: e.client, kube: e.kube}
+			e.preCreate = c.preCreate
 			e.preObserve = preObserve
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
-			c := &custom{client: e.client, kube: e.kube}
+			e.lateInitialize = lateInitialize
 			e.isUpToDate = c.isUpToDate
 		},
 	}
@@ -74,8 +83,12 @@ func postObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *
 	return obs, err
 }
 
-func preCreate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.CreateDBClusterParameterGroupInput) error {
+func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.CreateDBClusterParameterGroupInput) error {
+	if err := c.ensureParameterGroupFamily(ctx, cr); err != nil {
+		return errors.Wrap(err, errDetermineDBParameterGroupFamily)
+	}
 	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBParameterGroupFamily = cr.Spec.ForProvider.DBParameterGroupFamily
 	return nil
 }
 
@@ -108,6 +121,13 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
 	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func lateInitialize(spec *svcapitypes.DBClusterParameterGroupParameters, current *svcsdk.DescribeDBClusterParameterGroupsOutput) error {
+	// Len > 0 is ensured by the generated controller.
+	obj := current.DBClusterParameterGroups[0]
+	spec.DBParameterGroupFamily = obj.DBParameterGroupFamily
+	return nil
 }
 
 func (c *custom) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, error) {
@@ -151,4 +171,34 @@ func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapity
 		return results, err
 	}
 	return results, nil
+}
+
+func (c *custom) ensureParameterGroupFamily(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) error {
+	if cr.Spec.ForProvider.DBParameterGroupFamily == nil {
+		engineVersion, err := c.getDBEngineVersion(ctx, cr.Spec.ForProvider.DBParameterGroupFamilySelector)
+		if err != nil {
+			return errors.Wrap(err, errGetDBEngineVersion)
+		}
+		cr.Spec.ForProvider.DBParameterGroupFamily = engineVersion.DBParameterGroupFamily
+	}
+	return nil
+}
+
+func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.DBParameterGroupFamilyNameSelector) (*svcsdk.DBEngineVersion, error) {
+	if selector == nil {
+		return nil, errors.New(errRequireDBParameterGroupFamilyOrFromEngine)
+	}
+
+	resp, err := c.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
+		Engine:        &selector.Engine,
+		EngineVersion: selector.EngineVersion,
+		DefaultOnly:   awsclients.Bool(selector.EngineVersion == nil),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp.DBEngineVersions == nil || len(resp.DBEngineVersions) == 0 || resp.DBEngineVersions[0] == nil {
+		return nil, errors.New(errNoDBEngineVersions)
+	}
+	return resp.DBEngineVersions[0], nil
 }

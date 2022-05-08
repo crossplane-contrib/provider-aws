@@ -79,8 +79,26 @@ spec:
                       \n * aurora-postgresql \n * mariadb \n * mysql \n * oracle-ee
                       \n * oracle-ee-cdb \n * oracle-se2 \n * oracle-se2-cdb \n *
                       postgres \n * sqlserver-ee \n * sqlserver-se \n * sqlserver-ex
-                      \n * sqlserver-web"
+                      \n * sqlserver-web \n One of DBParameterGroupFamily or DBParameterGroupFamilySelector
+                      is required."
                     type: string
+                  dbParameterGroupFamilySelector:
+                    description: "DBParameterGroupFamilySelector determines DBParameterGroupFamily
+                      from the engine and engine version. \n One of DBParameterGroupFamily
+                      or DBParameterGroupFamilySelector is required. \n Will not be
+                      used if DBParameterGroupFamily is already set."
+                    properties:
+                      engine:
+                        description: Engine is the name of the database engine.
+                        type: string
+                      engineVersion:
+                        description: EngineVersion is the version of the database
+                          engine. If it is nil, the default engine version given by
+                          AWS will be used.
+                        type: string
+                    required:
+                    - engine
+                    type: object
                   description:
                     description: The description for the DB parameter group.
                     type: string
@@ -130,7 +148,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - dbParameterGroupFamily
                 - description
                 - region
                 type: object
@@ -240,6 +257,10 @@ spec:
                   dbParameterGroupARN:
                     description: The Amazon Resource Name (ARN) for the DB parameter
                       group.
+                    type: string
+                  dbParameterGroupFamily:
+                    description: The name of the DB parameter group family that this
+                      DB parameter group is compatible with.
                     type: string
                   dbParameterGroupName:
                     description: The name of the DB parameter group.

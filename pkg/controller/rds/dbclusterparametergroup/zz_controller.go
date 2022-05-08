@@ -129,9 +129,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DBClusterParameterGroupName = nil
 	}
 	if resp.DBClusterParameterGroup.DBParameterGroupFamily != nil {
-		cr.Spec.ForProvider.DBParameterGroupFamily = resp.DBClusterParameterGroup.DBParameterGroupFamily
+		cr.Status.AtProvider.DBParameterGroupFamily = resp.DBClusterParameterGroup.DBParameterGroupFamily
 	} else {
-		cr.Spec.ForProvider.DBParameterGroupFamily = nil
+		cr.Status.AtProvider.DBParameterGroupFamily = nil
 	}
 	if resp.DBClusterParameterGroup.Description != nil {
 		cr.Spec.ForProvider.Description = resp.DBClusterParameterGroup.Description

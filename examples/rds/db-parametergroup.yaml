@@ -5,7 +5,8 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    dbParameterGroupFamily: postgres12
+    dbParameterGroupFamilySelector:
+      engine: postgres
     description: example
     parameters:
       - parameterName: application_name

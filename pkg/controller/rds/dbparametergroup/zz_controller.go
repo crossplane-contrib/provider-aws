@@ -124,9 +124,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DBParameterGroupARN = nil
 	}
 	if resp.DBParameterGroup.DBParameterGroupFamily != nil {
-		cr.Spec.ForProvider.DBParameterGroupFamily = resp.DBParameterGroup.DBParameterGroupFamily
+		cr.Status.AtProvider.DBParameterGroupFamily = resp.DBParameterGroup.DBParameterGroupFamily
 	} else {
-		cr.Spec.ForProvider.DBParameterGroupFamily = nil
+		cr.Status.AtProvider.DBParameterGroupFamily = nil
 	}
 	if resp.DBParameterGroup.DBParameterGroupName != nil {
 		cr.Status.AtProvider.DBParameterGroupName = resp.DBParameterGroup.DBParameterGroupName

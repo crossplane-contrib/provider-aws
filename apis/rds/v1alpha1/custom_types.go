@@ -23,6 +23,69 @@ type CustomDBParameterGroupParameters struct {
 	// A list of parameters to associate with this DB parameter group
 	// +optional
 	Parameters []Parameter `json:"parameters,omitempty"`
+
+	// The DB parameter group family name. A DB parameter group can be associated
+	// with one and only one DB parameter group family, and can be applied only
+	// to a DB instance running a database engine and engine version compatible
+	// with that DB parameter group family.
+	//
+	// To list all of the available parameter group families for a DB engine, use
+	// the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine <engine>
+	//
+	// For example, to list all of the available parameter group families for the
+	// MySQL DB engine, use the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine mysql
+	//
+	// The output contains duplicates.
+	//
+	// The following are the valid DB engine values:
+	//
+	//    * aurora (for MySQL 5.6-compatible Aurora)
+	//
+	//    * aurora-mysql (for MySQL 5.7-compatible Aurora)
+	//
+	//    * aurora-postgresql
+	//
+	//    * mariadb
+	//
+	//    * mysql
+	//
+	//    * oracle-ee
+	//
+	//    * oracle-ee-cdb
+	//
+	//    * oracle-se2
+	//
+	//    * oracle-se2-cdb
+	//
+	//    * postgres
+	//
+	//    * sqlserver-ee
+	//
+	//    * sqlserver-se
+	//
+	//    * sqlserver-ex
+	//
+	//    * sqlserver-web
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// +optional
+	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
+
+	// DBParameterGroupFamilySelector determines DBParameterGroupFamily from
+	// the engine and engine version.
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// Will not be used if DBParameterGroupFamily is already set.
+	// +optional
+	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
 }
 
 // CustomDBClusterParameterGroupParameters are custom parameters for DBClusterParameterGroup
@@ -30,6 +93,68 @@ type CustomDBClusterParameterGroupParameters struct {
 	// A list of parameters to associate with this DB cluster parameter group
 	// +optional
 	Parameters []Parameter `json:"parameters,omitempty"`
+
+	// The DB cluster parameter group family name. A DB cluster parameter group
+	// can be associated with one and only one DB cluster parameter group family,
+	// and can be applied only to a DB cluster running a database engine and engine
+	// version compatible with that DB cluster parameter group family.
+	//
+	// Aurora MySQL
+	//
+	// Example: aurora5.6, aurora-mysql5.7
+	//
+	// Aurora PostgreSQL
+	//
+	// Example: aurora-postgresql9.6
+	//
+	// To list all of the available parameter group families for a DB engine, use
+	// the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine <engine>
+	//
+	// For example, to list all of the available parameter group families for the
+	// Aurora PostgreSQL DB engine, use the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine aurora-postgresql
+	//
+	// The output contains duplicates.
+	//
+	// The following are the valid DB engine values:
+	//
+	//    * aurora (for MySQL 5.6-compatible Aurora)
+	//
+	//    * aurora-mysql (for MySQL 5.7-compatible Aurora)
+	//
+	//    * aurora-postgresql
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// +optional
+	DBParameterGroupFamily *string `json:"dbParameterGroupFamily"`
+
+	// DBParameterGroupFamilySelector determines DBParameterGroupFamily from
+	// the engine and engine version.
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// Will not be used if DBParameterGroupFamily is already set.
+	// +optional
+	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
+}
+
+// DBParameterGroupFamilyNameSelector allows determining the family name from the
+// database engine and engine version.
+type DBParameterGroupFamilyNameSelector struct {
+	// Engine is the name of the database engine.
+	// +kubebuilder:validation:Required
+	Engine string `json:"engine"`
+
+	// EngineVersion is the version of the database engine.
+	// If it is nil, the default engine version given by AWS will be used.
+	// +optional
+	EngineVersion *string `json:"engineVersion,omitempty"`
 }
 
 // CustomDBClusterParameters are custom parameters for DBCluster

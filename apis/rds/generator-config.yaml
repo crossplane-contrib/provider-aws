@@ -35,12 +35,16 @@ ignore:
     - ModifyDBInstanceInput.DBSecurityGroups
     - ModifyDBInstanceInput.DBSubnetGroupName # this is immutable
     - CreateDBParameterGroupInput.DBParameterGroupName
+    - CreateDBParameterGroupInput.DBParameterGroupFamily
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
+    - ModifyDBParameterGroupInput.DBParameterGroupFamily
     - DescribeDBParameterGroupsInput.DBParameterGroupName
     - CreateDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - CreateDBClusterParameterGroupInput.DBParameterGroupFamily
     - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
     - ModifyDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - ModifyDBClusterParameterGroupInput.DBParameterGroupFamily
     - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName
     - DescribeGlobalClustersInput.GlobalClusterIdentifier
     - ModifyGlobalClusterInput.GlobalClusterIdentifier
