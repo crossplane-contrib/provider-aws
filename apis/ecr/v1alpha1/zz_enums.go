@@ -84,6 +84,20 @@ const (
 	LifecyclePolicyPreviewStatus_FAILED      LifecyclePolicyPreviewStatus = "FAILED"
 )
 
+type ReplicationStatus string
+
+const (
+	ReplicationStatus_IN_PROGRESS ReplicationStatus = "IN_PROGRESS"
+	ReplicationStatus_COMPLETE    ReplicationStatus = "COMPLETE"
+	ReplicationStatus_FAILED      ReplicationStatus = "FAILED"
+)
+
+type RepositoryFilterType string
+
+const (
+	RepositoryFilterType_PREFIX_MATCH RepositoryFilterType = "PREFIX_MATCH"
+)
+
 type ScanStatus string
 
 const (

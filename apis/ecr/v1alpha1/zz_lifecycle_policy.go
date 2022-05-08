@@ -32,8 +32,9 @@ type LifecyclePolicyParameters struct {
 	// The JSON repository policy text to apply to the repository.
 	// +kubebuilder:validation:Required
 	LifecyclePolicyText *string `json:"lifecyclePolicyText"`
-	// The AWS account ID associated with the registry that contains the repository.
-	// If you do not specify a registry, the default registry is assumed.
+	// The Amazon Web Services account ID associated with the registry that contains
+	// the repository. If you do not specify a registry, the default registry is
+	// assumed.
 	RegistryID                      *string `json:"registryID,omitempty"`
 	CustomLifecyclePolicyParameters `json:",inline"`
 }

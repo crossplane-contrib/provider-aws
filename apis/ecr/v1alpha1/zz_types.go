@@ -26,3 +26,8 @@ import (
 var (
 	_ = &metav1.Time{}
 )
+
+// +kubebuilder:skipversion
+type ImageReplicationStatus struct {
+	RegistryID *string `json:"registryID,omitempty"`
+}
