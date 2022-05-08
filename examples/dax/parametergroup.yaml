@@ -11,6 +11,8 @@ spec:
         parameterValue: "300000"
       - parameterName: "query-ttl-millis"
         parameterValue: "600000"
+  providerConfigRef:
+    name: example
 ---
 apiVersion: dax.aws.crossplane.io/v1alpha1
 kind: ParameterGroup
@@ -20,3 +22,5 @@ spec:
   forProvider:
     region: us-east-1
     description: "Test parameter group description with no values."
+  providerConfigRef:
+    name: example

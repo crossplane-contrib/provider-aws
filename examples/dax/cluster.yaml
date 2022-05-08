@@ -16,7 +16,7 @@ spec:
     preferredMaintenanceWindow: "tue:06:30-tue:07:30"
     clusterEndpointEncryptionType: "NONE"
     availabilityZones:
-      - "us-east-1a"
+      - "us-east-1b"
     securityGroupIdRefs:
       - name: "sample-cluster-sg"
     iamRoleARNRef:
@@ -25,3 +25,5 @@ spec:
       name: "example-subnet-group"
     parameterGroupNameRef:
       name: "example-parameter-group"
+  providerConfigRef:
+    name: example

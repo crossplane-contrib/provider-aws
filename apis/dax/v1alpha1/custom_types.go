@@ -7,6 +7,7 @@ type CustomClusterParameters struct {
 	// IAMRoleARN contains the ARN of an IAMRole
 	// +immutable
 	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
 	IAMRoleARN *string `json:"iamRoleARN,omitempty"`
 
 	// IAMRoleARNRef is a reference to an IAMRole used to set

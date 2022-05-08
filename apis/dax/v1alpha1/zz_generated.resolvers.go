@@ -37,7 +37,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomClusterParameters.IAMRoleARN),
-		Extract:      reference.ExternalName(),
+		Extract:      v1beta1.RoleARN(),
 		Reference:    mg.Spec.ForProvider.CustomClusterParameters.IAMRoleARNRef,
 		Selector:     mg.Spec.ForProvider.CustomClusterParameters.IAMRoleARNSelector,
 		To: reference.To{

@@ -8,3 +8,5 @@ spec:
     description: "Test subnet group description."
     subnetIDRefs:
       - name: "sample-subnet1"
+  providerConfigRef:
+    name: example
