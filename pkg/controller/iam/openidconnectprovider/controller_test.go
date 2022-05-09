@@ -48,6 +48,7 @@ var (
 	unexpectedItem resource.Managed
 	providerArn    = "arn:123"
 	url            = "https://example.com"
+	name           = "oidcProvider"
 
 	errBoom = errors.New("boom")
 
@@ -90,8 +91,9 @@ var (
 )
 
 type args struct {
-	iam *fake.MockOpenIDConnectProviderClient
-	cr  resource.Managed
+	iam  *fake.MockOpenIDConnectProviderClient
+	kube client.Client
+	cr   resource.Managed
 }
 
 type oidcProviderModifier func(provider *svcapitypes.OpenIDConnectProvider)
@@ -103,6 +105,11 @@ func withConditions(c ...xpv1.Condition) oidcProviderModifier {
 func withURL(s string) oidcProviderModifier {
 	return func(r *svcapitypes.OpenIDConnectProvider) { r.Spec.ForProvider.URL = s }
 }
+
+func withName(name string) oidcProviderModifier {
+	return func(r *svcapitypes.OpenIDConnectProvider) { r.Name = name }
+}
+
 func withExternalName(name string) oidcProviderModifier {
 	return func(r *svcapitypes.OpenIDConnectProvider) { meta.SetExternalName(r, name) }
 }
@@ -176,6 +183,9 @@ func TestObserve(t *testing.T) {
 					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
 						return nil, errBoom
 					},
+					MockListOpenIDConnectProviders: func(ctx context.Context, input *awsiam.ListOpenIDConnectProvidersInput, opts []func(*awsiam.Options)) (*awsiam.ListOpenIDConnectProvidersOutput, error) {
+						return &awsiam.ListOpenIDConnectProvidersOutput{}, nil
+					},
 				},
 				cr: oidcProvider(withURL(url),
 					withExternalName(providerArn)),
@@ -186,8 +196,72 @@ func TestObserve(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
+		"NoExternalNameExistingResource": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockListOpenIDConnectProviders: func(ctx context.Context, input *awsiam.ListOpenIDConnectProvidersInput, opts []func(*awsiam.Options)) (*awsiam.ListOpenIDConnectProvidersOutput, error) {
+						return &awsiam.ListOpenIDConnectProvidersOutput{
+							OpenIDConnectProviderList: []iamtypes.OpenIDConnectProviderListEntry{
+								{Arn: aws.String(providerArn)},
+							},
+						}, nil
+					},
+					MockListOpenIDConnectProviderTags: func(ctx context.Context, input *awsiam.ListOpenIDConnectProviderTagsInput, opts []func(*awsiam.Options)) (*awsiam.ListOpenIDConnectProviderTagsOutput, error) {
+						return &awsiam.ListOpenIDConnectProviderTagsOutput{
+							Tags: []iamtypes.Tag{
+								{Key: aws.String(resource.ExternalResourceTagKeyName), Value: aws.String(name)},
+							},
+						}, nil
+					},
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							CreateDate: &now.Time,
+						}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				cr: oidcProvider(withName(name), withURL(url)),
+			},
+			want: want{
+				cr: oidcProvider(withURL(url),
+					withName(name),
+					withExternalName(providerArn),
+					withConditions(xpv1.Available()),
+					withAtProvider(svcapitypes.OpenIDConnectProviderObservation{
+						CreateDate: &now,
+					})),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"NoExternalNameClientError": {
+			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockListOpenIDConnectProviders: func(ctx context.Context, input *awsiam.ListOpenIDConnectProvidersInput, opts []func(*awsiam.Options)) (*awsiam.ListOpenIDConnectProvidersOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr: oidcProvider(withURL(url)),
+			},
+			want: want{
+				cr:  oidcProvider(withURL(url)),
+				err: awsclient.Wrap(errBoom, errList),
+				result: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
 		"ResourceDoesNotExistName": {
 			args: args{
+				iam: &fake.MockOpenIDConnectProviderClient{
+					MockListOpenIDConnectProviders: func(ctx context.Context, input *awsiam.ListOpenIDConnectProvidersInput, opts []func(*awsiam.Options)) (*awsiam.ListOpenIDConnectProvidersOutput, error) {
+						return &awsiam.ListOpenIDConnectProvidersOutput{}, nil
+					},
+				},
 				cr: oidcProvider(withURL(url)),
 			},
 			want: want{
@@ -244,7 +318,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.iam}
+			e := &external{kube: tc.kube, client: tc.iam}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

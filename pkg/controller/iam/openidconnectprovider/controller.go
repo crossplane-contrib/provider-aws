@@ -47,6 +47,8 @@ import (
 const (
 	errUnexpectedObject = "managed resource is not an OpenIDConnectProvider resource"
 
+	errList             = "cannot list OpenIDConnectProvider in AWS"
+	errListTags         = "cannot list OpenIDConnectProvider tags in AWS"
 	errGet              = "cannot get OpenIDConnectProvider in AWS"
 	errCreate           = "cannot create OpenIDConnectProvider in AWS"
 	errUpdateThumbprint = "cannot update OpenIDConnectProvider thumbprint list in AWS"
@@ -110,9 +112,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+		arn, err := e.getOpenIDConnectProviderByTags(ctx, resource.GetExternalTags(mgd))
+		if arn == nil || err != nil {
+			return managed.ExternalObservation{}, resource.Ignore(iam.IsErrorNotFound, err)
+		}
+
+		meta.SetExternalName(cr, aws.ToString(arn))
+		_ = e.kube.Update(ctx, cr)
 	}
 
 	observedProvider, err := e.client.GetOpenIDConnectProvider(ctx, &awsiam.GetOpenIDConnectProviderInput{
@@ -246,6 +252,34 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+}
+
+func (e *external) getOpenIDConnectProviderByTags(ctx context.Context, tags map[string]string) (*string, error) {
+	name, ok := tags[resource.ExternalResourceTagKeyName]
+	if !ok {
+		return nil, nil
+	}
+
+	oidcs, err := e.client.ListOpenIDConnectProviders(ctx, &awsiam.ListOpenIDConnectProvidersInput{})
+	if err != nil || len(oidcs.OpenIDConnectProviderList) == 0 {
+		return nil, awsclient.Wrap(err, errList)
+	}
+
+	for _, o := range oidcs.OpenIDConnectProviderList {
+		tags, err := e.client.ListOpenIDConnectProviderTags(ctx, &awsiam.ListOpenIDConnectProviderTagsInput{
+			OpenIDConnectProviderArn: o.Arn,
+		})
+		if err != nil {
+			return nil, awsclient.Wrap(err, errListTags)
+		}
+
+		for _, t := range tags.Tags {
+			if *t.Key == resource.ExternalResourceTagKeyName && *t.Value == name {
+				return o.Arn, nil
+			}
+		}
+	}
+	return nil, nil
 }
 
 type tagger struct {
