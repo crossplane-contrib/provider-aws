@@ -35,7 +35,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
@@ -59,6 +58,9 @@ type Client interface {
 	CreateCacheCluster(context.Context, *elasticache.CreateCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error)
 	DeleteCacheCluster(context.Context, *elasticache.DeleteCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
 	ModifyCacheCluster(context.Context, *elasticache.ModifyCacheClusterInput, ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
+
+	DecreaseReplicaCount(ctx context.Context, params *elasticache.DecreaseReplicaCountInput, optFns ...func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error)
+	IncreaseReplicaCount(ctx context.Context, params *elasticache.IncreaseReplicaCountInput, optFns ...func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error)
 
 	ModifyReplicationGroupShardConfiguration(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
 
@@ -199,6 +201,28 @@ func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceIn
 	return &elasticache.ListTagsForResourceInput{ResourceName: arn}
 }
 
+// NewDecreaseReplicaCountInput returns Elasticache replication group decrease
+// the number of replicaGroup cache clusters
+func NewDecreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.DecreaseReplicaCountInput {
+	return &elasticache.DecreaseReplicaCountInput{
+		ApplyImmediately:   true, // false is not supported by the API
+		ReplicationGroupId: &replicationGroupID,
+		NewReplicaCount:    newReplicaCount,
+	}
+
+}
+
+// NewIncreaseReplicaCountInput returns Elasticache replication group increase
+// the number of replicaGroup cache clusters
+func NewIncreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.IncreaseReplicaCountInput {
+	return &elasticache.IncreaseReplicaCountInput{
+		ApplyImmediately:   true, // false is not supported by the API
+		ReplicationGroupId: &replicationGroupID,
+		NewReplicaCount:    newReplicaCount,
+	}
+
+}
+
 // LateInitialize assigns the observed configurations and assigns them to the
 // corresponding fields in ReplicationGroupParameters in order to let user
 // know the defaults and make the changes as wished on that value.
@@ -262,7 +286,10 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 		return true
 	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
 		return true
+	case ReplicationGroupNumCacheClustersNeedsUpdate(kube, ccList):
+		return true
 	}
+
 	for _, cc := range ccList {
 		if cacheClusterNeedsUpdate(kube, cc) {
 			return true
@@ -384,6 +411,12 @@ func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string
 	}
 
 	return clients.DiffTags(local, remote)
+}
+
+// ReplicationGroupNumCacheClustersNeedsUpdate determines if the number of Cache Clusters
+// in a replication group needs to be updated
+func ReplicationGroupNumCacheClustersNeedsUpdate(kube v1beta1.ReplicationGroupParameters, ccList []elasticachetypes.CacheCluster) bool {
+	return aws.ToInt(kube.NumCacheClusters) != len(ccList)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of
@@ -606,9 +639,9 @@ func GenerateClusterObservation(c elasticachetypes.CacheCluster) cachev1alpha1.C
 	}
 
 	if len(c.CacheNodes) > 0 {
-		cacheNodes := make([]v1alpha1.CacheNode, len(c.CacheNodes))
+		cacheNodes := make([]cachev1alpha1.CacheNode, len(c.CacheNodes))
 		for i, v := range c.CacheNodes {
-			cacheNodes[i] = v1alpha1.CacheNode{
+			cacheNodes[i] = cachev1alpha1.CacheNode{
 				CacheNodeID:              aws.ToString(v.CacheNodeId),
 				CacheNodeStatus:          aws.ToString(v.CacheNodeStatus),
 				CustomerAvailabilityZone: aws.ToString(v.CustomerAvailabilityZone),
@@ -616,7 +649,7 @@ func GenerateClusterObservation(c elasticachetypes.CacheCluster) cachev1alpha1.C
 				SourceCacheNodeID:        v.SourceCacheNodeId,
 			}
 			if v.Endpoint != nil {
-				cacheNodes[i].Endpoint = &v1alpha1.Endpoint{
+				cacheNodes[i].Endpoint = &cachev1alpha1.Endpoint{
 					Address: aws.ToString(v.Endpoint.Address),
 					Port:    int(v.Endpoint.Port),
 				}

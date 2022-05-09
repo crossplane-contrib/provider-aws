@@ -46,17 +46,19 @@ import (
 
 // Error strings.
 const (
-	errUpdateReplicationGroupCR   = "cannot update ReplicationGroup Custom Resource"
-	errGetCacheClusterList        = "cannot get cache cluster list"
-	errNotReplicationGroup        = "managed resource is not an ElastiCache replication group"
-	errDescribeReplicationGroup   = "cannot describe ElastiCache replication group"
-	errGenerateAuthToken          = "cannot generate ElastiCache auth token"
-	errCreateReplicationGroup     = "cannot create ElastiCache replication group"
-	errModifyReplicationGroup     = "cannot modify ElastiCache replication group"
-	errDeleteReplicationGroup     = "cannot delete ElastiCache replication group"
-	errModifyReplicationGroupSC   = "cannot modify ElastiCache replication group shard configuration"
-	errListReplicationGroupTags   = "cannot list ElastiCache replication group tags"
-	errUpdateReplicationGroupTags = "cannot update ElastiCache replication group tags"
+	errUpdateReplicationGroupCR            = "cannot update ReplicationGroup Custom Resource"
+	errGetCacheClusterList                 = "cannot get cache cluster list"
+	errNotReplicationGroup                 = "managed resource is not an ElastiCache replication group"
+	errDescribeReplicationGroup            = "cannot describe ElastiCache replication group"
+	errGenerateAuthToken                   = "cannot generate ElastiCache auth token"
+	errCreateReplicationGroup              = "cannot create ElastiCache replication group"
+	errModifyReplicationGroup              = "cannot modify ElastiCache replication group"
+	errDeleteReplicationGroup              = "cannot delete ElastiCache replication group"
+	errModifyReplicationGroupSC            = "cannot modify ElastiCache replication group shard configuration"
+	errListReplicationGroupTags            = "cannot list ElastiCache replication group tags"
+	errUpdateReplicationGroupTags          = "cannot update ElastiCache replication group tags"
+	errReplicationGroupCacheClusterMinimum = "at least 1 replica is required"
+	errReplicationGroupCacheClusterMaximum = "maximum of 5 replicas are allowed"
 )
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
@@ -200,7 +202,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotReplicationGroup)
@@ -231,16 +233,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetCacheClusterList)
 	}
 
+	if elasticache.ReplicationGroupNumCacheClustersNeedsUpdate(cr.Spec.ForProvider, ccList) {
+		err := e.updateReplicationGroupNumCacheClusters(ctx, meta.GetExternalName(cr), len(ccList), aws.ToInt(cr.Spec.ForProvider.NumCacheClusters))
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+		}
+		return managed.ExternalUpdate{}, nil
+	}
+
 	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
 		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
 		}
-		// perform one update at a time
 		return managed.ExternalUpdate{}, nil
 
 	}
-
 	err = e.updateTags(ctx, cr.Spec.ForProvider.Tags, rg.ARN)
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateReplicationGroupTags)
 }
@@ -322,4 +330,27 @@ func getCacheClusterList(ctx context.Context, client awselasticache.DescribeCach
 		ccList[i] = rsp.CacheClusters[0]
 	}
 	return ccList, nil
+}
+
+// updateReplicationGroupNumCacheClusters updates the number of Cache Clusters in a replica group
+func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, replicaGroup string, existingClusterSize, desiredClusterSize int) error {
+	// Cache clusters consist of 1 primary and 1-5 replicas.
+	// The AWS API modifies the number of replicas
+	newReplicaCount := desiredClusterSize - 1
+	switch {
+	case newReplicaCount < 1:
+		return errors.New(errReplicationGroupCacheClusterMinimum)
+	case newReplicaCount > 5:
+		return errors.New(errReplicationGroupCacheClusterMaximum)
+	case desiredClusterSize > existingClusterSize:
+		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, awsclient.Int32(newReplicaCount))
+		_, err := e.client.IncreaseReplicaCount(ctx, input)
+		return err
+	case desiredClusterSize < existingClusterSize:
+		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, awsclient.Int32(newReplicaCount))
+		_, err := e.client.DecreaseReplicaCount(ctx, input)
+		return err
+	default:
+		return nil
+	}
 }

@@ -57,7 +57,7 @@ var (
 	multiAZ                   = true
 	notificationTopicARN      = "arn:aws:sns:cooltopic"
 	notificationTopicStatus   = "active"
-	numCacheClusters          = 2
+	numCacheClusters          = 1
 	numNodeGroups             = 2
 	host                      = "coolhost"
 	port                      = 6379
@@ -781,6 +781,19 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "NeedsUpdateNumCacheClusters",
+			kube: replicationGroup.Spec.ForProvider,
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
+				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         aws.String(snapshotWindow),
+			},
+			ccList: []elasticachetypes.CacheCluster{},
+			want:   true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1426,4 +1439,68 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
+	var numCacheClusters5 = 5
+	type args struct {
+		kube   v1beta1.ReplicationGroupParameters
+		ccList []elasticachetypes.CacheCluster
+	}
+	type want struct {
+		res bool
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"Equal": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{
+					NumCacheClusters: &numCacheClusters,
+				},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: false},
+		},
+		"NotEqual": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{
+					NumCacheClusters: &numCacheClusters5,
+				},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: true},
+		},
+		"NilRequest": {
+			args: args{
+				kube:   v1beta1.ReplicationGroupParameters{},
+				ccList: []elasticachetypes.CacheCluster{},
+			},
+			want: want{res: false},
+		},
+		"NilRequestCC": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: true},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			res := ReplicationGroupNumCacheClustersNeedsUpdate(tc.args.kube, tc.args.ccList)
+			if diff := cmp.Diff(tc.want.res, res); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+
 }
