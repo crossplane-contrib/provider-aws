@@ -339,9 +339,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 								}
 								f0f4f1f0elemf6.Items = f0f4f1f0elemf6f0
 							}
-							if f0f4f1f0iter.FunctionAssociations.Quantity != nil {
-								f0f4f1f0elemf6.Quantity = f0f4f1f0iter.FunctionAssociations.Quantity
-							}
 							f0f4f1f0elem.FunctionAssociations = f0f4f1f0elemf6
 						}
 						if f0f4f1f0iter.LambdaFunctionAssociations != nil {
@@ -571,9 +568,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							f0f4f5f6f0 = append(f0f4f5f6f0, f0f4f5f6f0elem)
 						}
 						f0f4f5f6.Items = f0f4f5f6f0
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-						f0f4f5f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity
 					}
 					f0f4f5.FunctionAssociations = f0f4f5f6
 				}

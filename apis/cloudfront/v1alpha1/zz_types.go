@@ -820,8 +820,6 @@ type FunctionAssociation struct {
 // +kubebuilder:skipversion
 type FunctionAssociations struct {
 	Items []*FunctionAssociation `json:"items,omitempty"`
-
-	Quantity *int64 `json:"quantity,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -221,9 +221,6 @@ spec:
                                             type: string
                                         type: object
                                       type: array
-                                    quantity:
-                                      format: int64
-                                      type: integer
                                   type: object
                                 lambdaFunctionAssociations:
                                   description: "A complex type that specifies a list
@@ -469,9 +466,6 @@ spec:
                                       type: string
                                   type: object
                                 type: array
-                              quantity:
-                                format: int64
-                                type: integer
                             type: object
                           lambdaFunctionAssociations:
                             description: "A complex type that specifies a list of
@@ -1130,9 +1124,6 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
-                                        quantity:
-                                          format: int64
-                                          type: integer
                                       type: object
                                     lambdaFunctionAssociations:
                                       description: "A complex type that specifies
@@ -1384,9 +1375,6 @@ spec:
                                           type: string
                                       type: object
                                     type: array
-                                  quantity:
-                                    format: int64
-                                    type: integer
                                 type: object
                               lambdaFunctionAssociations:
                                 description: "A complex type that specifies a list
