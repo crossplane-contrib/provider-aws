@@ -265,9 +265,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 								}
 								f0f4f1f0elemf6.Items = f0f4f1f0elemf6f0
 							}
-							if f0f4f1f0iter.FunctionAssociations.Quantity != nil {
-								f0f4f1f0elemf6.Quantity = f0f4f1f0iter.FunctionAssociations.Quantity
-							}
 							f0f4f1f0elem.FunctionAssociations = f0f4f1f0elemf6
 						}
 						if f0f4f1f0iter.LambdaFunctionAssociations != nil {
@@ -497,9 +494,6 @@ func GenerateDistribution(resp *svcsdk.GetDistributionOutput) *svcapitypes.Distr
 							f0f4f5f6f0 = append(f0f4f5f6f0, f0f4f5f6f0elem)
 						}
 						f0f4f5f6.Items = f0f4f5f6f0
-					}
-					if resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-						f0f4f5f6.Quantity = resp.Distribution.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity
 					}
 					f0f4f5.FunctionAssociations = f0f4f5f6
 				}
@@ -970,9 +964,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 							}
 							f0f1f0elemf6.SetItems(f0f1f0elemf6f0)
 						}
-						if f0f1f0iter.FunctionAssociations.Quantity != nil {
-							f0f1f0elemf6.SetQuantity(*f0f1f0iter.FunctionAssociations.Quantity)
-						}
 						f0f1f0elem.SetFunctionAssociations(f0f1f0elemf6)
 					}
 					if f0f1f0iter.LambdaFunctionAssociations != nil {
@@ -1202,9 +1193,6 @@ func GenerateCreateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Creat
 						f0f5f6f0 = append(f0f5f6f0, f0f5f6f0elem)
 					}
 					f0f5f6.SetItems(f0f5f6f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-					f0f5f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
 				}
 				f0f5.SetFunctionAssociations(f0f5f6)
 			}
@@ -1651,9 +1639,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 							}
 							f0f1f0elemf6.SetItems(f0f1f0elemf6f0)
 						}
-						if f0f1f0iter.FunctionAssociations.Quantity != nil {
-							f0f1f0elemf6.SetQuantity(*f0f1f0iter.FunctionAssociations.Quantity)
-						}
 						f0f1f0elem.SetFunctionAssociations(f0f1f0elemf6)
 					}
 					if f0f1f0iter.LambdaFunctionAssociations != nil {
@@ -1883,9 +1868,6 @@ func GenerateUpdateDistributionInput(cr *svcapitypes.Distribution) *svcsdk.Updat
 						f0f5f6f0 = append(f0f5f6f0, f0f5f6f0elem)
 					}
 					f0f5f6.SetItems(f0f5f6f0)
-				}
-				if cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity != nil {
-					f0f5f6.SetQuantity(*cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity)
 				}
 				f0f5.SetFunctionAssociations(f0f5f6)
 			}

@@ -214,6 +214,13 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 		}
 	}
 
+	if from.FunctionAssociations != nil {
+		if in.FunctionAssociations == nil {
+			in.FunctionAssociations = &svcapitypes.FunctionAssociations{}
+		}
+		lateInitFunctionAssociations(in.FunctionAssociations, from.FunctionAssociations)
+	}
+
 	if from.LambdaFunctionAssociations != nil {
 		if in.LambdaFunctionAssociations == nil {
 			in.LambdaFunctionAssociations = &svcapitypes.LambdaFunctionAssociations{}
@@ -226,6 +233,7 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 	in.OriginRequestPolicyID = awsclients.LateInitializeStringPtr(in.OriginRequestPolicyID, from.OriginRequestPolicyId)
 	in.RealtimeLogConfigARN = awsclients.LateInitializeStringPtr(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
 	in.SmoothStreaming = awsclients.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
+	in.ResponseHeadersPolicyID = awsclients.LateInitializeStringPtr(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
 	in.TargetOriginID = awsclients.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
 
 	if from.TrustedKeyGroups != nil {
@@ -370,6 +378,7 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 	in.RealtimeLogConfigARN = awsclients.LateInitializeStringPtr(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
 	in.SmoothStreaming = awsclients.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
 	in.TargetOriginID = awsclients.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
+	in.ResponseHeadersPolicyID = awsclients.LateInitializeStringPtr(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
 
 	if from.TrustedKeyGroups != nil && *from.TrustedKeyGroups.Enabled && len(from.TrustedKeyGroups.Items) != 0 {
 		if in.TrustedKeyGroups == nil {
@@ -696,7 +705,6 @@ func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociatio
 
 		return
 	}
-
 	// If we have some lambda function associations, we need to late init each one of them
 	existing := make(map[string]*svcsdk.LambdaFunctionAssociation)
 	for i := range from.Items {
@@ -704,6 +712,7 @@ func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociatio
 		if o.LambdaFunctionARN == nil {
 			continue
 		}
+		// TODO(ezgidemirel): Instead of using FunctionARNs, we should use EventTypes as keys
 		// LambdaFunctionARN must be unique for each LambdaFunctionAssociation
 		existing[awsclients.StringValue(o.LambdaFunctionARN)] = o
 	}
@@ -727,4 +736,50 @@ func lateInitLambdaFunctionAssociation(in *svcapitypes.LambdaFunctionAssociation
 	in.EventType = awsclients.LateInitializeStringPtr(in.EventType, from.EventType)
 	in.IncludeBody = awsclients.LateInitializeBoolPtr(in.IncludeBody, from.IncludeBody)
 	in.LambdaFunctionARN = awsclients.LateInitializeStringPtr(in.LambdaFunctionARN, from.LambdaFunctionARN)
+}
+
+func lateInitFunctionAssociations(in *svcapitypes.FunctionAssociations, from *svcsdk.FunctionAssociations) {
+	if len(from.Items) == 0 {
+		return
+	}
+
+	// If we have no function associations, late init the entire slice
+	if in.Items == nil {
+		in.Items = make([]*svcapitypes.FunctionAssociation, len(from.Items))
+		for i := range from.Items {
+			in.Items[i] = &svcapitypes.FunctionAssociation{}
+			lateInitFunctionAssociation(in.Items[i], from.Items[i])
+		}
+
+		return
+	}
+
+	// If we have some function associations, we need to late init each one of them
+	existing := make(map[string]*svcsdk.FunctionAssociation)
+	for _, o := range from.Items {
+		if o.EventType == nil {
+			continue
+		}
+		// AWS Console allows us to set a single FunctionARN for each predefined EventType
+		existing[awsclients.StringValue(o.EventType)] = o
+	}
+
+	for _, il := range in.Items {
+		// If EventType is not nil, we want to use the value coming from the input
+		if il.EventType != nil {
+			continue
+		}
+
+		fl := existing[awsclients.StringValue(il.EventType)]
+		if fl == nil {
+			continue
+		}
+
+		lateInitFunctionAssociation(il, fl)
+	}
+}
+
+func lateInitFunctionAssociation(in *svcapitypes.FunctionAssociation, from *svcsdk.FunctionAssociation) {
+	in.EventType = awsclients.LateInitializeStringPtr(in.EventType, from.EventType)
+	in.FunctionARN = awsclients.LateInitializeStringPtr(in.FunctionARN, from.FunctionARN)
 }

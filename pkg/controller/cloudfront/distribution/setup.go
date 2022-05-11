@@ -141,6 +141,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Distribution, cdi *svcsdk.Crea
 			}
 		}
 
+		if dcb.FunctionAssociations != nil {
+			cdi.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity =
+				awsclients.Int64(len(dcb.FunctionAssociations.Items), 0)
+		}
+
 		if dcb.LambdaFunctionAssociations != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
 				awsclients.Int64(len(dcb.LambdaFunctionAssociations.Items), 0)
@@ -187,6 +192,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Distribution, cdi *svcsdk.Crea
 					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
 						awsclients.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items), 0)
 				}
+			}
+
+			if cbi.FunctionAssociations != nil {
+				cdi.DistributionConfig.CacheBehaviors.Items[i].FunctionAssociations.Quantity =
+					awsclients.Int64(len(cbi.FunctionAssociations.Items), 0)
 			}
 
 			if cbi.LambdaFunctionAssociations != nil {
@@ -374,6 +384,11 @@ func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.Upda
 					awsclients.Int64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items), 0)
 			}
 		}
+		if dcb.FunctionAssociations != nil {
+			udi.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity =
+				awsclients.Int64(len(dcb.FunctionAssociations.Items), 0)
+		}
+
 		if dcb.LambdaFunctionAssociations != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
 				awsclients.Int64(len(dcb.LambdaFunctionAssociations.Items), 0)
@@ -420,6 +435,11 @@ func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.Upda
 					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
 						awsclients.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items), 0)
 				}
+			}
+
+			if cbi.FunctionAssociations != nil {
+				udi.DistributionConfig.CacheBehaviors.Items[i].FunctionAssociations.Quantity =
+					awsclients.Int64(len(cbi.FunctionAssociations.Items), 0)
 			}
 
 			if cbi.LambdaFunctionAssociations != nil {

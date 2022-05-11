@@ -20,6 +20,7 @@ ignore:
     - Headers.Quantity
     - QueryStringCacheKeys.Quantity
     - LambdaFunctionAssociations.Quantity
+    - FunctionAssociations.Quantity
     - TrustedKeyGroups.Quantity
     - TrustedSigners.Quantity
     - CacheBehaviors.Quantity
