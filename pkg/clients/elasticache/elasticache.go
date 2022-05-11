@@ -348,7 +348,9 @@ func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elastic
 	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
 		return true
 	}
-	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
+	// AWS will normalize preferred maintenance windows to lowercase
+	if !strings.EqualFold(clients.StringValue(kube.PreferredMaintenanceWindow),
+		clients.StringValue(cc.PreferredMaintenanceWindow)) {
 		return true
 	}
 	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)
