@@ -308,6 +308,8 @@ type TargetGroup_SDK struct {
 
 	HealthyThresholdCount *int64 `json:"healthyThresholdCount,omitempty"`
 
+	IPAddressType *string `json:"ipAddressType,omitempty"`
+
 	LoadBalancerARNs []*string `json:"loadBalancerARNs,omitempty"`
 	// The codes to use when checking for a successful response from a target. If
 	// the protocol version is gRPC, these are gRPC codes. Otherwise, these are

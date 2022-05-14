@@ -9,8 +9,8 @@ ignore:
     - RealtimeLogConfig
     - MonitoringSubscription
     - FieldLevelEncryptionConfig
+    - Function
   field_paths:
-    - DistributionConfig.CallerReference
     - Origins.Quantity
     - Aliases.Quantity
     - CustomErrorResponses.Quantity
@@ -20,6 +20,7 @@ ignore:
     - Headers.Quantity
     - QueryStringCacheKeys.Quantity
     - LambdaFunctionAssociations.Quantity
+    - FunctionAssociations.Quantity
     - TrustedKeyGroups.Quantity
     - TrustedSigners.Quantity
     - CacheBehaviors.Quantity
@@ -28,4 +29,9 @@ ignore:
     - StatusCodes.Quantity
     - CustomHeaders.Quantity
     - OriginSslProtocols.Quantity
+    - ResponseHeadersPolicyAccessControlAllowHeaders.Quantity
+    - ResponseHeadersPolicyAccessControlAllowMethods.Quantity
+    - ResponseHeadersPolicyAccessControlAllowOrigins.Quantity
+    - ResponseHeadersPolicyAccessControlExposeHeaders.Quantity
+    - ResponseHeadersPolicyCustomHeadersConfig.Quantity
     - OriginAccessIdentityConfig.CallerReference

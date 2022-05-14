@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -178,7 +179,18 @@ type EBSBlockDevice struct {
 	// RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// RequestSpotFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet.html),
 	// and RequestSpotInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html).
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:refFieldName=KMSKeyIDRef
+	// +crossplane:generate:reference:selectorFieldName=KMSKeyIDSelector
 	KmsKeyID *string `json:"kmsKeyId,omitempty"`
+
+	// KMSKeyIDRef is a reference to a KMS Key used to set KMSKeyID.
+	// +optional
+	KMSKeyIDRef *xpv1.Reference `json:"kmsKeyIdRef,omitempty"`
+
+	// KMSKeyIDSelector selects a reference to a KMS Key used to set KMSKeyID.
+	// +optional
+	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIdSelector,omitempty"`
 
 	// The ID of the snapshot.
 	SnapshotID *string `json:"snapshotId,omitempty"`

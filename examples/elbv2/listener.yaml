@@ -37,3 +37,26 @@ spec:
     protocol: HTTP
   providerConfigRef:
     name: example
+---
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Listener
+metadata:
+  name: test-listener-https
+spec:
+  forProvider:
+    region: us-east-1
+    certificates:
+      - certificateARNRef:
+          name: dev.crossplane.io
+    defaultActions:
+      - actionType: forward
+        forwardConfig:
+          targetGroups:
+            - targetGroupArnRef:
+                name: test-targetgroup
+    loadBalancerArnRef:
+      name: test-loadbalancer
+    port: 443
+    protocol: HTTPS
+  providerConfigRef:
+    name: example

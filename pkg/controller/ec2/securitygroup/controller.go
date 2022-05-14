@@ -27,28 +27,29 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not an SecurityGroup resource"
 
 	errDescribe         = "failed to describe SecurityGroup"
+	errGetSecurityGroup = "failed to get SecurityGroup based on groupName"
 	errMultipleItems    = "retrieved multiple SecurityGroups for the given securityGroupId"
 	errCreate           = "failed to create the SecurityGroup resource"
 	errAuthorizeIngress = "failed to authorize ingress rules"
@@ -63,14 +64,17 @@ const (
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
-func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupSecurityGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.SecurityGroupGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&v1beta1.SecurityGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SecurityGroupGroupVersionKind),
@@ -79,9 +83,10 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -113,7 +118,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{}, nil
+		securityGroupArn, err := e.getSecurityGroupByName(ctx, cr.Spec.ForProvider.GroupName)
+		if securityGroupArn == nil || err != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errGetSecurityGroup)
+		}
+
+		meta.SetExternalName(cr, aws.ToString(securityGroupArn))
+		_ = e.kube.Update(ctx, cr)
 	}
 
 	response, err := e.sg.DescribeSecurityGroups(ctx, &awsec2.DescribeSecurityGroupsInput{
@@ -287,4 +298,18 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)
+}
+
+func (e *external) getSecurityGroupByName(ctx context.Context, groupName string) (*string, error) {
+	groups, err := e.sg.DescribeSecurityGroups(ctx, &awsec2.DescribeSecurityGroupsInput{
+		Filters: []awsec2types.Filter{
+			{Name: aws.String("group-name"), Values: []string{groupName}},
+		},
+	})
+
+	if err != nil || len(groups.SecurityGroups) == 0 {
+		return nil, err
+	}
+
+	return groups.SecurityGroups[0].GroupId, nil
 }

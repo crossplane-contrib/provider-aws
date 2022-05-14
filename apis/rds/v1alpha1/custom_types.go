@@ -23,6 +23,69 @@ type CustomDBParameterGroupParameters struct {
 	// A list of parameters to associate with this DB parameter group
 	// +optional
 	Parameters []Parameter `json:"parameters,omitempty"`
+
+	// The DB parameter group family name. A DB parameter group can be associated
+	// with one and only one DB parameter group family, and can be applied only
+	// to a DB instance running a database engine and engine version compatible
+	// with that DB parameter group family.
+	//
+	// To list all of the available parameter group families for a DB engine, use
+	// the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine <engine>
+	//
+	// For example, to list all of the available parameter group families for the
+	// MySQL DB engine, use the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine mysql
+	//
+	// The output contains duplicates.
+	//
+	// The following are the valid DB engine values:
+	//
+	//    * aurora (for MySQL 5.6-compatible Aurora)
+	//
+	//    * aurora-mysql (for MySQL 5.7-compatible Aurora)
+	//
+	//    * aurora-postgresql
+	//
+	//    * mariadb
+	//
+	//    * mysql
+	//
+	//    * oracle-ee
+	//
+	//    * oracle-ee-cdb
+	//
+	//    * oracle-se2
+	//
+	//    * oracle-se2-cdb
+	//
+	//    * postgres
+	//
+	//    * sqlserver-ee
+	//
+	//    * sqlserver-se
+	//
+	//    * sqlserver-ex
+	//
+	//    * sqlserver-web
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// +optional
+	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
+
+	// DBParameterGroupFamilySelector determines DBParameterGroupFamily from
+	// the engine and engine version.
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// Will not be used if DBParameterGroupFamily is already set.
+	// +optional
+	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
 }
 
 // CustomDBClusterParameterGroupParameters are custom parameters for DBClusterParameterGroup
@@ -30,6 +93,68 @@ type CustomDBClusterParameterGroupParameters struct {
 	// A list of parameters to associate with this DB cluster parameter group
 	// +optional
 	Parameters []Parameter `json:"parameters,omitempty"`
+
+	// The DB cluster parameter group family name. A DB cluster parameter group
+	// can be associated with one and only one DB cluster parameter group family,
+	// and can be applied only to a DB cluster running a database engine and engine
+	// version compatible with that DB cluster parameter group family.
+	//
+	// Aurora MySQL
+	//
+	// Example: aurora5.6, aurora-mysql5.7
+	//
+	// Aurora PostgreSQL
+	//
+	// Example: aurora-postgresql9.6
+	//
+	// To list all of the available parameter group families for a DB engine, use
+	// the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine <engine>
+	//
+	// For example, to list all of the available parameter group families for the
+	// Aurora PostgreSQL DB engine, use the following command:
+	//
+	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
+	// --engine aurora-postgresql
+	//
+	// The output contains duplicates.
+	//
+	// The following are the valid DB engine values:
+	//
+	//    * aurora (for MySQL 5.6-compatible Aurora)
+	//
+	//    * aurora-mysql (for MySQL 5.7-compatible Aurora)
+	//
+	//    * aurora-postgresql
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// +optional
+	DBParameterGroupFamily *string `json:"dbParameterGroupFamily"`
+
+	// DBParameterGroupFamilySelector determines DBParameterGroupFamily from
+	// the engine and engine version.
+	//
+	// One of DBParameterGroupFamily or DBParameterGroupFamilySelector is required.
+	//
+	// Will not be used if DBParameterGroupFamily is already set.
+	// +optional
+	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
+}
+
+// DBParameterGroupFamilyNameSelector allows determining the family name from the
+// database engine and engine version.
+type DBParameterGroupFamilyNameSelector struct {
+	// Engine is the name of the database engine.
+	// +kubebuilder:validation:Required
+	Engine string `json:"engine"`
+
+	// EngineVersion is the version of the database engine.
+	// If it is nil, the default engine version given by AWS will be used.
+	// +optional
+	EngineVersion *string `json:"engineVersion,omitempty"`
 }
 
 // CustomDBClusterParameters are custom parameters for DBCluster
@@ -166,6 +291,18 @@ type CustomDBInstanceParameters struct {
 	// +optional
 	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
 
+	// DBClusterIdentifierRef is a reference to a DBCluster used to set
+	// DBClusterIdentifier.
+	// +immutable
+	// +optional
+	DBClusterIdentifierRef *xpv1.Reference `json:"dbClusterIdentifierRef,omitempty"`
+
+	// DBClusterIdentifierSelector selects a reference to a DBCluster used to
+	// set DBClusterIdentifier.
+	// +immutable
+	// +optional
+	DBClusterIdentifierSelector *xpv1.Selector `json:"dbClusterIdentifierSelector,omitempty"`
+
 	// A list of database security groups to associate with this DB instance
 	DBSecurityGroups []string `json:"dbSecurityGroups,omitempty"`
 
@@ -277,4 +414,39 @@ type CustomDBInstanceParameters struct {
 	// ApplyImmediately for each modified parameter and to determine when the changes
 	// are applied.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
+}
+
+// CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
+type CustomDBInstanceRoleAssociationParameters struct {
+	// The name of the DB instance to associate the IAM role with.
+	// +crossplane:generate:reference:type=DBInstance
+	// +optional
+	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
+
+	// DBInstanceIdentifierRef is a reference to a DBInstance used to set
+	// the DBInstanceIdentifier.
+	// +optional
+	DBInstanceIdentifierRef *xpv1.Reference `json:"dbInstanceIdentifierRef,omitempty"`
+
+	// DBInstanceIdentifierSelector selects references to a DBInstance used
+	// to set the DBInstanceIdentifier.
+	// +optional
+	DBInstanceIdentifierSelector *xpv1.Selector `json:"dbInstanceIdentifierSelector,omitempty"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to associate with the DB instance,
+	// for example arn:aws:iam::123456789012:role/AccessRole.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +optional
+	RoleARN *string `json:"roleArn,omitempty"`
+
+	// RoleARNRef is a reference to a IAM Role used to set
+	// RoleARN.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleArnRef,omitempty"`
+
+	// RoleARNSelector selects a reference to a IAM Role used to
+	// set RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
 }

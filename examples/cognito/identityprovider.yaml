@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: providerdetails-example
+  namespace: crossplane-system
+type: Opaque
+# You'll need to update this to details specified by your external identity provider
+stringData:
+  client_id: foo000000000000000000
+  client_secret: bar000000000000000000
+  authorize_scopes: openid profile
+  attributes_request_method: POST
+  attributes_url_add_attributes: "false"
+  oidc_issuer: https://sso.example.org
+---
+apiVersion: cognitoidentityprovider.aws.crossplane.io/v1alpha1
+kind: IdentityProvider
+metadata:
+  name: example-provider-with-secret
+spec:
+  forProvider:
+    region: us-east-1
+    providerType: OIDC
+    providerDetailsSecretRef:
+      name: providerdetails-example
+      namespace: crossplane-system
+    userPoolIdRef:
+      name: example
+  providerConfigRef:
+    name: example

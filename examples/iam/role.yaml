@@ -17,7 +17,9 @@ spec:
                         "eks.amazonaws.com",
                         "eks-fargate-pods.amazonaws.com",
                         "lambda.amazonaws.com",
-                        "s3.amazonaws.com"
+                        "s3.amazonaws.com",
+                        "rds.amazonaws.com",
+                        "dax.amazonaws.com"
                     ]
                 },
                 "Action": [
@@ -87,5 +89,28 @@ spec:
     tags:
       - key: k1
         value: v1
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: cognito-role
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "cognito-identity.amazonaws.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity"
+          }
+        ]
+      }
   providerConfigRef:
     name: example

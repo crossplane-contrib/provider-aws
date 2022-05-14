@@ -18,6 +18,82 @@ limitations under the License.
 
 package v1alpha1
 
+type Action string
+
+const (
+	Action_ALLOW Action = "ALLOW"
+	Action_BLOCK Action = "BLOCK"
+	Action_ALERT Action = "ALERT"
+)
+
+type AutodefinedReverseFlag string
+
+const (
+	AutodefinedReverseFlag_ENABLE  AutodefinedReverseFlag = "ENABLE"
+	AutodefinedReverseFlag_DISABLE AutodefinedReverseFlag = "DISABLE"
+)
+
+type BlockOverrideDNSType string
+
+const (
+	BlockOverrideDNSType_CNAME BlockOverrideDNSType = "CNAME"
+)
+
+type BlockResponse string
+
+const (
+	BlockResponse_NODATA   BlockResponse = "NODATA"
+	BlockResponse_NXDOMAIN BlockResponse = "NXDOMAIN"
+	BlockResponse_OVERRIDE BlockResponse = "OVERRIDE"
+)
+
+type FirewallDomainImportOperation string
+
+const (
+	FirewallDomainImportOperation_REPLACE FirewallDomainImportOperation = "REPLACE"
+)
+
+type FirewallDomainListStatus string
+
+const (
+	FirewallDomainListStatus_COMPLETE               FirewallDomainListStatus = "COMPLETE"
+	FirewallDomainListStatus_COMPLETE_IMPORT_FAILED FirewallDomainListStatus = "COMPLETE_IMPORT_FAILED"
+	FirewallDomainListStatus_IMPORTING              FirewallDomainListStatus = "IMPORTING"
+	FirewallDomainListStatus_DELETING               FirewallDomainListStatus = "DELETING"
+	FirewallDomainListStatus_UPDATING               FirewallDomainListStatus = "UPDATING"
+)
+
+type FirewallDomainUpdateOperation string
+
+const (
+	FirewallDomainUpdateOperation_ADD     FirewallDomainUpdateOperation = "ADD"
+	FirewallDomainUpdateOperation_REMOVE  FirewallDomainUpdateOperation = "REMOVE"
+	FirewallDomainUpdateOperation_REPLACE FirewallDomainUpdateOperation = "REPLACE"
+)
+
+type FirewallFailOpenStatus string
+
+const (
+	FirewallFailOpenStatus_ENABLED  FirewallFailOpenStatus = "ENABLED"
+	FirewallFailOpenStatus_DISABLED FirewallFailOpenStatus = "DISABLED"
+)
+
+type FirewallRuleGroupAssociationStatus string
+
+const (
+	FirewallRuleGroupAssociationStatus_COMPLETE FirewallRuleGroupAssociationStatus = "COMPLETE"
+	FirewallRuleGroupAssociationStatus_DELETING FirewallRuleGroupAssociationStatus = "DELETING"
+	FirewallRuleGroupAssociationStatus_UPDATING FirewallRuleGroupAssociationStatus = "UPDATING"
+)
+
+type FirewallRuleGroupStatus string
+
+const (
+	FirewallRuleGroupStatus_COMPLETE FirewallRuleGroupStatus = "COMPLETE"
+	FirewallRuleGroupStatus_DELETING FirewallRuleGroupStatus = "DELETING"
+	FirewallRuleGroupStatus_UPDATING FirewallRuleGroupStatus = "UPDATING"
+)
+
 type IPAddressStatus string
 
 const (
@@ -31,6 +107,22 @@ const (
 	IPAddressStatus_FAILED_RESOURCE_GONE      IPAddressStatus = "FAILED_RESOURCE_GONE"
 	IPAddressStatus_DELETING                  IPAddressStatus = "DELETING"
 	IPAddressStatus_DELETE_FAILED_FAS_EXPIRED IPAddressStatus = "DELETE_FAILED_FAS_EXPIRED"
+)
+
+type MutationProtectionStatus string
+
+const (
+	MutationProtectionStatus_ENABLED  MutationProtectionStatus = "ENABLED"
+	MutationProtectionStatus_DISABLED MutationProtectionStatus = "DISABLED"
+)
+
+type ResolverAutodefinedReverseStatus string
+
+const (
+	ResolverAutodefinedReverseStatus_ENABLING  ResolverAutodefinedReverseStatus = "ENABLING"
+	ResolverAutodefinedReverseStatus_ENABLED   ResolverAutodefinedReverseStatus = "ENABLED"
+	ResolverAutodefinedReverseStatus_DISABLING ResolverAutodefinedReverseStatus = "DISABLING"
+	ResolverAutodefinedReverseStatus_DISABLED  ResolverAutodefinedReverseStatus = "DISABLED"
 )
 
 type ResolverDNSSECValidationStatus string

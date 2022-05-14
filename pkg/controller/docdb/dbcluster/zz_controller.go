@@ -284,10 +284,26 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
 	}
+	if resp.DBCluster.ReadReplicaIdentifiers != nil {
+		f25 := []*string{}
+		for _, f25iter := range resp.DBCluster.ReadReplicaIdentifiers {
+			var f25elem string
+			f25elem = *f25iter
+			f25 = append(f25, &f25elem)
+		}
+		cr.Status.AtProvider.ReadReplicaIdentifiers = f25
+	} else {
+		cr.Status.AtProvider.ReadReplicaIdentifiers = nil
+	}
 	if resp.DBCluster.ReaderEndpoint != nil {
 		cr.Status.AtProvider.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
 	} else {
 		cr.Status.AtProvider.ReaderEndpoint = nil
+	}
+	if resp.DBCluster.ReplicationSourceIdentifier != nil {
+		cr.Status.AtProvider.ReplicationSourceIdentifier = resp.DBCluster.ReplicationSourceIdentifier
+	} else {
+		cr.Status.AtProvider.ReplicationSourceIdentifier = nil
 	}
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
@@ -300,18 +316,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.StorageEncrypted = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f28 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f28iter := range resp.DBCluster.VpcSecurityGroups {
-			f28elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f28iter.Status != nil {
-				f28elem.Status = f28iter.Status
+		f30 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f30iter := range resp.DBCluster.VpcSecurityGroups {
+			f30elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f30iter.Status != nil {
+				f30elem.Status = f30iter.Status
 			}
-			if f28iter.VpcSecurityGroupId != nil {
-				f28elem.VPCSecurityGroupID = f28iter.VpcSecurityGroupId
+			if f30iter.VpcSecurityGroupId != nil {
+				f30elem.VPCSecurityGroupID = f30iter.VpcSecurityGroupId
 			}
-			f28 = append(f28, f28elem)
+			f30 = append(f30, f30elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f28
+		cr.Status.AtProvider.VPCSecurityGroups = f30
 	} else {
 		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}

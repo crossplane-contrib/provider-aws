@@ -1,0 +1,14 @@
+---
+apiVersion: cognitoidentityprovider.aws.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  name: example-group
+spec:
+  forProvider:
+    region: us-east-1
+    userPoolIdRef:
+      name: example
+    roleArnRef:
+      name: cognito-role
+  providerConfigRef:
+    name: example

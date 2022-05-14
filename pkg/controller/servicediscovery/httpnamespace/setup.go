@@ -18,26 +18,25 @@ package httpnamespace
 
 import (
 	"context"
-	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/commonnamespace"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupHTTPNamespace adds a controller that reconciles HTTPNamespace.
-func SetupHTTPNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -48,19 +47,24 @@ func SetupHTTPNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 			e.observe = h.Observe
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.HTTPNamespace{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.HTTPNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {

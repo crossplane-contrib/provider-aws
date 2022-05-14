@@ -101,20 +101,25 @@ of the provider. Create a file called `pkg/controller/<serviceid>/<managedResour
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 ```
 
@@ -214,7 +219,7 @@ Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -226,16 +231,14 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 

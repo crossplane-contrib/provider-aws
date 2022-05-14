@@ -30,7 +30,7 @@ type AddonParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The name of the add-on. The name must match one of the names returned by
-	// ListAddons (https://docs.aws.amazon.com/eks/latest/APIReference/API_ListAddons.html).
+	// DescribeAddonVersions (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html).
 	// +kubebuilder:validation:Required
 	AddonName *string `json:"addonName"`
 	// The version of the add-on. The version must match one of the versions returned

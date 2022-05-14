@@ -17,6 +17,7 @@ limitations under the License.
 package elasticache
 
 import (
+	"sort"
 	"strconv"
 	"testing"
 
@@ -53,9 +54,10 @@ var (
 	cacheSubnetGroupName      = "coolSubnet"
 	engine                    = "redis"
 	engineVersion             = "5.0.0"
+	multiAZ                   = true
 	notificationTopicARN      = "arn:aws:sns:cooltopic"
 	notificationTopicStatus   = "active"
-	numCacheClusters          = 2
+	numCacheClusters          = 1
 	numNodeGroups             = 2
 	host                      = "coolhost"
 	port                      = 6379
@@ -103,6 +105,7 @@ var (
 				CacheSubnetGroupName:          &cacheSubnetGroupName,
 				Engine:                        engine,
 				EngineVersion:                 &engineVersion,
+				MultiAZEnabled:                &multiAZ,
 				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
 					{
 						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
@@ -168,6 +171,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
 				CacheSubnetGroupName:        aws.String(cacheSubnetGroupName),
 				EngineVersion:               aws.String(engineVersion),
+				MultiAZEnabled:              aws.Bool(multiAZ),
 				NodeGroupConfiguration: []elasticachetypes.NodeGroupConfiguration{
 					{
 						PrimaryAvailabilityZone:  aws.String(nodeGroupPrimaryAZ),
@@ -242,6 +246,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				CacheParameterGroupName:     aws.String(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
 				EngineVersion:               aws.String(engineVersion),
+				MultiAZEnabled:              aws.Bool(true),
 				NotificationTopicArn:        aws.String(notificationTopicARN),
 				NotificationTopicStatus:     aws.String(notificationTopicStatus),
 				PreferredMaintenanceWindow:  aws.String(maintenanceWindow),
@@ -714,6 +719,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
 				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
 				SnapshotWindow:         aws.String(snapshotWindow),
 			},
@@ -740,6 +746,53 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 				},
 			},
 			want: false,
+		},
+		{
+			name: "NeedsMultiAZUpdate",
+			kube: replicationGroup.Spec.ForProvider,
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusDisabled, // trigger Update
+				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         aws.String(snapshotWindow),
+			},
+			ccList: []elasticachetypes.CacheCluster{
+				{
+					EngineVersion:              aws.String(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
+					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
+						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
+						for i, id := range securityGroupIDs {
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						}
+						return ids
+					}(),
+					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
+						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+						for i, n := range cacheSecurityGroupNames {
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+						}
+						return names
+					}(),
+				},
+			},
+			want: true,
+		},
+		{
+			name: "NeedsUpdateNumCacheClusters",
+			kube: replicationGroup.Spec.ForProvider,
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				CacheNodeType:          aws.String(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
+				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         aws.String(snapshotWindow),
+			},
+			ccList: []elasticachetypes.CacheCluster{},
+			want:   true,
 		},
 	}
 
@@ -1137,4 +1190,317 @@ func TestVersionMatches(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMultiAZEnabled(t *testing.T) {
+	f := false
+	tr := true
+	cases := []struct {
+		name string
+		maz  elasticachetypes.MultiAZStatus
+		want *bool
+	}{
+		{
+			name: "empty status",
+			maz:  elasticachetypes.MultiAZStatus(""),
+			want: nil,
+		},
+		{
+			name: "enabled",
+			maz:  elasticachetypes.MultiAZStatusEnabled,
+			want: &tr,
+		},
+		{
+			name: "disabled",
+			maz:  elasticachetypes.MultiAZStatusDisabled,
+			want: &f,
+		},
+		{
+			name: "unknown status",
+			maz:  elasticachetypes.MultiAZStatus("unknown"),
+			want: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := multiAZEnabled(tc.maz)
+			if tc.want == nil && got != nil {
+				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
+			}
+			if aws.BoolValue(got) != aws.BoolValue(tc.want) {
+				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
+			}
+		})
+	}
+}
+
+func TestDiffTags(t *testing.T) {
+	type args struct {
+		local  []v1beta1.Tag
+		remote []elasticachetypes.Tag
+	}
+	type want struct {
+		add    map[string]string
+		remove []string
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"AllNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+			},
+			want: want{
+				add:    map[string]string{"key": "val"},
+				remove: []string{},
+			},
+		},
+		"SomeNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+			want: want{
+				add: map[string]string{
+					"key1": "val1",
+					"key2": "val2",
+				},
+				remove: []string{},
+			},
+		},
+		"Update": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "different"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				add:    map[string]string{"key": "different"},
+				remove: []string{"key"},
+			},
+		},
+		"RemoveAll": {
+			args: args{
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				add:    map[string]string{},
+				remove: []string{"key", "key1", "key2"},
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			tagCmp := cmpopts.SortSlices(func(i, j elasticachetypes.Tag) bool {
+				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+			})
+			add, remove := DiffTags(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("add: -want, +got:\n%s", diff)
+			}
+			sort.Strings(tc.want.remove)
+			sort.Strings(remove)
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
+				t.Errorf("remove: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
+	type args struct {
+		local  []v1beta1.Tag
+		remote []elasticachetypes.Tag
+	}
+	type want struct {
+		res bool
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"AllNewRemoteNil": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"AllNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+				remote: []elasticachetypes.Tag{},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"SomeNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"Update": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "different"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+		"Equal": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: false,
+			},
+		},
+		"EqualEmpty": {
+			args: args{
+				local:  []v1beta1.Tag{},
+				remote: []elasticachetypes.Tag{},
+			},
+			want: want{
+				res: false,
+			},
+		},
+		"RemoveAll": {
+			args: args{
+				remote: []elasticachetypes.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				res: true,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			res := ReplicationGroupTagsNeedsUpdate(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.res, res); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
+	var numCacheClusters5 = 5
+	type args struct {
+		kube   v1beta1.ReplicationGroupParameters
+		ccList []elasticachetypes.CacheCluster
+	}
+	type want struct {
+		res bool
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"Equal": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{
+					NumCacheClusters: &numCacheClusters,
+				},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: false},
+		},
+		"NotEqual": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{
+					NumCacheClusters: &numCacheClusters5,
+				},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: true},
+		},
+		"NilRequest": {
+			args: args{
+				kube:   v1beta1.ReplicationGroupParameters{},
+				ccList: []elasticachetypes.CacheCluster{},
+			},
+			want: want{res: false},
+		},
+		"NilRequestCC": {
+			args: args{
+				kube: v1beta1.ReplicationGroupParameters{},
+				ccList: []elasticachetypes.CacheCluster{
+					{EngineVersion: aws.String(engineVersion)},
+				},
+			},
+			want: want{res: true},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			res := ReplicationGroupNumCacheClustersNeedsUpdate(tc.args.kube, tc.args.ccList)
+			if diff := cmp.Diff(tc.want.res, res); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+
 }

@@ -29,6 +29,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
@@ -58,7 +60,7 @@ func (r *NotFoundError) Error() string {
 // IsNotFound returns true if the error code indicates that the requested Resource Record was not found
 func IsNotFound(err error) bool {
 	var notFoundError *NotFoundError
-	return errors.As(err, &notFoundError)
+	return errors.As(err, &notFoundError) || hostedzone.IsNotFound(err)
 }
 
 // NewClient creates new AWS client with provided AWS Configuration/Credentials

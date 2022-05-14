@@ -22,6 +22,7 @@ import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -34,6 +35,26 @@ func (mg *Instance) ResolveReferences(ctx context.Context, c client.Reader) erro
 	var mrsp reference.MultiResolutionResponse
 	var err error
 
+	for i3 := 0; i3 < len(mg.Spec.ForProvider.BlockDeviceMappings); i3++ {
+		if mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KmsKeyID),
+				Extract:      reference.ExternalName(),
+				Reference:    mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KMSKeyIDRef,
+				Selector:     mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KMSKeyIDSelector,
+				To: reference.To{
+					List:    &v1alpha1.KeyList{},
+					Managed: &v1alpha1.Key{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KmsKeyID")
+			}
+			mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KmsKeyID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.BlockDeviceMappings[i3].EBS.KMSKeyIDRef = rsp.ResolvedReference
+
+		}
+	}
 	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
 		Extract:       reference.ExternalName(),

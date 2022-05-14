@@ -43,6 +43,9 @@ type DBClusterParameters struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// (Not supported by Neptune)
 	CharacterSetName *string `json:"characterSetName,omitempty"`
+	// If set to true, tags are copied to any snapshot of the DB cluster that is
+	// created.
+	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 	// The name of the DB cluster parameter group to associate with this DB cluster.
 	// If this argument is omitted, the default is used.
 	//
@@ -65,10 +68,15 @@ type DBClusterParameters struct {
 	// The database can't be deleted when deletion protection is enabled. By default,
 	// deletion protection is enabled.
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
+	// DestinationRegion is used for presigning the request to a given region.
+	DestinationRegion *string `json:"destinationRegion,omitempty"`
 	// The list of log types that need to be enabled for exporting to CloudWatch
 	// Logs.
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
-	// Not supported by Neptune.
+	// If set to true, enables Amazon Identity and Access Management (IAM) authentication
+	// for the entire DB cluster (this cannot be set at an instance level).
+	//
+	// Default: false.
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
 	// The name of the database engine to be used for this DB cluster.
 	//
@@ -79,10 +87,10 @@ type DBClusterParameters struct {
 	//
 	// Example: 1.0.2.1
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// The AWS KMS key identifier for an encrypted DB cluster.
+	// The Amazon KMS key identifier for an encrypted DB cluster.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
-	// key. If you are creating a DB cluster with the same AWS account that owns
+	// key. If you are creating a DB cluster with the same Amazon account that owns
 	// the KMS encryption key used to encrypt the new DB cluster, then you can use
 	// the KMS key alias instead of the ARN for the KMS encryption key.
 	//
@@ -96,27 +104,17 @@ type DBClusterParameters struct {
 	//    is not specified, then Amazon Neptune will use your default encryption
 	//    key.
 	//
-	// AWS KMS creates the default encryption key for your AWS account. Your AWS
-	// account has a different default encryption key for each AWS Region.
+	// Amazon KMS creates the default encryption key for your Amazon account. Your
+	// Amazon account has a different default encryption key for each Amazon Region.
 	//
-	// If you create a Read Replica of an encrypted DB cluster in another AWS Region,
-	// you must set KmsKeyId to a KMS key ID that is valid in the destination AWS
-	// Region. This key is used to encrypt the Read Replica in that AWS Region.
+	// If you create a Read Replica of an encrypted DB cluster in another Amazon
+	// Region, you must set KmsKeyId to a KMS key ID that is valid in the destination
+	// Amazon Region. This key is used to encrypt the Read Replica in that Amazon
+	// Region.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-	// The password for the master database user. This password can contain any
-	// printable ASCII character except "/", """, or "@".
-	//
-	// Constraints: Must contain from 8 to 41 characters.
+	// Not supported by Neptune.
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
-	// The name of the master user for the DB cluster.
-	//
-	// Constraints:
-	//
-	//    * Must be 1 to 16 letters or numbers.
-	//
-	//    * First character must be a letter.
-	//
-	//    * Cannot be a reserved word for the chosen database engine.
+	// Not supported by Neptune.
 	MasterUsername *string `json:"masterUsername,omitempty"`
 	// (Not supported by Neptune)
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
@@ -130,7 +128,7 @@ type DBClusterParameters struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region. To see the time blocks available, see Adjusting
+	// of time for each Amazon Region. To see the time blocks available, see Adjusting
 	// the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
 	// in the Amazon Neptune User Guide.
 	//
@@ -150,8 +148,8 @@ type DBClusterParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region, occurring on a random day of the week. To see
-	// the time blocks available, see Adjusting the Preferred Maintenance Window
+	// of time for each Amazon Region, occurring on a random day of the week. To
+	// see the time blocks available, see Adjusting the Preferred Maintenance Window
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
 	// in the Amazon Neptune User Guide.
 	//
@@ -162,6 +160,10 @@ type DBClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
+	// SourceRegion is the source region where the resource exists. This is not
+	// sent over the wire and is only used for presigning. This value should always
+	// have the same region as the source ARN.
+	SourceRegion *string `json:"sourceRegion,omitempty"`
 	// Specifies whether the DB cluster is encrypted.
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 	// The tags to assign to the new DB cluster.
@@ -182,16 +184,20 @@ type DBClusterObservation struct {
 	// AllocatedStorage always returns 1, because Neptune DB cluster storage size
 	// is not fixed, but instead automatically adjusts as needed.
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
-	// Provides a list of the AWS Identity and Access Management (IAM) roles that
-	// are associated with the DB cluster. IAM roles that are associated with a
-	// DB cluster grant permission for the DB cluster to access other AWS services
+	// Provides a list of the Amazon Identity and Access Management (IAM) roles
+	// that are associated with the DB cluster. IAM roles that are associated with
+	// a DB cluster grant permission for the DB cluster to access other Amazon services
 	// on your behalf.
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
+	// Time at which the DB cluster will be automatically restarted.
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
 	// Identifies the clone group to which the DB cluster is associated.
 	CloneGroupID *string `json:"cloneGroupID,omitempty"`
 	// Specifies the time when the DB cluster was created, in Universal Coordinated
 	// Time (UTC).
 	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`
+	// If set to true, the DB cluster can be cloned across accounts.
+	CrossAccountClone *bool `json:"crossAccountClone,omitempty"`
 	// The Amazon Resource Name (ARN) for the DB cluster.
 	DBClusterARN *string `json:"dbClusterARN,omitempty"`
 	// Contains a user-supplied DB cluster identifier. This identifier is the unique
@@ -199,16 +205,16 @@ type DBClusterObservation struct {
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 	// Provides the list of instances that make up the DB cluster.
 	DBClusterMembers []*DBClusterMember `json:"dbClusterMembers,omitempty"`
-	// (Not supported by Neptune)
+	// Not supported by Neptune.
 	DBClusterOptionGroupMemberships []*DBClusterOptionGroupStatus `json:"dbClusterOptionGroupMemberships,omitempty"`
 	// Specifies the name of the DB cluster parameter group for the DB cluster.
 	DBClusterParameterGroup *string `json:"dbClusterParameterGroup,omitempty"`
 	// Specifies information on the subnet group associated with the DB cluster,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
-	// The AWS Region-unique, immutable identifier for the DB cluster. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB
-	// cluster is accessed.
+	// The Amazon Region-unique, immutable identifier for the DB cluster. This identifier
+	// is found in Amazon CloudTrail log entries whenever the Amazon KMS key for
+	// the DB cluster is accessed.
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 	// Specifies the earliest time to which a database can be restored with point-in-time
 	// restore.
@@ -220,8 +226,8 @@ type DBClusterObservation struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
-	// True if mapping of AWS Identity and Access Management (IAM) accounts to database
-	// accounts is enabled, and otherwise false.
+	// True if mapping of Amazon Identity and Access Management (IAM) accounts to
+	// database accounts is enabled, and otherwise false.
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.

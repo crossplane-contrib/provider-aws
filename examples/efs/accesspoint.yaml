@@ -1,0 +1,12 @@
+---
+apiVersion: efs.aws.crossplane.io/v1alpha1
+kind: AccessPoint
+metadata:
+  name: example
+spec:
+  forProvider:
+    fileSystemIDRef:
+      name: example
+    region: us-east-1
+  providerConfigRef:
+    name: example

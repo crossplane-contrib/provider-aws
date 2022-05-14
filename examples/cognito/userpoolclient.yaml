@@ -1,0 +1,15 @@
+apiVersion: cognitoidentityprovider.aws.crossplane.io/v1alpha1
+kind: UserPoolClient
+metadata:
+  name: example-client
+spec:
+  forProvider:
+    region: us-east-1
+    clientName: example-client
+    userPoolIdRef:
+      name: example
+  writeConnectionSecretToRef:
+    name: example-cognito-userpoolclient
+    namespace: default
+  providerConfigRef:
+    name: example

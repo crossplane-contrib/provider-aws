@@ -192,6 +192,7 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 			if rule.Destination.Metrics != nil {
 				config.Rules[i].Destination.Metrics = &v1beta1.Metrics{}
 				if rule.Destination.Metrics.EventThreshold != nil {
+					config.Rules[i].Destination.Metrics.EventThreshold = &v1beta1.ReplicationTimeValue{}
 					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = rule.Destination.Metrics.EventThreshold.Minutes
 				}
 				config.Rules[i].Destination.Metrics.Status = string(rule.Destination.Metrics.Status)
@@ -256,8 +257,10 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *types.ReplicationR
 	}
 	if input.Destination.Metrics != nil {
 		newRule.Destination.Metrics = &types.Metrics{
-			EventThreshold: &types.ReplicationTimeValue{Minutes: input.Destination.Metrics.EventThreshold.Minutes},
-			Status:         types.MetricsStatus(input.Destination.Metrics.Status),
+			Status: types.MetricsStatus(input.Destination.Metrics.Status),
+		}
+		if input.Destination.Metrics.EventThreshold != nil {
+			newRule.Destination.Metrics.EventThreshold = &types.ReplicationTimeValue{Minutes: input.Destination.Metrics.EventThreshold.Minutes}
 		}
 	}
 	if input.Destination.ReplicationTime != nil {

@@ -24,13 +24,14 @@ import (
 
 // MockRDSClient for testing.
 type MockRDSClient struct {
-	MockCreate          func(context.Context, *rds.CreateDBInstanceInput, []func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
-	MockS3Restore       func(context.Context, *rds.RestoreDBInstanceFromS3Input, []func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
-	MockSnapshotRestore func(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, []func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
-	MockDescribe        func(context.Context, *rds.DescribeDBInstancesInput, []func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
-	MockModify          func(context.Context, *rds.ModifyDBInstanceInput, []func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
-	MockDelete          func(context.Context, *rds.DeleteDBInstanceInput, []func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
-	MockAddTags         func(context.Context, *rds.AddTagsToResourceInput, []func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
+	MockCreate             func(context.Context, *rds.CreateDBInstanceInput, []func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
+	MockS3Restore          func(context.Context, *rds.RestoreDBInstanceFromS3Input, []func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
+	MockSnapshotRestore    func(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, []func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
+	MockPointInTimeRestore func(context.Context, *rds.RestoreDBInstanceToPointInTimeInput, []func(*rds.Options)) (*rds.RestoreDBInstanceToPointInTimeOutput, error)
+	MockDescribe           func(context.Context, *rds.DescribeDBInstancesInput, []func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
+	MockModify             func(context.Context, *rds.ModifyDBInstanceInput, []func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
+	MockDelete             func(context.Context, *rds.DeleteDBInstanceInput, []func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
+	MockAddTags            func(context.Context, *rds.AddTagsToResourceInput, []func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
 }
 
 // DescribeDBInstances finds RDS Instance by name
@@ -51,6 +52,11 @@ func (m *MockRDSClient) RestoreDBInstanceFromS3(ctx context.Context, i *rds.Rest
 // RestoreDBInstanceFromDBSnapshot restores an RDS Instance from a database snapshot with the provided Specification
 func (m *MockRDSClient) RestoreDBInstanceFromDBSnapshot(ctx context.Context, i *rds.RestoreDBInstanceFromDBSnapshotInput, opts ...func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error) {
 	return m.MockSnapshotRestore(ctx, i, opts)
+}
+
+// RestoreDBInstanceToPointInTime restores an RDS Instance to the date and time with the provided Specification
+func (m *MockRDSClient) RestoreDBInstanceToPointInTime(ctx context.Context, i *rds.RestoreDBInstanceToPointInTimeInput, opts ...func(*rds.Options)) (*rds.RestoreDBInstanceToPointInTimeOutput, error) {
+	return m.MockPointInTimeRestore(ctx, i, opts)
 }
 
 // ModifyDBInstance modifies RDS Instance with provided Specification

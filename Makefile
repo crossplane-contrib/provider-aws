@@ -6,8 +6,9 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= c7d9f6bbcaf8f628910202fa126e03faa970502b
-GENERATED_SERVICES := $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
+CODE_GENERATOR_REPO ?= https://github.com/aws-controllers-k8s/code-generator.git
+CODE_GENERATOR_COMMIT ?= f8c0f4711a91e50335450521e3c49673d135d56d
+GENERATED_SERVICES ?= $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions
 KIND_VERSION ?= v0.11.1
@@ -75,14 +76,7 @@ cobertura:
 		grep -v zz_generated.deepcopy | \
 		$(GOCOVER_COBERTURA) > $(GO_TEST_OUTPUT)/cobertura-coverage.xml
 
-crds.clean:
-	@$(INFO) cleaning generated CRDs
-	@find package/crds -name '*.yaml' -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
-	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
-	@$(OK) cleaned generated CRDs
-
 generate.init: services.all
-generate.done: crds.clean
 
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.
@@ -91,7 +85,7 @@ manifests:
 e2e.run: test-integration
 
 # Run integration tests.
-test-integration: $(KIND) $(KUBECTL) $(HELM3)
+test-integration: $(KIND) $(KUBECTL) $(UP) $(HELM3)
 	@$(INFO) running integration tests using kind $(KIND_VERSION)
 	@KIND_NODE_IMAGE_TAG=${KIND_NODE_IMAGE_TAG} $(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
 	@$(OK) integration tests passed
@@ -124,7 +118,7 @@ run: go.build
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
-		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
+		cd $(WORK_DIR) && git clone "$(CODE_GENERATOR_REPO)"; \
 	fi
 	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
 	@for svc in $(SERVICES); do \

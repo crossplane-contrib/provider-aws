@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: dbclusterparametergroups.rds.aws.crossplane.io
 spec:
@@ -70,8 +71,36 @@ spec:
                       to a DB cluster running a database engine and engine version
                       compatible with that DB cluster parameter group family. \n Aurora
                       MySQL \n Example: aurora5.6, aurora-mysql5.7 \n Aurora PostgreSQL
-                      \n Example: aurora-postgresql9.6"
+                      \n Example: aurora-postgresql9.6 \n To list all of the available
+                      parameter group families for a DB engine, use the following
+                      command: \n aws rds describe-db-engine-versions --query \"DBEngineVersions[].DBParameterGroupFamily\"
+                      --engine <engine> \n For example, to list all of the available
+                      parameter group families for the Aurora PostgreSQL DB engine,
+                      use the following command: \n aws rds describe-db-engine-versions
+                      --query \"DBEngineVersions[].DBParameterGroupFamily\" --engine
+                      aurora-postgresql \n The output contains duplicates. \n The
+                      following are the valid DB engine values: \n * aurora (for MySQL
+                      5.6-compatible Aurora) \n * aurora-mysql (for MySQL 5.7-compatible
+                      Aurora) \n * aurora-postgresql \n One of DBParameterGroupFamily
+                      or DBParameterGroupFamilySelector is required."
                     type: string
+                  dbParameterGroupFamilySelector:
+                    description: "DBParameterGroupFamilySelector determines DBParameterGroupFamily
+                      from the engine and engine version. \n One of DBParameterGroupFamily
+                      or DBParameterGroupFamilySelector is required. \n Will not be
+                      used if DBParameterGroupFamily is already set."
+                    properties:
+                      engine:
+                        description: Engine is the name of the database engine.
+                        type: string
+                      engineVersion:
+                        description: EngineVersion is the version of the database
+                          engine. If it is nil, the default engine version given by
+                          AWS will be used.
+                        type: string
+                    required:
+                    - engine
+                    type: object
                   description:
                     description: The description for the DB cluster parameter group.
                     type: string
@@ -121,7 +150,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - dbParameterGroupFamily
                 - description
                 - region
                 type: object
@@ -149,12 +177,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -183,6 +263,10 @@ spec:
                     type: string
                   dbClusterParameterGroupName:
                     description: The name of the DB cluster parameter group.
+                    type: string
+                  dbParameterGroupFamily:
+                    description: The name of the DB parameter group family that this
+                      DB cluster parameter group is compatible with.
                     type: string
                 type: object
               conditions:

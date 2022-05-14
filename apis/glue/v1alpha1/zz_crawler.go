@@ -39,7 +39,7 @@ type CrawlerParameters struct {
 	Configuration *string `json:"configuration,omitempty"`
 	// The name of the SecurityConfiguration structure to be used by this crawler.
 	CrawlerSecurityConfiguration *string `json:"crawlerSecurityConfiguration,omitempty"`
-	// The AWS Glue database where results are written, such as: arn:aws:daylight:us-east-1::database/sometable/*.
+	// The Glue database where results are written, such as: arn:aws:daylight:us-east-1::database/sometable/*.
 	DatabaseName *string `json:"databaseName,omitempty"`
 	// A description of the new crawler.
 	Description *string `json:"description,omitempty"`
@@ -58,8 +58,8 @@ type CrawlerParameters struct {
 	// The table prefix used for catalog tables that are created.
 	TablePrefix *string `json:"tablePrefix,omitempty"`
 	// The tags to use with this crawler request. You may use tags to limit access
-	// to the crawler. For more information about tags in AWS Glue, see AWS Tags
-	// in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
+	// to the crawler. For more information about tags in Glue, see Amazon Web Services
+	// Tags in Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
 	// in the developer guide.
 	Tags map[string]*string `json:"tags,omitempty"`
 	// A list of collection of targets to crawl.

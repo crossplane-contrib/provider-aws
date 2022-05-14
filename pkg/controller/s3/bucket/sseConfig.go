@@ -75,6 +75,9 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 		if string(outputRule.SSEAlgorithm) != Rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm {
 			return NeedsUpdate, nil
 		}
+		if external.ServerSideEncryptionConfiguration.Rules[i].BucketKeyEnabled != Rule.BucketKeyEnabled {
+			return NeedsUpdate, nil
+		}
 	}
 
 	return Updated, nil
@@ -140,6 +143,7 @@ func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEnc
 	}
 	for i, rule := range config.Rules {
 		bei.ServerSideEncryptionConfiguration.Rules[i] = types.ServerSideEncryptionRule{
+			BucketKeyEnabled: rule.BucketKeyEnabled,
 			ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
 				SSEAlgorithm:   types.ServerSideEncryption(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),

@@ -1,0 +1,33 @@
+---
+apiVersion: s3.aws.crossplane.io/v1alpha1
+kind: Object
+metadata:
+  name: path
+  annotations:
+    crossplane.io/external-name: path
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: default
+  forProvider:
+    region: us-west-2
+    key: path/
+    acl: private
+    bucketName: abin-crossplane
+---
+apiVersion: s3.aws.crossplane.io/v1alpha1
+kind: Object
+metadata:
+  name: test.txt
+  annotations:
+    crossplane.io/external-name: test.txt
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: default
+  forProvider:
+    region: us-west-2
+    key: path/test.txt
+    acl: private
+    body: "this is test.txt"
+    bucketName: abin-crossplane

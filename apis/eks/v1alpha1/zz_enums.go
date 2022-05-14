@@ -21,9 +21,12 @@ package v1alpha1
 type AMITypes string
 
 const (
-	AMITypes_AL2_x86_64     AMITypes = "AL2_x86_64"
-	AMITypes_AL2_x86_64_GPU AMITypes = "AL2_x86_64_GPU"
-	AMITypes_AL2_ARM_64     AMITypes = "AL2_ARM_64"
+	AMITypes_AL2_x86_64          AMITypes = "AL2_x86_64"
+	AMITypes_AL2_x86_64_GPU      AMITypes = "AL2_x86_64_GPU"
+	AMITypes_AL2_ARM_64          AMITypes = "AL2_ARM_64"
+	AMITypes_CUSTOM              AMITypes = "CUSTOM"
+	AMITypes_BOTTLEROCKET_ARM_64 AMITypes = "BOTTLEROCKET_ARM_64"
+	AMITypes_BOTTLEROCKET_x86_64 AMITypes = "BOTTLEROCKET_x86_64"
 )
 
 type AddonIssueCode string
@@ -34,6 +37,9 @@ const (
 	AddonIssueCode_ClusterUnreachable           AddonIssueCode = "ClusterUnreachable"
 	AddonIssueCode_InsufficientNumberOfReplicas AddonIssueCode = "InsufficientNumberOfReplicas"
 	AddonIssueCode_ConfigurationConflict        AddonIssueCode = "ConfigurationConflict"
+	AddonIssueCode_AdmissionRequestDenied       AddonIssueCode = "AdmissionRequestDenied"
+	AddonIssueCode_UnsupportedAddonModification AddonIssueCode = "UnsupportedAddonModification"
+	AddonIssueCode_K8sResourceNotFound          AddonIssueCode = "K8sResourceNotFound"
 )
 
 type AddonStatus_SDK string
@@ -63,6 +69,7 @@ const (
 	ClusterStatus_DELETING ClusterStatus = "DELETING"
 	ClusterStatus_FAILED   ClusterStatus = "FAILED"
 	ClusterStatus_UPDATING ClusterStatus = "UPDATING"
+	ClusterStatus_PENDING  ClusterStatus = "PENDING"
 )
 
 type ConfigStatus string
@@ -71,6 +78,20 @@ const (
 	ConfigStatus_CREATING ConfigStatus = "CREATING"
 	ConfigStatus_DELETING ConfigStatus = "DELETING"
 	ConfigStatus_ACTIVE   ConfigStatus = "ACTIVE"
+)
+
+type ConnectorConfigProvider string
+
+const (
+	ConnectorConfigProvider_EKS_ANYWHERE ConnectorConfigProvider = "EKS_ANYWHERE"
+	ConnectorConfigProvider_ANTHOS       ConnectorConfigProvider = "ANTHOS"
+	ConnectorConfigProvider_GKE          ConnectorConfigProvider = "GKE"
+	ConnectorConfigProvider_AKS          ConnectorConfigProvider = "AKS"
+	ConnectorConfigProvider_OPENSHIFT    ConnectorConfigProvider = "OPENSHIFT"
+	ConnectorConfigProvider_TANZU        ConnectorConfigProvider = "TANZU"
+	ConnectorConfigProvider_RANCHER      ConnectorConfigProvider = "RANCHER"
+	ConnectorConfigProvider_EC2          ConnectorConfigProvider = "EC2"
+	ConnectorConfigProvider_OTHER        ConnectorConfigProvider = "OTHER"
 )
 
 type ErrorCode string
@@ -90,6 +111,9 @@ const (
 	ErrorCode_ClusterUnreachable           ErrorCode = "ClusterUnreachable"
 	ErrorCode_InsufficientNumberOfReplicas ErrorCode = "InsufficientNumberOfReplicas"
 	ErrorCode_ConfigurationConflict        ErrorCode = "ConfigurationConflict"
+	ErrorCode_AdmissionRequestDenied       ErrorCode = "AdmissionRequestDenied"
+	ErrorCode_UnsupportedAddonModification ErrorCode = "UnsupportedAddonModification"
+	ErrorCode_K8sResourceNotFound          ErrorCode = "K8sResourceNotFound"
 )
 
 type FargateProfileStatus string
@@ -154,25 +178,40 @@ const (
 	ResolveConflicts_NONE      ResolveConflicts = "NONE"
 )
 
+type TaintEffect string
+
+const (
+	TaintEffect_NO_SCHEDULE        TaintEffect = "NO_SCHEDULE"
+	TaintEffect_NO_EXECUTE         TaintEffect = "NO_EXECUTE"
+	TaintEffect_PREFER_NO_SCHEDULE TaintEffect = "PREFER_NO_SCHEDULE"
+)
+
 type UpdateParamType string
 
 const (
-	UpdateParamType_Version                UpdateParamType = "Version"
-	UpdateParamType_PlatformVersion        UpdateParamType = "PlatformVersion"
-	UpdateParamType_EndpointPrivateAccess  UpdateParamType = "EndpointPrivateAccess"
-	UpdateParamType_EndpointPublicAccess   UpdateParamType = "EndpointPublicAccess"
-	UpdateParamType_ClusterLogging         UpdateParamType = "ClusterLogging"
-	UpdateParamType_DesiredSize            UpdateParamType = "DesiredSize"
-	UpdateParamType_LabelsToAdd            UpdateParamType = "LabelsToAdd"
-	UpdateParamType_LabelsToRemove         UpdateParamType = "LabelsToRemove"
-	UpdateParamType_MaxSize                UpdateParamType = "MaxSize"
-	UpdateParamType_MinSize                UpdateParamType = "MinSize"
-	UpdateParamType_ReleaseVersion         UpdateParamType = "ReleaseVersion"
-	UpdateParamType_PublicAccessCidrs      UpdateParamType = "PublicAccessCidrs"
-	UpdateParamType_IdentityProviderConfig UpdateParamType = "IdentityProviderConfig"
-	UpdateParamType_AddonVersion           UpdateParamType = "AddonVersion"
-	UpdateParamType_ServiceAccountRoleArn  UpdateParamType = "ServiceAccountRoleArn"
-	UpdateParamType_ResolveConflicts       UpdateParamType = "ResolveConflicts"
+	UpdateParamType_Version                  UpdateParamType = "Version"
+	UpdateParamType_PlatformVersion          UpdateParamType = "PlatformVersion"
+	UpdateParamType_EndpointPrivateAccess    UpdateParamType = "EndpointPrivateAccess"
+	UpdateParamType_EndpointPublicAccess     UpdateParamType = "EndpointPublicAccess"
+	UpdateParamType_ClusterLogging           UpdateParamType = "ClusterLogging"
+	UpdateParamType_DesiredSize              UpdateParamType = "DesiredSize"
+	UpdateParamType_LabelsToAdd              UpdateParamType = "LabelsToAdd"
+	UpdateParamType_LabelsToRemove           UpdateParamType = "LabelsToRemove"
+	UpdateParamType_TaintsToAdd              UpdateParamType = "TaintsToAdd"
+	UpdateParamType_TaintsToRemove           UpdateParamType = "TaintsToRemove"
+	UpdateParamType_MaxSize                  UpdateParamType = "MaxSize"
+	UpdateParamType_MinSize                  UpdateParamType = "MinSize"
+	UpdateParamType_ReleaseVersion           UpdateParamType = "ReleaseVersion"
+	UpdateParamType_PublicAccessCidrs        UpdateParamType = "PublicAccessCidrs"
+	UpdateParamType_LaunchTemplateName       UpdateParamType = "LaunchTemplateName"
+	UpdateParamType_LaunchTemplateVersion    UpdateParamType = "LaunchTemplateVersion"
+	UpdateParamType_IdentityProviderConfig   UpdateParamType = "IdentityProviderConfig"
+	UpdateParamType_EncryptionConfig         UpdateParamType = "EncryptionConfig"
+	UpdateParamType_AddonVersion             UpdateParamType = "AddonVersion"
+	UpdateParamType_ServiceAccountRoleArn    UpdateParamType = "ServiceAccountRoleArn"
+	UpdateParamType_ResolveConflicts         UpdateParamType = "ResolveConflicts"
+	UpdateParamType_MaxUnavailable           UpdateParamType = "MaxUnavailable"
+	UpdateParamType_MaxUnavailablePercentage UpdateParamType = "MaxUnavailablePercentage"
 )
 
 type UpdateStatus string
@@ -193,5 +232,6 @@ const (
 	UpdateType_ConfigUpdate                       UpdateType = "ConfigUpdate"
 	UpdateType_AssociateIdentityProviderConfig    UpdateType = "AssociateIdentityProviderConfig"
 	UpdateType_DisassociateIdentityProviderConfig UpdateType = "DisassociateIdentityProviderConfig"
+	UpdateType_AssociateEncryptionConfig          UpdateType = "AssociateEncryptionConfig"
 	UpdateType_AddonUpdate                        UpdateType = "AddonUpdate"
 )

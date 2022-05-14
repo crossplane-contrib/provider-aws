@@ -1,0 +1,26 @@
+apiVersion: dax.aws.crossplane.io/v1alpha1
+kind: ParameterGroup
+metadata:
+  name: example-parameter-group
+spec:
+  forProvider:
+    region: us-east-1
+    description: "Test parameter group description."
+    parameterNameValues:
+      - parameterName: "record-ttl-millis"
+        parameterValue: "300000"
+      - parameterName: "query-ttl-millis"
+        parameterValue: "600000"
+  providerConfigRef:
+    name: example
+---
+apiVersion: dax.aws.crossplane.io/v1alpha1
+kind: ParameterGroup
+metadata:
+  name: example-parameter-group-no-values
+spec:
+  forProvider:
+    region: us-east-1
+    description: "Test parameter group description with no values."
+  providerConfigRef:
+    name: example

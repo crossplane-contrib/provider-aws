@@ -29,9 +29,6 @@ type VPCEndpointParameters struct {
 	// Region is which region the VPCEndpoint will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request. For more information, see How to Ensure Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
-	ClientToken *string `json:"clientToken,omitempty"`
 	// (Interface and gateway endpoints) A policy to attach to the endpoint that
 	// controls access to the service. The policy must be in valid JSON format.
 	// If this parameter is not specified, we attach a default policy that allows
@@ -49,9 +46,7 @@ type VPCEndpointParameters struct {
 	// true: enableDnsHostnames and enableDnsSupport. Use ModifyVpcAttribute to
 	// set the VPC attributes.
 	//
-	// Private DNS is not supported for Amazon S3 interface endpoints.
-	//
-	// Default: true for supported endpoints
+	// Default: true
 	PrivateDNSEnabled *bool `json:"privateDNSEnabled,omitempty"`
 	// The service name. To get a list of available services, use the DescribeVpcEndpointServices
 	// request, or get the name from the service provider.
@@ -74,8 +69,33 @@ type VPCEndpointSpec struct {
 
 // VPCEndpointObservation defines the observed state of VPCEndpoint
 type VPCEndpointObservation struct {
-	// Information about the endpoint.
-	VPCEndpoint *VPCEndpoint_SDK `json:"vpcEndpoint,omitempty"`
+	// The date and time that the VPC endpoint was created.
+	CreationTimestamp *metav1.Time `json:"creationTimestamp,omitempty"`
+	// (Interface endpoint) The DNS entries for the endpoint.
+	DNSEntries []*DNSEntry `json:"dnsEntries,omitempty"`
+	// (Interface endpoint) Information about the security groups that are associated
+	// with the network interface.
+	Groups []*SecurityGroupIdentifier `json:"groups,omitempty"`
+	// The last error that occurred for VPC endpoint.
+	LastError *LastError `json:"lastError,omitempty"`
+	// (Interface endpoint) One or more network interfaces for the endpoint.
+	NetworkInterfaceIDs []*string `json:"networkInterfaceIDs,omitempty"`
+	// The ID of the Amazon Web Services account that owns the VPC endpoint.
+	OwnerID *string `json:"ownerID,omitempty"`
+	// Indicates whether the VPC endpoint is being managed by its service.
+	RequesterManaged *bool `json:"requesterManaged,omitempty"`
+	// (Gateway endpoint) One or more route tables associated with the endpoint.
+	RouteTableIDs []*string `json:"routeTableIDs,omitempty"`
+	// The state of the VPC endpoint.
+	State *string `json:"state,omitempty"`
+	// (Interface endpoint) One or more subnets in which the endpoint is located.
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+	// Any tags assigned to the VPC endpoint.
+	Tags []*Tag `json:"tags,omitempty"`
+	// The ID of the VPC endpoint.
+	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
+	// The ID of the VPC to which the endpoint is associated.
+	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // VPCEndpointStatus defines the observed state of VPCEndpoint.

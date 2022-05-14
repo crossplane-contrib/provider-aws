@@ -29,16 +29,37 @@ type FileSystemParameters struct {
 	// Region is which region the FileSystem will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// Used to create a file system that uses One Zone storage classes. It specifies
+	// the Amazon Web Services Availability Zone in which to create the file system.
+	// Use the format us-east-1a to specify the Availability Zone. For more information
+	// about One Zone storage classes, see Using EFS storage classes (https://docs.aws.amazon.com/efs/latest/ug/storage-classes.html)
+	// in the Amazon EFS User Guide.
+	//
+	// One Zone storage classes are not available in all Availability Zones in Amazon
+	// Web Services Regions where Amazon EFS is available.
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+	// Specifies whether automatic backups are enabled on the file system that you
+	// are creating. Set the value to true to enable automatic backups. If you are
+	// creating a file system that uses One Zone storage classes, automatic backups
+	// are enabled by default. For more information, see Automatic backups (https://docs.aws.amazon.com/efs/latest/ug/awsbackup.html#automatic-backups)
+	// in the Amazon EFS User Guide.
+	//
+	// Default is false. However, if you specify an AvailabilityZoneName, the default
+	// is true.
+	//
+	// Backup is not available in all Amazon Web Services Regionswhere Amazon EFS
+	// is available.
+	Backup *bool `json:"backup,omitempty"`
 	// A Boolean value that, if true, creates an encrypted file system. When creating
 	// an encrypted file system, you have the option of specifying CreateFileSystemRequest$KmsKeyId
-	// for an existing AWS Key Management Service (AWS KMS) customer master key
-	// (CMK). If you don't specify a CMK, then the default CMK for Amazon EFS, /aws/elasticfilesystem,
+	// for an existing Key Management Service (KMS customer master key (CMK). If
+	// you don't specify a CMK, then the default CMK for Amazon EFS, /aws/elasticfilesystem,
 	// is used to protect the encrypted file system.
 	Encrypted *bool `json:"encrypted,omitempty"`
-	// The ID of the AWS KMS CMK to be used to protect the encrypted file system.
-	// This parameter is only required if you want to use a nondefault CMK. If this
-	// parameter is not specified, the default CMK for Amazon EFS is used. This
-	// ID can be in one of the following formats:
+	// The ID of the KMS CMK that you want to use to protect the encrypted file
+	// system. This parameter is only required if you want to use a non-default
+	// KMS key. If this parameter is not specified, the default CMK for Amazon EFS
+	// is used. This ID can be in one of the following formats:
 	//
 	//    * Key ID - A unique identifier of the key, for example 1234abcd-12ab-34cd-56ef-1234567890ab.
 	//
@@ -52,27 +73,33 @@ type FileSystemParameters struct {
 	// If KmsKeyId is specified, the CreateFileSystemRequest$Encrypted parameter
 	// must be set to true.
 	//
-	// EFS accepts only symmetric CMKs. You cannot use asymmetric CMKs with EFS
-	// file systems.
+	// EFS accepts only symmetric KMS keys. You cannot use asymmetric KMS keys with
+	// EFS file systems.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The performance mode of the file system. We recommend generalPurpose performance
 	// mode for most file systems. File systems using the maxIO performance mode
 	// can scale to higher levels of aggregate throughput and operations per second
 	// with a tradeoff of slightly higher latencies for most file operations. The
 	// performance mode can't be changed after the file system has been created.
+	//
+	// The maxIO mode is not supported on file systems using One Zone storage classes.
 	PerformanceMode *string `json:"performanceMode,omitempty"`
-	// A value that specifies to create one or more tags associated with the file
-	// system. Each tag is a user-defined key-value pair. Name your file system
-	// on creation by including a "Key":"Name","Value":"{value}" key-value pair.
+	// Use to create one or more tags associated with the file system. Each tag
+	// is a user-defined key-value pair. Name your file system on creation by including
+	// a "Key":"Name","Value":"{value}" key-value pair. Each key must be unique.
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// in the Amazon Web Services General Reference Guide.
 	Tags []*Tag `json:"tags,omitempty"`
-	// The throughput mode for the file system to be created. There are two throughput
-	// modes to choose from for your file system: bursting and provisioned. If you
-	// set ThroughputMode to provisioned, you must also set a value for ProvisionedThroughPutInMibps.
-	// You can decrease your file system's throughput in Provisioned Throughput
-	// mode or change between the throughput modes as long as it’s been more than
-	// 24 hours since the last decrease or throughput mode change. For more, see
-	// Specifying Throughput with Provisioned Mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
+	// Specifies the throughput mode for the file system, either bursting or provisioned.
+	// If you set ThroughputMode to provisioned, you must also set a value for ProvisionedThroughputInMibps.
+	// After you create the file system, you can decrease your file system's throughput
+	// in Provisioned Throughput mode or change between the throughput modes, as
+	// long as it’s been more than 24 hours since the last decrease or throughput
+	// mode change. For more information, see Specifying throughput with provisioned
+	// mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
 	// in the Amazon EFS User Guide.
+	//
+	// Default is bursting.
 	ThroughputMode             *string `json:"throughputMode,omitempty"`
 	CustomFileSystemParameters `json:",inline"`
 }
@@ -85,6 +112,11 @@ type FileSystemSpec struct {
 
 // FileSystemObservation defines the observed state of FileSystem
 type FileSystemObservation struct {
+	// The unique and consistent identifier of the Availability Zone in which the
+	// file system's One Zone storage classes exist. For example, use1-az1 is an
+	// Availability Zone ID for the us-east-1 Amazon Web Services Region, and it
+	// has the same location in every Amazon Web Services account.
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
 	// The time that the file system was created, in seconds (since 1970-01-01T00:00:00Z).
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 	// The opaque string specified in the request.
@@ -103,8 +135,9 @@ type FileSystemObservation struct {
 	// The current number of mount targets that the file system has. For more information,
 	// see CreateMountTarget.
 	NumberOfMountTargets *int64 `json:"numberOfMountTargets,omitempty"`
-	// The AWS account that created the file system. If the file system was created
-	// by an IAM user, the parent account to which the user belongs is the owner.
+	// The Amazon Web Services account that created the file system. If the file
+	// system was created by an IAM user, the parent account to which the user belongs
+	// is the owner.
 	OwnerID *string `json:"ownerID,omitempty"`
 	// The latest known metered size (in bytes) of data stored in the file system,
 	// in its Value field, and the time at which that size was determined in its

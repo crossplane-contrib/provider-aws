@@ -18,29 +18,28 @@ package elb
 
 import (
 	"context"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	awselbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -57,22 +56,27 @@ const (
 )
 
 // SetupELB adds a controller that reconciles ELBs.
-func SetupELB(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.ELBGroupKind)
+func SetupELB(mgr ctrl.Manager, o controller.Options) error {
+	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
-		For(&v1alpha1.ELB{}).
+		WithOptions(o.ForControllerRuntime()).
+		For(&elasticloadbalancingv1alpha1.ELB{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.ELBGroupVersionKind),
+			resource.ManagedKind(elasticloadbalancingv1alpha1.ELBGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -81,7 +85,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.ELB)
+	cr, ok := mg.(*elasticloadbalancingv1alpha1.ELB)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -98,7 +102,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.ELB)
+	cr, ok := mgd.(*elasticloadbalancingv1alpha1.ELB)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -149,7 +153,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.ELB)
+	cr, ok := mgd.(*elasticloadbalancingv1alpha1.ELB)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -163,7 +167,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.ELB)
+	cr, ok := mgd.(*elasticloadbalancingv1alpha1.ELB)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -247,7 +251,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.ELB)
+	cr, ok := mgd.(*elasticloadbalancingv1alpha1.ELB)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -311,7 +315,7 @@ func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []stri
 	return nil
 }
 
-func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Listener, elbListeners []awselbtypes.ListenerDescription, name string) error {
+func (e *external) updateListeners(ctx context.Context, listeners []elasticloadbalancingv1alpha1.Listener, elbListeners []awselbtypes.ListenerDescription, name string) error {
 
 	if len(elbListeners) != 0 {
 		ports := []int32{}
@@ -339,7 +343,7 @@ func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Lis
 	return nil
 }
 
-func (e *external) updateTags(ctx context.Context, tags []v1alpha1.Tag, elbTags []awselbtypes.Tag, name string) error {
+func (e *external) updateTags(ctx context.Context, tags []elasticloadbalancingv1alpha1.Tag, elbTags []awselbtypes.Tag, name string) error {
 
 	if len(elbTags) > 0 {
 		keysOnly := make([]awselbtypes.TagKeyOnly, len(elbTags))

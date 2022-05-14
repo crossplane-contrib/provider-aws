@@ -1,0 +1,14 @@
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: sample-environment-role-airflow-access
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    policyArnRef:
+      name: sample-environment-role-airflow-access
+    roleNameRef:
+      name: sample-environment-role
+  providerConfigRef:
+    name: example

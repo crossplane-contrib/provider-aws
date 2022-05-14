@@ -2,25 +2,24 @@ package route
 
 import (
 	"context"
-	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -28,7 +27,7 @@ const (
 )
 
 // SetupRoute adds a controller that reconciles Route.
-func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -37,18 +36,23 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, po
 			e.preDelete = preDelete
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Route{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.RouteGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Route, obj *svcsdk.CreateRouteInput) error {
@@ -112,7 +116,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.R
 
 	for _, route := range response.RouteTables[0].Routes {
 		if awsclients.StringValue(route.Origin) == svcsdk.RouteOriginCreateRoute {
-			if awsclients.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), *cr.Spec.ForProvider.DestinationCIDRBlock) {
+			if awsclients.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
 				return route, nil
 			}
 		}

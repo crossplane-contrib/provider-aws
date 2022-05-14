@@ -29,7 +29,7 @@ type DBInstanceParameters struct {
 	// Region is which region the DBInstance will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The amount of storage (in gibibytes) to allocate for the DB instance.
+	// The amount of storage in gibibytes (GiB) to allocate for the DB instance.
 	//
 	// Type: Integer
 	//
@@ -38,6 +38,14 @@ type DBInstanceParameters struct {
 	// Not applicable. Aurora cluster volumes automatically grow as the amount of
 	// data in your database increases, though you are only charged for the space
 	// that you use in an Aurora cluster volume.
+	//
+	// Amazon RDS Custom
+	//
+	// Constraints to the amount of storage for each storage type are the following:
+	//
+	//    * General Purpose (SSD) storage (gp2): Must be an integer from 40 to 65536.
+	//
+	//    * Provisioned IOPS storage (io1): Must be an integer from 40 to 65536.
 	//
 	// MySQL
 	//
@@ -98,19 +106,22 @@ type DBInstanceParameters struct {
 	// A value that indicates whether minor engine upgrades are applied automatically
 	// to the DB instance during the maintenance window. By default, minor engine
 	// upgrades are applied automatically.
+	//
+	// If you create an RDS Custom DB instance, you must set AutoMinorVersionUpgrade
+	// to false.
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 	// The Availability Zone (AZ) where the database will be created. For information
-	// on AWS Regions and Availability Zones, see Regions and Availability Zones
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html).
+	// on Amazon Web Services Regions and Availability Zones, see Regions and Availability
+	// Zones (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html).
 	//
-	// Default: A random, system-chosen Availability Zone in the endpoint's AWS
-	// Region.
+	// Default: A random, system-chosen Availability Zone in the endpoint's Amazon
+	// Web Services Region.
 	//
 	// Example: us-east-1d
 	//
 	// Constraint: The AvailabilityZone parameter can't be specified if the DB instance
 	// is a Multi-AZ deployment. The specified Availability Zone must be in the
-	// same AWS Region as the current endpoint.
+	// same Amazon Web Services Region as the current endpoint.
 	//
 	// If you're creating a DB instance in an RDS on VMware environment, specify
 	// the identifier of the custom Availability Zone to create the DB instance
@@ -135,9 +146,14 @@ type DBInstanceParameters struct {
 	//    * Must be a value from 0 to 35
 	//
 	//    * Can't be set to 0 if the DB instance is a source to read replicas
+	//
+	//    * Can't be set to 0 or 35 for an RDS Custom DB instance
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
-	// For supported engines, indicates that the DB instance should be associated
-	// with the specified CharacterSet.
+	// For supported engines, this value indicates that the DB instance should be
+	// associated with the specified CharacterSet.
+	//
+	// This setting doesn't apply to RDS Custom. However, if you need to change
+	// the character set, you can change it on the database itself.
 	//
 	// Amazon Aurora
 	//
@@ -152,12 +168,31 @@ type DBInstanceParameters struct {
 	// Not applicable. Copying tags to snapshots is managed by the DB cluster. Setting
 	// this value for an Aurora DB instance has no effect on the DB cluster setting.
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
+	// The instance profile associated with the underlying Amazon EC2 instance of
+	// an RDS Custom DB instance. The instance profile must meet the following requirements:
+	//
+	//    * The profile must exist in your account.
+	//
+	//    * The profile must have an IAM role that Amazon EC2 has permissions to
+	//    assume.
+	//
+	//    * The instance profile name and the associated IAM role name must start
+	//    with the prefix AWSRDSCustom.
+	//
+	// For the list of permissions required for the IAM role, see Configure IAM
+	// and your VPC (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-setup-orcl.html#custom-setup-orcl.iam-vpc)
+	// in the Amazon Relational Database Service User Guide.
+	//
+	// This setting is required for RDS Custom.
+	CustomIAMInstanceProfile *string `json:"customIAMInstanceProfile,omitempty"`
 	// The identifier of the DB cluster that the instance will belong to.
+	//
+	// This setting doesn't apply to RDS Custom.
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 	// The compute and memory capacity of the DB instance, for example, db.m4.large.
-	// Not all DB instance classes are available in all AWS Regions, or for all
-	// database engines. For the full list of DB instance classes, and availability
-	// for your engine, see DB Instance Class (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
+	// Not all DB instance classes are available in all Amazon Web Services Regions,
+	// or for all database engines. For the full list of DB instance classes, and
+	// availability for your engine, see DB Instance Class (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
 	// in the Amazon RDS User Guide.
 	// +kubebuilder:validation:Required
 	DBInstanceClass *string `json:"dbInstanceClass"`
@@ -219,6 +254,21 @@ type DBInstanceParameters struct {
 	//
 	//    * Can't be longer than 8 characters
 	//
+	// Amazon RDS Custom
+	//
+	// The Oracle System ID (SID) of the created RDS Custom DB instance. If you
+	// don't specify a value, the default value is ORCL.
+	//
+	// Default: ORCL
+	//
+	// Constraints:
+	//
+	//    * It must contain 1 to 8 alphanumeric characters.
+	//
+	//    * It must contain a letter.
+	//
+	//    * It can't be a word reserved by the database engine.
+	//
 	// SQL Server
 	//
 	// Not applicable. Must be null.
@@ -255,6 +305,8 @@ type DBInstanceParameters struct {
 	// you do not specify a value, then the default DB parameter group for the specified
 	// DB engine and version is used.
 	//
+	// This setting doesn't apply to RDS Custom.
+	//
 	// Constraints:
 	//
 	//    * Must be 1 to 255 letters, numbers, or hyphens.
@@ -285,18 +337,26 @@ type DBInstanceParameters struct {
 	//
 	// For more information, see Kerberos Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/kerberos-authentication.html)
 	// in the Amazon RDS User Guide.
+	//
+	// This setting doesn't apply to RDS Custom.
 	Domain *string `json:"domain,omitempty"`
 	// Specify the name of the IAM role to be used when making API calls to the
 	// Directory Service.
+	//
+	// This setting doesn't apply to RDS Custom.
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 	// The list of log types that need to be enabled for exporting to CloudWatch
-	// Logs. The values in the list depend on the DB engine being used. For more
-	// information, see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+	// Logs. The values in the list depend on the DB engine. For more information,
+	// see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
 	// in the Amazon Relational Database Service User Guide.
 	//
 	// Amazon Aurora
 	//
 	// Not applicable. CloudWatch Logs exports are managed by the DB cluster.
+	//
+	// RDS Custom
+	//
+	// Not applicable.
 	//
 	// MariaDB
 	//
@@ -327,31 +387,33 @@ type DBInstanceParameters struct {
 	// its virtual private cloud (VPC) on your local network.
 	//
 	// For more information about RDS on Outposts, see Working with Amazon RDS on
-	// AWS Outposts (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
+	// Amazon Web Services Outposts (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
 	// in the Amazon RDS User Guide.
 	//
 	// For more information about CoIPs, see Customer-owned IP addresses (https://docs.aws.amazon.com/outposts/latest/userguide/outposts-networking-components.html#ip-addressing)
-	// in the AWS Outposts User Guide.
+	// in the Amazon Web Services Outposts User Guide.
 	EnableCustomerOwnedIP *bool `json:"enableCustomerOwnedIP,omitempty"`
-	// A value that indicates whether to enable mapping of AWS Identity and Access
-	// Management (IAM) accounts to database accounts. By default, mapping is disabled.
+	// A value that indicates whether to enable mapping of Amazon Web Services Identity
+	// and Access Management (IAM) accounts to database accounts. By default, mapping
+	// is disabled.
 	//
-	// This setting doesn't apply to Amazon Aurora. Mapping AWS IAM accounts to
-	// database accounts is managed by the DB cluster.
+	// This setting doesn't apply to RDS Custom or Amazon Aurora. In Aurora, mapping
+	// Amazon Web Services IAM accounts to database accounts is managed by the DB
+	// cluster.
 	//
 	// For more information, see IAM Database Authentication for MySQL and PostgreSQL
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html)
 	// in the Amazon RDS User Guide.
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
 	// A value that indicates whether to enable Performance Insights for the DB
-	// instance.
-	//
-	// For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
+	// instance. For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
 	// in the Amazon Relational Database Service User Guide.
+	//
+	// This setting doesn't apply to RDS Custom.
 	EnablePerformanceInsights *bool `json:"enablePerformanceInsights,omitempty"`
 	// The name of the database engine to be used for this instance.
 	//
-	// Not every database engine is available for every AWS Region.
+	// Not every database engine is available for every Amazon Web Services Region.
 	//
 	// Valid Values:
 	//
@@ -361,17 +423,19 @@ type DBInstanceParameters struct {
 	//
 	//    * aurora-postgresql
 	//
+	//    * custom-oracle-ee (for RDS Custom instances)
+	//
 	//    * mariadb
 	//
 	//    * mysql
 	//
 	//    * oracle-ee
 	//
+	//    * oracle-ee-cdb
+	//
 	//    * oracle-se2
 	//
-	//    * oracle-se1
-	//
-	//    * oracle-se
+	//    * oracle-se2-cdb
 	//
 	//    * postgres
 	//
@@ -390,12 +454,20 @@ type DBInstanceParameters struct {
 	//
 	// The following are the database engines and links to information about the
 	// major and minor versions that are available with Amazon RDS. Not every database
-	// engine is available for every AWS Region.
+	// engine is available for every Amazon Web Services Region.
 	//
 	// Amazon Aurora
 	//
 	// Not applicable. The version number of the database engine to be used by the
 	// DB instance is managed by the DB cluster.
+	//
+	// Amazon RDS Custom
+	//
+	// A custom engine version (CEV) that you have previously created. This setting
+	// is required for RDS Custom. The CEV name has the following format: 19.customized_string
+	// . An example identifier is 19.my_cev1. For more information, see Creating
+	// an RDS Custom DB instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-creating.html#custom-creating.create)
+	// in the Amazon RDS User Guide..
 	//
 	// MariaDB
 	//
@@ -432,25 +504,34 @@ type DBInstanceParameters struct {
 	// For SQL Server DB instances, must be a multiple between 1 and 50 of the storage
 	// amount for the DB instance.
 	IOPS *int64 `json:"iops,omitempty"`
-	// The AWS KMS key identifier for an encrypted DB instance.
+	// The Amazon Web Services KMS key identifier for an encrypted DB instance.
 	//
-	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
-	// for the AWS KMS customer master key (CMK). To use a CMK in a different AWS
-	// account, specify the key ARN or alias ARN.
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+	// Web Services account, specify the key ARN or alias ARN.
 	//
 	// Amazon Aurora
 	//
-	// Not applicable. The AWS KMS key identifier is managed by the DB cluster.
-	// For more information, see CreateDBCluster.
+	// Not applicable. The Amazon Web Services KMS key identifier is managed by
+	// the DB cluster. For more information, see CreateDBCluster.
 	//
 	// If StorageEncrypted is enabled, and you do not specify a value for the KmsKeyId
-	// parameter, then Amazon RDS uses your default CMK. There is a default CMK
-	// for your AWS account. Your AWS account has a different default CMK for each
-	// AWS Region.
+	// parameter, then Amazon RDS uses your default KMS key. There is a default
+	// KMS key for your Amazon Web Services account. Your Amazon Web Services account
+	// has a different default KMS key for each Amazon Web Services Region.
+	//
+	// Amazon RDS Custom
+	//
+	// A KMS key is required for RDS Custom Oracle instances. For most RDS engines,
+	// if you leave this parameter empty while enabling StorageEncrypted, the engine
+	// uses the default KMS key. However, RDS Custom for Oracle doesn't use the
+	// default key when this parameter is empty. You must explicitly specify a key.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// License model information for this DB instance.
 	//
 	// Valid values: license-included | bring-your-own-license | general-public-license
+	//
+	// This setting doesn't apply to RDS Custom.
 	LicenseModel *string `json:"licenseModel,omitempty"`
 	// The name for the master user.
 	//
@@ -516,56 +597,74 @@ type DBInstanceParameters struct {
 	//
 	//    * Can't be a reserved word for the chosen database engine.
 	MasterUsername *string `json:"masterUsername,omitempty"`
-	// The upper limit to which Amazon RDS can automatically scale the storage of
-	// the DB instance.
+	// The upper limit in gibibytes (GiB) to which Amazon RDS can automatically
+	// scale the storage of the DB instance.
 	//
 	// For more information about this setting, including limitations that apply
 	// to it, see Managing capacity automatically with Amazon RDS storage autoscaling
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.Autoscaling)
 	// in the Amazon RDS User Guide.
+	//
+	// This setting doesn't apply to RDS Custom.
 	MaxAllocatedStorage *int64 `json:"maxAllocatedStorage,omitempty"`
 	// The interval, in seconds, between points when Enhanced Monitoring metrics
-	// are collected for the DB instance. To disable collecting Enhanced Monitoring
+	// are collected for the DB instance. To disable collection of Enhanced Monitoring
 	// metrics, specify 0. The default is 0.
 	//
-	// If MonitoringRoleArn is specified, then you must also set MonitoringInterval
-	// to a value other than 0.
+	// If MonitoringRoleArn is specified, then you must set MonitoringInterval to
+	// a value other than 0.
+	//
+	// This setting doesn't apply to RDS Custom.
 	//
 	// Valid Values: 0, 1, 5, 10, 15, 30, 60
 	MonitoringInterval *int64 `json:"monitoringInterval,omitempty"`
 	// The ARN for the IAM role that permits RDS to send enhanced monitoring metrics
 	// to Amazon CloudWatch Logs. For example, arn:aws:iam:123456789012:role/emaccess.
-	// For information on creating a monitoring role, go to Setting Up and Enabling
+	// For information on creating a monitoring role, see Setting Up and Enabling
 	// Enhanced Monitoring (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
 	// in the Amazon RDS User Guide.
 	//
 	// If MonitoringInterval is set to a value other than 0, then you must supply
 	// a MonitoringRoleArn value.
+	//
+	// This setting doesn't apply to RDS Custom.
 	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
 	// A value that indicates whether the DB instance is a Multi-AZ deployment.
 	// You can't set the AvailabilityZone parameter if the DB instance is a Multi-AZ
 	// deployment.
+	//
+	// This setting doesn't apply to RDS Custom.
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 	// The name of the NCHAR character set for the Oracle DB instance.
+	//
+	// This parameter doesn't apply to RDS Custom.
 	NcharCharacterSetName *string `json:"ncharCharacterSetName,omitempty"`
 	// A value that indicates that the DB instance should be associated with the
 	// specified option group.
 	//
 	// Permanent options, such as the TDE option for Oracle Advanced Security TDE,
 	// can't be removed from an option group. Also, that option group can't be removed
-	// from a DB instance once it is associated with a DB instance
-	OptionGroupName *string `json:"optionGroupName,omitempty"`
-	// The AWS KMS key identifier for encryption of Performance Insights data.
+	// from a DB instance after it is associated with a DB instance.
 	//
-	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
-	// for the AWS KMS customer master key (CMK).
+	// This setting doesn't apply to RDS Custom.
+	OptionGroupName *string `json:"optionGroupName,omitempty"`
+	// The Amazon Web Services KMS key identifier for encryption of Performance
+	// Insights data.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key.
 	//
 	// If you do not specify a value for PerformanceInsightsKMSKeyId, then Amazon
-	// RDS uses your default CMK. There is a default CMK for your AWS account. Your
-	// AWS account has a different default CMK for each AWS Region.
+	// RDS uses your default KMS key. There is a default KMS key for your Amazon
+	// Web Services account. Your Amazon Web Services account has a different default
+	// KMS key for each Amazon Web Services Region.
+	//
+	// This setting doesn't apply to RDS Custom.
 	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
 	// The amount of time, in days, to retain Performance Insights data. Valid values
 	// are 7 or 731 (2 years).
+	//
+	// This setting doesn't apply to RDS Custom.
 	PerformanceInsightsRetentionPeriod *int64 `json:"performanceInsightsRetentionPeriod,omitempty"`
 	// The port number on which the database accepts connections.
 	//
@@ -615,19 +714,16 @@ type DBInstanceParameters struct {
 	// Type: Integer
 	Port *int64 `json:"port,omitempty"`
 	// The daily time range during which automated backups are created if automated
-	// backups are enabled, using the BackupRetentionPeriod parameter. For more
-	// information, see The Backup Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html#USER_WorkingWithAutomatedBackups.BackupWindow)
+	// backups are enabled, using the BackupRetentionPeriod parameter. The default
+	// is a 30-minute window selected at random from an 8-hour block of time for
+	// each Amazon Web Services Region. For more information, see Backup window
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html#USER_WorkingWithAutomatedBackups.BackupWindow)
 	// in the Amazon RDS User Guide.
 	//
 	// Amazon Aurora
 	//
 	// Not applicable. The daily time range for creating automated backups is managed
 	// by the DB cluster.
-	//
-	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region. To see the time blocks available, see Adjusting
-	// the Preferred DB Instance Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow)
-	// in the Amazon RDS User Guide.
 	//
 	// Constraints:
 	//
@@ -646,7 +742,8 @@ type DBInstanceParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region, occurring on a random day of the week.
+	// of time for each Amazon Web Services Region, occurring on a random day of
+	// the week.
 	//
 	// Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
 	//
@@ -654,11 +751,15 @@ type DBInstanceParameters struct {
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 	// The number of CPU cores and the number of threads per core for the DB instance
 	// class of the DB instance.
+	//
+	// This setting doesn't apply to RDS Custom.
 	ProcessorFeatures []*ProcessorFeature `json:"processorFeatures,omitempty"`
 	// A value that specifies the order in which an Aurora Replica is promoted to
 	// the primary instance after a failure of the existing primary instance. For
 	// more information, see Fault Tolerance for an Aurora DB Cluster (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.FaultTolerance)
 	// in the Amazon Aurora User Guide.
+	//
+	// This setting doesn't apply to RDS Custom.
 	//
 	// Default: 1
 	//
@@ -700,6 +801,9 @@ type DBInstanceParameters struct {
 	// A value that indicates whether the DB instance is encrypted. By default,
 	// it isn't encrypted.
 	//
+	// For RDS Custom Oracle instances, either set this parameter to true or leave
+	// it unset. If you set this parameter to false, RDS reports an error.
+	//
 	// Amazon Aurora
 	//
 	// Not applicable. The encryption for DB instances is managed by the DB cluster.
@@ -715,9 +819,13 @@ type DBInstanceParameters struct {
 	// Tags to assign to the DB instance.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ARN from the key store with which to associate the instance for TDE encryption.
+	//
+	// This setting doesn't apply to RDS Custom.
 	TDECredentialARN *string `json:"tdeCredentialARN,omitempty"`
 	// The password for the given ARN from the key store in order to access the
 	// device.
+	//
+	// This setting doesn't apply to RDS Custom.
 	TDECredentialPassword *string `json:"tdeCredentialPassword,omitempty"`
 	// The time zone of the DB instance. The time zone parameter is currently supported
 	// only by Microsoft SQL Server (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
@@ -733,9 +841,34 @@ type DBInstanceSpec struct {
 
 // DBInstanceObservation defines the observed state of DBInstance
 type DBInstanceObservation struct {
-	// The AWS Identity and Access Management (IAM) roles associated with the DB
-	// instance.
+	// Indicates whether engine-native audit fields are included in the database
+	// activity stream.
+	ActivityStreamEngineNativeAuditFieldsIncluded *bool `json:"activityStreamEngineNativeAuditFieldsIncluded,omitempty"`
+	// The name of the Amazon Kinesis data stream used for the database activity
+	// stream.
+	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
+	// The Amazon Web Services KMS key identifier used for encrypting messages in
+	// the database activity stream. The Amazon Web Services KMS key identifier
+	// is the key ARN, key ID, alias ARN, or alias name for the KMS key.
+	ActivityStreamKMSKeyID *string `json:"activityStreamKMSKeyID,omitempty"`
+	// The mode of the database activity stream. Database events such as a change
+	// or access generate an activity stream event. RDS for Oracle always handles
+	// these events asynchronously.
+	ActivityStreamMode *string `json:"activityStreamMode,omitempty"`
+	// The status of the database activity stream.
+	ActivityStreamStatus *string `json:"activityStreamStatus,omitempty"`
+	// The Amazon Web Services Identity and Access Management (IAM) roles associated
+	// with the DB instance.
 	AssociatedRoles []*DBInstanceRole `json:"associatedRoles,omitempty"`
+	// The time when a stopped DB instance is restarted automatically.
+	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
+	// The automation mode of the RDS Custom DB instance: full or all paused. If
+	// full, the DB instance automates monitoring and instance recovery. If all
+	// paused, the instance pauses automation for the duration set by --resume-full-automation-mode-minutes.
+	AutomationMode *string `json:"automationMode,omitempty"`
+	// The Amazon Resource Name (ARN) of the recovery point in Amazon Web Services
+	// Backup.
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
 	// The identifier of the CA certificate for this DB instance.
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 	// Specifies whether a customer-owned IP address (CoIP) is enabled for an RDS
@@ -747,11 +880,11 @@ type DBInstanceObservation struct {
 	// its virtual private cloud (VPC) on your local network.
 	//
 	// For more information about RDS on Outposts, see Working with Amazon RDS on
-	// AWS Outposts (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
+	// Amazon Web Services Outposts (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-on-outposts.html)
 	// in the Amazon RDS User Guide.
 	//
 	// For more information about CoIPs, see Customer-owned IP addresses (https://docs.aws.amazon.com/outposts/latest/userguide/outposts-networking-components.html#ip-addressing)
-	// in the AWS Outposts User Guide.
+	// in the Amazon Web Services Outposts User Guide.
 	CustomerOwnedIPEnabled *bool `json:"customerOwnedIPEnabled,omitempty"`
 	// The Amazon Resource Name (ARN) for the DB instance.
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
@@ -762,7 +895,8 @@ type DBInstanceObservation struct {
 	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
 	// Specifies the current state of this database.
 	//
-	// For information about DB instance statuses, see DB Instance Status (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Status.html)
+	// For information about DB instance statuses, see Viewing DB instance status
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/accessing-monitoring.html#Overview.DBInstance.Status)
 	// in the Amazon RDS User Guide.
 	DBInstanceStatus *string `json:"dbInstanceStatus,omitempty"`
 	// Provides the list of DB parameter groups applied to this DB instance.
@@ -776,9 +910,9 @@ type DBInstanceObservation struct {
 	// Specifies the port that the DB instance listens on. If the DB instance is
 	// part of a DB cluster, this can be a different port than the DB cluster port.
 	DBInstancePort *int64 `json:"dbInstancePort,omitempty"`
-	// The AWS Region-unique, immutable identifier for the DB instance. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS customer master
-	// key (CMK) for the DB instance is accessed.
+	// The Amazon Web Services Region-unique, immutable identifier for the DB instance.
+	// This identifier is found in Amazon Web Services CloudTrail log entries whenever
+	// the Amazon Web Services KMS key for the DB instance is accessed.
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 	// The Active Directory Domain membership records associated with the DB instance.
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
@@ -790,12 +924,14 @@ type DBInstanceObservation struct {
 	// in the Amazon RDS User Guide.
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
 	// Specifies the connection endpoint.
+	//
+	// The endpoint might not be shown for instances whose status is creating.
 	Endpoint *Endpoint `json:"endpoint,omitempty"`
 	// The Amazon Resource Name (ARN) of the Amazon CloudWatch Logs log stream that
 	// receives the Enhanced Monitoring metrics data for the DB instance.
 	EnhancedMonitoringResourceARN *string `json:"enhancedMonitoringResourceARN,omitempty"`
-	// True if mapping of AWS Identity and Access Management (IAM) accounts to database
-	// accounts is enabled, and otherwise false.
+	// True if mapping of Amazon Web Services Identity and Access Management (IAM)
+	// accounts to database accounts is enabled, and otherwise false.
 	//
 	// IAM database authentication can be enabled for the following database engines
 	//
@@ -842,6 +978,10 @@ type DBInstanceObservation struct {
 	//
 	// This attribute is only supported in RDS for Oracle.
 	ReplicaMode *string `json:"replicaMode,omitempty"`
+	// The number of minutes to pause the automation. When the time period ends,
+	// RDS Custom resumes full automation. The minimum value is 60 (default). The
+	// maximum value is 1,440.
+	ResumeFullAutomationModeTime *metav1.Time `json:"resumeFullAutomationModeTime,omitempty"`
 	// If present, specifies the name of the secondary Availability Zone for a DB
 	// instance with multi-AZ support.
 	SecondaryAvailabilityZone *string `json:"secondaryAvailabilityZone,omitempty"`

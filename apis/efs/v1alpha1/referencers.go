@@ -28,6 +28,27 @@ import (
 	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 )
 
+// ResolveReferences of this AccessPoint
+func (mg *AccessPoint) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.fileSystemID
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.FileSystemID),
+		Reference:    mg.Spec.ForProvider.FileSystemIDRef,
+		Selector:     mg.Spec.ForProvider.FileSystemIDSelector,
+		To:           reference.To{Managed: &FileSystem{}, List: &FileSystemList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.fileSystemID")
+	}
+	mg.Spec.ForProvider.FileSystemID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.FileSystemIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this FileSystem
 func (mg *FileSystem) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

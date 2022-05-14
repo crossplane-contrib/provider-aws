@@ -1,0 +1,226 @@
+# These endpoints are required if your subnets don't have a route
+# to a NAT Gateway.
+# See https://docs.aws.amazon.com/mwaa/latest/userguide/vpc-create.html
+# for details.
+---
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: sample-mwaa-endpoint-sg
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    description: Security Group for Amazon MWAA Environments to access VPC endpoints
+    groupName: mwaa-vpc-endpoints
+    ingress:
+      - ipProtocol: tcp
+        fromPort: 443
+        toPort: 443
+        ipRanges:
+          - cidrIp: 10.0.0.0/8
+            description: Sample CIDR
+    region: us-east-1
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-s3
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.s3
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-airflow-api
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.airflow.api
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-airflow-env
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.airflow.env
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-airflow-ops
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.airflow.ops
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-sqs
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.sqs
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-ecr-api
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.ecr.api
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-ecr-dkr
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.ecr.dkr
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-kms
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.kms
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-monitoring
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.monitoring
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: sample-mwaa-logs
+spec:
+  forProvider:
+    region: us-east-1
+    privateDNSEnabled: true
+    serviceName: com.amazonaws.us-east-1.logs
+    securityGroupIdRefs:
+      - name: sample-mwaa-endpoint-sg
+    subnetIdRefss:
+      - name: sample-subnet-1
+      - name: sample-subnet-2
+    vpcEndpointType: Interface
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example

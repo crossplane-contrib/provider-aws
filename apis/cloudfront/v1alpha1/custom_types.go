@@ -22,5 +22,8 @@ type CustomDistributionParameters struct{}
 // CustomCachePolicyParameters includes the custom fields of CachePolicy.
 type CustomCachePolicyParameters struct{}
 
-// CustomCloudFrontOriginAccessIdentityParameters includes the custom fields of CloudFrontOriginAccessIDentityParameters.
+// CustomCloudFrontOriginAccessIdentityParameters includes the custom fields of CloudFrontOriginAccessIdentityParameters.
 type CustomCloudFrontOriginAccessIdentityParameters struct{}
+
+// CustomResponseHeadersPolicyParameters includes metadata about the response headers policy, and a set of configurations
+type CustomResponseHeadersPolicyParameters struct{}

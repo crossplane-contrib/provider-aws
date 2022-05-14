@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: nodegroups.eks.aws.crossplane.io
 spec:
@@ -427,12 +428,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -479,50 +532,48 @@ spec:
                           description: Issue is an issue with a NodeGroup.
                           properties:
                             code:
-                              description: "A brief description of the error. \n    *
+                              description: "A brief description of the error. \n *
                                 AutoScalingGroupNotFound: We couldn't find the Auto
-                                Scaling group associated    with the managed node
-                                group. You may be able to recreate an Auto Scaling
-                                \   group with the same settings to recover. \n    *
-                                Ec2SecurityGroupNotFound: We couldn't find the cluster
-                                security group    for the cluster. You must recreate
-                                your cluster. \n    * Ec2SecurityGroupDeletionFailure:
-                                We could not delete the remote access    security
-                                group for your managed node group. Remove any dependencies
-                                from    the security group. \n    * Ec2LaunchTemplateNotFound:
-                                We couldn't find the Amazon EC2 launch template    for
+                                Scaling group associated with the managed node group.
+                                You may be able to recreate an Auto Scaling group
+                                with the same settings to recover. \n * Ec2SecurityGroupNotFound:
+                                We couldn't find the cluster security group for the
+                                cluster. You must recreate your cluster. \n * Ec2SecurityGroupDeletionFailure:
+                                We could not delete the remote access security group
+                                for your managed node group. Remove any dependencies
+                                from the security group. \n * Ec2LaunchTemplateNotFound:
+                                We couldn't find the Amazon EC2 launch template for
                                 your managed node group. You may be able to recreate
-                                a launch template    with the same settings to recover.
-                                \n    * Ec2LaunchTemplateVersionMismatch: The Amazon
-                                EC2 launch template version    for your managed node
-                                group does not match the version that Amazon EKS    created.
+                                a launch template with the same settings to recover.
+                                \n * Ec2LaunchTemplateVersionMismatch: The Amazon
+                                EC2 launch template version for your managed node
+                                group does not match the version that Amazon EKS created.
                                 You may be able to revert to the version that Amazon
-                                EKS created    to recover. \n    * IamInstanceProfileNotFound:
-                                We couldn't find the IAM instance profile    for your
+                                EKS created to recover. \n * IamInstanceProfileNotFound:
+                                We couldn't find the IAM instance profile for your
                                 managed node group. You may be able to recreate an
-                                instance profile    with the same settings to recover.
-                                \n    * IamNodeRoleNotFound: We couldn't find the
-                                IAM role for your managed    node group. You may be
-                                able to recreate an IAM role with the same settings
-                                \   to recover. \n    * AsgInstanceLaunchFailures:
-                                Your Auto Scaling group is experiencing failures    while
-                                attempting to launch instances. \n    * NodeCreationFailure:
-                                Your launched instances are unable to register    with
-                                your Amazon EKS cluster. Common causes of this failure
-                                are insufficient    worker node IAM role (https://docs.aws.amazon.com/eks/latest/userguide/worker_node_IAM_role.html)
-                                \   permissions or lack of outbound internet access
-                                for the nodes. \n    * InstanceLimitExceeded: Your
-                                AWS account is unable to launch any more    instances
-                                of the specified instance type. You may be able to
-                                request an    Amazon EC2 instance limit increase to
-                                recover. \n    * InsufficientFreeAddresses: One or
-                                more of the subnets associated with    your managed
+                                instance profile with the same settings to recover.
+                                \n * IamNodeRoleNotFound: We couldn't find the IAM
+                                role for your managed node group. You may be able
+                                to recreate an IAM role with the same settings to
+                                recover. \n * AsgInstanceLaunchFailures: Your Auto
+                                Scaling group is experiencing failures while attempting
+                                to launch instances. \n * NodeCreationFailure: Your
+                                launched instances are unable to register with your
+                                Amazon EKS cluster. Common causes of this failure
+                                are insufficient worker node IAM role (https://docs.aws.amazon.com/eks/latest/userguide/worker_node_IAM_role.html)
+                                permissions or lack of outbound internet access for
+                                the nodes. \n * InstanceLimitExceeded: Your AWS account
+                                is unable to launch any more instances of the specified
+                                instance type. You may be able to request an Amazon
+                                EC2 instance limit increase to recover. \n * InsufficientFreeAddresses:
+                                One or more of the subnets associated with your managed
                                 node group does not have enough available IP addresses
-                                for    new nodes. \n    * AccessDenied: Amazon EKS
-                                or one or more of your managed nodes is unable    to
-                                communicate with your cluster API server. \n    *
-                                InternalFailure: These errors are usually caused by
-                                an Amazon EKS server-side    issue."
+                                for new nodes. \n * AccessDenied: Amazon EKS or one
+                                or more of your managed nodes is unable to communicate
+                                with your cluster API server. \n * InternalFailure:
+                                These errors are usually caused by an Amazon EKS server-side
+                                issue."
                               type: string
                             message:
                               description: The error message associated with the issue.
@@ -536,6 +587,14 @@ spec:
                           type: object
                         type: array
                     type: object
+                  releaseVersion:
+                    description: The AMI version of the Amazon EKS-optimized AMI to
+                      use with your node group. By default, the latest available AMI
+                      version for the node group's current Kubernetes version is used.
+                      For more information, see Amazon EKS-Optimized Linux AMI Versions
+                      (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
+                      in the Amazon EKS User Guide.
+                    type: string
                   resources:
                     description: The resources associated with the node group, such
                       as Auto Scaling groups and security groups for remote access.
@@ -571,6 +630,11 @@ spec:
                     type: object
                   status:
                     description: The current status of the managed node group.
+                    type: string
+                  version:
+                    description: The Kubernetes version to use for your managed nodes.
+                      By default, the Kubernetes version of the cluster is used, and
+                      this is the only accepted specified value.
                     type: string
                 type: object
               conditions:

@@ -29,19 +29,6 @@ type DBParameterGroupParameters struct {
 	// Region is which region the DBParameterGroup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The DB parameter group family name. A DB parameter group can be associated
-	// with one and only one DB parameter group family, and can be applied only
-	// to a DB instance running a database engine and engine version compatible
-	// with that DB parameter group family.
-	//
-	// To list all of the available parameter group families, use the following
-	// command:
-	//
-	// aws rds describe-db-engine-versions --query "DBEngineVersions[].DBParameterGroupFamily"
-	//
-	// The output contains duplicates.
-	// +kubebuilder:validation:Required
-	DBParameterGroupFamily *string `json:"dbParameterGroupFamily"`
 	// The description for the DB parameter group.
 	// +kubebuilder:validation:Required
 	Description *string `json:"description"`
@@ -60,6 +47,9 @@ type DBParameterGroupSpec struct {
 type DBParameterGroupObservation struct {
 	// The Amazon Resource Name (ARN) for the DB parameter group.
 	DBParameterGroupARN *string `json:"dbParameterGroupARN,omitempty"`
+	// The name of the DB parameter group family that this DB parameter group is
+	// compatible with.
+	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
 	// The name of the DB parameter group.
 	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
 }

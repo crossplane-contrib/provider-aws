@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
@@ -50,6 +51,7 @@ type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
 	RestoreDBInstanceFromS3(context.Context, *rds.RestoreDBInstanceFromS3Input, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromS3Output, error)
 	RestoreDBInstanceFromDBSnapshot(context.Context, *rds.RestoreDBInstanceFromDBSnapshotInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceFromDBSnapshotOutput, error)
+	RestoreDBInstanceToPointInTime(context.Context, *rds.RestoreDBInstanceToPointInTimeInput, ...func(*rds.Options)) (*rds.RestoreDBInstanceToPointInTimeOutput, error)
 	DescribeDBInstances(context.Context, *rds.DescribeDBInstancesInput, ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
@@ -229,6 +231,66 @@ func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInsta
 		PubliclyAccessible:              p.PubliclyAccessible,
 		StorageType:                     p.StorageType,
 		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
+	}
+	if len(p.ProcessorFeatures) != 0 {
+		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
+		for i, val := range p.ProcessorFeatures {
+			c.ProcessorFeatures[i] = rdstypes.ProcessorFeature{
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = make([]rdstypes.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			c.Tags[i] = rdstypes.Tag{
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
+			}
+		}
+	}
+	return c
+}
+
+// GenerateRestoreDBInstanceToPointInTimeInput from RDSInstanceSpec
+func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceToPointInTimeInput {
+	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
+	// Need to convert restoreTime from *metav1.Time to *time.Time
+	var restoreTime *time.Time
+	if p.RestoreFrom.PointInTime.RestoreTime != nil {
+		t, _ := time.Parse(time.RFC3339, p.RestoreFrom.PointInTime.RestoreTime.Format(time.RFC3339))
+		restoreTime = &t
+	}
+	c := &rds.RestoreDBInstanceToPointInTimeInput{
+		AutoMinorVersionUpgrade:         p.AutoMinorVersionUpgrade,
+		AvailabilityZone:                p.AvailabilityZone,
+		CopyTagsToSnapshot:              p.CopyTagsToSnapshot,
+		DBInstanceClass:                 aws.String(p.DBInstanceClass),
+		DBName:                          p.DBName,
+		DBParameterGroupName:            p.DBParameterGroupName,
+		DBSubnetGroupName:               p.DBSubnetGroupName,
+		DeletionProtection:              p.DeletionProtection,
+		Domain:                          p.Domain,
+		DomainIAMRoleName:               p.DomainIAMRoleName,
+		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		Engine:                          aws.String(p.Engine),
+		Iops:                            awsclients.Int32Address(p.IOPS),
+		LicenseModel:                    p.LicenseModel,
+		MultiAZ:                         p.MultiAZ,
+		OptionGroupName:                 p.OptionGroupName,
+		Port:                            awsclients.Int32Address(p.Port),
+		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageType:                     p.StorageType,
+		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
+
+		TargetDBInstanceIdentifier:          aws.String(name),
+		RestoreTime:                         restoreTime,
+		UseLatestRestorableTime:             p.RestoreFrom.PointInTime.UseLatestRestorableTime,
+		SourceDBInstanceAutomatedBackupsArn: p.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn,
+		SourceDBInstanceIdentifier:          p.RestoreFrom.PointInTime.SourceDBInstanceIdentifier,
+		SourceDbiResourceId:                 p.RestoreFrom.PointInTime.SourceDbiResourceID,
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]rdstypes.ProcessorFeature, len(p.ProcessorFeatures))
@@ -498,16 +560,16 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.Engine = awsclients.LateInitializeString(in.Engine, db.Engine)
 
 	in.AllocatedStorage = awsclients.LateInitializeIntFrom32Ptr(in.AllocatedStorage, &db.AllocatedStorage)
-	in.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, awsclients.Bool(db.AutoMinorVersionUpgrade))
+	in.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, awsclients.Bool(db.AutoMinorVersionUpgrade, awsclients.FieldRequired))
 	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
-	in.BackupRetentionPeriod = awsclients.LateInitializeIntFrom32Ptr(in.BackupRetentionPeriod, &db.BackupRetentionPeriod)
+	in.BackupRetentionPeriod = awsclients.LateInitializeIntFromInt32Ptr(in.BackupRetentionPeriod, &db.BackupRetentionPeriod)
 	in.CACertificateIdentifier = awsclients.LateInitializeStringPtr(in.CACertificateIdentifier, db.CACertificateIdentifier)
 	in.CharacterSetName = awsclients.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
-	in.CopyTagsToSnapshot = awsclients.LateInitializeBoolPtr(in.CopyTagsToSnapshot, awsclients.Bool(db.CopyTagsToSnapshot))
+	in.CopyTagsToSnapshot = awsclients.LateInitializeBoolPtr(in.CopyTagsToSnapshot, awsclients.Bool(db.CopyTagsToSnapshot, awsclients.FieldRequired))
 	in.DBClusterIdentifier = awsclients.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
 	in.DBName = awsclients.LateInitializeStringPtr(in.DBName, db.DBName)
-	in.DeletionProtection = awsclients.LateInitializeBoolPtr(in.DeletionProtection, awsclients.Bool(db.DeletionProtection))
-	in.EnableIAMDatabaseAuthentication = awsclients.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, awsclients.Bool(db.IAMDatabaseAuthenticationEnabled))
+	in.DeletionProtection = awsclients.LateInitializeBoolPtr(in.DeletionProtection, awsclients.Bool(db.DeletionProtection, awsclients.FieldRequired))
+	in.EnableIAMDatabaseAuthentication = awsclients.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, awsclients.Bool(db.IAMDatabaseAuthenticationEnabled, awsclients.FieldRequired))
 	in.EnablePerformanceInsights = awsclients.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
 	in.IOPS = awsclients.LateInitializeIntFrom32Ptr(in.IOPS, db.Iops)
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
@@ -516,14 +578,14 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.MaxAllocatedStorage = awsclients.LateInitializeIntFrom32Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
 	in.MonitoringInterval = awsclients.LateInitializeIntFrom32Ptr(in.MonitoringInterval, db.MonitoringInterval)
 	in.MonitoringRoleARN = awsclients.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
-	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, awsclients.Bool(db.MultiAZ))
+	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, awsclients.Bool(db.MultiAZ, awsclients.FieldRequired))
 	in.PerformanceInsightsKMSKeyID = awsclients.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
 	in.PerformanceInsightsRetentionPeriod = awsclients.LateInitializeIntFrom32Ptr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
 	in.PreferredBackupWindow = awsclients.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
 	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	in.PromotionTier = awsclients.LateInitializeIntFrom32Ptr(in.PromotionTier, db.PromotionTier)
-	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, awsclients.Bool(db.PubliclyAccessible))
-	in.StorageEncrypted = awsclients.LateInitializeBoolPtr(in.StorageEncrypted, awsclients.Bool(db.StorageEncrypted))
+	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, awsclients.Bool(db.PubliclyAccessible, awsclients.FieldRequired))
+	in.StorageEncrypted = awsclients.LateInitializeBoolPtr(in.StorageEncrypted, awsclients.Bool(db.StorageEncrypted, awsclients.FieldRequired))
 	in.StorageType = awsclients.LateInitializeStringPtr(in.StorageType, db.StorageType)
 	in.Timezone = awsclients.LateInitializeStringPtr(in.Timezone, db.Timezone)
 

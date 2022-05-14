@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: privatednsnamespaces.servicediscovery.aws.crossplane.io
 spec:
@@ -67,19 +68,35 @@ spec:
                     type: string
                   name:
                     description: The name that you want to assign to this namespace.
-                      When you create a private DNS namespace, AWS Cloud Map automatically
+                      When you create a private DNS namespace, Cloud Map automatically
                       creates an Amazon Route 53 private hosted zone that has the
                       same name as the namespace.
                     type: string
+                  properties:
+                    description: Properties for the private DNS namespace.
+                    properties:
+                      dnsProperties:
+                        description: DNS properties for the private DNS namespace.
+                        properties:
+                          sOA:
+                            description: Start of Authority (SOA) properties for a
+                              public or private DNS namespace.
+                            properties:
+                              tTL:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the PrivateDNSNamespace will
                       be created.
                     type: string
                   tags:
                     description: The tags to add to the namespace. Each tag consists
-                      of a key and an optional value, both of which you define. Tag
-                      keys can have a maximum character length of 128 characters,
-                      and tag values can have a maximum length of 256 characters.
+                      of a key and an optional value that you define. Tags keys can
+                      be up to 128 characters in length, and tag values can be up
+                      to 256 characters in length.
                     items:
                       properties:
                         key:
@@ -144,12 +161,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.

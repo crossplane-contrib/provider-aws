@@ -23,7 +23,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/transport/http"
+	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/document"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
@@ -90,6 +92,328 @@ func TestUseProviderSecret(t *testing.T) {
 	config, err := UseProviderSecret(context.TODO(), credentials, testProfile, testRegion)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(config).NotTo(BeNil())
+}
+
+func TestGetAssumeRoleARN(t *testing.T) {
+	roleARN := "test-arn"
+	roleARNDep := "test-arn-deprecated"
+
+	type args struct {
+		pcs v1beta1.ProviderConfigSpec
+	}
+	type want struct {
+		arn string
+		err error
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoArnSetError": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume an IAM Role"),
+			},
+		},
+		"EmptyAssumeRoleOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRole: &v1beta1.AssumeRoleOptions{},
+				},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume an IAM Role"),
+			},
+		},
+		"AssumeRoleOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRole: &v1beta1.AssumeRoleOptions{
+						RoleARN: &roleARN,
+					},
+				},
+			},
+			want: want{
+				arn: "test-arn",
+			},
+		},
+		"IgnoreDeprecatedSetting": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleARN: &roleARNDep,
+					AssumeRole: &v1beta1.AssumeRoleOptions{
+						RoleARN: &roleARN,
+					},
+				},
+			},
+			want: want{
+				arn: "test-arn",
+			},
+		},
+		"EmptyAssumeRoleOptionsOldSetting": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleARN: &roleARNDep,
+					AssumeRole:    &v1beta1.AssumeRoleOptions{},
+				},
+			},
+			want: want{
+				arn: "test-arn-deprecated",
+			},
+		},
+		"DeprecatedArn": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleARN: &roleARNDep,
+				},
+			},
+			want: want{
+				arn: "test-arn-deprecated",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			roleArn, err := GetAssumeRoleARN(&tc.args.pcs)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.want.arn, StringValue(roleArn)); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetAssumeRoleWithWebIdentityARN(t *testing.T) {
+	roleARN := "test-arn"
+
+	type args struct {
+		pcs v1beta1.ProviderConfigSpec
+	}
+	type want struct {
+		arn string
+		err error
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoArnSetError": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume with web identity"),
+			},
+		},
+		"EmptyAssumeRoleWithWebIdentityOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{},
+				},
+			},
+			want: want{
+				err: errors.New("a RoleARN must be set to assume with web identity"),
+			},
+		},
+		"AssumeRoleWithWebIdentityOptions": {
+			args: args{
+				pcs: v1beta1.ProviderConfigSpec{
+					AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{
+						RoleARN: &roleARN,
+					},
+				},
+			},
+			want: want{
+				arn: "test-arn",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			roleArn, err := GetAssumeRoleWithWebIdentityARN(&tc.args.pcs)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.want.arn, StringValue(roleArn)); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSetAssumeroleOptions(t *testing.T) {
+	externalID := "test-id"
+	externalIDDep := "test-id-deprecated"
+
+	key1 := "key1"
+	value1 := "value1"
+
+	type args struct {
+		pc v1beta1.ProviderConfig
+	}
+	type want struct {
+		aro stscreds.AssumeRoleOptions
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+
+		"NoOptionsSet": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{},
+			},
+		},
+		"BasicAssumerole": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						AssumeRole: &v1beta1.AssumeRoleOptions{
+							ExternalID: &externalID,
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{
+					ExternalID: &externalID,
+				},
+			},
+		},
+		"SpecExternalIDDeprecated": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						ExternalID: &externalIDDep,
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{
+					ExternalID: &externalIDDep,
+				},
+			},
+		},
+		"SetTagsAndTransitiveTagKeys": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						ExternalID: &externalIDDep, // should be ignored if AssumeRoleOptions set
+						AssumeRole: &v1beta1.AssumeRoleOptions{
+							ExternalID:        &externalID,
+							Tags:              []v1beta1.Tag{{Key: &key1, Value: &value1}},
+							TransitiveTagKeys: []string{"a", "b", "c"},
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{
+					ExternalID:        &externalID,
+					Tags:              []stscredstypesv2.Tag{{Key: &key1, Value: &value1}},
+					TransitiveTagKeys: []string{"a", "b", "c"},
+				},
+			},
+		},
+		"ZeroLengthTags": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						AssumeRole: &v1beta1.AssumeRoleOptions{
+							Tags:              []v1beta1.Tag{},
+							TransitiveTagKeys: []string{},
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			aro := stscreds.AssumeRoleOptions{}
+			f := SetAssumeRoleOptions(&tc.args.pc)
+			f(&aro)
+
+			if diff := cmp.Diff(tc.want.aro, aro, cmpopts.IgnoreUnexported(stscredstypesv2.Tag{})); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSetWebIdentityRoleOptions(t *testing.T) {
+	sessionName := "test-id"
+
+	type args struct {
+		pc v1beta1.ProviderConfig
+	}
+	type want struct {
+		aro stscreds.WebIdentityRoleOptions
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"NoOptionsSet": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{},
+				},
+			},
+			want: want{
+				aro: stscreds.WebIdentityRoleOptions{},
+			},
+		},
+		"BasicAssumeRoleWithWebIdentity": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						AssumeRoleWithWebIdentity: &v1beta1.AssumeRoleWithWebIdentityOptions{
+							RoleSessionName: sessionName,
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.WebIdentityRoleOptions{
+					RoleSessionName: sessionName,
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+
+			aro := stscreds.WebIdentityRoleOptions{}
+			f := SetWebIdentityRoleOptions(&tc.args.pc)
+			f(&aro)
+
+			if diff := cmp.Diff(tc.want.aro, aro, cmpopts.IgnoreUnexported(stscredstypesv2.Tag{})); diff != "" {
+				t.Errorf("Wrap: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestDiffTags(t *testing.T) {

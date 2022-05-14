@@ -29,8 +29,16 @@ import (
 var _ clientset.PolicyClient = (*MockPolicyClient)(nil)
 var _ clientset.STSClient = (*MockSTSClient)(nil)
 
+// MockPolicyInput holds the input structures for future inspections
+type MockPolicyInput struct {
+	CreatePolicyInput *iam.CreatePolicyInput
+	TagPolicyInput    *iam.TagPolicyInput
+	UntagPolicyInput  *iam.UntagPolicyInput
+}
+
 // MockPolicyClient is a type that implements all the methods for PolicyClient interface
 type MockPolicyClient struct {
+	MockPolicyInput         MockPolicyInput
 	MockGetPolicy           func(ctx context.Context, input *iam.GetPolicyInput, opts []func(*iam.Options)) (*iam.GetPolicyOutput, error)
 	MockCreatePolicy        func(ctx context.Context, input *iam.CreatePolicyInput, opts []func(*iam.Options)) (*iam.CreatePolicyOutput, error)
 	MockDeletePolicy        func(ctx context.Context, input *iam.DeletePolicyInput, opts []func(*iam.Options)) (*iam.DeletePolicyOutput, error)
@@ -59,6 +67,7 @@ func (m *MockPolicyClient) GetPolicy(ctx context.Context, input *iam.GetPolicyIn
 
 // CreatePolicy mocks CreatePolicy method
 func (m *MockPolicyClient) CreatePolicy(ctx context.Context, input *iam.CreatePolicyInput, opts ...func(*iam.Options)) (*iam.CreatePolicyOutput, error) {
+	m.MockPolicyInput.CreatePolicyInput = input
 	return m.MockCreatePolicy(ctx, input, opts)
 }
 
@@ -89,10 +98,12 @@ func (m *MockPolicyClient) DeletePolicyVersion(ctx context.Context, input *iam.D
 
 // TagPolicy mocks TagPolicy method
 func (m *MockPolicyClient) TagPolicy(ctx context.Context, input *iam.TagPolicyInput, opts ...func(*iam.Options)) (*iam.TagPolicyOutput, error) {
+	m.MockPolicyInput.TagPolicyInput = input
 	return m.MockTagPolicy(ctx, input, opts)
 }
 
 // UntagPolicy mocks UnTagPolicy method
 func (m *MockPolicyClient) UntagPolicy(ctx context.Context, input *iam.UntagPolicyInput, opts ...func(*iam.Options)) (*iam.UntagPolicyOutput, error) {
+	m.MockPolicyInput.UntagPolicyInput = input
 	return m.MockUntagPolicy(ctx, input, opts)
 }

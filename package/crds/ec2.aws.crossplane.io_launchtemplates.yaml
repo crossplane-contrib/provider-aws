@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: launchtemplates.ec2.aws.crossplane.io
 spec:
@@ -162,9 +163,9 @@ spec:
                         type: array
                       enclaveOptions:
                         description: Indicates whether the instance is enabled for
-                          AWS Nitro Enclaves. For more information, see What is AWS
-                          Nitro Enclaves? (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
-                          in the AWS Nitro Enclaves User Guide.
+                          Amazon Web Services Nitro Enclaves. For more information,
+                          see What is Amazon Web Services Nitro Enclaves? (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
+                          in the Amazon Web Services Nitro Enclaves User Guide.
                         properties:
                           enabled:
                             type: boolean
@@ -211,6 +212,152 @@ spec:
                                 type: string
                             type: object
                         type: object
+                      instanceRequirements:
+                        description: "The attributes for the instance types. When
+                          you specify instance attributes, Amazon EC2 will identify
+                          instance types with these attributes. \n When you specify
+                          multiple parameters, you get instance types that satisfy
+                          all of the specified parameters. If you specify multiple
+                          values for a parameter, you get instance types that satisfy
+                          any of the specified values. \n You must specify VCpuCount
+                          and MemoryMiB. All other parameters are optional. Any unspecified
+                          optional parameter is set to its default. \n For more information,
+                          see Attribute-based instance type selection for EC2 Fleet
+                          (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+                          Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
+                          and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
+                          in the Amazon EC2 User Guide."
+                        properties:
+                          acceleratorCount:
+                            description: The minimum and maximum number of accelerators
+                              (GPUs, FPGAs, or Amazon Web Services Inferentia chips)
+                              on an instance. To exclude accelerator-enabled instance
+                              types, set Max to 0.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                          acceleratorManufacturers:
+                            items:
+                              type: string
+                            type: array
+                          acceleratorNames:
+                            items:
+                              type: string
+                            type: array
+                          acceleratorTotalMemoryMiB:
+                            description: The minimum and maximum amount of total accelerator
+                              memory, in MiB.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                          acceleratorTypes:
+                            items:
+                              type: string
+                            type: array
+                          bareMetal:
+                            type: string
+                          baselineEBSBandwidthMbps:
+                            description: The minimum and maximum baseline bandwidth
+                              to Amazon EBS, in Mbps. For more information, see Amazon
+                              EBS–optimized instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
+                              in the Amazon EC2 User Guide.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                          burstablePerformance:
+                            type: string
+                          cpuManufacturers:
+                            items:
+                              type: string
+                            type: array
+                          excludedInstanceTypes:
+                            items:
+                              type: string
+                            type: array
+                          instanceGenerations:
+                            items:
+                              type: string
+                            type: array
+                          localStorage:
+                            type: string
+                          localStorageTypes:
+                            items:
+                              type: string
+                            type: array
+                          memoryGiBPerVCPU:
+                            description: The minimum and maximum amount of memory
+                              per vCPU, in GiB.
+                            properties:
+                              max:
+                                type: number
+                              min:
+                                type: number
+                            type: object
+                          memoryMiB:
+                            description: The minimum and maximum amount of memory,
+                              in MiB.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                          networkInterfaceCount:
+                            description: The minimum and maximum number of network
+                              interfaces.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                          onDemandMaxPricePercentageOverLowestPrice:
+                            format: int64
+                            type: integer
+                          requireHibernateSupport:
+                            type: boolean
+                          spotMaxPricePercentageOverLowestPrice:
+                            format: int64
+                            type: integer
+                          totalLocalStorageGB:
+                            description: The minimum and maximum amount of total local
+                              storage, in GB.
+                            properties:
+                              max:
+                                type: number
+                              min:
+                                type: number
+                            type: object
+                          vCPUCount:
+                            description: The minimum and maximum number of vCPUs.
+                            properties:
+                              max:
+                                format: int64
+                                type: integer
+                              min:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
                       instanceType:
                         type: string
                       kernelID:
@@ -230,6 +377,8 @@ spec:
                           in the Amazon Elastic Compute Cloud User Guide.
                         properties:
                           httpEndpoint:
+                            type: string
+                          httpProtocolIPv6:
                             type: string
                           httpPutResponseHopLimit:
                             format: int64
@@ -263,6 +412,16 @@ spec:
                               type: array
                             interfaceType:
                               type: string
+                            ipv4PrefixCount:
+                              format: int64
+                              type: integer
+                            ipv4Prefixes:
+                              items:
+                                properties:
+                                  ipv4Prefix:
+                                    type: string
+                                type: object
+                              type: array
                             ipv6AddressCount:
                               format: int64
                               type: integer
@@ -270,6 +429,16 @@ spec:
                               items:
                                 properties:
                                   ipv6Address:
+                                    type: string
+                                type: object
+                              type: array
+                            ipv6PrefixCount:
+                              format: int64
+                              type: integer
+                            ipv6Prefixes:
+                              items:
+                                properties:
+                                  ipv6Prefix:
                                     type: string
                                 type: object
                               type: array
@@ -413,12 +582,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.

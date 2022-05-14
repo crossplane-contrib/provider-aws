@@ -2,6 +2,7 @@ ignore:
   resource_names:
     - AccountAttribute
     - CapacityReservation
+    - CapacityReservationFleet
     - CarrierGateway
     - ClientVpnEndpoint
     - ClientVpnRoute
@@ -14,6 +15,7 @@ ignore:
     - FpgaImage
     - Image
     - Instance
+    - InstanceEventWindow
     - InstanceExportTask
     - InternetGateway
     - KeyPair
@@ -29,10 +31,14 @@ ignore:
     - PlacementGroup
     - ReservedInstancesListing
     - RouteTable
+    - ReplaceRootVolumeTask
+    - RestoreImageTask
     - SecurityGroup
     - Snapshot
     - SpotDatafeedSubscription
-    - Subnet 
+    - Subnet
+    - StoreImageTask
+    - SubnetCidrReservation
     - TrafficMirrorFilterRule
     - TrafficMirrorFilter
     - TrafficMirrorSession
@@ -110,6 +116,9 @@ ignore:
     - CreateVpcEndpointServiceConfigurationInput.ClientToken
     - CreateVpcEndpointServiceConfigurationInput.GatewayLoadBalancerArns
     - CreateVpcEndpointServiceConfigurationInput.NetworkLoadBalancerArns
+    - CreateVolumeInput.ClientToken
+    - CreateVpcEndpointInput.ClientToken
+    - CreateVpcEndpointOutput.ClientToken
 resources:
   Volume:
     exceptions:
@@ -125,7 +134,7 @@ resources:
     exceptions:
       errors:
         404:
-          code: InvalidLaunchTemplateId.VersionNotFound
+          code: InvalidLaunchTemplateName.NotFoundException
   TransitGatewayRouteTable:
     exceptions:
       errors:

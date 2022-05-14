@@ -27,17 +27,22 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
+
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
+	requestv1 "github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/smithy-go"
+	"github.com/aws/smithy-go/middleware"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/google/go-cmp/cmp"
@@ -53,6 +58,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
 	"github.com/crossplane/provider-aws/apis/v1beta1"
+	"github.com/crossplane/provider-aws/pkg/version"
 )
 
 // DefaultSection for INI files.
@@ -81,6 +87,17 @@ const (
 	FieldRequired FieldOption = iota
 )
 
+// userAgentV2 constructs the Crossplane user agent for AWS v2 clients
+var userAgentV2 = config.WithAPIOptions([]func(*middleware.Stack) error{
+	awsmiddleware.AddUserAgentKeyValue("crossplane-provider-aws", version.Version),
+})
+
+// userAgentV1 constructs the Crossplane user agent for AWS v1 clients
+var userAgentV1 = requestv1.NamedHandler{
+	Name: "crossplane.UserAgentHandler",
+	Fn:   requestv1.MakeAddToUserAgentHandler("crossplane-provider-aws", version.Version),
+}
+
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
 func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
@@ -108,8 +125,15 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UsePodServiceAccountAssumeRole(ctx, []byte{}, DefaultSection, region, pc)
+			if err != nil {
+				return nil, err
+			}
+			return SetResolver(pc, cfg), nil
+		}
+		if pc.Spec.AssumeRoleWithWebIdentity != nil && pc.Spec.AssumeRoleWithWebIdentity.RoleARN != nil {
+			cfg, err := UsePodServiceAccountAssumeRoleWithWebIdentity(ctx, []byte{}, DefaultSection, region, pc)
 			if err != nil {
 				return nil, err
 			}
@@ -125,7 +149,7 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UseProviderSecretAssumeRole(ctx, data, DefaultSection, region, pc)
 			if err != nil {
 				return nil, err
@@ -279,9 +303,14 @@ func UseProviderSecret(ctx context.Context, data []byte, profile, region string)
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
-		Value: creds,
-	}))
+	config, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: creds,
+		}),
+	)
 	return &config, err
 }
 
@@ -293,15 +322,30 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
-		Value: creds,
-	}))
+	config, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: creds,
+		}),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
 
 	stsSvc := sts.NewFromConfig(config)
+
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(pc.Spec.AssumeRoleARN),
-		func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+		StringValue(roleArn),
+		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
 
@@ -312,19 +356,63 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 // assume Cross account IAM roles
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
+
 	stsclient := sts.NewFromConfig(cfg)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
+		userAgentV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(pc.Spec.AssumeRoleARN),
-				func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+				StringValue(roleArn),
+				stsAssumeRoleOptions,
+			)),
+		),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
+	}
+	return &cnf, err
+}
+
+// UsePodServiceAccountAssumeRoleWithWebIdentity assumes an IAM role
+// configured via a ServiceAccount assume Cross account IAM roles
+// https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
+func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte, _, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	roleArn, err := GetAssumeRoleWithWebIdentityARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
+
+	stsclient := sts.NewFromConfig(cfg)
+	webIdentityRoleOptions := SetWebIdentityRoleOptions(pc)
+
+	cnf, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(aws.NewCredentialsCache(
+			stscreds.NewWebIdentityRoleProvider(
+				stsclient,
+				StringValue(roleArn),
+				stscreds.IdentityTokenFile("/var/run/secrets/eks.amazonaws.com/serviceaccount/token"),
+				webIdentityRoleOptions,
 			)),
 		),
 	)
@@ -339,6 +427,7 @@ func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region str
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
+		userAgentV2,
 		config.WithRegion(region),
 	)
 	if err != nil {
@@ -372,32 +461,49 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 			if err != nil {
 				return nil, errors.Wrap(err, "cannot use pod service account to assume role")
 			}
-			return session.NewSession(cfg)
+			return GetSessionV1(cfg)
+		}
+		if pc.Spec.AssumeRoleWithWebIdentity != nil && pc.Spec.AssumeRoleWithWebIdentity.RoleARN != nil {
+			cfg, err := UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx, []byte{}, pc, DefaultSection, region)
+			if err != nil {
+				return nil, err
+			}
+			return GetSessionV1(cfg)
 		}
 		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
-		return session.NewSession(cfg)
+		return GetSessionV1(cfg)
 	default:
 		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials")
 		}
 
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRole != nil || pc.Spec.AssumeRoleARN != nil {
 			cfg, err := UseProviderSecretV1AssumeRole(ctx, data, pc, DefaultSection, region)
 			if err != nil {
 				return nil, errors.Wrap(err, "cannot use secret")
 			}
-			return session.NewSession(cfg)
+			return GetSessionV1(cfg)
 		}
 		cfg, err := UseProviderSecretV1(ctx, data, pc, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
-		return session.NewSession(cfg)
+		return GetSessionV1(cfg)
 	}
+}
+
+// GetSessionV1 constructs an AWS V1 client session, with common configuration like the user agent handler
+func GetSessionV1(cfg *awsv1.Config) (*session.Session, error) {
+	session, err := session.NewSession(cfg)
+	if err != nil {
+		return nil, err
+	}
+	session.Handlers.Build.PushBackNamed(userAgentV1)
+	return session, nil
 }
 
 // UseProviderSecretV1AssumeRole - AWS v1 configuration which can be used to issue requests against AWS API
@@ -408,18 +514,29 @@ func UseProviderSecretV1AssumeRole(ctx context.Context, data []byte, pc *v1beta1
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
-	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(region), config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
-		Value: creds,
-	}))
+	config, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: creds,
+		}),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load credentials")
 	}
 
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to assume IAM Role")
+	}
+
 	stsSvc := sts.NewFromConfig(config)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(pc.Spec.AssumeRoleARN),
-		func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+		StringValue(roleArn),
+		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
 
@@ -472,19 +589,70 @@ func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderCon
 // assume Cross account IAM role
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
+
+	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to assume IAM Role")
+	}
 	stsclient := sts.NewFromConfig(cfg)
+	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
+		userAgentV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(pc.Spec.AssumeRoleARN),
-				func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID },
+				StringValue(roleArn),
+				stsAssumeRoleOptions,
+			)),
+		),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
+	}
+	v2creds, err := cnf.Credentials.Retrieve(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+	v1creds := credentialsv1.NewStaticCredentials(
+		v2creds.AccessKeyID,
+		v2creds.SecretAccessKey,
+		v2creds.SessionToken)
+	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
+}
+
+// UsePodServiceAccountV1AssumeRoleWithWebIdentity assumes an IAM role configured via a ServiceAccount and
+// assume Cross account IAM role
+// https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
+func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	roleArn, err := GetAssumeRoleWithWebIdentityARN(pc.Spec.DeepCopy())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get role arn for assume role with web identity")
+	}
+
+	stsclient := sts.NewFromConfig(cfg)
+	webIdentityRoleOptions := SetWebIdentityRoleOptions(pc)
+
+	cnf, err := config.LoadDefaultConfig(
+		ctx,
+		userAgentV2,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(aws.NewCredentialsCache(
+			stscreds.NewWebIdentityRoleProvider(
+				stsclient,
+				StringValue(roleArn),
+				stscreds.IdentityTokenFile("/var/run/secrets/eks.amazonaws.com/serviceaccount/token"),
+				webIdentityRoleOptions,
 			)),
 		),
 	)
@@ -507,6 +675,7 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
+		userAgentV2,
 		config.WithRegion(region),
 	)
 	if err != nil {
@@ -573,6 +742,76 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 	return cfg
 }
 
+// GetAssumeRoleARN gets the AssumeRoleArn from a ProviderConfigSpec
+func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
+	if pcs.AssumeRole != nil {
+		if pcs.AssumeRole.RoleARN != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
+			return pcs.AssumeRole.RoleARN, nil
+		}
+	}
+
+	// Deprecated. Use AssumeRole.RoleARN
+	if pcs.AssumeRoleARN != nil {
+		return pcs.AssumeRoleARN, nil
+	}
+
+	return nil, errors.New("a RoleARN must be set to assume an IAM Role")
+}
+
+// GetAssumeRoleWithWebIdentityARN gets the RoleArn from a ProviderConfigSpec
+func GetAssumeRoleWithWebIdentityARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
+	if pcs.AssumeRoleWithWebIdentity != nil {
+		if pcs.AssumeRoleWithWebIdentity.RoleARN != nil && StringValue(pcs.AssumeRoleWithWebIdentity.RoleARN) != "" {
+			return pcs.AssumeRoleWithWebIdentity.RoleARN, nil
+		}
+	}
+
+	return nil, errors.New("a RoleARN must be set to assume with web identity")
+}
+
+// SetAssumeRoleOptions sets options when Assuming an IAM Role
+func SetAssumeRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.AssumeRoleOptions) {
+	if pc.Spec.AssumeRole != nil {
+		return func(opt *stscreds.AssumeRoleOptions) {
+			if pc.Spec.AssumeRole.ExternalID != nil {
+				opt.ExternalID = pc.Spec.AssumeRole.ExternalID
+			}
+
+			if pc.Spec.AssumeRole.Tags != nil && len(pc.Spec.AssumeRole.Tags) > 0 {
+				for _, t := range pc.Spec.AssumeRole.Tags {
+					opt.Tags = append(
+						opt.Tags,
+						stscredstypesv2.Tag{Key: t.Key, Value: t.Value})
+				}
+			}
+
+			if pc.Spec.AssumeRole.TransitiveTagKeys != nil && len(pc.Spec.AssumeRole.TransitiveTagKeys) > 0 {
+				opt.TransitiveTagKeys = pc.Spec.AssumeRole.TransitiveTagKeys
+			}
+		}
+	}
+
+	// Deprecated. Use AssumeRole.ExternalID
+	if pc.Spec.ExternalID != nil {
+		return func(opt *stscreds.AssumeRoleOptions) { opt.ExternalID = pc.Spec.ExternalID }
+	}
+
+	return func(opt *stscreds.AssumeRoleOptions) {}
+}
+
+// SetWebIdentityRoleOptions sets options when exchanging a WebIdentity Token for a Role
+func SetWebIdentityRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.WebIdentityRoleOptions) {
+	if pc.Spec.AssumeRoleWithWebIdentity != nil {
+		return func(opt *stscreds.WebIdentityRoleOptions) {
+			if pc.Spec.AssumeRoleWithWebIdentity.RoleSessionName != "" {
+				opt.RoleSessionName = pc.Spec.AssumeRoleWithWebIdentity.RoleSessionName
+			}
+		}
+	}
+
+	return func(opt *stscreds.WebIdentityRoleOptions) {}
+}
+
 // TODO(muvaf): All the types that use CreateJSONPatch are known during
 // development time. In order to avoid unnecessary panic checks, we can generate
 // the code that creates a patch between two objects that share the same type.
@@ -615,6 +854,32 @@ func String(v string, o ...FieldOption) *string {
 // TODO(muvaf): is this really meaningful? why not implement it?
 func StringValue(v *string) string {
 	return aws.ToString(v)
+}
+
+// StringSliceToPtr converts the supplied string array to an array of string pointers.
+func StringSliceToPtr(slice []string) []*string {
+	if slice == nil {
+		return nil
+	}
+
+	res := make([]*string, len(slice))
+	for i, s := range slice {
+		res[i] = String(s)
+	}
+	return res
+}
+
+// StringPtrSliceToValue converts the supplied string pointer array to an array of strings.
+func StringPtrSliceToValue(slice []*string) []string {
+	if slice == nil {
+		return nil
+	}
+
+	res := make([]string, len(slice))
+	for i, s := range slice {
+		res[i] = StringValue(s)
+	}
+	return res
 }
 
 // BoolValue calls underlying aws ToBool
@@ -744,7 +1009,7 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 // LateInitializeIntFrom32Ptr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 // This function considered that nil and 0 values are same. However, for a *int32, nil and 0 values must be different
-// because if the external Azure resource has a field with 0 value, during late initialization setting this value
+// because if the external AWS resource has a field with 0 value, during late initialization setting this value
 // in CR must be allowed. Please see the LateInitializeIntFromInt32Ptr func.
 // Deprecated: Please use LateInitializeIntFromInt32Ptr instead.
 func LateInitializeIntFrom32Ptr(in *int, from *int32) *int {

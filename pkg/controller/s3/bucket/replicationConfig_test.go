@@ -54,7 +54,7 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 				Bucket:                   &bucketName,
 				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 				Metrics: &v1beta1.Metrics{
-					EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+					EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 					Status:         enabled,
 				},
 				ReplicationTime: &v1beta1.ReplicationTime{
@@ -486,7 +486,7 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
-								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 								Status:         enabled,
 							},
 							ReplicationTime: &v1beta1.ReplicationTime{
@@ -557,7 +557,7 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   awsclient.String("bucket-1"),
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
-								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 								Status:         enabled,
 							},
 							ReplicationTime: &v1beta1.ReplicationTime{
@@ -586,7 +586,7 @@ func TestIsUpToDate(t *testing.T) {
 								Bucket:                   awsclient.String("bucket-2"),
 								EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &v1beta1.Metrics{
-									EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 									Status:         enabled,
 								},
 								ReplicationTime: &v1beta1.ReplicationTime{
@@ -686,7 +686,7 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
-								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 								Status:         enabled,
 							},
 							ReplicationTime: &v1beta1.ReplicationTime{
@@ -773,7 +773,7 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
-								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 								Status:         enabled,
 							},
 							ReplicationTime: &v1beta1.ReplicationTime{
@@ -836,7 +836,7 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
-								EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 								Status:         enabled,
 							},
 							ReplicationTime: &v1beta1.ReplicationTime{

@@ -31,13 +31,12 @@ type JobParameters struct {
 	Region string `json:"region"`
 	// This parameter is deprecated. Use MaxCapacity instead.
 	//
-	// The number of AWS Glue data processing units (DPUs) to allocate to this Job.
+	// The number of Glue data processing units (DPUs) to allocate to this Job.
 	// You can allocate from 2 to 100 DPUs; the default is 10. A DPU is a relative
 	// measure of processing power that consists of 4 vCPUs of compute capacity
-	// and 16 GB of memory. For more information, see the AWS Glue pricing page
-	// (https://aws.amazon.com/glue/pricing/).
+	// and 16 GB of memory. For more information, see the Glue pricing page (https://aws.amazon.com/glue/pricing/).
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
-	// The JobCommand that executes this job.
+	// The JobCommand that runs this job.
 	// +kubebuilder:validation:Required
 	Command *JobCommand `json:"command"`
 	// The connections used for this job.
@@ -45,14 +44,14 @@ type JobParameters struct {
 	// The default arguments for this job.
 	//
 	// You can specify arguments here that your own job-execution script consumes,
-	// as well as arguments that AWS Glue itself consumes.
+	// as well as arguments that Glue itself consumes.
 	//
 	// For information about how to specify and consume your own Job arguments,
-	// see the Calling AWS Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
+	// see the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
 	// topic in the developer guide.
 	//
-	// For information about the key-value pairs that AWS Glue consumes to set up
-	// your job, see the Special Parameters Used by AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
+	// For information about the key-value pairs that Glue consumes to set up your
+	// job, see the Special Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
 	// topic in the developer guide.
 	DefaultArguments map[string]*string `json:"defaultArguments,omitempty"`
 	// Description of the job being defined.
@@ -60,11 +59,11 @@ type JobParameters struct {
 	// An ExecutionProperty specifying the maximum number of concurrent runs allowed
 	// for this job.
 	ExecutionProperty *ExecutionProperty `json:"executionProperty,omitempty"`
-	// Glue version determines the versions of Apache Spark and Python that AWS
-	// Glue supports. The Python version indicates the version supported for jobs
-	// of type Spark.
+	// Glue version determines the versions of Apache Spark and Python that Glue
+	// supports. The Python version indicates the version supported for jobs of
+	// type Spark.
 	//
-	// For more information about the available AWS Glue versions and corresponding
+	// For more information about the available Glue versions and corresponding
 	// Spark and Python versions, see Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
 	// in the developer guide.
 	//
@@ -72,10 +71,11 @@ type JobParameters struct {
 	GlueVersion *string `json:"glueVersion,omitempty"`
 	// This field is reserved for future use.
 	LogURI *string `json:"logURI,omitempty"`
-	// The number of AWS Glue data processing units (DPUs) that can be allocated
-	// when this job runs. A DPU is a relative measure of processing power that
-	// consists of 4 vCPUs of compute capacity and 16 GB of memory. For more information,
-	// see the AWS Glue pricing page (https://aws.amazon.com/glue/pricing/).
+	// For Glue version 1.0 or earlier jobs, using the standard worker type, the
+	// number of Glue data processing units (DPUs) that can be allocated when this
+	// job runs. A DPU is a relative measure of processing power that consists of
+	// 4 vCPUs of compute capacity and 16 GB of memory. For more information, see
+	// the Glue pricing page (https://aws.amazon.com/glue/pricing/).
 	//
 	// Do not set Max Capacity if using WorkerType and NumberOfWorkers.
 	//
@@ -89,6 +89,9 @@ type JobParameters struct {
 	//    or Apache Spark streaming ETL job (JobCommand.Name="gluestreaming"), you
 	//    can allocate from 2 to 100 DPUs. The default is 10 DPUs. This job type
 	//    cannot have a fractional DPU allocation.
+	//
+	// For Glue version 2.0 jobs, you cannot instead specify a Maximum capacity.
+	// Instead, you should specify a Worker type and the Number of workers.
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 	// The maximum number of times to retry this job if it fails.
 	MaxRetries *int64 `json:"maxRetries,omitempty"`
@@ -105,8 +108,9 @@ type JobParameters struct {
 	// The name of the SecurityConfiguration structure to be used with this job.
 	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
 	// The tags to use with this job. You may use tags to limit access to the job.
-	// For more information about tags in AWS Glue, see AWS Tags in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
-	// in the developer guide.
+	// For more information about tags in Glue, see Amazon Web Services Tags in
+	// Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html) in the
+	// developer guide.
 	Tags map[string]*string `json:"tags,omitempty"`
 	// The job timeout in minutes. This is the maximum time that a job run can consume
 	// resources before it is terminated and enters TIMEOUT status. The default

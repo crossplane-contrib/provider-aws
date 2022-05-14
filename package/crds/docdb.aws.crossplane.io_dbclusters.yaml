@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: dbclusters.docdb.aws.crossplane.io
 spec:
@@ -82,7 +83,7 @@ spec:
                   backupRetentionPeriod:
                     description: "The number of days for which automated backups are
                       retained. You must specify a minimum value of 1. \n Default:
-                      1 \n Constraints: \n    * Must be a value from 1 to 35."
+                      1 \n Constraints: \n * Must be a value from 1 to 35."
                     format: int64
                     type: integer
                   dbClusterParameterGroupName:
@@ -146,6 +147,10 @@ spec:
                       unless it is modified and DeletionProtection is disabled. DeletionProtection
                       protects clusters from being accidentally deleted.
                     type: boolean
+                  destinationRegion:
+                    description: DestinationRegion is used for presigning the request
+                      to a given region.
+                    type: string
                   enableCloudwatchLogsExports:
                     description: A list of log types that need to be enabled for exporting
                       to Amazon CloudWatch Logs. You can enable audit logs or profiler
@@ -169,26 +174,30 @@ spec:
                     description: "The cluster snapshot identifier of the new cluster
                       snapshot created when SkipFinalSnapshot is set to false. \n
                       Specifying this parameter and also setting the SkipFinalShapshot
-                      parameter to true results in an error. \n Constraints: \n    *
-                      Must be from 1 to 255 letters, numbers, or hyphens. \n    *
-                      The first character must be a letter. \n    * Cannot end with
-                      a hyphen or contain two consecutive hyphens."
+                      parameter to true results in an error. \n Constraints: \n *
+                      Must be from 1 to 255 letters, numbers, or hyphens. \n * The
+                      first character must be a letter. \n * Cannot end with a hyphen
+                      or contain two consecutive hyphens."
+                    type: string
+                  globalClusterIdentifier:
+                    description: The cluster identifier of the new global cluster.
                     type: string
                   kmsKeyID:
-                    description: "The AWS KMS key identifier for an encrypted cluster.
-                      \n The AWS KMS key identifier is the Amazon Resource Name (ARN)
-                      for the AWS KMS encryption key. If you are creating a cluster
-                      using the same AWS account that owns the AWS KMS encryption
-                      key that is used to encrypt the new cluster, you can use the
-                      AWS KMS key alias instead of the ARN for the AWS KMS encryption
-                      key. \n If an encryption key is not specified in KmsKeyId: \n
-                      \   * If the StorageEncrypted parameter is true, Amazon DocumentDB
-                      uses your    default encryption key. \n AWS KMS creates the
-                      default encryption key for your AWS account. Your AWS account
-                      has a different default encryption key for each AWS Region."
+                    description: "The KMS key identifier for an encrypted cluster.
+                      \n The KMS key identifier is the Amazon Resource Name (ARN)
+                      for the KMS encryption key. If you are creating a cluster using
+                      the same account that owns the KMS encryption key that is used
+                      to encrypt the new cluster, you can use the KMS key alias instead
+                      of the ARN for the KMS encryption key. \n If an encryption key
+                      is not specified in KmsKeyId: \n * If the StorageEncrypted parameter
+                      is true, Amazon DocumentDB uses your default encryption key.
+                      \n KMS creates the default encryption key for your account.
+                      Your account has a different default encryption key for each
+                      Regions."
                     type: string
                   kmsKeyIDRef:
-                    description: A Reference to a named object.
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to kmsKeyIdRef'
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -197,7 +206,8 @@ spec:
                     - name
                     type: object
                   kmsKeyIDSelector:
-                    description: A Selector selects an object.
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to kmsKeyIdSelector'
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the
@@ -233,9 +243,9 @@ spec:
                     type: object
                   masterUsername:
                     description: "The name of the master user for the cluster. \n
-                      Constraints: \n    * Must be from 1 to 63 letters or numbers.
-                      \n    * The first character must be a letter. \n    * Cannot
-                      be a reserved word for the chosen database engine."
+                      Constraints: \n * Must be from 1 to 63 letters or numbers. \n
+                      * The first character must be a letter. \n * Cannot be a reserved
+                      word for the chosen database engine."
                     type: string
                   port:
                     description: The port number on which the instances in the cluster
@@ -249,19 +259,18 @@ spec:
                     description: "The daily time range during which automated backups
                       are created if automated backups are enabled using the BackupRetentionPeriod
                       parameter. \n The default is a 30-minute window selected at
-                      random from an 8-hour block of time for each AWS Region. \n
-                      Constraints: \n    * Must be in the format hh24:mi-hh24:mi.
-                      \n    * Must be in Universal Coordinated Time (UTC). \n    *
-                      Must not conflict with the preferred maintenance window. \n
-                      \   * Must be at least 30 minutes."
+                      random from an 8-hour block of time for each Region. \n Constraints:
+                      \n * Must be in the format hh24:mi-hh24:mi. \n * Must be in
+                      Universal Coordinated Time (UTC). \n * Must not conflict with
+                      the preferred maintenance window. \n * Must be at least 30 minutes."
                     type: string
                   preferredMaintenanceWindow:
                     description: "The weekly time range during which system maintenance
                       can occur, in Universal Coordinated Time (UTC). \n Format: ddd:hh24:mi-ddd:hh24:mi
                       \n The default is a 30-minute window selected at random from
-                      an 8-hour block of time for each AWS Region, occurring on a
-                      random day of the week. \n Valid days: Mon, Tue, Wed, Thu, Fri,
-                      Sat, Sun \n Constraints: Minimum 30-minute window."
+                      an 8-hour block of time for each Region, occurring on a random
+                      day of the week. \n Valid days: Mon, Tue, Wed, Thu, Fri, Sat,
+                      Sun \n Constraints: Minimum 30-minute window."
                     type: string
                   region:
                     description: Region is which region the DBCluster will be created.
@@ -274,6 +283,12 @@ spec:
                       is false, you must specify a FinalDBSnapshotIdentifier parameter.
                       \n Default: false"
                     type: boolean
+                  sourceRegion:
+                    description: SourceRegion is the source region where the resource
+                      exists. This is not sent over the wire and is only used for
+                      presigning. This value should always have the same region as
+                      the source ARN.
+                    type: string
                   storageEncrypted:
                     description: Specifies whether the cluster is encrypted.
                     type: boolean
@@ -294,6 +309,8 @@ spec:
                       type: string
                     type: array
                   vpcSecurityGroupIDsRefs:
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to vpcSecurityGroupIdRefs'
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -305,7 +322,8 @@ spec:
                       type: object
                     type: array
                   vpcSecurityGroupIDsSelector:
-                    description: A Selector selects an object.
+                    description: 'TODO(haarchri): when resource is bumped to beta
+                      we will convert this field to vpcSecurityGroupIdSelector'
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the
@@ -320,7 +338,6 @@ spec:
                     type: object
                 required:
                 - engine
-                - masterUsername
                 - region
                 type: object
               providerConfigRef:
@@ -347,12 +364,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -374,10 +443,11 @@ spec:
                 description: DBClusterObservation defines the observed state of DBCluster
                 properties:
                   associatedRoles:
-                    description: Provides a list of the AWS Identity and Access Management
-                      (IAM) roles that are associated with the cluster. IAM roles
+                    description: Provides a list of the Identity and Access Management
+                      (IAM) roles that are associated with the cluster. (IAM) roles
                       that are associated with a cluster grant permission for the
-                      cluster to access other AWS services on your behalf.
+                      cluster to access other Amazon Web Services services on your
+                      behalf.
                     items:
                       properties:
                         roleARN:
@@ -418,9 +488,9 @@ spec:
                       for the cluster.
                     type: string
                   dbClusterResourceID:
-                    description: The AWS Region-unique, immutable identifier for the
-                      cluster. This identifier is found in AWS CloudTrail log entries
-                      whenever the AWS KMS key for the cluster is accessed.
+                    description: The Region-unique, immutable identifier for the cluster.
+                      This identifier is found in CloudTrail log entries whenever
+                      the KMS key for the cluster is accessed.
                     type: string
                   dbSubnetGroup:
                     description: Specifies information on the subnet group that is
@@ -458,6 +528,12 @@ spec:
                   percentProgress:
                     description: Specifies the progress of the operation as a percentage.
                     type: string
+                  readReplicaIdentifiers:
+                    description: Contains one or more identifiers of the secondary
+                      clusters that are associated with this cluster.
+                    items:
+                      type: string
+                    type: array
                   readerEndpoint:
                     description: "The reader endpoint for the cluster. The reader
                       endpoint for a cluster load balances connections across the
@@ -471,6 +547,10 @@ spec:
                       be the primary instance, your connection is dropped. To continue
                       sending your read workload to other Amazon DocumentDB replicas
                       in the cluster, you can then reconnect to the reader endpoint."
+                    type: string
+                  replicationSourceIdentifier:
+                    description: Contains the identifier of the source cluster if
+                      this cluster is a secondary cluster.
                     type: string
                   status:
                     description: Specifies the current state of this cluster.

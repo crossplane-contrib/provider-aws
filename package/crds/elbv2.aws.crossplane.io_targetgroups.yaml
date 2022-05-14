@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: targetgroups.elbv2.aws.crossplane.io
 spec:
@@ -63,8 +64,8 @@ spec:
                   healthCheckEnabled:
                     description: Indicates whether health checks are enabled. If the
                       target type is lambda, health checks are disabled by default
-                      but can be enabled. If the target type is instance or ip, health
-                      checks are always enabled and cannot be disabled.
+                      but can be enabled. If the target type is instance, ip, or alb,
+                      health checks are always enabled and cannot be disabled.
                     type: boolean
                   healthCheckIntervalSeconds:
                     description: The approximate amount of time, in seconds, between
@@ -81,7 +82,7 @@ spec:
                       checks on the targets. \n [HTTP1 or HTTP2 protocol version]
                       The ping path. The default is /. \n [GRPC protocol version]
                       The path of a custom health check method with the format /package.service/method.
-                      The default is /AWS.ALB/healthcheck."
+                      The default is /Amazon Web Services.ALB/healthcheck."
                     type: string
                   healthCheckPort:
                     description: The port the load balancer uses when performing health
@@ -118,6 +119,11 @@ spec:
                       is 5.
                     format: int64
                     type: integer
+                  ipAddressType:
+                    description: The type of IP address used for this target group.
+                      The possible values are ipv4 and ipv6. This is an optional parameter.
+                      If not specified, the IP address type defaults to ipv4.
+                    type: string
                   matcher:
                     description: '[HTTP/HTTPS health checks] The HTTP or gRPC codes
                       to use when checking for a successful response from a target.'
@@ -172,14 +178,15 @@ spec:
                   targetType:
                     description: "The type of target that you must specify when registering
                       targets with this target group. You can't specify targets for
-                      a target group using more than one target type. \n    * instance
+                      a target group using more than one target type. \n * instance
                       - Register targets by instance ID. This is the default value.
-                      \n    * ip - Register targets by IP address. You can specify
-                      IP addresses from    the subnets of the virtual private cloud
-                      (VPC) for the target group, the    RFC 1918 range (10.0.0.0/8,
-                      172.16.0.0/12, and 192.168.0.0/16), and the    RFC 6598 range
-                      (100.64.0.0/10). You can't specify publicly routable IP    addresses.
-                      \n    * lambda - Register a single Lambda function as a target."
+                      \n * ip - Register targets by IP address. You can specify IP
+                      addresses from the subnets of the virtual private cloud (VPC)
+                      for the target group, the RFC 1918 range (10.0.0.0/8, 172.16.0.0/12,
+                      and 192.168.0.0/16), and the RFC 6598 range (100.64.0.0/10).
+                      You can't specify publicly routable IP addresses. \n * lambda
+                      - Register a single Lambda function as a target. \n * alb -
+                      Register a single Application Load Balancer as a target."
                     type: string
                   unhealthyThresholdCount:
                     description: The number of consecutive health check failures required
@@ -246,12 +253,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -294,6 +353,8 @@ spec:
                         healthyThresholdCount:
                           format: int64
                           type: integer
+                        ipAddressType:
+                          type: string
                         loadBalancerARNs:
                           items:
                             type: string

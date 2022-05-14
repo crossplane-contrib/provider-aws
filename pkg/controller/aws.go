@@ -17,14 +17,14 @@ limitations under the License.
 package controller
 
 import (
-	"time"
-
-	"k8s.io/client-go/util/workqueue"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane/provider-aws/pkg/controller/apigateway/resource"
+	"github.com/crossplane/provider-aws/pkg/controller/apigateway/restapi"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/apimapping"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
@@ -44,10 +44,20 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	cloudfrontorginaccessidentity "github.com/crossplane/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
+	cloudfrontresponseheaderspolicy "github.com/crossplane/provider-aws/pkg/controller/cloudfront/responseheaderspolicy"
+	domain "github.com/crossplane/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
+	cognitogroup "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/group"
+	cognitoidentityprovider "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/identityprovider"
+	cognitouserpool "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpool"
+	cognitouserpoolclient "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpoolclient"
+	cognitouserpooldomain "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpooldomain"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	daxcluster "github.com/crossplane/provider-aws/pkg/controller/dax/cluster"
+	daxparametergroup "github.com/crossplane/provider-aws/pkg/controller/dax/parametergroup"
+	daxsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/dax/subnetgroup"
 	docdbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
 	docdbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
 	docdbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
@@ -77,6 +87,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/efs/accesspoint"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
 	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
@@ -100,6 +111,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/iam/group"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/grouppolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/groupusermembership"
+	"github.com/crossplane/provider-aws/pkg/controller/iam/instanceprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/openidconnectprovider"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/policy"
 	"github.com/crossplane/provider-aws/pkg/controller/iam/role"
@@ -113,16 +125,20 @@ import (
 	kinesisstream "github.com/crossplane/provider-aws/pkg/controller/kinesis/stream"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
-	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	lambdafunction "github.com/crossplane/provider-aws/pkg/controller/lambda/function"
+	lambdapermission "github.com/crossplane/provider-aws/pkg/controller/lambda/permission"
 	mqbroker "github.com/crossplane/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane/provider-aws/pkg/controller/mq/user"
+	mwaaenvironment "github.com/crossplane/provider-aws/pkg/controller/mwaa/environment"
 	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	prometheusserviceworkspace "github.com/crossplane/provider-aws/pkg/controller/prometheusservice/workspace"
 	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstanceroleassociation"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
@@ -145,19 +161,21 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 	transferserver "github.com/crossplane/provider-aws/pkg/controller/transfer/server"
 	transferuser "github.com/crossplane/provider-aws/pkg/controller/transfer/user"
-
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
+func Setup(mgr ctrl.Manager, o controller.Options) error {
+	for _, setup := range []func(ctrl.Manager, controller.Options) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cacheparametergroup.SetupCacheParameterGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
+		daxcluster.SetupCluster,
+		daxparametergroup.SetupParameterGroup,
+		daxsubnetgroup.SetupSubnetGroup,
+		domain.SetupDomain,
 		docdbinstance.SetupDBInstance,
 		docdbcluster.SetupDBCluster,
 		docdbclusterparametergroup.SetupDBClusterParameterGroup,
@@ -165,6 +183,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		eks.SetupCluster,
 		eksaddon.SetupAddon,
 		identityproviderconfig.SetupIdentityProviderConfig,
+		instanceprofile.SetupInstanceProfile,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
@@ -222,21 +241,25 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		globaltable.SetupGlobalTable,
 		key.SetupKey,
 		alias.SetupAlias,
+		accesspoint.SetupAccessPoint,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
 		dbclusterparametergroup.SetupDBClusterParameterGroup,
 		dbinstance.SetupDBInstance,
+		dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
 		dbparametergroup.SetupDBParameterGroup,
 		globalcluster.SetupGlobalCluster,
 		vpccidrblock.SetupVPCCIDRBlock,
 		privatednsnamespace.SetupPrivateDNSNamespace,
 		publicdnsnamespace.SetupPublicDNSNamespace,
 		httpnamespace.SetupHTTPNamespace,
-		function.SetupFunction,
+		lambdafunction.SetupFunction,
+		lambdapermission.SetupPermission,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
 		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
+		cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
@@ -254,6 +277,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		glueclassifier.SetupClassifier,
 		mqbroker.SetupBroker,
 		mquser.SetupUser,
+		mwaaenvironment.SetupEnvironment,
 		cwloggroup.SetupLogGroup,
 		volume.SetupVolume,
 		transitgateway.SetupTransitGateway,
@@ -272,16 +296,24 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 		kinesisstream.SetupStream,
 		resolverruleassociation.SetupResolverRuleAssociation,
+		cognitouserpool.SetupUserPool,
+		cognitouserpooldomain.SetupUserPoolDomain,
+		cognitogroup.SetupGroup,
+		cognitouserpoolclient.SetupUserPoolClient,
+		cognitoidentityprovider.SetupIdentityProvider,
 		neptunecluster.SetupDBCluster,
 		topic.SetupSNSTopic,
 		subscription.SetupSubscription,
 		nottopic.SetupSNSTopic,
 		notsubscription.SetupSubscription,
+		prometheusserviceworkspace.SetupWorkspace,
+		resource.SetupResource,
+		restapi.SetupRestAPI,
 	} {
-		if err := setup(mgr, l, rl, poll); err != nil {
+		if err := setup(mgr, o); err != nil {
 			return err
 		}
 	}
 
-	return config.Setup(mgr, l, rl)
+	return config.Setup(mgr, o)
 }

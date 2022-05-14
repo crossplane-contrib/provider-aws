@@ -53,6 +53,26 @@ type BatchStopJobRunSuccessfulSubmission struct {
 }
 
 // +kubebuilder:skipversion
+type Blueprint struct {
+	BlueprintLocation *string `json:"blueprintLocation,omitempty"`
+
+	BlueprintServiceLocation *string `json:"blueprintServiceLocation,omitempty"`
+
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type BlueprintRun struct {
+	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
+
+	StartedOn *metav1.Time `json:"startedOn,omitempty"`
+
+	WorkflowName *string `json:"workflowName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CatalogEntry struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
@@ -237,7 +257,7 @@ type Crawler_SDK struct {
 	// When crawling an Amazon S3 data source after the first crawl is complete,
 	// specifies whether to crawl the entire dataset again or to crawl only folders
 	// that were added since the last crawler run. For more information, see Incremental
-	// Crawls in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/incremental-crawls.html)
+	// Crawls in Glue (https://docs.aws.amazon.com/glue/latest/dg/incremental-crawls.html)
 	// in the developer guide.
 	RecrawlPolicy *RecrawlPolicy `json:"recrawlPolicy,omitempty"`
 
@@ -603,7 +623,7 @@ type JobRun struct {
 // +kubebuilder:skipversion
 type JobUpdate struct {
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
-	// Specifies code executed when a job is run.
+	// Specifies code that runs when a job is run.
 	Command *JobCommand `json:"command,omitempty"`
 	// Specifies the connections used by a job.
 	Connections *ConnectionsList `json:"connections,omitempty"`
@@ -640,7 +660,7 @@ type JobUpdate struct {
 // +kubebuilder:skipversion
 type Job_SDK struct {
 	AllocatedCapacity *int64 `json:"allocatedCapacity,omitempty"`
-	// Specifies code executed when a job is run.
+	// Specifies code that runs when a job is run.
 	Command *JobCommand `json:"command,omitempty"`
 	// Specifies the connections used by a job.
 	Connections *ConnectionsList `json:"connections,omitempty"`
@@ -688,6 +708,15 @@ type KeySchemaElement struct {
 // +kubebuilder:skipversion
 type LabelingSetGenerationTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LastActiveDefinition struct {
+	BlueprintLocation *string `json:"blueprintLocation,omitempty"`
+
+	BlueprintServiceLocation *string `json:"blueprintServiceLocation,omitempty"`
+
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -819,7 +848,7 @@ type Predecessor struct {
 // +kubebuilder:skipversion
 type PrincipalPermissions struct {
 	Permissions []*string `json:"permissions,omitempty"`
-	// The AWS Lake Formation principal.
+	// The Lake Formation principal.
 	Principal *DataLakePrincipal `json:"principal,omitempty"`
 }
 
@@ -856,9 +885,15 @@ type S3Encryption struct {
 type S3Target struct {
 	ConnectionName *string `json:"connectionName,omitempty"`
 
+	DlqEventQueueARN *string `json:"dlqEventQueueARN,omitempty"`
+
+	EventQueueARN *string `json:"eventQueueARN,omitempty"`
+
 	Exclusions []*string `json:"exclusions,omitempty"`
 
 	Path *string `json:"path,omitempty"`
+
+	SampleSize *int64 `json:"sampleSize,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -899,6 +934,13 @@ type SerDeInfo struct {
 // +kubebuilder:skipversion
 type SortCriterion struct {
 	FieldName *string `json:"fieldName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StartingEventBatchCondition struct {
+	BatchSize *int64 `json:"batchSize,omitempty"`
+
+	BatchWindow *int64 `json:"batchWindow,omitempty"`
 }
 
 // +kubebuilder:skipversion

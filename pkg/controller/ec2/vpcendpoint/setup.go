@@ -4,49 +4,51 @@ import (
 	"context"
 	"sort"
 	"strings"
-	"time"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/pkg/errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/pkg/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
-func SetupVPCEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
 	opts := []option{setupExternal}
 
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.VPCEndpoint{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.VPCEndpointGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func setupExternal(e *external) {
@@ -68,7 +70,7 @@ type custom struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointInput) error {
 	obj.VpcId = cr.Spec.ForProvider.VPCID
-
+	obj.ClientToken = awsclients.String(string(cr.UID))
 	// Clear SGs, RTs, and Subnets if they're empty
 	if len(cr.Spec.ForProvider.SecurityGroupIDs) == 0 {
 		obj.SecurityGroupIds = nil
@@ -113,7 +115,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.De
 		}
 	}
 
-	cr.Status.AtProvider.VPCEndpoint = generateVPCEndpointSDK(resp.VpcEndpoints[0])
+	cr.Status.AtProvider = generateVPCEndpointObservation(resp.VpcEndpoints[0])
 
 	switch awsclients.StringValue(resp.VpcEndpoints[0].State) {
 	case "available":
@@ -247,24 +249,24 @@ func filterList(cr *svcapitypes.VPCEndpoint, obj *svcsdk.DescribeVpcEndpointsOut
 	return resp
 }
 
-func generateVPCEndpointSDK(vpcEndpoint *svcsdk.VpcEndpoint) *svcapitypes.VPCEndpoint_SDK {
-	vpcEndpointSDK := &svcapitypes.VPCEndpoint_SDK{}
+func generateVPCEndpointObservation(vpcEndpoint *svcsdk.VpcEndpoint) svcapitypes.VPCEndpointObservation {
+	vpcEndpointObservation := svcapitypes.VPCEndpointObservation{}
 
 	// Mapping vpcEndpoint -> vpcEndpoint_SDK
-	vpcEndpointSDK.CreationTimestamp = &v1.Time{
+	vpcEndpointObservation.CreationTimestamp = &v1.Time{
 		Time: *vpcEndpoint.CreationTimestamp,
 	}
-	vpcEndpointSDK.DNSEntries = []*svcapitypes.DNSEntry{}
+	vpcEndpointObservation.DNSEntries = []*svcapitypes.DNSEntry{}
 	for _, dnsEntry := range vpcEndpoint.DnsEntries {
-		dnsEntrySDK := svcapitypes.DNSEntry{
+		dnsEntry := svcapitypes.DNSEntry{
 			DNSName:      dnsEntry.DnsName,
 			HostedZoneID: dnsEntry.HostedZoneId,
 		}
-		vpcEndpointSDK.DNSEntries = append(vpcEndpointSDK.DNSEntries, &dnsEntrySDK)
+		vpcEndpointObservation.DNSEntries = append(vpcEndpointObservation.DNSEntries, &dnsEntry)
 	}
-	vpcEndpointSDK.State = vpcEndpoint.State
+	vpcEndpointObservation.State = vpcEndpoint.State
 
-	return vpcEndpointSDK
+	return vpcEndpointObservation
 }
 
 // formatModifyVpcEndpointInput takes in a ModifyVpcEndpointInput, and sets

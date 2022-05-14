@@ -144,6 +144,7 @@ type CustomVPCPeeringConnectionParameters struct {
 	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
 	// The ID of the VPC with which you are creating the VPC peering connection.
 	// You must specify this parameter in the request.
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
 	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// PeerVPCIDRef is a reference to an API used to set
 	// the PeerVPCID.
@@ -276,11 +277,22 @@ type CustomRouteParameters struct {
 	// The ID of the route table for the route.
 	// provider-aws currently provides both a standalone Route resource
 	// and a RouteTable resource with routes defined in-line.
-	// At this time you cannot use a Route Table with in-line routes
+	// At this time you cannot use a RouteTable with in-line routes
 	// in conjunction with any Route resources.
-	// Doing so will cause a conflict of rule settings and will overwrite rules.
+	// Set the flag ignoreRoutes=true in RouteTable to use Route resource
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.RouteTable
 	RouteTableID *string `json:"routeTableId,omitempty"`
+
+	// RouteTableIDRef is a reference to an API used to set
+	// the RouteTableID.
+	// +optional
+	RouteTableIDRef *xpv1.Reference `json:"routeTableIdRef,omitempty"`
+
+	// RouteTableIDSelector selects references to API used
+	// to set the RouteTableID.
+	// +optional
+	RouteTableIDSelector *xpv1.Selector `json:"routeTableIdSelector,omitempty"`
 
 	// The ID of a NAT instance in your VPC. The operation fails if you specify
 	// an instance ID unless exactly one network interface is attached.

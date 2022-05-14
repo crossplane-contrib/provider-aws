@@ -69,6 +69,10 @@ func withVersion(v *string) clusterModifier {
 	return func(r *v1beta1.Cluster) { r.Spec.ForProvider.Version = v }
 }
 
+func withStatusVersion(v *string) clusterModifier {
+	return func(r *v1beta1.Cluster) { r.Status.AtProvider.Version = *v }
+}
+
 func withStatus(s v1beta1.ClusterStatusType) clusterModifier {
 	return func(r *v1beta1.Cluster) { r.Status.AtProvider.Status = s }
 }
@@ -220,6 +224,7 @@ func TestObserve(t *testing.T) {
 					withStatus(v1beta1.ClusterStatusCreating),
 					withConditions(xpv1.Creating()),
 					withVersion(&version),
+					withStatusVersion(&version),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,

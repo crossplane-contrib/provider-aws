@@ -16,27 +16,26 @@ package cluster
 import (
 	"context"
 	"strings"
-	"time"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/kafka"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupCluster adds a controller that reconciles Cluster.
-func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -49,18 +48,23 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, 
 			e.lateInitialize = LateInitialize
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Cluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
@@ -102,11 +106,11 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/client-access.html
 		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
-		"zookeeperEndpointPlain": []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString)),
-		"zookeeperEndpointTls":   []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectStringTLS)),
-		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9092")),
-		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9094")),
-		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9098")),
+		"zookeeperEndpointPlain": []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
+		"zookeeperEndpointTls":   []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
+		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9092")),
+		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9094")),
+		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9098")),
 	}
 
 	return obs, nil
@@ -146,14 +150,6 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
 		cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
-	}
-
-	if cr.CustomClusterParameters.ZookeeperConnectString == nil && obj.ClusterInfo.ZookeeperConnectString != nil {
-		cr.CustomClusterParameters.ZookeeperConnectString = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectString, obj.ClusterInfo.ZookeeperConnectString)
-	}
-
-	if cr.CustomClusterParameters.ZookeeperConnectStringTLS == nil && obj.ClusterInfo.ZookeeperConnectStringTls != nil {
-		cr.CustomClusterParameters.ZookeeperConnectStringTLS = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectStringTLS, obj.ClusterInfo.ZookeeperConnectStringTls)
 	}
 
 	if cr.CustomBrokerNodeGroupInfo.SecurityGroups == nil && obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups != nil {

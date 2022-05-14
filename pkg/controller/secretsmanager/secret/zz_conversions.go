@@ -21,6 +21,7 @@ package secret
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/secretsmanager/v1beta1"
 )
@@ -55,19 +56,44 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 	} else {
 		cr.Spec.ForProvider.KMSKeyID = nil
 	}
-	if resp.Tags != nil {
-		f12 := []*svcapitypes.Tag{}
-		for _, f12iter := range resp.Tags {
-			f12elem := &svcapitypes.Tag{}
-			if f12iter.Key != nil {
-				f12elem.Key = f12iter.Key
+	if resp.ReplicationStatus != nil {
+		f10 := []*svcapitypes.ReplicationStatusType{}
+		for _, f10iter := range resp.ReplicationStatus {
+			f10elem := &svcapitypes.ReplicationStatusType{}
+			if f10iter.KmsKeyId != nil {
+				f10elem.KMSKeyID = f10iter.KmsKeyId
 			}
-			if f12iter.Value != nil {
-				f12elem.Value = f12iter.Value
+			if f10iter.LastAccessedDate != nil {
+				f10elem.LastAccessedDate = &metav1.Time{*f10iter.LastAccessedDate}
 			}
-			f12 = append(f12, f12elem)
+			if f10iter.Region != nil {
+				f10elem.Region = f10iter.Region
+			}
+			if f10iter.Status != nil {
+				f10elem.Status = f10iter.Status
+			}
+			if f10iter.StatusMessage != nil {
+				f10elem.StatusMessage = f10iter.StatusMessage
+			}
+			f10 = append(f10, f10elem)
 		}
-		cr.Spec.ForProvider.Tags = f12
+		cr.Status.AtProvider.ReplicationStatus = f10
+	} else {
+		cr.Status.AtProvider.ReplicationStatus = nil
+	}
+	if resp.Tags != nil {
+		f14 := []*svcapitypes.Tag{}
+		for _, f14iter := range resp.Tags {
+			f14elem := &svcapitypes.Tag{}
+			if f14iter.Key != nil {
+				f14elem.Key = f14iter.Key
+			}
+			if f14iter.Value != nil {
+				f14elem.Value = f14iter.Value
+			}
+			f14 = append(f14, f14elem)
+		}
+		cr.Spec.ForProvider.Tags = f14
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -79,25 +105,42 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 func GenerateCreateSecretInput(cr *svcapitypes.Secret) *svcsdk.CreateSecretInput {
 	res := &svcsdk.CreateSecretInput{}
 
+	if cr.Spec.ForProvider.AddReplicaRegions != nil {
+		f0 := []*svcsdk.ReplicaRegionType{}
+		for _, f0iter := range cr.Spec.ForProvider.AddReplicaRegions {
+			f0elem := &svcsdk.ReplicaRegionType{}
+			if f0iter.KMSKeyID != nil {
+				f0elem.SetKmsKeyId(*f0iter.KMSKeyID)
+			}
+			if f0iter.Region != nil {
+				f0elem.SetRegion(*f0iter.Region)
+			}
+			f0 = append(f0, f0elem)
+		}
+		res.SetAddReplicaRegions(f0)
+	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Spec.ForProvider.ForceOverwriteReplicaSecret != nil {
+		res.SetForceOverwriteReplicaSecret(*cr.Spec.ForProvider.ForceOverwriteReplicaSecret)
 	}
 	if cr.Spec.ForProvider.KMSKeyID != nil {
 		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+		f4 := []*svcsdk.Tag{}
+		for _, f4iter := range cr.Spec.ForProvider.Tags {
+			f4elem := &svcsdk.Tag{}
+			if f4iter.Key != nil {
+				f4elem.SetKey(*f4iter.Key)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
+			if f4iter.Value != nil {
+				f4elem.SetValue(*f4iter.Value)
 			}
-			f2 = append(f2, f2elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTags(f2)
+		res.SetTags(f4)
 	}
 
 	return res

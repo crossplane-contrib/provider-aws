@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: replicationgroups.cache.aws.crossplane.io
 spec:
@@ -99,14 +100,14 @@ spec:
                   automaticFailoverEnabled:
                     description: "AutomaticFailoverEnabled specifies whether a read-only
                       replica is automatically promoted to read/write primary if the
-                      existing primary fails. If true, Multi-AZ is enabled for this
-                      replication group. If false, Multi-AZ is disabled for this replication
-                      group. \n AutomaticFailoverEnabled must be enabled for Redis
-                      (cluster mode enabled) replication groups. \n Amazon ElastiCache
-                      for Redis does not support Multi-AZ with automatic failover
-                      on: * Redis versions earlier than 2.8.6. * Redis (cluster mode
-                      disabled): T1 and T2 cache node types. * Redis (cluster mode
-                      enabled): T1 node types."
+                      existing primary fails. Must be set to true if Multi-AZ is enabled
+                      for this replication group. If false, Multi-AZ cannot be enabled
+                      for this replication group. \n AutomaticFailoverEnabled must
+                      be enabled for Redis (cluster mode enabled) replication groups.
+                      \n Amazon ElastiCache for Redis does not support Multi-AZ with
+                      automatic failover on: * Redis versions earlier than 2.8.6.
+                      * Redis (cluster mode disabled): T1 and T2 cache node types.
+                      * Redis (cluster mode enabled): T1 node types."
                     type: boolean
                   cacheNodeType:
                     description: 'CacheNodeType specifies the compute and memory capacity
@@ -226,6 +227,12 @@ spec:
                       version, you must delete the existing cluster or replication
                       group and create it anew with the earlier engine version."
                     type: string
+                  multiAZEnabled:
+                    description: MultiAZEnabled specifies if Multi-AZ is enabled to
+                      enhance fault tolerance You must have nodes across two or more
+                      Availability Zones in order to enable this feature. If this
+                      feature is set, automaticFailoverEnabled must be set to true.
+                    type: boolean
                   nodeGroupConfiguration:
                     description: "NodeGroupConfigurationSpec specifies a list of node
                       group (shard) configuration options. \n If you're creating a
@@ -286,6 +293,7 @@ spec:
                       (it will default to 1), or you can explicitly set it to a value
                       between 2 and 6. \n The maximum permitted value for NumCacheClusters
                       is 6 (1 primary plus 5 replicas)."
+                    maximum: 6
                     type: integer
                   numNodeGroups:
                     description: "NumNodeGroups specifies the number of node groups
@@ -477,12 +485,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.

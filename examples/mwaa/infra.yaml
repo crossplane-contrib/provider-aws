@@ -1,0 +1,200 @@
+# Required infrastructure for airflow
+---
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: sample-environment-sg
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    description: Security Group for Amazon MWAA Environment
+    groupName: sample-mwaa-sg
+    ingress:
+      - ipProtocol: tcp
+        fromPort: 443
+        toPort: 443
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+      - ipProtocol: tcp
+        fromPort: 5432
+        toPort: 5432
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+    egress:
+      - ipProtocol: "-1"
+        fromPort: -1
+        toPort: -1
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+    region: us-east-1
+    vpcIdRef:
+      name: sample-vpc
+  providerConfigRef:
+    name: example
+---
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: sample-environment-bucket-123
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    acl: private
+    locationConstraint: us-east-1
+    paymentConfiguration:
+      payer: BucketOwner
+    versioningConfiguration:
+      status: Enabled
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: sample-environment-role
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": [
+                        "airflow.amazonaws.com",
+                        "airflow-env.amazonaws.com"
+                    ]
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+      }
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Policy
+metadata:
+  name: sample-environment-role-airflow-access
+spec:
+  forProvider:
+    name: sample-environment-role-airflow-access
+    description: Allow airflow access to S3
+    # For more info refer to https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-create-role.html#mwaa-create-role-mwaa-onconsole
+    document: |
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Action": "airflow:PublishMetrics",
+                  "Resource": "arn:aws:airflow:us-east-1:<sample-account>:environment/sample-environment"
+              },
+              { 
+                  "Effect": "Deny",
+                  "Action": "s3:ListAllMyBuckets",
+                  "Resource": [
+                      "arn:aws:s3:::sample-environment-bucket-123",
+                      "arn:aws:s3:::sample-environment-bucket-123/*"
+                  ]
+              }, 
+              { 
+                  "Effect": "Allow",
+                  "Action": [ 
+                      "s3:GetObject*",
+                      "s3:GetBucket*",
+                      "s3:List*"
+                  ],
+                  "Resource": [
+                      "arn:aws:s3:::sample-environment-bucket-123",
+                      "arn:aws:s3:::sample-environment-bucket-123/*"
+                  ]
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": [
+                      "logs:CreateLogStream",
+                      "logs:CreateLogGroup",
+                      "logs:PutLogEvents",
+                      "logs:GetLogEvents",
+                      "logs:GetLogRecord",
+                      "logs:GetLogGroupFields",
+                      "logs:GetQueryResults"
+                  ],
+                  "Resource": [
+                      "arn:aws:logs:us-east-1:<sample-account>:log-group:airflow-sample-environment-*"
+                  ]
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": [
+                      "logs:DescribeLogGroups"
+                  ],
+                  "Resource": [
+                      "*"
+                  ]
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": [
+                      "s3:GetAccountPublicAccessBlock"
+                  ],
+                  "Resource": [
+                      "*"
+                  ]
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": "cloudwatch:PutMetricData",
+                  "Resource": "*"
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": [
+                      "sqs:ChangeMessageVisibility",
+                      "sqs:DeleteMessage",
+                      "sqs:GetQueueAttributes",
+                      "sqs:GetQueueUrl",
+                      "sqs:ReceiveMessage",
+                      "sqs:SendMessage"
+                  ],
+                  "Resource": "arn:aws:sqs:us-east-1:*:airflow-celery-*"
+              },
+              {
+                  "Effect": "Allow",
+                  "Action": [
+                      "kms:Decrypt",
+                      "kms:DescribeKey",
+                      "kms:GenerateDataKey*",
+                      "kms:Encrypt"
+                  ],
+                  "Resource": "arn:aws:kms:us-east-1:<sample-account>:key/<kms-key-id>",
+                  "Condition": {
+                      "StringLike": {
+                          "kms:ViaService": [
+                              "sqs.us-east-1.amazonaws.com",
+                              "s3.us-east-1.amazonaws.com"
+                          ]
+                      }
+                  }
+              }
+          ]
+        }
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: sample-environment-role-airflow-access
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    policyArnRef:
+      name: sample-environment-role-airflow-access
+    roleNameRef:
+      name: sample-environment-role
+  providerConfigRef:
+    name: example

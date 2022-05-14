@@ -15,27 +15,26 @@ package crawler
 
 import (
 	"context"
-	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"k8s.io/client-go/util/workqueue"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 // SetupCrawler adds a controller that reconciles Crawler.
-func SetupCrawler(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter, poll time.Duration) error {
+func SetupCrawler(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.CrawlerGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -45,18 +44,23 @@ func SetupCrawler(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 			e.preCreate = preCreate
 		},
 	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(limiter),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.Crawler{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.CrawlerGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.DeleteCrawlerInput) (bool, error) {

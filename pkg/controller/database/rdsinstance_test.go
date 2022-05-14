@@ -18,6 +18,9 @@ package database
 import (
 	"context"
 	"testing"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"k8s.io/apimachinery/pkg/types"
@@ -48,13 +51,15 @@ const (
 )
 
 var (
-	masterUsername     = "root"
-	engineVersion      = "5.6"
-	s3SourceType       = "S3"
-	snapshotSourceType = "Snapshot"
-	s3BucketName       = "database-backup"
-	snapshotIdentifier = "my-snapshot"
-	s3Backup           = v1beta1.RestoreBackupConfiguration{
+	masterUsername                  = "root"
+	engineVersion                   = "5.6"
+	s3SourceType                    = "S3"
+	snapshotSourceType              = "Snapshot"
+	pointInTimeSourceType           = "PointInTime"
+	s3BucketName                    = "database-backup"
+	snapshotIdentifier              = "my-snapshot"
+	pointInTimeDBInstanceIdentifier = "my-instance"
+	s3Backup                        = v1beta1.RestoreBackupConfiguration{
 		Source: &s3SourceType,
 		S3: &v1beta1.S3RestoreBackupConfiguration{
 			BucketName: &s3BucketName,
@@ -66,10 +71,34 @@ var (
 			SnapshotIdentifier: &snapshotIdentifier,
 		},
 	}
+	pointInTimeRestoreFrom, _ = time.Parse(time.RFC3339, "2011-09-07T23:45:00Z")
+	pointInTimeBackup         = v1beta1.RestoreBackupConfiguration{
+		Source: &pointInTimeSourceType,
+		PointInTime: &v1beta1.PointInTimeRestoreBackupConfiguration{
+			RestoreTime:                FromTimePtr(&pointInTimeRestoreFrom),
+			SourceDBInstanceIdentifier: &pointInTimeDBInstanceIdentifier,
+		},
+	}
+	pointInTimeLatestRestorableBackup = v1beta1.RestoreBackupConfiguration{
+		Source: &pointInTimeSourceType,
+		PointInTime: &v1beta1.PointInTimeRestoreBackupConfiguration{
+			UseLatestRestorableTime:    true,
+			SourceDBInstanceIdentifier: &pointInTimeDBInstanceIdentifier,
+		},
+	}
 
 	replaceMe = "replace-me!"
 	errBoom   = errors.New("boom")
 )
+
+// FromTimePtr is a helper for converting a *time.Time to a *metav1.Time
+func FromTimePtr(t *time.Time) *metav1.Time {
+	if t != nil {
+		m := metav1.NewTime(*t)
+		return &m
+	}
+	return nil
+}
 
 type args struct {
 	rds  rds.Client
@@ -126,7 +155,21 @@ func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 }
 
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
-	cr := &v1beta1.RDSInstance{}
+	falseFlag := false
+	cr := &v1beta1.RDSInstance{
+		Spec: v1beta1.RDSInstanceSpec{
+			ForProvider: v1beta1.RDSInstanceParameters{
+				AutoMinorVersionUpgrade:         &falseFlag,
+				BackupRetentionPeriod:           new(int),
+				CopyTagsToSnapshot:              &falseFlag,
+				DeletionProtection:              &falseFlag,
+				EnableIAMDatabaseAuthentication: &falseFlag,
+				MultiAZ:                         &falseFlag,
+				PubliclyAccessible:              &falseFlag,
+				StorageEncrypted:                &falseFlag,
+			},
+		},
+	}
 	for _, f := range m {
 		f(cr)
 	}
@@ -404,6 +447,54 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&snapshotBackup),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulPointInTimeLatestRestorable": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockPointInTimeRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceToPointInTimeInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceToPointInTimeOutput, error) {
+						return &awsrds.RestoreDBInstanceToPointInTimeOutput{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&pointInTimeLatestRestorableBackup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&pointInTimeLatestRestorableBackup),
+					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulPointInTimeRestore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockPointInTimeRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceToPointInTimeInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceToPointInTimeOutput, error) {
+						return &awsrds.RestoreDBInstanceToPointInTimeOutput{}, nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&pointInTimeBackup)),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withBackupConfiguration(&pointInTimeBackup),
 					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{

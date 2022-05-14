@@ -59,8 +59,10 @@ const (
 type DomainNameStatus_SDK string
 
 const (
-	DomainNameStatus_SDK_AVAILABLE DomainNameStatus_SDK = "AVAILABLE"
-	DomainNameStatus_SDK_UPDATING  DomainNameStatus_SDK = "UPDATING"
+	DomainNameStatus_SDK_AVAILABLE                      DomainNameStatus_SDK = "AVAILABLE"
+	DomainNameStatus_SDK_UPDATING                       DomainNameStatus_SDK = "UPDATING"
+	DomainNameStatus_SDK_PENDING_CERTIFICATE_REIMPORT   DomainNameStatus_SDK = "PENDING_CERTIFICATE_REIMPORT"
+	DomainNameStatus_SDK_PENDING_OWNERSHIP_VERIFICATION DomainNameStatus_SDK = "PENDING_OWNERSHIP_VERIFICATION"
 )
 
 type EndpointType string

@@ -57,6 +57,7 @@ var (
 	transitEncryptionEnabled = true
 
 	cacheClusterID = name + "-0001"
+	cacheClusters  = []string{name + "-0001", name + "-0002", name + "-0003"}
 
 	ctx       = context.Background()
 	errorBoom = errors.New("boom")
@@ -119,6 +120,10 @@ func withTags(tagMaps ...map[string]string) replicationGroupModifier {
 
 func withNumNodeGroups(n int) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.NumNodeGroups = &n }
+}
+
+func withNumCacheClusters(n int) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.NumCacheClusters = &n }
 }
 
 func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
@@ -263,6 +268,14 @@ func TestObserve(t *testing.T) {
 							Status:                aws.String(v1beta1.StatusAvailable),
 							ConfigurationEndpoint: &types.Endpoint{Address: aws.String(host), Port: int32(port)},
 						}},
+					}, nil
+				},
+				MockListTagsForResource: func(ctx context.Context, _ *elasticache.ListTagsForResourceInput, opts []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+					return &elasticache.ListTagsForResourceOutput{
+						TagList: []types.Tag{
+							{Key: aws.String("key1"), Value: aws.String("val1")},
+							{Key: aws.String("key2"), Value: aws.String("val2")},
+						},
 					}, nil
 				},
 			}},
@@ -447,12 +460,14 @@ func TestUpdate(t *testing.T) {
 				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(xpv1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
+				withNumCacheClusters(1),
 			),
 			want: replicationGroup(
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(xpv1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
+				withNumCacheClusters(1),
 			),
 			returnsErr: true,
 		},
@@ -502,6 +517,144 @@ func TestUpdate(t *testing.T) {
 				withNumNodeGroups(3),
 			),
 			returnsErr: true,
+		},
+		{
+			name: "FailedDecreaseReplicationGroupNumCacheClusters",
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							MemberClusters:         cacheClusters,
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
+				},
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return &elasticache.DescribeCacheClustersOutput{
+						CacheClusters: []types.CacheCluster{
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+						},
+					}, nil
+				},
+				MockDecreaseReplicaCount: func(ctx context.Context, _ *elasticache.DecreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error) {
+					return &elasticache.DecreaseReplicaCountOutput{}, errors.New("error decreasing number of cache clusters")
+				},
+			}},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(1),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(1),
+			),
+			returnsErr: true,
+		},
+		{
+			name: "DecreaseReplicationGroupNumCacheClusters",
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							MemberClusters:         cacheClusters,
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
+				},
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return &elasticache.DescribeCacheClustersOutput{
+						CacheClusters: []types.CacheCluster{
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+						},
+					}, nil
+				},
+				MockDecreaseReplicaCount: func(ctx context.Context, _ *elasticache.DecreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error) {
+					return &elasticache.DecreaseReplicaCountOutput{}, nil
+				},
+			}},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(2),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(2),
+			),
+			returnsErr: false,
+		},
+		{
+			name: "IncreaseReplicationGroupNumCacheClusters",
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							MemberClusters:         cacheClusters,
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
+				},
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return &elasticache.DescribeCacheClustersOutput{
+						CacheClusters: []types.CacheCluster{
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+						},
+					}, nil
+				},
+				MockIncreaseReplicaCount: func(ctx context.Context, _ *elasticache.IncreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error) {
+					return &elasticache.IncreaseReplicaCountOutput{}, nil
+				},
+			}},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(4),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(4),
+			),
+			returnsErr: false,
 		},
 	}
 
@@ -636,4 +789,85 @@ func TestInitialize(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdateReplicationGroupNumCacheClusters(t *testing.T) {
+
+	cases := []struct {
+		name                string
+		e                   *external
+		rg                  string
+		existingClusterSize int
+		desiredclusterSize  int
+		want                error
+	}{
+		{
+			name:                "ErrDesiredTooSmall",
+			e:                   &external{client: &fake.MockClient{}},
+			desiredclusterSize:  0,
+			existingClusterSize: 1,
+			want:                errors.New("at least 1 replica is required"),
+		},
+		{
+			name:                "ErrDesiredTooLarge",
+			e:                   &external{client: &fake.MockClient{}},
+			desiredclusterSize:  7,
+			existingClusterSize: 1,
+			want:                errors.New("maximum of 5 replicas are allowed"),
+		},
+		{
+			name: "ErrIncreaseReplicaCount",
+			e: &external{client: &fake.MockClient{
+				MockIncreaseReplicaCount: func(ctx context.Context, _ *elasticache.IncreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error) {
+					return &elasticache.IncreaseReplicaCountOutput{}, errors.New("error increasing number of cache clusters")
+				},
+			}},
+			desiredclusterSize:  4,
+			existingClusterSize: 1,
+			want:                errors.New("error increasing number of cache clusters"),
+		},
+		{
+			name: "IncreaseReplicaCount",
+			e: &external{client: &fake.MockClient{
+				MockIncreaseReplicaCount: func(ctx context.Context, _ *elasticache.IncreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error) {
+					return &elasticache.IncreaseReplicaCountOutput{}, nil
+				},
+			}},
+			desiredclusterSize:  4,
+			existingClusterSize: 1,
+			want:                nil,
+		},
+		{
+			name: "ErrDecreaseReplicaCount",
+			e: &external{client: &fake.MockClient{
+				MockDecreaseReplicaCount: func(ctx context.Context, _ *elasticache.DecreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error) {
+					return &elasticache.DecreaseReplicaCountOutput{}, errors.New("error decreasing number of cache clusters")
+				},
+			}},
+			desiredclusterSize:  3,
+			existingClusterSize: 5,
+			want:                errors.New("error decreasing number of cache clusters"),
+		},
+		{
+			name: "DecreaseReplicaCount",
+			e: &external{client: &fake.MockClient{
+				MockDecreaseReplicaCount: func(ctx context.Context, _ *elasticache.DecreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error) {
+					return &elasticache.DecreaseReplicaCountOutput{}, nil
+				},
+			}},
+			desiredclusterSize:  3,
+			existingClusterSize: 5,
+			want:                nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.e.updateReplicationGroupNumCacheClusters(ctx, tc.rg, tc.existingClusterSize, tc.desiredclusterSize)
+			if diff := cmp.Diff(tc.want, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+
 }

@@ -5,7 +5,8 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    routeTableId: rtb-0bcc5f92178fcaaa3
+    routeTableIdRef:
+      name: sample-routetable-ignore-routes
     destinationCIDRBlock: 172.16.0.0/12
     transitGatewayIdRef:
       name: tgw

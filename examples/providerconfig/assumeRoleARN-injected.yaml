@@ -3,6 +3,14 @@ kind: ProviderConfig
 metadata:
   name: aws-provider-injected-account-b
 spec:
-  assumeRoleARN: "arn:aws:iam::999999999999:role/account_b"
+  assumeRole:
+    roleARN: "arn:aws:iam::999999999999:role/account_b"
+    externalID: "my-optional-id"
+    tags:
+      - key: Project
+        value: Crossplane
+      - key: Department
+        value: Infrastructure   
+    transitiveTagKeys: [ "Project", "Department"]
   credentials:
     source: InjectedIdentity

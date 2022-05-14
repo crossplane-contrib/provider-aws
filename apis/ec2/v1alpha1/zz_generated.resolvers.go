@@ -127,6 +127,22 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	mg.Spec.ForProvider.CustomRouteParameters.VPCPeeringConnectionIDRef = rsp.ResolvedReference
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.RouteTableID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDRef,
+		Selector:     mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDSelector,
+		To: reference.To{
+			List:    &v1beta1.RouteTableList{},
+			Managed: &v1beta1.RouteTable{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomRouteParameters.RouteTableID")
+	}
+	mg.Spec.ForProvider.CustomRouteParameters.RouteTableID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomRouteParameters.RouteTableIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomRouteParameters.InstanceID),
 		Extract:      reference.ExternalName(),
 		Reference:    mg.Spec.ForProvider.CustomRouteParameters.InstanceIDRef,
@@ -427,6 +443,22 @@ func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.
 	}
 	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.VPCIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID")
+	}
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomVPCPeeringConnectionParameters.PeerVPCIDRef = rsp.ResolvedReference
 
 	return nil
 }

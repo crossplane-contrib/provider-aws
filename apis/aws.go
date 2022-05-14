@@ -24,14 +24,18 @@ import (
 	acmv1beta1 "github.com/crossplane/provider-aws/apis/acm/v1beta1"
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	acmpcav1beta1 "github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
+	apigatewayv1alpha1 "github.com/crossplane/provider-aws/apis/apigateway/v1alpha1"
 	apigatewayv2v1alpha1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 	apigatewayv2v1beta1 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1beta1"
 	athenav1alpha1 "github.com/crossplane/provider-aws/apis/athena/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	cloudfrontv1alpha1 "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
+	cloudsearchv1alpha1 "github.com/crossplane/provider-aws/apis/cloudsearch/v1alpha1"
 	cloudwatchlogsv1alpha1 "github.com/crossplane/provider-aws/apis/cloudwatchlogs/v1alpha1"
+	cognitoidentityproviderv1alpha1 "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	daxv1alpha1 "github.com/crossplane/provider-aws/apis/dax/v1alpha1"
 	docdbv1alpha1 "github.com/crossplane/provider-aws/apis/docdb/v1alpha1"
 	dynamodbv1alpha1 "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
 	ec2manualv1alpha1 "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
@@ -47,16 +51,20 @@ import (
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	elbv2v1alpha1 "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
 	gluev1alpha1 "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
+	iamv1alpha1 "github.com/crossplane/provider-aws/apis/iam/v1alpha1"
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	iotv1alpha1 "github.com/crossplane/provider-aws/apis/iot/v1alpha1"
 	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
 	kinesisv1alpha1 "github.com/crossplane/provider-aws/apis/kinesis/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	lambdamanualv1alpha1 "github.com/crossplane/provider-aws/apis/lambda/manualv1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	lambdav1beta1 "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
 	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
+	mwaav1alpha1 "github.com/crossplane/provider-aws/apis/mwaa/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	prometheusservice "github.com/crossplane/provider-aws/apis/prometheusservice/v1alpha1"
 	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
@@ -73,6 +81,7 @@ import (
 	snsv1beta1 "github.com/crossplane/provider-aws/apis/sns/v1beta1"
 	sqsv1beta1 "github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	transferv1alpha1 "github.com/crossplane/provider-aws/apis/transfer/v1alpha1"
+	awsv1alpha1 "github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsv1beta1 "github.com/crossplane/provider-aws/apis/v1beta1"
 )
@@ -83,14 +92,17 @@ func init() {
 		cachev1alpha1.SchemeBuilder.AddToScheme,
 		cachev1beta1.SchemeBuilder.AddToScheme,
 		databasev1beta1.SchemeBuilder.AddToScheme,
+		daxv1alpha1.SchemeBuilder.AddToScheme,
 		docdbv1alpha1.AddToScheme,
 		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
+		iamv1alpha1.SchemeBuilder.AddToScheme,
 		iamv1beta1.SchemeBuilder.AddToScheme,
 		elasticachev1alpha1.SchemeBuilder.AddToScheme,
 		elbv2v1alpha1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
 		notificationv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
+		awsv1alpha1.SchemeBuilder.AddToScheme,
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1beta1.SchemeBuilder.AddToScheme,
 		acmv1alpha1.SchemeBuilder.AddToScheme,
@@ -120,6 +132,7 @@ func init() {
 		ec2manualv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1alpha1.SchemeBuilder.AddToScheme,
+		lambdamanualv1alpha1.SchemeBuilder.AddToScheme,
 		lambdav1beta1.SchemeBuilder.AddToScheme,
 		cloudfrontv1alpha1.SchemeBuilder.AddToScheme,
 		route53resolverv1alpha1.SchemeBuilder.AddToScheme,
@@ -128,13 +141,18 @@ func init() {
 		transferv1alpha1.SchemeBuilder.AddToScheme,
 		gluev1alpha1.SchemeBuilder.AddToScheme,
 		mqv1alpha1.SchemeBuilder.AddToScheme,
+		mwaav1alpha1.SchemeBuilder.AddToScheme,
 		cloudwatchlogsv1alpha1.SchemeBuilder.AddToScheme,
 		iotv1alpha1.SchemeBuilder.AddToScheme,
 		athenav1alpha1.SchemeBuilder.AddToScheme,
 		ramv1alpha1.SchemeBuilder.AddToScheme,
 		kinesisv1alpha1.SchemeBuilder.AddToScheme,
+		cognitoidentityproviderv1alpha1.AddToScheme,
 		neptunev1alpha1.SchemeBuilder.AddToScheme,
 		snsv1beta1.SchemeBuilder.AddToScheme,
+		prometheusservice.SchemeBuilder.AddToScheme,
+		cloudsearchv1alpha1.AddToScheme,
+		apigatewayv1alpha1.AddToScheme,
 	)
 }
 

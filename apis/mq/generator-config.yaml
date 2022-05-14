@@ -2,6 +2,8 @@ ignore:
   field_paths:
     - CreateBrokerRequest.Users
     - CreateBrokerRequest.BrokerName
+    - CreateBrokerRequest.SecurityGroups
+    - CreateBrokerRequest.SubnetIds
     - CreateUserRequest.Username
     - CreateUserRequest.BrokerId
     - CreateUserRequest.Password

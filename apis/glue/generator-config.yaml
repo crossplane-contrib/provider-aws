@@ -1,5 +1,6 @@
 ignore:
   resource_names:
+    - Blueprint
     - DevEndpoint
     - MLTransform
     - PartitionIndex

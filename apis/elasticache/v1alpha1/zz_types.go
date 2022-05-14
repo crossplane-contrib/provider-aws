@@ -67,6 +67,8 @@ type CacheCluster struct {
 
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
+	ReplicationGroupLogDeliveryEnabled *bool `json:"replicationGroupLogDeliveryEnabled,omitempty"`
+
 	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
 
 	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
@@ -179,6 +181,11 @@ type CacheSubnetGroup struct {
 }
 
 // +kubebuilder:skipversion
+type CloudWatchLogsDestinationDetails struct {
+	LogGroup *string `json:"logGroup,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CustomerNodeEndpoint struct {
 	Address *string `json:"address,omitempty"`
 
@@ -253,6 +260,16 @@ type GlobalReplicationGroupMember struct {
 	Role *string `json:"role,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KinesisFirehoseDestinationDetails struct {
+	DeliveryStream *string `json:"deliveryStream,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LogDeliveryConfiguration struct {
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -35,6 +35,115 @@ type Filter struct {
 }
 
 // +kubebuilder:skipversion
+type FirewallConfig struct {
+	ID *string `json:"id,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallDomainList struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	ModificationTime *string `json:"modificationTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	StatusMessage *string `json:"statusMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallDomainListMetadata struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallRule struct {
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	FirewallDomainListID *string `json:"firewallDomainListID,omitempty"`
+
+	FirewallRuleGroupID *string `json:"firewallRuleGroupID,omitempty"`
+
+	ModificationTime *string `json:"modificationTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallRuleGroup struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	ModificationTime *string `json:"modificationTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	ShareStatus *string `json:"shareStatus,omitempty"`
+
+	StatusMessage *string `json:"statusMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallRuleGroupAssociation struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	FirewallRuleGroupID *string `json:"firewallRuleGroupID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	ModificationTime *string `json:"modificationTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FirewallRuleGroupMetadata struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	ShareStatus *string `json:"shareStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type IPAddressResponse struct {
 	CreationTime *string `json:"creationTime,omitempty"`
 
@@ -52,6 +161,15 @@ type IPAddressUpdate struct {
 	IP *string `json:"ip,omitempty"`
 
 	IPID *string `json:"ipID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ResolverConfig struct {
+	ID *string `json:"id,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
 }
 
 // +kubebuilder:skipversion

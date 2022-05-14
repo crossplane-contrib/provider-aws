@@ -227,8 +227,8 @@ type EncryptionConfiguration struct {
 type Metrics struct {
 	// A container specifying the time threshold for emitting the s3:Replication:OperationMissedThreshold
 	// event.
-	// EventThreshold is a required field
-	EventThreshold ReplicationTimeValue `json:"eventThreshold"`
+	// +optional
+	EventThreshold *ReplicationTimeValue `json:"eventThreshold,omitempty"`
 
 	// Specifies whether the replication metrics are enabled.
 	//

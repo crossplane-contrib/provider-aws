@@ -29,19 +29,48 @@ var (
 
 // +kubebuilder:skipversion
 type AccessPointDescription struct {
+	AccessPointARN *string `json:"accessPointARN,omitempty"`
+
 	AccessPointID *string `json:"accessPointID,omitempty"`
+
+	ClientToken *string `json:"clientToken,omitempty"`
 
 	FileSystemID *string `json:"fileSystemID,omitempty"`
 
 	LifeCycleState *string `json:"lifeCycleState,omitempty"`
 
+	Name *string `json:"name,omitempty"`
+
 	OwnerID *string `json:"ownerID,omitempty"`
+	// The full POSIX identity, including the user ID, group ID, and any secondary
+	// group IDs, on the access point that is used for all file system operations
+	// performed by NFS clients using the access point.
+	PosixUser *PosixUser `json:"posixUser,omitempty"`
+	// Specifies the directory on the Amazon EFS file system that the access point
+	// provides access to. The access point exposes the specified file system path
+	// as the root directory of your file system to applications using the access
+	// point. NFS clients using the access point can only access data in the access
+	// point's RootDirectory and it's subdirectories.
+	RootDirectory *RootDirectory `json:"rootDirectory,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
+type CreationInfo struct {
+	OwnerGid *int64 `json:"ownerGid,omitempty"`
+
+	OwnerUid *int64 `json:"ownerUid,omitempty"`
+
+	Permissions *string `json:"permissions,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemDescription struct {
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	CreationToken *string `json:"creationToken,omitempty"`
@@ -110,6 +139,35 @@ type MountTargetDescription struct {
 	SubnetID *string `json:"subnetID,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PosixUser struct {
+	Gid *int64 `json:"gid,omitempty"`
+
+	SecondaryGids []*int64 `json:"secondaryGids,omitempty"`
+
+	Uid *int64 `json:"uid,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RootDirectory struct {
+	// Required if the RootDirectory > Path specified does not exist. Specifies
+	// the POSIX IDs and permissions to apply to the access point's RootDirectory
+	// > Path. If the access point root directory does not exist, EFS creates it
+	// with these settings when a client connects to the access point. When specifying
+	// CreationInfo, you must include values for all properties.
+	//
+	// Amazon EFS creates a root directory only if you have provided the CreationInfo:
+	// OwnUid, OwnGID, and permissions for the directory. If you do not provide
+	// this information, Amazon EFS does not create the root directory. If the root
+	// directory does not exist, attempts to mount using the access point will fail.
+	//
+	// If you do not provide CreationInfo and the specified RootDirectory does not
+	// exist, attempts to mount the file system using the access point will fail.
+	CreationInfo *CreationInfo `json:"creationInfo,omitempty"`
+
+	Path *string `json:"path,omitempty"`
 }
 
 // +kubebuilder:skipversion

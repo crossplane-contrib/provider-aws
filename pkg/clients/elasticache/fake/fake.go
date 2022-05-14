@@ -40,8 +40,14 @@ type MockClient struct {
 	MockCreateCacheCluster    func(context.Context, *elasticache.CreateCacheClusterInput, []func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error)
 	MockDeleteCacheCluster    func(context.Context, *elasticache.DeleteCacheClusterInput, []func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
 	MockModifyCacheCluster    func(context.Context, *elasticache.ModifyCacheClusterInput, []func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
+	MockIncreaseReplicaCount  func(context.Context, *elasticache.IncreaseReplicaCountInput, []func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error)
+	MockDecreaseReplicaCount  func(context.Context, *elasticache.DecreaseReplicaCountInput, []func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error)
 
 	MockModifyReplicationGroupShardConfiguration func(context.Context, *elasticache.ModifyReplicationGroupShardConfigurationInput, []func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupShardConfigurationOutput, error)
+
+	MockListTagsForResource    func(context.Context, *elasticache.ListTagsForResourceInput, []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error)
+	MockAddTagsToResource      func(context.Context, *elasticache.AddTagsToResourceInput, []func(*elasticache.Options)) (*elasticache.AddTagsToResourceOutput, error)
+	MockRemoveTagsFromResource func(context.Context, *elasticache.RemoveTagsFromResourceInput, []func(*elasticache.Options)) (*elasticache.RemoveTagsFromResourceOutput, error)
 }
 
 // DescribeReplicationGroups calls the underlying
@@ -120,4 +126,34 @@ func (c *MockClient) DeleteCacheCluster(ctx context.Context, i *elasticache.Dele
 // MockModifyCacheCluster method.
 func (c *MockClient) ModifyCacheCluster(ctx context.Context, i *elasticache.ModifyCacheClusterInput, opts ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error) {
 	return c.MockModifyCacheCluster(ctx, i, opts)
+}
+
+// ListTagsForResource calls the underlying
+// MockListTagsForResource method
+func (c *MockClient) ListTagsForResource(ctx context.Context, i *elasticache.ListTagsForResourceInput, opts ...func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+	return c.MockListTagsForResource(ctx, i, opts)
+}
+
+// AddTagsToResource calls the underlying
+// MockAddTagsToResource method
+func (c *MockClient) AddTagsToResource(ctx context.Context, i *elasticache.AddTagsToResourceInput, opts ...func(*elasticache.Options)) (*elasticache.AddTagsToResourceOutput, error) {
+	return c.MockAddTagsToResource(ctx, i, opts)
+}
+
+// RemoveTagsFromResource calls the underlying
+// MockRemoveTagsFromResource method
+func (c *MockClient) RemoveTagsFromResource(ctx context.Context, i *elasticache.RemoveTagsFromResourceInput, opts ...func(*elasticache.Options)) (*elasticache.RemoveTagsFromResourceOutput, error) {
+	return c.MockRemoveTagsFromResource(ctx, i, opts)
+}
+
+// DecreaseReplicaCount calls the underlying
+// MockDecreaseReplicaCount method
+func (c *MockClient) DecreaseReplicaCount(ctx context.Context, i *elasticache.DecreaseReplicaCountInput, opts ...func(*elasticache.Options)) (*elasticache.DecreaseReplicaCountOutput, error) {
+	return c.MockDecreaseReplicaCount(ctx, i, opts)
+}
+
+// IncreaseReplicaCount calls the underlying
+// MockIncreaseReplicaCount method
+func (c *MockClient) IncreaseReplicaCount(ctx context.Context, i *elasticache.IncreaseReplicaCountInput, opts ...func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error) {
+	return c.MockIncreaseReplicaCount(ctx, i, opts)
 }

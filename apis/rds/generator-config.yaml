@@ -1,3 +1,17 @@
+operations:
+  AddRoleToDBInstance:
+    resource_name: DBInstanceRoleAssociation
+    operation_type: Create
+  RemoveRoleFromDBInstance:
+    resource_name: DBInstanceRoleAssociation
+    operation_type: Delete
+
+resources:
+  DBInstanceRoleAssociation:
+    exceptions:
+      errors:
+        404:
+          code: DBInstanceNotFound
 ignore:
   field_paths:
     - DescribeDBClustersInput.DBClusterIdentifier
@@ -21,23 +35,33 @@ ignore:
     - ModifyDBInstanceInput.DBSecurityGroups
     - ModifyDBInstanceInput.DBSubnetGroupName # this is immutable
     - CreateDBParameterGroupInput.DBParameterGroupName
+    - CreateDBParameterGroupInput.DBParameterGroupFamily
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
+    - ModifyDBParameterGroupInput.DBParameterGroupFamily
     - DescribeDBParameterGroupsInput.DBParameterGroupName
     - CreateDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - CreateDBClusterParameterGroupInput.DBParameterGroupFamily
     - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
     - ModifyDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - ModifyDBClusterParameterGroupInput.DBParameterGroupFamily
     - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName
     - DescribeGlobalClustersInput.GlobalClusterIdentifier
     - ModifyGlobalClusterInput.GlobalClusterIdentifier
     - CreateGlobalClusterInput.GlobalClusterIdentifier
     - DeleteGlobalClusterInput.GlobalClusterIdentifier
+    - AddRoleToDBInstanceInput.DBInstanceIdentifier
+    - AddRoleToDBInstanceInput.RoleArn
+    - RemoveRoleFromDBInstanceInput.DBInstanceIdentifier
+    - RemoveRoleFromDBInstanceInput.RoleArn
   resource_names:
-    - DBClusterEndpoint
     - CustomAvailabilityZone
+    - CustomDBEngineVersion
+    - DBClusterEndpoint
     - DBClusterSnapshot
     - DBInstanceReadReplica
     - DBProxy
+    - DBProxyEndpoint
     - DBSecurityGroup
     - DBSnapshot
     - DBSubnetGroup

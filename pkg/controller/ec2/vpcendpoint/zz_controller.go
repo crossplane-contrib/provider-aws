@@ -119,125 +119,148 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	if resp.ClientToken != nil {
-		cr.Spec.ForProvider.ClientToken = resp.ClientToken
+	if resp.VpcEndpoint.CreationTimestamp != nil {
+		cr.Status.AtProvider.CreationTimestamp = &metav1.Time{*resp.VpcEndpoint.CreationTimestamp}
 	} else {
-		cr.Spec.ForProvider.ClientToken = nil
+		cr.Status.AtProvider.CreationTimestamp = nil
 	}
-	if resp.VpcEndpoint != nil {
-		f1 := &svcapitypes.VPCEndpoint_SDK{}
-		if resp.VpcEndpoint.CreationTimestamp != nil {
-			f1.CreationTimestamp = &metav1.Time{*resp.VpcEndpoint.CreationTimestamp}
-		}
-		if resp.VpcEndpoint.DnsEntries != nil {
-			f1f1 := []*svcapitypes.DNSEntry{}
-			for _, f1f1iter := range resp.VpcEndpoint.DnsEntries {
-				f1f1elem := &svcapitypes.DNSEntry{}
-				if f1f1iter.DnsName != nil {
-					f1f1elem.DNSName = f1f1iter.DnsName
-				}
-				if f1f1iter.HostedZoneId != nil {
-					f1f1elem.HostedZoneID = f1f1iter.HostedZoneId
-				}
-				f1f1 = append(f1f1, f1f1elem)
+	if resp.VpcEndpoint.DnsEntries != nil {
+		f1 := []*svcapitypes.DNSEntry{}
+		for _, f1iter := range resp.VpcEndpoint.DnsEntries {
+			f1elem := &svcapitypes.DNSEntry{}
+			if f1iter.DnsName != nil {
+				f1elem.DNSName = f1iter.DnsName
 			}
-			f1.DNSEntries = f1f1
-		}
-		if resp.VpcEndpoint.Groups != nil {
-			f1f2 := []*svcapitypes.SecurityGroupIdentifier{}
-			for _, f1f2iter := range resp.VpcEndpoint.Groups {
-				f1f2elem := &svcapitypes.SecurityGroupIdentifier{}
-				if f1f2iter.GroupId != nil {
-					f1f2elem.GroupID = f1f2iter.GroupId
-				}
-				if f1f2iter.GroupName != nil {
-					f1f2elem.GroupName = f1f2iter.GroupName
-				}
-				f1f2 = append(f1f2, f1f2elem)
+			if f1iter.HostedZoneId != nil {
+				f1elem.HostedZoneID = f1iter.HostedZoneId
 			}
-			f1.Groups = f1f2
+			f1 = append(f1, f1elem)
 		}
-		if resp.VpcEndpoint.LastError != nil {
-			f1f3 := &svcapitypes.LastError{}
-			if resp.VpcEndpoint.LastError.Code != nil {
-				f1f3.Code = resp.VpcEndpoint.LastError.Code
-			}
-			if resp.VpcEndpoint.LastError.Message != nil {
-				f1f3.Message = resp.VpcEndpoint.LastError.Message
-			}
-			f1.LastError = f1f3
-		}
-		if resp.VpcEndpoint.NetworkInterfaceIds != nil {
-			f1f4 := []*string{}
-			for _, f1f4iter := range resp.VpcEndpoint.NetworkInterfaceIds {
-				var f1f4elem string
-				f1f4elem = *f1f4iter
-				f1f4 = append(f1f4, &f1f4elem)
-			}
-			f1.NetworkInterfaceIDs = f1f4
-		}
-		if resp.VpcEndpoint.OwnerId != nil {
-			f1.OwnerID = resp.VpcEndpoint.OwnerId
-		}
-		if resp.VpcEndpoint.PolicyDocument != nil {
-			f1.PolicyDocument = resp.VpcEndpoint.PolicyDocument
-		}
-		if resp.VpcEndpoint.PrivateDnsEnabled != nil {
-			f1.PrivateDNSEnabled = resp.VpcEndpoint.PrivateDnsEnabled
-		}
-		if resp.VpcEndpoint.RequesterManaged != nil {
-			f1.RequesterManaged = resp.VpcEndpoint.RequesterManaged
-		}
-		if resp.VpcEndpoint.RouteTableIds != nil {
-			f1f9 := []*string{}
-			for _, f1f9iter := range resp.VpcEndpoint.RouteTableIds {
-				var f1f9elem string
-				f1f9elem = *f1f9iter
-				f1f9 = append(f1f9, &f1f9elem)
-			}
-			f1.RouteTableIDs = f1f9
-		}
-		if resp.VpcEndpoint.ServiceName != nil {
-			f1.ServiceName = resp.VpcEndpoint.ServiceName
-		}
-		if resp.VpcEndpoint.State != nil {
-			f1.State = resp.VpcEndpoint.State
-		}
-		if resp.VpcEndpoint.SubnetIds != nil {
-			f1f12 := []*string{}
-			for _, f1f12iter := range resp.VpcEndpoint.SubnetIds {
-				var f1f12elem string
-				f1f12elem = *f1f12iter
-				f1f12 = append(f1f12, &f1f12elem)
-			}
-			f1.SubnetIDs = f1f12
-		}
-		if resp.VpcEndpoint.Tags != nil {
-			f1f13 := []*svcapitypes.Tag{}
-			for _, f1f13iter := range resp.VpcEndpoint.Tags {
-				f1f13elem := &svcapitypes.Tag{}
-				if f1f13iter.Key != nil {
-					f1f13elem.Key = f1f13iter.Key
-				}
-				if f1f13iter.Value != nil {
-					f1f13elem.Value = f1f13iter.Value
-				}
-				f1f13 = append(f1f13, f1f13elem)
-			}
-			f1.Tags = f1f13
-		}
-		if resp.VpcEndpoint.VpcEndpointId != nil {
-			f1.VPCEndpointID = resp.VpcEndpoint.VpcEndpointId
-		}
-		if resp.VpcEndpoint.VpcEndpointType != nil {
-			f1.VPCEndpointType = resp.VpcEndpoint.VpcEndpointType
-		}
-		if resp.VpcEndpoint.VpcId != nil {
-			f1.VPCID = resp.VpcEndpoint.VpcId
-		}
-		cr.Status.AtProvider.VPCEndpoint = f1
+		cr.Status.AtProvider.DNSEntries = f1
 	} else {
-		cr.Status.AtProvider.VPCEndpoint = nil
+		cr.Status.AtProvider.DNSEntries = nil
+	}
+	if resp.VpcEndpoint.Groups != nil {
+		f2 := []*svcapitypes.SecurityGroupIdentifier{}
+		for _, f2iter := range resp.VpcEndpoint.Groups {
+			f2elem := &svcapitypes.SecurityGroupIdentifier{}
+			if f2iter.GroupId != nil {
+				f2elem.GroupID = f2iter.GroupId
+			}
+			if f2iter.GroupName != nil {
+				f2elem.GroupName = f2iter.GroupName
+			}
+			f2 = append(f2, f2elem)
+		}
+		cr.Status.AtProvider.Groups = f2
+	} else {
+		cr.Status.AtProvider.Groups = nil
+	}
+	if resp.VpcEndpoint.LastError != nil {
+		f3 := &svcapitypes.LastError{}
+		if resp.VpcEndpoint.LastError.Code != nil {
+			f3.Code = resp.VpcEndpoint.LastError.Code
+		}
+		if resp.VpcEndpoint.LastError.Message != nil {
+			f3.Message = resp.VpcEndpoint.LastError.Message
+		}
+		cr.Status.AtProvider.LastError = f3
+	} else {
+		cr.Status.AtProvider.LastError = nil
+	}
+	if resp.VpcEndpoint.NetworkInterfaceIds != nil {
+		f4 := []*string{}
+		for _, f4iter := range resp.VpcEndpoint.NetworkInterfaceIds {
+			var f4elem string
+			f4elem = *f4iter
+			f4 = append(f4, &f4elem)
+		}
+		cr.Status.AtProvider.NetworkInterfaceIDs = f4
+	} else {
+		cr.Status.AtProvider.NetworkInterfaceIDs = nil
+	}
+	if resp.VpcEndpoint.OwnerId != nil {
+		cr.Status.AtProvider.OwnerID = resp.VpcEndpoint.OwnerId
+	} else {
+		cr.Status.AtProvider.OwnerID = nil
+	}
+	if resp.VpcEndpoint.PolicyDocument != nil {
+		cr.Spec.ForProvider.PolicyDocument = resp.VpcEndpoint.PolicyDocument
+	} else {
+		cr.Spec.ForProvider.PolicyDocument = nil
+	}
+	if resp.VpcEndpoint.PrivateDnsEnabled != nil {
+		cr.Spec.ForProvider.PrivateDNSEnabled = resp.VpcEndpoint.PrivateDnsEnabled
+	} else {
+		cr.Spec.ForProvider.PrivateDNSEnabled = nil
+	}
+	if resp.VpcEndpoint.RequesterManaged != nil {
+		cr.Status.AtProvider.RequesterManaged = resp.VpcEndpoint.RequesterManaged
+	} else {
+		cr.Status.AtProvider.RequesterManaged = nil
+	}
+	if resp.VpcEndpoint.RouteTableIds != nil {
+		f9 := []*string{}
+		for _, f9iter := range resp.VpcEndpoint.RouteTableIds {
+			var f9elem string
+			f9elem = *f9iter
+			f9 = append(f9, &f9elem)
+		}
+		cr.Status.AtProvider.RouteTableIDs = f9
+	} else {
+		cr.Status.AtProvider.RouteTableIDs = nil
+	}
+	if resp.VpcEndpoint.ServiceName != nil {
+		cr.Spec.ForProvider.ServiceName = resp.VpcEndpoint.ServiceName
+	} else {
+		cr.Spec.ForProvider.ServiceName = nil
+	}
+	if resp.VpcEndpoint.State != nil {
+		cr.Status.AtProvider.State = resp.VpcEndpoint.State
+	} else {
+		cr.Status.AtProvider.State = nil
+	}
+	if resp.VpcEndpoint.SubnetIds != nil {
+		f12 := []*string{}
+		for _, f12iter := range resp.VpcEndpoint.SubnetIds {
+			var f12elem string
+			f12elem = *f12iter
+			f12 = append(f12, &f12elem)
+		}
+		cr.Status.AtProvider.SubnetIDs = f12
+	} else {
+		cr.Status.AtProvider.SubnetIDs = nil
+	}
+	if resp.VpcEndpoint.Tags != nil {
+		f13 := []*svcapitypes.Tag{}
+		for _, f13iter := range resp.VpcEndpoint.Tags {
+			f13elem := &svcapitypes.Tag{}
+			if f13iter.Key != nil {
+				f13elem.Key = f13iter.Key
+			}
+			if f13iter.Value != nil {
+				f13elem.Value = f13iter.Value
+			}
+			f13 = append(f13, f13elem)
+		}
+		cr.Status.AtProvider.Tags = f13
+	} else {
+		cr.Status.AtProvider.Tags = nil
+	}
+	if resp.VpcEndpoint.VpcEndpointId != nil {
+		cr.Status.AtProvider.VPCEndpointID = resp.VpcEndpoint.VpcEndpointId
+	} else {
+		cr.Status.AtProvider.VPCEndpointID = nil
+	}
+	if resp.VpcEndpoint.VpcEndpointType != nil {
+		cr.Spec.ForProvider.VPCEndpointType = resp.VpcEndpoint.VpcEndpointType
+	} else {
+		cr.Spec.ForProvider.VPCEndpointType = nil
+	}
+	if resp.VpcEndpoint.VpcId != nil {
+		cr.Status.AtProvider.VPCID = resp.VpcEndpoint.VpcId
+	} else {
+		cr.Status.AtProvider.VPCID = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

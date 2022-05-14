@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: streams.kinesis.aws.crossplane.io
 spec:
@@ -68,10 +69,10 @@ spec:
                   enhancedMetrics:
                     description: "List of shard-level metrics. \n The following are
                       the valid shard-level metrics. The value \"ALL\" enhances every
-                      metric. \n    * IncomingBytes \n    * IncomingRecords \n    *
-                      OutgoingBytes \n    * OutgoingRecords \n    * WriteProvisionedThroughputExceeded
-                      \n    * ReadProvisionedThroughputExceeded \n    * IteratorAgeMilliseconds
-                      \n    * ALL \n For more information, see Monitoring the Amazon
+                      metric. \n * IncomingBytes \n * IncomingRecords \n * OutgoingBytes
+                      \n * OutgoingRecords \n * WriteProvisionedThroughputExceeded
+                      \n * ReadProvisionedThroughputExceeded \n * IteratorAgeMilliseconds
+                      \n * ALL \n For more information, see Monitoring the Amazon
                       Kinesis Data Streams Service with Amazon CloudWatch (https://docs.aws.amazon.com/kinesis/latest/dev/monitoring-with-cloudwatch.html)
                       in the Amazon Kinesis Data Streams Developer Guide."
                     items:
@@ -164,12 +165,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -192,9 +245,9 @@ spec:
                 properties:
                   encryptionType:
                     description: "The server-side encryption type used on the stream.
-                      This parameter can be one of the following values: \n    * NONE:
-                      Do not encrypt the records in the stream. \n    * KMS: Use server-side
-                      encryption on the records in the stream using a    customer-managed
+                      This parameter can be one of the following values: \n * NONE:
+                      Do not encrypt the records in the stream. \n * KMS: Use server-side
+                      encryption on the records in the stream using a customer-managed
                       AWS KMS key."
                     type: string
                   enhancedMonitoring:
@@ -218,11 +271,11 @@ spec:
                       a fully specified ARN to either an alias or a key, or an alias
                       name prefixed by \"alias/\".You can also use a master key owned
                       by Kinesis Data Streams by specifying the alias aws/kinesis.
-                      \n    * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
-                      \n    * Alias ARN example: arn:aws:kms:us-east-1:123456789012:alias/MyAliasName
-                      \n    * Globally unique key ID example: 12345678-1234-1234-1234-123456789012
-                      \n    * Alias name example: alias/MyAliasName \n    * Master
-                      key owned by Kinesis Data Streams: alias/aws/kinesis"
+                      \n * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+                      \n * Alias ARN example: arn:aws:kms:us-east-1:123456789012:alias/MyAliasName
+                      \n * Globally unique key ID example: 12345678-1234-1234-1234-123456789012
+                      \n * Alias name example: alias/MyAliasName \n * Master key owned
+                      by Kinesis Data Streams: alias/aws/kinesis"
                     type: string
                   retentionPeriodHours:
                     description: The current retention period, in hours. Minimum value
@@ -265,17 +318,16 @@ spec:
                     type: string
                   streamStatus:
                     description: "The current status of the stream being described.
-                      The stream status is one of the following states: \n    * CREATING
+                      The stream status is one of the following states: \n * CREATING
                       - The stream is being created. Kinesis Data Streams immediately
-                      \   returns and sets StreamStatus to CREATING. \n    * DELETING
-                      - The stream is being deleted. The specified stream is in the
-                      \   DELETING state until Kinesis Data Streams completes the
-                      deletion. \n    * ACTIVE - The stream exists and is ready for
-                      read and write operations    or deletion. You should perform
-                      read and write operations only on an ACTIVE    stream. \n    *
-                      UPDATING - Shards in the stream are being merged or split. Read
-                      and    write operations continue to work while the stream is
-                      in the UPDATING    state."
+                      returns and sets StreamStatus to CREATING. \n * DELETING - The
+                      stream is being deleted. The specified stream is in the DELETING
+                      state until Kinesis Data Streams completes the deletion. \n
+                      * ACTIVE - The stream exists and is ready for read and write
+                      operations or deletion. You should perform read and write operations
+                      only on an ACTIVE stream. \n * UPDATING - Shards in the stream
+                      are being merged or split. Read and write operations continue
+                      to work while the stream is in the UPDATING state."
                     type: string
                 type: object
               conditions:

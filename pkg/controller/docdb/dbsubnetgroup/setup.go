@@ -17,59 +17,57 @@ limitations under the License.
 package dbsubnetgroup
 
 import (
-	"time"
+	"context"
 
-	"k8s.io/client-go/util/workqueue"
+	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
+	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
 
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-
-	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
-
 	svcapitypes "github.com/crossplane/provider-aws/apis/docdb/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane/provider-aws/pkg/controller/docdb"
-
-	"context"
-
-	"github.com/pkg/errors"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
-	errNotDBSubnetGroup = "managed resource is not a DocDBSubnetGroup custom resource"
+	errNotDBSubnetGroup = "managed resource is not a DBSubnetGroup custom resource"
 	errKubeUpdateFailed = "cannot update DocDBSubnetGroup custom resource"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
-func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBSubnetGroupKind)
 	opts := []option{setupExternal}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.DBSubnetGroup{}).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func setupExternal(e *external) {

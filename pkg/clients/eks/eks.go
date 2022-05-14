@@ -219,6 +219,7 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 		Arn:             awsclients.StringValue(cluster.Arn),
 		Endpoint:        awsclients.StringValue(cluster.Endpoint),
 		PlatformVersion: awsclients.StringValue(cluster.PlatformVersion),
+		Version:         awsclients.StringValue(cluster.Version),
 		Status:          v1beta1.ClusterStatusType(cluster.Status),
 	}
 
@@ -239,6 +240,10 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 			ClusterSecurityGroupID: awsclients.StringValue(cluster.ResourcesVpcConfig.ClusterSecurityGroupId),
 			VpcID:                  awsclients.StringValue(cluster.ResourcesVpcConfig.VpcId),
 		}
+	}
+
+	if cluster.CertificateAuthority != nil {
+		o.CertificateAuthorityData = awsclients.StringValue(cluster.CertificateAuthority.Data)
 	}
 	return o
 }

@@ -341,7 +341,9 @@ func TestGenerateObservation(t *testing.T) {
 	createTime := time.Now()
 	clusterArn := "my:arn"
 	endpoint := "https://my-endpoint.com"
+	caData := "Y2VydGlmaWNhdGUtYXV0aG9yaXR5LWRhdGE="
 	oidcIssuer := "secret-issuer"
+	version := "1.21"
 	platformVersion := "eks1.0"
 	securityGrp := "sg-1234"
 	vpc := "vpc-1234"
@@ -355,11 +357,15 @@ func TestGenerateObservation(t *testing.T) {
 				Arn:       &clusterArn,
 				CreatedAt: &createTime,
 				Endpoint:  &endpoint,
+				CertificateAuthority: &ekstypes.Certificate{
+					Data: &caData,
+				},
 				Identity: &ekstypes.Identity{
 					Oidc: &ekstypes.OIDC{
 						Issuer: &oidcIssuer,
 					},
 				},
+				Version:         &version,
 				PlatformVersion: &platformVersion,
 				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
@@ -368,14 +374,16 @@ func TestGenerateObservation(t *testing.T) {
 				Status: ekstypes.ClusterStatusActive,
 			},
 			want: v1beta1.ClusterObservation{
-				Arn:       clusterArn,
-				CreatedAt: &metav1.Time{Time: createTime},
-				Endpoint:  endpoint,
+				Arn:                      clusterArn,
+				CreatedAt:                &metav1.Time{Time: createTime},
+				Endpoint:                 endpoint,
+				CertificateAuthorityData: caData,
 				Identity: v1beta1.Identity{
 					OIDC: v1beta1.OIDC{
 						Issuer: oidcIssuer,
 					},
 				},
+				Version:         version,
 				PlatformVersion: platformVersion,
 				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
 					ClusterSecurityGroupID: securityGrp,
@@ -388,6 +396,7 @@ func TestGenerateObservation(t *testing.T) {
 			cluster: &ekstypes.Cluster{
 				Arn:             &clusterArn,
 				CreatedAt:       &createTime,
+				Version:         &version,
 				PlatformVersion: &platformVersion,
 				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
@@ -398,6 +407,7 @@ func TestGenerateObservation(t *testing.T) {
 			want: v1beta1.ClusterObservation{
 				Arn:             clusterArn,
 				CreatedAt:       &metav1.Time{Time: createTime},
+				Version:         version,
 				PlatformVersion: platformVersion,
 				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
 					ClusterSecurityGroupID: securityGrp,

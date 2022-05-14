@@ -1,0 +1,15 @@
+---
+apiVersion: lambda.aws.crossplane.io/v1alpha1
+kind: Permission
+metadata:
+  name: sample-permission
+spec:
+  forProvider:
+    region: us-east-1
+    functionNameRef:
+      name: test-function
+    principal: s3.amazonaws.com
+    principalOrgId: o-exampleorgid
+    action: "*"
+  providerConfigRef:
+    name: example

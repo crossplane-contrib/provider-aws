@@ -20,65 +20,70 @@ import (
 	"context"
 	"reflect"
 	"sort"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/password"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
-	errNotRDSInstance          = "managed resource is not an RDS instance custom resource"
-	errKubeUpdateFailed        = "cannot update RDS instance custom resource"
-	errCreateFailed            = "cannot create RDS instance"
-	errS3RestoreFailed         = "cannot restore RDS instance from S3 backup"
-	errSnapshotRestoreFailed   = "cannot restore RDS instance from snapshot"
-	errUnknownRestoreSource    = "unknown RDS restore souce"
-	errModifyFailed            = "cannot modify RDS instance"
-	errAddTagsFailed           = "cannot add tags to RDS instance"
-	errDeleteFailed            = "cannot delete RDS instance"
-	errDescribeFailed          = "cannot describe RDS instance"
-	errPatchCreationFailed     = "cannot create a patch object"
-	errUpToDateFailed          = "cannot check whether object is up-to-date"
-	errGetPasswordSecretFailed = "cannot get password secret"
+	errNotRDSInstance                     = "managed resource is not an RDS instance custom resource"
+	errKubeUpdateFailed                   = "cannot update RDS instance custom resource"
+	errCreateFailed                       = "cannot create RDS instance"
+	errS3RestoreFailed                    = "cannot restore RDS instance from S3 backup"
+	errSnapshotRestoreFailed              = "cannot restore RDS instance from snapshot"
+	errPointInTimeRestoreFailed           = "cannot restore RDS instance from point in time"
+	errPointInTimeRestoreSourceNotDefined = "sourceDBInstanceAutomatedBackupsArn, sourceDBInstanceIdentifier or sourceDbiResourceId must be defined"
+	errUnknownRestoreSource               = "unknown RDS restore source"
+	errModifyFailed                       = "cannot modify RDS instance"
+	errAddTagsFailed                      = "cannot add tags to RDS instance"
+	errDeleteFailed                       = "cannot delete RDS instance"
+	errDescribeFailed                     = "cannot describe RDS instance"
+	errPatchCreationFailed                = "cannot create a patch object"
+	errUpToDateFailed                     = "cannot check whether object is up-to-date"
+	errGetPasswordSecretFailed            = "cannot get password secret"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
-func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
+		WithOptions(o.ForControllerRuntime()).
 		For(&v1beta1.RDSInstance{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -182,7 +187,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error {
+func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error { // nolint:gocyclo
 	if cr.Spec.ForProvider.RestoreFrom == nil {
 		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
@@ -201,6 +206,14 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errSnapshotRestoreFailed)
+		}
+	case "PointInTime":
+		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceID == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
+			return errors.New(errPointInTimeRestoreSourceNotDefined)
+		}
+		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+		if err != nil {
+			return awsclient.Wrap(err, errPointInTimeRestoreFailed)
 		}
 	default:
 		return errors.New(errUnknownRestoreSource)

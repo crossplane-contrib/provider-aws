@@ -19,28 +19,27 @@ package snstopic
 import (
 	"context"
 	"reflect"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	notclient "github.com/crossplane/provider-aws/pkg/clients/notification"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -52,24 +51,28 @@ const (
 )
 
 // SetupSNSTopic adds a controller that reconciles SNSTopic.
-func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.SNSTopicGroupKind)
+func SetupSNSTopic(mgr ctrl.Manager, o controller.Options) error {
+	name := managed.ControllerName(notificationv1alpha1.SNSTopicGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
-		For(&v1alpha1.SNSTopic{}).
+		WithOptions(o.ForControllerRuntime()).
+		For(&notificationv1alpha1.SNSTopic{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.SNSTopicGroupVersionKind),
+			resource.ManagedKind(notificationv1alpha1.SNSTopicGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewTopicClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -78,7 +81,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.SNSTopic)
+	cr, ok := mg.(*notificationv1alpha1.SNSTopic)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -95,7 +98,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*notificationv1alpha1.SNSTopic)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -130,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*notificationv1alpha1.SNSTopic)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -145,7 +148,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*notificationv1alpha1.SNSTopic)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -172,7 +175,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
+	cr, ok := mgd.(*notificationv1alpha1.SNSTopic)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

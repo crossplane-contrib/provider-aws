@@ -89,15 +89,42 @@ type KeyMetadata struct {
 
 	KeyManager *string `json:"keyManager,omitempty"`
 
+	KeySpec *string `json:"keySpec,omitempty"`
+
 	KeyState *string `json:"keyState,omitempty"`
 
 	KeyUsage *string `json:"keyUsage,omitempty"`
 
+	MultiRegion *bool `json:"multiRegion,omitempty"`
+	// Describes the configuration of this multi-Region key. This field appears
+	// only when the KMS key is a primary or replica of a multi-Region key.
+	//
+	// For more information about any listed KMS key, use the DescribeKey operation.
+	MultiRegionConfiguration *MultiRegionConfiguration `json:"multiRegionConfiguration,omitempty"`
+
 	Origin *string `json:"origin,omitempty"`
+
+	PendingDeletionWindowInDays *int64 `json:"pendingDeletionWindowInDays,omitempty"`
 
 	SigningAlgorithms []*string `json:"signingAlgorithms,omitempty"`
 
 	ValidTo *metav1.Time `json:"validTo,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MultiRegionConfiguration struct {
+	MultiRegionKeyType *string `json:"multiRegionKeyType,omitempty"`
+	// Describes the primary or replica key in a multi-Region key.
+	PrimaryKey *MultiRegionKey `json:"primaryKey,omitempty"`
+
+	ReplicaKeys []*MultiRegionKey `json:"replicaKeys,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MultiRegionKey struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Region *string `json:"region,omitempty"`
 }
 
 // +kubebuilder:skipversion

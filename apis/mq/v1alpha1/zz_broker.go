@@ -32,21 +32,26 @@ type BrokerParameters struct {
 
 	AuthenticationStrategy *string `json:"authenticationStrategy,omitempty"`
 
-	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+	// +kubebuilder:validation:Required
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade"`
 
 	Configuration *ConfigurationID `json:"configuration,omitempty"`
 
 	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 
-	DeploymentMode *string `json:"deploymentMode,omitempty"`
+	// +kubebuilder:validation:Required
+	DeploymentMode *string `json:"deploymentMode"`
 
 	EncryptionOptions *EncryptionOptions `json:"encryptionOptions,omitempty"`
 
-	EngineType *string `json:"engineType,omitempty"`
+	// +kubebuilder:validation:Required
+	EngineType *string `json:"engineType"`
 
-	EngineVersion *string `json:"engineVersion,omitempty"`
+	// +kubebuilder:validation:Required
+	EngineVersion *string `json:"engineVersion"`
 
-	HostInstanceType *string `json:"hostInstanceType,omitempty"`
+	// +kubebuilder:validation:Required
+	HostInstanceType *string `json:"hostInstanceType"`
 
 	LDAPServerMetadata *LDAPServerMetadataInput `json:"ldapServerMetadata,omitempty"`
 
@@ -54,13 +59,10 @@ type BrokerParameters struct {
 
 	MaintenanceWindowStartTime *WeeklyStartTime `json:"maintenanceWindowStartTime,omitempty"`
 
-	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
-
-	SecurityGroups []*string `json:"securityGroups,omitempty"`
+	// +kubebuilder:validation:Required
+	PubliclyAccessible *bool `json:"publiclyAccessible"`
 
 	StorageType *string `json:"storageType,omitempty"`
-
-	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
 	Tags                   map[string]*string `json:"tags,omitempty"`
 	CustomBrokerParameters `json:",inline"`

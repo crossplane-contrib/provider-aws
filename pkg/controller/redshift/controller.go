@@ -19,28 +19,27 @@ package redshift
 import (
 	"context"
 	"reflect"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsredshift "github.com/aws/aws-sdk-go-v2/service/redshift"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/password"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
+	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/redshift"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -55,21 +54,26 @@ const (
 )
 
 // SetupCluster adds a controller that reconciles Redshift clusters.
-func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.ClusterGroupKind)
+func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+	name := managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
-		For(&v1alpha1.Cluster{}).
+		WithOptions(o.ForControllerRuntime()).
+		For(&redshiftv1alpha1.Cluster{}).
 		Complete(managed.NewReconciler(
-			mgr, resource.ManagedKind(v1alpha1.ClusterGroupVersionKind),
+			mgr, resource.ManagedKind(redshiftv1alpha1.ClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: redshift.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 type connector struct {
@@ -78,7 +82,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Cluster)
+	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -95,7 +99,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
-	cr, ok := mg.(*v1alpha1.Cluster)
+	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -124,11 +128,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.AtProvider = redshift.GenerateObservation(rsp.Clusters[0])
 	switch cr.Status.AtProvider.ClusterStatus {
-	case v1alpha1.StateAvailable:
+	case redshiftv1alpha1.StateAvailable:
 		cr.Status.SetConditions(xpv1.Available())
-	case v1alpha1.StateCreating:
+	case redshiftv1alpha1.StateCreating:
 		cr.Status.SetConditions(xpv1.Creating())
-	case v1alpha1.StateDeleting:
+	case redshiftv1alpha1.StateDeleting:
 		cr.Status.SetConditions(xpv1.Deleting())
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
@@ -147,12 +151,12 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.Cluster)
+	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 	cr.SetConditions(xpv1.Creating())
-	if cr.Status.AtProvider.ClusterStatus == v1alpha1.StateCreating {
+	if cr.Status.AtProvider.ClusterStatus == redshiftv1alpha1.StateCreating {
 		return managed.ExternalCreation{}, nil
 	}
 	pw, err := password.Generate()
@@ -174,12 +178,12 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.Cluster)
+	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 	switch cr.Status.AtProvider.ClusterStatus {
-	case v1alpha1.StateModifying, v1alpha1.StateCreating:
+	case redshiftv1alpha1.StateModifying, redshiftv1alpha1.StateCreating:
 		return managed.ExternalUpdate{}, nil
 	}
 
@@ -204,12 +208,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Cluster)
+	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 	cr.SetConditions(xpv1.Deleting())
-	if cr.Status.AtProvider.ClusterStatus == v1alpha1.StateDeleting {
+	if cr.Status.AtProvider.ClusterStatus == redshiftv1alpha1.StateDeleting {
 		return nil
 	}
 

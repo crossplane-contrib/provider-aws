@@ -18,26 +18,25 @@ package addon
 
 import (
 	"context"
-	"time"
 
 	awseks "github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/features"
 )
 
 const (
@@ -48,26 +47,30 @@ const (
 )
 
 // SetupAddon adds a controller that reconciles Clusters.
-func SetupAddon(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(v1alpha1.AddonGroupKind)
+func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
+	name := managed.ControllerName(eksv1alpha1.AddonGroupKind)
 	opts := []option{
 		setupHooks,
 	}
 
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewController(rl),
-		}).
-		For(&v1alpha1.Addon{}).
+		WithOptions(o.ForControllerRuntime()).
+		For(&eksv1alpha1.Addon{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.AddonGroupVersionKind),
+			resource.ManagedKind(eksv1alpha1.AddonGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithPollInterval(poll),
-			managed.WithLogger(l.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
 }
 
 func setupHooks(e *external) {
@@ -88,12 +91,12 @@ type hooks struct {
 	kube   client.Client
 }
 
-func preObserve(_ context.Context, cr *v1alpha1.Addon, obj *awseks.DescribeAddonInput) error {
+func preObserve(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.DescribeAddonInput) error {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return nil
 }
 
-func postObserve(_ context.Context, cr *v1alpha1.Addon, _ *awseks.DescribeAddonOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func postObserve(_ context.Context, cr *eksv1alpha1.Addon, _ *awseks.DescribeAddonOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -115,14 +118,14 @@ func postObserve(_ context.Context, cr *v1alpha1.Addon, _ *awseks.DescribeAddonO
 	return obs, nil
 }
 
-func lateInitialize(spec *v1alpha1.AddonParameters, resp *awseks.DescribeAddonOutput) error {
+func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddonOutput) error {
 	if resp.Addon != nil {
 		spec.ServiceAccountRoleARN = awsclients.LateInitializeStringPtr(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
 	}
 	return nil
 }
 
-func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) {
+func (h *hooks) isUpToDate(cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) {
 	switch {
 	case resp.Addon == nil,
 		cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion),
@@ -134,12 +137,12 @@ func (h *hooks) isUpToDate(cr *v1alpha1.Addon, resp *awseks.DescribeAddonOutput)
 	return len(add) == 0 && len(remove) == 0, nil
 }
 
-func preUpdate(_ context.Context, cr *v1alpha1.Addon, obj *awseks.UpdateAddonInput) error {
+func preUpdate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.UpdateAddonInput) error {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return nil
 }
 
-func (h *hooks) postUpdate(ctx context.Context, cr *v1alpha1.Addon, resp *awseks.UpdateAddonOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *awseks.UpdateAddonOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -176,12 +179,12 @@ func (h *hooks) postUpdate(ctx context.Context, cr *v1alpha1.Addon, resp *awseks
 	return managed.ExternalUpdate{}, nil
 }
 
-func preCreate(_ context.Context, cr *v1alpha1.Addon, obj *awseks.CreateAddonInput) error {
+func preCreate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.CreateAddonInput) error {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return nil
 }
 
-func postCreate(_ context.Context, cr *v1alpha1.Addon, res *awseks.CreateAddonOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *eksv1alpha1.Addon, res *awseks.CreateAddonOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -192,7 +195,7 @@ func postCreate(_ context.Context, cr *v1alpha1.Addon, res *awseks.CreateAddonOu
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *v1alpha1.Addon, obj *awseks.DeleteAddonInput) (bool, error) {
+func preDelete(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.DeleteAddonInput) (bool, error) {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return false, nil
 }
@@ -202,7 +205,7 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Addon)
+	cr, ok := mg.(*eksv1alpha1.Addon)
 	if !ok {
 		return errors.New(errNotEKSCluster)
 	}

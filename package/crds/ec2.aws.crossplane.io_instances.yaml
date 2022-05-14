@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: instances.ec2.aws.crossplane.io
 spec:
@@ -155,6 +156,32 @@ spec:
                                 RequestSpotFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet.html),
                                 and RequestSpotInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html)."
                               type: string
+                            kmsKeyIdRef:
+                              description: KMSKeyIDRef is a reference to a KMS Key
+                                used to set KMSKeyID.
+                              properties:
+                                name:
+                                  description: Name of the referenced object.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            kmsKeyIdSelector:
+                              description: KMSKeyIDSelector selects a reference to
+                                a KMS Key used to set KMSKeyID.
+                              properties:
+                                matchControllerRef:
+                                  description: MatchControllerRef ensures an object
+                                    with the same controller reference as the selecting
+                                    object is selected.
+                                  type: boolean
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: MatchLabels ensures an object with
+                                    matching labels is selected.
+                                  type: object
+                              type: object
                             snapshotId:
                               description: The ID of the snapshot.
                               type: string
@@ -219,12 +246,12 @@ spec:
                         type: object
                       capacityReservationsPreference:
                         description: "Indicates the instance's Capacity Reservation
-                          preferences. Possible preferences include: \n    * open
-                          - The instance can run in any open Capacity Reservation
-                          that has    matching attributes (instance type, platform,
-                          Availability Zone). \n    * none - The instance avoids running
-                          in a Capacity Reservation even if    one is available. The
-                          instance runs as an On-Demand Instance."
+                          preferences. Possible preferences include: \n * open - The
+                          instance can run in any open Capacity Reservation that has
+                          matching attributes (instance type, platform, Availability
+                          Zone). \n * none - The instance avoids running in a Capacity
+                          Reservation even if one is available. The instance runs
+                          as an On-Demand Instance."
                         enum:
                         - open
                         - none
@@ -946,12 +973,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -1031,12 +1110,12 @@ spec:
                     properties:
                       capacityReservationPreference:
                         description: "Describes the instance's Capacity Reservation
-                          preferences. Possible preferences include: \n    * open
-                          - The instance can run in any open Capacity Reservation
-                          that has    matching attributes (instance type, platform,
-                          Availability Zone). \n    * none - The instance avoids running
-                          in a Capacity Reservation even if    one is available. The
-                          instance runs in On-Demand capacity."
+                          preferences. Possible preferences include: \n * open - The
+                          instance can run in any open Capacity Reservation that has
+                          matching attributes (instance type, platform, Availability
+                          Zone). \n * none - The instance avoids running in a Capacity
+                          Reservation even if one is available. The instance runs
+                          in On-Demand capacity."
                         type: string
                       capacityReservationTarget:
                         description: Information about the targeted Capacity Reservation.
@@ -1507,31 +1586,31 @@ spec:
                         description: The reason code for the state change.
                         type: string
                       message:
-                        description: "The message for the state change. \n    * Server.InsufficientInstanceCapacity:
-                          There was insufficient capacity    available to satisfy
-                          the launch request. \n    * Server.InternalError: An internal
-                          error caused the instance to terminate    during launch.
-                          \n    * Server.ScheduledStop: The instance was stopped due
-                          to a scheduled retirement. \n    * Server.SpotInstanceShutdown:
-                          The instance was stopped because the number    of Spot requests
-                          with a maximum price equal to or higher than the Spot    price
-                          exceeded available capacity or because of an increase in
-                          the Spot    price. \n    * Server.SpotInstanceTermination:
-                          The instance was terminated because    the number of Spot
-                          requests with a maximum price equal to or higher than    the
-                          Spot price exceeded available capacity or because of an
-                          increase in    the Spot price. \n    * Client.InstanceInitiatedShutdown:
-                          The instance was shut down using the    shutdown -h command
-                          from the instance. \n    * Client.InstanceTerminated: The
-                          instance was terminated or rebooted during    AMI creation.
-                          \n    * Client.InternalError: A client error caused the
-                          instance to terminate    during launch. \n    * Client.InvalidSnapshot.NotFound:
-                          The specified snapshot was not found. \n    * Client.UserInitiatedHibernate:
-                          Hibernation was initiated on the instance. \n    * Client.UserInitiatedShutdown:
-                          The instance was shut down using the Amazon    EC2 API.
-                          \n    * Client.VolumeLimitExceeded: The limit on the number
-                          of EBS volumes or    total storage was exceeded. Decrease
-                          usage or request an increase in your    account limits."
+                        description: "The message for the state change. \n * Server.InsufficientInstanceCapacity:
+                          There was insufficient capacity available to satisfy the
+                          launch request. \n * Server.InternalError: An internal error
+                          caused the instance to terminate during launch. \n * Server.ScheduledStop:
+                          The instance was stopped due to a scheduled retirement.
+                          \n * Server.SpotInstanceShutdown: The instance was stopped
+                          because the number of Spot requests with a maximum price
+                          equal to or higher than the Spot price exceeded available
+                          capacity or because of an increase in the Spot price. \n
+                          * Server.SpotInstanceTermination: The instance was terminated
+                          because the number of Spot requests with a maximum price
+                          equal to or higher than the Spot price exceeded available
+                          capacity or because of an increase in the Spot price. \n
+                          * Client.InstanceInitiatedShutdown: The instance was shut
+                          down using the shutdown -h command from the instance. \n
+                          * Client.InstanceTerminated: The instance was terminated
+                          or rebooted during AMI creation. \n * Client.InternalError:
+                          A client error caused the instance to terminate during launch.
+                          \n * Client.InvalidSnapshot.NotFound: The specified snapshot
+                          was not found. \n * Client.UserInitiatedHibernate: Hibernation
+                          was initiated on the instance. \n * Client.UserInitiatedShutdown:
+                          The instance was shut down using the Amazon EC2 API. \n
+                          * Client.VolumeLimitExceeded: The limit on the number of
+                          EBS volumes or total storage was exceeded. Decrease usage
+                          or request an increase in your account limits."
                         type: string
                     required:
                     - code

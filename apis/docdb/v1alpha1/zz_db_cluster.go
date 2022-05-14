@@ -55,6 +55,8 @@ type DBClusterParameters struct {
 	// is disabled. DeletionProtection protects clusters from being accidentally
 	// deleted.
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
+	// DestinationRegion is used for presigning the request to a given region.
+	DestinationRegion *string `json:"destinationRegion,omitempty"`
 	// A list of log types that need to be enabled for exporting to Amazon CloudWatch
 	// Logs. You can enable audit logs or profiler logs. For more information, see
 	// Auditing Amazon DocumentDB Events (https://docs.aws.amazon.com/documentdb/latest/developerguide/event-auditing.html)
@@ -70,21 +72,22 @@ type DBClusterParameters struct {
 	// recommend explicitly declaring this parameter with the intended major engine
 	// version.
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// The AWS KMS key identifier for an encrypted cluster.
+	// The cluster identifier of the new global cluster.
+	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
+	// The KMS key identifier for an encrypted cluster.
 	//
-	// The AWS KMS key identifier is the Amazon Resource Name (ARN) for the AWS
-	// KMS encryption key. If you are creating a cluster using the same AWS account
-	// that owns the AWS KMS encryption key that is used to encrypt the new cluster,
-	// you can use the AWS KMS key alias instead of the ARN for the AWS KMS encryption
-	// key.
+	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
+	// key. If you are creating a cluster using the same account that owns the KMS
+	// encryption key that is used to encrypt the new cluster, you can use the KMS
+	// key alias instead of the ARN for the KMS encryption key.
 	//
 	// If an encryption key is not specified in KmsKeyId:
 	//
 	//    * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
 	//    default encryption key.
 	//
-	// AWS KMS creates the default encryption key for your AWS account. Your AWS
-	// account has a different default encryption key for each AWS Region.
+	// KMS creates the default encryption key for your account. Your account has
+	// a different default encryption key for each Regions.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The name of the master user for the cluster.
 	//
@@ -95,8 +98,7 @@ type DBClusterParameters struct {
 	//    * The first character must be a letter.
 	//
 	//    * Cannot be a reserved word for the chosen database engine.
-	// +kubebuilder:validation:Required
-	MasterUsername *string `json:"masterUsername"`
+	MasterUsername *string `json:"masterUsername,omitempty"`
 	// The port number on which the instances in the cluster accept connections.
 	Port *int64 `json:"port,omitempty"`
 	// Not currently supported.
@@ -105,7 +107,7 @@ type DBClusterParameters struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region.
+	// of time for each Region.
 	//
 	// Constraints:
 	//
@@ -123,12 +125,16 @@ type DBClusterParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each AWS Region, occurring on a random day of the week.
+	// of time for each Region, occurring on a random day of the week.
 	//
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
 	// Constraints: Minimum 30-minute window.
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+	// SourceRegion is the source region where the resource exists. This is not
+	// sent over the wire and is only used for presigning. This value should always
+	// have the same region as the source ARN.
+	SourceRegion *string `json:"sourceRegion,omitempty"`
 	// Specifies whether the cluster is encrypted.
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 	// The tags to be assigned to the cluster.
@@ -146,9 +152,10 @@ type DBClusterSpec struct {
 
 // DBClusterObservation defines the observed state of DBCluster
 type DBClusterObservation struct {
-	// Provides a list of the AWS Identity and Access Management (IAM) roles that
-	// are associated with the cluster. IAM roles that are associated with a cluster
-	// grant permission for the cluster to access other AWS services on your behalf.
+	// Provides a list of the Identity and Access Management (IAM) roles that are
+	// associated with the cluster. (IAM) roles that are associated with a cluster
+	// grant permission for the cluster to access other Amazon Web Services services
+	// on your behalf.
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 	// Specifies the time when the cluster was created, in Universal Coordinated
 	// Time (UTC).
@@ -165,9 +172,9 @@ type DBClusterObservation struct {
 	// Specifies information on the subnet group that is associated with the cluster,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
-	// The AWS Region-unique, immutable identifier for the cluster. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the cluster
-	// is accessed.
+	// The Region-unique, immutable identifier for the cluster. This identifier
+	// is found in CloudTrail log entries whenever the KMS key for the cluster is
+	// accessed.
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 	// The earliest time to which a database can be restored with point-in-time
 	// restore.
@@ -186,6 +193,9 @@ type DBClusterObservation struct {
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 	// Specifies the progress of the operation as a percentage.
 	PercentProgress *string `json:"percentProgress,omitempty"`
+	// Contains one or more identifiers of the secondary clusters that are associated
+	// with this cluster.
+	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`
 	// The reader endpoint for the cluster. The reader endpoint for a cluster load
 	// balances connections across the Amazon DocumentDB replicas that are available
 	// in a cluster. As clients request new connections to the reader endpoint,
@@ -198,6 +208,9 @@ type DBClusterObservation struct {
 	// continue sending your read workload to other Amazon DocumentDB replicas in
 	// the cluster, you can then reconnect to the reader endpoint.
 	ReaderEndpoint *string `json:"readerEndpoint,omitempty"`
+	// Contains the identifier of the source cluster if this cluster is a secondary
+	// cluster.
+	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
 	// Specifies the current state of this cluster.
 	Status *string `json:"status,omitempty"`
 	// Provides a list of virtual private cloud (VPC) security groups that the cluster

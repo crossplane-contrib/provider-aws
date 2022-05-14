@@ -1,8 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: resolverendpoints.route53resolver.aws.crossplane.io
 spec:
@@ -62,10 +63,10 @@ spec:
                   of ResolverEndpoint
                 properties:
                   direction:
-                    description: "Specify the applicable value: \n    * INBOUND: Resolver
-                      forwards DNS queries to the DNS service for a VPC    from your
-                      network \n    * OUTBOUND: Resolver forwards DNS queries from
-                      the DNS service for a VPC    to your network"
+                    description: "Specify the applicable value: \n * INBOUND: Resolver
+                      forwards DNS queries to the DNS service for a VPC from your
+                      network \n * OUTBOUND: Resolver forwards DNS queries from the
+                      DNS service for a VPC to your network"
                     type: string
                   ipAddresses:
                     description: IPAddresses are the subnets and IP addresses in your
@@ -197,12 +198,64 @@ spec:
                 required:
                 - name
                 type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace
                   and name of a Secret to which any connection details for this managed
                   resource should be written. Connection details frequently include
                   the endpoint, username, and password required to connect to the
-                  managed resource.
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -234,7 +287,7 @@ spec:
                   creatorRequestID:
                     description: A unique string that identifies the request that
                       created the Resolver endpoint. The CreatorRequestId allows failed
-                      requests to be retried without the risk of executing the operation
+                      requests to be retried without the risk of running the operation
                       twice.
                     type: string
                   hostVPCID:
@@ -266,33 +319,31 @@ spec:
                     type: array
                   status:
                     description: "A code that specifies the current status of the
-                      Resolver endpoint. Valid values include the following: \n    *
+                      Resolver endpoint. Valid values include the following: \n *
                       CREATING: Resolver is creating and configuring one or more Amazon
-                      VPC    network interfaces for this endpoint. \n    * OPERATIONAL:
-                      The Amazon VPC network interfaces for this endpoint are    correctly
+                      VPC network interfaces for this endpoint. \n * OPERATIONAL:
+                      The Amazon VPC network interfaces for this endpoint are correctly
                       configured and able to pass inbound or outbound DNS queries
-                      \   between your network and Resolver. \n    * UPDATING: Resolver
-                      is associating or disassociating one or more network    interfaces
-                      with this endpoint. \n    * AUTO_RECOVERING: Resolver is trying
-                      to recover one or more of the network    interfaces that are
-                      associated with this endpoint. During the recovery    process,
-                      the endpoint functions with limited capacity because of the
-                      limit    on the number of DNS queries per IP address (per network
-                      interface). For    the current limit, see Limits on Route 53
-                      Resolver (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities-resolver).
-                      \n    * ACTION_NEEDED: This endpoint is unhealthy, and Resolver
-                      can't automatically    recover it. To resolve the problem, we
-                      recommend that you check each IP    address that you associated
-                      with the endpoint. For each IP address that    isn't available,
-                      add another IP address and then delete the IP address    that
-                      isn't available. (An endpoint must always include at least two
-                      IP    addresses.) A status of ACTION_NEEDED can have a variety
-                      of causes. Here    are two common causes: One or more of the
-                      network interfaces that are    associated with the endpoint
-                      were deleted using Amazon VPC. The network    interface couldn't
-                      be created for some reason that's outside the control    of
-                      Resolver. \n    * DELETING: Resolver is deleting this endpoint
-                      and the associated network    interfaces."
+                      between your network and Resolver. \n * UPDATING: Resolver is
+                      associating or disassociating one or more network interfaces
+                      with this endpoint. \n * AUTO_RECOVERING: Resolver is trying
+                      to recover one or more of the network interfaces that are associated
+                      with this endpoint. During the recovery process, the endpoint
+                      functions with limited capacity because of the limit on the
+                      number of DNS queries per IP address (per network interface).
+                      For the current limit, see Limits on Route 53 Resolver (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities-resolver).
+                      \n * ACTION_NEEDED: This endpoint is unhealthy, and Resolver
+                      can't automatically recover it. To resolve the problem, we recommend
+                      that you check each IP address that you associated with the
+                      endpoint. For each IP address that isn't available, add another
+                      IP address and then delete the IP address that isn't available.
+                      (An endpoint must always include at least two IP addresses.)
+                      A status of ACTION_NEEDED can have a variety of causes. Here
+                      are two common causes: One or more of the network interfaces
+                      that are associated with the endpoint were deleted using Amazon
+                      VPC. The network interface couldn't be created for some reason
+                      that's outside the control of Resolver. \n * DELETING: Resolver
+                      is deleting this endpoint and the associated network interfaces."
                     type: string
                   statusMessage:
                     description: A detailed description of the status of the Resolver
