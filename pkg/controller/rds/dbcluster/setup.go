@@ -2,6 +2,7 @@ package dbcluster
 
 import (
 	"context"
+	"strconv"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -83,6 +84,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(cr.Status.AtProvider.Endpoint)),
 		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(aws.Int64Value(cr.Spec.ForProvider.Port), 10)),
 	}
 	pw, _, _ := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if pw != "" {
