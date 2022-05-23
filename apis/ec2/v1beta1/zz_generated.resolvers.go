@@ -183,6 +183,26 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 	for i3 := 0; i3 < len(mg.Spec.ForProvider.Ingress); i3++ {
 		for i4 := 0; i4 < len(mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs); i4++ {
 			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupID),
+				Extract:      reference.ExternalName(),
+				Reference:    mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupIDRef,
+				Selector:     mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupIDSelector,
+				To: reference.To{
+					List:    &SecurityGroupList{},
+					Managed: &SecurityGroup{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupID")
+			}
+			mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].GroupIDRef = rsp.ResolvedReference
+
+		}
+	}
+	for i3 := 0; i3 < len(mg.Spec.ForProvider.Ingress); i3++ {
+		for i4 := 0; i4 < len(mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs); i4++ {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].VPCID),
 				Extract:      reference.ExternalName(),
 				Reference:    mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].VPCIDRef,
@@ -197,6 +217,26 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 			}
 			mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.Ingress[i3].UserIDGroupPairs[i4].VPCIDRef = rsp.ResolvedReference
+
+		}
+	}
+	for i3 := 0; i3 < len(mg.Spec.ForProvider.Egress); i3++ {
+		for i4 := 0; i4 < len(mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs); i4++ {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupID),
+				Extract:      reference.ExternalName(),
+				Reference:    mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupIDRef,
+				Selector:     mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupIDSelector,
+				To: reference.To{
+					List:    &SecurityGroupList{},
+					Managed: &SecurityGroup{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupID")
+			}
+			mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Egress[i3].UserIDGroupPairs[i4].GroupIDRef = rsp.ResolvedReference
 
 		}
 	}

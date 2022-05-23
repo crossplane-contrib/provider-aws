@@ -125,6 +125,7 @@ type UserIDGroupPair struct {
 
 	// The ID of the security group.
 	// +optional
+	// +crossplane:generate:reference:type=SecurityGroup
 	GroupID *string `json:"groupId,omitempty"`
 
 	// GroupIDRef reference a security group to retrieve its GroupID
