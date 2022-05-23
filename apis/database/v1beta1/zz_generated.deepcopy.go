@@ -622,6 +622,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DeleteAutomatedBackups != nil {
+		in, out := &in.DeleteAutomatedBackups, &out.DeleteAutomatedBackups
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)

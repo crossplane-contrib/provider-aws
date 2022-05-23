@@ -298,6 +298,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier:      aws.String(meta.GetExternalName(cr)),
+		DeleteAutomatedBackups:    cr.Spec.ForProvider.DeleteAutomatedBackups,
 		SkipFinalSnapshot:         aws.ToBool(cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion),
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}

@@ -396,6 +396,13 @@ type RDSInstanceParameters struct {
 	// +optional
 	DBSubnetGroupNameSelector *xpv1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
 
+	// DeleteAutomatedBackups indicates whether to remove automated backups
+	// immediately after the DB instance is deleted. The default is to
+	// remove automated backups immediately after the DB instance is
+	// deleted.
+	// +optional
+	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
+
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
 	// false. For more information, see  Deleting a DB Instance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html).

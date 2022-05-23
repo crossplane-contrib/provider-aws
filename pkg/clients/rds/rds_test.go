@@ -184,6 +184,28 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
+		"IgnoreDeletionOptions": {
+			args: args{
+				db: rdstypes.DBInstance{
+					AllocatedStorage: allocatedStorage,
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							AllocatedStorage:                awsclient.IntAddress(awsclient.Int64(20)),
+							CharacterSetName:                &characterSetName,
+							DBName:                          &dbName,
+							DeleteAutomatedBackups:          awsclient.Bool(true),
+							SkipFinalSnapshotBeforeDeletion: awsclient.Bool(true),
+							FinalDBSnapshotIdentifier:       awsclient.String("final"),
+						},
+					},
+				},
+			},
+			want: true,
+		},
 		"DifferentFields": {
 			args: args{
 				db: rdstypes.DBInstance{
