@@ -52,6 +52,8 @@ const (
 	TopicSubscriptionsDeleted TopicAttributes = "SubscriptionsDeleted"
 	// TopicARN is the ARN for the SNS Topic
 	TopicARN TopicAttributes = "TopicArn"
+	// TopicFifoTopic is whether or not Topic is fifo
+	TopicFifoTopic TopicAttributes = "FifoTopic"
 )
 
 // TopicClient is the external client used for AWS Topic
@@ -69,8 +71,15 @@ func NewTopicClient(cfg aws.Config) TopicClient {
 
 // GenerateCreateTopicInput prepares input for CreateTopicRequest
 func GenerateCreateTopicInput(p *v1beta1.TopicParameters) *sns.CreateTopicInput {
+	attr := make(map[string]string)
+
+	if p.FifoTopic != nil {
+		attr["FifoTopic"] = strconv.FormatBool(*p.FifoTopic)
+	}
+
 	input := &sns.CreateTopicInput{
-		Name: &p.Name,
+		Attributes: attr,
+		Name:       &p.Name,
 	}
 
 	if len(p.Tags) != 0 {
@@ -94,6 +103,11 @@ func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]strin
 	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
 	in.Policy = awsclients.LateInitializeStringPtr(in.Policy, aws.String(attrs[string(TopicPolicy)]))
 
+	in.FifoTopic = nil
+	fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)])
+	if err != nil && fifoTopic {
+		in.FifoTopic = awsclients.LateInitializeBoolPtr(in.FifoTopic, aws.Bool(fifoTopic))
+	}
 }
 
 // GetChangedAttributes will return the changed attributes for a topic in AWS side.
@@ -139,9 +153,12 @@ func GenerateTopicObservation(attr map[string]string) v1beta1.TopicObservation {
 
 // IsSNSTopicUpToDate checks if object is up to date
 func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) bool {
+	fifoTopic, _ := strconv.ParseBool(attr[string(TopicFifoTopic)])
+
 	return aws.ToString(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
 		aws.ToString(p.DisplayName) == attr[string(TopicDisplayName)] &&
 		aws.ToString(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
+		aws.ToBool(p.FifoTopic) == fifoTopic &&
 		aws.ToString(p.Policy) == attr[string(TopicPolicy)]
 }
 
@@ -153,6 +170,11 @@ func getTopicAttributes(p v1beta1.TopicParameters) map[string]string {
 	topicAttr[string(TopicDisplayName)] = aws.ToString(p.DisplayName)
 	topicAttr[string(TopicKmsMasterKeyID)] = aws.ToString(p.KMSMasterKeyID)
 	topicAttr[string(TopicPolicy)] = aws.ToString(p.Policy)
+
+	fifoTopic := aws.ToBool(p.FifoTopic)
+	if fifoTopic {
+		topicAttr[string(TopicFifoTopic)] = strconv.FormatBool(fifoTopic)
+	}
 
 	return topicAttr
 }

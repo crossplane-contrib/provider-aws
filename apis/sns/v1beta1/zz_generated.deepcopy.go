@@ -331,6 +331,11 @@ func (in *TopicParameters) DeepCopyInto(out *TopicParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.FifoTopic != nil {
+		in, out := &in.FifoTopic, &out.FifoTopic
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]Tag, len(*in))
