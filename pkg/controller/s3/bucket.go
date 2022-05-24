@@ -108,7 +108,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
 
-	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr))
+	// get the proper partitionId for the bucket's region
+	resolver := awss3.NewDefaultEndpointResolver()
+	endpoint, err1 := resolver.ResolveEndpoint(cr.Spec.ForProvider.LocationConstraint, awss3.EndpointResolverOptions{})
+	if err1 != nil {
+		return managed.ExternalObservation{}, err1
+	}
+
+	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr), endpoint.PartitionID)
 
 	lateInit := false
 	current := cr.Spec.ForProvider.DeepCopy()

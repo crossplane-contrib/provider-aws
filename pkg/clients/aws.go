@@ -186,7 +186,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 		// to be set.
 		if region == "aws-global" {
 			switch StringValue(pc.Spec.Endpoint.PartitionID) {
-			case "aws-us-gov", "aws-cn":
+			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
 				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
@@ -552,7 +552,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		// to be set.
 		if region == "aws-global" {
 			switch StringValue(pc.Spec.Endpoint.PartitionID) {
-			case "aws-us-gov", "aws-cn":
+			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
 				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"

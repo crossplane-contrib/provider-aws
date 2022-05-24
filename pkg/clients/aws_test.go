@@ -649,8 +649,6 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			g := NewGomegaWithT(t)
-
 			mg := fake.Managed{
 				ProviderConfigReferencer: fake.ProviderConfigReferencer{
 					Ref: &xpv1.Reference{Name: providerConfigReferenceName},
@@ -677,18 +675,20 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 			}
 
 			config, err := UseProviderConfig(context.TODO(), kubeClient, &mg, tc.args.region)
-			g.Expect(err).NotTo(HaveOccurred())
+			if err != nil {
+				t.Errorf("UseProviderConfig threw exception:\n%s", err)
+			}
 
 			// If no endpointConfig was provided the returned endpointResolver should be nil
 			if tc.args.endpointConfig != nil {
 				actual, endpointError := config.EndpointResolverWithOptions.ResolveEndpoint(tc.args.service, tc.args.region, nil)
-				if tc.want.error != nil {
-					g.Expect(endpointError).To(HaveOccurred())
-				} else {
-					g.Expect(endpointError).NotTo(HaveOccurred())
-					if diff := cmp.Diff(tc.want.url, actual.URL); diff != "" {
-						t.Errorf("add: -want, +got:\n%s", diff)
-					}
+				// Assert exceptions match
+				if diff := cmp.Diff(tc.want.error, endpointError, test.EquateConditions()); diff != "" {
+					t.Errorf("r: -want error, +got error:\n%s", diff)
+				}
+				// Assert endpoints match
+				if diff := cmp.Diff(tc.want.url, actual.URL); diff != "" {
+					t.Errorf("add: -want, +got:\n%s", diff)
 				}
 			} else if config.EndpointResolverWithOptions != nil {
 				t.Errorf("Expected config.EndpointResolverWithOptions to be nil")

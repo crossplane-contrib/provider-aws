@@ -148,9 +148,9 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 }
 
 // GenerateBucketObservation generates the ARN string for the external status
-func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
+func GenerateBucketObservation(name string, partition string) v1beta1.BucketExternalStatus {
 	return v1beta1.BucketExternalStatus{
-		ARN: fmt.Sprintf("arn:aws:s3:::%s", name),
+		ARN: fmt.Sprintf("arn:%s:s3:::%s", partition, name),
 	}
 }
 
