@@ -23,37 +23,22 @@ import (
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
-
-// Package type metadata.
-const (
-	Group   = "ecr.aws.crossplane.io"
-	Version = "v1alpha1"
-)
-
-var (
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
 // Repository type metadata.
 var (
 	RepositoryKind             = reflect.TypeOf(Repository{}).Name()
-	RepositoryGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryKind}.String()
-	RepositoryKindAPIVersion   = RepositoryKind + "." + SchemeGroupVersion.String()
-	RepositoryGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryKind)
+	RepositoryGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RepositoryKind}.String()
+	RepositoryKindAPIVersion   = RepositoryKind + "." + GroupVersion.String()
+	RepositoryGroupVersionKind = GroupVersion.WithKind(RepositoryKind)
 )
 
 // RepositoryPolicy type metadata.
 var (
 	RepositoryPolicyKind             = reflect.TypeOf(RepositoryPolicy{}).Name()
-	RepositoryPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryPolicyKind}.String()
-	RepositoryPolicyKindAPIVersion   = RepositoryPolicyKind + "." + SchemeGroupVersion.String()
-	RepositoryPolicyGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryPolicyKind)
+	RepositoryPolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RepositoryPolicyKind}.String()
+	RepositoryPolicyKindAPIVersion   = RepositoryPolicyKind + "." + GroupVersion.String()
+	RepositoryPolicyGroupVersionKind = GroupVersion.WithKind(RepositoryPolicyKind)
 )
 
 func init() {

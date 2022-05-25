@@ -86,6 +86,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpoint"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
+	"github.com/crossplane/provider-aws/pkg/controller/ecr/lifecyclepolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/accesspoint"
@@ -220,6 +221,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		address.SetupAddress,
 		repository.SetupRepository,
 		repositorypolicy.SetupRepositoryPolicy,
+		lifecyclepolicy.SetupLifecyclePolicy,
 		api.SetupAPI,
 		stage.SetupStage,
 		route.SetupRoute,
