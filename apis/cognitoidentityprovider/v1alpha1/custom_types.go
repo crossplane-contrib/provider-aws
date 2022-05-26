@@ -119,3 +119,19 @@ type CustomUserPoolClientParameters struct {
 	// +optional
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
+
+// CustomResourceServerParameters
+type CustomResourceServerParameters struct{
+	// The user pool ID.
+	// +immutable
+	// +crossplane:generate:reference:type=UserPool
+	UserPoolID *string `json:"userPoolId,omitempty"`
+
+	// UserPoolIDRef is a reference to an server instance.
+	// +optional
+	UserPoolIDRef *xpv1.Reference `json:"userPoolIdRef,omitempty"`
+
+	// UserPoolIDSelector selects references to an server instance.
+	// +optional
+	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
+}

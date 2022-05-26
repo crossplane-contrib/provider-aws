@@ -53,6 +53,7 @@ import (
 	cognitouserpool "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpool"
 	cognitouserpoolclient "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpoolclient"
 	cognitouserpooldomain "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/userpooldomain"
+	cognitoresourceserver "github.com/crossplane/provider-aws/pkg/controller/cognitoidentityprovider/resourceserver"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -302,6 +303,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cognitogroup.SetupGroup,
 		cognitouserpoolclient.SetupUserPoolClient,
 		cognitoidentityprovider.SetupIdentityProvider,
+		cognitoresourceserver.SetupResourceServer,
 		neptunecluster.SetupDBCluster,
 		topic.SetupSNSTopic,
 		subscription.SetupSubscription,
