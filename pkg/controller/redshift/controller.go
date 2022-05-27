@@ -35,11 +35,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/redshift"
-	"github.com/crossplane/provider-aws/pkg/features"
+	redshiftv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/redshift"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (

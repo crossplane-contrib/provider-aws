@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/s3"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 )
 
 // this ensures that the mock implements the client interface

@@ -39,8 +39,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

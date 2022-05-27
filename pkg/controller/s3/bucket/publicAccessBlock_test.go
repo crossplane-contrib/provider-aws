@@ -11,10 +11,10 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 )
 
 func TestPublicAccessBlockClient_Observe(t *testing.T) {

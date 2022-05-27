@@ -65,7 +65,7 @@ type ServerSideEncryptionByDefault struct {
 	// information, see Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 	// in the AWS Key Management Service Developer Guide.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	// KMSMasterKeyIDRef references an KMSKey to retrieve its ID

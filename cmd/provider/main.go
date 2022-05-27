@@ -36,10 +36,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/controller"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 func main() {

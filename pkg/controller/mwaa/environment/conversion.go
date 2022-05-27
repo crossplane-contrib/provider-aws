@@ -3,8 +3,8 @@ package environment
 import (
 	svcsdk "github.com/aws/aws-sdk-go/service/mwaa"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/mwaa/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mwaa/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // generateEnvironment the ACK-generated GenerateEnvironment with custom types.

@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/dbsubnetgroup"
 )
 
 // this ensures that the mock implements the client interface

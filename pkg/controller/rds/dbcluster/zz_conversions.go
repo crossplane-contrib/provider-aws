@@ -23,7 +23,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an

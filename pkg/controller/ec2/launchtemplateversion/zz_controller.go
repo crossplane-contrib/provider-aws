@@ -34,8 +34,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -644,7 +644,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				f0f3.Placement = f0f3f22
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.RamDiskId != nil {
-				f0f3.RamDiskID = resp.LaunchTemplateVersion.LaunchTemplateData.RamDiskId
+				f0f3.RAMDiskID = resp.LaunchTemplateVersion.LaunchTemplateData.RamDiskId
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroupIds != nil {
 				f0f3f24 := []*string{}

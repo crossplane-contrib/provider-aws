@@ -2,12 +2,12 @@
 # Setup Project
 
 PROJECT_NAME := provider-aws
-PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
+PROJECT_REPO := github.com/crossplane-contrib/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_REPO ?= https://github.com/aws-controllers-k8s/code-generator.git
-CODE_GENERATOR_COMMIT ?= f8c0f4711a91e50335450521e3c49673d135d56d
+CODE_GENERATOR_COMMIT ?= 6acf40fe3e3cfd97b799ef7cbf1e89e01c3db8f7
 GENERATED_SERVICES ?= $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions

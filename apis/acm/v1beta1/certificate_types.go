@@ -103,7 +103,7 @@ type CertificateParameters struct {
 
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/acmpca/v1beta1.CertificateAuthority
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1.CertificateAuthority
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
 
 	// CertificateAuthorityARNRef references an AWS ACMPCA CertificateAuthority to retrieve its Arn

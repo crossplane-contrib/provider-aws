@@ -15,10 +15,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 
-	route53resolverv1alpha1 "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
-	svcapitypes "github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/features"
+	route53resolverv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupResolverRule adds a controller that reconciles ResolverRule

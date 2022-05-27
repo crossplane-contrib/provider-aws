@@ -32,10 +32,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
 )
 
 var (

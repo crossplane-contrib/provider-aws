@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // NOTE(muvaf): This code ported from ACK-generated code. See details here:
-// https://github.com/crossplane/provider-aws/pull/950#issue-1055573793
+// https://github.com/crossplane-contrib/provider-aws/pull/950#issue-1055573793
 
 package alias
 
@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an

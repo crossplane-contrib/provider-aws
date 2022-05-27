@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"

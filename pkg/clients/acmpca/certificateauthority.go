@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 )
 
 // Client defines the CertificateManager operations

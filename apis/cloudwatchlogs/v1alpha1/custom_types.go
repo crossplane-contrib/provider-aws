@@ -31,7 +31,7 @@ type CustomLogGroupParameters struct {
 	// The Amazon Resource Name (ARN) of the CMK to use when encrypting log data.
 	// For more information, see Amazon Resource Names - AWS Key Management Service
 	// (AWS KMS) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-kms).
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	// +crossplane:generate:reference:refFieldName=KMSKeyIDRef
 	// +crossplane:generate:reference:selectorFieldName=KMSKeyIDSelector
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`

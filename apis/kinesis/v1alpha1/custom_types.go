@@ -27,8 +27,8 @@ type CustomStreamParameters struct {
 	RetentionPeriodHours *int64 `json:"retentionPeriodHours,omitempty"`
 
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/kms/v1alpha1.KMSKeyARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.KMSKeyARN()
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 
 	KMSKeyARNRef *xpv1.Reference `json:"kmsKeyARNRef,omitempty"`

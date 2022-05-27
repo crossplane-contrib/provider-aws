@@ -34,8 +34,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

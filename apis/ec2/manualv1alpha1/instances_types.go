@@ -229,7 +229,7 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any security groups
 	// as part of the network interface.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupRefs
 	// +crossplane:generate:reference:selectorFieldName=SecurityGroupSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
@@ -249,7 +249,7 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any subnets as part
 	// of the network interface.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	SubnetID *string `json:"subnetId,omitempty"`
 
 	// SubnetIDRef is a reference to a Subnet used to set the SubnetID.

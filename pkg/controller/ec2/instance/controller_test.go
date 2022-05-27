@@ -35,10 +35,10 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
 )
 
 var (

@@ -8,7 +8,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	ec2v1beta1 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this PrivateDNSNamespace.

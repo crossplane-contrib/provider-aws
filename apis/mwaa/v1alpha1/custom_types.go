@@ -20,7 +20,7 @@ type CustomEnvironmentParameters struct {
 	// This field or KMSKeyRef or KMSKeySelector is required.
 	// +optional
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	KMSKey *string `json:"kmsKey,omitempty"`
 
 	// KMSKeyRef is a reference to the KMSKey used to set.
@@ -38,8 +38,8 @@ type CustomEnvironmentParameters struct {
 	//
 	// This field or SourceBucketARNRef or SourceBucketARNSelector is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/s3/v1beta1.Bucket
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/s3/v1beta1.BucketARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.Bucket
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.BucketARN()
 	SourceBucketARN *string `json:"sourceBucketARN"`
 
 	// SourceBucketARNRef is a reference to the SourceBucketARN used to set.
@@ -59,8 +59,8 @@ type CustomEnvironmentParameters struct {
 	//
 	// This field or SourceBucketARNRef or SourceBucketARNSelector is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	ExecutionRoleARN *string `json:"executionRoleARN"`
 
 	// ExecutionRoleARNRef is a reference to the ExecutionRoleARN used to set.
@@ -82,7 +82,7 @@ type CustomEnvironmentParameters struct {
 // CustomNetworkConfiguration for an Environment.
 type CustomNetworkConfiguration struct {
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
@@ -99,7 +99,7 @@ type CustomNetworkConfiguration struct {
 
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []string `json:"subnetIds,omitempty"`

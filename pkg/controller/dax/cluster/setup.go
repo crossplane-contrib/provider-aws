@@ -14,8 +14,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/dax/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // SetupCluster adds a controller that reconciles Cluster.

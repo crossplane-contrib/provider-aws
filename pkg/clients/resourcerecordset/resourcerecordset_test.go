@@ -22,7 +22,7 @@ import (
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 )
 
 func TestCreatePatch(t *testing.T) {

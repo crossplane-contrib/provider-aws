@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this Route53ResolverEndpoint

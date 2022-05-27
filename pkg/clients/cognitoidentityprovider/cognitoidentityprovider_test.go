@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	mockkube "github.com/crossplane/provider-aws/pkg/clients/mock/kube"
+	mockkube "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/kube"
 )
 
 type mockModifier func(*mockkube.MockClient)

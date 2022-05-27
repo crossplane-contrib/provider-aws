@@ -38,8 +38,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

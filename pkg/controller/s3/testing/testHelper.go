@@ -20,7 +20,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 )
 
 var (

@@ -26,8 +26,8 @@ import (
 	awscachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

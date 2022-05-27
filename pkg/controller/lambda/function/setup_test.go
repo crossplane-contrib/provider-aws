@@ -9,7 +9,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/lambda/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
 )
 
 type args struct {

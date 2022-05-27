@@ -25,8 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

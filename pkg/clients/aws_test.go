@@ -40,7 +40,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 )
 
 const (

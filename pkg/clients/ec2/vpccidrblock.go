@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/smithy-go"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

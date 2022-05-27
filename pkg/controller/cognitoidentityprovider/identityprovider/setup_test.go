@@ -11,9 +11,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/clients/cognitoidentityprovider"
-	mockclient "github.com/crossplane/provider-aws/pkg/clients/mock/cognitoidentityprovider"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider"
+	mockclient "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/cognitoidentityprovider"
 )
 
 type functionModifier func(*svcapitypes.IdentityProvider)

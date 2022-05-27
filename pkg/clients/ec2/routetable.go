@@ -17,8 +17,8 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

@@ -24,7 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	kms "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 )
 
 // ResolveReferences of this Secret

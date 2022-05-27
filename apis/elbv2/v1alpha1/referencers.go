@@ -21,8 +21,8 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	acm "github.com/crossplane/provider-aws/apis/acm/v1beta1"
-	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	acm "github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
+	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences resolves references for Listeners
