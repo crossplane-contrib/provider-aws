@@ -3,7 +3,7 @@ package acm
 import (
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/acm/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
 
 	"github.com/aws/smithy-go/document"
 
@@ -13,7 +13,7 @@ import (
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/google/go-cmp/cmp"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

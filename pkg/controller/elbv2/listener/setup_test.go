@@ -7,7 +7,7 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 )
 
 func strPtr(s string) *string {

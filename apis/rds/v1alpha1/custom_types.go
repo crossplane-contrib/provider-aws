@@ -435,8 +435,8 @@ type CustomDBInstanceRoleAssociationParameters struct {
 
 	// The Amazon Resource Name (ARN) of the IAM role to associate with the DB instance,
 	// for example arn:aws:iam::123456789012:role/AccessRole.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	// +optional
 	RoleARN *string `json:"roleArn,omitempty"`
 

@@ -27,8 +27,8 @@ package distribution
 import (
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // TODO(negz): Every field of the generated DistributionParameters is a pointer.

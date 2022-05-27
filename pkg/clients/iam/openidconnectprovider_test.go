@@ -26,7 +26,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )
 
 func TestSliceDiff(t *testing.T) {

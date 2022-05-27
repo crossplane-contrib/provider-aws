@@ -22,8 +22,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // ResolveReferences of this CacheSubnetGroup

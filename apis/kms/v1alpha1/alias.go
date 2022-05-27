@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // NOTE(muvaf): This code ported from ACK-generated code. See details here:
-// https://github.com/crossplane/provider-aws/pull/950#issue-1055573793
+// https://github.com/crossplane-contrib/provider-aws/pull/950#issue-1055573793
 
 package v1alpha1
 

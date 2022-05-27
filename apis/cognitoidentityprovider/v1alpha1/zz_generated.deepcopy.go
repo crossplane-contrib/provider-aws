@@ -1866,8 +1866,8 @@ func (in *SmsConfigurationType) DeepCopyInto(out *SmsConfigurationType) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SnsCallerARN != nil {
-		in, out := &in.SnsCallerARN, &out.SnsCallerARN
+	if in.SNSCallerARN != nil {
+		in, out := &in.SNSCallerARN, &out.SNSCallerARN
 		*out = new(string)
 		**out = **in
 	}

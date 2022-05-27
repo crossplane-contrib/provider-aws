@@ -387,7 +387,7 @@ type SchemaAttributeType struct {
 type SmsConfigurationType struct {
 	ExternalID *string `json:"externalID,omitempty"`
 
-	SnsCallerARN *string `json:"snsCallerARN,omitempty"`
+	SNSCallerARN *string `json:"snsCallerARN,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -24,8 +24,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/docdb/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

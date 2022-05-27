@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 
 	"github.com/aws/smithy-go/document"
 
@@ -15,7 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

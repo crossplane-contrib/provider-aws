@@ -56,9 +56,9 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/v1alpha3"
-	"github.com/crossplane/provider-aws/apis/v1beta1"
-	"github.com/crossplane/provider-aws/pkg/version"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha3"
+	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/version"
 )
 
 // DefaultSection for INI files.

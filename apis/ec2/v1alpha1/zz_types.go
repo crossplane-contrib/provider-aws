@@ -1639,11 +1639,11 @@ type Image struct {
 
 	Public *bool `json:"public,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	RootDeviceName *string `json:"rootDeviceName,omitempty"`
 
-	SriovNetSupport *string `json:"sriovNetSupport,omitempty"`
+	SRIOVNetSupport *string `json:"sriovNetSupport,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
@@ -2215,7 +2215,7 @@ type LaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -3533,7 +3533,7 @@ type RequestLaunchTemplateData struct {
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacementRequest `json:"placement,omitempty"`
 
-	RamDiskID *string `json:"ramDiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
@@ -3558,7 +3558,7 @@ type RequestSpotLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -3755,7 +3755,7 @@ type ResponseLaunchTemplateData struct {
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacement `json:"placement,omitempty"`
 
-	RamDiskID *string `json:"ramDiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
@@ -3970,7 +3970,7 @@ type ScheduledInstancesLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -4297,7 +4297,7 @@ type SpotFleetLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SpotPrice *string `json:"spotPrice,omitempty"`
 

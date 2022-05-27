@@ -21,8 +21,8 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"

@@ -29,10 +29,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
-	"github.com/crossplane/provider-aws/pkg/clients/elasticache/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
 )
 
 var (

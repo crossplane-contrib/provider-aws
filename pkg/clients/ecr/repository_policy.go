@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

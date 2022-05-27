@@ -49,7 +49,7 @@ type PermissionParameters struct {
 	//
 	// This member is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/lambda/v1beta1.Function
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1.Function
 	// +crossplane:generate:reference:refFieldName=FunctionNameRef
 	// +crossplane:generate:reference:selectorFieldName=FunctionNameSelector
 	FunctionName *string `json:"functionName,omitempty"`

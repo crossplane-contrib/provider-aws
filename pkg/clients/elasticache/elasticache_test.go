@@ -30,9 +30,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 
-	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

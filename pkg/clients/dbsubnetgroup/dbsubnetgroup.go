@@ -25,8 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	rdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // Client is the external client used for DBSubnetGroup Custom Resource

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"context"
 
-	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"

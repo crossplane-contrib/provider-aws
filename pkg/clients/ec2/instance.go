@@ -26,8 +26,8 @@ import (
 	"github.com/aws/smithy-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -768,7 +768,7 @@ func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpe
 }
 
 // GenerateEC2RunInstancesInput generates a ec2.RunInstanceInput based on the supplied managed resource Name and InstanceParameters
-// Note: MaxCount and MinCount are set to 1 each per https://github.com/crossplane/provider-aws/pull/777#issuecomment-887017783
+// Note: MaxCount and MinCount are set to 1 each per https://github.com/crossplane-contrib/provider-aws/pull/777#issuecomment-887017783
 func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParameters) *ec2.RunInstancesInput {
 	return &ec2.RunInstancesInput{
 		BlockDeviceMappings:               GenerateEC2BlockDeviceMappings(p.BlockDeviceMappings),

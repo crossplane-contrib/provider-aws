@@ -19,7 +19,7 @@ package eks
 import (
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"

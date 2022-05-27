@@ -28,8 +28,8 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // See - https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#RESTErrorResponses

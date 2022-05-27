@@ -34,12 +34,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	notclient "github.com/crossplane/provider-aws/pkg/clients/notification"
-	"github.com/crossplane/provider-aws/pkg/clients/sns"
-	"github.com/crossplane/provider-aws/pkg/features"
+	notificationv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	notclient "github.com/crossplane-contrib/provider-aws/pkg/clients/notification"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (

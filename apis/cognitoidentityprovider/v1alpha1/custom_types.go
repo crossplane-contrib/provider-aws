@@ -22,8 +22,8 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 type CustomGroupParameters struct {
 	// The role ARN for the group.
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	RoleARN *string `json:"roleArn,omitempty"`
 
 	// UserPoolIDRef is a reference to an server instance.

@@ -135,8 +135,8 @@ type QueueConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	//
 	// QueueArn is a required field
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/sqs/v1beta1.Queue
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/sqs/v1beta1.QueueARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1.Queue
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1.QueueARN()
 	QueueArn *string `json:"queueArn,omitempty"`
 
 	// QueueArnRef references an Queue to retrieve its ARN
@@ -175,8 +175,8 @@ type TopicConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	// At least one of topicArn, topicArnRef or topicSelector is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/notification/v1alpha1.SNSTopic
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/notification/v1alpha1.SNSTopicARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1.SNSTopic
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1.SNSTopicARN()
 	TopicArn *string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn

@@ -36,11 +36,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
-	"github.com/crossplane/provider-aws/pkg/features"
+	route53v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/hostedzone"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (

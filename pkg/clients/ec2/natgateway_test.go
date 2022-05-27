@@ -8,8 +8,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (

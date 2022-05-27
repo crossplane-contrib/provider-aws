@@ -22,7 +22,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
 	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
@@ -36,9 +36,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
-	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks/fake"
 )
 
 var (

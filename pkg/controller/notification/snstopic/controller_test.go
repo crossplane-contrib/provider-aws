@@ -33,10 +33,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/sns"
-	"github.com/crossplane/provider-aws/pkg/clients/sns/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns/fake"
 )
 
 var (

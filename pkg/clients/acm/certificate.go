@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"github.com/crossplane/provider-aws/apis/acm/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // Client defines the CertificateManager operations

@@ -33,11 +33,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/docdb/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	svcutils "github.com/crossplane/provider-aws/pkg/controller/docdb"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (

@@ -20,9 +20,9 @@ package manualv1alpha1
 
 import (
 	"context"
+	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
-	v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	v1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )

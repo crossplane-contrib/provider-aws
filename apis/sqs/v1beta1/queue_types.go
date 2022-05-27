@@ -124,7 +124,7 @@ type QueueParameters struct {
 	// in the AWS Key Management Service API Reference.
 	// Applies only to server-side-encryption (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-server-side-encryption.html):
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	KMSMasterKeyIDRef *xpv1.Reference `json:"kmsMasterKeyIdRef,omitempty"`

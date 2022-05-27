@@ -32,9 +32,9 @@ import (
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/apigateway/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	apigwclient "github.com/crossplane/provider-aws/pkg/clients/apigateway"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/apigateway/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
 // SetupResource adds a controller that reconciles Resource.

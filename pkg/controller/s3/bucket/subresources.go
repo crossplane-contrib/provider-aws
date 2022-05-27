@@ -19,8 +19,8 @@ package bucket
 import (
 	"context"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 )
 
 // SubresourceClient is the interface all Bucket sub-resources must conform to
@@ -36,7 +36,7 @@ type SubresourceClient interface {
 func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
 	return []SubresourceClient{
 		// Note: Moved VersioningClient up, since ReplicationConfiguration may be blocked
-		// by an invalid VersioningConfig, see https://github.com/crossplane/provider-aws/issues/553
+		// by an invalid VersioningConfig, see https://github.com/crossplane-contrib/provider-aws/issues/553
 		NewVersioningConfigurationClient(client),
 		NewAccelerateConfigurationClient(client),
 		NewCORSConfigurationClient(client),

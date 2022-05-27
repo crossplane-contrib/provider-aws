@@ -32,8 +32,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

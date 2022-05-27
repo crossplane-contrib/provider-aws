@@ -19,7 +19,7 @@ package iam
 import (
 	"context"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"

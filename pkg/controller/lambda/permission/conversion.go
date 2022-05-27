@@ -21,8 +21,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/lambda/manualv1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/manualv1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 func generatePermission(policyDocument *policyDocument, sid string) *svcapitypes.Permission {

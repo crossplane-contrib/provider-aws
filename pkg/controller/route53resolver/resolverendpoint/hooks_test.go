@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1"
 )
 
 var (

@@ -24,8 +24,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 const errDeprecatedRef = "spec.forProvider.cacheSubnetGroupNameRefs is deprecated - please set only spec.forProvider.cacheSubnetGroupNameRef"

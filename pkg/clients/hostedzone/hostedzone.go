@@ -24,8 +24,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 
-	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // IDPrefix is the prefix of the actual ID that's returned from GET call.

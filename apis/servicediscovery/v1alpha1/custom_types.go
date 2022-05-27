@@ -4,7 +4,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // AnnotationKeyOperationID is the key in the annotations map of a

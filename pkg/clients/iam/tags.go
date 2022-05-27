@@ -4,7 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )
 
 // DiffIAMTags returns the lists of tags that need to be removed and added according

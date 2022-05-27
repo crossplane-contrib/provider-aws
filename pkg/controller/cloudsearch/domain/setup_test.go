@@ -25,9 +25,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cloudsearch/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	fake "github.com/crossplane/provider-aws/pkg/clients/cloudsearch/fake"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudsearch/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	fake "github.com/crossplane-contrib/provider-aws/pkg/clients/cloudsearch/fake"
 
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/cloudsearch"

@@ -27,7 +27,7 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
 )
 
 var (

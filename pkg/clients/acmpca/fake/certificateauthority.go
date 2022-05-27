@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/acmpca"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 )
 
 // this ensures that the mock implements the client interface

@@ -18,7 +18,7 @@ limitations under the License.
 
 //go:generate go run -tags generate github.com/golang/mock/mockgen -package kube -destination ./kube/mock.go sigs.k8s.io/controller-runtime/pkg/client Client
 
-//go:generate go run -tags generate github.com/golang/mock/mockgen -package cognitoidentityprovider -destination ./cognitoidentityprovider/mock.go github.com/crossplane/provider-aws/pkg/clients/cognitoidentityprovider ResolverService
+//go:generate go run -tags generate github.com/golang/mock/mockgen -package cognitoidentityprovider -destination ./cognitoidentityprovider/mock.go github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider ResolverService
 
 package mock
 
