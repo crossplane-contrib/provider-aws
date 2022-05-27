@@ -948,7 +948,7 @@ spec:
                       aliasICPRecordals:
                         items:
                           properties:
-                            cNAME:
+                            cname:
                               type: string
                             iCPRecordalStatus:
                               type: string

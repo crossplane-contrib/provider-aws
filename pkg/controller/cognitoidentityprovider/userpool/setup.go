@@ -288,7 +288,7 @@ func areSmsConfigurationEqual(spec *svcapitypes.SmsConfigurationType, current *s
 	if spec != nil && current != nil {
 		switch {
 		case awsclients.StringValue(spec.ExternalID) != awsclients.StringValue(current.ExternalId),
-			awsclients.StringValue(spec.SnsCallerARN) != awsclients.StringValue(current.SnsCallerArn):
+			awsclients.StringValue(spec.SNSCallerARN) != awsclients.StringValue(current.SnsCallerArn):
 			return false
 		}
 	}
