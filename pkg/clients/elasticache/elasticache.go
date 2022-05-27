@@ -35,9 +35,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 
-	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	clients "github.com/crossplane/provider-aws/pkg/clients"
+	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const errCheckUpToDate = "unable to determine if external resource is up to date"
@@ -348,7 +348,9 @@ func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elastic
 	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
 		return true
 	}
-	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
+	// AWS will normalize preferred maintenance windows to lowercase
+	if !strings.EqualFold(clients.StringValue(kube.PreferredMaintenanceWindow),
+		clients.StringValue(cc.PreferredMaintenanceWindow)) {
 		return true
 	}
 	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)

@@ -6002,8 +6002,8 @@ func (in *Image) DeepCopyInto(out *Image) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.RamdiskID != nil {
-		in, out := &in.RamdiskID, &out.RamdiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -6012,8 +6012,8 @@ func (in *Image) DeepCopyInto(out *Image) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SriovNetSupport != nil {
-		in, out := &in.SriovNetSupport, &out.SriovNetSupport
+	if in.SRIOVNetSupport != nil {
+		in, out := &in.SRIOVNetSupport, &out.SRIOVNetSupport
 		*out = new(string)
 		**out = **in
 	}
@@ -7968,8 +7968,8 @@ func (in *LaunchSpecification) DeepCopyInto(out *LaunchSpecification) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.RamdiskID != nil {
-		in, out := &in.RamdiskID, &out.RamdiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -12611,8 +12611,8 @@ func (in *RequestLaunchTemplateData) DeepCopyInto(out *RequestLaunchTemplateData
 		*out = new(LaunchTemplatePlacementRequest)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.RamDiskID != nil {
-		in, out := &in.RamDiskID, &out.RamDiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -12699,8 +12699,8 @@ func (in *RequestSpotLaunchSpecification) DeepCopyInto(out *RequestSpotLaunchSpe
 		*out = new(string)
 		**out = **in
 	}
-	if in.RamdiskID != nil {
-		in, out := &in.RamdiskID, &out.RamdiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -13284,8 +13284,8 @@ func (in *ResponseLaunchTemplateData) DeepCopyInto(out *ResponseLaunchTemplateDa
 		*out = new(LaunchTemplatePlacement)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.RamDiskID != nil {
-		in, out := &in.RamDiskID, &out.RamDiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -14121,8 +14121,8 @@ func (in *ScheduledInstancesLaunchSpecification) DeepCopyInto(out *ScheduledInst
 		*out = new(string)
 		**out = **in
 	}
-	if in.RamdiskID != nil {
-		in, out := &in.RamdiskID, &out.RamdiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}
@@ -15134,8 +15134,8 @@ func (in *SpotFleetLaunchSpecification) DeepCopyInto(out *SpotFleetLaunchSpecifi
 		*out = new(string)
 		**out = **in
 	}
-	if in.RamdiskID != nil {
-		in, out := &in.RamdiskID, &out.RamdiskID
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
 		**out = **in
 	}

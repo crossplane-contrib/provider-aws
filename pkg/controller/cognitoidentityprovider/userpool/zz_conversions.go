@@ -23,7 +23,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -344,7 +344,7 @@ func GenerateUserPool(resp *svcsdk.DescribeUserPoolOutput) *svcapitypes.UserPool
 			f22.ExternalID = resp.UserPool.SmsConfiguration.ExternalId
 		}
 		if resp.UserPool.SmsConfiguration.SnsCallerArn != nil {
-			f22.SnsCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
+			f22.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
 		}
 		cr.Spec.ForProvider.SmsConfiguration = f22
 	} else {
@@ -671,8 +671,8 @@ func GenerateCreateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.CreateUserPoo
 		if cr.Spec.ForProvider.SmsConfiguration.ExternalID != nil {
 			f14.SetExternalId(*cr.Spec.ForProvider.SmsConfiguration.ExternalID)
 		}
-		if cr.Spec.ForProvider.SmsConfiguration.SnsCallerARN != nil {
-			f14.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SnsCallerARN)
+		if cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN != nil {
+			f14.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN)
 		}
 		res.SetSmsConfiguration(f14)
 	}
@@ -920,8 +920,8 @@ func GenerateUpdateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.UpdateUserPoo
 		if cr.Spec.ForProvider.SmsConfiguration.ExternalID != nil {
 			f11.SetExternalId(*cr.Spec.ForProvider.SmsConfiguration.ExternalID)
 		}
-		if cr.Spec.ForProvider.SmsConfiguration.SnsCallerARN != nil {
-			f11.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SnsCallerARN)
+		if cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN != nil {
+			f11.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN)
 		}
 		res.SetSmsConfiguration(f11)
 	}

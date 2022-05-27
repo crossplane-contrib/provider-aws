@@ -12,9 +12,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // SetupAccessPoint adds a controller that reconciles AccessPoint.

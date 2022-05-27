@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -577,8 +577,8 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 			}
 			f0.SetPlacement(f0f22)
 		}
-		if cr.Spec.ForProvider.LaunchTemplateData.RamDiskID != nil {
-			f0.SetRamDiskId(*cr.Spec.ForProvider.LaunchTemplateData.RamDiskID)
+		if cr.Spec.ForProvider.LaunchTemplateData.RAMDiskID != nil {
+			f0.SetRamDiskId(*cr.Spec.ForProvider.LaunchTemplateData.RAMDiskID)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs != nil {
 			f0f24 := []*string{}

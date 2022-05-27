@@ -6,8 +6,8 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 type CustomClusterParameters struct {
 	// IAMRoleARN contains the ARN of an IAMRole
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	IAMRoleARN *string `json:"iamRoleARN,omitempty"`
 
 	// IAMRoleARNRef is a reference to an IAMRole used to set
@@ -52,7 +52,7 @@ type CustomClusterParameters struct {
 
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []*string `json:"securityGroupIds,omitempty"`
@@ -83,7 +83,7 @@ type CustomSubnetGroupParameters struct {
 	// SubnetIds is the list of Ids for the Subnets.
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	SubnetIds []*string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs is a list of references to Subnets used to set

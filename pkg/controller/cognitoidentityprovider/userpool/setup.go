@@ -28,10 +28,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupUserPool adds a controller that reconciles UserPool.
@@ -155,10 +155,20 @@ func areAdminCreateUserConfigEqual(spec *svcapitypes.AdminCreateUserConfigType, 
 	if spec != nil && current != nil {
 		switch {
 		case awsclients.BoolValue(spec.AllowAdminCreateUserOnly) != awsclients.BoolValue(current.AllowAdminCreateUserOnly),
-			awsclients.StringValue(spec.InviteMessageTemplate.EmailMessage) != awsclients.StringValue(current.InviteMessageTemplate.EmailMessage),
-			awsclients.StringValue(spec.InviteMessageTemplate.EmailSubject) != awsclients.StringValue(current.InviteMessageTemplate.EmailSubject),
-			awsclients.StringValue(spec.InviteMessageTemplate.SMSMessage) != awsclients.StringValue(current.InviteMessageTemplate.SMSMessage),
+			!areInviteMessageTemplateEqual(spec.InviteMessageTemplate, current.InviteMessageTemplate),
 			awsclients.Int64Value(spec.UnusedAccountValidityDays) != awsclients.Int64Value(current.UnusedAccountValidityDays):
+			return false
+		}
+	}
+	return true
+}
+
+func areInviteMessageTemplateEqual(spec *svcapitypes.MessageTemplateType, current *svcsdk.MessageTemplateType) bool {
+	if spec != nil && current != nil {
+		switch {
+		case awsclients.StringValue(spec.EmailMessage) != awsclients.StringValue(current.EmailMessage),
+			awsclients.StringValue(spec.EmailSubject) != awsclients.StringValue(current.EmailSubject),
+			awsclients.StringValue(spec.SMSMessage) != awsclients.StringValue(current.SMSMessage):
 			return false
 		}
 	}
@@ -194,11 +204,9 @@ func areLambdaConfigEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.La
 	if spec != nil && current != nil {
 		switch {
 		case awsclients.StringValue(spec.CreateAuthChallenge) != awsclients.StringValue(current.CreateAuthChallenge),
-			awsclients.StringValue(spec.CustomEmailSender.LambdaARN) != awsclients.StringValue(current.CustomEmailSender.LambdaArn),
-			awsclients.StringValue(spec.CustomEmailSender.LambdaVersion) != awsclients.StringValue(current.CustomEmailSender.LambdaVersion),
+			!areCustomEmailSenderEqual(spec.CustomEmailSender, current.CustomEmailSender),
 			awsclients.StringValue(spec.CustomMessage) != awsclients.StringValue(current.CustomMessage),
-			awsclients.StringValue(spec.CustomSMSSender.LambdaARN) != awsclients.StringValue(current.CustomSMSSender.LambdaArn),
-			awsclients.StringValue(spec.CustomSMSSender.LambdaVersion) != awsclients.StringValue(current.CustomSMSSender.LambdaVersion),
+			!areCustomSMSSenderEqual(spec.CustomSMSSender, current.CustomSMSSender),
 			awsclients.StringValue(spec.DefineAuthChallenge) != awsclients.StringValue(current.DefineAuthChallenge),
 			awsclients.StringValue(spec.KMSKeyID) != awsclients.StringValue(current.KMSKeyID),
 			awsclients.StringValue(spec.PostAuthentication) != awsclients.StringValue(current.PostAuthentication),
@@ -214,8 +222,30 @@ func areLambdaConfigEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.La
 	return true
 }
 
-func arePoliciesEqual(spec *svcapitypes.UserPoolPolicyType, current *svcsdk.UserPoolPolicyType) bool {
+func areCustomEmailSenderEqual(spec *svcapitypes.CustomEmailLambdaVersionConfigType, current *svcsdk.CustomEmailLambdaVersionConfigType) bool {
 	if spec != nil && current != nil {
+		switch {
+		case awsclients.StringValue(spec.LambdaARN) != awsclients.StringValue(current.LambdaArn),
+			awsclients.StringValue(spec.LambdaVersion) != awsclients.StringValue(current.LambdaVersion):
+			return false
+		}
+	}
+	return true
+}
+
+func areCustomSMSSenderEqual(spec *svcapitypes.CustomSMSLambdaVersionConfigType, current *svcsdk.CustomSMSLambdaVersionConfigType) bool {
+	if spec != nil && current != nil {
+		switch {
+		case awsclients.StringValue(spec.LambdaARN) != awsclients.StringValue(current.LambdaArn),
+			awsclients.StringValue(spec.LambdaVersion) != awsclients.StringValue(current.LambdaVersion):
+			return false
+		}
+	}
+	return true
+}
+
+func arePoliciesEqual(spec *svcapitypes.UserPoolPolicyType, current *svcsdk.UserPoolPolicyType) bool {
+	if spec != nil && current != nil && spec.PasswordPolicy != nil && current.PasswordPolicy != nil {
 		switch {
 		case awsclients.Int64Value(spec.PasswordPolicy.MinimumLength) != awsclients.Int64Value(current.PasswordPolicy.MinimumLength),
 			awsclients.BoolValue(spec.PasswordPolicy.RequireLowercase) != awsclients.BoolValue(current.PasswordPolicy.RequireLowercase),
@@ -258,7 +288,7 @@ func areSmsConfigurationEqual(spec *svcapitypes.SmsConfigurationType, current *s
 	if spec != nil && current != nil {
 		switch {
 		case awsclients.StringValue(spec.ExternalID) != awsclients.StringValue(current.ExternalId),
-			awsclients.StringValue(spec.SnsCallerARN) != awsclients.StringValue(current.SnsCallerArn):
+			awsclients.StringValue(spec.SNSCallerARN) != awsclients.StringValue(current.SnsCallerArn):
 			return false
 		}
 	}

@@ -39,10 +39,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/rds"
-	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds/fake"
 )
 
 const (
@@ -152,6 +152,10 @@ func withStatusAllocatedStorage(i int) rdsModifier {
 
 func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = &s }
+}
+
+func withDeleteAutomatedBackups(b bool) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.DeleteAutomatedBackups = &b }
 }
 
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
@@ -790,6 +794,30 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withConditions(xpv1.Deleting())),
+			},
+		},
+		"SuccessfulWithOptions": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDelete: func(ctx context.Context, input *awsrds.DeleteDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.DeleteDBInstanceOutput, error) {
+						if input.DeleteAutomatedBackups == nil || !*input.DeleteAutomatedBackups {
+							return nil, errors.New("expected DeletedAutomatedBackups to be set")
+						}
+						return &awsrds.DeleteDBInstanceOutput{}, nil
+					},
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{}},
+						}, nil
+					},
+				},
+				cr: instance(withDeleteAutomatedBackups(true)),
+			},
+			want: want{
+				cr: instance(withDeleteAutomatedBackups(true), withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {

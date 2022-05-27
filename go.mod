@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-aws
+module github.com/crossplane-contrib/provider-aws
 
 go 1.17
 

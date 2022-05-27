@@ -25,7 +25,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 )
 
 const (

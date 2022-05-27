@@ -20,7 +20,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
@@ -34,9 +34,9 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/ecr"
-	"github.com/crossplane/provider-aws/pkg/clients/ecr/fake"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr/fake"
 )
 
 var (

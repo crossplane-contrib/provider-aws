@@ -23,8 +23,8 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
-	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
 )
 
 var (

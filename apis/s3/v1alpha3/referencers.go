@@ -24,8 +24,8 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 )
 
 // ResolveReferences of this BucketPolicy

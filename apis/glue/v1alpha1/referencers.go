@@ -25,9 +25,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	network "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	network "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	kms "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 )
 
 // ResolveReferences of this Job

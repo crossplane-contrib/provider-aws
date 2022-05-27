@@ -95,8 +95,8 @@ type FargateProfileParameters struct {
 	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	PodExecutionRoleArn string `json:"podExecutionRoleArn,omitempty"`
 
 	// PodExecutionRoleArnRef is a reference to an IAMRole used to set
@@ -123,7 +123,7 @@ type FargateProfileParameters struct {
 	// no direct route to an Internet Gateway) are accepted for this parameter.
 	// +optional
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetSelector
 	Subnets []string `json:"subnets,omitempty"`

@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const fmtCanonical = "%s.%s"

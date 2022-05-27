@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
@@ -18,9 +18,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/sns"
-	"github.com/crossplane/provider-aws/pkg/clients/sns/fake"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns/fake"
 )
 
 var (

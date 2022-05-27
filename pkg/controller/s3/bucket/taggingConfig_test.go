@@ -26,12 +26,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 )
 
 var (

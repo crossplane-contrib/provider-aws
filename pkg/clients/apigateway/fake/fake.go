@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/apigateway"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/apigateway"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
 // ensures its a valid client

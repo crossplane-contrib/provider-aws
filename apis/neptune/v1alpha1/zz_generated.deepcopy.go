@@ -1752,8 +1752,8 @@ func (in *EventSubscription) DeepCopyInto(out *EventSubscription) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SnsTopicARN != nil {
-		in, out := &in.SnsTopicARN, &out.SnsTopicARN
+	if in.SNSTopicARN != nil {
+		in, out := &in.SNSTopicARN, &out.SNSTopicARN
 		*out = new(string)
 		**out = **in
 	}

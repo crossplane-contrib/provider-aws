@@ -22,7 +22,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ecr/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -38,9 +38,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
-	"github.com/crossplane/provider-aws/pkg/clients/ecr/fake"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	ecr "github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr/fake"
 )
 
 var (

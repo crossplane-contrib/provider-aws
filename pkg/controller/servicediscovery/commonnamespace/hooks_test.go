@@ -31,10 +31,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	svcclient "github.com/crossplane/provider-aws/pkg/clients/servicediscovery"
-	"github.com/crossplane/provider-aws/pkg/clients/servicediscovery/fake"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	svcclient "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery/fake"
 )
 
 const (

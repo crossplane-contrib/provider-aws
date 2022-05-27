@@ -16,8 +16,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/dax/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // SetupParameterGroup adds a controller that reconciles ParameterGroup.

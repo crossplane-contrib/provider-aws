@@ -54,7 +54,7 @@ type CustomConfigurationInfo struct {
 // CustomBrokerNodeGroupInfo contains the additional fields for BrokerNodeGroupInfo.
 type CustomBrokerNodeGroupInfo struct {
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=ClientSubnetRefs
 	// +crossplane:generate:reference:selectorFieldName=ClientSubnetSelector
 	ClientSubnets []*string `json:"clientSubnets,omitempty"`
@@ -72,7 +72,7 @@ type CustomBrokerNodeGroupInfo struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupRefs
 	// +crossplane:generate:reference:selectorFieldName=SecurityGroupSelector
 	SecurityGroups []*string `json:"securityGroups,omitempty"`

@@ -23,7 +23,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/acmpca/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
@@ -38,9 +38,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
-	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	acmpca "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca/fake"
 )
 
 var (

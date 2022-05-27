@@ -8,8 +8,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/google/go-cmp/cmp"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	apigwclient "github.com/crossplane/provider-aws/pkg/clients/apigateway"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
 func normalizePolicy(p *string) (*string, error) {

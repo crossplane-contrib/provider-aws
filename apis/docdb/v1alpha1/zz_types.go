@@ -339,7 +339,7 @@ type EventSubscription struct {
 
 	EventSubscriptionARN *string `json:"eventSubscriptionARN,omitempty"`
 
-	SnsTopicARN *string `json:"snsTopicARN,omitempty"`
+	SNSTopicARN *string `json:"snsTopicARN,omitempty"`
 
 	SourceType *string `json:"sourceType,omitempty"`
 

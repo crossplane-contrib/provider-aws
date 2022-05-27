@@ -15,12 +15,12 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
