@@ -5,25 +5,25 @@ go 1.17
 require (
 	github.com/aws/aws-sdk-go v1.42.0
 	github.com/aws/aws-sdk-go-v2 v1.16.2
-	github.com/aws/aws-sdk-go-v2/config v1.10.0
-	github.com/aws/aws-sdk-go-v2/credentials v1.6.0
-	github.com/aws/aws-sdk-go-v2/service/acm v1.8.0
-	github.com/aws/aws-sdk-go-v2/service/acmpca v1.10.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.21.0
-	github.com/aws/aws-sdk-go-v2/service/ecr v1.9.0
-	github.com/aws/aws-sdk-go-v2/service/eks v1.12.0
-	github.com/aws/aws-sdk-go-v2/service/elasticache v1.13.0
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.8.0
-	github.com/aws/aws-sdk-go-v2/service/iam v1.12.0
+	github.com/aws/aws-sdk-go-v2/config v1.11.1
+	github.com/aws/aws-sdk-go-v2/credentials v1.6.5
+	github.com/aws/aws-sdk-go-v2/service/acm v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/acmpca v1.12.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.26.0
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.12.0
+	github.com/aws/aws-sdk-go-v2/service/eks v1.16.0
+	github.com/aws/aws-sdk-go-v2/service/elasticache v1.16.0
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/iam v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.21.1
-	github.com/aws/aws-sdk-go-v2/service/rds v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/redshift v1.13.0
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.13.0
+	github.com/aws/aws-sdk-go-v2/service/rds v1.14.0
+	github.com/aws/aws-sdk-go-v2/service/redshift v1.17.0
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/route53resolver v1.10.2
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.18.0
-	github.com/aws/aws-sdk-go-v2/service/sns v1.10.0
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.9.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.22.0
+	github.com/aws/aws-sdk-go-v2/service/sns v1.13.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.14.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.12.0
 	github.com/aws/smithy-go v1.11.2
 	github.com/crossplane/crossplane-runtime v0.15.1-0.20220315141414-988c9ba9c255
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
@@ -51,14 +51,14 @@ require (
 	github.com/armon/go-metrics v0.3.9 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.0 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.3 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.5.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.9.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.6.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.9.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
