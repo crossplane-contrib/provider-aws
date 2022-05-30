@@ -63,6 +63,7 @@ import (
 	mwaav1alpha1 "github.com/crossplane/provider-aws/apis/mwaa/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane/provider-aws/apis/neptune/v1alpha1"
 	notificationv1alpha1 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	opensearchservicev1alpha1 "github.com/crossplane/provider-aws/apis/opensearchservice/v1alpha1"
 	prometheusservice "github.com/crossplane/provider-aws/apis/prometheusservice/v1alpha1"
 	ramv1alpha1 "github.com/crossplane/provider-aws/apis/ram/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
@@ -149,6 +150,7 @@ func init() {
 		prometheusservice.SchemeBuilder.AddToScheme,
 		cloudsearchv1alpha1.AddToScheme,
 		apigatewayv1alpha1.AddToScheme,
+		opensearchservicev1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

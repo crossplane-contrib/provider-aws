@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -131,6 +133,7 @@ import (
 	neptunecluster "github.com/crossplane/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	opensearchdomain "github.com/crossplane/provider-aws/pkg/controller/opensearchservice/domain"
 	prometheusserviceworkspace "github.com/crossplane/provider-aws/pkg/controller/prometheusservice/workspace"
 	resourceshare "github.com/crossplane/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
@@ -163,6 +166,7 @@ import (
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
+	fmt.Println("aws.go > Setup is creating aws controllers for each resource.")
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
@@ -302,6 +306,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		prometheusserviceworkspace.SetupWorkspace,
 		resource.SetupResource,
 		restapi.SetupRestAPI,
+		opensearchdomain.SetupDomain,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

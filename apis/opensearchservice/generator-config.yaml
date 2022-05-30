@@ -1,0 +1,14 @@
+model_name: opensearch
+ignore:
+  resource_names:
+    - Package
+    - OutboundConnection
+  field_paths:
+    - CreateDomainInput.DomainName
+    - DeleteDomainInput.DomainName
+resources:
+  Domain:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
