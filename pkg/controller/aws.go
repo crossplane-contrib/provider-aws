@@ -138,6 +138,7 @@ import (
 	neptunecluster "github.com/crossplane-contrib/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snstopic"
+	opensearchdomain "github.com/crossplane-contrib/provider-aws/pkg/controller/opensearchservice/domain"
 	prometheusserviceworkspace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/workspace"
 	resourceshare "github.com/crossplane-contrib/provider-aws/pkg/controller/ram/resourceshare"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/dbcluster"
@@ -165,7 +166,6 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sqs/queue"
 	transferserver "github.com/crossplane-contrib/provider-aws/pkg/controller/transfer/server"
 	transferuser "github.com/crossplane-contrib/provider-aws/pkg/controller/transfer/user"
-	opensearchdomain "github.com/crossplane/provider-aws/pkg/controller/opensearchservice/domain"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
