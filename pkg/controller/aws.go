@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -163,11 +165,13 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sqs/queue"
 	transferserver "github.com/crossplane-contrib/provider-aws/pkg/controller/transfer/server"
 	transferuser "github.com/crossplane-contrib/provider-aws/pkg/controller/transfer/user"
+	opensearchdomain "github.com/crossplane/provider-aws/pkg/controller/opensearchservice/domain"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
+	fmt.Println("aws.go > Setup is creating aws controllers for each resource.")
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
@@ -312,6 +316,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		prometheusserviceworkspace.SetupWorkspace,
 		resource.SetupResource,
 		restapi.SetupRestAPI,
+		opensearchdomain.SetupDomain,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

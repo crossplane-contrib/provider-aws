@@ -83,6 +83,7 @@ import (
 	awsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsv1alpha3 "github.com/crossplane-contrib/provider-aws/apis/v1alpha3"
 	awsv1beta1 "github.com/crossplane-contrib/provider-aws/apis/v1beta1"
+	opensearchservicev1alpha1 "github.com/crossplane/provider-aws/apis/opensearchservice/v1alpha1"
 )
 
 func init() {
@@ -151,6 +152,7 @@ func init() {
 		prometheusservice.SchemeBuilder.AddToScheme,
 		cloudsearchv1alpha1.AddToScheme,
 		apigatewayv1alpha1.AddToScheme,
+		opensearchservicev1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
