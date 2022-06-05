@@ -53,6 +53,7 @@ func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
 			u := &updater{client: e.client}
 			e.isUpToDate = u.isUpToDate
 			e.update = u.update
+			e.preObserve = preObserve
 		},
 	}
 
@@ -89,6 +90,11 @@ func filterList(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) *
 		}
 	}
 	return resp
+}
+
+func preObserve(ctx context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsInput) error {
+	obj.SetLogGroupNamePrefix(meta.GetExternalName(cr))
+	return nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
