@@ -242,7 +242,83 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 	}
 }
 
-func TestGenerateUpdateClusterInput(t *testing.T) {
+func TestGenerateUpdateClusterConfigInputForLogging(t *testing.T) {
+	type args struct {
+		name string
+		p    *v1beta1.ClusterParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want *eks.UpdateClusterConfigInput
+	}{
+		"AllFields": {
+			args: args{
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					EncryptionConfig: []v1beta1.EncryptionConfig{
+						{
+							Provider: v1beta1.Provider{
+								KeyArn: keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &v1beta1.Logging{
+						ClusterLogging: []v1beta1.LogSetup{
+							{
+								Enabled: &trueVal,
+								Types: []v1beta1.LogType{
+									v1beta1.LogTypeAPI,
+									v1beta1.LogTypeAudit,
+									v1beta1.LogTypeAuthenticator,
+									v1beta1.LogTypeControllerManager,
+									v1beta1.LogTypeScheduler,
+								},
+							},
+						},
+					},
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					},
+					RoleArn: roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: &eks.UpdateClusterConfigInput{
+				Logging: &ekstypes.Logging{
+					ClusterLogging: []ekstypes.LogSetup{
+						{
+							Enabled: &trueVal,
+							Types: []ekstypes.LogType{
+								ekstypes.LogTypeApi,
+								ekstypes.LogTypeAudit,
+								ekstypes.LogTypeAuthenticator,
+								ekstypes.LogTypeControllerManager,
+								ekstypes.LogTypeScheduler,
+							},
+						},
+					},
+				},
+				Name: &clusterName,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateUpdateClusterConfigInputForLogging(tc.args.name, tc.args.p)
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateUpdateClusterConfigInputForVPC(t *testing.T) {
 	type args struct {
 		name string
 		p    *v1beta1.ClusterParameters
@@ -285,38 +361,6 @@ func TestGenerateUpdateClusterInput(t *testing.T) {
 				},
 			},
 			want: &eks.UpdateClusterConfigInput{
-				Logging: &ekstypes.Logging{
-					ClusterLogging: []ekstypes.LogSetup{
-						{
-							Enabled: &falseVal,
-							Types: []ekstypes.LogType{
-								ekstypes.LogTypeApi,
-							},
-						},
-					},
-				},
-				Name: &clusterName,
-				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
-					EndpointPrivateAccess: &trueVal,
-					EndpointPublicAccess:  &trueVal,
-					PublicAccessCidrs:     []string{"0.0.0.0/0"},
-				},
-			},
-		},
-		"SomeFields": {
-			args: args{
-				name: clusterName,
-				p: &v1beta1.ClusterParameters{
-					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
-						EndpointPrivateAccess: &trueVal,
-						EndpointPublicAccess:  &trueVal,
-						PublicAccessCidrs:     []string{"0.0.0.0/0"},
-					},
-					RoleArn: roleArn,
-					Version: &version,
-				},
-			},
-			want: &eks.UpdateClusterConfigInput{
 				Name: &clusterName,
 				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
 					EndpointPrivateAccess: &trueVal,
@@ -329,7 +373,7 @@ func TestGenerateUpdateClusterInput(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := GenerateUpdateClusterConfigInput(tc.args.name, tc.args.p)
+			got := GenerateUpdateClusterConfigInputForVPC(tc.args.name, tc.args.p)
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
