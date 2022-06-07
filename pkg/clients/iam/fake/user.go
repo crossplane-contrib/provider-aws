@@ -27,12 +27,21 @@ import (
 // this ensures that the mock implements the client interface
 var _ clientset.UserClient = (*MockUserClient)(nil)
 
+// MockUserInput holds the input structures for test inspections
+type MockUserInput struct {
+	TagUserInput   *iam.TagUserInput
+	UntagUserInput *iam.UntagUserInput
+}
+
 // MockUserClient is a type that implements all the methods for RoleClient interface
 type MockUserClient struct {
+	MockUserInput  MockUserInput
 	MockGetUser    func(ctx context.Context, input *iam.GetUserInput, opts []func(*iam.Options)) (*iam.GetUserOutput, error)
 	MockCreateUser func(ctx context.Context, input *iam.CreateUserInput, opts []func(*iam.Options)) (*iam.CreateUserOutput, error)
 	MockDeleteUser func(ctx context.Context, input *iam.DeleteUserInput, opts []func(*iam.Options)) (*iam.DeleteUserOutput, error)
 	MockUpdateUser func(ctx context.Context, input *iam.UpdateUserInput, opts []func(*iam.Options)) (*iam.UpdateUserOutput, error)
+	MockTagUser    func(ctx context.Context, input *iam.TagUserInput, opt []func(*iam.Options)) (*iam.TagUserOutput, error)
+	MockUntagUser  func(ctx context.Context, input *iam.UntagUserInput, opts []func(*iam.Options)) (*iam.UntagUserOutput, error)
 }
 
 // GetUser mocks GetUser method
@@ -53,4 +62,16 @@ func (m *MockUserClient) DeleteUser(ctx context.Context, input *iam.DeleteUserIn
 // UpdateUser mocks UpdateUser method
 func (m *MockUserClient) UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error) {
 	return m.MockUpdateUser(ctx, input, opts)
+}
+
+// TagUser mocks TagUser method
+func (m *MockUserClient) TagUser(ctx context.Context, input *iam.TagUserInput, opts ...func(*iam.Options)) (*iam.TagUserOutput, error) {
+	m.MockUserInput.TagUserInput = input
+	return m.MockTagUser(ctx, input, opts)
+}
+
+// UntagUser mocks UntagUser method
+func (m *MockUserClient) UntagUser(ctx context.Context, input *iam.UntagUserInput, opts ...func(*iam.Options)) (*iam.UntagUserOutput, error) {
+	m.MockUserInput.UntagUserInput = input
+	return m.MockUntagUser(ctx, input, opts)
 }
