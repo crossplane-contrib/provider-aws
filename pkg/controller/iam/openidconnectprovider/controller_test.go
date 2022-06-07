@@ -774,6 +774,19 @@ func TestInitialize(t *testing.T) {
 				cr: oidcProvider(withTags(resource.GetExternalTags(oidcProvider(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
 			},
 		},
+		"NoChanges": {
+			args: args{
+				cr: oidcProvider(
+					withTags(map[string]string{"foo": "bar"}),
+					withGroupVersionKind()),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: oidcProvider(
+					withTags(resource.GetExternalTags(oidcProvider(withGroupVersionKind())), map[string]string{"foo": "bar"}),
+					withGroupVersionKind()),
+			},
+		},
 		"UpdateFailed": {
 			args: args{
 				cr:   oidcProvider(),

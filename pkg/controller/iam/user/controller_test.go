@@ -714,6 +714,17 @@ func TestTagger_Initialize(t *testing.T) {
 					withTags(resource.GetExternalTags(user(withGroupVersionKind()))), withGroupVersionKind()),
 			},
 		},
+		"NoChange": {
+			args: args{
+				cr: user(withExternalName(userName), withGroupVersionKind(),
+					withTags(map[string]string{"foo": "bar"}, resource.GetExternalTags(user(withExternalName(userName), withGroupVersionKind())))),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: user(withExternalName(userName), withGroupVersionKind(),
+					withTags(map[string]string{"foo": "bar"}, resource.GetExternalTags(user(withExternalName(userName), withGroupVersionKind())))),
+			},
+		},
 		"UpdateFailed": {
 			args: args{
 				cr:   user(),
