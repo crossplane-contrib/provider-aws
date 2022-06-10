@@ -413,7 +413,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRoleARN != nil || pc.Spec.AssumeRole != nil {
 			cfg, err := UsePodServiceAccountV1AssumeRole(ctx, []byte{}, pc, DefaultSection, region)
 			if err != nil {
 				return nil, errors.Wrap(err, "cannot use pod service account to assume role")
@@ -650,10 +650,8 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 
 // GetAssumeRoleARN gets the AssumeRoleArn from a ProviderConfigSpec
 func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
-	if pcs.AssumeRole != nil {
-		if pcs.AssumeRole.RoleARN != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
-			return pcs.AssumeRole.RoleARN, nil
-		}
+	if pcs.AssumeRole != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
+		return pcs.AssumeRole.RoleARN, nil
 	}
 
 	// Deprecated. Use AssumeRole.RoleARN
