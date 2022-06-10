@@ -176,26 +176,32 @@ func CreatePatch(in *ekstypes.Cluster, target *v1beta1.ClusterParameters) (*v1be
 	return patch, nil
 }
 
-// GenerateUpdateClusterConfigInput from ClusterParameters.
-func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+// GenerateUpdateClusterConfigInputForLogging from ClusterParameters.
+func GenerateUpdateClusterConfigInputForLogging(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
 	u := &eks.UpdateClusterConfigInput{
 		Name: awsclients.String(name),
 	}
 
-	if p.Logging != nil {
-		u.Logging = &ekstypes.Logging{
-			ClusterLogging: make([]ekstypes.LogSetup, len(p.Logging.ClusterLogging)),
+	u.Logging = &ekstypes.Logging{
+		ClusterLogging: make([]ekstypes.LogSetup, len(p.Logging.ClusterLogging)),
+	}
+	for i, cl := range p.Logging.ClusterLogging {
+		types := make([]ekstypes.LogType, len(cl.Types))
+		for j, t := range cl.Types {
+			types[j] = ekstypes.LogType(t)
 		}
-		for i, cl := range p.Logging.ClusterLogging {
-			types := make([]ekstypes.LogType, len(cl.Types))
-			for j, t := range cl.Types {
-				types[j] = ekstypes.LogType(t)
-			}
-			u.Logging.ClusterLogging[i] = ekstypes.LogSetup{
-				Enabled: cl.Enabled,
-				Types:   types,
-			}
+		u.Logging.ClusterLogging[i] = ekstypes.LogSetup{
+			Enabled: cl.Enabled,
+			Types:   types,
 		}
+	}
+	return u
+}
+
+// GenerateUpdateClusterConfigInputForVPC from ClusterParameters.
+func GenerateUpdateClusterConfigInputForVPC(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+	u := &eks.UpdateClusterConfigInput{
+		Name: awsclients.String(name),
 	}
 
 	// NOTE(muvaf): SecurityGroupIds and SubnetIds cannot be updated. They are

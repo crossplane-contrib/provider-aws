@@ -193,7 +193,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: awsclient.String(meta.GetExternalName(cr)), Version: patch.Version})
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
-	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch))
+	if patch.Logging != nil {
+		_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForLogging(meta.GetExternalName(cr), patch))
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+	}
+	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForVPC(meta.GetExternalName(cr), patch))
 	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
