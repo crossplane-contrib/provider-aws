@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1alpha3"
@@ -49,8 +48,8 @@ func IsErrorPolicyNotFound(err error) bool {
 
 // IsErrorBucketNotFound returns true if the error code indicates that the bucket was not found
 func IsErrorBucketNotFound(err error) bool {
-	var nsb *s3types.NoSuchBucket
-	return errors.As(err, &nsb)
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == "NoSuchBucket"
 }
 
 // Serialize is the custom marshaller for the BucketPolicyParameters
