@@ -1002,6 +1002,14 @@ spec:
                     description: AllocatedStorage is the allocated storage size in
                       gibibytes.
                     type: integer
+                  awsBackupRecoveryPointARN:
+                    description: AWSBackupRecoveryPointARN is the Amazon Resource
+                      Name (ARN) of the recovery point in Amazon Web Services Backup.
+                    type: string
+                  backupRetentionPeriod:
+                    description: BackupRetentionPeriod is the number of days for which
+                      automated backups are retained.
+                    type: integer
                   dbInstanceArn:
                     description: DBInstanceArn is the Amazon Resource Name (ARN) for
                       the DB instance.

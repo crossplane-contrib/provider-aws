@@ -59,6 +59,7 @@ var (
 	s3BucketName                    = "database-backup"
 	snapshotIdentifier              = "my-snapshot"
 	pointInTimeDBInstanceIdentifier = "my-instance"
+	awsBackupRecoveryPointARN       = "arn:aws:backup:us-east-1:123456789012:recovery-point:1EB3B5E7-9EB-A80B-108B488B0D45"
 	s3Backup                        = v1beta1.RestoreBackupConfiguration{
 		Source: &s3SourceType,
 		S3: &v1beta1.S3RestoreBackupConfiguration{
@@ -158,6 +159,18 @@ func withDeleteAutomatedBackups(b bool) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.DeleteAutomatedBackups = &b }
 }
 
+func withBackupRetentionPeriod(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.BackupRetentionPeriod = &i }
+}
+
+func withStatusBackupRetentionPeriod(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.BackupRetentionPeriod = &i }
+}
+
+func withStatusAWSBackupRecoveryPointARN(s string) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.AWSBackupRecoveryPointARN = &s }
+}
+
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	falseFlag := false
 	cr := &v1beta1.RDSInstance{
@@ -211,6 +224,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withStatusBackupRetentionPeriod(0),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -239,9 +253,41 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withStatusBackupRetentionPeriod(0),
 					withMaxAllocatedStorage(100),
 					withAllocatedStorage(20),
 					withStatusAllocatedStorage(30),
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"AWSBackupManagedBackupRetentionPeriod": { // Ignore BackupRetentionPeriod if using AWS Backup
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:          aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									BackupRetentionPeriod:     10,
+									AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(1), withStatusBackupRetentionPeriod(1), withStatusAWSBackupRecoveryPointARN(awsBackupRecoveryPointARN)),
+			},
+			want: want{
+				cr: instance(
+					withBackupRetentionPeriod(1),
+					withStatusBackupRetentionPeriod(10),
+					withStatusAWSBackupRecoveryPointARN(awsBackupRecoveryPointARN),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -268,6 +314,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withStatusBackupRetentionPeriod(0),
 					withConditions(xpv1.Deleting()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateDeleting))),
 				result: managed.ExternalObservation{
@@ -294,6 +341,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withStatusBackupRetentionPeriod(0),
 					withConditions(xpv1.Unavailable()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateFailed))),
 				result: managed.ExternalObservation{
@@ -348,6 +396,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
+					withStatusBackupRetentionPeriod(0),
 					withEngineVersion(&engineVersion),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateCreating)),
 					withConditions(xpv1.Creating()),

@@ -333,6 +333,11 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 		currentParams.AllocatedStorage = target.AllocatedStorage
 	}
 
+	// AWS Backup takes ownership of backupRetentionPeriod if it is in use, so we need to exclude the field in the diff
+	if in.AwsBackupRecoveryPointArn != nil && target.BackupRetentionPeriod != nil {
+		currentParams.BackupRetentionPeriod = target.BackupRetentionPeriod
+	}
+
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -411,6 +416,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
 		AllocatedStorage:                      int(db.AllocatedStorage),
+		AWSBackupRecoveryPointARN:             db.AwsBackupRecoveryPointArn,
+		BackupRetentionPeriod:                 aws.Int(int(db.BackupRetentionPeriod)),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),

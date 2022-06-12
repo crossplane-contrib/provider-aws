@@ -1138,6 +1138,12 @@ type VPCSecurityGroupMembership struct {
 
 // RDSInstanceObservation is the representation of the current state that is observed.
 type RDSInstanceObservation struct {
+	// AWSBackupRecoveryPointARN is the Amazon Resource Name (ARN) of the recovery point in Amazon Web Services Backup.
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
+
+	// BackupRetentionPeriod is the number of days for which automated backups are retained.
+	BackupRetentionPeriod *int `json:"backupRetentionPeriod,omitempty"`
+
 	// DBInstanceStatus specifies the current state of this database.
 	DBInstanceStatus string `json:"dbInstanceStatus,omitempty"`
 
