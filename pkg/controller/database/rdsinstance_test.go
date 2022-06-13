@@ -264,7 +264,7 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		"AWSBackupManagedBackupRetentionPeriod": { // Ignore BackupRetentionPeriod if using AWS Backup
+		"AWSBackupManagedBackupRetentionPeriodIsUpToDate": { // Ignore BackupRetentionPeriod if using AWS Backup
 			args: args{
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
@@ -286,6 +286,35 @@ func TestObserve(t *testing.T) {
 					withBackupRetentionPeriod(1),
 					withStatusBackupRetentionPeriod(10),
 					withStatusAWSBackupRecoveryPointARN(awsBackupRecoveryPointARN),
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"RDSManagedBackupRetentionPeriod": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:      aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									BackupRetentionPeriod: 10,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(10), withStatusBackupRetentionPeriod(10)),
+			},
+			want: want{
+				cr: instance(
+					withBackupRetentionPeriod(10),
+					withStatusBackupRetentionPeriod(10),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -724,6 +753,33 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+			},
+		},
+		"AWSManagedBackupRetentionTargetIgnore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						if input.BackupRetentionPeriod != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("BackupRetentionPeriod must not be set when AWS Backup is used")
+						}
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{
+								BackupRetentionPeriod:     7,
+								AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
+							}},
+						}, nil
+					},
+					MockAddTags: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7)),
+			},
+			want: want{
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7)),
 			},
 		},
 		"AlreadyModifying": {
