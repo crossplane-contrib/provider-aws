@@ -30,7 +30,7 @@ spec:
         forwardConfig:
           targetGroups:
             - targetGroupArnRef:
-                name: test-targetgroup
+                name: test-targetgroup-with-ip-target
     loadBalancerArnRef:
       name: test-loadbalancer
     port: 8080

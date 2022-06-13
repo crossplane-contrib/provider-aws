@@ -91,6 +91,9 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecr/lifecyclepolicy"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecr/repositorypolicy"
+	ecscluster "github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/cluster"
+	ecsservice "github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/service"
+	ecstask "github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/taskdefinition"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/efs/accesspoint"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/efs/filesystem"
 	efsmounttarget "github.com/crossplane-contrib/provider-aws/pkg/controller/efs/mounttarget"
@@ -183,6 +186,9 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		docdbcluster.SetupDBCluster,
 		docdbclusterparametergroup.SetupDBClusterParameterGroup,
 		docdbsubnetgroup.SetupDBSubnetGroup,
+		ecscluster.SetupCluster,
+		ecsservice.SetupService,
+		ecstask.SetupTaskDefinition,
 		eks.SetupCluster,
 		eksaddon.SetupAddon,
 		identityproviderconfig.SetupIdentityProviderConfig,
