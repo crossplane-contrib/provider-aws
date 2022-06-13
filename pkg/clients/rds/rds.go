@@ -416,8 +416,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
 		AllocatedStorage:                      int(db.AllocatedStorage),
-		AWSBackupRecoveryPointARN:             db.AwsBackupRecoveryPointArn,
-		BackupRetentionPeriod:                 aws.Int(int(db.BackupRetentionPeriod)),
+		AWSBackupRecoveryPointARN:             aws.ToString(db.AwsBackupRecoveryPointArn),
+		BackupRetentionPeriod:                 int(db.BackupRetentionPeriod),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),
