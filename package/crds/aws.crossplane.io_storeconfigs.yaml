@@ -12,7 +12,7 @@ spec:
     categories:
     - crossplane
     - store
-    - gcp
+    - aws
     kind: StoreConfig
     listKind: StoreConfigList
     plural: storeconfigs
@@ -32,7 +32,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: A StoreConfig configures how GCP controller should store connection
+        description: A StoreConfig configures how AWS controller should store connection
           details.
         properties:
           apiVersion:
