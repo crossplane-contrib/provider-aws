@@ -670,7 +670,7 @@ func (in *CustomBackupParameters) DeepCopyInto(out *CustomBackupParameters) {
 	if in.TableNameRef != nil {
 		in, out := &in.TableNameRef, &out.TableNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TableNameSelector != nil {
 		in, out := &in.TableNameSelector, &out.TableNameSelector

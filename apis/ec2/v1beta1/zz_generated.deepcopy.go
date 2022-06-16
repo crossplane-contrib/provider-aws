@@ -190,7 +190,7 @@ func (in *Association) DeepCopyInto(out *Association) {
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -432,7 +432,7 @@ func (in *InternetGatewayParameters) DeepCopyInto(out *InternetGatewayParameters
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -603,7 +603,7 @@ func (in *NATGatewayParameters) DeepCopyInto(out *NATGatewayParameters) {
 	if in.AllocationIDRef != nil {
 		in, out := &in.AllocationIDRef, &out.AllocationIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.AllocationIDSelector != nil {
 		in, out := &in.AllocationIDSelector, &out.AllocationIDSelector
@@ -618,7 +618,7 @@ func (in *NATGatewayParameters) DeepCopyInto(out *NATGatewayParameters) {
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -722,7 +722,7 @@ func (in *RouteBeta) DeepCopyInto(out *RouteBeta) {
 	if in.GatewayIDRef != nil {
 		in, out := &in.GatewayIDRef, &out.GatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.GatewayIDSelector != nil {
 		in, out := &in.GatewayIDSelector, &out.GatewayIDSelector
@@ -747,7 +747,7 @@ func (in *RouteBeta) DeepCopyInto(out *RouteBeta) {
 	if in.NatGatewayIDRef != nil {
 		in, out := &in.NatGatewayIDRef, &out.NatGatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.NatGatewayIDSelector != nil {
 		in, out := &in.NatGatewayIDSelector, &out.NatGatewayIDSelector
@@ -917,7 +917,7 @@ func (in *RouteTableParameters) DeepCopyInto(out *RouteTableParameters) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -1079,7 +1079,7 @@ func (in *SecurityGroupParameters) DeepCopyInto(out *SecurityGroupParameters) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -1252,7 +1252,7 @@ func (in *SubnetParameters) DeepCopyInto(out *SubnetParameters) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -1336,7 +1336,7 @@ func (in *UserIDGroupPair) DeepCopyInto(out *UserIDGroupPair) {
 	if in.GroupIDRef != nil {
 		in, out := &in.GroupIDRef, &out.GroupIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.GroupIDSelector != nil {
 		in, out := &in.GroupIDSelector, &out.GroupIDSelector
@@ -1361,7 +1361,7 @@ func (in *UserIDGroupPair) DeepCopyInto(out *UserIDGroupPair) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -1540,7 +1540,7 @@ func (in *VPCCIDRBlockParameters) DeepCopyInto(out *VPCCIDRBlockParameters) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector

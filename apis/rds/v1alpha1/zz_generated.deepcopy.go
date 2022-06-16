@@ -410,7 +410,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
@@ -420,7 +420,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.KMSKeyIDRef != nil {
 		in, out := &in.KMSKeyIDRef, &out.KMSKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyIDSelector != nil {
 		in, out := &in.KMSKeyIDSelector, &out.KMSKeyIDSelector
@@ -436,7 +436,9 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
@@ -446,7 +448,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
@@ -456,7 +458,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBClusterParameterGroupNameRef != nil {
 		in, out := &in.DBClusterParameterGroupNameRef, &out.DBClusterParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterParameterGroupNameSelector != nil {
 		in, out := &in.DBClusterParameterGroupNameSelector, &out.DBClusterParameterGroupNameSelector
@@ -486,7 +488,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBClusterIdentifierRef != nil {
 		in, out := &in.DBClusterIdentifierRef, &out.DBClusterIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterIdentifierSelector != nil {
 		in, out := &in.DBClusterIdentifierSelector, &out.DBClusterIdentifierSelector
@@ -501,7 +503,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
@@ -511,7 +513,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
@@ -526,7 +528,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.MonitoringRoleARNRef != nil {
 		in, out := &in.MonitoringRoleARNRef, &out.MonitoringRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.MonitoringRoleARNSelector != nil {
 		in, out := &in.MonitoringRoleARNSelector, &out.MonitoringRoleARNSelector
@@ -541,7 +543,9 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
@@ -551,7 +555,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBParameterGroupNameRef != nil {
 		in, out := &in.DBParameterGroupNameRef, &out.DBParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBParameterGroupNameSelector != nil {
 		in, out := &in.DBParameterGroupNameSelector, &out.DBParameterGroupNameSelector
@@ -586,7 +590,7 @@ func (in *CustomDBInstanceRoleAssociationParameters) DeepCopyInto(out *CustomDBI
 	if in.DBInstanceIdentifierRef != nil {
 		in, out := &in.DBInstanceIdentifierRef, &out.DBInstanceIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBInstanceIdentifierSelector != nil {
 		in, out := &in.DBInstanceIdentifierSelector, &out.DBInstanceIdentifierSelector
@@ -601,7 +605,7 @@ func (in *CustomDBInstanceRoleAssociationParameters) DeepCopyInto(out *CustomDBI
 	if in.RoleARNRef != nil {
 		in, out := &in.RoleARNRef, &out.RoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleARNSelector != nil {
 		in, out := &in.RoleARNSelector, &out.RoleARNSelector
@@ -658,7 +662,7 @@ func (in *CustomGlobalClusterParameters) DeepCopyInto(out *CustomGlobalClusterPa
 	if in.SourceDBClusterIdentifierRef != nil {
 		in, out := &in.SourceDBClusterIdentifierRef, &out.SourceDBClusterIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SourceDBClusterIdentifierSelector != nil {
 		in, out := &in.SourceDBClusterIdentifierSelector, &out.SourceDBClusterIdentifierSelector

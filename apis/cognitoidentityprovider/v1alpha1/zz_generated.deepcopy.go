@@ -302,7 +302,7 @@ func (in *CustomGroupParameters) DeepCopyInto(out *CustomGroupParameters) {
 	if in.RoleARNRef != nil {
 		in, out := &in.RoleARNRef, &out.RoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleARNSelector != nil {
 		in, out := &in.RoleARNSelector, &out.RoleARNSelector
@@ -317,7 +317,7 @@ func (in *CustomGroupParameters) DeepCopyInto(out *CustomGroupParameters) {
 	if in.UserPoolIDRef != nil {
 		in, out := &in.UserPoolIDRef, &out.UserPoolIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserPoolIDSelector != nil {
 		in, out := &in.UserPoolIDSelector, &out.UserPoolIDSelector
@@ -347,7 +347,7 @@ func (in *CustomIdentityProviderParameters) DeepCopyInto(out *CustomIdentityProv
 	if in.UserPoolIDRef != nil {
 		in, out := &in.UserPoolIDRef, &out.UserPoolIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserPoolIDSelector != nil {
 		in, out := &in.UserPoolIDSelector, &out.UserPoolIDSelector
@@ -378,7 +378,7 @@ func (in *CustomResourceServerParameters) DeepCopyInto(out *CustomResourceServer
 	if in.UserPoolIDRef != nil {
 		in, out := &in.UserPoolIDRef, &out.UserPoolIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserPoolIDSelector != nil {
 		in, out := &in.UserPoolIDSelector, &out.UserPoolIDSelector
@@ -433,7 +433,7 @@ func (in *CustomUserPoolClientParameters) DeepCopyInto(out *CustomUserPoolClient
 	if in.UserPoolIDRef != nil {
 		in, out := &in.UserPoolIDRef, &out.UserPoolIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserPoolIDSelector != nil {
 		in, out := &in.UserPoolIDSelector, &out.UserPoolIDSelector
@@ -463,7 +463,7 @@ func (in *CustomUserPoolDomainParameters) DeepCopyInto(out *CustomUserPoolDomain
 	if in.UserPoolIDRef != nil {
 		in, out := &in.UserPoolIDRef, &out.UserPoolIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserPoolIDSelector != nil {
 		in, out := &in.UserPoolIDSelector, &out.UserPoolIDSelector

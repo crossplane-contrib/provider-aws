@@ -154,7 +154,7 @@ func (in *QueueParameters) DeepCopyInto(out *QueueParameters) {
 	if in.KMSMasterKeyIDRef != nil {
 		in, out := &in.KMSMasterKeyIDRef, &out.KMSMasterKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSMasterKeyIDSelector != nil {
 		in, out := &in.KMSMasterKeyIDSelector, &out.KMSMasterKeyIDSelector
@@ -240,7 +240,7 @@ func (in *RedrivePolicy) DeepCopyInto(out *RedrivePolicy) {
 	if in.DeadLetterTargetARNRef != nil {
 		in, out := &in.DeadLetterTargetARNRef, &out.DeadLetterTargetARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DeadLetterTargetARNSelector != nil {
 		in, out := &in.DeadLetterTargetARNSelector, &out.DeadLetterTargetARNSelector

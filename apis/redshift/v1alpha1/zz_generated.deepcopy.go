@@ -222,7 +222,9 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	if in.ClusterSecurityGroupRefs != nil {
 		in, out := &in.ClusterSecurityGroupRefs, &out.ClusterSecurityGroupRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.ClusterSecurityGroupSelector != nil {
 		in, out := &in.ClusterSecurityGroupSelector, &out.ClusterSecurityGroupSelector
@@ -292,7 +294,9 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	if in.IAMRoleRefs != nil {
 		in, out := &in.IAMRoleRefs, &out.IAMRoleRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.IAMRoleSelector != nil {
 		in, out := &in.IAMRoleSelector, &out.IAMRoleSelector
@@ -367,7 +371,9 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector

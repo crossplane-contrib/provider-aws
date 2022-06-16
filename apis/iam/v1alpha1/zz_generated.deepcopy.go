@@ -173,7 +173,7 @@ func (in *CustomInstanceProfileParameters) DeepCopyInto(out *CustomInstanceProfi
 	if in.RoleRef != nil {
 		in, out := &in.RoleRef, &out.RoleRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleSelector != nil {
 		in, out := &in.RoleSelector, &out.RoleSelector

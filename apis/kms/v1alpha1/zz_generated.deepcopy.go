@@ -144,7 +144,7 @@ func (in *AliasParameters) DeepCopyInto(out *AliasParameters) {
 	if in.TargetKeyIDRef != nil {
 		in, out := &in.TargetKeyIDRef, &out.TargetKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetKeyIDSelector != nil {
 		in, out := &in.TargetKeyIDSelector, &out.TargetKeyIDSelector

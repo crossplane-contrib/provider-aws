@@ -270,7 +270,7 @@ func (in *CustomStateMachineParameters) DeepCopyInto(out *CustomStateMachinePara
 	if in.RoleARNRef != nil {
 		in, out := &in.RoleARNRef, &out.RoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleARNSelector != nil {
 		in, out := &in.RoleARNSelector, &out.RoleARNSelector

@@ -859,7 +859,7 @@ func (in *CustomAuthorizerParameters) DeepCopyInto(out *CustomAuthorizerParamete
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -889,7 +889,7 @@ func (in *CustomBasePathMappingParameters) DeepCopyInto(out *CustomBasePathMappi
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -919,7 +919,7 @@ func (in *CustomDeploymentParameters) DeepCopyInto(out *CustomDeploymentParamete
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -949,7 +949,7 @@ func (in *CustomDocumentationPartParameters) DeepCopyInto(out *CustomDocumentati
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -979,7 +979,7 @@ func (in *CustomDocumentationVersionParameters) DeepCopyInto(out *CustomDocument
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1024,7 +1024,7 @@ func (in *CustomGatewayResponseParameters) DeepCopyInto(out *CustomGatewayRespon
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1054,7 +1054,7 @@ func (in *CustomIntegrationParameters) DeepCopyInto(out *CustomIntegrationParame
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1069,7 +1069,7 @@ func (in *CustomIntegrationParameters) DeepCopyInto(out *CustomIntegrationParame
 	if in.ResourceIDRef != nil {
 		in, out := &in.ResourceIDRef, &out.ResourceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResourceIDSelector != nil {
 		in, out := &in.ResourceIDSelector, &out.ResourceIDSelector
@@ -1099,7 +1099,7 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1114,7 +1114,7 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	if in.ResourceIDRef != nil {
 		in, out := &in.ResourceIDRef, &out.ResourceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResourceIDSelector != nil {
 		in, out := &in.ResourceIDSelector, &out.ResourceIDSelector
@@ -1144,7 +1144,7 @@ func (in *CustomMethodParameters) DeepCopyInto(out *CustomMethodParameters) {
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1159,7 +1159,7 @@ func (in *CustomMethodParameters) DeepCopyInto(out *CustomMethodParameters) {
 	if in.AuthorizerIDRef != nil {
 		in, out := &in.AuthorizerIDRef, &out.AuthorizerIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.AuthorizerIDSelector != nil {
 		in, out := &in.AuthorizerIDSelector, &out.AuthorizerIDSelector
@@ -1174,7 +1174,7 @@ func (in *CustomMethodParameters) DeepCopyInto(out *CustomMethodParameters) {
 	if in.ResourceIDRef != nil {
 		in, out := &in.ResourceIDRef, &out.ResourceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResourceIDSelector != nil {
 		in, out := &in.ResourceIDSelector, &out.ResourceIDSelector
@@ -1189,7 +1189,7 @@ func (in *CustomMethodParameters) DeepCopyInto(out *CustomMethodParameters) {
 	if in.RequestValidatorIDRef != nil {
 		in, out := &in.RequestValidatorIDRef, &out.RequestValidatorIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RequestValidatorIDSelector != nil {
 		in, out := &in.RequestValidatorIDSelector, &out.RequestValidatorIDSelector
@@ -1219,7 +1219,7 @@ func (in *CustomMethodResponseParameters) DeepCopyInto(out *CustomMethodResponse
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1234,7 +1234,7 @@ func (in *CustomMethodResponseParameters) DeepCopyInto(out *CustomMethodResponse
 	if in.ResourceIDRef != nil {
 		in, out := &in.ResourceIDRef, &out.ResourceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResourceIDSelector != nil {
 		in, out := &in.ResourceIDSelector, &out.ResourceIDSelector
@@ -1264,7 +1264,7 @@ func (in *CustomModelParameters) DeepCopyInto(out *CustomModelParameters) {
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1294,7 +1294,7 @@ func (in *CustomRequestValidatorParameters) DeepCopyInto(out *CustomRequestValid
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1324,7 +1324,7 @@ func (in *CustomResourceParameters) DeepCopyInto(out *CustomResourceParameters) 
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1339,7 +1339,7 @@ func (in *CustomResourceParameters) DeepCopyInto(out *CustomResourceParameters) 
 	if in.ParentResourceIDRef != nil {
 		in, out := &in.ParentResourceIDRef, &out.ParentResourceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ParentResourceIDSelector != nil {
 		in, out := &in.ParentResourceIDSelector, &out.ParentResourceIDSelector
@@ -1384,7 +1384,7 @@ func (in *CustomStageCanarySettings) DeepCopyInto(out *CustomStageCanarySettings
 	if in.DeploymentIDRef != nil {
 		in, out := &in.DeploymentIDRef, &out.DeploymentIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DeploymentIDSelector != nil {
 		in, out := &in.DeploymentIDSelector, &out.DeploymentIDSelector
@@ -1439,7 +1439,7 @@ func (in *CustomStageParameters) DeepCopyInto(out *CustomStageParameters) {
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1454,7 +1454,7 @@ func (in *CustomStageParameters) DeepCopyInto(out *CustomStageParameters) {
 	if in.DeploymentIDRef != nil {
 		in, out := &in.DeploymentIDRef, &out.DeploymentIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DeploymentIDSelector != nil {
 		in, out := &in.DeploymentIDSelector, &out.DeploymentIDSelector
@@ -1489,7 +1489,7 @@ func (in *CustomUsagePlanAPIStage) DeepCopyInto(out *CustomUsagePlanAPIStage) {
 	if in.RestAPIIDRef != nil {
 		in, out := &in.RestAPIIDRef, &out.RestAPIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RestAPIIDSelector != nil {
 		in, out := &in.RestAPIIDSelector, &out.RestAPIIDSelector
@@ -1539,7 +1539,7 @@ func (in *CustomUsagePlanKeyParameters) DeepCopyInto(out *CustomUsagePlanKeyPara
 	if in.UsagePlanIDRef != nil {
 		in, out := &in.UsagePlanIDRef, &out.UsagePlanIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UsagePlanIDSelector != nil {
 		in, out := &in.UsagePlanIDSelector, &out.UsagePlanIDSelector

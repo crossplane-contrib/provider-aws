@@ -2460,7 +2460,7 @@ func (in *CustomLaunchTemplateVersionParameters) DeepCopyInto(out *CustomLaunchT
 	if in.LaunchTemplateIDRef != nil {
 		in, out := &in.LaunchTemplateIDRef, &out.LaunchTemplateIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.LaunchTemplateIDSelector != nil {
 		in, out := &in.LaunchTemplateIDSelector, &out.LaunchTemplateIDSelector
@@ -2475,7 +2475,7 @@ func (in *CustomLaunchTemplateVersionParameters) DeepCopyInto(out *CustomLaunchT
 	if in.LaunchTemplateNameRef != nil {
 		in, out := &in.LaunchTemplateNameRef, &out.LaunchTemplateNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.LaunchTemplateNameSelector != nil {
 		in, out := &in.LaunchTemplateNameSelector, &out.LaunchTemplateNameSelector
@@ -2505,7 +2505,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.TransitGatewayIDRef != nil {
 		in, out := &in.TransitGatewayIDRef, &out.TransitGatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TransitGatewayIDSelector != nil {
 		in, out := &in.TransitGatewayIDSelector, &out.TransitGatewayIDSelector
@@ -2520,7 +2520,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.NATGatewayIDRef != nil {
 		in, out := &in.NATGatewayIDRef, &out.NATGatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.NATGatewayIDSelector != nil {
 		in, out := &in.NATGatewayIDSelector, &out.NATGatewayIDSelector
@@ -2535,7 +2535,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.VPCPeeringConnectionIDRef != nil {
 		in, out := &in.VPCPeeringConnectionIDRef, &out.VPCPeeringConnectionIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCPeeringConnectionIDSelector != nil {
 		in, out := &in.VPCPeeringConnectionIDSelector, &out.VPCPeeringConnectionIDSelector
@@ -2550,7 +2550,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.RouteTableIDRef != nil {
 		in, out := &in.RouteTableIDRef, &out.RouteTableIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RouteTableIDSelector != nil {
 		in, out := &in.RouteTableIDSelector, &out.RouteTableIDSelector
@@ -2565,7 +2565,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.InstanceIDRef != nil {
 		in, out := &in.InstanceIDRef, &out.InstanceIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.InstanceIDSelector != nil {
 		in, out := &in.InstanceIDSelector, &out.InstanceIDSelector
@@ -2580,7 +2580,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.GatewayIDRef != nil {
 		in, out := &in.GatewayIDRef, &out.GatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.GatewayIDSelector != nil {
 		in, out := &in.GatewayIDSelector, &out.GatewayIDSelector
@@ -2632,7 +2632,7 @@ func (in *CustomTransitGatewayRouteParameters) DeepCopyInto(out *CustomTransitGa
 	if in.TransitGatewayAttachmentIDRef != nil {
 		in, out := &in.TransitGatewayAttachmentIDRef, &out.TransitGatewayAttachmentIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TransitGatewayAttachmentIDSelector != nil {
 		in, out := &in.TransitGatewayAttachmentIDSelector, &out.TransitGatewayAttachmentIDSelector
@@ -2647,7 +2647,7 @@ func (in *CustomTransitGatewayRouteParameters) DeepCopyInto(out *CustomTransitGa
 	if in.TransitGatewayRouteTableIDRef != nil {
 		in, out := &in.TransitGatewayRouteTableIDRef, &out.TransitGatewayRouteTableIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TransitGatewayRouteTableIDSelector != nil {
 		in, out := &in.TransitGatewayRouteTableIDSelector, &out.TransitGatewayRouteTableIDSelector
@@ -2677,7 +2677,7 @@ func (in *CustomTransitGatewayRouteTableParameters) DeepCopyInto(out *CustomTran
 	if in.TransitGatewayIDRef != nil {
 		in, out := &in.TransitGatewayIDRef, &out.TransitGatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TransitGatewayIDSelector != nil {
 		in, out := &in.TransitGatewayIDSelector, &out.TransitGatewayIDSelector
@@ -2714,7 +2714,7 @@ func (in *CustomTransitGatewayVPCAttachmentParameters) DeepCopyInto(out *CustomT
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -2735,7 +2735,9 @@ func (in *CustomTransitGatewayVPCAttachmentParameters) DeepCopyInto(out *CustomT
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -2750,7 +2752,7 @@ func (in *CustomTransitGatewayVPCAttachmentParameters) DeepCopyInto(out *CustomT
 	if in.TransitGatewayIDRef != nil {
 		in, out := &in.TransitGatewayIDRef, &out.TransitGatewayIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TransitGatewayIDSelector != nil {
 		in, out := &in.TransitGatewayIDSelector, &out.TransitGatewayIDSelector
@@ -2787,7 +2789,7 @@ func (in *CustomVPCEndpointParameters) DeepCopyInto(out *CustomVPCEndpointParame
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -2808,7 +2810,9 @@ func (in *CustomVPCEndpointParameters) DeepCopyInto(out *CustomVPCEndpointParame
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -2829,7 +2833,9 @@ func (in *CustomVPCEndpointParameters) DeepCopyInto(out *CustomVPCEndpointParame
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -2850,7 +2856,9 @@ func (in *CustomVPCEndpointParameters) DeepCopyInto(out *CustomVPCEndpointParame
 	if in.RouteTableIDRefs != nil {
 		in, out := &in.RouteTableIDRefs, &out.RouteTableIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.RouteTableIDSelector != nil {
 		in, out := &in.RouteTableIDSelector, &out.RouteTableIDSelector
@@ -2893,7 +2901,9 @@ func (in *CustomVPCEndpointServiceConfigurationParameters) DeepCopyInto(out *Cus
 	if in.GatewayLoadBalancerARNRefs != nil {
 		in, out := &in.GatewayLoadBalancerARNRefs, &out.GatewayLoadBalancerARNRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.GatewayLoadBalancerARNSelector != nil {
 		in, out := &in.GatewayLoadBalancerARNSelector, &out.GatewayLoadBalancerARNSelector
@@ -2914,7 +2924,9 @@ func (in *CustomVPCEndpointServiceConfigurationParameters) DeepCopyInto(out *Cus
 	if in.NetworkLoadBalancerARNRefs != nil {
 		in, out := &in.NetworkLoadBalancerARNRefs, &out.NetworkLoadBalancerARNRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.NetworkLoadBalancerARNSelector != nil {
 		in, out := &in.NetworkLoadBalancerARNSelector, &out.NetworkLoadBalancerARNSelector
@@ -2944,7 +2956,7 @@ func (in *CustomVPCPeeringConnectionParameters) DeepCopyInto(out *CustomVPCPeeri
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -2959,7 +2971,7 @@ func (in *CustomVPCPeeringConnectionParameters) DeepCopyInto(out *CustomVPCPeeri
 	if in.PeerVPCIDRef != nil {
 		in, out := &in.PeerVPCIDRef, &out.PeerVPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.PeerVPCIDSelector != nil {
 		in, out := &in.PeerVPCIDSelector, &out.PeerVPCIDSelector
@@ -2996,7 +3008,7 @@ func (in *CustomVolumeParameters) DeepCopyInto(out *CustomVolumeParameters) {
 	if in.KMSKeyIDRef != nil {
 		in, out := &in.KMSKeyIDRef, &out.KMSKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyIDSelector != nil {
 		in, out := &in.KMSKeyIDSelector, &out.KMSKeyIDSelector

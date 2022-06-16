@@ -37,7 +37,9 @@ func (in *CustomResolverEndpointParameters) DeepCopyInto(out *CustomResolverEndp
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -88,7 +90,7 @@ func (in *CustomResolverRuleParameters) DeepCopyInto(out *CustomResolverRulePara
 	if in.ResolverEndpointIDRef != nil {
 		in, out := &in.ResolverEndpointIDRef, &out.ResolverEndpointIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResolverEndpointIDSelector != nil {
 		in, out := &in.ResolverEndpointIDSelector, &out.ResolverEndpointIDSelector
@@ -479,7 +481,7 @@ func (in *IPAddressRequest) DeepCopyInto(out *IPAddressRequest) {
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
