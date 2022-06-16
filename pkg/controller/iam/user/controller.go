@@ -239,9 +239,11 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	defaultTags := resource.GetExternalTags(mgd)
 
 	for i, t := range cr.Spec.ForProvider.Tags {
-		if v, ok := defaultTags[t.Key]; ok && v != t.Value {
-			cr.Spec.ForProvider.Tags[i].Value = v
-			added = true
+		if v, ok := defaultTags[t.Key]; ok {
+			if v != t.Value {
+				cr.Spec.ForProvider.Tags[i].Value = v
+				added = true
+			}
 			delete(defaultTags, t.Key)
 		}
 	}
