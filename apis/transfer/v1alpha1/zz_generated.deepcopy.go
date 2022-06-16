@@ -43,7 +43,9 @@ func (in *CustomEndpointDetails) DeepCopyInto(out *CustomEndpointDetails) {
 	if in.AddressAllocationIDRefs != nil {
 		in, out := &in.AddressAllocationIDRefs, &out.AddressAllocationIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.AddressAllocationIDSelector != nil {
 		in, out := &in.AddressAllocationIDSelector, &out.AddressAllocationIDSelector
@@ -64,7 +66,9 @@ func (in *CustomEndpointDetails) DeepCopyInto(out *CustomEndpointDetails) {
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -85,7 +89,9 @@ func (in *CustomEndpointDetails) DeepCopyInto(out *CustomEndpointDetails) {
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -100,7 +106,7 @@ func (in *CustomEndpointDetails) DeepCopyInto(out *CustomEndpointDetails) {
 	if in.VPCEndpointIDRef != nil {
 		in, out := &in.VPCEndpointIDRef, &out.VPCEndpointIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCEndpointIDSelector != nil {
 		in, out := &in.VPCEndpointIDSelector, &out.VPCEndpointIDSelector
@@ -115,7 +121,7 @@ func (in *CustomEndpointDetails) DeepCopyInto(out *CustomEndpointDetails) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -150,7 +156,7 @@ func (in *CustomServerParameters) DeepCopyInto(out *CustomServerParameters) {
 	if in.CertificateRef != nil {
 		in, out := &in.CertificateRef, &out.CertificateRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.CertificateSelector != nil {
 		in, out := &in.CertificateSelector, &out.CertificateSelector
@@ -165,7 +171,7 @@ func (in *CustomServerParameters) DeepCopyInto(out *CustomServerParameters) {
 	if in.LoggingRoleRef != nil {
 		in, out := &in.LoggingRoleRef, &out.LoggingRoleRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.LoggingRoleSelector != nil {
 		in, out := &in.LoggingRoleSelector, &out.LoggingRoleSelector
@@ -195,7 +201,7 @@ func (in *CustomUserParameters) DeepCopyInto(out *CustomUserParameters) {
 	if in.ServerIDRef != nil {
 		in, out := &in.ServerIDRef, &out.ServerIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ServerIDSelector != nil {
 		in, out := &in.ServerIDSelector, &out.ServerIDSelector
@@ -210,7 +216,7 @@ func (in *CustomUserParameters) DeepCopyInto(out *CustomUserParameters) {
 	if in.RoleRef != nil {
 		in, out := &in.RoleRef, &out.RoleRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleSelector != nil {
 		in, out := &in.RoleSelector, &out.RoleSelector

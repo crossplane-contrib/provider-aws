@@ -1633,7 +1633,7 @@ func (in *CustomCloudWatchEncryption) DeepCopyInto(out *CustomCloudWatchEncrypti
 	if in.KMSKeyARNRef != nil {
 		in, out := &in.KMSKeyARNRef, &out.KMSKeyARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyARNSelector != nil {
 		in, out := &in.KMSKeyARNSelector, &out.KMSKeyARNSelector
@@ -1734,7 +1734,7 @@ func (in *CustomCrawlerParameters) DeepCopyInto(out *CustomCrawlerParameters) {
 	if in.RoleArnRef != nil {
 		in, out := &in.RoleArnRef, &out.RoleArnRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleArnSelector != nil {
 		in, out := &in.RoleArnSelector, &out.RoleArnSelector
@@ -1985,7 +1985,7 @@ func (in *CustomJobBookmarksEncryption) DeepCopyInto(out *CustomJobBookmarksEncr
 	if in.KMSKeyARNRef != nil {
 		in, out := &in.KMSKeyARNRef, &out.KMSKeyARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyARNSelector != nil {
 		in, out := &in.KMSKeyARNSelector, &out.KMSKeyARNSelector
@@ -2010,7 +2010,7 @@ func (in *CustomJobParameters) DeepCopyInto(out *CustomJobParameters) {
 	if in.RoleArnRef != nil {
 		in, out := &in.RoleArnRef, &out.RoleArnRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleArnSelector != nil {
 		in, out := &in.RoleArnSelector, &out.RoleArnSelector
@@ -2045,7 +2045,9 @@ func (in *CustomPhysicalConnectionRequirements) DeepCopyInto(out *CustomPhysical
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -2060,7 +2062,7 @@ func (in *CustomPhysicalConnectionRequirements) DeepCopyInto(out *CustomPhysical
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

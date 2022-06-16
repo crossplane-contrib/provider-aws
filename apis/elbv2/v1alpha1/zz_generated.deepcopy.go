@@ -338,7 +338,7 @@ func (in *CustomAction) DeepCopyInto(out *CustomAction) {
 	if in.TargetGroupARNRef != nil {
 		in, out := &in.TargetGroupARNRef, &out.TargetGroupARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetGroupARNSelector != nil {
 		in, out := &in.TargetGroupARNSelector, &out.TargetGroupARNSelector
@@ -373,7 +373,7 @@ func (in *CustomCertificate) DeepCopyInto(out *CustomCertificate) {
 	if in.CertificateARNRef != nil {
 		in, out := &in.CertificateARNRef, &out.CertificateARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.CertificateARNSelector != nil {
 		in, out := &in.CertificateARNSelector, &out.CertificateARNSelector
@@ -456,7 +456,7 @@ func (in *CustomListenerParameters) DeepCopyInto(out *CustomListenerParameters) 
 	if in.LoadBalancerARNRef != nil {
 		in, out := &in.LoadBalancerARNRef, &out.LoadBalancerARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.LoadBalancerARNSelector != nil {
 		in, out := &in.LoadBalancerARNSelector, &out.LoadBalancerARNSelector
@@ -486,7 +486,9 @@ func (in *CustomLoadBalancerParameters) DeepCopyInto(out *CustomLoadBalancerPara
 	if in.SecurityGroupRefs != nil {
 		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupSelector != nil {
 		in, out := &in.SecurityGroupSelector, &out.SecurityGroupSelector
@@ -496,7 +498,9 @@ func (in *CustomLoadBalancerParameters) DeepCopyInto(out *CustomLoadBalancerPara
 	if in.SubnetRefs != nil {
 		in, out := &in.SubnetRefs, &out.SubnetRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetSelector != nil {
 		in, out := &in.SubnetSelector, &out.SubnetSelector
@@ -521,7 +525,7 @@ func (in *CustomTargetGroupParameters) DeepCopyInto(out *CustomTargetGroupParame
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
@@ -547,7 +551,7 @@ func (in *CustomTargetGroupTuple) DeepCopyInto(out *CustomTargetGroupTuple) {
 	if in.TargetGroupARNRef != nil {
 		in, out := &in.TargetGroupARNRef, &out.TargetGroupARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetGroupARNSelector != nil {
 		in, out := &in.TargetGroupARNSelector, &out.TargetGroupARNSelector

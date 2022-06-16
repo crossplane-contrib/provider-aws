@@ -116,7 +116,7 @@ func (in *PermissionParameters) DeepCopyInto(out *PermissionParameters) {
 	if in.FunctionNameRef != nil {
 		in, out := &in.FunctionNameRef, &out.FunctionNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.FunctionNameSelector != nil {
 		in, out := &in.FunctionNameSelector, &out.FunctionNameSelector

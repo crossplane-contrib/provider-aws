@@ -422,7 +422,7 @@ func (in *ResourceRecordSetParameters) DeepCopyInto(out *ResourceRecordSetParame
 	if in.ZoneIDRef != nil {
 		in, out := &in.ZoneIDRef, &out.ZoneIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ZoneIDSelector != nil {
 		in, out := &in.ZoneIDSelector, &out.ZoneIDSelector
@@ -490,7 +490,7 @@ func (in *VPC) DeepCopyInto(out *VPC) {
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector

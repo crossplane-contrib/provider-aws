@@ -37,7 +37,7 @@ func (in *CustomEnvironmentParameters) DeepCopyInto(out *CustomEnvironmentParame
 	if in.KMSKeyRef != nil {
 		in, out := &in.KMSKeyRef, &out.KMSKeyRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeySelector != nil {
 		in, out := &in.KMSKeySelector, &out.KMSKeySelector
@@ -52,7 +52,7 @@ func (in *CustomEnvironmentParameters) DeepCopyInto(out *CustomEnvironmentParame
 	if in.SourceBucketARNRef != nil {
 		in, out := &in.SourceBucketARNRef, &out.SourceBucketARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SourceBucketARNSelector != nil {
 		in, out := &in.SourceBucketARNSelector, &out.SourceBucketARNSelector
@@ -67,7 +67,7 @@ func (in *CustomEnvironmentParameters) DeepCopyInto(out *CustomEnvironmentParame
 	if in.ExecutionRoleARNRef != nil {
 		in, out := &in.ExecutionRoleARNRef, &out.ExecutionRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ExecutionRoleARNSelector != nil {
 		in, out := &in.ExecutionRoleARNSelector, &out.ExecutionRoleARNSelector
@@ -98,7 +98,9 @@ func (in *CustomNetworkConfiguration) DeepCopyInto(out *CustomNetworkConfigurati
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -113,7 +115,9 @@ func (in *CustomNetworkConfiguration) DeepCopyInto(out *CustomNetworkConfigurati
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

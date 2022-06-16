@@ -117,7 +117,7 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 	if in.CertificateAuthorityARNRef != nil {
 		in, out := &in.CertificateAuthorityARNRef, &out.CertificateAuthorityARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.CertificateAuthorityARNSelector != nil {
 		in, out := &in.CertificateAuthorityARNSelector, &out.CertificateAuthorityARNSelector

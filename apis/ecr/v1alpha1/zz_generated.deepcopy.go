@@ -37,7 +37,7 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	if in.UserARNRef != nil {
 		in, out := &in.UserARNRef, &out.UserARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserARNSelector != nil {
 		in, out := &in.UserARNSelector, &out.UserARNSelector
@@ -57,7 +57,7 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	if in.IAMRoleARNRef != nil {
 		in, out := &in.IAMRoleARNRef, &out.IAMRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.IAMRoleARNSelector != nil {
 		in, out := &in.IAMRoleARNSelector, &out.IAMRoleARNSelector
@@ -148,7 +148,7 @@ func (in *CustomLifecyclePolicyParameters) DeepCopyInto(out *CustomLifecyclePoli
 	if in.RepositoryNameRef != nil {
 		in, out := &in.RepositoryNameRef, &out.RepositoryNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RepositoryNameSelector != nil {
 		in, out := &in.RepositoryNameSelector, &out.RepositoryNameSelector
@@ -586,7 +586,7 @@ func (in *RepositoryPolicyParameters) DeepCopyInto(out *RepositoryPolicyParamete
 	if in.RepositoryNameRef != nil {
 		in, out := &in.RepositoryNameRef, &out.RepositoryNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RepositoryNameSelector != nil {
 		in, out := &in.RepositoryNameSelector, &out.RepositoryNameSelector

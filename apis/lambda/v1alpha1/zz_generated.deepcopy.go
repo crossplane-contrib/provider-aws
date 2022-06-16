@@ -152,7 +152,7 @@ func (in *CustomFunctionCodeParameters) DeepCopyInto(out *CustomFunctionCodePara
 	if in.S3BucketRef != nil {
 		in, out := &in.S3BucketRef, &out.S3BucketRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.S3BucketSelector != nil {
 		in, out := &in.S3BucketSelector, &out.S3BucketSelector
@@ -177,7 +177,7 @@ func (in *CustomFunctionParameters) DeepCopyInto(out *CustomFunctionParameters) 
 	if in.KMSKeyARNRef != nil {
 		in, out := &in.KMSKeyARNRef, &out.KMSKeyARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyARNSelector != nil {
 		in, out := &in.KMSKeyARNSelector, &out.KMSKeyARNSelector
@@ -192,7 +192,7 @@ func (in *CustomFunctionParameters) DeepCopyInto(out *CustomFunctionParameters) 
 	if in.RoleRef != nil {
 		in, out := &in.RoleRef, &out.RoleRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleSelector != nil {
 		in, out := &in.RoleSelector, &out.RoleSelector
@@ -234,7 +234,9 @@ func (in *CustomFunctionVPCConfigParameters) DeepCopyInto(out *CustomFunctionVPC
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -255,7 +257,9 @@ func (in *CustomFunctionVPCConfigParameters) DeepCopyInto(out *CustomFunctionVPC
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

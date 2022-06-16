@@ -121,7 +121,7 @@ func (in *SNSSubscriptionParameters) DeepCopyInto(out *SNSSubscriptionParameters
 	if in.TopicARNRef != nil {
 		in, out := &in.TopicARNRef, &out.TopicARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TopicARNSelector != nil {
 		in, out := &in.TopicARNSelector, &out.TopicARNSelector
