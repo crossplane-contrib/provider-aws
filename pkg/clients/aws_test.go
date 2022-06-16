@@ -19,6 +19,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -1205,5 +1206,67 @@ func TestLateInitInt64PtrSlice(t *testing.T) {
 				t.Errorf("\nLateInitializeInt64PtrSlice(...): -got, +want:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestUsePodServiceAccount(t *testing.T) {
+	awsRegion := "eu-somewhere-1"
+	err := os.Setenv("AWS_REGION", awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := map[string]string{
+		"us-west-2":     "us-west-2",
+		"us-gov-east-1": "us-gov-east-1",
+		GlobalRegion:    awsRegion,
+	}
+	for inpuRegion, expectedRegion := range cases {
+		cfg, tErr := UsePodServiceAccount(context.Background(), nil, DefaultSection, inpuRegion)
+		if tErr != nil {
+			t.Error(tErr)
+			continue
+		}
+		if cfg.Region != expectedRegion {
+			t.Errorf("expected region was not returend. expected: %s, actually: %s", expectedRegion, cfg.Region)
+		}
+	}
+	err = os.Unsetenv("AWS_REGION")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestUsePodServiceAccountAssumeRole(t *testing.T) {
+	awsRegion := "eu-somewhere-1"
+	err := os.Setenv("AWS_REGION", awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	providerConfig := v1beta1.ProviderConfig{
+		Spec: v1beta1.ProviderConfigSpec{
+			AssumeRole: &v1beta1.AssumeRoleOptions{
+				RoleARN: aws.String("arn:aws:iam::123456789:role/crossplane-role"),
+			},
+			Credentials: v1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceInjectedIdentity},
+		},
+	}
+	cases := map[string]string{
+		"us-west-2":     "us-west-2",
+		"us-gov-east-1": "us-gov-east-1",
+		GlobalRegion:    awsRegion,
+	}
+	for inpuRegion, expectedRegion := range cases {
+		cfg, tErr := UsePodServiceAccountAssumeRole(context.Background(), nil, DefaultSection, inpuRegion, &providerConfig)
+		if tErr != nil {
+			t.Error(tErr)
+			continue
+		}
+		if cfg.Region != expectedRegion {
+			t.Errorf("expected region was not returend. expected: %s, received: %s", expectedRegion, cfg.Region)
+		}
+	}
+	err = os.Unsetenv("AWS_REGION")
+	if err != nil {
+		t.Error(err)
 	}
 }
