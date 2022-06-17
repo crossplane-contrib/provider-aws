@@ -999,6 +999,19 @@ func TestInitialize(t *testing.T) {
 				cr: policy(withTags(resource.GetExternalTags(policy(withGroupVersionKind()))), withGroupVersionKind()),
 			},
 		},
+		"NoChanges": {
+			args: args{
+				cr: policy(
+					withTags(resource.GetExternalTags(policy(withGroupVersionKind())), map[string]string{"foo": "bar"}),
+					withGroupVersionKind()),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: policy(
+					withTags(resource.GetExternalTags(policy(withGroupVersionKind())), map[string]string{"foo": "bar"}),
+					withGroupVersionKind()),
+			},
+		},
 		"UpdateFailed": {
 			args: args{
 				cr:   policy(),
