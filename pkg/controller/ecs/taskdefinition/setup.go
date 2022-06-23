@@ -67,7 +67,15 @@ func postObserve(_ context.Context, cr *svcapitypes.TaskDefinition, resp *svcsdk
 	if err != nil {
 		return obs, err
 	}
-	cr.SetConditions(xpv1.Available())
+	if aws.StringValue(resp.TaskDefinition.Status) == "ACTIVE" {
+		cr.SetConditions(xpv1.Available())
+	}
+	if aws.StringValue(resp.TaskDefinition.Status) == "INACTIVE" {
+		// Deleted services can still be described in the API and show up with
+		// an INACTIVE status.
+		obs.ResourceExists = false
+		cr.SetConditions(xpv1.Unavailable())
+	}
 	return obs, nil
 }
 
