@@ -605,6 +605,9 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 	}
 	stsclient := sts.NewFromConfig(cfg)
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
+	if region == GlobalRegion {
+		region = cfg.Region
+	}
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
@@ -681,7 +684,6 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
-		config.WithRegion(region),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
@@ -689,6 +691,9 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 	v2creds, err := cfg.Credentials.Retrieve(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+	if region == GlobalRegion {
+		region = cfg.Region
 	}
 	v1creds := credentialsv1.NewStaticCredentials(
 		v2creds.AccessKeyID,
