@@ -39,6 +39,7 @@ import (
 
 const (
 	errResourceRecordSetNotFound = "ResourceRecordSet.NotFound"
+	wildCardCharacters           = "\\052"
 )
 
 // Client defines ResourceRecordSet operations
@@ -84,8 +85,14 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 		}
 		return s
 	}
+	replaceWithWildCard := func(s string) string {
+		if strings.HasPrefix(s, wildCardCharacters) {
+			return strings.Replace(s, wildCardCharacters, "*", 1)
+		}
+		return s
+	}
 	for _, rr := range res.ResourceRecordSets {
-		if appendDot(aws.ToString(rr.Name)) == appendDot(name) &&
+		if replaceWithWildCard(appendDot(aws.ToString(rr.Name))) == appendDot(name) &&
 			string(rr.Type) == params.Type &&
 			aws.ToString(rr.SetIdentifier) == aws.ToString(params.SetIdentifier) {
 			return &rr, nil
