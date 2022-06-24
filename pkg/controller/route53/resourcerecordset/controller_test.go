@@ -17,6 +17,7 @@ package resourcerecordset
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -112,6 +113,13 @@ func TestObserve(t *testing.T) {
 		err    error
 	}
 
+	addWildcardPrefix := func(rr *v1alpha1.ResourceRecordSet) {
+		meta.SetExternalName(rr, fmt.Sprintf("*.%s", rr.Name))
+	}
+	addTwoWildcardPrefix := func(rr *v1alpha1.ResourceRecordSet) {
+		meta.SetExternalName(rr, fmt.Sprintf("*.test*.%s", rr.Name))
+	}
+
 	cases := map[string]struct {
 		args
 		want
@@ -171,6 +179,78 @@ func TestObserve(t *testing.T) {
 				cr: instance(),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
+				},
+			},
+		},
+		"WildcardRecord": {
+			args: args{
+				kube: &test.MockClient{
+					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+				},
+				route53: &fake.MockResourceRecordSetClient{
+					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
+						return &route53.ListResourceRecordSetsOutput{
+							ResourceRecordSets: []route53types.ResourceRecordSet{
+								{
+									Name: aws.String(fmt.Sprintf("*.%s", name)),
+									Type: "A",
+									TTL:  TTL,
+									ResourceRecords: []route53types.ResourceRecord{
+										{
+											Value: aws.String("0.0.0.0"),
+										},
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(addWildcardPrefix),
+			},
+			want: want{
+				cr: instance(
+					withConditions(xpv1.Available()),
+					addWildcardPrefix,
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"RecordWithTwoWildCards": {
+			args: args{
+				kube: &test.MockClient{
+					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+				},
+				route53: &fake.MockResourceRecordSetClient{
+					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
+						return &route53.ListResourceRecordSetsOutput{
+							ResourceRecordSets: []route53types.ResourceRecordSet{
+								{
+									Name: aws.String(fmt.Sprintf("*.test*.%s", name)),
+									Type: "A",
+									TTL:  TTL,
+									ResourceRecords: []route53types.ResourceRecord{
+										{
+											Value: aws.String("0.0.0.0"),
+										},
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(addTwoWildcardPrefix),
+			},
+			want: want{
+				cr: instance(
+					withConditions(xpv1.Available()),
+					addTwoWildcardPrefix,
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
