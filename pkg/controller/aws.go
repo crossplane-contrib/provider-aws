@@ -48,6 +48,7 @@ import (
 	cloudfrontresponseheaderspolicy "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/responseheaderspolicy"
 	domain "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudsearch/domain"
 	cwloggroup "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
+	cognitoidentitypool "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentity/identitypool"
 	cognitogroup "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/group"
 	cognitoidentityprovider "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/identityprovider"
 	cognitoresourceserver "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/resourceserver"
@@ -312,6 +313,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		prometheusserviceworkspace.SetupWorkspace,
 		resource.SetupResource,
 		restapi.SetupRestAPI,
+		cognitoidentitypool.SetupIdentityPool,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

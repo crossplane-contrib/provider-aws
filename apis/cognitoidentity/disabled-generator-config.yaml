@@ -1,0 +1,18 @@
+# Disabled due to issue https://github.com/aws-controllers-k8s/community/issues/1294
+
+model_name: cognito-identity
+ignore:
+  field_paths:
+    - CreateIdentityPoolInput.OpenIdConnectProviderARNs
+    - CreateIdentityPoolInput.CognitoIdentityProviders
+    - CreateIdentityPoolInput.AllowUnauthenticatedIdentities
+  shape_names:
+    - Provider
+resources:
+  IdentityPool:
+    exceptions:
+      errors:
+        # In the API this is a 400 error, but we have to define a 404 error here,
+        # so the IsNotFound() function is generated correctly
+        404:
+          code: ResourceNotFoundException
