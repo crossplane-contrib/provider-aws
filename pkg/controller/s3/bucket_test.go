@@ -139,6 +139,21 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{},
 			},
 		},
+		"ValidInputNoLateInitializeUpdateBucketOwnershipControlsFail": {
+			args: args{
+				s3: s3Testing.Client(s3Testing.WithDeleteOwnershipControls(func(ctx context.Context, input *awss3.DeleteBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOwnershipControlsOutput, error) {
+					return nil, errBoom
+				})),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
+				),
+				err:    errBoom,
+				result: managed.ExternalObservation{},
+			},
+		},
 		"LateInitialize": {
 			args: args{
 				s3: s3Testing.Client(

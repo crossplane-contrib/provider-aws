@@ -110,6 +110,10 @@ type BucketClient interface {
 	GetPublicAccessBlock(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
 	PutPublicAccessBlock(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error)
 	DeletePublicAccessBlock(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error)
+
+	GetBucketOwnershipControls(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
+	PutBucketOwnershipControls(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
+	DeleteBucketOwnershipControls(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
@@ -140,6 +144,7 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 		GrantWrite:                 s.GrantWrite,
 		GrantWriteACP:              s.GrantWriteACP,
 		ObjectLockEnabledForBucket: aws.ToBool(s.ObjectLockEnabledForBucket),
+		ObjectOwnership:            s3types.ObjectOwnership(aws.ToString(s.ObjectOwnership)),
 	}
 	if s.LocationConstraint != "us-east-1" {
 		cbi.CreateBucketConfiguration = &s3types.CreateBucketConfiguration{LocationConstraint: s3types.BucketLocationConstraint(s.LocationConstraint)}
@@ -220,6 +225,35 @@ func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.B
 		GrantWriteACP:    bucket.Spec.ForProvider.GrantWriteACP,
 	}
 	_, err := client.PutBucketAcl(ctx, config)
+	return err
+}
+
+// BucketHasACLsDisabled returns true if ACLs are disabled for the bucket, i.e., if ObjectOwnership is set to BucketOwnerEnforced
+func BucketHasACLsDisabled(bucket *v1beta1.Bucket) bool {
+	return s3types.ObjectOwnership(aws.ToString(bucket.Spec.ForProvider.ObjectOwnership)) == s3types.ObjectOwnershipBucketOwnerEnforced
+}
+
+// UpdateBucketOwnershipControls creates the OwnershipContolsInput, sends the request to put an ObjectOwnership based on the bucket
+func UpdateBucketOwnershipControls(ctx context.Context, client BucketClient, bucket *v1beta1.Bucket) error {
+	objectOwnership := bucket.Spec.ForProvider.ObjectOwnership
+	if objectOwnership == nil {
+		config := &s3.DeleteBucketOwnershipControlsInput{
+			Bucket: aws.String(meta.GetExternalName(bucket)),
+		}
+		_, err := client.DeleteBucketOwnershipControls(ctx, config)
+		return err
+	}
+	config := &s3.PutBucketOwnershipControlsInput{
+		Bucket: aws.String(meta.GetExternalName(bucket)),
+		OwnershipControls: &s3types.OwnershipControls{
+			Rules: []s3types.OwnershipControlsRule{
+				{
+					ObjectOwnership: s3types.ObjectOwnership(aws.ToString(bucket.Spec.ForProvider.ObjectOwnership)),
+				},
+			},
+		},
+	}
+	_, err := client.PutBucketOwnershipControls(ctx, config)
 	return err
 }
 
