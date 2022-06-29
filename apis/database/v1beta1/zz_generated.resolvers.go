@@ -22,6 +22,7 @@ import (
 	"context"
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	v1beta12 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	v1beta11 "github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	errors "github.com/pkg/errors"
@@ -149,6 +150,22 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 	}
 	mg.Spec.ForProvider.VPCSecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.VPCSecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBParameterGroupName),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.DBParameterGroupNameRef,
+		Selector:     mg.Spec.ForProvider.DBParameterGroupNameSelector,
+		To: reference.To{
+			List:    &v1alpha1.DBParameterGroupList{},
+			Managed: &v1alpha1.DBParameterGroup{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.DBParameterGroupName")
+	}
+	mg.Spec.ForProvider.DBParameterGroupName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBParameterGroupNameRef = rsp.ResolvedReference
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),

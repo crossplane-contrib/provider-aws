@@ -824,7 +824,18 @@ type RDSInstanceParameters struct {
 	//    * First character must be a letter
 	//    * Cannot end with a hyphen or contain two consecutive hyphens
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1.DBParameterGroup
 	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
+
+	// DBParameterGroupNameRef is a reference to a DBParameterGroup used to set
+	// DBParameterGroupName.
+	// +optional
+	DBParameterGroupNameRef *xpv1.Reference `json:"dbParameterGroupNameRef,omitempty"`
+
+	// DBParameterGroupNameSelector selects a reference to a DBParameterGroup used to
+	// set DBParameterGroupName.
+	// +optional
+	DBCParameterGroupNameSelector *xpv1.Selector `json:"dbParameterGroupNameSelector,omitempty"`
 
 	// Domain specifies the Active Directory Domain to create the instance in.
 	// +optional

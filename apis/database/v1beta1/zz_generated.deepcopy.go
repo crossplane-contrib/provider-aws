@@ -816,6 +816,16 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DBParameterGroupNameRef != nil {
+		in, out := &in.DBParameterGroupNameRef, &out.DBParameterGroupNameRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.DBCParameterGroupNameSelector != nil {
+		in, out := &in.DBCParameterGroupNameSelector, &out.DBCParameterGroupNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Domain != nil {
 		in, out := &in.Domain, &out.Domain
 		*out = new(string)
