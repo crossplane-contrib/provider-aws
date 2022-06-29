@@ -18,7 +18,6 @@ package elasticache
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -364,7 +363,7 @@ func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
 
 // For versions before 6.x, the version string can be exact (i.e. 5.0.6)
 // For versions 6, 6.2, 6.x, etc., we only need a major version
-func versionMatches(kubeVersion *string, awsVersion *string) bool {
+func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: gocyclo
 
 	if clients.StringValue(kubeVersion) == clients.StringValue(awsVersion) {
 		return true
@@ -407,7 +406,6 @@ func versionMatches(kubeVersion *string, awsVersion *string) bool {
 func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
 	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
-		fmt.Println("Version does not match:", aws.ToString(kube.EngineVersion), aws.ToString(cc.EngineVersion))
 		return true
 	}
 	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
