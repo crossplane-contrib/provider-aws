@@ -271,8 +271,7 @@ func DifferenceARN(local []*string, remote []*string) ([]*string, []*string) {
 	return createKey, removeKey
 }
 
-// GenerateObservation is used to produce v1beta1.ClusterObservation from
-// ekstypes.Cluster.
+// GenerateObservation is used to produce v1alpha1.vpcendpointserviceconfigurationObservation
 func GenerateObservation(obj *svcsdk.ServiceConfiguration) *svcapitypes.ServiceConfiguration { // nolint:gocyclo
 	if obj == nil {
 		return &svcapitypes.ServiceConfiguration{}
@@ -283,15 +282,18 @@ func GenerateObservation(obj *svcsdk.ServiceConfiguration) *svcapitypes.ServiceC
 		BaseEndpointDNSNames: obj.BaseEndpointDnsNames,
 		ManagesVPCEndpoints:  obj.ManagesVpcEndpoints,
 		PrivateDNSName:       obj.PrivateDnsName,
-		PrivateDNSNameConfiguration: &svcapitypes.PrivateDNSNameConfiguration{
+		ServiceID:            obj.ServiceId,
+		ServiceName:          obj.ServiceName,
+		ServiceState:         obj.ServiceState,
+	}
+
+	if obj.PrivateDnsNameConfiguration != nil {
+		o.PrivateDNSNameConfiguration = &svcapitypes.PrivateDNSNameConfiguration{
 			Name:  obj.PrivateDnsNameConfiguration.Name,
 			State: obj.PrivateDnsNameConfiguration.State,
 			Value: obj.PrivateDnsNameConfiguration.Value,
 			Type:  obj.PrivateDnsNameConfiguration.Type,
-		},
-		ServiceID:    obj.ServiceId,
-		ServiceName:  obj.ServiceName,
-		ServiceState: obj.ServiceState,
+		}
 	}
 
 	o.NetworkLoadBalancerARNs = append(o.NetworkLoadBalancerARNs, obj.NetworkLoadBalancerArns...)
