@@ -55,6 +55,24 @@ func (mg *Service) ResolveReferences(ctx context.Context, c client.Reader) error
 
 	for i4 := 0; i4 < len(mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers); i4++ {
 		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerName),
+			Extract:      LoadBalancerName(),
+			Reference:    mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerNameRef,
+			Selector:     mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerNameSelector,
+			To: reference.To{
+				List:    &v1alpha1.LoadBalancerList{},
+				Managed: &v1alpha1.LoadBalancer{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerName")
+		}
+		mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerName = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].LoadBalancerNameRef = rsp.ResolvedReference
+
+	}
+	for i4 := 0; i4 < len(mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers); i4++ {
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].TargetGroupARN),
 			Extract:      reference.ExternalName(),
 			Reference:    mg.Spec.ForProvider.CustomServiceParameters.LoadBalancers[i4].TargetGroupARNRef,

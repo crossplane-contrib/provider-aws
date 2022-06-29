@@ -1473,6 +1473,16 @@ func (in *CustomLoadBalancer) DeepCopyInto(out *CustomLoadBalancer) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.LoadBalancerNameRef != nil {
+		in, out := &in.LoadBalancerNameRef, &out.LoadBalancerNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.LoadBalancerNameSelector != nil {
+		in, out := &in.LoadBalancerNameSelector, &out.LoadBalancerNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.TargetGroupARN != nil {
 		in, out := &in.TargetGroupARN, &out.TargetGroupARN
 		*out = new(string)
