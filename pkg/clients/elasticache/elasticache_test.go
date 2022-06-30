@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
@@ -1201,9 +1202,15 @@ func TestVersionMatches(t *testing.T) {
 			want:        true,
 		},
 		{
-			name:        "pattern mismatch",
-			kubeVersion: aws.String("6.x"),
-			awsVersion:  aws.String("5.0.8"),
+			name:        "minor match",
+			kubeVersion: aws.String("6.2"),
+			awsVersion:  aws.String("6.2.6"),
+			want:        true,
+		},
+		{
+			name:        "zero major mismatch",
+			kubeVersion: aws.String("0.2"),
+			awsVersion:  aws.String("6.2.6"),
 			want:        false,
 		},
 	}
@@ -1214,6 +1221,94 @@ func TestVersionMatches(t *testing.T) {
 			if got != tc.want {
 				t.Errorf("versionMatches(%+v) - got %v", tc, got)
 			}
+		})
+	}
+}
+
+func TestParseVersion(t *testing.T) {
+	cases := []struct {
+		name    string
+		version *string
+		parsed  *PartialSemanticVersion
+		wantErr error
+	}{
+		{
+			name:    "nil",
+			version: nil,
+			parsed:  nil,
+			wantErr: errors.New("empty string"),
+		},
+		{
+			name:    "",
+			version: nil,
+			parsed:  nil,
+			wantErr: errors.New("empty string"),
+		},
+		{
+			name:    "bad version",
+			version: aws.String("badversion"),
+			parsed:  nil,
+			wantErr: errors.New("major version must be a number"),
+		},
+		{
+			name:    "major only",
+			version: aws.String("6"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor",
+			version: aws.String("6.2"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6), Minor: aws.Int64(2)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.x",
+			version: aws.String("6.x"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.",
+			version: aws.String("6."),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "majorLarge.",
+			version: aws.String("999."),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(999)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor.patch",
+			version: aws.String("5.0.9"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired), Patch: aws.Int64(9)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor.x",
+			version: aws.String("5.0.x"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired)},
+			wantErr: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := ParseVersion(tc.version)
+			if diff := cmp.Diff(tc.parsed, got); diff != "" {
+				t.Errorf("ParseVersion(...): -want, +got:\n%s", diff)
+			}
+			if (tc.wantErr == nil) != (gotErr == nil) {
+				t.Errorf("ParseVersion Error (%+v) - got %v", tc.wantErr, gotErr)
+			}
+			if tc.wantErr != nil {
+				if tc.wantErr.Error() != gotErr.Error() {
+					t.Errorf("ParseVersion ErrorString (%s) - got %s", tc.wantErr.Error(), gotErr.Error())
+				}
+			}
+
 		})
 	}
 }

@@ -317,17 +317,90 @@ func multiAZEnabled(maz elasticachetypes.MultiAZStatus) *bool {
 	}
 }
 
-func versionMatches(kubeVersion *string, awsVersion *string) bool {
-	switch {
-	case clients.StringValue(kubeVersion) == clients.StringValue(awsVersion):
-		return true
+// PartialSemanticVersion is semantic version that does not fulfill
+// the specification. This allows for partial matching.
+type PartialSemanticVersion struct {
+	Major *int64
+	Minor *int64
+	Patch *int64
+}
 
-	case kubeVersion == nil || awsVersion == nil:
-		return false
-
-	default:
-		return strings.HasSuffix(*kubeVersion, ".x") && strings.HasPrefix(*awsVersion, strings.TrimSuffix(*kubeVersion, "x"))
+// ParseVersion parses the semantic version of an Elasticache Cluster
+// See https://docs.aws.amazon.com/memorydb/latest/devguide/engine-versions.html
+func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
+	if ver == nil || aws.ToString(ver) == "" {
+		return nil, errors.New("empty string")
 	}
+
+	parts := strings.Split(strings.TrimSpace(aws.ToString(ver)), ".")
+
+	major, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return nil, errors.New("major version must be a number")
+	}
+
+	p := &PartialSemanticVersion{Major: aws.Int64(major)}
+
+	if len(parts) > 1 {
+		minor, err := strconv.ParseInt(parts[1], 10, 64)
+		// if not a digit (i.e. .x, ignore)
+		if err != nil {
+			return p, nil
+		}
+		p.Minor = aws.Int64(minor)
+	}
+
+	if len(parts) > 2 {
+		patch, err := strconv.ParseInt(parts[2], 10, 64)
+		if err != nil {
+			return p, nil
+		}
+		p.Patch = aws.Int64(patch)
+	}
+
+	return p, nil
+}
+
+// For versions before 6.x, the version string can be exact (i.e. 5.0.6)
+// For versions 6, 6.2, 6.x, etc., we only need a major version
+func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: gocyclo
+
+	if clients.StringValue(kubeVersion) == clients.StringValue(awsVersion) {
+		return true
+	}
+
+	if kubeVersion == nil || awsVersion == nil {
+		return false
+	}
+
+	kv, err := ParseVersion(kubeVersion)
+	if err != nil {
+		return false
+	}
+
+	av, err := ParseVersion(awsVersion)
+	if err != nil {
+		return false
+	}
+
+	if aws.ToInt64(kv.Major) != aws.ToInt64(av.Major) {
+		return false
+	}
+
+	if kv.Minor != nil {
+		if aws.ToInt64(kv.Minor) != aws.ToInt64(av.Minor) {
+			return false
+		}
+	}
+
+	// Setting the patch level is valid for Redis versions < 6
+	if kv.Patch != nil && aws.ToInt64(kv.Major) < 6 {
+		if aws.ToInt64(kv.Patch) != aws.ToInt64(av.Patch) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) bool { // nolint:gocyclo
