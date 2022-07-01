@@ -111,8 +111,24 @@ type LoadBalancerSpec struct {
 
 // LoadBalancerObservation defines the observed state of LoadBalancer
 type LoadBalancerObservation struct {
-	// Information about the load balancer.
-	LoadBalancers []*LoadBalancer_SDK `json:"loadBalancers,omitempty"`
+	// The subnets for the load balancer.
+	AvailabilityZones []*AvailabilityZone `json:"availabilityZones,omitempty"`
+	// The ID of the Amazon Route 53 hosted zone associated with the load balancer.
+	CanonicalHostedZoneID *string `json:"canonicalHostedZoneID,omitempty"`
+	// The date and time the load balancer was created.
+	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
+	// The public DNS name of the load balancer.
+	DNSName *string `json:"dnsName,omitempty"`
+	// The Amazon Resource Name (ARN) of the load balancer.
+	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
+	// The name of the load balancer.
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
+	// The state of the load balancer.
+	State *LoadBalancerState `json:"state,omitempty"`
+	// The type of load balancer.
+	Type *string `json:"type_,omitempty"`
+	// The ID of the VPC for the load balancer.
+	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // LoadBalancerStatus defines the observed state of LoadBalancer.

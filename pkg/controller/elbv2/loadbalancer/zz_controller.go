@@ -119,101 +119,125 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	if resp.LoadBalancers != nil {
-		f0 := []*svcapitypes.LoadBalancer_SDK{}
-		for _, f0iter := range resp.LoadBalancers {
-			f0elem := &svcapitypes.LoadBalancer_SDK{}
-			if f0iter.AvailabilityZones != nil {
-				f0elemf0 := []*svcapitypes.AvailabilityZone{}
-				for _, f0elemf0iter := range f0iter.AvailabilityZones {
-					f0elemf0elem := &svcapitypes.AvailabilityZone{}
-					if f0elemf0iter.LoadBalancerAddresses != nil {
-						f0elemf0elemf0 := []*svcapitypes.LoadBalancerAddress{}
-						for _, f0elemf0elemf0iter := range f0elemf0iter.LoadBalancerAddresses {
-							f0elemf0elemf0elem := &svcapitypes.LoadBalancerAddress{}
-							if f0elemf0elemf0iter.AllocationId != nil {
-								f0elemf0elemf0elem.AllocationID = f0elemf0elemf0iter.AllocationId
-							}
-							if f0elemf0elemf0iter.IPv6Address != nil {
-								f0elemf0elemf0elem.IPv6Address = f0elemf0elemf0iter.IPv6Address
-							}
-							if f0elemf0elemf0iter.IpAddress != nil {
-								f0elemf0elemf0elem.IPAddress = f0elemf0elemf0iter.IpAddress
-							}
-							if f0elemf0elemf0iter.PrivateIPv4Address != nil {
-								f0elemf0elemf0elem.PrivateIPv4Address = f0elemf0elemf0iter.PrivateIPv4Address
-							}
-							f0elemf0elemf0 = append(f0elemf0elemf0, f0elemf0elemf0elem)
+	found := false
+	for _, elem := range resp.LoadBalancers {
+		if elem.AvailabilityZones != nil {
+			f0 := []*svcapitypes.AvailabilityZone{}
+			for _, f0iter := range elem.AvailabilityZones {
+				f0elem := &svcapitypes.AvailabilityZone{}
+				if f0iter.LoadBalancerAddresses != nil {
+					f0elemf0 := []*svcapitypes.LoadBalancerAddress{}
+					for _, f0elemf0iter := range f0iter.LoadBalancerAddresses {
+						f0elemf0elem := &svcapitypes.LoadBalancerAddress{}
+						if f0elemf0iter.AllocationId != nil {
+							f0elemf0elem.AllocationID = f0elemf0iter.AllocationId
 						}
-						f0elemf0elem.LoadBalancerAddresses = f0elemf0elemf0
+						if f0elemf0iter.IPv6Address != nil {
+							f0elemf0elem.IPv6Address = f0elemf0iter.IPv6Address
+						}
+						if f0elemf0iter.IpAddress != nil {
+							f0elemf0elem.IPAddress = f0elemf0iter.IpAddress
+						}
+						if f0elemf0iter.PrivateIPv4Address != nil {
+							f0elemf0elem.PrivateIPv4Address = f0elemf0iter.PrivateIPv4Address
+						}
+						f0elemf0 = append(f0elemf0, f0elemf0elem)
 					}
-					if f0elemf0iter.OutpostId != nil {
-						f0elemf0elem.OutpostID = f0elemf0iter.OutpostId
-					}
-					if f0elemf0iter.SubnetId != nil {
-						f0elemf0elem.SubnetID = f0elemf0iter.SubnetId
-					}
-					if f0elemf0iter.ZoneName != nil {
-						f0elemf0elem.ZoneName = f0elemf0iter.ZoneName
-					}
-					f0elemf0 = append(f0elemf0, f0elemf0elem)
+					f0elem.LoadBalancerAddresses = f0elemf0
 				}
-				f0elem.AvailabilityZones = f0elemf0
-			}
-			if f0iter.CanonicalHostedZoneId != nil {
-				f0elem.CanonicalHostedZoneID = f0iter.CanonicalHostedZoneId
-			}
-			if f0iter.CreatedTime != nil {
-				f0elem.CreatedTime = &metav1.Time{*f0iter.CreatedTime}
-			}
-			if f0iter.CustomerOwnedIpv4Pool != nil {
-				f0elem.CustomerOwnedIPv4Pool = f0iter.CustomerOwnedIpv4Pool
-			}
-			if f0iter.DNSName != nil {
-				f0elem.DNSName = f0iter.DNSName
-			}
-			if f0iter.IpAddressType != nil {
-				f0elem.IPAddressType = f0iter.IpAddressType
-			}
-			if f0iter.LoadBalancerArn != nil {
-				f0elem.LoadBalancerARN = f0iter.LoadBalancerArn
-			}
-			if f0iter.LoadBalancerName != nil {
-				f0elem.LoadBalancerName = f0iter.LoadBalancerName
-			}
-			if f0iter.Scheme != nil {
-				f0elem.Scheme = f0iter.Scheme
-			}
-			if f0iter.SecurityGroups != nil {
-				f0elemf9 := []*string{}
-				for _, f0elemf9iter := range f0iter.SecurityGroups {
-					var f0elemf9elem string
-					f0elemf9elem = *f0elemf9iter
-					f0elemf9 = append(f0elemf9, &f0elemf9elem)
+				if f0iter.OutpostId != nil {
+					f0elem.OutpostID = f0iter.OutpostId
 				}
-				f0elem.SecurityGroups = f0elemf9
-			}
-			if f0iter.State != nil {
-				f0elemf10 := &svcapitypes.LoadBalancerState{}
-				if f0iter.State.Code != nil {
-					f0elemf10.Code = f0iter.State.Code
+				if f0iter.SubnetId != nil {
+					f0elem.SubnetID = f0iter.SubnetId
 				}
-				if f0iter.State.Reason != nil {
-					f0elemf10.Reason = f0iter.State.Reason
+				if f0iter.ZoneName != nil {
+					f0elem.ZoneName = f0iter.ZoneName
 				}
-				f0elem.State = f0elemf10
+				f0 = append(f0, f0elem)
 			}
-			if f0iter.Type != nil {
-				f0elem.Type = f0iter.Type
-			}
-			if f0iter.VpcId != nil {
-				f0elem.VPCID = f0iter.VpcId
-			}
-			f0 = append(f0, f0elem)
+			cr.Status.AtProvider.AvailabilityZones = f0
+		} else {
+			cr.Status.AtProvider.AvailabilityZones = nil
 		}
-		cr.Status.AtProvider.LoadBalancers = f0
-	} else {
-		cr.Status.AtProvider.LoadBalancers = nil
+		if elem.CanonicalHostedZoneId != nil {
+			cr.Status.AtProvider.CanonicalHostedZoneID = elem.CanonicalHostedZoneId
+		} else {
+			cr.Status.AtProvider.CanonicalHostedZoneID = nil
+		}
+		if elem.CreatedTime != nil {
+			cr.Status.AtProvider.CreatedTime = &metav1.Time{*elem.CreatedTime}
+		} else {
+			cr.Status.AtProvider.CreatedTime = nil
+		}
+		if elem.CustomerOwnedIpv4Pool != nil {
+			cr.Spec.ForProvider.CustomerOwnedIPv4Pool = elem.CustomerOwnedIpv4Pool
+		} else {
+			cr.Spec.ForProvider.CustomerOwnedIPv4Pool = nil
+		}
+		if elem.DNSName != nil {
+			cr.Status.AtProvider.DNSName = elem.DNSName
+		} else {
+			cr.Status.AtProvider.DNSName = nil
+		}
+		if elem.IpAddressType != nil {
+			cr.Spec.ForProvider.IPAddressType = elem.IpAddressType
+		} else {
+			cr.Spec.ForProvider.IPAddressType = nil
+		}
+		if elem.LoadBalancerArn != nil {
+			cr.Status.AtProvider.LoadBalancerARN = elem.LoadBalancerArn
+		} else {
+			cr.Status.AtProvider.LoadBalancerARN = nil
+		}
+		if elem.LoadBalancerName != nil {
+			cr.Status.AtProvider.LoadBalancerName = elem.LoadBalancerName
+		} else {
+			cr.Status.AtProvider.LoadBalancerName = nil
+		}
+		if elem.Scheme != nil {
+			cr.Spec.ForProvider.Scheme = elem.Scheme
+		} else {
+			cr.Spec.ForProvider.Scheme = nil
+		}
+		if elem.SecurityGroups != nil {
+			f9 := []*string{}
+			for _, f9iter := range elem.SecurityGroups {
+				var f9elem string
+				f9elem = *f9iter
+				f9 = append(f9, &f9elem)
+			}
+			cr.Spec.ForProvider.SecurityGroups = f9
+		} else {
+			cr.Spec.ForProvider.SecurityGroups = nil
+		}
+		if elem.State != nil {
+			f10 := &svcapitypes.LoadBalancerState{}
+			if elem.State.Code != nil {
+				f10.Code = elem.State.Code
+			}
+			if elem.State.Reason != nil {
+				f10.Reason = elem.State.Reason
+			}
+			cr.Status.AtProvider.State = f10
+		} else {
+			cr.Status.AtProvider.State = nil
+		}
+		if elem.Type != nil {
+			cr.Status.AtProvider.Type = elem.Type
+		} else {
+			cr.Status.AtProvider.Type = nil
+		}
+		if elem.VpcId != nil {
+			cr.Status.AtProvider.VPCID = elem.VpcId
+		} else {
+			cr.Status.AtProvider.VPCID = nil
+		}
+		found = true
+		break
+	}
+	if !found {
+		return cr
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

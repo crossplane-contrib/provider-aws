@@ -24,3 +24,10 @@ resources:
       errors:
         404:
           code: TargetGroupNotFound
+operations:
+  CreateLoadBalancer:
+    output_wrapper_field_path: LoadBalancers
+  CreateListener:
+    output_wrapper_field_path: Listeners
+  CreateTargetGroupOutput:
+    output_wrapper_field_path: TargetGroups

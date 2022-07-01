@@ -74,8 +74,14 @@ type ListenerSpec struct {
 
 // ListenerObservation defines the observed state of Listener
 type ListenerObservation struct {
-	// Information about the listener.
-	Listeners []*Listener_SDK `json:"listeners,omitempty"`
+	// [HTTPS or TLS listener] The default certificate for the listener.
+	Certificates []*Certificate `json:"certificates,omitempty"`
+	// The default actions for the listener.
+	DefaultActions []*Action `json:"defaultActions,omitempty"`
+	// The Amazon Resource Name (ARN) of the listener.
+	ListenerARN *string `json:"listenerARN,omitempty"`
+	// The Amazon Resource Name (ARN) of the load balancer.
+	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
 }
 
 // ListenerStatus defines the observed state of Listener.
