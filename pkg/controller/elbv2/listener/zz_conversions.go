@@ -33,10 +33,6 @@ import (
 func GenerateDescribeListenersInput(cr *svcapitypes.Listener) *svcsdk.DescribeListenersInput {
 	res := &svcsdk.DescribeListenersInput{}
 
-	if cr.Status.AtProvider.LoadBalancerARN != nil {
-		res.SetLoadBalancerArn(*cr.Status.AtProvider.LoadBalancerARN)
-	}
-
 	return res
 }
 

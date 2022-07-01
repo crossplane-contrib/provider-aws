@@ -6,6 +6,7 @@ ignore:
     - CreateListenerInput.Certificates
     # Type has a json key of type_, so it's reimplemented with loadBalancerType
     - CreateLoadBalancerInput.Type
+    - DescribeListenersInput.LoadBalancerArn
   resource_names:
     - Rule
 resources:
