@@ -264,7 +264,7 @@ func GenerateListener(resp *svcsdk.DescribeListenersOutput) *svcapitypes.Listene
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return cr

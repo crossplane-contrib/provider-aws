@@ -134,7 +134,7 @@ func GenerateTargetGroup(resp *svcsdk.DescribeTargetGroupsOutput) *svcapitypes.T
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return cr

@@ -24,6 +24,11 @@ resources:
       errors:
         404:
           code: TargetGroupNotFound
+# Since the Create* actions all return a list and we can't use the same return
+# type for Create and Generate* functions, use a noop statement here. This is a
+# bit hacky, but can't be helped without some way to configure this more
+# granularly.
+set_many_output_notfound_err_return: _ = found
 operations:
   CreateLoadBalancer:
     output_wrapper_field_path: LoadBalancers

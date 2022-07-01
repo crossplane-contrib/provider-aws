@@ -165,7 +165,7 @@ func GenerateLoadBalancer(resp *svcsdk.DescribeLoadBalancersOutput) *svcapitypes
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return cr

@@ -338,7 +338,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
