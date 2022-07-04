@@ -17,21 +17,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// NOTE(negz): See the below link for details on what is happening here.
-// https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
+// // NOTE(negz): See the below link for details on what is happening here.
+// // https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 
-// Remove existing CRDs
-//go:generate rm -rf ../package/crds
+// // Remove existing CRDs
+// //go:generate rm -rf ../package/crds
 
-// Generate deepcopy methodsets and CRD manifests
-//go:generate go run -tags generate sigs.k8s.io/controller-tools/cmd/controller-gen object:headerFile=../hack/boilerplate.go.txt paths=./... crd:allowDangerousTypes=true,crdVersions=v1 output:artifacts:config=../package/crds
+// // Generate deepcopy methodsets and CRD manifests
+// //go:generate go run -tags generate sigs.k8s.io/controller-tools/cmd/controller-gen object:headerFile=../hack/boilerplate.go.txt paths=./... crd:allowDangerousTypes=true,crdVersions=v1 output:artifacts:config=../package/crds
 
-// Generate crossplane-runtime methodsets (resource.Claim, etc)
-//go:generate go run -tags generate github.com/crossplane/crossplane-tools/cmd/angryjet generate-methodsets --header-file=../hack/boilerplate.go.txt ./...
+// // Generate crossplane-runtime methodsets (resource.Claim, etc)
+// //go:generate go run -tags generate github.com/crossplane/crossplane-tools/cmd/angryjet generate-methodsets --header-file=../hack/boilerplate.go.txt ./...
 
-// TODO(muvaf): Remove the last mockgen usage in Addon resource and move to
-// current convention with tests.
-//go:generate go run github.com/golang/mock/mockgen  --build_flags=--mod=mod -package eksiface -copyright_file ../hack/boilerplate.go.txt -destination ../pkg/clients/eks/fake/eksiface/fake.go github.com/aws/aws-sdk-go/service/eks/eksiface EKSAPI
+// // Generate tag methods for each managed resource
+//go:generate go run -tags generate github.com/crossplane-contrib/provider-aws/cmd/codegen generate-methodsets --header-file=../hack/boilerplate.go.txt ./...
+
+// // TODO(muvaf): Remove the last mockgen usage in Addon resource and move to
+// // current convention with tests.
+// //go:generate go run github.com/golang/mock/mockgen  --build_flags=--mod=mod -package eksiface -copyright_file ../hack/boilerplate.go.txt -destination ../pkg/clients/eks/fake/eksiface/fake.go github.com/aws/aws-sdk-go/service/eks/eksiface EKSAPI
 
 package apis
 

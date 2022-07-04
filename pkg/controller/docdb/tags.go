@@ -148,7 +148,7 @@ func AddExternalTags(mg resource.Managed, spec []*svcapitypes.Tag) []*svcapitype
 func GetExternalTags(mg resource.Managed) []*svcapitypes.Tag {
 	externalTags := []*svcapitypes.Tag{}
 	for k, v := range resource.GetExternalTags(mg) {
-		externalTags = append(externalTags, &svcapitypes.Tag{Key: awsclient.String(k), Value: awsclient.String(v)})
+		externalTags = append(externalTags, &svcapitypes.Tag{Key: awsclient.String(k, awsclient.FieldRequired), Value: awsclient.String(v, awsclient.FieldRequired)})
 	}
 
 	sort.Slice(externalTags, func(i, j int) bool {

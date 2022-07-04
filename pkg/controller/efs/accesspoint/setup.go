@@ -15,6 +15,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 // SetupAccessPoint adds a controller that reconciles AccessPoint.
@@ -34,7 +35,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.AccessPoint{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.AccessPointGroupVersionKind),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &svcapitypes.AccessPoint{})),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),

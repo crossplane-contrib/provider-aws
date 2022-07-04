@@ -19,7 +19,6 @@ package database
 import (
 	"context"
 	"reflect"
-	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -41,12 +40,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
 	errNotRDSInstance                     = "managed resource is not an RDS instance custom resource"
-	errKubeUpdateFailed                   = "cannot update RDS instance custom resource"
 	errCreateFailed                       = "cannot create RDS instance"
 	errS3RestoreFailed                    = "cannot restore RDS instance from S3 backup"
 	errSnapshotRestoreFailed              = "cannot restore RDS instance from snapshot"
@@ -78,7 +77,11 @@ func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewDefaultProviderConfig(mgr.GetClient()),
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &v1beta1.RDSInstance{}),
+			),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -304,32 +307,4 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err = e.client.DeleteDBInstance(ctx, &input)
 	return awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1beta1.RDSInstance)
-	if !ok {
-		return errors.New(errNotRDSInstance)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

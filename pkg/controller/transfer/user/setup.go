@@ -30,6 +30,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -57,7 +58,10 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.User{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.UserGroupVersionKind),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.User{}),
+			),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),

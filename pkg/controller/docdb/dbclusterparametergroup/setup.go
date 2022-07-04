@@ -38,16 +38,15 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
-	errNotDBClusterParameterGroup = "managed resource is not a DocDBClusterParameterGroup custom resource"
-	errKubeUpdateFailed           = "cannot update DocDB DBClusterParameterGroup custom resource"
-	errModifyFamily               = "cannot modify DBParameterGroupFamily of an existing DBClusterParameterGroup"
-	errModifyDescription          = "cannot modify Description of an existing DBClusterParameterGroup"
-	errDescribeParameters         = "cannot describe parameters for DBClusterParameterGroup"
+	errModifyFamily       = "cannot modify DBParameterGroupFamily of an existing DBClusterParameterGroup"
+	errModifyDescription  = "cannot modify Description of an existing DBClusterParameterGroup"
+	errDescribeParameters = "cannot describe parameters for DBClusterParameterGroup"
 )
 
 // SetupDBClusterParameterGroup adds a controller that reconciles a DBClusterParameterGroup.
@@ -68,7 +67,10 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 			resource.ManagedKind(svcapitypes.DBClusterParameterGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.DBClusterParameterGroup{}),
+			),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -261,18 +263,4 @@ func generateAPIParameter(p *svcsdk.Parameter, o *svcapitypes.Parameter) *svcapi
 	o.Source = p.Source
 
 	return o
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBClusterParameterGroup)
-	if !ok {
-		return errors.New(errNotDBClusterParameterGroup)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

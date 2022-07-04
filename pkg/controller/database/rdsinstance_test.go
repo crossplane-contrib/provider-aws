@@ -43,6 +43,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 const (
@@ -1006,14 +1007,14 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, errKubeUpdateFailed),
+				err: awsclient.Wrap(errBoom, common.ErrUpdateTags),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
+			e := common.NewTagger(tc.kube, &v1beta1.RDSInstance{})
 			err := e.Initialize(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

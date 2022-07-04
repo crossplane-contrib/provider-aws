@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -74,7 +75,8 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
 			managed.WithInitializers(
 				managed.NewNameAsExternalName(mgr.GetClient()),
-				&tagger{kube: mgr.GetClient()}),
+				common.NewTagger(mgr.GetClient(), &v1beta1.User{}),
+			),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -223,37 +225,4 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.User)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-
-	added := false
-	defaultTags := resource.GetExternalTags(mgd)
-
-	for i, t := range cr.Spec.ForProvider.Tags {
-		if v, ok := defaultTags[t.Key]; ok {
-			if v != t.Value {
-				cr.Spec.ForProvider.Tags[i].Value = v
-				added = true
-			}
-			delete(defaultTags, t.Key)
-		}
-	}
-
-	for k, v := range defaultTags {
-		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-		added = true
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

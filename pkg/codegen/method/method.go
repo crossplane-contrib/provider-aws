@@ -85,6 +85,13 @@ const (
 	localFieldOldValue    = "oldValue"
 	localFieldEntryExists = "exists"
 	localFieldTagIterator = "ta"
+	localFieldUpdated     = "updated"
+
+	localFieldIndexA = "i"
+	localFieldIndexB = "j"
+
+	localFieldTagA = "ta"
+	localFieldTagB = "tb"
 )
 
 // NewAddTag creates a new AddTag function generator.
@@ -131,17 +138,19 @@ func NewAddTag(receiver string, log logging.Logger) New {
 		// tagging implementation. In this case it is necessary to define the
 		// AddTag method manually.
 
-		tagFieldAccessor := jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags)
+		tagFieldAccessor := func() *jen.Statement {
+			return jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags)
+		}
 
 		if ref := isTagMap(tagObj); ref != nil {
 			funcHeader().Block(
-				jen.If(jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags).Op("==").Nil()).Block(
-					jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags).Op("=").Add(ref.newMap),
+				jen.If(tagFieldAccessor().Op("==").Nil()).Block(
+					tagFieldAccessor().Op("=").Add(ref.newMap),
 					jen.Return(jen.True()),
 				),
-				jen.List(jen.Id(localFieldOldValue), jen.Id(localFieldEntryExists)).Op(":=").Add(tagFieldAccessor).Index(jen.Id(localFieldKey)),
-				jen.If(jen.Op("!").Id(localFieldEntryExists).Op("||").Add(ref.checkUnequalValue)).Block(
-					jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags).Index(jen.Id(localFieldKey)).Op("=").Add(ref.assignValue),
+				jen.List(jen.Id(localFieldOldValue), jen.Id(localFieldEntryExists)).Op(":=").Add(tagFieldAccessor()).Index(jen.Id(localFieldKey)),
+				jen.If(jen.Op("!").Id(localFieldEntryExists).Op("||").Add(ref.oldValueRef).Op("!=").Id(localFieldNewValue)).Block(
+					tagFieldAccessor().Index(jen.Id(localFieldKey)).Op("=").Add(ref.assignValue),
 					jen.Return(jen.True()),
 				),
 				jen.Return(jen.False()),
@@ -149,29 +158,43 @@ func NewAddTag(receiver string, log logging.Logger) New {
 		} else if ref := isTagSlice(tagObj); ref != nil {
 			funcHeader().Block(
 				jen.Id(localFieldNewTag).Op(":=").Add(ref.newTag),
-				jen.For(jen.List(jen.Id("i"), jen.Id(localFieldTagIterator)).Op(":=").Range().Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags)).Block(
+				jen.Id(localFieldUpdated).Op(":=").False(),
+				jen.For(jen.List(jen.Id("i"), jen.Id(localFieldTagIterator)).Op(":=").Range().Add(tagFieldAccessor())).Block(
 					jen.If(ref.checkEqualKey).Block(
 						jen.If(ref.checkEqualValue).Block(
 							jen.Return().False(),
 						),
-						jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags).Index(jen.Id("i")).Op("=").Id(localFieldNewTag),
-						jen.Return().True(),
+						tagFieldAccessor().Index(jen.Id("i")).Op("=").Id(localFieldNewTag),
+						jen.Id(localFieldUpdated).Op("=").True(),
+						jen.Break(),
 					),
 				),
-				jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags).Op("=").Id("append").Call(
-					jen.Id(receiver).Dot(fields.NameSpec).Dot(fields.NameSpecForProvider).Dot(fields.NameTags),
-					jen.Id(localFieldNewTag),
+				jen.If(jen.Op("!").Id(localFieldUpdated)).Block(
+					tagFieldAccessor().Op("=").Id("append").Call(
+						tagFieldAccessor(),
+						jen.Id(localFieldNewTag),
+					),
 				),
+				jen.Qual("sort", "Slice").Call(tagFieldAccessor(), jen.Func().Params(jen.Id(localFieldIndexA).Int(), jen.Id(localFieldIndexB).Int()).Bool().Block(
+					jen.Id(localFieldTagA).Op(":=").Add(tagFieldAccessor()).Index(jen.Id(localFieldIndexA)),
+					jen.Id(localFieldTagB).Op(":=").Add(tagFieldAccessor()).Index(jen.Id(localFieldIndexB)),
+					ref.compareTagStruct(jen.Id(localFieldTagA), jen.Id(localFieldTagB)),
+					ref.compareTagKeys(jen.Id(localFieldTagA), jen.Id(localFieldTagB)),
+				)),
 				jen.Return().True(),
 			)
 		}
 	}
 }
 
+const (
+	packageK8sUtilPointer = "k8s.io/utils/pointer"
+)
+
 type tagMapReference struct {
-	newMap            *jen.Statement
-	checkUnequalValue *jen.Statement
-	assignValue       *jen.Statement
+	newMap      *jen.Statement
+	oldValueRef *jen.Statement
+	assignValue *jen.Statement
 }
 
 func isTagMap(t types.Type) *tagMapReference {
@@ -185,16 +208,13 @@ func isTagMap(t types.Type) *tagMapReference {
 	}
 	switch {
 	case isString(m.Elem()):
-		ref.checkUnequalValue = jen.Id(localFieldOldValue).Op("!=").Id(localFieldNewValue)
+		ref.oldValueRef = jen.Id(localFieldOldValue)
 		ref.assignValue = jen.Id(localFieldNewValue)
 		ref.newMap = jen.Map(jen.String()).String().Values(jen.Dict{
 			jen.Id(localFieldKey): jen.Id(localFieldNewValue),
 		})
 	case isStringPtr(m.Elem()):
-		ref.checkUnequalValue = jen.
-			Id(localFieldOldValue).Op("==").Nil().
-			Op("||").
-			Op("*").Id(localFieldOldValue).Op("!=").Id(localFieldNewValue)
+		ref.oldValueRef = jen.Qual(packageK8sUtilPointer, "StringDeref").Call(jen.Id(localFieldOldValue), jen.Lit(""))
 		ref.assignValue = jen.Op("&").Id(localFieldNewValue)
 		ref.newMap = jen.Map(jen.String()).Op("*").String().Values(jen.Dict{
 			jen.Id(localFieldKey): jen.Op("&").Id(localFieldNewValue),
@@ -206,9 +226,11 @@ func isTagMap(t types.Type) *tagMapReference {
 }
 
 type tagSliceReference struct {
-	newTag          *jen.Statement
-	checkEqualKey   *jen.Statement
-	checkEqualValue *jen.Statement
+	newTag           *jen.Statement
+	checkEqualKey    *jen.Statement
+	checkEqualValue  *jen.Statement
+	compareTagStruct func(tagA, tagB *jen.Statement) *jen.Statement
+	compareTagKeys   func(tagA, tagB *jen.Statement) *jen.Statement
 }
 
 func isTagSlice(t types.Type) *tagSliceReference {
@@ -216,6 +238,8 @@ func isTagSlice(t types.Type) *tagSliceReference {
 	if !ok {
 		return nil
 	}
+
+	ref := &tagSliceReference{}
 
 	var named *types.Named
 	var elem *types.Struct
@@ -225,9 +249,20 @@ func isTagSlice(t types.Type) *tagSliceReference {
 	if named, elem = isNamedStruct(s.Elem()); elem != nil {
 		newTag = jen.Empty()
 		baseCheck = jen.Empty()
+		ref.compareTagStruct = func(tagA, tagB *jen.Statement) *jen.Statement {
+			return jen.Empty()
+		}
 	} else if named, elem = isNamedStructPtr(s.Elem()); elem != nil {
 		newTag = jen.Op("&")
 		baseCheck = jen.Id(localFieldTagIterator).Op("!=").Nil().Op("&&")
+
+		ref.compareTagStruct = func(tagA, tagB *jen.Statement) *jen.Statement {
+			return jen.If(tagA.Op("==").Nil()).Block(
+				jen.Return(jen.True()),
+			).Else().If(tagB.Op("==").Nil()).Block(
+				jen.Return(jen.False()),
+			)
+		}
 	} else {
 		return nil
 	}
@@ -235,20 +270,31 @@ func isTagSlice(t types.Type) *tagSliceReference {
 	key := lookupFieldByName(elem, fields.NameTagKey)
 	value := lookupFieldByName(elem, fields.NameTagValue)
 
-	ref := &tagSliceReference{}
-
 	var keyValue *jen.Statement
 	switch {
 	case isString(key):
 		keyValue = jen.Id(localFieldKey)
 		ref.checkEqualKey = baseCheck.
-			Id(localFieldTagIterator).Dot(fields.NameTagKey).Op("==").Id(localFieldKey)
+			Id(localFieldTagIterator).Dot(fields.NameTagKey).
+			Op("==").
+			Id(localFieldKey)
+
+		ref.compareTagKeys = func(tagA, tagB *jen.Statement) *jen.Statement {
+			return jen.Return(tagA.Dot(fields.NameTagKey).Op("<").Add(tagB).Dot(fields.NameTagKey))
+		}
 	case isStringPtr(key):
 		keyValue = jen.Op("&").Id(localFieldKey)
 		ref.checkEqualKey = baseCheck.
-			Id(localFieldTagIterator).Dot(fields.NameTagKey).Op("!=").Nil().
-			Op("&&").
-			Op("*").Id(localFieldTagIterator).Dot(fields.NameTagKey).Op("==").Id(localFieldKey)
+			Qual(packageK8sUtilPointer, "StringDeref").Call(jen.Id(localFieldTagIterator).Dot(fields.NameTagKey), jen.Lit("")).
+			Op("==").
+			Id(localFieldKey)
+		ref.compareTagKeys = func(tagA, tagB *jen.Statement) *jen.Statement {
+			return jen.Return(jen.
+				Qual(packageK8sUtilPointer, "StringDeref").Call(tagA.Clone().Dot(fields.NameTagKey), jen.Lit("")).
+				Op("<").
+				Qual(packageK8sUtilPointer, "StringDeref").Call(tagB.Clone().Dot(fields.NameTagKey), jen.Lit("")),
+			)
+		}
 	default:
 		return nil
 	}
@@ -261,9 +307,9 @@ func isTagSlice(t types.Type) *tagSliceReference {
 	case isStringPtr(value):
 		valueValue = jen.Op("&").Id(localFieldNewValue)
 		ref.checkEqualValue = jen.
-			Id(localFieldTagIterator).Dot(fields.NameTagValue).Op("!=").Nil().
-			Op("&&").
-			Op("*").Id(localFieldTagIterator).Dot(fields.NameTagValue).Op("==").Id(localFieldNewValue)
+			Qual(packageK8sUtilPointer, "StringDeref").Call(jen.Id(localFieldTagIterator).Dot(fields.NameTagValue), jen.Lit("")).
+			Op("==").
+			Id(localFieldNewValue)
 	default:
 		return nil
 	}

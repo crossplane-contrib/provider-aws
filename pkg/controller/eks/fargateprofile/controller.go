@@ -38,12 +38,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
 	errNotEKSFargateProfile = "managed resource is not an EKS fargate profile custom resource"
-	errKubeUpdateFailed     = "cannot update EKS fargate profile custom resource"
 	errCreateFailed         = "cannot create EKS fargate profile"
 	errAddTagsFailed        = "cannot add tags to EKS fargate profile"
 	errDeleteFailed         = "cannot delete EKS fargate profile"
@@ -66,7 +66,11 @@ func SetupFargateProfile(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.FargateProfileGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewDefaultProviderConfig(mgr.GetClient()),
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &v1beta1.FargateProfile{}),
+			),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -181,29 +185,4 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err := e.client.DeleteFargateProfile(ctx, &awseks.DeleteFargateProfileInput{FargateProfileName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1beta1.FargateProfile)
-	if !ok {
-		return errors.New(errNotEKSFargateProfile)
-	}
-	changed := false
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]string{}
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		if cr.Spec.ForProvider.Tags[k] != v {
-			cr.Spec.ForProvider.Tags[k] = v
-			changed = true
-		}
-	}
-	if !changed {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

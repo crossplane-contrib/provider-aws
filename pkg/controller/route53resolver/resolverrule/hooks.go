@@ -18,6 +18,7 @@ import (
 	route53resolverv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -47,7 +48,7 @@ func SetupResolverRule(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(route53resolverv1alpha1.ResolverRuleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &route53resolverv1alpha1.ResolverRule{})),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),

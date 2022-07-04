@@ -42,6 +42,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 var (
@@ -753,7 +754,7 @@ func TestInitialize(t *testing.T) {
 				cr: unexpectedItem,
 			},
 			want: want{
-				err: errors.New(errUnexpectedObject),
+				err: errors.New(common.ErrNotTagged),
 			},
 		},
 		"Successful": {
@@ -793,14 +794,14 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+				err: errors.Wrap(errBoom, common.ErrUpdateTags),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
+			e := common.NewTagger(tc.kube, &v1beta1.OpenIDConnectProvider{})
 			err := e.Initialize(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

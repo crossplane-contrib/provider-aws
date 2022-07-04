@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 const (
@@ -771,14 +772,14 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errorBoom)},
 			},
 			want: want{
-				err: awsclient.Wrap(errorBoom, errUpdateReplicationGroupCR),
+				err: awsclient.Wrap(errorBoom, common.ErrUpdateTags),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
+			e := common.NewTagger(tc.kube, &v1beta1.ReplicationGroup{})
 			err := e.Initialize(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

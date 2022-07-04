@@ -40,13 +40,12 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
-	errNotDBCluster            = "managed resource is not a DB Cluster custom resource"
-	errKubeUpdateFailed        = "cannot update DBCluster instance custom resource"
 	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
@@ -68,7 +67,10 @@ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(svcapitypes.DBClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.DBCluster{}),
+			),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -319,18 +321,4 @@ func getConnectionDetails(cr *svcapitypes.DBCluster) managed.ConnectionDetails {
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(awsclient.Int64Value(cr.Spec.ForProvider.Port)))),
 		"readerEndpoint":                          []byte(awsclient.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBCluster)
-	if !ok {
-		return errors.New(errNotDBCluster)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

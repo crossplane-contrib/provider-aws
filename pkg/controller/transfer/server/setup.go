@@ -30,6 +30,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -58,7 +59,7 @@ func SetupServer(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.Server{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ServerGroupVersionKind),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &svcapitypes.Server{})),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),

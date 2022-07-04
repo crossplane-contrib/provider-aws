@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -127,6 +127,11 @@ type Model8 struct {
 
 	generated := `package v1alpha1
 
+import (
+	pointer "k8s.io/utils/pointer"
+	"sort"
+)
+
 // AddTag adds a tag to this Model1. If it already exists, it will be overwritten.
 // It returns true if the tag has been added/changed. Otherwise false.
 func (t *Model1) AddTag(key string, value string) bool {
@@ -150,7 +155,7 @@ func (t *Model2) AddTag(key string, value string) bool {
 		return true
 	}
 	oldValue, exists := t.Spec.ForProvider.Tags[key]
-	if !exists || oldValue == nil || *oldValue != value {
+	if !exists || pointer.StringDeref(oldValue, "") != value {
 		t.Spec.ForProvider.Tags[key] = &value
 		return true
 	}
@@ -164,16 +169,26 @@ func (t *Model3) AddTag(key string, value string) bool {
 		Key:   key,
 		Value: value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
 		if ta.Key == key {
 			if ta.Value == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+
+		return ta.Key < tb.Key
+	})
 	return true
 }
 
@@ -184,16 +199,30 @@ func (t *Model4) AddTag(key string, value string) bool {
 		Key:   key,
 		Value: value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
 		if ta != nil && ta.Key == key {
 			if ta.Value == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+		if ta == nil {
+			return true
+		} else if tb == nil {
+			return false
+		}
+		return ta.Key < tb.Key
+	})
 	return true
 }
 
@@ -204,16 +233,26 @@ func (t *Model5) AddTag(key string, value string) bool {
 		Key:   &key,
 		Value: &value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
-		if ta.Key != nil && *ta.Key == key {
-			if ta.Value != nil && *ta.Value == value {
+		if pointer.StringDeref(ta.Key, "") == key {
+			if pointer.StringDeref(ta.Value, "") == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+
+		return pointer.StringDeref(ta.Key, "") < pointer.StringDeref(tb.Key, "")
+	})
 	return true
 }
 
@@ -224,16 +263,30 @@ func (t *Model6) AddTag(key string, value string) bool {
 		Key:   &key,
 		Value: &value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
-		if ta != nil && ta.Key != nil && *ta.Key == key {
-			if ta.Value != nil && *ta.Value == value {
+		if ta != nil && pointer.StringDeref(ta.Key, "") == key {
+			if pointer.StringDeref(ta.Value, "") == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+		if ta == nil {
+			return true
+		} else if tb == nil {
+			return false
+		}
+		return pointer.StringDeref(ta.Key, "") < pointer.StringDeref(tb.Key, "")
+	})
 	return true
 }
 
@@ -244,16 +297,26 @@ func (t *Model7) AddTag(key string, value string) bool {
 		Key:   key,
 		Value: &value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
 		if ta.Key == key {
-			if ta.Value != nil && *ta.Value == value {
+			if pointer.StringDeref(ta.Value, "") == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+
+		return ta.Key < tb.Key
+	})
 	return true
 }
 
@@ -264,16 +327,30 @@ func (t *Model8) AddTag(key string, value string) bool {
 		Key:   key,
 		Value: &value,
 	}
+	updated := false
 	for i, ta := range t.Spec.ForProvider.Tags {
 		if ta != nil && ta.Key == key {
-			if ta.Value != nil && *ta.Value == value {
+			if pointer.StringDeref(ta.Value, "") == value {
 				return false
 			}
 			t.Spec.ForProvider.Tags[i] = newTag
-			return true
+			updated = true
+			break
 		}
 	}
-	t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	if !updated {
+		t.Spec.ForProvider.Tags = append(t.Spec.ForProvider.Tags, newTag)
+	}
+	sort.Slice(t.Spec.ForProvider.Tags, func(i int, j int) bool {
+		ta := t.Spec.ForProvider.Tags[i]
+		tb := t.Spec.ForProvider.Tags[j]
+		if ta == nil {
+			return true
+		} else if tb == nil {
+			return false
+		}
+		return ta.Key < tb.Key
+	})
 	return true
 }
 `
@@ -293,6 +370,7 @@ func (t *Model8) AddTag(key string, value string) bool {
 	for _, n := range pkgs[0].Types.Scope().Names() {
 		NewAddTag("t", logging.NewNopLogger())(f, pkgs[0].Types.Scope().Lookup(n))
 	}
+	fmt.Printf("%#v\n", f)
 	if diff := cmp.Diff(generated, fmt.Sprintf("%#v", f)); diff != "" {
 		t.Errorf("NewAddTag(): -want, +got\n%s", diff)
 	}

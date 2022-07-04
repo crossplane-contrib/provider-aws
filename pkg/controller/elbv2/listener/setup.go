@@ -17,6 +17,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -45,7 +46,7 @@ func SetupListener(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ListenerGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &svcapitypes.Listener{})),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),

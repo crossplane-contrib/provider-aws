@@ -40,23 +40,23 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not a Policy resource"
 
-	errGet              = "failed to get IAM Policy"
-	errCreate           = "failed to create the IAM Policy"
-	errDelete           = "failed to delete the IAM Policy"
-	errUpdate           = "failed to update the IAM Policy"
-	errExternalName     = "failed to update the IAM Policy external-name"
-	errEmptyPolicy      = "empty IAM Policy received from IAM API"
-	errPolicyVersion    = "No version for policy received from IAM API"
-	errUpToDate         = "cannot check if policy is up to date"
-	errKubeUpdateFailed = "cannot late initialize IAM Policy"
-	errTag              = "cannot tag policy"
-	errUntag            = "cannot untag policy"
+	errGet           = "failed to get IAM Policy"
+	errCreate        = "failed to create the IAM Policy"
+	errDelete        = "failed to delete the IAM Policy"
+	errUpdate        = "failed to update the IAM Policy"
+	errExternalName  = "failed to update the IAM Policy external-name"
+	errEmptyPolicy   = "empty IAM Policy received from IAM API"
+	errPolicyVersion = "No version for policy received from IAM API"
+	errUpToDate      = "cannot check if policy is up to date"
+	errTag           = "cannot tag policy"
+	errUntag         = "cannot untag policy"
 )
 
 // SetupPolicy adds a controller that reconciles IAM Policy.
@@ -75,7 +75,7 @@ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.PolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
-			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &v1beta1.Policy{})),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -377,37 +377,4 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.Policy)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	added := false
-	defaultTags := resource.GetExternalTags(mgd)
-
-	for i, t := range cr.Spec.ForProvider.Tags {
-		v, ok := defaultTags[t.Key]
-		if ok {
-			if v != t.Value {
-				cr.Spec.ForProvider.Tags[i].Value = v
-				added = true
-			}
-			delete(defaultTags, t.Key)
-		}
-	}
-
-	for k, v := range defaultTags {
-		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-		added = true
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

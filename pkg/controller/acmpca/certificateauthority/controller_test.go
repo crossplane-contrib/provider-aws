@@ -41,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	acmpca "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 var (
@@ -578,7 +579,7 @@ func TestInitialize(t *testing.T) {
 				cr: unexpectedItem,
 			},
 			want: want{
-				err: errors.New(errUnexpectedObject),
+				err: errors.New(common.ErrNotTagged),
 			},
 		},
 		"Successful": {
@@ -605,14 +606,15 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+				err: errors.Wrap(errBoom, common.ErrUpdateTags),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
+			e := common.NewTagger(tc.args.kube, &v1beta1.CertificateAuthority{})
+
 			err := e.Initialize(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

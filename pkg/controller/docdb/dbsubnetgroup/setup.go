@@ -21,7 +21,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,13 +35,9 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-)
-
-const (
-	errNotDBSubnetGroup = "managed resource is not a DBSubnetGroup custom resource"
-	errKubeUpdateFailed = "cannot update DocDBSubnetGroup custom resource"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
@@ -63,7 +58,11 @@ func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(svcapitypes.DBSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewDefaultProviderConfig(mgr.GetClient()),
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.DBSubnetGroup{}),
+			),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -173,18 +172,4 @@ func filterList(cr *svcapitypes.DBSubnetGroup, list *svcsdk.DescribeDBSubnetGrou
 		Marker:         list.Marker,
 		DBSubnetGroups: []*svcsdk.DBSubnetGroup{},
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBSubnetGroup)
-	if !ok {
-		return errors.New(errNotDBSubnetGroup)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

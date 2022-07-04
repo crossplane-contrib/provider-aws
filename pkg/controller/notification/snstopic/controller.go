@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	notclient "github.com/crossplane-contrib/provider-aws/pkg/clients/notification"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -67,7 +68,7 @@ func SetupSNSTopic(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(notificationv1alpha1.SNSTopicGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewTopicClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &notificationv1alpha1.SNSTopic{})),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),

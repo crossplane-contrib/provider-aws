@@ -22,7 +22,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -37,13 +36,9 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-)
-
-const (
-	errNotDBInstance    = "managed resource is not a DocDB instance custom resource"
-	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
 )
 
 // SetupDBInstance adds a controller that reconciles a DBInstance.
@@ -64,7 +59,10 @@ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(svcapitypes.DBInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.DBInstance{}),
+			),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -205,18 +203,4 @@ func getConnectionDetails(cr *svcapitypes.DBInstance) managed.ConnectionDetails 
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(awsclient.StringValue(cr.Status.AtProvider.Endpoint.Address)),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(awsclient.Int64Value(cr.Status.AtProvider.Endpoint.Port)))),
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBInstance)
-	if !ok {
-		return errors.New(errNotDBInstance)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

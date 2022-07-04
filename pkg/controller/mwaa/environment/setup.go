@@ -20,16 +20,15 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mwaa/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 )
 
 const (
-	errNotEnvironment   = "managed resource is not a environment custom resource"
-	errKubeUpdateFailed = "failed to update Secret custom resource"
-	errCreateCLIToken   = "cannot create CLI token"
-	errCreateWebToken   = "cannot create web token"
-	errGetEnvironemt    = "cannot get environment"
-	errTagResource      = "cannot tag resource"
-	errUntagResource    = "cannot untag resource"
+	errCreateCLIToken = "cannot create CLI token"
+	errCreateWebToken = "cannot create web token"
+	errGetEnvironemt  = "cannot get environment"
+	errTagResource    = "cannot tag resource"
+	errUntagResource  = "cannot untag resource"
 )
 
 // SetupEnvironment adds a controller that reconciles Environment.
@@ -55,7 +54,11 @@ func SetupEnvironment(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.Environment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EnvironmentGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewDefaultProviderConfig(mgr.GetClient()),
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.Environment{}),
+			),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -246,25 +249,4 @@ func diffTags(spec, current map[string]*string) (map[string]*string, []*string) 
 	}
 
 	return addTags, remove
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-// TODO(knappek): split this out as it is used in several controllers
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Environment)
-	if !ok {
-		return errors.New(errNotEnvironment)
-	}
-
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]*string{}
-	}
-
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

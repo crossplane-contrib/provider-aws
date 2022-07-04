@@ -18,6 +18,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -47,7 +48,7 @@ func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.FileSystem{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.FileSystemGroupVersionKind),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &svcapitypes.FileSystem{})),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),

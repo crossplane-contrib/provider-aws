@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -56,7 +57,6 @@ const (
 	errSDK              = "empty OpenIDConnectProvider received from IAM API"
 	errAddTags          = "cannot add tags to OpenIDConnectProvider in AWS"
 	errRemoveTags       = "cannot remove tags to OpenIDConnectProvider in AWS"
-	errKubeUpdateFailed = "cannot update OpenIDConnectProvider instance custom resource"
 )
 
 // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
@@ -75,7 +75,7 @@ func SetupOpenIDConnectProvider(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.OpenIDConnectProviderGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewOpenIDConnectProviderClient}),
-			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &v1beta1.OpenIDConnectProvider{})),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -246,30 +246,4 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	added := false
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		if p, ok := tagMap[k]; !ok || v != p {
-			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-			added = true
-		}
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

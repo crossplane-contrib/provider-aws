@@ -24,10 +24,7 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -40,6 +37,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -75,7 +73,8 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithInitializers(
 				managed.NewNameAsExternalName(mgr.GetClient()),
 				managed.NewDefaultProviderConfig(mgr.GetClient()),
-				&tagger{kube: mgr.GetClient()}),
+				common.NewTagger(mgr.GetClient(), &svcapitypes.Table{}),
+			),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -132,36 +131,6 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	}
 
 	return obs, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Table)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(cr) {
-		tagMap[k] = v
-	}
-	tags := make([]*svcapitypes.Tag, 0)
-	for k, v := range tagMap {
-		tags = append(tags, &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)})
-	}
-	sort.Slice(tags, func(i, j int) bool {
-		return aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key)
-	})
-	if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
-		return nil
-	}
-	cr.Spec.ForProvider.Tags = tags
-	return errors.Wrap(e.kube.Update(ctx, cr), "cannot update Table Spec")
 }
 
 func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutput) error { // nolint:gocyclo,unparam

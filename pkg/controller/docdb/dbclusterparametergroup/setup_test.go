@@ -18,6 +18,7 @@ package dbclusterparametergroup
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -35,6 +36,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 )
 
@@ -140,6 +142,9 @@ func mergeTags(lists ...[]*svcapitypes.Tag) []*svcapitypes.Tag {
 	for _, list := range lists {
 		res = append(res, list...)
 	}
+	sort.Slice(res, func(i, j int) bool {
+		return awsclient.StringValue(res[i].Key) < awsclient.StringValue(res[j].Key)
+	})
 	return res
 }
 
@@ -1183,14 +1188,14 @@ func TestInitialize(t *testing.T) {
 						svcutils.GetExternalTags(instance()),
 					)...,
 				)),
-				err: awsclient.Wrap(errors.New(testErrBoom), errKubeUpdateFailed),
+				err: awsclient.Wrap(errors.New(testErrBoom), common.ErrUpdateTags),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
+			e := common.NewTagger(tc.kube, &svcapitypes.DBClusterParameterGroup{})
 			err := e.Initialize(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

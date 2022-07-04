@@ -32,6 +32,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/common"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -68,7 +69,7 @@ func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.LogGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.LogGroupGroupVersionKind),
-			managed.WithInitializers(),
+			managed.WithInitializers(common.NewTagger(mgr.GetClient(), &svcapitypes.LogGroup{})),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
