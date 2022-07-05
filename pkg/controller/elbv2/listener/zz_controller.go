@@ -118,213 +118,227 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	if resp.Listeners != nil {
-		f0 := []*svcapitypes.Listener_SDK{}
-		for _, f0iter := range resp.Listeners {
-			f0elem := &svcapitypes.Listener_SDK{}
-			if f0iter.AlpnPolicy != nil {
-				f0elemf0 := []*string{}
-				for _, f0elemf0iter := range f0iter.AlpnPolicy {
-					var f0elemf0elem string
-					f0elemf0elem = *f0elemf0iter
-					f0elemf0 = append(f0elemf0, &f0elemf0elem)
-				}
-				f0elem.AlpnPolicy = f0elemf0
+	found := false
+	for _, elem := range resp.Listeners {
+		if elem.AlpnPolicy != nil {
+			f0 := []*string{}
+			for _, f0iter := range elem.AlpnPolicy {
+				var f0elem string
+				f0elem = *f0iter
+				f0 = append(f0, &f0elem)
 			}
-			if f0iter.Certificates != nil {
-				f0elemf1 := []*svcapitypes.Certificate{}
-				for _, f0elemf1iter := range f0iter.Certificates {
-					f0elemf1elem := &svcapitypes.Certificate{}
-					if f0elemf1iter.CertificateArn != nil {
-						f0elemf1elem.CertificateARN = f0elemf1iter.CertificateArn
-					}
-					if f0elemf1iter.IsDefault != nil {
-						f0elemf1elem.IsDefault = f0elemf1iter.IsDefault
-					}
-					f0elemf1 = append(f0elemf1, f0elemf1elem)
-				}
-				f0elem.Certificates = f0elemf1
-			}
-			if f0iter.DefaultActions != nil {
-				f0elemf2 := []*svcapitypes.Action{}
-				for _, f0elemf2iter := range f0iter.DefaultActions {
-					f0elemf2elem := &svcapitypes.Action{}
-					if f0elemf2iter.AuthenticateCognitoConfig != nil {
-						f0elemf2elemf0 := &svcapitypes.AuthenticateCognitoActionConfig{}
-						if f0elemf2iter.AuthenticateCognitoConfig.AuthenticationRequestExtraParams != nil {
-							f0elemf2elemf0f0 := map[string]*string{}
-							for f0elemf2elemf0f0key, f0elemf2elemf0f0valiter := range f0elemf2iter.AuthenticateCognitoConfig.AuthenticationRequestExtraParams {
-								var f0elemf2elemf0f0val string
-								f0elemf2elemf0f0val = *f0elemf2elemf0f0valiter
-								f0elemf2elemf0f0[f0elemf2elemf0f0key] = &f0elemf2elemf0f0val
-							}
-							f0elemf2elemf0.AuthenticationRequestExtraParams = f0elemf2elemf0f0
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.OnUnauthenticatedRequest != nil {
-							f0elemf2elemf0.OnUnauthenticatedRequest = f0elemf2iter.AuthenticateCognitoConfig.OnUnauthenticatedRequest
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.Scope != nil {
-							f0elemf2elemf0.Scope = f0elemf2iter.AuthenticateCognitoConfig.Scope
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.SessionCookieName != nil {
-							f0elemf2elemf0.SessionCookieName = f0elemf2iter.AuthenticateCognitoConfig.SessionCookieName
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.SessionTimeout != nil {
-							f0elemf2elemf0.SessionTimeout = f0elemf2iter.AuthenticateCognitoConfig.SessionTimeout
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.UserPoolArn != nil {
-							f0elemf2elemf0.UserPoolARN = f0elemf2iter.AuthenticateCognitoConfig.UserPoolArn
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.UserPoolClientId != nil {
-							f0elemf2elemf0.UserPoolClientID = f0elemf2iter.AuthenticateCognitoConfig.UserPoolClientId
-						}
-						if f0elemf2iter.AuthenticateCognitoConfig.UserPoolDomain != nil {
-							f0elemf2elemf0.UserPoolDomain = f0elemf2iter.AuthenticateCognitoConfig.UserPoolDomain
-						}
-						f0elemf2elem.AuthenticateCognitoConfig = f0elemf2elemf0
-					}
-					if f0elemf2iter.AuthenticateOidcConfig != nil {
-						f0elemf2elemf1 := &svcapitypes.AuthenticateOIDCActionConfig{}
-						if f0elemf2iter.AuthenticateOidcConfig.AuthenticationRequestExtraParams != nil {
-							f0elemf2elemf1f0 := map[string]*string{}
-							for f0elemf2elemf1f0key, f0elemf2elemf1f0valiter := range f0elemf2iter.AuthenticateOidcConfig.AuthenticationRequestExtraParams {
-								var f0elemf2elemf1f0val string
-								f0elemf2elemf1f0val = *f0elemf2elemf1f0valiter
-								f0elemf2elemf1f0[f0elemf2elemf1f0key] = &f0elemf2elemf1f0val
-							}
-							f0elemf2elemf1.AuthenticationRequestExtraParams = f0elemf2elemf1f0
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.AuthorizationEndpoint != nil {
-							f0elemf2elemf1.AuthorizationEndpoint = f0elemf2iter.AuthenticateOidcConfig.AuthorizationEndpoint
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.ClientId != nil {
-							f0elemf2elemf1.ClientID = f0elemf2iter.AuthenticateOidcConfig.ClientId
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.ClientSecret != nil {
-							f0elemf2elemf1.ClientSecret = f0elemf2iter.AuthenticateOidcConfig.ClientSecret
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.Issuer != nil {
-							f0elemf2elemf1.Issuer = f0elemf2iter.AuthenticateOidcConfig.Issuer
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.OnUnauthenticatedRequest != nil {
-							f0elemf2elemf1.OnUnauthenticatedRequest = f0elemf2iter.AuthenticateOidcConfig.OnUnauthenticatedRequest
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.Scope != nil {
-							f0elemf2elemf1.Scope = f0elemf2iter.AuthenticateOidcConfig.Scope
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.SessionCookieName != nil {
-							f0elemf2elemf1.SessionCookieName = f0elemf2iter.AuthenticateOidcConfig.SessionCookieName
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.SessionTimeout != nil {
-							f0elemf2elemf1.SessionTimeout = f0elemf2iter.AuthenticateOidcConfig.SessionTimeout
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.TokenEndpoint != nil {
-							f0elemf2elemf1.TokenEndpoint = f0elemf2iter.AuthenticateOidcConfig.TokenEndpoint
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.UseExistingClientSecret != nil {
-							f0elemf2elemf1.UseExistingClientSecret = f0elemf2iter.AuthenticateOidcConfig.UseExistingClientSecret
-						}
-						if f0elemf2iter.AuthenticateOidcConfig.UserInfoEndpoint != nil {
-							f0elemf2elemf1.UserInfoEndpoint = f0elemf2iter.AuthenticateOidcConfig.UserInfoEndpoint
-						}
-						f0elemf2elem.AuthenticateOIDCConfig = f0elemf2elemf1
-					}
-					if f0elemf2iter.FixedResponseConfig != nil {
-						f0elemf2elemf2 := &svcapitypes.FixedResponseActionConfig{}
-						if f0elemf2iter.FixedResponseConfig.ContentType != nil {
-							f0elemf2elemf2.ContentType = f0elemf2iter.FixedResponseConfig.ContentType
-						}
-						if f0elemf2iter.FixedResponseConfig.MessageBody != nil {
-							f0elemf2elemf2.MessageBody = f0elemf2iter.FixedResponseConfig.MessageBody
-						}
-						if f0elemf2iter.FixedResponseConfig.StatusCode != nil {
-							f0elemf2elemf2.StatusCode = f0elemf2iter.FixedResponseConfig.StatusCode
-						}
-						f0elemf2elem.FixedResponseConfig = f0elemf2elemf2
-					}
-					if f0elemf2iter.ForwardConfig != nil {
-						f0elemf2elemf3 := &svcapitypes.ForwardActionConfig{}
-						if f0elemf2iter.ForwardConfig.TargetGroupStickinessConfig != nil {
-							f0elemf2elemf3f0 := &svcapitypes.TargetGroupStickinessConfig{}
-							if f0elemf2iter.ForwardConfig.TargetGroupStickinessConfig.DurationSeconds != nil {
-								f0elemf2elemf3f0.DurationSeconds = f0elemf2iter.ForwardConfig.TargetGroupStickinessConfig.DurationSeconds
-							}
-							if f0elemf2iter.ForwardConfig.TargetGroupStickinessConfig.Enabled != nil {
-								f0elemf2elemf3f0.Enabled = f0elemf2iter.ForwardConfig.TargetGroupStickinessConfig.Enabled
-							}
-							f0elemf2elemf3.TargetGroupStickinessConfig = f0elemf2elemf3f0
-						}
-						if f0elemf2iter.ForwardConfig.TargetGroups != nil {
-							f0elemf2elemf3f1 := []*svcapitypes.TargetGroupTuple{}
-							for _, f0elemf2elemf3f1iter := range f0elemf2iter.ForwardConfig.TargetGroups {
-								f0elemf2elemf3f1elem := &svcapitypes.TargetGroupTuple{}
-								if f0elemf2elemf3f1iter.TargetGroupArn != nil {
-									f0elemf2elemf3f1elem.TargetGroupARN = f0elemf2elemf3f1iter.TargetGroupArn
-								}
-								if f0elemf2elemf3f1iter.Weight != nil {
-									f0elemf2elemf3f1elem.Weight = f0elemf2elemf3f1iter.Weight
-								}
-								f0elemf2elemf3f1 = append(f0elemf2elemf3f1, f0elemf2elemf3f1elem)
-							}
-							f0elemf2elemf3.TargetGroups = f0elemf2elemf3f1
-						}
-						f0elemf2elem.ForwardConfig = f0elemf2elemf3
-					}
-					if f0elemf2iter.Order != nil {
-						f0elemf2elem.Order = f0elemf2iter.Order
-					}
-					if f0elemf2iter.RedirectConfig != nil {
-						f0elemf2elemf5 := &svcapitypes.RedirectActionConfig{}
-						if f0elemf2iter.RedirectConfig.Host != nil {
-							f0elemf2elemf5.Host = f0elemf2iter.RedirectConfig.Host
-						}
-						if f0elemf2iter.RedirectConfig.Path != nil {
-							f0elemf2elemf5.Path = f0elemf2iter.RedirectConfig.Path
-						}
-						if f0elemf2iter.RedirectConfig.Port != nil {
-							f0elemf2elemf5.Port = f0elemf2iter.RedirectConfig.Port
-						}
-						if f0elemf2iter.RedirectConfig.Protocol != nil {
-							f0elemf2elemf5.Protocol = f0elemf2iter.RedirectConfig.Protocol
-						}
-						if f0elemf2iter.RedirectConfig.Query != nil {
-							f0elemf2elemf5.Query = f0elemf2iter.RedirectConfig.Query
-						}
-						if f0elemf2iter.RedirectConfig.StatusCode != nil {
-							f0elemf2elemf5.StatusCode = f0elemf2iter.RedirectConfig.StatusCode
-						}
-						f0elemf2elem.RedirectConfig = f0elemf2elemf5
-					}
-					if f0elemf2iter.TargetGroupArn != nil {
-						f0elemf2elem.TargetGroupARN = f0elemf2iter.TargetGroupArn
-					}
-					if f0elemf2iter.Type != nil {
-						f0elemf2elem.Type = f0elemf2iter.Type
-					}
-					f0elemf2 = append(f0elemf2, f0elemf2elem)
-				}
-				f0elem.DefaultActions = f0elemf2
-			}
-			if f0iter.ListenerArn != nil {
-				f0elem.ListenerARN = f0iter.ListenerArn
-			}
-			if f0iter.LoadBalancerArn != nil {
-				f0elem.LoadBalancerARN = f0iter.LoadBalancerArn
-			}
-			if f0iter.Port != nil {
-				f0elem.Port = f0iter.Port
-			}
-			if f0iter.Protocol != nil {
-				f0elem.Protocol = f0iter.Protocol
-			}
-			if f0iter.SslPolicy != nil {
-				f0elem.SSLPolicy = f0iter.SslPolicy
-			}
-			f0 = append(f0, f0elem)
+			cr.Spec.ForProvider.AlpnPolicy = f0
+		} else {
+			cr.Spec.ForProvider.AlpnPolicy = nil
 		}
-		cr.Status.AtProvider.Listeners = f0
-	} else {
-		cr.Status.AtProvider.Listeners = nil
+		if elem.Certificates != nil {
+			f1 := []*svcapitypes.Certificate{}
+			for _, f1iter := range elem.Certificates {
+				f1elem := &svcapitypes.Certificate{}
+				if f1iter.CertificateArn != nil {
+					f1elem.CertificateARN = f1iter.CertificateArn
+				}
+				if f1iter.IsDefault != nil {
+					f1elem.IsDefault = f1iter.IsDefault
+				}
+				f1 = append(f1, f1elem)
+			}
+			cr.Status.AtProvider.Certificates = f1
+		} else {
+			cr.Status.AtProvider.Certificates = nil
+		}
+		if elem.DefaultActions != nil {
+			f2 := []*svcapitypes.Action{}
+			for _, f2iter := range elem.DefaultActions {
+				f2elem := &svcapitypes.Action{}
+				if f2iter.AuthenticateCognitoConfig != nil {
+					f2elemf0 := &svcapitypes.AuthenticateCognitoActionConfig{}
+					if f2iter.AuthenticateCognitoConfig.AuthenticationRequestExtraParams != nil {
+						f2elemf0f0 := map[string]*string{}
+						for f2elemf0f0key, f2elemf0f0valiter := range f2iter.AuthenticateCognitoConfig.AuthenticationRequestExtraParams {
+							var f2elemf0f0val string
+							f2elemf0f0val = *f2elemf0f0valiter
+							f2elemf0f0[f2elemf0f0key] = &f2elemf0f0val
+						}
+						f2elemf0.AuthenticationRequestExtraParams = f2elemf0f0
+					}
+					if f2iter.AuthenticateCognitoConfig.OnUnauthenticatedRequest != nil {
+						f2elemf0.OnUnauthenticatedRequest = f2iter.AuthenticateCognitoConfig.OnUnauthenticatedRequest
+					}
+					if f2iter.AuthenticateCognitoConfig.Scope != nil {
+						f2elemf0.Scope = f2iter.AuthenticateCognitoConfig.Scope
+					}
+					if f2iter.AuthenticateCognitoConfig.SessionCookieName != nil {
+						f2elemf0.SessionCookieName = f2iter.AuthenticateCognitoConfig.SessionCookieName
+					}
+					if f2iter.AuthenticateCognitoConfig.SessionTimeout != nil {
+						f2elemf0.SessionTimeout = f2iter.AuthenticateCognitoConfig.SessionTimeout
+					}
+					if f2iter.AuthenticateCognitoConfig.UserPoolArn != nil {
+						f2elemf0.UserPoolARN = f2iter.AuthenticateCognitoConfig.UserPoolArn
+					}
+					if f2iter.AuthenticateCognitoConfig.UserPoolClientId != nil {
+						f2elemf0.UserPoolClientID = f2iter.AuthenticateCognitoConfig.UserPoolClientId
+					}
+					if f2iter.AuthenticateCognitoConfig.UserPoolDomain != nil {
+						f2elemf0.UserPoolDomain = f2iter.AuthenticateCognitoConfig.UserPoolDomain
+					}
+					f2elem.AuthenticateCognitoConfig = f2elemf0
+				}
+				if f2iter.AuthenticateOidcConfig != nil {
+					f2elemf1 := &svcapitypes.AuthenticateOIDCActionConfig{}
+					if f2iter.AuthenticateOidcConfig.AuthenticationRequestExtraParams != nil {
+						f2elemf1f0 := map[string]*string{}
+						for f2elemf1f0key, f2elemf1f0valiter := range f2iter.AuthenticateOidcConfig.AuthenticationRequestExtraParams {
+							var f2elemf1f0val string
+							f2elemf1f0val = *f2elemf1f0valiter
+							f2elemf1f0[f2elemf1f0key] = &f2elemf1f0val
+						}
+						f2elemf1.AuthenticationRequestExtraParams = f2elemf1f0
+					}
+					if f2iter.AuthenticateOidcConfig.AuthorizationEndpoint != nil {
+						f2elemf1.AuthorizationEndpoint = f2iter.AuthenticateOidcConfig.AuthorizationEndpoint
+					}
+					if f2iter.AuthenticateOidcConfig.ClientId != nil {
+						f2elemf1.ClientID = f2iter.AuthenticateOidcConfig.ClientId
+					}
+					if f2iter.AuthenticateOidcConfig.ClientSecret != nil {
+						f2elemf1.ClientSecret = f2iter.AuthenticateOidcConfig.ClientSecret
+					}
+					if f2iter.AuthenticateOidcConfig.Issuer != nil {
+						f2elemf1.Issuer = f2iter.AuthenticateOidcConfig.Issuer
+					}
+					if f2iter.AuthenticateOidcConfig.OnUnauthenticatedRequest != nil {
+						f2elemf1.OnUnauthenticatedRequest = f2iter.AuthenticateOidcConfig.OnUnauthenticatedRequest
+					}
+					if f2iter.AuthenticateOidcConfig.Scope != nil {
+						f2elemf1.Scope = f2iter.AuthenticateOidcConfig.Scope
+					}
+					if f2iter.AuthenticateOidcConfig.SessionCookieName != nil {
+						f2elemf1.SessionCookieName = f2iter.AuthenticateOidcConfig.SessionCookieName
+					}
+					if f2iter.AuthenticateOidcConfig.SessionTimeout != nil {
+						f2elemf1.SessionTimeout = f2iter.AuthenticateOidcConfig.SessionTimeout
+					}
+					if f2iter.AuthenticateOidcConfig.TokenEndpoint != nil {
+						f2elemf1.TokenEndpoint = f2iter.AuthenticateOidcConfig.TokenEndpoint
+					}
+					if f2iter.AuthenticateOidcConfig.UseExistingClientSecret != nil {
+						f2elemf1.UseExistingClientSecret = f2iter.AuthenticateOidcConfig.UseExistingClientSecret
+					}
+					if f2iter.AuthenticateOidcConfig.UserInfoEndpoint != nil {
+						f2elemf1.UserInfoEndpoint = f2iter.AuthenticateOidcConfig.UserInfoEndpoint
+					}
+					f2elem.AuthenticateOIDCConfig = f2elemf1
+				}
+				if f2iter.FixedResponseConfig != nil {
+					f2elemf2 := &svcapitypes.FixedResponseActionConfig{}
+					if f2iter.FixedResponseConfig.ContentType != nil {
+						f2elemf2.ContentType = f2iter.FixedResponseConfig.ContentType
+					}
+					if f2iter.FixedResponseConfig.MessageBody != nil {
+						f2elemf2.MessageBody = f2iter.FixedResponseConfig.MessageBody
+					}
+					if f2iter.FixedResponseConfig.StatusCode != nil {
+						f2elemf2.StatusCode = f2iter.FixedResponseConfig.StatusCode
+					}
+					f2elem.FixedResponseConfig = f2elemf2
+				}
+				if f2iter.ForwardConfig != nil {
+					f2elemf3 := &svcapitypes.ForwardActionConfig{}
+					if f2iter.ForwardConfig.TargetGroupStickinessConfig != nil {
+						f2elemf3f0 := &svcapitypes.TargetGroupStickinessConfig{}
+						if f2iter.ForwardConfig.TargetGroupStickinessConfig.DurationSeconds != nil {
+							f2elemf3f0.DurationSeconds = f2iter.ForwardConfig.TargetGroupStickinessConfig.DurationSeconds
+						}
+						if f2iter.ForwardConfig.TargetGroupStickinessConfig.Enabled != nil {
+							f2elemf3f0.Enabled = f2iter.ForwardConfig.TargetGroupStickinessConfig.Enabled
+						}
+						f2elemf3.TargetGroupStickinessConfig = f2elemf3f0
+					}
+					if f2iter.ForwardConfig.TargetGroups != nil {
+						f2elemf3f1 := []*svcapitypes.TargetGroupTuple{}
+						for _, f2elemf3f1iter := range f2iter.ForwardConfig.TargetGroups {
+							f2elemf3f1elem := &svcapitypes.TargetGroupTuple{}
+							if f2elemf3f1iter.TargetGroupArn != nil {
+								f2elemf3f1elem.TargetGroupARN = f2elemf3f1iter.TargetGroupArn
+							}
+							if f2elemf3f1iter.Weight != nil {
+								f2elemf3f1elem.Weight = f2elemf3f1iter.Weight
+							}
+							f2elemf3f1 = append(f2elemf3f1, f2elemf3f1elem)
+						}
+						f2elemf3.TargetGroups = f2elemf3f1
+					}
+					f2elem.ForwardConfig = f2elemf3
+				}
+				if f2iter.Order != nil {
+					f2elem.Order = f2iter.Order
+				}
+				if f2iter.RedirectConfig != nil {
+					f2elemf5 := &svcapitypes.RedirectActionConfig{}
+					if f2iter.RedirectConfig.Host != nil {
+						f2elemf5.Host = f2iter.RedirectConfig.Host
+					}
+					if f2iter.RedirectConfig.Path != nil {
+						f2elemf5.Path = f2iter.RedirectConfig.Path
+					}
+					if f2iter.RedirectConfig.Port != nil {
+						f2elemf5.Port = f2iter.RedirectConfig.Port
+					}
+					if f2iter.RedirectConfig.Protocol != nil {
+						f2elemf5.Protocol = f2iter.RedirectConfig.Protocol
+					}
+					if f2iter.RedirectConfig.Query != nil {
+						f2elemf5.Query = f2iter.RedirectConfig.Query
+					}
+					if f2iter.RedirectConfig.StatusCode != nil {
+						f2elemf5.StatusCode = f2iter.RedirectConfig.StatusCode
+					}
+					f2elem.RedirectConfig = f2elemf5
+				}
+				if f2iter.TargetGroupArn != nil {
+					f2elem.TargetGroupARN = f2iter.TargetGroupArn
+				}
+				if f2iter.Type != nil {
+					f2elem.Type = f2iter.Type
+				}
+				f2 = append(f2, f2elem)
+			}
+			cr.Status.AtProvider.DefaultActions = f2
+		} else {
+			cr.Status.AtProvider.DefaultActions = nil
+		}
+		if elem.ListenerArn != nil {
+			cr.Status.AtProvider.ListenerARN = elem.ListenerArn
+		} else {
+			cr.Status.AtProvider.ListenerARN = nil
+		}
+		if elem.LoadBalancerArn != nil {
+			cr.Status.AtProvider.LoadBalancerARN = elem.LoadBalancerArn
+		} else {
+			cr.Status.AtProvider.LoadBalancerARN = nil
+		}
+		if elem.Port != nil {
+			cr.Spec.ForProvider.Port = elem.Port
+		} else {
+			cr.Spec.ForProvider.Port = nil
+		}
+		if elem.Protocol != nil {
+			cr.Spec.ForProvider.Protocol = elem.Protocol
+		} else {
+			cr.Spec.ForProvider.Protocol = nil
+		}
+		if elem.SslPolicy != nil {
+			cr.Spec.ForProvider.SSLPolicy = elem.SslPolicy
+		} else {
+			cr.Spec.ForProvider.SSLPolicy = nil
+		}
+		found = true
+		break
+	}
+	if !found {
+		_ = found
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

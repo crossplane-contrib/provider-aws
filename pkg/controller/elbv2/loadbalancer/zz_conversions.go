@@ -21,6 +21,7 @@ package loadbalancer
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 )
@@ -48,15 +49,79 @@ func GenerateLoadBalancer(resp *svcsdk.DescribeLoadBalancersOutput) *svcapitypes
 
 	found := false
 	for _, elem := range resp.LoadBalancers {
+		if elem.AvailabilityZones != nil {
+			f0 := []*svcapitypes.AvailabilityZone{}
+			for _, f0iter := range elem.AvailabilityZones {
+				f0elem := &svcapitypes.AvailabilityZone{}
+				if f0iter.LoadBalancerAddresses != nil {
+					f0elemf0 := []*svcapitypes.LoadBalancerAddress{}
+					for _, f0elemf0iter := range f0iter.LoadBalancerAddresses {
+						f0elemf0elem := &svcapitypes.LoadBalancerAddress{}
+						if f0elemf0iter.AllocationId != nil {
+							f0elemf0elem.AllocationID = f0elemf0iter.AllocationId
+						}
+						if f0elemf0iter.IPv6Address != nil {
+							f0elemf0elem.IPv6Address = f0elemf0iter.IPv6Address
+						}
+						if f0elemf0iter.IpAddress != nil {
+							f0elemf0elem.IPAddress = f0elemf0iter.IpAddress
+						}
+						if f0elemf0iter.PrivateIPv4Address != nil {
+							f0elemf0elem.PrivateIPv4Address = f0elemf0iter.PrivateIPv4Address
+						}
+						f0elemf0 = append(f0elemf0, f0elemf0elem)
+					}
+					f0elem.LoadBalancerAddresses = f0elemf0
+				}
+				if f0iter.OutpostId != nil {
+					f0elem.OutpostID = f0iter.OutpostId
+				}
+				if f0iter.SubnetId != nil {
+					f0elem.SubnetID = f0iter.SubnetId
+				}
+				if f0iter.ZoneName != nil {
+					f0elem.ZoneName = f0iter.ZoneName
+				}
+				f0 = append(f0, f0elem)
+			}
+			cr.Status.AtProvider.AvailabilityZones = f0
+		} else {
+			cr.Status.AtProvider.AvailabilityZones = nil
+		}
+		if elem.CanonicalHostedZoneId != nil {
+			cr.Status.AtProvider.CanonicalHostedZoneID = elem.CanonicalHostedZoneId
+		} else {
+			cr.Status.AtProvider.CanonicalHostedZoneID = nil
+		}
+		if elem.CreatedTime != nil {
+			cr.Status.AtProvider.CreatedTime = &metav1.Time{*elem.CreatedTime}
+		} else {
+			cr.Status.AtProvider.CreatedTime = nil
+		}
 		if elem.CustomerOwnedIpv4Pool != nil {
 			cr.Spec.ForProvider.CustomerOwnedIPv4Pool = elem.CustomerOwnedIpv4Pool
 		} else {
 			cr.Spec.ForProvider.CustomerOwnedIPv4Pool = nil
 		}
+		if elem.DNSName != nil {
+			cr.Status.AtProvider.DNSName = elem.DNSName
+		} else {
+			cr.Status.AtProvider.DNSName = nil
+		}
 		if elem.IpAddressType != nil {
 			cr.Spec.ForProvider.IPAddressType = elem.IpAddressType
 		} else {
 			cr.Spec.ForProvider.IPAddressType = nil
+		}
+		if elem.LoadBalancerArn != nil {
+			cr.Status.AtProvider.LoadBalancerARN = elem.LoadBalancerArn
+		} else {
+			cr.Status.AtProvider.LoadBalancerARN = nil
+		}
+		if elem.LoadBalancerName != nil {
+			cr.Status.AtProvider.LoadBalancerName = elem.LoadBalancerName
+		} else {
+			cr.Status.AtProvider.LoadBalancerName = nil
 		}
 		if elem.Scheme != nil {
 			cr.Spec.ForProvider.Scheme = elem.Scheme
@@ -74,11 +139,33 @@ func GenerateLoadBalancer(resp *svcsdk.DescribeLoadBalancersOutput) *svcapitypes
 		} else {
 			cr.Spec.ForProvider.SecurityGroups = nil
 		}
+		if elem.State != nil {
+			f10 := &svcapitypes.LoadBalancerState{}
+			if elem.State.Code != nil {
+				f10.Code = elem.State.Code
+			}
+			if elem.State.Reason != nil {
+				f10.Reason = elem.State.Reason
+			}
+			cr.Status.AtProvider.State = f10
+		} else {
+			cr.Status.AtProvider.State = nil
+		}
+		if elem.Type != nil {
+			cr.Status.AtProvider.Type = elem.Type
+		} else {
+			cr.Status.AtProvider.Type = nil
+		}
+		if elem.VpcId != nil {
+			cr.Status.AtProvider.VPCID = elem.VpcId
+		} else {
+			cr.Status.AtProvider.VPCID = nil
+		}
 		found = true
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return cr
@@ -159,6 +246,10 @@ func GenerateCreateLoadBalancerInput(cr *svcapitypes.LoadBalancer) *svcsdk.Creat
 // GenerateDeleteLoadBalancerInput returns a deletion input.
 func GenerateDeleteLoadBalancerInput(cr *svcapitypes.LoadBalancer) *svcsdk.DeleteLoadBalancerInput {
 	res := &svcsdk.DeleteLoadBalancerInput{}
+
+	if cr.Status.AtProvider.LoadBalancerARN != nil {
+		res.SetLoadBalancerArn(*cr.Status.AtProvider.LoadBalancerARN)
+	}
 
 	return res
 }

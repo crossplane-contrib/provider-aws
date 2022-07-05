@@ -491,69 +491,62 @@ spec:
                 description: LoadBalancerObservation defines the observed state of
                   LoadBalancer
                 properties:
-                  loadBalancers:
-                    description: Information about the load balancer.
+                  availabilityZones:
+                    description: The subnets for the load balancer.
                     items:
                       properties:
-                        availabilityZones:
+                        loadBalancerAddresses:
                           items:
                             properties:
-                              loadBalancerAddresses:
-                                items:
-                                  properties:
-                                    allocationID:
-                                      type: string
-                                    iPv6Address:
-                                      type: string
-                                    ipAddress:
-                                      type: string
-                                    privateIPv4Address:
-                                      type: string
-                                  type: object
-                                type: array
-                              outpostID:
+                              allocationID:
                                 type: string
-                              subnetID:
+                              iPv6Address:
                                 type: string
-                              zoneName:
+                              ipAddress:
+                                type: string
+                              privateIPv4Address:
                                 type: string
                             type: object
                           type: array
-                        canonicalHostedZoneID:
+                        outpostID:
                           type: string
-                        createdTime:
-                          format: date-time
+                        subnetID:
                           type: string
-                        customerOwnedIPv4Pool:
-                          type: string
-                        dnsName:
-                          type: string
-                        ipAddressType:
-                          type: string
-                        loadBalancerARN:
-                          type: string
-                        loadBalancerName:
-                          type: string
-                        scheme:
-                          type: string
-                        securityGroups:
-                          items:
-                            type: string
-                          type: array
-                        state:
-                          description: Information about the state of the load balancer.
-                          properties:
-                            code:
-                              type: string
-                            reason:
-                              type: string
-                          type: object
-                        type_:
-                          type: string
-                        vpcID:
+                        zoneName:
                           type: string
                       type: object
                     type: array
+                  canonicalHostedZoneID:
+                    description: The ID of the Amazon Route 53 hosted zone associated
+                      with the load balancer.
+                    type: string
+                  createdTime:
+                    description: The date and time the load balancer was created.
+                    format: date-time
+                    type: string
+                  dnsName:
+                    description: The public DNS name of the load balancer.
+                    type: string
+                  loadBalancerARN:
+                    description: The Amazon Resource Name (ARN) of the load balancer.
+                    type: string
+                  loadBalancerName:
+                    description: The name of the load balancer.
+                    type: string
+                  state:
+                    description: The state of the load balancer.
+                    properties:
+                      code:
+                        type: string
+                      reason:
+                        type: string
+                    type: object
+                  type_:
+                    description: The type of load balancer.
+                    type: string
+                  vpcID:
+                    description: The ID of the VPC for the load balancer.
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
