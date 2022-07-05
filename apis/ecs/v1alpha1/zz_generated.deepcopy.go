@@ -1315,7 +1315,9 @@ func (in *CustomAWSVPCConfiguration) DeepCopyInto(out *CustomAWSVPCConfiguration
 	if in.SecurityGroupRefs != nil {
 		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupSelector != nil {
 		in, out := &in.SecurityGroupSelector, &out.SecurityGroupSelector
@@ -1336,7 +1338,9 @@ func (in *CustomAWSVPCConfiguration) DeepCopyInto(out *CustomAWSVPCConfiguration
 	if in.SubnetRefs != nil {
 		in, out := &in.SubnetRefs, &out.SubnetRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetSelector != nil {
 		in, out := &in.SubnetSelector, &out.SubnetSelector
@@ -1381,7 +1385,7 @@ func (in *CustomEFSAuthorizationConfig) DeepCopyInto(out *CustomEFSAuthorization
 	if in.AccessPointIDRef != nil {
 		in, out := &in.AccessPointIDRef, &out.AccessPointIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.AccessPointIDSelector != nil {
 		in, out := &in.AccessPointIDSelector, &out.AccessPointIDSelector
@@ -1421,7 +1425,7 @@ func (in *CustomEFSVolumeConfiguration) DeepCopyInto(out *CustomEFSVolumeConfigu
 	if in.FileSystemIDRef != nil {
 		in, out := &in.FileSystemIDRef, &out.FileSystemIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.FileSystemIDSelector != nil {
 		in, out := &in.FileSystemIDSelector, &out.FileSystemIDSelector
@@ -1476,7 +1480,7 @@ func (in *CustomLoadBalancer) DeepCopyInto(out *CustomLoadBalancer) {
 	if in.LoadBalancerNameRef != nil {
 		in, out := &in.LoadBalancerNameRef, &out.LoadBalancerNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.LoadBalancerNameSelector != nil {
 		in, out := &in.LoadBalancerNameSelector, &out.LoadBalancerNameSelector
@@ -1491,7 +1495,7 @@ func (in *CustomLoadBalancer) DeepCopyInto(out *CustomLoadBalancer) {
 	if in.TargetGroupARNRef != nil {
 		in, out := &in.TargetGroupARNRef, &out.TargetGroupARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetGroupARNSelector != nil {
 		in, out := &in.TargetGroupARNSelector, &out.TargetGroupARNSelector
@@ -1541,7 +1545,7 @@ func (in *CustomServiceParameters) DeepCopyInto(out *CustomServiceParameters) {
 	if in.ClusterRef != nil {
 		in, out := &in.ClusterRef, &out.ClusterRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ClusterSelector != nil {
 		in, out := &in.ClusterSelector, &out.ClusterSelector
@@ -1572,7 +1576,7 @@ func (in *CustomServiceParameters) DeepCopyInto(out *CustomServiceParameters) {
 	if in.TaskDefinitionRef != nil {
 		in, out := &in.TaskDefinitionRef, &out.TaskDefinitionRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TaskDefinitionSelector != nil {
 		in, out := &in.TaskDefinitionSelector, &out.TaskDefinitionSelector
@@ -1602,7 +1606,7 @@ func (in *CustomTaskDefinitionParameters) DeepCopyInto(out *CustomTaskDefinition
 	if in.ExecutionRoleARNRef != nil {
 		in, out := &in.ExecutionRoleARNRef, &out.ExecutionRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ExecutionRoleARNSelector != nil {
 		in, out := &in.ExecutionRoleARNSelector, &out.ExecutionRoleARNSelector
@@ -1617,7 +1621,7 @@ func (in *CustomTaskDefinitionParameters) DeepCopyInto(out *CustomTaskDefinition
 	if in.TaskRoleARNRef != nil {
 		in, out := &in.TaskRoleARNRef, &out.TaskRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TaskRoleARNSelector != nil {
 		in, out := &in.TaskRoleARNSelector, &out.TaskRoleARNSelector
