@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -14,9 +15,6 @@ func LoadBalancerName() reference.ExtractValueFn {
 		if !ok {
 			return ""
 		}
-		if len(lb.Status.AtProvider.LoadBalancers) == 0 {
-			return ""
-		}
-		return *lb.Status.AtProvider.LoadBalancers[0].LoadBalancerName
+		return aws.StringValue(lb.Status.AtProvider.LoadBalancerName)
 	}
 }
