@@ -21,6 +21,7 @@ package database
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 )
@@ -48,6 +49,11 @@ func GenerateDatabase(resp *svcsdk.GetDatabaseOutput) *svcapitypes.Database {
 		cr.Spec.ForProvider.CatalogID = resp.Database.CatalogId
 	} else {
 		cr.Spec.ForProvider.CatalogID = nil
+	}
+	if resp.Database.CreateTime != nil {
+		cr.Status.AtProvider.CreateTime = &metav1.Time{*resp.Database.CreateTime}
+	} else {
+		cr.Status.AtProvider.CreateTime = nil
 	}
 
 	return cr

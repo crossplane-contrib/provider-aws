@@ -21,8 +21,11 @@ spec:
     region: us-east-1
     csvClassifier:
       delimiter: ","
-      quoteSymbol: "\""
+      quoteSymbol: \
       containsHeader: "PRESENT"
+      header:
+        - "head1"
+        - "BIGHEAD"
       disableValueTrimming: true 
       allowSingleColumn: false
   providerConfigRef:
@@ -36,7 +39,7 @@ spec:
   forProvider:
     region: us-east-1
     jsonClassifier: 
-      jsonPath: "[<timestampe>]"
+      jsonPath: "[<timestamp>]"
   providerConfigRef:
     name: example
 ---
@@ -49,7 +52,7 @@ spec:
     region: us-east-1
     grokClassifier: 
       classification: "timestamp"
-      grokPattern: "%{MY_TIMESTAMP} "
+      grokPattern: "%{MY_TIMESTAMP}"
       customPatterns: "MY_TIMESTAMP (%{USERNAME:test}[,]%{YEAR:year}[-]%{MONTHNUM:mm}[-]%{MONTHDAY:dd} %{TIME:time})"
   providerConfigRef:
     name: example

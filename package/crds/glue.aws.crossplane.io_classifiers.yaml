@@ -62,7 +62,7 @@ spec:
                 description: ClassifierParameters defines the desired state of Classifier
                 properties:
                   csvClassifier:
-                    description: A CsvClassifier object specifying the classifier
+                    description: A CSVClassifier object specifying the classifier
                       to create.
                     properties:
                       allowSingleColumn:
@@ -71,6 +71,12 @@ spec:
                         type: boolean
                       containsHeader:
                         description: Indicates whether the CSV file contains a header.
+                          UNKNOWN = "Detect headings" PRESENT = "Has headings" ABSENT
+                          = "No headings"
+                        enum:
+                        - UNKNOWN
+                        - PRESENT
+                        - ABSENT
                         type: string
                       delimiter:
                         description: A custom symbol to denote what separates each
@@ -106,6 +112,9 @@ spec:
                       grokPattern:
                         description: The grok pattern used by this classifier.
                         type: string
+                    required:
+                    - classification
+                    - grokPattern
                     type: object
                   jsonClassifier:
                     description: A JsonClassifier object specifying the classifier
@@ -121,7 +130,7 @@ spec:
                     description: Region is which region the Classifier will be created.
                     type: string
                   xmlClassifier:
-                    description: A CsvClassifier object specifying the classifier
+                    description: A XMLClassifier object specifying the classifier
                       to create.
                     properties:
                       classification:
@@ -137,6 +146,8 @@ spec:
                           item_a="A" item_b="B"></row> is okay, but <row item_a="A"
                           item_b="B" /> is not).
                         type: string
+                    required:
+                    - classification
                     type: object
                 required:
                 - region
@@ -317,6 +328,19 @@ spec:
             properties:
               atProvider:
                 description: ClassifierObservation defines the observed state of Classifier
+                properties:
+                  creationTime:
+                    description: The time that this classifier was registered.
+                    format: date-time
+                    type: string
+                  lastUpdated:
+                    description: The time that this classifier was last updated.
+                    format: date-time
+                    type: string
+                  version:
+                    description: The version of this classifier.
+                    format: int64
+                    type: integer
                 type: object
               conditions:
                 description: Conditions of the resource.

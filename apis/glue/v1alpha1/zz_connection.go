@@ -45,6 +45,12 @@ type ConnectionSpec struct {
 
 // ConnectionObservation defines the observed state of Connection
 type ConnectionObservation struct {
+	// The time that this connection definition was created.
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The user, group, or role that last updated this connection definition.
+	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
+	// The last time that this connection definition was updated.
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 }
 
 // ConnectionStatus defines the observed state of Connection.

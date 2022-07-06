@@ -9,11 +9,15 @@ spec:
     encryptionConfiguration:
       cloudWatchEncryption:
         cloudWatchEncryptionMode: SSE-KMS
-        kmsKeyARNRef:
+        ## Defined in examples/kms
+        kmsKeyArnRef:
           name: dev-key
       jobBookmarksEncryption:
         jobBookmarksEncryptionMode: CSE-KMS
-        kmsKeyARNRef:
+        ## Defined in examples/kms
+        kmsKeyArnRef:
           name: dev-key
+      s3Encryption:
+        - s3EncryptionMode: SSE-S3
   providerConfigRef:
     name: example

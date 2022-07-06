@@ -21,6 +21,7 @@ package connection
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 )
@@ -43,6 +44,22 @@ func GenerateGetConnectionInput(cr *svcapitypes.Connection) *svcsdk.GetConnectio
 // GenerateConnection returns the current state in the form of *svcapitypes.Connection.
 func GenerateConnection(resp *svcsdk.GetConnectionOutput) *svcapitypes.Connection {
 	cr := &svcapitypes.Connection{}
+
+	if resp.Connection.CreationTime != nil {
+		cr.Status.AtProvider.CreationTime = &metav1.Time{*resp.Connection.CreationTime}
+	} else {
+		cr.Status.AtProvider.CreationTime = nil
+	}
+	if resp.Connection.LastUpdatedBy != nil {
+		cr.Status.AtProvider.LastUpdatedBy = resp.Connection.LastUpdatedBy
+	} else {
+		cr.Status.AtProvider.LastUpdatedBy = nil
+	}
+	if resp.Connection.LastUpdatedTime != nil {
+		cr.Status.AtProvider.LastUpdatedTime = &metav1.Time{*resp.Connection.LastUpdatedTime}
+	} else {
+		cr.Status.AtProvider.LastUpdatedTime = nil
+	}
 
 	return cr
 }

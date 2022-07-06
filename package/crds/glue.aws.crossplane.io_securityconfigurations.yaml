@@ -72,11 +72,19 @@ spec:
                           encrypted.
                         properties:
                           cloudWatchEncryptionMode:
+                            description: The encryption mode to use for CloudWatch
+                              data.
+                            enum:
+                            - DISABLED
+                            - SSE-KMS
                             type: string
-                          kmsKeyARN:
+                          kmsKeyArn:
+                            description: The Amazon Resource Name (ARN) of the KMS
+                              key to be used to encrypt the data.
                             type: string
-                          kmsKeyARNRef:
-                            description: A Reference to a named object.
+                          kmsKeyArnRef:
+                            description: KMSKeyARNRef is a reference to an KMSKey
+                              used to set the KMSKeyARN.
                             properties:
                               name:
                                 description: Name of the referenced object.
@@ -111,8 +119,9 @@ spec:
                             required:
                             - name
                             type: object
-                          kmsKeyARNSelector:
-                            description: A Selector selects an object.
+                          kmsKeyArnSelector:
+                            description: KMSKeyARNSelector selects references to an
+                              KMSKey used to set the KMSKeyARN.
                             properties:
                               matchControllerRef:
                                 description: MatchControllerRef ensures an object
@@ -158,11 +167,19 @@ spec:
                         description: Specifies how job bookmark data should be encrypted.
                         properties:
                           jobBookmarksEncryptionMode:
+                            description: The encryption mode to use for job bookmarks
+                              data.
+                            enum:
+                            - DISABLED
+                            - CSE-KMS
                             type: string
-                          kmsKeyARN:
+                          kmsKeyArn:
+                            description: The Amazon Resource Name (ARN) of the KMS
+                              key to be used to encrypt the data.
                             type: string
-                          kmsKeyARNRef:
-                            description: A Reference to a named object.
+                          kmsKeyArnRef:
+                            description: KMSKeyARNRef is a reference to an KMSKey
+                              used to set the KMSKeyARN.
                             properties:
                               name:
                                 description: Name of the referenced object.
@@ -197,8 +214,9 @@ spec:
                             required:
                             - name
                             type: object
-                          kmsKeyARNSelector:
-                            description: A Selector selects an object.
+                          kmsKeyArnSelector:
+                            description: KMSKeyARNSelector selects references to an
+                              KMSKey used to set the KMSKeyARN.
                             properties:
                               matchControllerRef:
                                 description: MatchControllerRef ensures an object
@@ -240,6 +258,107 @@ spec:
                                 type: object
                             type: object
                         type: object
+                      s3Encryption:
+                        description: Specifies how Amazon Simple Storage Service (Amazon
+                          S3) data should be encrypted.
+                        items:
+                          description: CustomS3Encryption contains the additional
+                            fields for S3Encryption
+                          properties:
+                            kmsKeyArn:
+                              description: The Amazon Resource Name (ARN) of the KMS
+                                key to be used to encrypt the data.
+                              type: string
+                            kmsKeyArnRef:
+                              description: KMSKeyARNRef is a reference to an KMSKey
+                                used to set the KMSKeyARN.
+                              properties:
+                                name:
+                                  description: Name of the referenced object.
+                                  type: string
+                                policy:
+                                  description: Policies for referencing.
+                                  properties:
+                                    resolution:
+                                      default: Required
+                                      description: Resolution specifies whether resolution
+                                        of this reference is required. The default
+                                        is 'Required', which means the reconcile will
+                                        fail if the reference cannot be resolved.
+                                        'Optional' means this reference will be a
+                                        no-op if it cannot be resolved.
+                                      enum:
+                                      - Required
+                                      - Optional
+                                      type: string
+                                    resolve:
+                                      description: Resolve specifies when this reference
+                                        should be resolved. The default is 'IfNotPresent',
+                                        which will attempt to resolve the reference
+                                        only when the corresponding field is not present.
+                                        Use 'Always' to resolve the reference on every
+                                        reconcile.
+                                      enum:
+                                      - Always
+                                      - IfNotPresent
+                                      type: string
+                                  type: object
+                              required:
+                              - name
+                              type: object
+                            kmsKeyArnSelector:
+                              description: KMSKeyARNSelector selects references to
+                                an KMSKey used to set the KMSKeyARN.
+                              properties:
+                                matchControllerRef:
+                                  description: MatchControllerRef ensures an object
+                                    with the same controller reference as the selecting
+                                    object is selected.
+                                  type: boolean
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: MatchLabels ensures an object with
+                                    matching labels is selected.
+                                  type: object
+                                policy:
+                                  description: Policies for selection.
+                                  properties:
+                                    resolution:
+                                      default: Required
+                                      description: Resolution specifies whether resolution
+                                        of this reference is required. The default
+                                        is 'Required', which means the reconcile will
+                                        fail if the reference cannot be resolved.
+                                        'Optional' means this reference will be a
+                                        no-op if it cannot be resolved.
+                                      enum:
+                                      - Required
+                                      - Optional
+                                      type: string
+                                    resolve:
+                                      description: Resolve specifies when this reference
+                                        should be resolved. The default is 'IfNotPresent',
+                                        which will attempt to resolve the reference
+                                        only when the corresponding field is not present.
+                                        Use 'Always' to resolve the reference on every
+                                        reconcile.
+                                      enum:
+                                      - Always
+                                      - IfNotPresent
+                                      type: string
+                                  type: object
+                              type: object
+                            s3EncryptionMode:
+                              description: The encryption mode to use for Amazon S3
+                                data.
+                              enum:
+                              - DISABLED
+                              - SSE-KMS
+                              - SSE-S3
+                              type: string
+                          type: object
+                        type: array
                     type: object
                   region:
                     description: Region is which region the SecurityConfiguration

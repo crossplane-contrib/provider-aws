@@ -80,14 +80,89 @@ spec:
                       scriptLocation:
                         type: string
                     type: object
+                  connectionRefs:
+                    description: ConnectionRefs is a list of references to Connections
+                      used to set the Connections.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                        policy:
+                          description: Policies for referencing.
+                          properties:
+                            resolution:
+                              default: Required
+                              description: Resolution specifies whether resolution
+                                of this reference is required. The default is 'Required',
+                                which means the reconcile will fail if the reference
+                                cannot be resolved. 'Optional' means this reference
+                                will be a no-op if it cannot be resolved.
+                              enum:
+                              - Required
+                              - Optional
+                              type: string
+                            resolve:
+                              description: Resolve specifies when this reference should
+                                be resolved. The default is 'IfNotPresent', which
+                                will attempt to resolve the reference only when the
+                                corresponding field is not present. Use 'Always' to
+                                resolve the reference on every reconcile.
+                              enum:
+                              - Always
+                              - IfNotPresent
+                              type: string
+                          type: object
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  connectionSelector:
+                    description: ConnectionsSelector selects references to Connections
+                      used to set the Connections.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                   connections:
                     description: The connections used for this job.
-                    properties:
-                      connections:
-                        items:
-                          type: string
-                        type: array
-                    type: object
+                    items:
+                      type: string
+                    type: array
                   defaultArguments:
                     additionalProperties:
                       type: string
@@ -171,13 +246,13 @@ spec:
                   region:
                     description: Region is which region the Job will be created.
                     type: string
-                  roleArn:
+                  role:
                     description: The name or Amazon Resource Name (ARN) of the IAM
-                      role associated with this job. RoleArn is a required field
+                      role associated with this job. Role is a required field
                     type: string
-                  roleArnRef:
-                    description: RoleArnRef is a reference to an IAMRole used to set
-                      the RoleArn.
+                  roleRef:
+                    description: RoleRef is a reference to an IAMRole used to set
+                      the Role.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -210,9 +285,9 @@ spec:
                     required:
                     - name
                     type: object
-                  roleArnSelector:
-                    description: RoleArnSelector selects references to IAMRole used
-                      to set the RoleArn.
+                  roleSelector:
+                    description: RoleSelector selects references to IAMRole used to
+                      set the Role.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the
@@ -254,6 +329,81 @@ spec:
                     description: The name of the SecurityConfiguration structure to
                       be used with this job.
                     type: string
+                  securityConfigurationRef:
+                    description: SecurityConfigurationRef is a reference to an SecurityConfiguration
+                      used to set the SecurityConfiguration.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  securityConfigurationSelector:
+                    description: SecurityConfigurationSelector selects references
+                      to SecurityConfiguration used to set the SecurityConfiguration.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                   tags:
                     additionalProperties:
                       type: string
@@ -463,6 +613,15 @@ spec:
               atProvider:
                 description: JobObservation defines the observed state of Job
                 properties:
+                  createdOn:
+                    description: The time and date that this job definition was created.
+                    format: date-time
+                    type: string
+                  lastModifiedOn:
+                    description: The last point in time when this job definition was
+                      modified.
+                    format: date-time
+                    type: string
                   name:
                     description: The unique name that was provided for this job definition.
                     type: string

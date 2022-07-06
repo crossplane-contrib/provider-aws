@@ -39,8 +39,6 @@ type JobParameters struct {
 	// The JobCommand that runs this job.
 	// +kubebuilder:validation:Required
 	Command *JobCommand `json:"command"`
-	// The connections used for this job.
-	Connections *ConnectionsList `json:"connections,omitempty"`
 	// The default arguments for this job.
 	//
 	// You can specify arguments here that your own job-execution script consumes,
@@ -105,8 +103,6 @@ type JobParameters struct {
 	// The maximum number of workers you can define are 299 for G.1X, and 149 for
 	// G.2X.
 	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
-	// The name of the SecurityConfiguration structure to be used with this job.
-	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
 	// The tags to use with this job. You may use tags to limit access to the job.
 	// For more information about tags in Glue, see Amazon Web Services Tags in
 	// Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html) in the
@@ -141,6 +137,10 @@ type JobSpec struct {
 
 // JobObservation defines the observed state of Job
 type JobObservation struct {
+	// The time and date that this job definition was created.
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+	// The last point in time when this job definition was modified.
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 	// The unique name that was provided for this job definition.
 	Name *string `json:"name,omitempty"`
 }
