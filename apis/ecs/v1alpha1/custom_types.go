@@ -255,6 +255,7 @@ type CustomTaskDefinitionParameters struct {
 	// in the Amazon Elastic Container Service Developer Guide.
 	// A list of volume definitions in JSON format that containers in your task
 	// may use.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	TaskRoleARN         *string         `json:"taskRoleARN,omitempty"`
 	TaskRoleARNRef      *xpv1.Reference `json:"taskRoleARNRef,omitempty"`
 	TaskRoleARNSelector *xpv1.Selector  `json:"taskRoleARNSelector,omitempty"`
