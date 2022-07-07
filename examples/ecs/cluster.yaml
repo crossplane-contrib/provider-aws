@@ -1,0 +1,17 @@
+---
+apiVersion: ecs.aws.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: example
+spec:
+  forProvider:
+    clusterName: example-cluster
+    region: us-east-1
+    capacityProviders:
+    - FARGATE
+    - FARGATE_SPOT
+    tags:
+    - key: Type
+      value: example
+  providerConfigRef:
+    name: example

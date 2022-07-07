@@ -44,6 +44,7 @@ import (
 	ec2v1beta1 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	ecrv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/ecr/v1alpha1"
 	ecrv1beta1 "github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
+	ecsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/ecs/v1alpha1"
 	efsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 	eksmanualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	eksv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
@@ -121,6 +122,7 @@ func init() {
 		eksmanualv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1beta1.SchemeBuilder.AddToScheme,
+		ecsv1alpha1.SchemeBuilder.AddToScheme,
 		apigatewayv2v1alpha1.SchemeBuilder.AddToScheme,
 		apigatewayv2v1beta1.SchemeBuilder.AddToScheme,
 		sfnv1alpha1.SchemeBuilder.AddToScheme,
