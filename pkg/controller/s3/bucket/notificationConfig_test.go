@@ -24,6 +24,9 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -607,6 +610,120 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 				t.Errorf("r: -want error, +got error:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.isUpToDate, actual, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSanitizeQueue(t *testing.T) {
+	type args struct {
+		cr []types.QueueConfiguration
+	}
+	type want struct {
+		sanitizedQueueConfiguration []types.QueueConfiguration
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SanitizeQueueFilterRuleName": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: []types.FilterRule{
+									{
+										Name:  "preFIX",
+										Value: nil,
+									},
+									{
+										Name:  "PrEFix",
+										Value: nil,
+									},
+									{
+										Name:  "suFFix",
+										Value: nil,
+									},
+									{
+										Name:  "SUffiX",
+										Value: nil,
+									},
+									{
+										Name:  "Foo",
+										Value: nil,
+									},
+									{
+										Name:  "BAR",
+										Value: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				sanitizedQueueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: []types.FilterRule{
+									{
+										Name:  "prefix",
+										Value: nil,
+									},
+									{
+										Name:  "prefix",
+										Value: nil,
+									},
+									{
+										Name:  "suffix",
+										Value: nil,
+									},
+									{
+										Name:  "suffix",
+										Value: nil,
+									},
+									{
+										Name:  "foo",
+										Value: nil,
+									},
+									{
+										Name:  "bar",
+										Value: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			sanitizedQueueConfigurations(tc.args.cr)
+
+			if diff := cmp.Diff(
+				tc.want.sanitizedQueueConfiguration,
+				tc.args.cr,
+				cmpopts.IgnoreUnexported(
+					tc.args.cr[0].Filter.Key.FilterRules[0],
+					*tc.args.cr[0].Filter.Key,
+					*tc.args.cr[0].Filter,
+					tc.args.cr[0],
+				),
+			); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

@@ -19,6 +19,7 @@ package bucket
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -93,6 +94,11 @@ func IsNotificationConfigurationUpToDate(cr *v1beta1.NotificationConfiguration, 
 	sortTopic(generated.TopicConfigurations)
 	sortTopic(external.TopicConfigurations)
 
+	// The AWS API returns QueueConfiguration.Filter.Key.FilterRules.Name as "Prefix"/"Suffix" but expects
+	// "prefix"/"suffix" this leads to inconsistency and a constant diff. Fixes
+	// https://github.com/crossplane-contrib/provider-aws/issues/1165
+	sanitizedQueueConfigurations(external.QueueConfigurations)
+
 	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.LambdaFunctionConfiguration{}.Id), cmpopts.EquateEmpty()) &&
 		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.QueueConfiguration{}.Id), cmpopts.EquateEmpty()) &&
 		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.TopicConfiguration{}.Id), cmpopts.EquateEmpty()) {
@@ -127,6 +133,15 @@ func sortTopic(configs []types.TopicConfiguration) {
 		}
 		return true
 	})
+}
+
+func sanitizedQueueConfigurations(configs []types.QueueConfiguration) {
+	for c := range configs {
+		for r := range configs[c].Filter.Key.FilterRules {
+			name := string(configs[c].Filter.Key.FilterRules[r].Name)
+			configs[c].Filter.Key.FilterRules[r].Name = types.FilterRuleName(strings.ToLower(name))
+		}
+	}
 }
 
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
