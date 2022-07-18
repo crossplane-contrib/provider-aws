@@ -24,7 +24,6 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
@@ -621,14 +620,14 @@ func TestSanitizeQueue(t *testing.T) {
 		cr []types.QueueConfiguration
 	}
 	type want struct {
-		sanitizedQueueConfiguration []types.QueueConfiguration
+		queueConfiguration []types.QueueConfiguration
 	}
 
 	cases := map[string]struct {
 		args
 		want
 	}{
-		"SanitizeQueueFilterRuleName": {
+		"SanitizeQueueFilterKeyFilterRulesName": {
 			args: args{
 				cr: []types.QueueConfiguration{
 					{
@@ -669,9 +668,9 @@ func TestSanitizeQueue(t *testing.T) {
 				},
 			},
 			want: want{
-				sanitizedQueueConfiguration: []types.QueueConfiguration{
+				queueConfiguration: []types.QueueConfiguration{
 					{
-						Events:   nil,
+						Events:   []types.Event{},
 						QueueArn: nil,
 						Id:       nil,
 						Filter: &types.NotificationConfigurationFilter{
@@ -708,20 +707,166 @@ func TestSanitizeQueue(t *testing.T) {
 				},
 			},
 		},
+		"SanitizeQueueEmptyFilterRules": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: []types.FilterRule{},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   []types.Event{},
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: []types.FilterRule{},
+							},
+						},
+					},
+				},
+			},
+		},
+		"SanitizeQueueNilFilterRules": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: nil,
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   []types.Event{},
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: &types.S3KeyFilter{
+								FilterRules: []types.FilterRule{},
+							},
+						},
+					},
+				},
+			},
+		},
+		"SanitizeQueueNilFilterKey": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: nil,
+						},
+					},
+				},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   []types.Event{},
+						QueueArn: nil,
+						Id:       nil,
+						Filter: &types.NotificationConfigurationFilter{
+							Key: nil,
+						},
+					},
+				},
+			},
+		},
+		"SanitizeQueueNilFilter": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter:   nil,
+					},
+				},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   []types.Event{},
+						QueueArn: nil,
+						Id:       nil,
+						Filter:   nil,
+					},
+				},
+			},
+		},
+		"SanitizeQueueEmptyFilter": {
+			args: args{
+				cr: []types.QueueConfiguration{
+					{
+						Events:   nil,
+						QueueArn: nil,
+						Id:       nil,
+						Filter:   &types.NotificationConfigurationFilter{},
+					},
+				},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{
+					{
+						Events:   []types.Event{},
+						QueueArn: nil,
+						Id:       nil,
+						Filter:   &types.NotificationConfigurationFilter{},
+					},
+				},
+			},
+		},
+		"SanitizeQueueEmptyConfigSlice": {
+			args: args{
+				cr: []types.QueueConfiguration{},
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{},
+			},
+		},
+		"SanitizeQueueNilConfigSlice": {
+			args: args{
+				cr: nil,
+			},
+			want: want{
+				queueConfiguration: []types.QueueConfiguration{},
+			},
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			sanitizedQueueConfigurations(tc.args.cr)
+			actual := sanitizedQueueConfigurations(tc.args.cr)
 
 			if diff := cmp.Diff(
-				tc.want.sanitizedQueueConfiguration,
-				tc.args.cr,
-				cmpopts.IgnoreUnexported(
-					tc.args.cr[0].Filter.Key.FilterRules[0],
-					*tc.args.cr[0].Filter.Key,
-					*tc.args.cr[0].Filter,
-					tc.args.cr[0],
+				tc.want.queueConfiguration,
+				actual,
+				cmp.AllowUnexported(
+					types.FilterRule{},
+					types.S3KeyFilter{},
+					types.NotificationConfigurationFilter{},
+					types.QueueConfiguration{},
 				),
 			); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
