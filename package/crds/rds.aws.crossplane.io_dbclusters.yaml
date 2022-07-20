@@ -61,6 +61,12 @@ spec:
               forProvider:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
+                  autogeneratePassword:
+                    description: "AutogeneratePassword indicates whether the controller should generate a 
+                      random password for the master user if one is not provided via MasterUserPasswordSecretRef. 
+                      \n If a password is generated, it will be stored as a secret at the location specified 
+                      by MasterUserPasswordSecretRef."
+                    type: boolean                
                   applyImmediately:
                     description: "A value that indicates whether the modifications
                       in this request and any pending modifications are asynchronously
@@ -567,7 +573,7 @@ spec:
                     description: "The password for the master database user. This
                       password can contain any printable ASCII character except \"/\",
                       \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41
-                      characters. Required."
+                      characters."
                     properties:
                       key:
                         description: The key to select.
