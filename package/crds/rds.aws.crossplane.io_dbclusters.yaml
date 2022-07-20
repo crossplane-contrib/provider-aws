@@ -61,12 +61,6 @@ spec:
               forProvider:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
-                  autogeneratePassword:
-                    description: "AutogeneratePassword indicates whether the controller should generate a 
-                      random password for the master user if one is not provided via MasterUserPasswordSecretRef. 
-                      \n If a password is generated, it will be stored as a secret at the location specified 
-                      by MasterUserPasswordSecretRef."
-                    type: boolean                
                   applyImmediately:
                     description: "A value that indicates whether the modifications
                       in this request and any pending modifications are asynchronously
@@ -80,6 +74,13 @@ spec:
                       window. All other changes are applied immediately, regardless
                       of the value of the ApplyImmediately parameter. \n By default,
                       this parameter is disabled."
+                    type: boolean
+                  autogeneratePassword:
+                    description: "AutogeneratePassword indicates whether the controller
+                      should generate a random password for the master user if one
+                      is not provided via MasterUserPasswordSecretRef. \n If a password
+                      is generated, it will be stored as a secret at the location
+                      specified by MasterUserPasswordSecretRef."
                     type: boolean
                   availabilityZones:
                     description: A list of Availability Zones (AZs) where instances
@@ -810,7 +811,6 @@ spec:
                     type: array
                 required:
                 - engine
-                - masterUserPasswordSecretRef
                 - region
                 type: object
               providerConfigRef:
