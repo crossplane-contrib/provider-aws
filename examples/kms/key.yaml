@@ -23,6 +23,7 @@ spec:
         ]
       }
     region: us-east-1
+    enableKeyRotation: true
     tags:
     - tagKey: k1
       tagValue: v1

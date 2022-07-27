@@ -106,6 +106,10 @@ spec:
                       \n To set or change the description after the key is created,
                       use UpdateKeyDescription."
                     type: string
+                  enableKeyRotation:
+                    description: Specifies if key rotation is enabled for the corresponding
+                      key
+                    type: boolean
                   enabled:
                     description: Specifies whether the CMK is enabled.
                     type: boolean
