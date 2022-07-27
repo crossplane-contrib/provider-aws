@@ -278,7 +278,7 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 	return nil
 }
 
-func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, error) {
+func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, error) { // nolint:gocyclo
 	// Description
 	if obj.KeyMetadata.Description != nil &&
 		cr.Spec.ForProvider.Description != nil &&
