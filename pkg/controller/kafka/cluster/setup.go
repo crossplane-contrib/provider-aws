@@ -128,9 +128,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClu
 			},
 		},
 	}
-	obj.ConfigurationInfo = &svcsdk.ConfigurationInfo{
-		Arn:      cr.Spec.ForProvider.CustomConfigurationInfo.ARN,
-		Revision: cr.Spec.ForProvider.CustomConfigurationInfo.Revision,
+	if cr.Spec.ForProvider.CustomConfigurationInfo != nil {
+		obj.ConfigurationInfo = &svcsdk.ConfigurationInfo{
+			Arn:      cr.Spec.ForProvider.CustomConfigurationInfo.ARN,
+			Revision: cr.Spec.ForProvider.CustomConfigurationInfo.Revision,
+		}
 	}
 	return nil
 }
