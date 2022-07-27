@@ -7,4 +7,7 @@ type CustomKeyParameters struct {
 
 	// Specifies how many days the Key is retained when scheduled for deletion. Defaults to 30 days.
 	PendingWindowInDays *int64 `json:"pendingWindowInDays,omitempty"`
+
+	// Specifies if key rotation is enabled for the corresponding key
+	EnableKeyRotation *bool `json:"enableKeyRotation,omitempty"`
 }

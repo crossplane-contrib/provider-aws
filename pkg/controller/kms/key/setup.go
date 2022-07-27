@@ -123,6 +123,22 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
 	}
 
+	if awsclients.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
+		// EnableKeyRotation
+		if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
+			KeyId: awsclients.String(meta.GetExternalName(cr)),
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+		}
+	} else {
+		// DisableKeyRotation
+		if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
+			KeyId: awsclients.String(meta.GetExternalName(cr)),
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+		}
+	}
+
 	// Tags
 	if err := u.updateTags(ctx, cr); err != nil {
 		return managed.ExternalUpdate{}, err
@@ -262,7 +278,7 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 	return nil
 }
 
-func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, error) {
+func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, error) { // nolint:gocyclo
 	// Description
 	if obj.KeyMetadata.Description != nil &&
 		cr.Spec.ForProvider.Description != nil &&
@@ -284,6 +300,17 @@ func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput
 		return false, awsclients.Wrap(err, "cannot get key policy")
 	}
 	if awsclients.StringValue(cr.Spec.ForProvider.Policy) != awsclients.StringValue(resPolicy.Policy) {
+		return false, nil
+	}
+
+	// EnableKeyRotation
+	resRotation, err := o.client.GetKeyRotationStatus(&svcsdk.GetKeyRotationStatusInput{
+		KeyId: awsclients.String(meta.GetExternalName(cr)),
+	})
+	if err != nil {
+		return false, awsclients.Wrap(err, "cannot get key rotation status")
+	}
+	if awsclients.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) != awsclients.BoolValue(resRotation.KeyRotationEnabled) {
 		return false, nil
 	}
 
