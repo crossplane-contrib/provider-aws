@@ -80,12 +80,12 @@ spec:
                     description: Optional, user-provided tags for this rule groups
                       namespace.
                     type: object
-                  workspaceID:
+                  workspaceId:
                     description: workspaceID is the ID for the Workspace.
                     type: string
-                  workspaceIDRef:
+                  workspaceIdRef:
                     description: WorkspaceIDRef is a reference to a Workspace used
-                      to set the WorksworkspaceIDpaceId.
+                      to set the workspaceID.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -118,7 +118,7 @@ spec:
                     required:
                     - name
                     type: object
-                  workspaceIDSelector:
+                  workspaceIdSelector:
                     description: WorkspaceIDSelector selects references to Workspace
                       used to set the workspaceID.
                     properties:

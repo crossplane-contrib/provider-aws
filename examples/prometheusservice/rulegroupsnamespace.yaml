@@ -6,7 +6,8 @@ spec:
   forProvider:
     region: us-east-1
     name: example-rule
-    workspaceID: ws-00000000-0000-0000-0000-000000000000
+    workspaceIdRef:
+      name: example
     data: Z3JvdXBzOgogIC0gbmFtZTogdGVzdAogICAgcnVsZXM6CiAgICAtIHJlY29yZDogbWV0cmljOnJlY29yZGluZ19ydWxlCiAgICAgIGV4cHI6IGF2ZyhyYXRlKGNvbnRhaW5lcl9jcHVfdXNhZ2Vfc2Vjb25kc190b3RhbFs1bV0pKQogIC0gbmFtZTogYWxlcnQtdGVzdAogICAgcnVsZXM6CiAgICAtIGFsZXJ0OiBtZXRyaWM6YWxlcnRpbmdfcnVsZQogICAgICBleHByOiBhdmcocmF0ZShjb250YWluZXJfY3B1X3VzYWdlX3NlY29uZHNfdG90YWxbNW1dKSkgPiAwCiAgICAgIGZvcjogNW0=
   providerConfigRef:
     name: example

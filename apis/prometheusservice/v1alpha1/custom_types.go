@@ -29,15 +29,15 @@ type CustomRuleGroupsNamespaceParameters struct {
 	// workspaceID is the ID for the Workspace.
 	// +immutable
 	// +crossplane:generate:reference:type=Workspace
-	WorkspaceID *string `json:"workspaceID,omitempty"`
+	WorkspaceID *string `json:"workspaceId,omitempty"`
 
 	// WorkspaceIDRef is a reference to a Workspace used to set
-	// the WorksworkspaceIDpaceId.
+	// the workspaceID.
 	// +optional
-	WorkspaceIDRef *xpv1.Reference `json:"workspaceIDRef,omitempty"`
+	WorkspaceIDRef *xpv1.Reference `json:"workspaceIdRef,omitempty"`
 
 	// WorkspaceIDSelector selects references to Workspace used
 	// to set the workspaceID.
 	// +optional
-	WorkspaceIDSelector *xpv1.Selector `json:"workspaceIDSelector,omitempty"`
+	WorkspaceIDSelector *xpv1.Selector `json:"workspaceIdSelector,omitempty"`
 }
