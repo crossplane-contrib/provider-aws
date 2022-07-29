@@ -1,6 +1,6 @@
 ---
 apiVersion: apigateway.aws.crossplane.io/v1alpha1
-kind: Resource
+kind: Method
 metadata:
   name: example
 spec:
@@ -9,4 +9,8 @@ spec:
     restApiIdRef:
       name: example
     region: eu-central-1
-    pathPart: example
+    resourceIdRef:
+      name: example
+    httpMethod: GET
+    authorizationType: None
+    operationName: GetExample

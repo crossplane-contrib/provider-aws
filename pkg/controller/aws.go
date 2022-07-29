@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/acm"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigateway/method"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigateway/resource"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigateway/restapi"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigatewayv2/api"
@@ -319,6 +320,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		prometheusserviceworkspace.SetupWorkspace,
 		resource.SetupResource,
 		restapi.SetupRestAPI,
+		method.SetupMethod,
 		cognitoidentitypool.SetupIdentityPool,
 	} {
 		if err := setup(mgr, o); err != nil {
