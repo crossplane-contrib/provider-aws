@@ -2,7 +2,7 @@
 apiVersion: apigateway.aws.crossplane.io/v1alpha1
 kind: RestAPI
 metadata:
-  name: test
+  name: example
 spec:
   deletionPolicy: Delete
   forProvider:
@@ -11,8 +11,8 @@ spec:
       types:
         - PRIVATE
     minimumCompressionSize: 1024
-    description: "Test "
-    name: crossplane-b-api
+    description: "Example api for crossplane"
+    name: crossplane-example
     policy: |
       {
         "Version": "2012-10-17",
