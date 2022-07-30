@@ -23,9 +23,28 @@ import (
 // CustomWorkspaceParameters includes custom fields about WorkspaceParameters.
 type CustomWorkspaceParameters struct{}
 
-// CustomRuleGroupsNamespaceParameters includes custom fields about CustomRuleGroupsNamespaceParameters.
+// CustomRuleGroupsNamespaceParameters includes custom fields about RuleGroupsNamespaceParameters.
 // workspaceID is actually required but since it's reference-able, it's not marked as required.
 type CustomRuleGroupsNamespaceParameters struct {
+	// workspaceID is the ID for the Workspace.
+	// +immutable
+	// +crossplane:generate:reference:type=Workspace
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+
+	// WorkspaceIDRef is a reference to a Workspace used to set
+	// the workspaceID.
+	// +optional
+	WorkspaceIDRef *xpv1.Reference `json:"workspaceIdRef,omitempty"`
+
+	// WorkspaceIDSelector selects references to Workspace used
+	// to set the workspaceID.
+	// +optional
+	WorkspaceIDSelector *xpv1.Selector `json:"workspaceIdSelector,omitempty"`
+}
+
+// CustomAlertManagerDefinitionParameters includes custom fields about AlertManagerDefinitionParameters.
+// workspaceID is actually required but since it's reference-able, it's not marked as required.
+type CustomAlertManagerDefinitionParameters struct {
 	// workspaceID is the ID for the Workspace.
 	// +immutable
 	// +crossplane:generate:reference:type=Workspace

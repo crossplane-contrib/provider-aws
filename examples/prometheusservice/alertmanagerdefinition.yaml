@@ -1,0 +1,12 @@
+apiVersion: prometheusservice.aws.crossplane.io/v1alpha1
+kind: AlertManagerDefinition
+metadata:
+  name: example-definition
+spec:
+  forProvider:
+    region: us-east-1
+    workspaceIdRef:
+      name: example
+    data: YWxlcnRtYW5hZ2VyX2NvbmZpZzogfAogIHJvdXRlOgogICAgcmVjZWl2ZXI6ICdkZWZhdWx0JwogIHJlY2VpdmVyczoKICAgIC0gbmFtZTogJ2RlZmF1bHQnCiAgICAgIHNuc19jb25maWdzOgogICAgICAtIHRvcGljX2FybjogYXJuOmF3czpzbnM6dXMtZWFzdC0yOjEyMzQ1Njc4OTAxMjpNeS1Ub3BpYwogICAgICAgIHNpZ3Y0OgogICAgICAgICAgcmVnaW9uOiB1cy1lYXN0LTIKICAgICAgICBhdHRyaWJ1dGVzOgogICAgICAgICAga2V5OiBrZXkxCiAgICAgICAgICB2YWx1ZTogdmFsdWUxCg==
+  providerConfigRef:
+    name: example

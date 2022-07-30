@@ -140,6 +140,7 @@ import (
 	neptunecluster "github.com/crossplane-contrib/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snstopic"
+	prometheusservicealertmanagerdefinition "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/alertmanagerdefinition"
 	prometheusservicerulegroupnamespace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/rulegroupsnamespace"
 	prometheusserviceworkspace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/workspace"
 	resourceshare "github.com/crossplane-contrib/provider-aws/pkg/controller/ram/resourceshare"
@@ -319,6 +320,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		notsubscription.SetupSubscription,
 		prometheusserviceworkspace.SetupWorkspace,
 		prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
+		prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,
 		resource.SetupResource,
 		restapi.SetupRestAPI,
 		cognitoidentitypool.SetupIdentityPool,
