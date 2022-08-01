@@ -4049,31 +4049,6 @@ type SecurityGroupReference struct {
 }
 
 // +kubebuilder:skipversion
-type SecurityGroupRule struct {
-	CIDRIPv4 *string `json:"cidrIPv4,omitempty"`
-
-	CIDRIPv6 *string `json:"cidrIPv6,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	FromPort *int64 `json:"fromPort,omitempty"`
-
-	GroupID *string `json:"groupID,omitempty"`
-
-	GroupOwnerID *string `json:"groupOwnerID,omitempty"`
-
-	IPProtocol *string `json:"ipProtocol,omitempty"`
-
-	IsEgress *bool `json:"isEgress,omitempty"`
-
-	PrefixListID *string `json:"prefixListID,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	ToPort *int64 `json:"toPort,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type SecurityGroupRuleDescription struct {
 	Description *string `json:"description,omitempty"`
 
