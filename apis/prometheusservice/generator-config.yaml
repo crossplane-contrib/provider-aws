@@ -5,8 +5,9 @@ ignore:
     - CreateRuleGroupsNamespaceInput.ClientToken
     - CreateRuleGroupsNamespaceInput.WorkspaceId
     - DeleteRuleGroupsNamespaceInput.WorkspaceId
-  resource_names:
-    - AlertManagerDefinition
+    - CreateAlertManagerDefinitionInput.ClientToken
+    - CreateAlertManagerDefinitionInput.WorkspaceId
+    - DeleteAlertManagerDefinitionInput.WorkspaceId
 resources:
   Workspace:
     fields:

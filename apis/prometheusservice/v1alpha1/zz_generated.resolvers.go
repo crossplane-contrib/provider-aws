@@ -25,6 +25,32 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ResolveReferences of this AlertManagerDefinition.
+func (mg *AlertManagerDefinition) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceIDRef,
+		Selector:     mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceIDSelector,
+		To: reference.To{
+			List:    &WorkspaceList{},
+			Managed: &Workspace{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceID")
+	}
+	mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomAlertManagerDefinitionParameters.WorkspaceIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this RuleGroupsNamespace.
 func (mg *RuleGroupsNamespace) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
