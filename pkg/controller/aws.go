@@ -50,6 +50,7 @@ import (
 	cwloggroup "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
 	cognitoidentitypool "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentity/identitypool"
 	cognitogroup "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/group"
+	cognitogroupusermembership "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/groupusermembership"
 	cognitoidentityprovider "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/identityprovider"
 	cognitoresourceserver "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/resourceserver"
 	cognitouserpool "github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider/userpool"
@@ -313,6 +314,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cognitouserpoolclient.SetupUserPoolClient,
 		cognitoidentityprovider.SetupIdentityProvider,
 		cognitoresourceserver.SetupResourceServer,
+		cognitogroupusermembership.SetupGroupUserMembership,
 		neptunecluster.SetupDBCluster,
 		topic.SetupSNSTopic,
 		subscription.SetupSubscription,
