@@ -34,6 +34,7 @@ import (
 	cloudsearchv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudsearch/v1alpha1"
 	cloudwatchlogsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	cognitoidentityv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cognitoidentity/v1alpha1"
+	cognitoidentityprovidermanualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/manualv1alpha1"
 	cognitoidentityproviderv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	databasev1beta1 "github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	daxv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
@@ -149,6 +150,7 @@ func init() {
 		ramv1alpha1.SchemeBuilder.AddToScheme,
 		kinesisv1alpha1.SchemeBuilder.AddToScheme,
 		cognitoidentityproviderv1alpha1.AddToScheme,
+		cognitoidentityprovidermanualv1alpha1.SchemeBuilder.AddToScheme,
 		neptunev1alpha1.SchemeBuilder.AddToScheme,
 		snsv1beta1.SchemeBuilder.AddToScheme,
 		prometheusservice.SchemeBuilder.AddToScheme,
