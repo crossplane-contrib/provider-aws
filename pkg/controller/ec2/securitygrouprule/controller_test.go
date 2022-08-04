@@ -6,11 +6,15 @@ import (
 	"testing"
 
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -19,20 +23,20 @@ import (
 )
 
 var (
-	sgID                = "some sg ID"
-	sgrID               = "some sgr  ID"
-	sgrIdIngress        = "some sgr ingress ID"
-	sgrIdEgress         = "some sgr egress ID"
-	cidrIpv4Block       = "172.1.0.0/16"
-	cidrIpv6Block       = "2001:0DB8:7654:0010:FEDC:0000:0000:3210/128"
-	fromPort      int32 = 10
-	wrongFromPort int32 = 0
-	toPort        int32 = 20
-	ingressType         = "ingress"
-	egressType          = "egress"
-	trueValue           = true
-	falseValue          = false
-	description         = "description"
+	sgID                  = "some sg ID"
+	sgrID                 = "some sgr  ID"
+	sgrIDIngress          = "some sgr ingress ID"
+	sgrIDEgress           = "some sgr egress ID"
+	cidrIpv4Block         = "172.1.0.0/16"
+	cidrIpv6Block         = "2001:0DB8:7654:0010:FEDC:0000:0000:3210/128"
+	fromPort        int32 = 10
+	wrongFromPort   int32 = 0
+	toPort          int32 = 20
+	ingressTypeTest       = "ingress"
+	egressTypeTest        = "egress"
+	trueValue             = true
+	falseValue            = false
+	description           = "description"
 )
 
 type args struct {
@@ -105,7 +109,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				})),
 			},
 			want: want{
@@ -114,7 +118,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				})),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
@@ -134,7 +138,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withExternalName(sgrID)),
 			},
 			want: want{
@@ -143,7 +147,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withExternalName(sgrID)),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
@@ -173,7 +177,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withExternalName(sgrID)),
 			},
 			want: want{
@@ -182,7 +186,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withStatus(manualv1alpha1.SecurityGroupRuleObservation{
 					SecurityGroupRuleID: &sgrID,
 				}), withExternalName(sgrID), withConditions(xpv1.Available())),
@@ -216,7 +220,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withExternalName(sgrID)),
 			},
 			want: want{
@@ -225,7 +229,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withStatus(manualv1alpha1.SecurityGroupRuleObservation{
 					SecurityGroupRuleID: &sgrID,
 				}), withExternalName(sgrID), withConditions(xpv1.Available())),
@@ -258,7 +262,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withExternalName(sgrID)),
 			},
 			want: want{
@@ -267,7 +271,7 @@ func TestObserce(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 				}), withStatus(manualv1alpha1.SecurityGroupRuleObservation{
 					SecurityGroupRuleID: &sgrID,
 				}), withExternalName(sgrID), withConditions(xpv1.Available())),
@@ -281,7 +285,7 @@ func TestObserce(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.sgr}
+			e := &external{kube: tc.args.kube, client: tc.sgr}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -333,7 +337,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdIngress,
+									SecurityGroupRuleId: &sgrIDIngress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &falseValue,
@@ -361,7 +365,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdEgress,
+									SecurityGroupRuleId: &sgrIDEgress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &trueValue,
@@ -374,7 +378,7 @@ func TestCreate(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					SecurityGroupID: &sgID,
 				})),
 			},
@@ -384,8 +388,8 @@ func TestCreate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
-				}), withExternalName(sgrIdIngress)),
+					Type:            &ingressTypeTest,
+				}), withExternalName(sgrIDIngress)),
 				result: managed.ExternalCreation{},
 				err:    nil,
 			},
@@ -414,7 +418,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdIngress,
+									SecurityGroupRuleId: &sgrIDIngress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &falseValue,
@@ -442,7 +446,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdEgress,
+									SecurityGroupRuleId: &sgrIDEgress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &trueValue,
@@ -455,7 +459,7 @@ func TestCreate(t *testing.T) {
 					Ipv6CidrBlock:   &cidrIpv6Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					SecurityGroupID: &sgID,
 					Description:     &description,
 				})),
@@ -465,10 +469,10 @@ func TestCreate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					Ipv6CidrBlock:   &cidrIpv6Block,
 					Description:     &description,
-				}), withExternalName(sgrIdIngress)),
+				}), withExternalName(sgrIDIngress)),
 				result: managed.ExternalCreation{},
 				err:    nil,
 			},
@@ -497,7 +501,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdIngress,
+									SecurityGroupRuleId: &sgrIDIngress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &falseValue,
@@ -525,7 +529,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdEgress,
+									SecurityGroupRuleId: &sgrIDEgress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &trueValue,
@@ -538,7 +542,7 @@ func TestCreate(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
+					Type:            &egressTypeTest,
 					SecurityGroupID: &sgID,
 				})),
 			},
@@ -548,8 +552,8 @@ func TestCreate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
-				}), withExternalName(sgrIdEgress)),
+					Type:            &egressTypeTest,
+				}), withExternalName(sgrIDEgress)),
 				result: managed.ExternalCreation{},
 				err:    nil,
 			},
@@ -578,7 +582,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdIngress,
+									SecurityGroupRuleId: &sgrIDIngress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &falseValue,
@@ -606,7 +610,7 @@ func TestCreate(t *testing.T) {
 									CidrIpv6:            cidrIpv6,
 									Description:         description,
 									GroupId:             input.GroupId,
-									SecurityGroupRuleId: &sgrIdEgress,
+									SecurityGroupRuleId: &sgrIDEgress,
 									FromPort:            input.IpPermissions[0].FromPort,
 									ToPort:              input.IpPermissions[0].ToPort,
 									IsEgress:            &trueValue,
@@ -619,7 +623,7 @@ func TestCreate(t *testing.T) {
 					Ipv6CidrBlock:   &cidrIpv6Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
+					Type:            &egressTypeTest,
 					SecurityGroupID: &sgID,
 					Description:     &description,
 				})),
@@ -629,10 +633,10 @@ func TestCreate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
+					Type:            &egressTypeTest,
 					Ipv6CidrBlock:   &cidrIpv6Block,
 					Description:     &description,
-				}), withExternalName(sgrIdEgress)),
+				}), withExternalName(sgrIDEgress)),
 				result: managed.ExternalCreation{},
 				err:    nil,
 			},
@@ -641,7 +645,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.sgr}
+			e := &external{kube: tc.args.kube, client: tc.sgr}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -686,9 +690,9 @@ func TestDelete(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					SecurityGroupID: &sgID,
-				}), withExternalName(sgrIdIngress)),
+				}), withExternalName(sgrIDIngress)),
 			},
 			want: want{
 				cr: securityGroupRule(withSpec(manualv1alpha1.SecurityGroupRuleParameters{
@@ -696,8 +700,8 @@ func TestDelete(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
-				}), withExternalName(sgrIdIngress), withConditions(xpv1.Deleting())),
+					Type:            &ingressTypeTest,
+				}), withExternalName(sgrIDIngress), withConditions(xpv1.Deleting())),
 				err: nil,
 			},
 		},
@@ -720,9 +724,9 @@ func TestDelete(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
+					Type:            &egressTypeTest,
 					SecurityGroupID: &sgID,
-				}), withExternalName(sgrIdEgress)),
+				}), withExternalName(sgrIDEgress)),
 			},
 			want: want{
 				cr: securityGroupRule(withSpec(manualv1alpha1.SecurityGroupRuleParameters{
@@ -730,8 +734,8 @@ func TestDelete(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &egressType,
-				}), withExternalName(sgrIdEgress), withConditions(xpv1.Deleting())),
+					Type:            &egressTypeTest,
+				}), withExternalName(sgrIDEgress), withConditions(xpv1.Deleting())),
 				err: nil,
 			},
 		},
@@ -739,7 +743,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.sgr}
+			e := &external{kube: tc.args.kube, client: tc.sgr}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -791,9 +795,9 @@ func TestUpdate(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					SecurityGroupID: &sgID,
-				}), withExternalName(sgrIdIngress)),
+				}), withExternalName(sgrIDIngress)),
 			},
 			want: want{
 				cr: securityGroupRule(withSpec(manualv1alpha1.SecurityGroupRuleParameters{
@@ -801,8 +805,8 @@ func TestUpdate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
-				}), withExternalName(sgrIdIngress)),
+					Type:            &ingressTypeTest,
+				}), withExternalName(sgrIDIngress)),
 				err: nil,
 			},
 		},
@@ -844,9 +848,9 @@ func TestUpdate(t *testing.T) {
 					CidrBlock:       &cidrIpv4Block,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
+					Type:            &ingressTypeTest,
 					SecurityGroupID: &sgID,
-				}), withExternalName(sgrIdIngress)),
+				}), withExternalName(sgrIDIngress)),
 			},
 			want: want{
 				cr: securityGroupRule(withSpec(manualv1alpha1.SecurityGroupRuleParameters{
@@ -854,8 +858,8 @@ func TestUpdate(t *testing.T) {
 					SecurityGroupID: &sgID,
 					FromPort:        &fromPort,
 					ToPort:          &toPort,
-					Type:            &ingressType,
-				}), withExternalName(sgrIdIngress)),
+					Type:            &ingressTypeTest,
+				}), withExternalName(sgrIDIngress)),
 				err: errors.New("Update needs recreation"),
 			},
 		},
@@ -863,7 +867,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.sgr}
+			e := &external{kube: tc.args.kube, client: tc.sgr}
 			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

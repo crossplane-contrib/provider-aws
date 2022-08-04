@@ -1623,8 +1623,8 @@ func (in *SecurityGroupRuleParameters) DeepCopyInto(out *SecurityGroupRuleParame
 		*out = new(string)
 		**out = **in
 	}
-	if in.PrefixListId != nil {
-		in, out := &in.PrefixListId, &out.PrefixListId
+	if in.PrefixListID != nil {
+		in, out := &in.PrefixListID, &out.PrefixListID
 		*out = new(string)
 		**out = **in
 	}

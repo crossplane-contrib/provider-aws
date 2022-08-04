@@ -73,7 +73,9 @@ spec:
                   securityGroupId:
                     type: string
                   securityGroupIdRef:
-                    description: A Reference to a named object.
+                    description: If using a SecurittyGroup managed by crossplane as
+                      reference, enable ignoreIngress or ignoreEgress on the sg to
+                      prevent the roules to be constantly created and deleted
                     properties:
                       name:
                         description: Name of the referenced object.

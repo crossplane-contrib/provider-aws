@@ -47,6 +47,7 @@ var (
 	VPCCIDRBlockKindAPIVersion   = VPCCIDRBlockKind + "." + SchemeGroupVersion.String()
 	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
 )
+
 // SecurityGroupRule type metadata.
 var (
 	SecurityGroupRuleKind             = reflect.TypeOf(SecurityGroupRule{}).Name()
@@ -54,6 +55,7 @@ var (
 	SecurityGroupRuleKindAPIVersion   = SecurityGroupRuleKind + "." + SchemeGroupVersion.String()
 	SecurityGroupRuleGroupVersionKind = SchemeGroupVersion.WithKind(SecurityGroupRuleKind)
 )
+
 // Instance type metadata.
 var (
 	InstanceKind             = reflect.TypeOf(Instance{}).Name()
