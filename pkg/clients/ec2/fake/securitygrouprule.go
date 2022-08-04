@@ -38,12 +38,12 @@ type MockSecurityGroupRuleClient struct {
 	MockRevokeEgress     func(ctx context.Context, input *ec2.RevokeSecurityGroupEgressInput, opts []func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error)
 }
 
-// DeleteSecurityGroup mocks DeleteSecurityGroup method
+// DescribeSecurityGroupRules mocks DescribeSecurityGroupRules method
 func (m *MockSecurityGroupRuleClient) DescribeSecurityGroupRules(ctx context.Context, input *ec2.DescribeSecurityGroupRulesInput, opts ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupRulesOutput, error) {
 	return m.MockDescribe(ctx, input, opts)
 }
 
-// DescribeSecurityGroups mocks DescribeSecurityGroups method
+// ModifySecurityGroupRules mocks ModifySecurityGroupRules method
 func (m *MockSecurityGroupRuleClient) ModifySecurityGroupRules(ctx context.Context, input *ec2.ModifySecurityGroupRulesInput, opts ...func(*ec2.Options)) (*ec2.ModifySecurityGroupRulesOutput, error) {
 	return m.MockModify(ctx, input, opts)
 }

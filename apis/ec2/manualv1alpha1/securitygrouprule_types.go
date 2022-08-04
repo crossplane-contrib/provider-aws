@@ -52,7 +52,7 @@ type SecurityGroupRuleParameters struct {
 	Description *string `json:"description,omitempty"`
 
 	// +kubebuilder:validation:Optional
-	PrefixListId *string `json:"prefixListId,omitempty"`
+	PrefixListID *string `json:"prefixListId,omitempty"`
 
 	// Region is the region you'd like your resource to be created in.
 	// +kubebuilder:validation:Required

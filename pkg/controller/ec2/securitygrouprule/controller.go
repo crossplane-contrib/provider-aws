@@ -7,11 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -25,11 +28,12 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an SecurityGroupRule resource"
-	errDescribe         = "failed to describe SecurityGroupRule with id"
-	errCreate           = "failed to create the SecurityGroupRule resource"
 	errDelete           = "failed to delete the SecurityGroupRule resource"
+	ingressType         = "ingress"
+	egressType          = "egress"
 )
 
+// SetupSecurityGroupRule adds a controller that reconciles SecurityGroupRules.
 func SetupSecurityGroupRule(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind)
 
@@ -56,10 +60,6 @@ func SetupSecurityGroupRule(mgr ctrl.Manager, o controller.Options) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) ec2.SecurityGroupRuleClient
-}
-
-type tagger struct {
-	kube client.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -105,7 +105,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		SecurityGroupRuleID: &externalName,
 	}
 	// Check if the two sgr are in sync
-	needsUpdate, _, _, _ := compareSgr(&cr.Spec.ForProvider, existingSgrP)
+	needsUpdate, _, _ := compareSgr(&cr.Spec.ForProvider, existingSgrP)
 	cr.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -124,8 +124,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, err
 }
 
-func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGroupRule) error {
-	if *sgr.Spec.ForProvider.Type == "ingress" {
+func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGroupRule) error { //nolint: gocyclo
+	if *sgr.Spec.ForProvider.Type == ingressType {
 		providerValues := sgr.Spec.ForProvider
 		input := &awsec2.AuthorizeSecurityGroupIngressInput{
 			GroupId: providerValues.SecurityGroupID,
@@ -163,11 +163,11 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 
 		if result != nil {
 			if len(result.SecurityGroupRules) > 0 && result.SecurityGroupRules[0].SecurityGroupRuleId != nil {
-				sgrId := result.SecurityGroupRules[0].SecurityGroupRuleId
-				meta.SetExternalName(sgr, awsclient.StringValue(sgrId))
+				sgrID := result.SecurityGroupRules[0].SecurityGroupRuleId
+				meta.SetExternalName(sgr, awsclient.StringValue(sgrID))
 			}
 		}
-	} else if *sgr.Spec.ForProvider.Type == "egress" {
+	} else if *sgr.Spec.ForProvider.Type == egressType {
 		providerValues := sgr.Spec.ForProvider
 		input := &awsec2.AuthorizeSecurityGroupEgressInput{
 			GroupId: providerValues.SecurityGroupID,
@@ -205,8 +205,8 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 
 		if result != nil {
 			if len(result.SecurityGroupRules) > 0 && result.SecurityGroupRules[0].SecurityGroupRuleId != nil {
-				sgrId := result.SecurityGroupRules[0].SecurityGroupRuleId
-				meta.SetExternalName(sgr, awsclient.StringValue(sgrId))
+				sgrID := result.SecurityGroupRules[0].SecurityGroupRuleId
+				meta.SetExternalName(sgr, awsclient.StringValue(sgrID))
 			}
 		}
 	}
@@ -229,14 +229,14 @@ func (e *external) deleteSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 func (e *external) deleteSgrForType(ctx context.Context, sgr *manualv1alpha1.SecurityGroupRule, sgrType string) error {
 	// We cant use the type of the sgr, because in case of an update of the type property of
 	// an existing sgr, we need to delete the actual sgr with the old type
-	if sgrType == "ingress" {
+	if sgrType == ingressType {
 		_, err := e.client.RevokeSecurityGroupIngress(ctx, &awsec2.RevokeSecurityGroupIngressInput{
 			SecurityGroupRuleIds: []string{meta.GetExternalName(sgr)},
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
 		})
 
 		return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
-	} else if sgrType == "egress" {
+	} else if sgrType == egressType {
 		_, err := e.client.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{
 			SecurityGroupRuleIds: []string{meta.GetExternalName(sgr)},
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
@@ -252,10 +252,10 @@ func getTypeForDeletion(sgr *manualv1alpha1.SecurityGroupRule, switchType bool) 
 	// the sgr that needs to be deleted has the old, that is opposite, type
 	returnType := *sgr.Spec.ForProvider.Type
 	if switchType {
-		if *&returnType == "ingress" {
-			return "egress"
+		if returnType == ingressType {
+			return egressType
 		}
-		return "ingress"
+		return ingressType
 	}
 	return returnType
 
@@ -272,7 +272,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
-	needsUpdate, recreate, typechange, err := compareSgr(&cr.Spec.ForProvider, existingSgr)
+	needsUpdate, recreate, typechange := compareSgr(&cr.Spec.ForProvider, existingSgr)
 
 	if needsUpdate {
 		if recreate {
@@ -313,7 +313,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, nil
 }
 
-func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *manualv1alpha1.SecurityGroupRuleParameters) (needsUpdate bool, recreate bool, typechange bool, err error) {
+func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *manualv1alpha1.SecurityGroupRuleParameters) (needsUpdate bool, recreate bool, typechange bool) {
 
 	needsUpdate = false
 	recreate = false
@@ -345,7 +345,7 @@ func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *man
 		typechange = true
 	}
 
-	return needsUpdate, recreate, typechange, nil
+	return needsUpdate, recreate, typechange
 }
 
 func (e *external) getExternalSgr(ctx context.Context, externalName string) (*manualv1alpha1.SecurityGroupRuleParameters, error) {
@@ -358,9 +358,9 @@ func (e *external) getExternalSgr(ctx context.Context, externalName string) (*ma
 		return nil, err
 	}
 	existingSgr := response.SecurityGroupRules[0]
-	crType := "ingress"
+	crType := ingressType
 	if awsclient.BoolValue(existingSgr.IsEgress) {
-		crType = "egress"
+		crType = egressType
 	}
 	cr := &manualv1alpha1.SecurityGroupRuleParameters{
 		Description:   existingSgr.Description,

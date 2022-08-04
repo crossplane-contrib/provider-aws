@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
 
+// SecurityGroupRuleClient is the external client used for SecurityGroupRule Custom Resource
 type SecurityGroupRuleClient interface {
 	AuthorizeSecurityGroupIngress(ctx context.Context, params *ec2.AuthorizeSecurityGroupIngressInput, optFns ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error)
 	AuthorizeSecurityGroupEgress(ctx context.Context, params *ec2.AuthorizeSecurityGroupEgressInput, optFns ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupEgressOutput, error)
@@ -16,6 +17,7 @@ type SecurityGroupRuleClient interface {
 	RevokeSecurityGroupEgress(ctx context.Context, params *ec2.RevokeSecurityGroupEgressInput, optFns ...func(*ec2.Options)) (*ec2.RevokeSecurityGroupEgressOutput, error)
 }
 
+// NewSecurityGroupRuleClient generates client for AWS Security Group Rule API
 func NewSecurityGroupRuleClient(cfg aws.Config) SecurityGroupRuleClient {
 	return ec2.NewFromConfig(cfg)
 }
