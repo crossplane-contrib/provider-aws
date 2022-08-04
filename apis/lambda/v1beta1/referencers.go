@@ -26,9 +26,21 @@ import (
 	kms "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// FunctionARN returns the status.atProvider.ARN of a Function.
+func FunctionARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*Function)
+		if !ok || r.Status.AtProvider.FunctionARN == nil {
+			return ""
+		}
+		return *r.Status.AtProvider.FunctionARN
+	}
+}
 
 // ResolveReferences of this Function
 func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) error {

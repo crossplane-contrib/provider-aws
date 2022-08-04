@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.16.0
 	github.com/aws/aws-sdk-go-v2/service/elasticache v1.16.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.21.1
 	github.com/aws/aws-sdk-go-v2/service/rds v1.14.0
