@@ -53,13 +53,14 @@ spec:
                 description: SecurityGroupRuleParameters define the desired state
                   of the SecurityGroupRule
                 properties:
-                  SecurityGroupRuleBlock:
+                  cidrBlock:
                     type: string
                   description:
                     type: string
                   fromPort:
-                    type: number
-                  ipv6SecurityGroupRuleBlock:
+                    format: int32
+                    type: integer
+                  ipv6cidrBlock:
                     type: string
                   prefixListId:
                     type: string
@@ -220,7 +221,8 @@ spec:
                         type: object
                     type: object
                   toPort:
-                    type: number
+                    format: int32
+                    type: integer
                   type:
                     description: Type of rule, ingress (inbound) or egress (outbound).
                     type: string
