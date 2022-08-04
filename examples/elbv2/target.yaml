@@ -1,0 +1,13 @@
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Target
+metadata:
+  name: test-target
+spec:
+  forProvider:
+    region: us-east-1
+    targetGroupArnRef:
+      name: test-targetgroup-lambda
+    lambdaArnRef:
+      name: test-function
+  providerConfigRef:
+    name: example
