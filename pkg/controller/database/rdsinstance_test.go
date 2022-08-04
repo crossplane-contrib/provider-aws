@@ -57,6 +57,7 @@ var (
 	snapshotSourceType              = "Snapshot"
 	pointInTimeSourceType           = "PointInTime"
 	s3BucketName                    = "database-backup"
+	backupWindow                    = "21:00-23:00"
 	snapshotIdentifier              = "my-snapshot"
 	pointInTimeDBInstanceIdentifier = "my-instance"
 	awsBackupRecoveryPointARN       = "arn:aws:backup:us-east-1:123456789012:recovery-point:1EB3B5E7-9EB-A80B-108B488B0D45"
@@ -161,6 +162,10 @@ func withDeleteAutomatedBackups(b bool) rdsModifier {
 
 func withBackupRetentionPeriod(i int) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.BackupRetentionPeriod = &i }
+}
+
+func withPreferredBackupWindow(s string) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.PreferredBackupWindow = &s }
 }
 
 func withStatusBackupRetentionPeriod(i int) rdsModifier {
@@ -762,12 +767,16 @@ func TestUpdate(t *testing.T) {
 						if input.BackupRetentionPeriod != nil {
 							return &awsrds.ModifyDBInstanceOutput{}, errors.New("BackupRetentionPeriod must not be set when AWS Backup is used")
 						}
+						if input.PreferredBackupWindow != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("PreferredBackupWindow must not be set when AWS Backup is used")
+						}
 						return &awsrds.ModifyDBInstanceOutput{}, nil
 					},
 					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
 						return &awsrds.DescribeDBInstancesOutput{
 							DBInstances: []awsrdstypes.DBInstance{{
 								BackupRetentionPeriod:     7,
+								PreferredBackupWindow:     &backupWindow,
 								AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
 							}},
 						}, nil
@@ -776,10 +785,10 @@ func TestUpdate(t *testing.T) {
 						return &awsrds.AddTagsToResourceOutput{}, nil
 					},
 				},
-				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7)),
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7), withPreferredBackupWindow("x")),
 			},
 			want: want{
-				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7)),
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7), withPreferredBackupWindow("x")),
 			},
 		},
 		"AlreadyModifying": {
