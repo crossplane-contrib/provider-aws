@@ -97,6 +97,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Function, resp *svcsdk.GetFu
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+	cr.Status.AtProvider = generateFuntionObservation(resp)
 	switch aws.StringValue(resp.Configuration.State) {
 	case string(svcapitypes.State_Active):
 		cr.SetConditions(xpv1.Available())
@@ -472,4 +473,54 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 		res.SetVpcConfig(f19)
 	}
 	return res
+}
+
+func generateFuntionObservation(resp *svcsdk.GetFunctionOutput) svcapitypes.FunctionObservation {
+	if resp == nil || resp.Configuration == nil {
+		return svcapitypes.FunctionObservation{}
+	}
+
+	o := svcapitypes.FunctionObservation{
+		CodeSHA256:                 resp.Configuration.CodeSha256,
+		CodeSize:                   resp.Configuration.CodeSize,
+		FunctionARN:                resp.Configuration.FunctionArn,
+		FunctionName:               resp.Configuration.FunctionName,
+		LastModified:               resp.Configuration.LastModified,
+		LastUpdateStatus:           resp.Configuration.LastUpdateStatus,
+		LastUpdateStatusReason:     resp.Configuration.LastUpdateStatusReason,
+		LastUpdateStatusReasonCode: resp.Configuration.LastUpdateStatusReasonCode,
+		MasterARN:                  resp.Configuration.MasterArn,
+		RevisionID:                 resp.Configuration.RevisionId,
+		Role:                       resp.Configuration.Role,
+		SigningJobARN:              resp.Configuration.SigningJobArn,
+		SigningProfileVersionARN:   resp.Configuration.SigningProfileVersionArn,
+		State:                      resp.Configuration.State,
+		StateReason:                resp.Configuration.StateReason,
+		StateReasonCode:            resp.Configuration.StateReasonCode,
+		Version:                    resp.Configuration.Version,
+	}
+	if resp.Configuration.VpcConfig != nil {
+		o.VPCConfig = &svcapitypes.VPCConfigResponse{
+			SecurityGroupIDs: resp.Configuration.VpcConfig.SecurityGroupIds,
+			SubnetIDs:        resp.Configuration.VpcConfig.SubnetIds,
+			VPCID:            resp.Configuration.VpcConfig.VpcId,
+		}
+	}
+	if resp.Configuration.ImageConfigResponse != nil {
+		o.ImageConfigResponse = &svcapitypes.ImageConfigResponse{}
+		if resp.Configuration.ImageConfigResponse.Error != nil {
+			o.ImageConfigResponse.Error = &svcapitypes.ImageConfigError{
+				ErrorCode: resp.Configuration.Environment.Error.ErrorCode,
+				Message:   resp.Configuration.Environment.Error.Message,
+			}
+		}
+		if resp.Configuration.ImageConfigResponse.ImageConfig != nil {
+			o.ImageConfigResponse.ImageConfig = &svcapitypes.ImageConfig{
+				Command:          resp.Configuration.ImageConfigResponse.ImageConfig.Command,
+				EntryPoint:       resp.Configuration.ImageConfigResponse.ImageConfig.EntryPoint,
+				WorkingDirectory: resp.Configuration.ImageConfigResponse.ImageConfig.WorkingDirectory,
+			}
+		}
+	}
+	return o
 }
