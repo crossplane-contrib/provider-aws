@@ -380,6 +380,13 @@ spec:
                   groupName:
                     description: The name of the security group.
                     type: string
+                  ignoreEgress:
+                    description: Dont manage the egress settings for the created resource
+                    type: boolean
+                  ignoreIngress:
+                    description: Dont manage the ingress settings for the created
+                      resource
+                    type: boolean
                   ingress:
                     description: One or more inbound rules associated with the security
                       group.

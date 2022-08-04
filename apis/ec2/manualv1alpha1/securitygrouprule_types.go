@@ -24,23 +24,35 @@ import (
 
 // SecurityGroupRuleParameters define the desired state of the SecurityGroupRule
 type SecurityGroupRuleParameters struct {
+
+	// -------------Required--------------
+
+	// +kubebuilder:validation:Required
+	FromPort *int32 `json:"fromPort"`
+
+	// +kubebuilder:validation:Required
+	ToPort *int32 `json:"toPort"`
+
+	// Type of rule, ingress (inbound) or egress (outbound).
+	// +kubebuilder:validation:Required
+	Type *string `json:"type"`
+
+	// +kubebuilder:validation:Required
+	Protocol *string `json:"protocol"`
+
+	// -------------Optional--------------
+
 	// +kubebuilder:validation:Optional
-	SecurityGroupRuleBlock *string `json:"SecurityGroupRuleBlock,omitempty"`
+	CidrBlock *string `json:"cidrBlock,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	Ipv6CidrBlock *string `json:"ipv6cidrBlock,omitempty"`
 
 	// +kubebuilder:validation:Optional
 	Description *string `json:"description,omitempty"`
 
-	// +kubebuilder:validation:Required
-	FromPort *float64 `json:"fromPort"`
-
-	// +kubebuilder:validation:Optional
-	IPv6SecurityGroupRuleBlock *string `json:"ipv6SecurityGroupRuleBlock,omitempty"`
-
 	// +kubebuilder:validation:Optional
 	PrefixListId *string `json:"prefixListId,omitempty"`
-
-	// +kubebuilder:validation:Required
-	Protocol *string `json:"protocol"`
 
 	// Region is the region you'd like your resource to be created in.
 	// +kubebuilder:validation:Required
@@ -48,12 +60,18 @@ type SecurityGroupRuleParameters struct {
 
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +kubebuilder:validation:Optional
+	// +immutable
 	SecurityGroupID *string `json:"securityGroupId,omitempty"`
 
+	// If using a SecurittyGroup managed by crossplane as reference,
+	// enable ignoreIngress or ignoreEgress on the sg to prevent the
+	// roules to be constantly created and deleted
 	// +kubebuilder:validation:Optional
+	// +immutable
 	SecurityGroupIDRef *xpv1.Reference `json:"securityGroupIdRef,omitempty"`
 
 	// +kubebuilder:validation:Optional
+	// +immutable
 	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
@@ -65,13 +83,6 @@ type SecurityGroupRuleParameters struct {
 
 	// +kubebuilder:validation:Optional
 	SourceSecurityGroupIDSelector *xpv1.Selector `json:"sourceSecurityGroupIdSelector,omitempty"`
-
-	// +kubebuilder:validation:Required
-	ToPort *float64 `json:"toPort"`
-
-	// Type of rule, ingress (inbound) or egress (outbound).
-	// +kubebuilder:validation:Required
-	Type *string `json:"type"`
 }
 
 // A SecurityGroupRuleSpec defines the desired state of a SecurityGroupRule.
