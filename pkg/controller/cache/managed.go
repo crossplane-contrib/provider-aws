@@ -159,12 +159,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		tagsNeedUpdate = elasticache.ReplicationGroupTagsNeedsUpdate(cr.Spec.ForProvider.Tags, tags.TagList)
 	}
 
+	rgDiff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList)
 	return managed.ExternalObservation{
 		ResourceExists: true,
-		ResourceUpToDate: !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) &&
+		ResourceUpToDate: rgDiff == "" &&
 			!elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg) &&
 			!tagsNeedUpdate,
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
+		Diff:              rgDiff,
 	}, nil
 }
 
@@ -241,7 +243,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
+	if diff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList); diff != "" {
 		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
