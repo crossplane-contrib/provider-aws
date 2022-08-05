@@ -1611,7 +1611,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					{EngineVersion: aws.String(engineVersion)},
 				},
 			},
-			want: want{res: true},
+			want: want{res: false},
 		},
 	}
 
