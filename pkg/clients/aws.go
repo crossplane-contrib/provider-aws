@@ -30,7 +30,7 @@ import (
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -188,9 +188,9 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 			if pc.Spec.Endpoint.URL.Dynamic == nil {
 				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
 			}
-			// NOTE(muvaf): IAM does not have any region.
-			if service == "IAM" {
-				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			// NOTE(muvaf): IAM and Route 53 do not have a region.
+			if service == "IAM" || service == "Route 53" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ReplaceAll(strings.ToLower(service), " ", ""), pc.Spec.Endpoint.URL.Dynamic.Host)
 			} else {
 				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
 			}
