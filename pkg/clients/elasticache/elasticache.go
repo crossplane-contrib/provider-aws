@@ -491,7 +491,7 @@ func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string
 // ReplicationGroupNumCacheClustersNeedsUpdate determines if the number of Cache Clusters
 // in a replication group needs to be updated
 func ReplicationGroupNumCacheClustersNeedsUpdate(kube v1beta1.ReplicationGroupParameters, ccList []elasticachetypes.CacheCluster) bool {
-	return aws.ToInt(kube.NumCacheClusters) != len(ccList)
+	return kube.NumCacheClusters != nil && aws.ToInt(kube.NumCacheClusters) != len(ccList)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of
