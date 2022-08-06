@@ -1260,7 +1260,7 @@ func Wrap(err error, msg string) error {
 	// AWS SDK v1 uses different interfaces than v2 and it doesn't unwrap to
 	// the underlying error. So, we need to strip off the unique request ID
 	// manually.
-	if v1RequestError, ok := err.(awserr.RequestFailure); ok {
+	if v1RequestError, ok := err.(awserr.RequestFailure); ok { //nolint:errorlint
 		// TODO(negz): This loses context about the underlying error
 		// type, preventing us from using errors.As to figure out what
 		// kind of error it is. Could we do this without losing

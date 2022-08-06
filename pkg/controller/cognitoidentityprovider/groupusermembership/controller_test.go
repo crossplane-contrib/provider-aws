@@ -60,7 +60,10 @@ func withExternalName(groupname string, username string, userPoolID string) user
 		Groupname:  &groupname,
 		Username:   &username,
 	}
-	payload, _ := json.Marshal(externalAnnotation)
+	payload, err := json.Marshal(externalAnnotation)
+	if err != nil {
+		panic(err)
+	}
 	return func(r *manualv1alpha1.GroupUserMembership) { meta.SetExternalName(r, string(payload)) }
 }
 
