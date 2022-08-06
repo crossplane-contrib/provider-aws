@@ -554,9 +554,10 @@ type ElasticIPStatus struct {
 }
 
 // Endpoint is used as a response element in the following actions:
-//    * CreateCluster
-//    * DescribeClusters
-//    * DeleteCluster
+//   - CreateCluster
+//   - DescribeClusters
+//   - DeleteCluster
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Endpoint
 type Endpoint struct {
 	// Address specifies the DNS address of the cluster.
