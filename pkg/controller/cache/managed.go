@@ -55,6 +55,7 @@ const (
 	errModifyReplicationGroup              = "cannot modify ElastiCache replication group"
 	errDeleteReplicationGroup              = "cannot delete ElastiCache replication group"
 	errModifyReplicationGroupSC            = "cannot modify ElastiCache replication group shard configuration"
+	errModifyReplicationGroupCC            = "cannot modify ElastiCache replication group num cache clusters"
 	errListReplicationGroupTags            = "cannot list ElastiCache replication group tags"
 	errUpdateReplicationGroupTags          = "cannot update ElastiCache replication group tags"
 	errReplicationGroupCacheClusterMinimum = "at least 1 replica is required"
@@ -238,7 +239,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if elasticache.ReplicationGroupNumCacheClustersNeedsUpdate(cr.Spec.ForProvider, ccList) {
 		err := e.updateReplicationGroupNumCacheClusters(ctx, meta.GetExternalName(cr), len(ccList), aws.ToInt(cr.Spec.ForProvider.NumCacheClusters))
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroupCC)
 		}
 		return managed.ExternalUpdate{}, nil
 	}
