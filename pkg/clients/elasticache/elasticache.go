@@ -274,28 +274,28 @@ func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroup
 
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
 // the configuration of its member clusters differ from given desired state.
-func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) bool {
+func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) string {
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
-		return true
+		return "AutomaticFailover"
 	case !reflect.DeepEqual(&kube.CacheNodeType, rg.CacheNodeType):
-		return true
+		return "CacheNotType"
 	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, clients.IntFrom32Address(rg.SnapshotRetentionLimit)):
-		return true
+		return "SnapshotRetentionLimit"
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
-		return true
+		return "SnapshotWindow"
 	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
-		return true
+		return "MultiAZ"
 	case ReplicationGroupNumCacheClustersNeedsUpdate(kube, ccList):
-		return true
+		return "NumCacheClusters"
 	}
 
 	for _, cc := range ccList {
-		if cacheClusterNeedsUpdate(kube, cc) {
-			return true
+		if reason := cacheClusterNeedsUpdate(kube, cc); reason != "" {
+			return reason
 		}
 	}
-	return false
+	return ""
 }
 
 func automaticFailoverEnabled(af elasticachetypes.AutomaticFailoverStatus) *bool {
@@ -403,30 +403,33 @@ func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: go
 	return true
 }
 
-func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) bool { // nolint:gocyclo
+func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
 	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
-		return true
+		return "EngineVersion"
 	}
 	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
-		return true
+		return "CacheParameterGroup"
 	}
 	if cc.NotificationConfiguration != nil {
 		if !reflect.DeepEqual(kube.NotificationTopicARN, cc.NotificationConfiguration.TopicArn) {
-			return true
+			return "NoticationTopicARN"
 		}
 		if !reflect.DeepEqual(cc.NotificationConfiguration.TopicStatus, kube.NotificationTopicStatus) {
-			return true
+			return "TopicStatus"
 		}
 	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
-		return true
+		return "NotificationTopicARN"
 	}
 	// AWS will normalize preferred maintenance windows to lowercase
 	if !strings.EqualFold(clients.StringValue(kube.PreferredMaintenanceWindow),
 		clients.StringValue(cc.PreferredMaintenanceWindow)) {
-		return true
+		return "PreferredMaintainenceWindow"
 	}
-	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)
+	if sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups) {
+		return "SecurityGroups"
+	}
+	return ""
 }
 
 func sgIDsNeedUpdate(kube []string, cc []elasticachetypes.SecurityGroupMembership) bool {

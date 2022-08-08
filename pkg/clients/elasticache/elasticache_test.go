@@ -797,7 +797,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ReplicationGroupNeedsUpdate(*tc.kube, tc.rg, tc.ccList)
+			got := ReplicationGroupNeedsUpdate(*tc.kube, tc.rg, tc.ccList) != ""
 			if got != tc.want {
 				t.Errorf("ReplicationGroupNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
@@ -1019,7 +1019,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := cacheClusterNeedsUpdate(*tc.kube, tc.cc)
+			got := cacheClusterNeedsUpdate(*tc.kube, tc.cc) != ""
 			if got != tc.want {
 				t.Errorf("cacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
