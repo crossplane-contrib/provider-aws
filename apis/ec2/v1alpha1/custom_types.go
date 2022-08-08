@@ -449,3 +449,96 @@ type CustomTransitGatewayRouteTableParameters struct {
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 }
+
+type CustomFlowLogsParameters struct {
+
+	// The ID of the subnet, network interface, or VPC for which you want to create
+	// a flow log.
+	//
+	// Constraints: Maximum of 1000 resources
+	// +optional
+	ResourceIDs []*string `json:"resourceIDs"`
+	// The type of resource for which to create the flow log. For example, if you
+	// specified a VPC ID for the ResourceId property, specify VPC for this property.
+	// +optional
+	ResourceType *string `json:"resourceType"`
+	// The ID of the VPC for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
+	VPCID *string `json:"vpcID,omitempty"`
+	// VPCIDRef is a reference to an API used to set
+	// the VPCID.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIDRef,omitempty"`
+	// VPCIDSelector selects references to API used
+	// to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
+
+	// The ID of the TransitGateway for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGateway
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// TransitGatewayIDRef is a reference to an API used to set
+	// the TransitGatewayID.
+	// +optional
+	TransitGatewayIDRef *xpv1.Reference `json:"transitGatewayIdRef,omitempty"`
+
+	// TransitGatewayIDSelector selects references to API used
+	// to set the TransitGatewayID.
+	// +optional
+	TransitGatewayIDSelector *xpv1.Selector `json:"transitGatewayIdSelector,omitempty"`
+
+	// The ID of the TransitGatewayAttachment for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGatewayVPCAttachment
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentId,omitempty"`
+
+	// TransitGatewayAttachmentIDRef is a reference to an API used to set
+	// the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDRef *xpv1.Reference `json:"transitGatewayAttachmentIdRef,omitempty"`
+
+	// TransitGatewayAttachmentIDSelector selects references to API used
+	// to set the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDSelector *xpv1.Selector `json:"transitGatewayAttachmentIdSelector,omitempty"`
+
+	// The ID of the one or more Subnets for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
+	SubnetIDs []*string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a list of references to SubnetIDs used to set
+	// the SubnetIDs.
+	// +optional
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDSelector selects references to SubnetIDs used
+	// to set the SubnetIDs.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+
+	// The ID of the NetworkInterface for which you want to create a flow log.
+	// +optional
+	NetworkInterfaceID *string `json:"networkInterfaceId"`
+
+	// The Amazon Resource Names (ARNs) of a IAM Role.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
+
+	DeliverLogsPermissionRole *string `json:"deliverLogsPermissionRole,omitempty"`
+
+	// DeliverLogsPermissionRoleRef is a reference to DeliverLogsPermissionRole used to set
+	// the DeliverLogsPermissionRole.
+	// +optional
+	DeliverLogsPermissionRoleRef xpv1.Reference `json:"deliverLogsPermissionRoleRef,omitempty"`
+
+	// DeliverLogsPermissionRoleSelector selects a reference to DeliverLogsPermissionRoleSelector used
+	// to set the DeliverLogsPermissionRoleSelector.
+	// +optional
+	DeliverLogsPermissionRoleSelector *xpv1.Selector `json:"deliverLogsPermissionRoleSelector,omitempty"`
+}

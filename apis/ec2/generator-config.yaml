@@ -120,6 +120,8 @@ ignore:
     - CreateVolumeInput.ClientToken
     - CreateVpcEndpointInput.ClientToken
     - CreateVpcEndpointOutput.ClientToken
+    - CreateFlowLogsInput.ResourceIds
+    - CreateFlowLogsInput.ResourceType
 resources:
   Volume:
     exceptions:
@@ -146,3 +148,8 @@ resources:
       errors:
         404:
           code: InvalidRoute.NotFound
+operations:
+  CreateFlowLogs:
+    operation_type:
+    - Create
+    resource_name: FlowLogs

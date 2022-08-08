@@ -29,6 +29,81 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ResolveReferences of this FlowLogs.
+func (mg *FlowLogs) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogsParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogsParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogsParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogsParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogsParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogsParameters.VPCIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayList{},
+			Managed: &TransitGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayVPCAttachmentList{},
+			Managed: &TransitGatewayVPCAttachment{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogsParameters.TransitGatewayAttachmentIDRef = rsp.ResolvedReference
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDs),
+		Extract:       reference.ExternalName(),
+		References:    mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDRefs,
+		Selector:      mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDSelector,
+		To: reference.To{
+			List:    &v1beta1.SubnetList{},
+			Managed: &v1beta1.Subnet{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDs")
+	}
+	mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.CustomFlowLogsParameters.SubnetIDRefs = mrsp.ResolvedReferences
+
+	return nil
+}
+
 // ResolveReferences of this LaunchTemplateVersion.
 func (mg *LaunchTemplateVersion) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

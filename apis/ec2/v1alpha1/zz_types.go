@@ -840,6 +840,8 @@ type DescribeFleetsInstances struct {
 
 // +kubebuilder:skipversion
 type DestinationOptionsRequest struct {
+	FileFormat *string `json:"fileFormat,omitempty"`
+
 	HiveCompatiblePartitions *bool `json:"hiveCompatiblePartitions,omitempty"`
 
 	PerHourPartition *bool `json:"perHourPartition,omitempty"`
@@ -847,6 +849,8 @@ type DestinationOptionsRequest struct {
 
 // +kubebuilder:skipversion
 type DestinationOptionsResponse struct {
+	FileFormat *string `json:"fileFormat,omitempty"`
+
 	HiveCompatiblePartitions *bool `json:"hiveCompatiblePartitions,omitempty"`
 
 	PerHourPartition *bool `json:"perHourPartition,omitempty"`
@@ -1371,6 +1375,8 @@ type FlowLog struct {
 
 	LogDestination *string `json:"logDestination,omitempty"`
 
+	LogDestinationType *string `json:"logDestinationType,omitempty"`
+
 	LogFormat *string `json:"logFormat,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
@@ -1380,6 +1386,8 @@ type FlowLog struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+
+	TrafficType *string `json:"trafficType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -5169,6 +5177,10 @@ type UnsuccessfulInstanceCreditSpecificationItemError struct {
 
 // +kubebuilder:skipversion
 type UnsuccessfulItem struct {
+	// Information about the error that occurred. For more information about errors,
+	// see Error codes (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html).
+	Error *UnsuccessfulItemError `json:"error,omitempty"`
+
 	ResourceID *string `json:"resourceID,omitempty"`
 }
 
