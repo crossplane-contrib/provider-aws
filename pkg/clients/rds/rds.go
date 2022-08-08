@@ -333,9 +333,17 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 		currentParams.AllocatedStorage = target.AllocatedStorage
 	}
 
-	// AWS Backup takes ownership of backupRetentionPeriod if it is in use, so we need to exclude the field in the diff
-	if in.AwsBackupRecoveryPointArn != nil && target.BackupRetentionPeriod != nil {
-		currentParams.BackupRetentionPeriod = target.BackupRetentionPeriod
+	// AWS Backup takes ownership of backupRetentionPeriod and
+	// preferredBackupWindow if it is in use, so we need to exclude
+	// the field in the diff
+	if in.AwsBackupRecoveryPointArn != nil {
+		if target.BackupRetentionPeriod != nil {
+			currentParams.BackupRetentionPeriod = target.BackupRetentionPeriod
+		}
+
+		if target.PreferredBackupWindow != nil {
+			currentParams.PreferredBackupWindow = target.PreferredBackupWindow
+		}
 	}
 
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
