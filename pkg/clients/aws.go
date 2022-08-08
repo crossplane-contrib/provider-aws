@@ -904,6 +904,15 @@ func Int64Value(v *int64) int64 {
 	return 0
 }
 
+// Int32Value converts the supplied int32 pointer to a int32, returning
+// 0 if the pointer is nil.
+func Int32Value(v *int32) int32 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
 // LateInitializeStringPtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeStringPtr(in *string, from *string) *string {

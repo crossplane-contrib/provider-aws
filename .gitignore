@@ -17,3 +17,4 @@ cover.out
 # ignore asdf local versions
 /.tool-versions
 
+.DS_Store

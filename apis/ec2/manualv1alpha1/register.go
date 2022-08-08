@@ -48,6 +48,14 @@ var (
 	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
 )
 
+// SecurityGroupRule type metadata.
+var (
+	SecurityGroupRuleKind             = reflect.TypeOf(SecurityGroupRule{}).Name()
+	SecurityGroupRuleGroupKind        = schema.GroupKind{Group: Group, Kind: SecurityGroupRuleKind}.String()
+	SecurityGroupRuleKindAPIVersion   = SecurityGroupRuleKind + "." + SchemeGroupVersion.String()
+	SecurityGroupRuleGroupVersionKind = SchemeGroupVersion.WithKind(SecurityGroupRuleKind)
+)
+
 // Instance type metadata.
 var (
 	InstanceKind             = reflect.TypeOf(Instance{}).Name()
@@ -58,5 +66,6 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
+	SchemeBuilder.Register(&SecurityGroupRule{}, &SecurityGroupRuleList{})
 	SchemeBuilder.Register(&Instance{}, &InstanceList{})
 }

@@ -79,6 +79,7 @@ import (
 	ec2route "github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/route"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/securitygroup"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/securitygrouprule"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/subnet"
 	transitgateway "github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/transitgateway"
 	transitgatewayroute "github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/transitgatewayroute"
@@ -214,6 +215,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,
+		securitygrouprule.SetupSecurityGroupRule,
 		internetgateway.SetupInternetGateway,
 		launchtemplate.SetupLaunchTemplate,
 		launchtemplateversion.SetupLaunchTemplateVersion,
