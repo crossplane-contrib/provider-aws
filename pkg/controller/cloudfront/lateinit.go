@@ -38,7 +38,8 @@ type LateInitOption interface {
 }
 
 // lateInitOptions Contains options for late-initialization processing of a managed resource.
-//   Initialized in a managed resource's setup method to customize late-initialization behavior for the resource.
+//
+//	Initialized in a managed resource's setup method to customize late-initialization behavior for the resource.
 type lateInitOptions struct {
 	nameMappers mapperArr
 	nameFilters filterArr
@@ -52,8 +53,9 @@ func (opts *lateInitOptions) apply(opt ...LateInitOption) {
 }
 
 // nameFilter defines a filter on CR filed names as a `LateInitOption`.
-//   Fields with matching canonical names will not be processed
-//   during late-initialization.
+//
+//	Fields with matching canonical names will not be processed
+//	during late-initialization.
 type nameFilter func(string) bool
 
 // apply Applies the receiver `nameFilter` to the specified `lateInitOptions`
@@ -82,7 +84,8 @@ func (fArr filterArr) filter(name string) bool {
 }
 
 // canonicalNameFilter returns a `nameFilter` option that filters all specified canonical CR field names.
-//   Example: `canonicalNameFilter("a.b.c", "a.b.d", "a.b.e")`
+//
+//	Example: `canonicalNameFilter("a.b.c", "a.b.d", "a.b.e")`
 func canonicalNameFilter(cNames ...string) nameFilter {
 	return func(name string) bool {
 		for _, n := range cNames {
@@ -124,12 +127,13 @@ func (mArr mapperArr) getName(name string) string {
 }
 
 // suffixReplacer returns a `NameMapper` as a `LateInitOption` that
-//   can be used to replace the specified `suffix` on a CR field name
-//   with the specified `replace` string to obtain the source
-//   response field name.
-//   Example: `suffixReplacer("ID", "Id")` tells
-//   `lateInitializeFromResponse` to fill a target CR field with name `FieldID`
-//   from a corresponding response field with name `FieldId`.
+//
+//	can be used to replace the specified `suffix` on a CR field name
+//	with the specified `replace` string to obtain the source
+//	response field name.
+//	Example: `suffixReplacer("ID", "Id")` tells
+//	`lateInitializeFromResponse` to fill a target CR field with name `FieldID`
+//	from a corresponding response field with name `FieldId`.
 func suffixReplacer(suffix, replace string) NameMapper {
 	return func(s string) string {
 		trimmed := strings.TrimSuffix(s, suffix)
@@ -143,9 +147,10 @@ func suffixReplacer(suffix, replace string) NameMapper {
 }
 
 // Replacer returns a `NameMapper` as a `LateInitOption` that
-//   that replaces all occurrences of string `old` to `new` in a
-//   target CR field name to obtain the corresponding
-//   source response field name.
+//
+//	that replaces all occurrences of string `old` to `new` in a
+//	target CR field name to obtain the corresponding
+//	source response field name.
 func Replacer(old, new string) NameMapper {
 	return func(s string) string {
 		return strings.ReplaceAll(s, old, new)
@@ -153,8 +158,9 @@ func Replacer(old, new string) NameMapper {
 }
 
 // MapReplacer returns a `NameMapper` as a `LateInitOption` that
-//   uses the specified `map[string]string` to map from
-//   target CR field names to corresponding source response field names.
+//
+//	uses the specified `map[string]string` to map from
+//	target CR field names to corresponding source response field names.
 func MapReplacer(m map[string]string) NameMapper {
 	return func(s string) string {
 		if result, ok := m[s]; ok {
@@ -166,9 +172,11 @@ func MapReplacer(m map[string]string) NameMapper {
 }
 
 // LateInitializeFromResponse Copy unset (nil) values from responseObject to crObject
-//   Both crObject and responseObject must be pointers to structs.
-//	 Otherwise, an error will be returned. Returns `true` if at least one field has been stored
-//   from source `responseObject` into a corresponding field of target `crObject`.
+//
+//	  Both crObject and responseObject must be pointers to structs.
+//		 Otherwise, an error will be returned. Returns `true` if at least one field has been stored
+//	  from source `responseObject` into a corresponding field of target `crObject`.
+//
 // nolint:gocyclo
 func LateInitializeFromResponse(parentName string, crObject interface{}, responseObject interface{},
 	opts ...LateInitOption) (bool, error) {

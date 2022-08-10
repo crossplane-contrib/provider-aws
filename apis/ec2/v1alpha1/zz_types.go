@@ -1360,7 +1360,7 @@ type FleetSpotCapacityRebalanceRequest struct {
 }
 
 // +kubebuilder:skipversion
-type FlowLog struct {
+type FlowLog_SDK struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	DeliverLogsErrorMessage *string `json:"deliverLogsErrorMessage,omitempty"`
@@ -1368,6 +1368,8 @@ type FlowLog struct {
 	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
 
 	DeliverLogsStatus *string `json:"deliverLogsStatus,omitempty"`
+	// Describes the destination options for a flow log.
+	DestinationOptions *DestinationOptionsResponse `json:"destinationOptions,omitempty"`
 
 	FlowLogID *string `json:"flowLogID,omitempty"`
 
@@ -5177,10 +5179,6 @@ type UnsuccessfulInstanceCreditSpecificationItemError struct {
 
 // +kubebuilder:skipversion
 type UnsuccessfulItem struct {
-	// Information about the error that occurred. For more information about errors,
-	// see Error codes (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html).
-	Error *UnsuccessfulItemError `json:"error,omitempty"`
-
 	ResourceID *string `json:"resourceID,omitempty"`
 }
 

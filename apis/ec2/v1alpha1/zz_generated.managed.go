@@ -20,69 +20,69 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-// GetCondition of this FlowLogs.
-func (mg *FlowLogs) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this FlowLog.
+func (mg *FlowLog) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this FlowLogs.
-func (mg *FlowLogs) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this FlowLog.
+func (mg *FlowLog) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this FlowLogs.
-func (mg *FlowLogs) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this FlowLog.
+func (mg *FlowLog) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this FlowLogs.
+GetProviderReference of this FlowLog.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *FlowLogs) GetProviderReference() *xpv1.Reference {
+func (mg *FlowLog) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetPublishConnectionDetailsTo of this FlowLogs.
-func (mg *FlowLogs) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
+// GetPublishConnectionDetailsTo of this FlowLog.
+func (mg *FlowLog) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
 }
 
-// GetWriteConnectionSecretToReference of this FlowLogs.
-func (mg *FlowLogs) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this FlowLog.
+func (mg *FlowLog) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this FlowLogs.
-func (mg *FlowLogs) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this FlowLog.
+func (mg *FlowLog) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this FlowLogs.
-func (mg *FlowLogs) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this FlowLog.
+func (mg *FlowLog) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this FlowLogs.
-func (mg *FlowLogs) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this FlowLog.
+func (mg *FlowLog) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this FlowLogs.
+SetProviderReference of this FlowLog.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *FlowLogs) SetProviderReference(r *xpv1.Reference) {
+func (mg *FlowLog) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetPublishConnectionDetailsTo of this FlowLogs.
-func (mg *FlowLogs) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+// SetPublishConnectionDetailsTo of this FlowLog.
+func (mg *FlowLog) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
 	mg.Spec.PublishConnectionDetailsTo = r
 }
 
-// SetWriteConnectionSecretToReference of this FlowLogs.
-func (mg *FlowLogs) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this FlowLog.
+func (mg *FlowLog) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

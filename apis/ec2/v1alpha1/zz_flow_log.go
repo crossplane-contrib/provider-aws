@@ -24,9 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// FlowLogsParameters defines the desired state of FlowLogs
-type FlowLogsParameters struct {
-	// Region is which region the FlowLogs will be created.
+// FlowLogParameters defines the desired state of FlowLog
+type FlowLogParameters struct {
+	// Region is which region the FlowLog will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -40,11 +40,6 @@ type FlowLogsParameters struct {
 	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
 	// The destination options.
 	DestinationOptions *DestinationOptionsRequest `json:"destinationOptions,omitempty"`
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `json:"dryRun,omitempty"`
 	// The destination to which the flow log data is to be published. Flow log data
 	// can be published to a CloudWatch Logs log group or an Amazon S3 bucket. The
 	// value specified for this parameter depends on the value specified for LogDestinationType.
@@ -96,68 +91,74 @@ type FlowLogsParameters struct {
 	//
 	// Default: 600
 	MaxAggregationInterval *int64 `json:"maxAggregationInterval,omitempty"`
-	// The tags to apply to the flow logs.
-	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
 	// The type of traffic to log. You can log traffic that the resource accepts
 	// or rejects, or all traffic.
 	// +kubebuilder:validation:Required
-	TrafficType              *string `json:"trafficType"`
-	CustomFlowLogsParameters `json:",inline"`
+	TrafficType             *string `json:"trafficType"`
+	CustomFlowLogParameters `json:",inline"`
 }
 
-// FlowLogsSpec defines the desired state of FlowLogs
-type FlowLogsSpec struct {
+// FlowLogSpec defines the desired state of FlowLog
+type FlowLogSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       FlowLogsParameters `json:"forProvider"`
+	ForProvider       FlowLogParameters `json:"forProvider"`
 }
 
-// FlowLogsObservation defines the observed state of FlowLogs
-type FlowLogsObservation struct {
-	// The IDs of the flow logs.
-	FlowLogIDs []*string `json:"flowLogIDs,omitempty"`
-	// Information about the flow logs that could not be created successfully.
-	Unsuccessful []*UnsuccessfulItem `json:"unsuccessful,omitempty"`
+// FlowLogObservation defines the observed state of FlowLog
+type FlowLogObservation struct {
+	// The date and time the flow log was created.
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The status of the logs delivery (SUCCESS | FAILED).
+	DeliverLogsStatus *string `json:"deliverLogsStatus,omitempty"`
+	// The flow log ID.
+	FlowLogID *string `json:"flowLogID,omitempty"`
+	// The status of the flow log (ACTIVE).
+	FlowLogStatus *string `json:"flowLogStatus,omitempty"`
+	// The ID of the resource on which the flow log was created.
+	ResourceID *string `json:"resourceID,omitempty"`
+	// The tags for the flow log.
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
-// FlowLogsStatus defines the observed state of FlowLogs.
-type FlowLogsStatus struct {
+// FlowLogStatus defines the observed state of FlowLog.
+type FlowLogStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          FlowLogsObservation `json:"atProvider,omitempty"`
+	AtProvider          FlowLogObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// FlowLogs is the Schema for the FlowLogs API
+// FlowLog is the Schema for the FlowLogs API
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type FlowLogs struct {
+type FlowLog struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FlowLogsSpec   `json:"spec"`
-	Status            FlowLogsStatus `json:"status,omitempty"`
+	Spec              FlowLogSpec   `json:"spec"`
+	Status            FlowLogStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// FlowLogsList contains a list of FlowLogs
-type FlowLogsList struct {
+// FlowLogList contains a list of FlowLogs
+type FlowLogList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []FlowLogs `json:"items"`
+	Items           []FlowLog `json:"items"`
 }
 
 // Repository type metadata.
 var (
-	FlowLogsKind             = "FlowLogs"
-	FlowLogsGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: FlowLogsKind}.String()
-	FlowLogsKindAPIVersion   = FlowLogsKind + "." + GroupVersion.String()
-	FlowLogsGroupVersionKind = GroupVersion.WithKind(FlowLogsKind)
+	FlowLogKind             = "FlowLog"
+	FlowLogGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: FlowLogKind}.String()
+	FlowLogKindAPIVersion   = FlowLogKind + "." + GroupVersion.String()
+	FlowLogGroupVersionKind = GroupVersion.WithKind(FlowLogKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&FlowLogs{}, &FlowLogsList{})
+	SchemeBuilder.Register(&FlowLog{}, &FlowLogList{})
 }

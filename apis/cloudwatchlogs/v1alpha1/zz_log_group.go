@@ -50,6 +50,21 @@ type LogGroupSpec struct {
 
 // LogGroupObservation defines the observed state of LogGroup
 type LogGroupObservation struct {
+	// The Amazon Resource Name (ARN) of the log group.
+	ARN *string `json:"arn,omitempty"`
+	// The creation time of the log group, expressed as the number of milliseconds
+	// after Jan 1, 1970 00:00:00 UTC.
+	CreationTime *int64 `json:"creationTime,omitempty"`
+	// The Amazon Resource Name (ARN) of the CMK to use when encrypting log data.
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	// The name of the log group.
+	LogGroupName *string `json:"logGroupName,omitempty"`
+	// The number of metric filters.
+	MetricFilterCount *int64 `json:"metricFilterCount,omitempty"`
+
+	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
+	// The number of bytes stored.
+	StoredBytes *int64 `json:"storedBytes,omitempty"`
 }
 
 // LogGroupStatus defines the observed state of LogGroup.

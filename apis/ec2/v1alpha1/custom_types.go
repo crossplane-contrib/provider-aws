@@ -450,8 +450,11 @@ type CustomTransitGatewayRouteTableParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-type CustomFlowLogsParameters struct {
-
+// CustomFlowLogParameters are custom parameters for FlowLogParameters
+type CustomFlowLogParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 	// The ID of the subnet, network interface, or VPC for which you want to create
 	// a flow log.
 	//
@@ -508,17 +511,15 @@ type CustomFlowLogsParameters struct {
 	// The ID of the one or more Subnets for which you want to create a flow log.
 	// +optional
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
-	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
-	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
-	SubnetIDs []*string `json:"subnetIds,omitempty"`
+	SubnetID *string `json:"subnetId,omitempty"`
 
-	// SubnetIDRefs is a list of references to SubnetIDs used to set
-	// the SubnetIDs.
+	// SubnetIDRefs is a referenc to a SubnetID used to set
+	// the SubnetID.
 	// +optional
-	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRef *xpv1.Reference `json:"subnetIdRef,omitempty"`
 
-	// SubnetIDSelector selects references to SubnetIDs used
-	// to set the SubnetIDs.
+	// SubnetIDSelector selects reference to a SubnetID used
+	// to set the SubnetID.
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
@@ -526,19 +527,54 @@ type CustomFlowLogsParameters struct {
 	// +optional
 	NetworkInterfaceID *string `json:"networkInterfaceId"`
 
-	// The Amazon Resource Names (ARNs) of a IAM Role.
+	// The Amazon Resource Names (ARNs) of an IAM Role.
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
+	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
 
-	DeliverLogsPermissionRole *string `json:"deliverLogsPermissionRole,omitempty"`
-
-	// DeliverLogsPermissionRoleRef is a reference to DeliverLogsPermissionRole used to set
-	// the DeliverLogsPermissionRole.
+	// DeliverLogsPermissionARNRef is a reference to DeliverLogsPermissionARN used to set
+	// the DeliverLogsPermissionARN.
 	// +optional
-	DeliverLogsPermissionRoleRef xpv1.Reference `json:"deliverLogsPermissionRoleRef,omitempty"`
+	DeliverLogsPermissionARNRef *xpv1.Reference `json:"deliverLogsPermissionARNRef,omitempty"`
 
-	// DeliverLogsPermissionRoleSelector selects a reference to DeliverLogsPermissionRoleSelector used
-	// to set the DeliverLogsPermissionRoleSelector.
+	// DeliverLogsPermissionARNelector selects a reference to DeliverLogsPermissionARN used
+	// to set the DeliverLogsPermissionARN.
 	// +optional
-	DeliverLogsPermissionRoleSelector *xpv1.Selector `json:"deliverLogsPermissionRoleSelector,omitempty"`
+	DeliverLogsPermissionARNSelector *xpv1.Selector `json:"deliverLogsPermissionARNSelector,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of a CloudWatch Log Group.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1.LogGroup
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1.LogGroupARN()
+	CloudWatchLogDestination *string `json:"cloudWatchLogDestination,omitempty"`
+
+	// CloudWatchLogDestinationRef is a reference to a CloudWatch Log Group used to set
+	// the CloudWatchLogDestination.
+	// +optional
+	CloudWatchLogDestinationRef *xpv1.Reference `json:"cloudWatchLogDestinationRef,omitempty"`
+
+	// CloudWatchLogDestinationSelector selects a reference to a CloudWatch Log Group used
+	// to set the CloudWatchLogDestination.
+	// +optional
+	CloudWatchLogDestinationSelector *xpv1.Selector `json:"cloudWatchLogDestinationSelector,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of a CloudWatch Log Group.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.Bucket
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.BucketARN()
+	S3BucketLogDestination *string `json:"s3BucketLogDestination,omitempty"`
+
+	// S3BucketLogDestinationRef is a reference to a S3 Bucket  to set
+	// the S3BucketLogDestination.
+	// +optional
+	S3BucketLogDestinationRef *xpv1.Reference `json:"s3BucketLogDestinationRef,omitempty"`
+
+	// S3BucketLogDestinationSelector selects a reference to a S3 Bucket used
+	// to set the S3BucketLogDestination.
+	// +optional
+	S3BucketLogDestinationSelector *xpv1.Selector `json:"s3BucketLogDestinationSelector,omitempty"`
+
+	// S3BucketSubfolder allows you to use a subfolder in a S3Bucket, if S3BucketLogDestination is used to determin the ARN of a Bucket managed by crossplane
+	// S3BucketSubfolder starts and ends without an slash e.g. test/test2
+	// You cannot use AWSLogs as a subfolder name. This is a reserved term.
+	// +optional
+	S3BucketSubfolder *string `json:"s3BucketSubfolder,omitempty"`
 }

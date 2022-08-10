@@ -71,6 +71,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/dynamodb/table"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/address"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/flowlog"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/launchtemplate"
@@ -330,6 +331,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		restapi.SetupRestAPI,
 		method.SetupMethod,
 		cognitoidentitypool.SetupIdentityPool,
+		flowlog.SetupFlowLog,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

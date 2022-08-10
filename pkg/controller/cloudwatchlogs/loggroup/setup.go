@@ -102,6 +102,7 @@ func postObserve(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.Descri
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(xpv1.Available())
+	cr.Status.AtProvider = generateObservation(obj)
 	return obs, nil
 }
 
@@ -110,7 +111,7 @@ func preCreate(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.CreateLo
 	return nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.CreateLogGroupOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(ctx context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.CreateLogGroupOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -194,4 +195,22 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	return managed.ExternalUpdate{}, nil
+}
+
+func generateObservation(obj *svcsdk.DescribeLogGroupsOutput) svcapitypes.LogGroupObservation {
+	if obj == nil || len(obj.LogGroups) == 0 {
+		return svcapitypes.LogGroupObservation{}
+	}
+
+	o := svcapitypes.LogGroupObservation{
+		ARN:               obj.LogGroups[0].Arn,
+		CreationTime:      obj.LogGroups[0].CreationTime,
+		KMSKeyID:          obj.LogGroups[0].KmsKeyId,
+		LogGroupName:      obj.LogGroups[0].LogGroupName,
+		MetricFilterCount: obj.LogGroups[0].MetricFilterCount,
+		RetentionInDays:   obj.LogGroups[0].RetentionInDays,
+		StoredBytes:       obj.LogGroups[0].StoredBytes,
+	}
+
+	return o
 }
