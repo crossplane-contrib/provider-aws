@@ -105,7 +105,7 @@ func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]strin
 
 	in.FifoTopic = nil
 	fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)])
-	if err != nil && fifoTopic {
+	if err == nil && fifoTopic {
 		in.FifoTopic = awsclients.LateInitializeBoolPtr(in.FifoTopic, aws.Bool(fifoTopic))
 	}
 }
