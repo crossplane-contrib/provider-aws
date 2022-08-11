@@ -468,15 +468,15 @@ type CustomFlowLogParameters struct {
 	// The ID of the VPC for which you want to create a flow log.
 	// +optional
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
-	VPCID *string `json:"vpcID,omitempty"`
+	VPCID *string `json:"vpcId,omitempty"`
 	// VPCIDRef is a reference to an API used to set
 	// the VPCID.
 	// +optional
-	VPCIDRef *xpv1.Reference `json:"vpcIDRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 	// VPCIDSelector selects references to API used
 	// to set the VPCID.
 	// +optional
-	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// The ID of the TransitGateway for which you want to create a flow log.
 	// +optional
@@ -530,17 +530,17 @@ type CustomFlowLogParameters struct {
 	// The Amazon Resource Names (ARNs) of an IAM Role.
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
-	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
+	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionArn,omitempty"`
 
 	// DeliverLogsPermissionARNRef is a reference to DeliverLogsPermissionARN used to set
 	// the DeliverLogsPermissionARN.
 	// +optional
-	DeliverLogsPermissionARNRef *xpv1.Reference `json:"deliverLogsPermissionARNRef,omitempty"`
+	DeliverLogsPermissionARNRef *xpv1.Reference `json:"deliverLogsPermissionArnRef,omitempty"`
 
 	// DeliverLogsPermissionARNelector selects a reference to DeliverLogsPermissionARN used
 	// to set the DeliverLogsPermissionARN.
 	// +optional
-	DeliverLogsPermissionARNSelector *xpv1.Selector `json:"deliverLogsPermissionARNSelector,omitempty"`
+	DeliverLogsPermissionARNSelector *xpv1.Selector `json:"deliverLogsPermissionArnSelector,omitempty"`
 
 	// The Amazon Resource Names (ARNs) of a CloudWatch Log Group.
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1.LogGroup

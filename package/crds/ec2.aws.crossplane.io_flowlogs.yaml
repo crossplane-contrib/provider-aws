@@ -146,9 +146,15 @@ spec:
                         type: object
                     type: object
                   deliverLogsPermissionARN:
+                    description: "The ARN for the IAM role that permits Amazon EC2
+                      to publish flow logs to a CloudWatch Logs log group in your
+                      account. \n If you specify LogDestinationType as s3, do not
+                      specify DeliverLogsPermissionArn or LogGroupName."
+                    type: string
+                  deliverLogsPermissionArn:
                     description: The Amazon Resource Names (ARNs) of an IAM Role.
                     type: string
-                  deliverLogsPermissionARNRef:
+                  deliverLogsPermissionArnRef:
                     description: DeliverLogsPermissionARNRef is a reference to DeliverLogsPermissionARN
                       used to set the DeliverLogsPermissionARN.
                     properties:
@@ -183,7 +189,7 @@ spec:
                     required:
                     - name
                     type: object
-                  deliverLogsPermissionARNSelector:
+                  deliverLogsPermissionArnSelector:
                     description: DeliverLogsPermissionARNelector selects a reference
                       to DeliverLogsPermissionARN used to set the DeliverLogsPermissionARN.
                     properties:
@@ -642,11 +648,11 @@ spec:
                             type: string
                         type: object
                     type: object
-                  vpcID:
+                  vpcId:
                     description: The ID of the VPC for which you want to create a
                       flow log.
                     type: string
-                  vpcIDRef:
+                  vpcIdRef:
                     description: VPCIDRef is a reference to an API used to set the
                       VPCID.
                     properties:
@@ -681,7 +687,7 @@ spec:
                     required:
                     - name
                     type: object
-                  vpcIDSelector:
+                  vpcIdSelector:
                     description: VPCIDSelector selects references to API used to set
                       the VPCID.
                     properties:

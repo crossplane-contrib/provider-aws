@@ -83,11 +83,11 @@ spec:
   forProvider:
     region: us-east-1
     trafficType: ALL
-    deliverLogsPermissionARNRef:
+    deliverLogsPermissionArnRef:
       name: flowlogs-role
     cloudWatchLogDestinationRef:
       name: sample-loggroup
-    vpcID: vpc-0123456789
+    vpcId: vpc-0123456789
     tags: 
       - key: Name
         value: example
@@ -105,7 +105,7 @@ spec:
     logDestinationType: s3
     s3BucketLogDestination: arn:aws:s3:::ctest-bucket
     s3BucketSubfolder: test/test2
-    vpcID: vpc-0123456789
+    vpcId: vpc-0123456789
     destinationOptions:
       fileFormat: parquet
       perHourPartition: true

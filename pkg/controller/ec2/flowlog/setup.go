@@ -155,30 +155,34 @@ func preCreate(_ context.Context, cr *svcapitypes.FlowLog, obj *svcsdk.CreateFlo
 
 	if cr.Spec.ForProvider.Tags != nil {
 
-		tagSpecification := &svcsdk.TagSpecification{}
-		tagSpecification.SetResourceType(flowLogTagResource)
-		tags := []*svcsdk.Tag{}
-
-		for _, cTag := range cr.Spec.ForProvider.Tags {
-			tag := &svcsdk.Tag{}
-
-			if cTag.Key != nil {
-				tag.SetKey(*cTag.Key)
-			}
-			if cTag.Value != nil {
-				tag.SetValue(*cTag.Value)
-			}
-			tags = append(tags, tag)
-		}
-
-		tagSpecification.SetTags(tags)
-		tagSpecifications := []*svcsdk.TagSpecification{tagSpecification}
-		obj.SetTagSpecifications(tagSpecifications)
+		obj.SetTagSpecifications(generateTagSpecifications(cr))
 	}
 
 	obj.ResourceIds, obj.ResourceType = determineResourceIdsAndType(cr)
 
 	return nil
+}
+
+func generateTagSpecifications(cr *svcapitypes.FlowLog) []*svcsdk.TagSpecification {
+	tagSpecification := &svcsdk.TagSpecification{}
+	tagSpecification.SetResourceType(flowLogTagResource)
+	tags := []*svcsdk.Tag{}
+
+	for _, cTag := range cr.Spec.ForProvider.Tags {
+		tag := &svcsdk.Tag{}
+
+		if cTag.Key != nil {
+			tag.SetKey(*cTag.Key)
+		}
+		if cTag.Value != nil {
+			tag.SetValue(*cTag.Value)
+		}
+		tags = append(tags, tag)
+	}
+
+	tagSpecification.SetTags(tags)
+	tagSpecifications := []*svcsdk.TagSpecification{tagSpecification}
+	return tagSpecifications
 }
 
 func postCreate(ctx context.Context, cr *svcapitypes.FlowLog, obj *svcsdk.CreateFlowLogsOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

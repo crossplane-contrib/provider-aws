@@ -85,7 +85,7 @@ func (fArr filterArr) filter(name string) bool {
 
 // canonicalNameFilter returns a `nameFilter` option that filters all specified canonical CR field names.
 //
-//	Example: `canonicalNameFilter("a.b.c", "a.b.d", "a.b.e")`
+// Example: `canonicalNameFilter("a.b.c", "a.b.d", "a.b.e")`
 func canonicalNameFilter(cNames ...string) nameFilter {
 	return func(name string) bool {
 		for _, n := range cNames {
