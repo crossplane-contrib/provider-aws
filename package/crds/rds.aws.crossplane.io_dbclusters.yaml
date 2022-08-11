@@ -75,6 +75,13 @@ spec:
                       of the value of the ApplyImmediately parameter. \n By default,
                       this parameter is disabled."
                     type: boolean
+                  autogeneratePassword:
+                    description: "AutogeneratePassword indicates whether the controller
+                      should generate a random password for the master user if one
+                      is not provided via MasterUserPasswordSecretRef. \n If a password
+                      is generated, it will be stored as a secret at the location
+                      specified by MasterUserPasswordSecretRef."
+                    type: boolean
                   availabilityZones:
                     description: A list of Availability Zones (AZs) where instances
                       in the DB cluster can be created. For information on Amazon
@@ -567,7 +574,7 @@ spec:
                     description: "The password for the master database user. This
                       password can contain any printable ASCII character except \"/\",
                       \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41
-                      characters. Required."
+                      characters."
                     properties:
                       key:
                         description: The key to select.
@@ -804,7 +811,6 @@ spec:
                     type: array
                 required:
                 - engine
-                - masterUserPasswordSecretRef
                 - region
                 type: object
               providerConfigRef:
