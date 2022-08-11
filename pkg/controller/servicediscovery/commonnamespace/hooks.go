@@ -18,19 +18,18 @@ package commonnamespace
 
 import (
 	"context"
-
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/util/retry"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -41,6 +40,10 @@ const (
 	errGetNamespace               = "get-namespace failed"
 	errDeleteNamespace            = "delete-namespace failed"
 	errOperationResponseMalformed = "get-operation result malformed"
+
+	errListTagsForResource = "cannot list tags"
+	errRemoveTags          = "cannot remove tags"
+	errCreateTags          = "cannot create tags"
 )
 
 type namespace interface {
@@ -48,7 +51,8 @@ type namespace interface {
 	GetOperationID() *string
 	SetOperationID(*string)
 	GetDescription() *string
-	SetDescription(*string)
+	GetTTL() *int64
+	GetTags() []*v1alpha1.Tag
 }
 
 // NewHooks returns a new Hooks object.
@@ -133,17 +137,31 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 
 	cr.SetConditions(xpv1.Available())
 
-	lateInited := false
-	if awsclient.StringValue(cr.GetDescription()) == "" && awsclient.StringValue(nsReqResp.Namespace.Description) != "" {
-		cr.SetDescription(nsReqResp.Namespace.Description)
-		// set READY false
-		lateInited = true
+	upToDate := true
+	tagUpToDate, err := AreTagsUpToDate(h.client, cr.GetTags(), nsReqResp.Namespace.Arn)
+	if err != nil {
+		cr.SetConditions(xpv1.Unavailable())
+		return managed.ExternalObservation{},
+			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errListTagsForResource)
+	}
+	if !tagUpToDate {
+		upToDate = false
+	}
+
+	if awsclient.StringValue(cr.GetDescription()) != awsclient.StringValue(nsReqResp.Namespace.Description) {
+		//Update Description
+		//ToDo check if AWS set some Default Description
+		upToDate = false
+	}
+	if awsclient.Int64Value(cr.GetTTL()) != awsclient.Int64Value(nsReqResp.Namespace.Properties.DnsProperties.SOA.TTL) {
+		//Update TTL
+		//ToDo Check whats happen on "httpnamespace" without TTL / We need to protect empty struct?
+		upToDate = false
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceLateInitialized: lateInited,
-		ResourceUpToDate:        true, // Namespaces cannot be updated.
+		ResourceExists:   true,
+		ResourceUpToDate: upToDate,
 	}, nil
 }
 
@@ -183,4 +201,107 @@ func ActualIsNotFound(err error) bool {
 func IsDuplicateRequest(err error) bool {
 	awsErr, ok := err.(awserr.Error)
 	return ok && (awsErr.Code() == svcsdk.ErrCodeDuplicateRequest)
+}
+
+// AreTagsUpToDate for spec and resourceName
+func AreTagsUpToDate(client servicediscoveryiface.ServiceDiscoveryAPI, spec []*v1alpha1.Tag, resourceName *string) (bool, error) {
+	current, err := ListTagsForResource(client, resourceName)
+	if err != nil {
+		return false, err
+	}
+
+	add, remove := DiffTags(spec, current)
+
+	return len(add) == 0 && len(remove) == 0, nil
+}
+
+// UpdateTagsForResource with resourceName
+func UpdateTagsForResource(client servicediscoveryiface.ServiceDiscoveryAPI, spec []*v1alpha1.Tag, cr v1.Object) error {
+
+	nsInput := &svcsdk.GetNamespaceInput{
+		Id: awsclient.String(meta.GetExternalName(cr)),
+	}
+
+	nsReqResp, err := client.GetNamespace(nsInput)
+	if err != nil {
+		return err
+	}
+
+	current, err := ListTagsForResource(client, nsReqResp.Namespace.Arn)
+	if err != nil {
+		return err
+	}
+
+	add, remove := DiffTags(spec, current)
+	if len(remove) != 0 {
+		if _, err := client.UntagResource(&svcsdk.UntagResourceInput{
+			ResourceARN: nsReqResp.Namespace.Arn,
+			TagKeys:     remove,
+		}); err != nil {
+			return errors.Wrap(err, errRemoveTags)
+		}
+	}
+	if len(add) != 0 {
+		if _, err := client.TagResource(&svcsdk.TagResourceInput{
+			ResourceARN: nsReqResp.Namespace.Arn,
+			Tags:        add,
+		}); err != nil {
+			return errors.Wrap(err, errCreateTags)
+		}
+	}
+
+	return nil
+}
+
+// ListTagsForResource for the given resource
+func ListTagsForResource(client servicediscoveryiface.ServiceDiscoveryAPI, resourceARN *string) ([]*svcsdk.Tag, error) {
+	req := &svcsdk.ListTagsForResourceInput{
+		ResourceARN: resourceARN,
+	}
+
+	resp, err := client.ListTagsForResource(req)
+	if err != nil {
+		return nil, errors.Wrap(err, errListTagsForResource)
+	}
+
+	return resp.Tags, nil
+}
+
+// DiffTags between spec and current
+func DiffTags(spec []*v1alpha1.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.Tag, removeTags []*string) {
+	currentMap := make(map[string]string, len(current))
+	for _, t := range current {
+		currentMap[awsclient.StringValue(t.Key)] = awsclient.StringValue(t.Value)
+	}
+
+	specMap := make(map[string]string, len(spec))
+	for _, t := range spec {
+		key := awsclient.StringValue(t.Key)
+		val := awsclient.StringValue(t.Value)
+		specMap[key] = awsclient.StringValue(t.Value)
+
+		if currentVal, exists := currentMap[key]; exists {
+			if currentVal != val {
+				removeTags = append(removeTags, t.Key)
+				addTags = append(addTags, &svcsdk.Tag{
+					Key:   awsclient.String(key),
+					Value: awsclient.String(val),
+				})
+			}
+		} else {
+			addTags = append(addTags, &svcsdk.Tag{
+				Key:   awsclient.String(key),
+				Value: awsclient.String(val),
+			})
+		}
+	}
+
+	for _, t := range current {
+		key := awsclient.StringValue(t.Key)
+		if _, exists := specMap[key]; !exists {
+			removeTags = append(removeTags, awsclient.String(key))
+		}
+	}
+
+	return addTags, removeTags
 }

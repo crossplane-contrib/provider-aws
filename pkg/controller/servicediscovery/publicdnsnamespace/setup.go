@@ -18,6 +18,9 @@ package publicdnsnamespace
 
 import (
 	"context"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
+	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,10 +44,14 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)
+			hL := &hooks{client: e.client}
 			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preUpdate = preUpdate
+			e.postUpdate = hL.postUpdate
 			e.delete = h.Delete
 			e.observe = h.Observe
-			e.postCreate = postCreate
+
 		},
 	}
 
@@ -67,6 +74,10 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithConnectionPublishers(cps...)))
 }
 
+type hooks struct {
+	client servicediscovery.Client
+}
+
 func preCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.CreatePublicDnsNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	return nil
@@ -75,4 +86,33 @@ func preCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsd
 func postCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, resp *svcsdk.CreatePublicDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	cr.SetOperationID(resp.OperationId)
 	return cre, err
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.UpdatePublicDnsNamespaceInput) error {
+	obj.UpdaterRequestId = awsclient.String(string(cr.UID))
+	obj.Id = awsclient.String(meta.GetExternalName(cr))
+
+	//Description and TTL are required
+	obj.Namespace = &svcsdk.PublicDnsNamespaceChange{
+		Description: cr.GetDescription(),
+		Properties: &svcsdk.PublicDnsNamespacePropertiesChange{
+			DnsProperties: &svcsdk.PublicDnsPropertiesMutableChange{
+				SOA: &svcsdk.SOAChange{
+					TTL: cr.GetTTL(),
+				},
+			},
+		},
+	}
+
+	return nil
+}
+
+func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, resp *svcsdk.UpdatePublicDnsNamespaceOutput, cre managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return cre, err
+	}
+	cr.Status.SetConditions(v1.Available())
+
+	//Update Tags
+	return cre, commonnamespace.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr)
 }

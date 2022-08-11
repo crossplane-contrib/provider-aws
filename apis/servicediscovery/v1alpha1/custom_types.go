@@ -52,9 +52,14 @@ func (in *HTTPNamespace) GetDescription() *string {
 	return in.Spec.ForProvider.Description
 }
 
-// SetDescription sets the description.
-func (in *HTTPNamespace) SetDescription(d *string) {
-	in.Spec.ForProvider.Description = d
+// GetTTL returns the TTL.
+func (in *HTTPNamespace) GetTTL() *int64 {
+	return nil
+}
+
+// GetTags returns the tags.
+func (in *HTTPNamespace) GetTags() []*Tag {
+	return in.Spec.ForProvider.Tags
 }
 
 // GetOperationID returns the last operation id.
@@ -75,9 +80,14 @@ func (in *PrivateDNSNamespace) GetDescription() *string {
 	return in.Spec.ForProvider.Description
 }
 
-// SetDescription sets the description.
-func (in *PrivateDNSNamespace) SetDescription(d *string) {
-	in.Spec.ForProvider.Description = d
+// GetTTL returns the TTL.
+func (in *PrivateDNSNamespace) GetTTL() *int64 {
+	return in.Spec.ForProvider.Properties.DNSProperties.SOA.TTL
+}
+
+// GetTags returns the tags.
+func (in *PrivateDNSNamespace) GetTags() []*Tag {
+	return in.Spec.ForProvider.Tags
 }
 
 // GetOperationID returns the last operation id.
@@ -98,7 +108,12 @@ func (in *PublicDNSNamespace) GetDescription() *string {
 	return in.Spec.ForProvider.Description
 }
 
-// SetDescription sets the description.
-func (in *PublicDNSNamespace) SetDescription(d *string) {
-	in.Spec.ForProvider.Description = d
+// GetTTL returns the TTL.
+func (in *PublicDNSNamespace) GetTTL() *int64 {
+	return in.Spec.ForProvider.Properties.DNSProperties.SOA.TTL
+}
+
+// GetTags returns the tags.
+func (in *PublicDNSNamespace) GetTags() []*Tag {
+	return in.Spec.ForProvider.Tags
 }
