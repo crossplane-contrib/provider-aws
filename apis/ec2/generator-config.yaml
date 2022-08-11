@@ -120,6 +120,17 @@ ignore:
     - CreateVolumeInput.ClientToken
     - CreateVpcEndpointInput.ClientToken
     - CreateVpcEndpointOutput.ClientToken
+    - CreateFlowLogsInput.ResourceIds
+    - CreateFlowLogsInput.ResourceType
+    - CreateFlowLogsInput.TagSpecifications
+    - CreateFlowLogsInput.DeliverLogsPermissionARN
+    - DescribeFlowLogsInput.FlowLogIds
+    - DescribeFlowLogsInput.DryRun
+    - CreateFlowLogsOutput.FlowLogIds
+    - CreateFlowLogsOutput.Unsuccessful
+    - CreateFlowLogsInput.DryRun
+    - DeleteFlowLogsInput.FlowLogIds
+    - DeleteFlowLogsInput.DryRun
 resources:
   Volume:
     exceptions:
@@ -146,3 +157,40 @@ resources:
       errors:
         404:
           code: InvalidRoute.NotFound
+  FlowLog:
+    fields:
+      FlowLogId:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.FlowLogId
+      FlowLogStatus:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.FlowLogStatus
+      DeliverLogsStatus:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.DeliverLogsStatus
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.CreationTime
+      ResourceId:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.ResourceId
+      Tags:
+        is_read_only: true
+        from:
+          operation: DescribeFlowLogs
+          path: FlowLogs.Tags
+operations:
+  CreateFlowLogs:
+    operation_type:
+    - Create
+    resource_name: FlowLog

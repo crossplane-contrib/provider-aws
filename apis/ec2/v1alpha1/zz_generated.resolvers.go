@@ -20,14 +20,139 @@ package v1alpha1
 
 import (
 	"context"
+	v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	manualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
-	v1alpha11 "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
+	v1alpha11 "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
+	v1beta11 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	v1alpha12 "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
+	v1beta12 "github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// ResolveReferences of this FlowLog.
+func (mg *FlowLog) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.VPCID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.VPCIDSelector,
+		To: reference.To{
+			List:    &v1beta1.VPCList{},
+			Managed: &v1beta1.VPC{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.VPCID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.VPCIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayList{},
+			Managed: &TransitGateway{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentIDSelector,
+		To: reference.To{
+			List:    &TransitGatewayVPCAttachmentList{},
+			Managed: &TransitGatewayVPCAttachment{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.TransitGatewayAttachmentIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.SubnetID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.SubnetIDRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.SubnetIDSelector,
+		To: reference.To{
+			List:    &v1beta1.SubnetList{},
+			Managed: &v1beta1.Subnet{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.SubnetID")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.SubnetID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.SubnetIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARN),
+		Extract:      v1beta11.RoleARN(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARNRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARNSelector,
+		To: reference.To{
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARN")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.DeliverLogsPermissionARNRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestination),
+		Extract:      v1alpha1.LogGroupARN(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestinationRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestinationSelector,
+		To: reference.To{
+			List:    &v1alpha1.LogGroupList{},
+			Managed: &v1alpha1.LogGroup{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestination")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestination = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.CloudWatchLogDestinationRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestination),
+		Extract:      v1beta12.BucketARN(),
+		Reference:    mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestinationRef,
+		Selector:     mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestinationSelector,
+		To: reference.To{
+			List:    &v1beta12.BucketList{},
+			Managed: &v1beta12.Bucket{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestination")
+	}
+	mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestination = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFlowLogParameters.S3BucketLogDestinationRef = rsp.ResolvedReference
+
+	return nil
+}
 
 // ResolveReferences of this LaunchTemplateVersion.
 func (mg *LaunchTemplateVersion) ResolveReferences(ctx context.Context, c client.Reader) error {
@@ -392,8 +517,8 @@ func (mg *VPCEndpointServiceConfiguration) ResolveReferences(ctx context.Context
 		References:    mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNRefs,
 		Selector:      mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.GatewayLoadBalancerARNSelector,
 		To: reference.To{
-			List:    &v1alpha1.LoadBalancerList{},
-			Managed: &v1alpha1.LoadBalancer{},
+			List:    &v1alpha11.LoadBalancerList{},
+			Managed: &v1alpha11.LoadBalancer{},
 		},
 	})
 	if err != nil {
@@ -408,8 +533,8 @@ func (mg *VPCEndpointServiceConfiguration) ResolveReferences(ctx context.Context
 		References:    mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNRefs,
 		Selector:      mg.Spec.ForProvider.CustomVPCEndpointServiceConfigurationParameters.NetworkLoadBalancerARNSelector,
 		To: reference.To{
-			List:    &v1alpha1.LoadBalancerList{},
-			Managed: &v1alpha1.LoadBalancer{},
+			List:    &v1alpha11.LoadBalancerList{},
+			Managed: &v1alpha11.LoadBalancer{},
 		},
 	})
 	if err != nil {
@@ -476,8 +601,8 @@ func (mg *Volume) ResolveReferences(ctx context.Context, c client.Reader) error 
 		Reference:    mg.Spec.ForProvider.CustomVolumeParameters.KMSKeyIDRef,
 		Selector:     mg.Spec.ForProvider.CustomVolumeParameters.KMSKeyIDSelector,
 		To: reference.To{
-			List:    &v1alpha11.KeyList{},
-			Managed: &v1alpha11.Key{},
+			List:    &v1alpha12.KeyList{},
+			Managed: &v1alpha12.Key{},
 		},
 	})
 	if err != nil {

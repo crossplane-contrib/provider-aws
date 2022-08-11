@@ -362,6 +362,33 @@ spec:
             properties:
               atProvider:
                 description: LogGroupObservation defines the observed state of LogGroup
+                properties:
+                  arn:
+                    description: The Amazon Resource Name (ARN) of the log group.
+                    type: string
+                  creationTime:
+                    description: The creation time of the log group, expressed as
+                      the number of milliseconds after Jan 1, 1970 00:00:00 UTC.
+                    format: int64
+                    type: integer
+                  kmsKeyID:
+                    description: The Amazon Resource Name (ARN) of the CMK to use
+                      when encrypting log data.
+                    type: string
+                  logGroupName:
+                    description: The name of the log group.
+                    type: string
+                  metricFilterCount:
+                    description: The number of metric filters.
+                    format: int64
+                    type: integer
+                  retentionInDays:
+                    format: int64
+                    type: integer
+                  storedBytes:
+                    description: The number of bytes stored.
+                    format: int64
+                    type: integer
                 type: object
               conditions:
                 description: Conditions of the resource.
