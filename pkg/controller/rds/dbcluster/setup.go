@@ -7,6 +7,8 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -23,6 +26,11 @@ import (
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+)
+
+// error constants
+const (
+	errSaveSecretFailed = "failed to save generated password to Kubernetes secret"
 )
 
 // SetupDBCluster adds a controller that reconciles DbCluster.
@@ -86,7 +94,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(aws.Int64Value(cr.Spec.ForProvider.Port), 10)),
 	}
-	pw, _, _ := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	pw, _, _ := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if pw != "" {
 		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 	}
@@ -100,10 +108,20 @@ type custom struct {
 }
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error {
-	pw, _, err := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if err != nil {
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
+	if pw == "" && aws.BoolValue(&cr.Spec.ForProvider.AutogeneratePassword) {
+		pw, err = password.Generate()
+		if err != nil {
+			return errors.Wrap(err, "unable to generate a password")
+		}
+		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
+			return errors.Wrap(err, errSaveSecretFailed)
+		}
+	}
+
 	obj.MasterUserPassword = aws.String(pw)
 	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
@@ -150,4 +168,22 @@ func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput)
 		}
 	}
 	return resp
+}
+
+func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBCluster, pw string) error {
+	if cr.Spec.ForProvider.MasterUserPasswordSecretRef == nil {
+		return errors.New("no MasterUserPasswordSecretRef given, unable to store password")
+	}
+	patcher := resource.NewAPIPatchingApplicator(e.kube)
+	ref := cr.Spec.ForProvider.MasterUserPasswordSecretRef
+	sc := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ref.Name,
+			Namespace: ref.Namespace,
+		},
+		Data: map[string][]byte{
+			ref.Key: []byte(pw),
+		},
+	}
+	return patcher.Apply(ctx, sc)
 }

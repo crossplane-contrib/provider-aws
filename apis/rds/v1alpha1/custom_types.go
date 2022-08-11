@@ -160,6 +160,15 @@ type DBParameterGroupFamilyNameSelector struct {
 // CustomDBClusterParameters are custom parameters for DBCluster
 type CustomDBClusterParameters struct {
 
+	// AutogeneratePassword indicates whether the controller should generate
+	// a random password for the master user if one is not provided via
+	// MasterUserPasswordSecretRef.
+	//
+	// If a password is generated, it will
+	// be stored as a secret at the location specified by MasterUserPasswordSecretRef.
+	// +optional
+	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
+
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
 	// DomainIAMRoleName.
 	// +optional
@@ -181,8 +190,9 @@ type CustomDBClusterParameters struct {
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except "/", """, or "@".
 	//
-	// Constraints: Must contain from 8 to 41 characters. Required.
-	MasterUserPasswordSecretRef xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
+	// Constraints: Must contain from 8 to 41 characters.
+	// +optional
+	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
 
 	// A list of EC2 VPC security groups to associate with this DB cluster.
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIDs,omitempty"`
