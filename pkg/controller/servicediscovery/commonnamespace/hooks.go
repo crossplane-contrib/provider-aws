@@ -18,6 +18,7 @@ package commonnamespace
 
 import (
 	"context"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
@@ -149,13 +150,18 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	}
 
 	if awsclient.StringValue(cr.GetDescription()) != awsclient.StringValue(nsReqResp.Namespace.Description) {
-		//Update Description
-		//ToDo check if AWS set some Default Description
+		// Update Description
+		// ToDo check if AWS set some Default Description
 		upToDate = false
 	}
-	if awsclient.Int64Value(cr.GetTTL()) != awsclient.Int64Value(nsReqResp.Namespace.Properties.DnsProperties.SOA.TTL) {
-		//Update TTL
-		//ToDo Check whats happen on "httpnamespace" without TTL / We need to protect empty struct?
+
+	if nsReqResp.Namespace != nil || nsReqResp.Namespace.Properties != nil || nsReqResp.Namespace.Properties.DnsProperties != nil {
+		if awsclient.Int64Value(cr.GetTTL()) > 0 {
+			// Update TTL
+			upToDate = false
+		}
+	} else if nsReqResp.Namespace.Properties != nil && awsclient.Int64Value(cr.GetTTL()) != awsclient.Int64Value(nsReqResp.Namespace.Properties.DnsProperties.SOA.TTL) {
+		// Update TTL
 		upToDate = false
 	}
 

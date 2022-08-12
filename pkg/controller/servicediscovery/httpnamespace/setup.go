@@ -18,7 +18,7 @@ package httpnamespace
 
 import (
 	"context"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
+
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
@@ -34,6 +34,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clientsvcdk "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
@@ -74,7 +75,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
 }
 
 type hooks struct {
-	client servicediscovery.Client
+	client clientsvcdk.Client
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
@@ -91,7 +92,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.Upd
 	obj.UpdaterRequestId = awsclient.String(string(cr.UID))
 	obj.Id = awsclient.String(meta.GetExternalName(cr))
 
-	//Description are required
+	// Description are required
 	obj.Namespace = &svcsdk.HttpNamespaceChange{
 		Description: cr.GetDescription(),
 	}
@@ -105,6 +106,6 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, res
 	}
 	cr.Status.SetConditions(v1.Available())
 
-	//Update Tags
+	// Update Tags
 	return cre, commonnamespace.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr)
 }
