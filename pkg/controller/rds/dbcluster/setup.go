@@ -13,6 +13,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -21,12 +29,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
@@ -293,11 +295,11 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 			}
 		}
 		if !isPreferredMaintenanceWindowUpToDate(cr, resp) {
-			return upd, errors.New("PreferredMaintenanceWindow not maching aws data")
+			return upd, errors.New("PreferredMaintenanceWindow not matching aws data")
 		}
 
 		if !isPreferredBackupWindowUpToDate(cr, resp) {
-			return upd, errors.New("PreferredBackupWindow not maching aws data")
+			return upd, errors.New("PreferredBackupWindow not matching aws data")
 		}
 	}
 
@@ -362,7 +364,7 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 	for k, v := range addMap {
 		addTags = append(addTags, &svcsdk.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
-	for k, _ := range removeMap {
+	for k := range removeMap {
 		remove = append(remove, aws.String(k))
 	}
 	return
