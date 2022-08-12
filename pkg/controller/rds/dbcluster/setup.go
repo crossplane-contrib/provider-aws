@@ -256,7 +256,7 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBCl
 }
 
 func isPortUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
-	// If EngineVersion is not set, aws sets a default value
+	// If Port is not set, aws sets a default value
 	// so we do not try to update in this case
 	if cr.Spec.ForProvider.Port != nil {
 		if aws.Int64Value(cr.Spec.ForProvider.Port) != aws.Int64Value(out.DBClusters[0].Port) {
