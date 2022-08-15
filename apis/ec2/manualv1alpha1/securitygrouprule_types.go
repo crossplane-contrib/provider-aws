@@ -116,6 +116,10 @@ type SecurityGroupRuleStatus struct {
 // +kubebuilder:object:root=true
 
 // A SecurityGroupRule is a managed resource that represents an SecurityGroupRule
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="SG",type="string",JSONPath=".spec.forProvider.securityGroupId"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type SecurityGroupRule struct {
