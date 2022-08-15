@@ -19,7 +19,20 @@ spec:
     singular: securitygrouprule
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: ID
+      type: string
+    - jsonPath: .spec.forProvider.securityGroupId
+      name: SG
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: A SecurityGroupRule is a managed resource that represents an
