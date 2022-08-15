@@ -64,6 +64,7 @@ func GenerateVpcObservation(vpc ec2types.Vpc) v1beta1.VPCObservation {
 		DHCPOptionsID: aws.ToString(vpc.DhcpOptionsId),
 		OwnerID:       aws.ToString(vpc.OwnerId),
 		VPCState:      string(vpc.State),
+		VPCID:         aws.ToString(vpc.VpcId),
 	}
 
 	if len(vpc.CidrBlockAssociationSet) > 0 {
