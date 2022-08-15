@@ -142,6 +142,9 @@ type VPCObservation struct {
 
 	// VPCState is the current state of the VPC.
 	VPCState string `json:"vpcState,omitempty"`
+
+	// The ID of the VPC.
+	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A VPCStatus represents the observed state of a VPC.
