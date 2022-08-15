@@ -111,6 +111,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/listener"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/loadbalancer"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/target"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/targetgroup"
 	glueclassifier "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/classifier"
 	glueconnection "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/connection"
@@ -307,6 +308,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		listener.SetupListener,
 		loadbalancer.SetupLoadBalancer,
 		targetgroup.SetupTargetGroup,
+		target.SetupTarget,
 		transitgatewayroute.SetupTransitGatewayRoute,
 		transitgatewayroutetable.SetupTransitGatewayRouteTable,
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,

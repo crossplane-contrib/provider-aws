@@ -28,3 +28,15 @@ spec:
       name: sample-vpc
   providerConfigRef:
     name: example
+---
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: TargetGroup
+metadata:
+  name: test-targetgroup-lambda
+spec:
+  forProvider:
+    name: test-targetgroup-lambda
+    targetType: lambda
+    region: us-east-1
+  providerConfigRef:
+    name: example
