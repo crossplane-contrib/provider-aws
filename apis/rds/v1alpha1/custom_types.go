@@ -273,6 +273,41 @@ type CustomDBClusterParameters struct {
 	//
 	// By default, this parameter is disabled.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
+
+	// RestoreFrom specifies the details of the backup to restore when creating a new DBCluster.
+	// +optional
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
+}
+
+// S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
+type S3RestoreBackupConfiguration struct {
+	// BucketName is the name of the S3 bucket containing the backup to restore.
+	BucketName *string `json:"bucketName"`
+
+	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
+	IngestionRoleARN *string `json:"ingestionRoleARN"`
+
+	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
+	// +optional
+	Prefix *string `json:"prefix,omitempty"`
+
+	// SourceEngine is the engine used to create the backup.
+	// Must be "mysql".
+	SourceEngine *string `json:"sourceEngine"`
+
+	// SourceEngineVersion is the version of the engine used to create the backup.
+	// Example: "5.7.30"
+	SourceEngineVersion *string `json:"sourceEngineVersion"`
+}
+
+// RestoreBackupConfiguration defines the backup to restore a new DBCluster from.
+type RestoreBackupConfiguration struct {
+	// S3 specifies the details of the S3 backup to restore from.
+	// +optional
+	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
+
+	// Source is the type of the backup to restore when creating a new DBCluster. Only S3 is supported at present.
+	Source *string `json:"source"`
 }
 
 // CustomGlobalClusterParameters are custom parameters for a GlobalCluster
