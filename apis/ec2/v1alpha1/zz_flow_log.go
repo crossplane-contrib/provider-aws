@@ -32,12 +32,6 @@ type FlowLogParameters struct {
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
 	// of the request. For more information, see How to ensure idempotency (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html).
 	ClientToken *string `json:"clientToken,omitempty"`
-	// The ARN for the IAM role that permits Amazon EC2 to publish flow logs to
-	// a CloudWatch Logs log group in your account.
-	//
-	// If you specify LogDestinationType as s3, do not specify DeliverLogsPermissionArn
-	// or LogGroupName.
-	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
 	// The destination options.
 	DestinationOptions *DestinationOptionsRequest `json:"destinationOptions,omitempty"`
 	// The destination to which the flow log data is to be published. Flow log data
