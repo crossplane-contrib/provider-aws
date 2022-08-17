@@ -82,6 +82,9 @@ func (in *PrivateDNSNamespace) GetDescription() *string {
 
 // GetTTL returns the TTL.
 func (in *PrivateDNSNamespace) GetTTL() *int64 {
+	if in.Spec.ForProvider.Properties == nil || in.Spec.ForProvider.Properties.DNSProperties == nil || in.Spec.ForProvider.Properties.DNSProperties.SOA == nil {
+		return nil
+	}
 	return in.Spec.ForProvider.Properties.DNSProperties.SOA.TTL
 }
 
@@ -110,6 +113,9 @@ func (in *PublicDNSNamespace) GetDescription() *string {
 
 // GetTTL returns the TTL.
 func (in *PublicDNSNamespace) GetTTL() *int64 {
+	if in.Spec.ForProvider.Properties == nil || in.Spec.ForProvider.Properties.DNSProperties == nil || in.Spec.ForProvider.Properties.DNSProperties.SOA == nil {
+		return nil
+	}
 	return in.Spec.ForProvider.Properties.DNSProperties.SOA.TTL
 }
 

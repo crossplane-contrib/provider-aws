@@ -96,13 +96,23 @@ func preUpdate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsd
 	// Description and TTL are required
 	obj.Namespace = &svcsdk.PublicDnsNamespaceChange{
 		Description: cr.GetDescription(),
-		Properties: &svcsdk.PublicDnsNamespacePropertiesChange{
+	}
+
+	// Namespace.Description are required for update publicdnsnamespace
+	// Set an empty string if Description are nil
+	if cr.GetDescription() == nil {
+		var tmpEmpty = ""
+		obj.Namespace.Description = &tmpEmpty
+	}
+
+	if cr.GetTTL() != nil {
+		obj.Namespace.Properties = &svcsdk.PublicDnsNamespacePropertiesChange{
 			DnsProperties: &svcsdk.PublicDnsPropertiesMutableChange{
 				SOA: &svcsdk.SOAChange{
 					TTL: cr.GetTTL(),
 				},
 			},
-		},
+		}
 	}
 
 	return nil

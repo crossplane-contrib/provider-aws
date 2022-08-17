@@ -80,6 +80,7 @@ type hooks struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
+
 	return nil
 }
 
@@ -89,12 +90,19 @@ func postCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, resp *svcsdk.C
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.UpdateHttpNamespaceInput) error {
+
 	obj.UpdaterRequestId = awsclient.String(string(cr.UID))
 	obj.Id = awsclient.String(meta.GetExternalName(cr))
 
-	// Description are required
 	obj.Namespace = &svcsdk.HttpNamespaceChange{
 		Description: cr.GetDescription(),
+	}
+
+	// Namespace.Description are required for update httpnamespace
+	// Set an empty string if Description are nil
+	if cr.GetDescription() == nil {
+		var tmpEmpty = ""
+		obj.Namespace.Description = &tmpEmpty
 	}
 
 	return nil

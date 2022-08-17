@@ -100,7 +100,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 		}
 		switch awsclient.StringValue(opResp.Operation.Status) {
 		case "PENDING", "SUBMITTED":
-			return managed.ExternalObservation{ResourceExists: true}, nil
+			return managed.ExternalObservation{}, nil
 		case "FAIL":
 			cr.SetConditions(xpv1.Unavailable().WithMessage(awsclient.StringValue(opResp.Operation.ErrorMessage)))
 			return managed.ExternalObservation{}, nil
@@ -131,9 +131,20 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	}
 	nsReqResp, err := h.client.GetNamespaceWithContext(ctx, nsInput)
 	if err != nil {
+		// Deleting is done
+		if cr.GetCondition(xpv1.TypeReady).Reason == xpv1.ReasonDeleting {
+			return managed.ExternalObservation{}, nil
+		}
 		cr.SetConditions(xpv1.Unavailable())
 		return managed.ExternalObservation{},
 			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errGetNamespace)
+	}
+
+	// Deleting is still on-going.
+	if cr.GetCondition(xpv1.TypeReady).Reason == xpv1.ReasonDeleting {
+		return managed.ExternalObservation{
+			ResourceExists: true,
+		}, nil
 	}
 
 	cr.SetConditions(xpv1.Available())
@@ -142,25 +153,25 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	tagUpToDate, err := AreTagsUpToDate(h.client, cr.GetTags(), nsReqResp.Namespace.Arn)
 	if err != nil {
 		cr.SetConditions(xpv1.Unavailable())
-		return managed.ExternalObservation{},
+		return managed.ExternalObservation{
+				ResourceExists: true,
+			},
 			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errListTagsForResource)
 	}
 	if !tagUpToDate {
+		// Update Tags
 		upToDate = false
 	}
 
-	if awsclient.StringValue(cr.GetDescription()) != awsclient.StringValue(nsReqResp.Namespace.Description) {
+	if cr.GetDescription() != nil && // Ignore aws value if no description are set
+		awsclient.StringValue(cr.GetDescription()) != awsclient.StringValue(nsReqResp.Namespace.Description) {
 		// Update Description
-		// ToDo check if AWS set some Default Description
 		upToDate = false
 	}
 
-	if nsReqResp.Namespace != nil || nsReqResp.Namespace.Properties != nil || nsReqResp.Namespace.Properties.DnsProperties != nil {
-		if awsclient.Int64Value(cr.GetTTL()) > 0 {
-			// Update TTL
-			upToDate = false
-		}
-	} else if nsReqResp.Namespace.Properties != nil && awsclient.Int64Value(cr.GetTTL()) != awsclient.Int64Value(nsReqResp.Namespace.Properties.DnsProperties.SOA.TTL) {
+	if cr.GetTTL() != nil && // Ignore aws value if no ttl are set
+		(nsReqResp.Namespace == nil || nsReqResp.Namespace.Properties == nil || nsReqResp.Namespace.Properties.DnsProperties == nil ||
+			awsclient.Int64Value(cr.GetTTL()) != awsclient.Int64Value(nsReqResp.Namespace.Properties.DnsProperties.SOA.TTL)) {
 		// Update TTL
 		upToDate = false
 	}

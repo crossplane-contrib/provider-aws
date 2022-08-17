@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists: false,
 				},
 			},
 		},
@@ -191,9 +191,7 @@ func TestObserve(t *testing.T) {
 						},
 					},
 				},
-				result: managed.ExternalObservation{
-					ResourceExists: true,
-				},
+				result: managed.ExternalObservation{},
 			},
 		},
 		"NewOperationFailed": {
