@@ -123,7 +123,7 @@ ignore:
     - CreateFlowLogsInput.ResourceIds
     - CreateFlowLogsInput.ResourceType
     - CreateFlowLogsInput.TagSpecifications
-    - CreateFlowLogsInput.DeliverLogsPermissionARN
+    - CreateFlowLogsInput.DeliverLogsPermissionArn
     - DescribeFlowLogsInput.FlowLogIds
     - DescribeFlowLogsInput.DryRun
     - CreateFlowLogsOutput.FlowLogIds
