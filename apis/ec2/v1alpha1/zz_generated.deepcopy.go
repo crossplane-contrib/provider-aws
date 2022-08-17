@@ -5346,11 +5346,6 @@ func (in *FlowLogParameters) DeepCopyInto(out *FlowLogParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.DeliverLogsPermissionARN != nil {
-		in, out := &in.DeliverLogsPermissionARN, &out.DeliverLogsPermissionARN
-		*out = new(string)
-		**out = **in
-	}
 	if in.DestinationOptions != nil {
 		in, out := &in.DestinationOptions, &out.DestinationOptions
 		*out = new(DestinationOptionsRequest)

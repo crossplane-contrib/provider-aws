@@ -527,7 +527,10 @@ type CustomFlowLogParameters struct {
 	// +optional
 	NetworkInterfaceID *string `json:"networkInterfaceId"`
 
-	// The Amazon Resource Names (ARNs) of an IAM Role.
+	// The ARN for the IAM role that permits Amazon EC2
+	// to publish flow logs to a CloudWatch Logs log group in your
+	// account. \n If you specify LogDestinationType as s3, do not
+	// specify DeliverLogsPermissionArn or LogGroupName.
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionArn,omitempty"`
