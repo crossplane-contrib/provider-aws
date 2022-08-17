@@ -36,6 +36,12 @@ type MockServicediscoveryClient struct {
 	MockCreateHTTPNamespaceRequest func(*svcsdk.CreateHttpNamespaceInput) (*request.Request, *svcsdk.CreateHttpNamespaceOutput)
 	// MockDeleteNamespaceRequest is a function pointer
 	MockDeleteNamespaceRequest func(*svcsdk.DeleteNamespaceInput) (*request.Request, *svcsdk.DeleteNamespaceOutput)
+	// MockListTagsForResource is a function pointer
+	MockListTagsForResource func(*svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error)
+	// MockUntagResource is a function pointer
+	MockUntagResource func(*svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error)
+	// MockTagResource is a function pointer
+	MockTagResource func(*svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error)
 }
 
 // CreatePrivateDnsNamespace is the interface function to call the mock function pointer
@@ -214,4 +220,28 @@ func (m *MockServicediscoveryClient) DeleteNamespaceRequest(input *svcsdk.Delete
 		return &request.Request{}, nil
 	}
 	return m.MockDeleteNamespaceRequest(input)
+}
+
+// ListTagsForResource is the interface function to call the mock function pointer
+func (m *MockServicediscoveryClient) ListTagsForResource(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) { // nolint:golint
+	if m.MockListTagsForResource == nil {
+		return &svcsdk.ListTagsForResourceOutput{}, nil
+	}
+	return m.MockListTagsForResource(input)
+}
+
+// UntagResource is the interface function to call the mock function pointer
+func (m *MockServicediscoveryClient) UntagResource(input *svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error) { // nolint:golint
+	if m.MockUntagResource == nil {
+		return &svcsdk.UntagResourceOutput{}, nil
+	}
+	return m.MockUntagResource(input)
+}
+
+// TagResource is the interface function to call the mock function pointer
+func (m *MockServicediscoveryClient) TagResource(input *svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error) { // nolint:golint
+	if m.MockTagResource == nil {
+		return &svcsdk.TagResourceOutput{}, nil
+	}
+	return m.MockTagResource(input)
 }
