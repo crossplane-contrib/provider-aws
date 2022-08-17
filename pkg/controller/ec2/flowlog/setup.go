@@ -153,6 +153,10 @@ func preCreate(_ context.Context, cr *svcapitypes.FlowLog, obj *svcsdk.CreateFlo
 		obj.LogDestination = cr.Spec.ForProvider.CloudWatchLogDestination
 	}
 
+	if cr.Spec.ForProvider.DeliverLogsPermissionARN != nil {
+		obj.DeliverLogsPermissionArn = cr.Spec.ForProvider.DeliverLogsPermissionARN
+	}
+
 	if cr.Spec.ForProvider.Tags != nil {
 
 		obj.SetTagSpecifications(generateTagSpecifications(cr))
