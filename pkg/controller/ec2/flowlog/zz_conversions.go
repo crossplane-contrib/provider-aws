@@ -48,11 +48,6 @@ func GenerateFlowLog(resp *svcsdk.DescribeFlowLogsOutput) *svcapitypes.FlowLog {
 		} else {
 			cr.Status.AtProvider.CreationTime = nil
 		}
-		if elem.DeliverLogsPermissionArn != nil {
-			cr.Spec.ForProvider.DeliverLogsPermissionARN = elem.DeliverLogsPermissionArn
-		} else {
-			cr.Spec.ForProvider.DeliverLogsPermissionARN = nil
-		}
 		if elem.DeliverLogsStatus != nil {
 			cr.Status.AtProvider.DeliverLogsStatus = elem.DeliverLogsStatus
 		} else {
@@ -151,21 +146,18 @@ func GenerateCreateFlowLogsInput(cr *svcapitypes.FlowLog) *svcsdk.CreateFlowLogs
 	if cr.Spec.ForProvider.ClientToken != nil {
 		res.SetClientToken(*cr.Spec.ForProvider.ClientToken)
 	}
-	if cr.Spec.ForProvider.DeliverLogsPermissionARN != nil {
-		res.SetDeliverLogsPermissionArn(*cr.Spec.ForProvider.DeliverLogsPermissionARN)
-	}
 	if cr.Spec.ForProvider.DestinationOptions != nil {
-		f2 := &svcsdk.DestinationOptionsRequest{}
+		f1 := &svcsdk.DestinationOptionsRequest{}
 		if cr.Spec.ForProvider.DestinationOptions.FileFormat != nil {
-			f2.SetFileFormat(*cr.Spec.ForProvider.DestinationOptions.FileFormat)
+			f1.SetFileFormat(*cr.Spec.ForProvider.DestinationOptions.FileFormat)
 		}
 		if cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions != nil {
-			f2.SetHiveCompatiblePartitions(*cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions)
+			f1.SetHiveCompatiblePartitions(*cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions)
 		}
 		if cr.Spec.ForProvider.DestinationOptions.PerHourPartition != nil {
-			f2.SetPerHourPartition(*cr.Spec.ForProvider.DestinationOptions.PerHourPartition)
+			f1.SetPerHourPartition(*cr.Spec.ForProvider.DestinationOptions.PerHourPartition)
 		}
-		res.SetDestinationOptions(f2)
+		res.SetDestinationOptions(f1)
 	}
 	if cr.Spec.ForProvider.LogDestination != nil {
 		res.SetLogDestination(*cr.Spec.ForProvider.LogDestination)
