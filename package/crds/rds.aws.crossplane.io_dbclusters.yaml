@@ -574,7 +574,7 @@ spec:
                     description: "The password for the master database user. This
                       password can contain any printable ASCII character except \"/\",
                       \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41
-                      characters."
+                      characters. Required."
                     properties:
                       key:
                         description: The key to select.
@@ -811,6 +811,7 @@ spec:
                     type: array
                 required:
                 - engine
+                - masterUserPasswordSecretRef
                 - region
                 type: object
               providerConfigRef:

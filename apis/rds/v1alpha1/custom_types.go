@@ -190,8 +190,7 @@ type CustomDBClusterParameters struct {
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except "/", """, or "@".
 	//
-	// Constraints: Must contain from 8 to 41 characters.
-	// +optional
+	// Constraints: Must contain from 8 to 41 characters. Required.
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
 
 	// A list of EC2 VPC security groups to associate with this DB cluster.
