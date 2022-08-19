@@ -15,8 +15,10 @@ package securityconfiguration
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -78,6 +80,11 @@ func postObserve(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+
+	// field not set as expected in zz_conversions.go GenerateSecurityConfiguration()
+	// the setting of the field in zz_controller.go Create() seems to not work correctly (but Name works fine there)
+	cr.Status.AtProvider.CreatedTimestamp = fromTimePtr(obj.SecurityConfiguration.CreatedTimeStamp)
+
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
 }
@@ -94,17 +101,41 @@ func preCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *sv
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomEncryptionConfiguration != nil {
-		obj.EncryptionConfiguration = &svcsdk.EncryptionConfiguration{
-			CloudWatchEncryption: &svcsdk.CloudWatchEncryption{
+
+		obj.EncryptionConfiguration = &svcsdk.EncryptionConfiguration{}
+		if cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomCloudWatchEncryption != nil {
+
+			obj.EncryptionConfiguration.CloudWatchEncryption = &svcsdk.CloudWatchEncryption{
 				CloudWatchEncryptionMode: cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomCloudWatchEncryption.CloudWatchEncryptionMode,
 				KmsKeyArn:                cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomCloudWatchEncryption.KMSKeyARN,
-			},
-			JobBookmarksEncryption: &svcsdk.JobBookmarksEncryption{
+			}
+		}
+
+		if cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomJobBookmarksEncryption != nil {
+
+			obj.EncryptionConfiguration.JobBookmarksEncryption = &svcsdk.JobBookmarksEncryption{
 				JobBookmarksEncryptionMode: cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomJobBookmarksEncryption.JobBookmarksEncryptionMode,
 				KmsKeyArn:                  cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomJobBookmarksEncryption.KMSKeyARN,
-			},
+			}
+		}
+
+		obj.EncryptionConfiguration.S3Encryption = []*svcsdk.S3Encryption{}
+		for _, s3Encryption := range cr.Spec.ForProvider.CustomEncryptionConfiguration.CustomS3Encryption {
+			obj.EncryptionConfiguration.S3Encryption = append(obj.EncryptionConfiguration.S3Encryption, &svcsdk.S3Encryption{
+				S3EncryptionMode: s3Encryption.S3EncryptionMode,
+				KmsKeyArn:        s3Encryption.KMSKeyARN,
+			})
 		}
 	}
 
+	return nil
+}
+
+// fromTimePtr is a helper for converting a *time.Time to a *metav1.Time
+func fromTimePtr(t *time.Time) *metav1.Time {
+	if t != nil {
+		m := metav1.NewTime(*t)
+		return &m
+	}
 	return nil
 }

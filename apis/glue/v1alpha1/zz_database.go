@@ -43,6 +43,8 @@ type DatabaseSpec struct {
 
 // DatabaseObservation defines the observed state of Database
 type DatabaseObservation struct {
+	// The time at which the metadata database was created in the catalog.
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
 }
 
 // DatabaseStatus defines the observed state of Database.

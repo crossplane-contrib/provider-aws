@@ -40,6 +40,12 @@ type ClassifierSpec struct {
 
 // ClassifierObservation defines the observed state of Classifier
 type ClassifierObservation struct {
+	// The time that this classifier was registered.
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The time that this classifier was last updated.
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+	// The version of this classifier.
+	Version *int64 `json:"version,omitempty"`
 }
 
 // ClassifierStatus defines the observed state of Classifier.
