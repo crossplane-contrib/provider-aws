@@ -171,6 +171,23 @@ func TestObserve(t *testing.T) {
 				cr: identityProviderConfig(),
 			},
 		},
+		"NotFoundResetStatus": {
+			args: args{
+				eks: &fake.MockClient{
+					MockDescribeIdentityProviderConfig: func(ctx context.Context, input *awseks.DescribeIdentityProviderConfigInput, opts []func(*awseks.Options)) (*awseks.DescribeIdentityProviderConfigOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
+					},
+				},
+				cr: identityProviderConfig(
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusCreateFailed),
+				),
+			},
+			want: want{
+				cr: identityProviderConfig(
+					withStatus(""),
+				),
+			},
+		},
 		"LateInitSuccess": {
 			args: args{
 				kube: &test.MockClient{
