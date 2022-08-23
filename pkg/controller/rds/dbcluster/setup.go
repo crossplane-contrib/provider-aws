@@ -34,8 +34,10 @@ import (
 
 // error constants
 const (
-	errSaveSecretFailed = "failed to save generated password to Kubernetes secret"
-	errUpdateTags       = "cannot update tags"
+	errSaveSecretFailed         = "failed to save generated password to Kubernetes secret"
+	errUpdateTags               = "cannot update tags"
+	errRestore                  = "cannot restore DBCluster in AWS"
+	errUnknownRestoreFromSource = "unknown restoreFrom source"
 )
 
 type updater struct {
@@ -118,7 +120,7 @@ type custom struct {
 	client svcsdkapi.RDSAPI
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error {
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { // nolint:gocyclo
 	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
@@ -139,12 +141,154 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
 		obj.VpcSecurityGroupIds[i] = aws.String(v)
 	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil {
+		switch *cr.Spec.ForProvider.RestoreFrom.Source {
+		case "S3":
+			input := generateRestoreDBClusterFromS3Input(cr)
+			input.MasterUserPassword = obj.MasterUserPassword
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterFromS3WithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		default:
+			return errors.New(errUnknownRestoreFromSource)
+		}
+	}
+
 	return nil
+}
+
+func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromS3Input { // nolint:gocyclo
+	res := &svcsdk.RestoreDBClusterFromS3Input{}
+
+	if cr.Spec.ForProvider.AvailabilityZones != nil {
+		res.SetAvailabilityZones(cr.Spec.ForProvider.AvailabilityZones)
+	}
+
+	if cr.Spec.ForProvider.BacktrackWindow != nil {
+		res.SetBacktrackWindow(*cr.Spec.ForProvider.BacktrackWindow)
+	}
+
+	if cr.Spec.ForProvider.BackupRetentionPeriod != nil {
+		res.SetBackupRetentionPeriod(*cr.Spec.ForProvider.BackupRetentionPeriod)
+	}
+
+	if cr.Spec.ForProvider.CharacterSetName != nil {
+		res.SetCharacterSetName(*cr.Spec.ForProvider.CharacterSetName)
+	}
+
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+
+	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil {
+		res.SetDBClusterParameterGroupName(*cr.Spec.ForProvider.DBClusterParameterGroupName)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DatabaseName != nil {
+		res.SetDatabaseName(*cr.Spec.ForProvider.DatabaseName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.Domain != nil {
+		res.SetDomain(*cr.Spec.ForProvider.Domain)
+	}
+
+	if cr.Spec.ForProvider.DomainIAMRoleName != nil {
+		res.SetDomainIAMRoleName(*cr.Spec.ForProvider.DomainIAMRoleName)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.MasterUsername != nil {
+		res.SetMasterUsername(*cr.Spec.ForProvider.MasterUsername)
+	}
+
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.PreferredBackupWindow != nil {
+		res.SetPreferredBackupWindow(*cr.Spec.ForProvider.PreferredBackupWindow)
+	}
+
+	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
+		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
+	}
+
+	if cr.Spec.ForProvider.StorageEncrypted != nil {
+		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.S3 != nil {
+		if cr.Spec.ForProvider.RestoreFrom.S3.BucketName != nil {
+			res.SetS3BucketName(*cr.Spec.ForProvider.RestoreFrom.S3.BucketName)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.IngestionRoleARN != nil {
+			res.SetS3IngestionRoleArn(*cr.Spec.ForProvider.RestoreFrom.S3.IngestionRoleARN)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.Prefix != nil {
+			res.SetS3Prefix(*cr.Spec.ForProvider.RestoreFrom.S3.Prefix)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.SourceEngine != nil {
+			res.SetSourceEngine(*cr.Spec.ForProvider.RestoreFrom.S3.SourceEngine)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion != nil {
+			res.SetSourceEngineVersion(*cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion)
+		}
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
 }
 
 func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
 	status := aws.StringValue(out.DBClusters[0].Status)
-	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" {
+	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" {
 		return true, nil
 	}
 
