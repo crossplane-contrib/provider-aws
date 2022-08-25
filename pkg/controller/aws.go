@@ -145,6 +145,7 @@ import (
 	neptunecluster "github.com/crossplane-contrib/provider-aws/pkg/controller/neptune/dbcluster"
 	notsubscription "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snssubscription"
 	nottopic "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snstopic"
+	opensearchdomain "github.com/crossplane-contrib/provider-aws/pkg/controller/opensearchservice/domain"
 	prometheusservicealertmanagerdefinition "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/alertmanagerdefinition"
 	prometheusservicerulegroupnamespace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/rulegroupsnamespace"
 	prometheusserviceworkspace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/workspace"
@@ -334,6 +335,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		method.SetupMethod,
 		cognitoidentitypool.SetupIdentityPool,
 		flowlog.SetupFlowLog,
+		opensearchdomain.SetupDomain,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

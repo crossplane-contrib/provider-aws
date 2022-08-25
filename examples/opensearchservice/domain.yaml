@@ -1,0 +1,15 @@
+apiVersion: opensearchservice.aws.crossplane.io/v1alpha1
+kind: Domain
+metadata:
+  name: sample-domain
+spec:
+  forProvider:
+    name: sample-domain
+    region: us-west-2
+    ebsOptions:
+      ebsEnabled: true
+      volumeType: gp2
+      volumeSize: 10
+
+  providerConfigRef:
+    name: example
