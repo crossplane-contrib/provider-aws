@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -271,15 +272,45 @@ type updater struct {
 	client svcsdkapi.LambdaAPI
 }
 
+func (u *updater) isLastUpdateStatusSuccessful(cr *svcapitypes.Function) error {
+	for {
+		out, err := u.client.GetFunction(&svcsdk.GetFunctionInput{
+			FunctionName: aws.String(meta.GetExternalName(cr)),
+		})
+		if err != nil {
+			return err
+		}
+		if aws.StringValue(out.Configuration.LastUpdateStatus) == svcsdk.LastUpdateStatusSuccessful {
+			return nil
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+
+// nolint:gocyclo
 func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*svcapitypes.Function)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
+	// LastUpdateStatus must be Successful before running UpdateFunctionCode
+	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
+	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
+	if err := u.isLastUpdateStatusSuccessful(cr); err != nil {
+		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+	}
+
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.UpdateFunctionCode
 	updateFunctionCodeInput := GenerateUpdateFunctionCodeInput(cr)
 	if _, err := u.client.UpdateFunctionCodeWithContext(ctx, updateFunctionCodeInput); err != nil {
+		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+	}
+
+	// LastUpdateStatus must be Successful before running UpdateFunctionConfiguration
+	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
+	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
+	if err := u.isLastUpdateStatusSuccessful(cr); err != nil {
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
@@ -314,6 +345,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 		}
 	}
+
 	if len(addTags) > 0 {
 		if _, err := u.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
 			Resource: functionConfiguration.FunctionArn,
