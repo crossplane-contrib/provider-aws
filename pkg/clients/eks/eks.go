@@ -160,6 +160,7 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	return c
 }
 
+// GenerateEncryptionConfig creates the config needed to enable encryption
 func GenerateEncryptionConfig(parameters *v1beta1.ClusterParameters) []ekstypes.EncryptionConfig {
 	encryptionConfig := make([]ekstypes.EncryptionConfig, len(parameters.EncryptionConfig))
 	if len(parameters.EncryptionConfig) > 0 {
