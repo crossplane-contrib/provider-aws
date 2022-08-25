@@ -60,6 +60,7 @@ type Client interface {
 	TagResource(ctx context.Context, input *eks.TagResourceInput, opts ...func(*eks.Options)) (*eks.TagResourceOutput, error)
 	UntagResource(ctx context.Context, input *eks.UntagResourceInput, opts ...func(*eks.Options)) (*eks.UntagResourceOutput, error)
 	UpdateClusterVersion(ctx context.Context, input *eks.UpdateClusterVersionInput, opts ...func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error)
+	AssociateEncryptionConfig(ctx context.Context, params *eks.AssociateEncryptionConfigInput, optFns ...func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error)
 
 	DescribeNodegroup(ctx context.Context, input *eks.DescribeNodegroupInput, opts ...func(*eks.Options)) (*eks.DescribeNodegroupOutput, error)
 	CreateNodegroup(ctx context.Context, input *eks.CreateNodegroupInput, opts ...func(*eks.Options)) (*eks.CreateNodegroupOutput, error)
@@ -118,15 +119,7 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	}
 
 	if len(p.EncryptionConfig) > 0 {
-		c.EncryptionConfig = make([]ekstypes.EncryptionConfig, len(p.EncryptionConfig))
-		for i, conf := range p.EncryptionConfig {
-			c.EncryptionConfig[i] = ekstypes.EncryptionConfig{
-				Provider: &ekstypes.Provider{
-					KeyArn: awsclients.String(conf.Provider.KeyArn),
-				},
-				Resources: conf.Resources,
-			}
-		}
+		c.EncryptionConfig = GenerateEncryptionConfig(p)
 	}
 
 	c.ResourcesVpcConfig = &ekstypes.VpcConfigRequest{
@@ -156,6 +149,22 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 		c.Tags = p.Tags
 	}
 	return c
+}
+
+// GenerateEncryptionConfig creates the config needed to enable encryption
+func GenerateEncryptionConfig(parameters *v1beta1.ClusterParameters) []ekstypes.EncryptionConfig {
+	encryptionConfig := make([]ekstypes.EncryptionConfig, len(parameters.EncryptionConfig))
+	if len(parameters.EncryptionConfig) > 0 {
+		for i, conf := range parameters.EncryptionConfig {
+			encryptionConfig[i] = ekstypes.EncryptionConfig{
+				Provider: &ekstypes.Provider{
+					KeyArn: awsclients.String(conf.Provider.KeyArn),
+				},
+				Resources: conf.Resources,
+			}
+		}
+	}
+	return encryptionConfig
 }
 
 // CreatePatch creates a *v1beta1.ClusterParameters that has only the changed

@@ -189,6 +189,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errPatchCreationFailed)
 	}
+	if patch.EncryptionConfig != nil {
+		_, err := e.client.AssociateEncryptionConfig(ctx, &awseks.AssociateEncryptionConfigInput{
+			ClusterName:      awsclient.String(meta.GetExternalName(cr)),
+			EncryptionConfig: eks.GenerateEncryptionConfig(&cr.Spec.ForProvider),
+		})
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+	}
 	if patch.Version != nil {
 		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: awsclient.String(meta.GetExternalName(cr)), Version: patch.Version})
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
