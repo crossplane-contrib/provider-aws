@@ -119,15 +119,6 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	}
 
 	if len(p.EncryptionConfig) > 0 {
-		// c.EncryptionConfig = make([]ekstypes.EncryptionConfig, len(p.EncryptionConfig))
-		// for i, conf := range p.EncryptionConfig {
-		// 	c.EncryptionConfig[i] = ekstypes.EncryptionConfig{
-		// 		Provider: &ekstypes.Provider{
-		// 			KeyArn: awsclients.String(conf.Provider.KeyArn),
-		// 		},
-		// 		Resources: conf.Resources,
-		// 	}
-		// }
 		c.EncryptionConfig = GenerateEncryptionConfig(p)
 	}
 
