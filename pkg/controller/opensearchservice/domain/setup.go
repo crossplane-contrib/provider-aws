@@ -71,7 +71,8 @@ func postObserve(_ context.Context, cr *svcapitypes.Domain, resp *svcsdk.Describ
 	if resp.DomainStatus != nil {
 		if *resp.DomainStatus.Deleted {
 			cr.SetConditions(xpv1.Deleting())
-		} else if !*resp.DomainStatus.Created {
+		}
+		if !*resp.DomainStatus.Created {
 			cr.SetConditions(xpv1.Creating())
 		} else {
 			cr.SetConditions(xpv1.Available())
