@@ -20,6 +20,3 @@ metadata:
       the
       [crossplane-contrib/provider-aws](https://github.com/crossplane-contrib/provider-aws)
       repo.
-spec:
-  controller:
-    image: DOCKER_REGISTRY/provider-aws-controller:VERSION
