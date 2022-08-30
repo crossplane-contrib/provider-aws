@@ -915,12 +915,13 @@ const (
 
 // DBParameterGroupStatus is the status of the DB parameter group.
 // This data type is used as a response element in the following actions:
-//    * CreateDBInstance
-//    * CreateDBInstanceReadReplica
-//    * DeleteDBInstance
-//    * ModifyDBInstance
-//    * RebootDBInstance
-//    * RestoreDBInstanceFromDBSnapshot
+//   - CreateDBInstance
+//   - CreateDBInstanceReadReplica
+//   - DeleteDBInstance
+//   - ModifyDBInstance
+//   - RebootDBInstance
+//   - RestoreDBInstanceFromDBSnapshot
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus
 type DBParameterGroupStatus struct {
 	// DBParameterGroupName is the name of the DP parameter group.
@@ -931,10 +932,11 @@ type DBParameterGroupStatus struct {
 }
 
 // DBSecurityGroupMembership is used as a response element in the following actions:
-//    * ModifyDBInstance
-//    * RebootDBInstance
-//    * RestoreDBInstanceFromDBSnapshot
-//    * RestoreDBInstanceToPointInTime
+//   - ModifyDBInstance
+//   - RebootDBInstance
+//   - RestoreDBInstanceFromDBSnapshot
+//   - RestoreDBInstanceToPointInTime
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership
 type DBSecurityGroupMembership struct {
 	// DBSecurityGroupName is the name of the DB security group.
@@ -946,7 +948,8 @@ type DBSecurityGroupMembership struct {
 
 // AvailabilityZone contains Availability Zone information.
 // This data type is used as an element in the following data type:
-//    * OrderableDBInstanceOption
+//   - OrderableDBInstanceOption
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/AvailabilityZone
 type AvailabilityZone struct {
 	// Name of the Availability Zone.
@@ -1013,9 +1016,10 @@ type DomainMembership struct {
 }
 
 // Endpoint is used as a response element in the following actions:
-//    * CreateDBInstance
-//    * DescribeDBInstances
-//    * DeleteDBInstance
+//   - CreateDBInstance
+//   - DescribeDBInstances
+//   - DeleteDBInstance
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Endpoint
 type Endpoint struct {
 	// Address specifies the DNS address of the DB instance.
