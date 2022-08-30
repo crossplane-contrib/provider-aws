@@ -162,6 +162,13 @@ type CustomVPCPeeringConnectionParameters struct {
 	// Metadata tagging key value pairs
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
+
+	// RequesterPeeringOptions describes the Requester VPC peering connection options.
+	// +optional
+	RequesterPeeringOptions *VPCPeeringConnectionOptionsDescription `json:"requesterPeeringOptions,omitempty"`
+	// AccepterRequesterPeeringOptions describes the Accepter VPC peering connection options.
+	// +optional
+	AccepterPeeringOptions *VPCPeeringConnectionOptionsDescription `json:"accepterPeeringOptions,omitempty"`
 }
 
 // CustomTransitGatewayParameters are custom parameters for TransitGateway

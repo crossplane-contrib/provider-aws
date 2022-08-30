@@ -2,6 +2,7 @@ package vpcpeeringconnection
 
 import (
 	"context"
+	"reflect"
 	"sort"
 	"time"
 
@@ -90,6 +91,32 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
 		request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
+		err := request.Send()
+		if err != nil {
+			return obs, err
+		}
+	}
+
+	if !reflect.DeepEqual(obj.VpcPeeringConnections[0].AccepterVpcInfo.PeeringOptions, cr.Spec.ForProvider.AccepterPeeringOptions) ||
+		!reflect.DeepEqual(obj.VpcPeeringConnections[0].RequesterVpcInfo.PeeringOptions, cr.Spec.ForProvider.RequesterPeeringOptions) {
+		req := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
+			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+		}
+		if cr.Spec.ForProvider.AccepterPeeringOptions != nil {
+			req.AccepterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
+				AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.AccepterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
+				AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
+				AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
+			}
+		}
+		if cr.Spec.ForProvider.RequesterPeeringOptions != nil {
+			req.RequesterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
+				AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.RequesterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
+				AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
+				AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
+			}
+		}
+		request, _ := e.client.ModifyVpcPeeringConnectionOptionsRequest(&req)
 		err := request.Send()
 		if err != nil {
 			return obs, err

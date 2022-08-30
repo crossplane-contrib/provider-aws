@@ -69,6 +69,17 @@ spec:
                       will be in pending-acceptance state. This will only lead to
                       an active connection if both VPCs are in the same tenant.
                     type: boolean
+                  accepterPeeringOptions:
+                    description: AccepterRequesterPeeringOptions describes the Accepter
+                      VPC peering connection options.
+                    properties:
+                      allowDNSResolutionFromRemoteVPC:
+                        type: boolean
+                      allowEgressFromLocalClassicLinkToRemoteVPC:
+                        type: boolean
+                      allowEgressFromLocalVPCToRemoteClassicLink:
+                        type: boolean
+                    type: object
                   peerOwnerID:
                     description: "The Amazon Web Services account ID of the owner
                       of the accepter VPC. \n Default: Your Amazon Web Services account
@@ -164,6 +175,17 @@ spec:
                     description: Region is which region the VPCPeeringConnection will
                       be created.
                     type: string
+                  requesterPeeringOptions:
+                    description: RequesterPeeringOptions describes the Requester VPC
+                      peering connection options.
+                    properties:
+                      allowDNSResolutionFromRemoteVPC:
+                        type: boolean
+                      allowEgressFromLocalClassicLinkToRemoteVPC:
+                        type: boolean
+                      allowEgressFromLocalVPCToRemoteClassicLink:
+                        type: boolean
+                    type: object
                   tagSpecifications:
                     description: The tags to assign to the peering connection.
                     items:
