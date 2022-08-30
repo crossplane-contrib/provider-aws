@@ -1,11 +1,9 @@
-FROM BASEIMAGE
-RUN apk --no-cache add ca-certificates bash
+FROM gcr.io/distroless/static@sha256:1f580b0a1922c3e54ae15b0758b5747b260bd99d39d40c2edb3e7f6e2452298b
 
-ARG ARCH
-ARG TINI_VERSION
+ARG TARGETOS
+ARG TARGETARCH
 
-ADD provider /usr/local/bin/crossplane-aws-provider
+ADD bin/$TARGETOS\_$TARGETARCH/provider /usr/local/bin/crossplane-aws-provider
 
-EXPOSE 8080
-USER 1001
+USER 65532
 ENTRYPOINT ["crossplane-aws-provider"]
