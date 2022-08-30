@@ -43,11 +43,11 @@ eval $(make --no-print-directory -C ${projectdir} build.vars)
 SAFEHOSTARCH="${SAFEHOSTARCH:-amd64}"
 BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${SAFEHOSTARCH}"
 PACKAGE_IMAGE="crossplane.io/inttests/${PROJECT_NAME}:${VERSION}"
-CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-controller-${SAFEHOSTARCH}"
+CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${SAFEHOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
 # tag as latest version to load into kind cluster
-PACKAGE_CONTROLLER_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}-controller:${VERSION}"
+PACKAGE_CONTROLLER_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:${VERSION}"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-inttests}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
@@ -70,7 +70,7 @@ CACHE_PATH="${projectdir}/.work/inttest-package-cache"
 mkdir -p "${CACHE_PATH}"
 echo "created cache dir at ${CACHE_PATH}"
 docker tag "${BUILD_IMAGE}" "${PACKAGE_IMAGE}"
-"${UP}" xpkg xp-extract --from-daemon "${PACKAGE_IMAGE}" -o "${CACHE_PATH}/${PACKAGE_NAME}.gz" && chmod 644 "${CACHE_PATH}/${PACKAGE_NAME}.gz"
+"${UP}" alpha xpkg xp-extract --from-xpkg "${XPKG_OUTPUT_DIR}"/"${PLATFORM}"/"${PACKAGE_NAME}"-"${VERSION}".xpkg -o "${CACHE_PATH}/${PACKAGE_NAME}.gz" && chmod 644 "${CACHE_PATH}/${PACKAGE_NAME}.gz"
 
 # create kind cluster with extra mounts
 KIND_NODE_IMAGE="kindest/node:${KIND_NODE_IMAGE_TAG}"
