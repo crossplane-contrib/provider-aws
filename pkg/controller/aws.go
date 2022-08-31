@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cluster"
+	cfstack "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudformation/stack"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	cloudfrontorginaccessidentity "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/distribution"
@@ -334,6 +335,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		method.SetupMethod,
 		cognitoidentitypool.SetupIdentityPool,
 		flowlog.SetupFlowLog,
+		cfstack.SetupStack,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

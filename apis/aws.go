@@ -30,6 +30,7 @@ import (
 	athenav1alpha1 "github.com/crossplane-contrib/provider-aws/apis/athena/v1alpha1"
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	cloudformationv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudformation/v1alpha1"
 	cloudfrontv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
 	cloudsearchv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudsearch/v1alpha1"
 	cloudwatchlogsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
@@ -159,6 +160,7 @@ func init() {
 		cloudsearchv1alpha1.AddToScheme,
 		apigatewayv1alpha1.AddToScheme,
 		cognitoidentityv1alpha1.AddToScheme,
+		cloudformationv1alpha1.AddToScheme,
 	)
 }
 

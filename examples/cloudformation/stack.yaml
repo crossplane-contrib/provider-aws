@@ -1,0 +1,39 @@
+apiVersion: cloudformation.aws.crossplane.io/v1alpha1
+kind: Stack
+metadata:
+  name: cloudformation-stack-test
+spec:
+  forProvider:
+    stackName: cloudformation-stack-test
+    region: us-east-1
+    templateBody: |
+      {
+        "Resources": {
+            "VPC": {
+                "Type": "AWS::EC2::VPC",
+                "Properties": {
+                    "CidrBlock": "10.1.0.0/16",
+                    "EnableDnsSupport": true,
+                    "EnableDnsHostnames": true,
+                    "Tags": [
+                        {
+                            "Key": "Name",
+                            "Value": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "AWS::StackName"
+                                        },
+                                        "-VPC"
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+      }
+  providerConfigRef:
+    name: example

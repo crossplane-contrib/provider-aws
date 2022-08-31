@@ -1,0 +1,10 @@
+ignore:
+  resource_names:
+    - StackSet
+    - ChangeSet
+resources:
+  Stack:
+    exceptions:
+      errors:
+        404:
+          code: ValidationError
