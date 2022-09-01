@@ -155,6 +155,18 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 				}},
 			}}
 		}
+		if providerValues.SourceSecurityGroupID != nil {
+			input.IpPermissions = []awsec2types.IpPermission{{
+				FromPort:   providerValues.FromPort,
+				ToPort:     providerValues.ToPort,
+				IpProtocol: providerValues.Protocol,
+				UserIdGroupPairs: []awsec2types.UserIdGroupPair{{
+					GroupId: providerValues.SourceSecurityGroupID,
+
+					Description: providerValues.Description,
+				}},
+			}}
+		}
 		result, err := e.client.AuthorizeSecurityGroupIngress(ctx, input)
 
 		if err != nil {
@@ -192,6 +204,18 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 				IpProtocol: providerValues.Protocol,
 				Ipv6Ranges: []awsec2types.Ipv6Range{{
 					CidrIpv6: providerValues.Ipv6CidrBlock,
+
+					Description: providerValues.Description,
+				}},
+			}}
+		}
+		if providerValues.SourceSecurityGroupID != nil {
+			input.IpPermissions = []awsec2types.IpPermission{{
+				FromPort:   providerValues.FromPort,
+				ToPort:     providerValues.ToPort,
+				IpProtocol: providerValues.Protocol,
+				UserIdGroupPairs: []awsec2types.UserIdGroupPair{{
+					GroupId: providerValues.SourceSecurityGroupID,
 
 					Description: providerValues.Description,
 				}},
@@ -304,6 +328,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		if cr.Spec.ForProvider.Ipv6CidrBlock != nil {
 			input.SecurityGroupRules[0].SecurityGroupRule.CidrIpv6 = cr.Spec.ForProvider.Ipv6CidrBlock
 		}
+		if cr.Spec.ForProvider.SourceSecurityGroupID != nil {
+			input.SecurityGroupRules[0].SecurityGroupRule.ReferencedGroupId = cr.Spec.ForProvider.SourceSecurityGroupID
+		}
 
 		_, err := e.client.ModifySecurityGroupRules(ctx, input)
 		if err != nil {
@@ -339,6 +366,10 @@ func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *man
 		recreate = true
 	}
 
+	if awsclient.StringValue(desired.SourceSecurityGroupID) != awsclient.StringValue(actual.SourceSecurityGroupID) {
+		needsUpdate = true
+	}
+
 	if awsclient.StringValue(desired.Type) != awsclient.StringValue(actual.Type) {
 		needsUpdate = true
 		recreate = true
@@ -370,6 +401,9 @@ func (e *external) getExternalSgr(ctx context.Context, externalName string) (*ma
 		Protocol:      existingSgr.IpProtocol,
 		CidrBlock:     existingSgr.CidrIpv4,
 		Ipv6CidrBlock: existingSgr.CidrIpv6,
+	}
+	if existingSgr.ReferencedGroupInfo != nil {
+		cr.SourceSecurityGroupID = existingSgr.ReferencedGroupInfo.GroupId
 	}
 
 	return cr, nil
