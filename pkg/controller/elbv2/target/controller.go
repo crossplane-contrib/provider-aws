@@ -130,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
+		ResourceExists:   cr.Status.AtProvider.GetReason() != string(types.TargetHealthReasonEnumNotRegistered),
 		ResourceUpToDate: true, // Targets cannot be updated
 	}, nil
 }
