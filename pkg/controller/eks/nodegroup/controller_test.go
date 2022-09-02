@@ -18,8 +18,11 @@ package nodegroup
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
+	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
 	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
@@ -32,6 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks/fake"
@@ -41,12 +45,17 @@ var (
 	version           = "1.16"
 	desiredSize int32 = 3
 
+	ltName                 = "launchTemplateName"
+	ltVersion        int64 = 2
+	ltDesiredVersion       = "3"
+
 	errBoom = errors.New("boom")
 )
 
 type args struct {
 	eks  eks.Client
 	kube client.Client
+	ec2  ec2Client
 	cr   *manualv1alpha1.NodeGroup
 }
 
@@ -80,6 +89,10 @@ func withStatus(s manualv1alpha1.NodeGroupStatusType) nodeGroupModifier {
 
 func withScalingConfig(c *manualv1alpha1.NodeGroupScalingConfig) nodeGroupModifier {
 	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.ScalingConfig = c }
+}
+
+func withLaunchTemplate(t *manualv1alpha1.LaunchTemplateSpecification) nodeGroupModifier {
+	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.LaunchTemplate = t }
 }
 
 func nodeGroup(m ...nodeGroupModifier) *manualv1alpha1.NodeGroup {
@@ -432,6 +445,36 @@ func TestUpdate(t *testing.T) {
 				cr: nodeGroup(withScalingConfig(&manualv1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
 			},
 		},
+		"SuccessfulUpdateNodeGroupLaunchTemplate": {
+			args: args{
+				eks: &fake.MockClient{
+					MockUpdateNodegroupVersion: func(tx context.Context, input *awseks.UpdateNodegroupVersionInput, opts []func(*awseks.Options)) (*awseks.UpdateNodegroupVersionOutput, error) {
+						return &awseks.UpdateNodegroupVersionOutput{}, nil
+					},
+					MockDescribeNodegroup: func(tx context.Context, input *awseks.DescribeNodegroupInput, opts []func(*awseks.Options)) (*awseks.DescribeNodegroupOutput, error) {
+						return &awseks.DescribeNodegroupOutput{
+							Nodegroup: &awsekstypes.Nodegroup{
+								LaunchTemplate: &awsekstypes.LaunchTemplateSpecification{
+									Id:   aws.String(strconv.FormatInt(ltVersion, 10)),
+									Name: &ltName,
+								},
+							},
+						}, nil
+					},
+				},
+				ec2: &fake.MockEc2Client{
+					MockDescribeLaunchTemplateVersions: func(tx context.Context, params *awsec2.DescribeLaunchTemplateVersionsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeLaunchTemplateVersionsOutput, error) {
+						return &awsec2.DescribeLaunchTemplateVersionsOutput{
+							LaunchTemplateVersions: []awsec2types.LaunchTemplateVersion{{VersionNumber: &ltVersion}},
+						}, nil
+					},
+				},
+				cr: nodeGroup(withLaunchTemplate(&manualv1alpha1.LaunchTemplateSpecification{Name: &ltName, Version: &ltDesiredVersion})),
+			},
+			want: want{
+				cr: nodeGroup(withLaunchTemplate(&manualv1alpha1.LaunchTemplateSpecification{Name: &ltName, Version: &ltDesiredVersion})),
+			},
+		},
 		"AlreadyModifying": {
 			args: args{
 				cr: nodeGroup(withStatus(manualv1alpha1.NodeGroupStatusUpdating)),
@@ -536,7 +579,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.eks}
+			e := &external{kube: tc.kube, client: tc.eks, ec2Client: tc.ec2}
 			u, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

@@ -33,13 +33,14 @@ import (
 )
 
 var (
-	ngName      = "my-cool-ng"
-	amiType     = "cool-ami"
-	diskSize    = int32(20)
-	size        = int32(2)
-	currentSize = int32(5)
-	maxSize     = int32(8)
-	nodeRole    = "cool-role"
+	ngName                = "my-cool-ng"
+	amiType               = "cool-ami"
+	diskSize              = int32(20)
+	size                  = int32(2)
+	currentSize           = int32(5)
+	maxSize               = int32(8)
+	nodeRole              = "cool-role"
+	launchtemplateversion = "1"
 )
 
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
@@ -573,6 +574,7 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 func TestIsNodeGroupUpToDate(t *testing.T) {
 	otherVersion := "1.17"
 	otherSize := int32(100)
+	otherLaunchtemplateVersion := "3"
 
 	type args struct {
 		p *manualv1alpha1.NodeGroupParameters
@@ -655,6 +657,36 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 					ReleaseVersion: &version,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
+				},
+			},
+			want: false,
+		},
+		"UpdateLaunchTemplateVersion": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					Tags:   map[string]string{"cool": "tag"},
+					Labels: map[string]string{"cool": "label"},
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Version: &otherLaunchtemplateVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					Labels: map[string]string{"cool": "label"},
+					ScalingConfig: &ekstypes.NodegroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+					ReleaseVersion: &version,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &launchtemplateversion,
+					},
+					Tags: map[string]string{"cool": "tag"},
 				},
 			},
 			want: false,

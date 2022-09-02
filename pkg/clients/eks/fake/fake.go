@@ -20,9 +20,20 @@ import (
 	"context"
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
+
+// MockEc2Client is a fake implementation of ec2Client.
+type MockEc2Client struct {
+	MockDescribeLaunchTemplateVersions func(ctx context.Context, params *ec2.DescribeLaunchTemplateVersionsInput, opts []func(*ec2.Options)) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+}
+
+// DescribeLaunchTemplateVersions calls the underlying MockDescribeLaunchTemplateVersions method.
+func (c *MockEc2Client) DescribeLaunchTemplateVersions(ctx context.Context, input *ec2.DescribeLaunchTemplateVersionsInput, opts ...func(*ec2.Options)) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	return c.MockDescribeLaunchTemplateVersions(ctx, input, opts)
+}
 
 // MockClient is a fake implementation of eks.Client.
 type MockClient struct {
