@@ -23,23 +23,9 @@ resources:
         DescribeDomain:
           input_fields:
             DomainName: Name
-    reconcile:
-      # Doing this because it takes a LONG time for the Domain's
-      # endpoint/endpoints field to be populated, even after the Domain's
-      # Processing field is set to False after creation...
-      requeue_on_success_seconds: 60
     exceptions:
       errors:
         404:
           code: ResourceNotFoundException
       terminal_codes:
         - ValidationException
-    hooks:
-      sdk_create_post_set_output:
-        template_path: hooks/domain/sdk_create_post_set_output.go.tpl
-      sdk_read_one_post_set_output:
-        template_path: hooks/domain/sdk_read_one_post_set_output.go.tpl
-      sdk_update_pre_build_request:
-        template_path: hooks/domain/sdk_update_pre_build_request.go.tpl
-      sdk_delete_pre_build_request:
-        template_path: hooks/domain/sdk_delete_pre_build_request.go.tpl
