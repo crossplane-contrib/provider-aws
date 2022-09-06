@@ -303,11 +303,11 @@ type ReplicationRuleFilter struct {
 //
 // For example:
 //
-//    * If you specify both a Prefix and a Tag filter, wrap these filters in
-//    an And tag.
+//   - If you specify both a Prefix and a Tag filter, wrap these filters in
+//     an And tag.
 //
-//    * If you specify a filter based on multiple tags, wrap the Tag elements
-//    in an And tag
+//   - If you specify a filter based on multiple tags, wrap the Tag elements
+//     in an And tag
 type ReplicationRuleAndOperator struct {
 	// An object key name prefix that identifies the subset of objects to which
 	// the rule applies.

@@ -195,9 +195,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDa
 				Permissions: make([]*string, len(prins.Permissions)),
 			}
 
-			for i2, perms := range prins.Permissions {
-				sdkPrins.Permissions[i2] = perms
-			}
+			copy(sdkPrins.Permissions, prins.Permissions)
 
 			if prins.Principal != nil {
 				sdkPrins.Principal = &svcsdk.DataLakePrincipal{
@@ -259,9 +257,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 					Permissions: make([]*string, len(prins.Permissions)),
 				}
 
-				for i2, perms := range prins.Permissions {
-					sdkPrins.Permissions[i2] = perms
-				}
+				copy(sdkPrins.Permissions, prins.Permissions)
 
 				if prins.Principal != nil {
 					sdkPrins.Principal = &svcsdk.DataLakePrincipal{

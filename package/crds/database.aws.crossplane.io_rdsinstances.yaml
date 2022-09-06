@@ -1410,11 +1410,11 @@ spec:
                     description: DBParameterGroups provides the list of DB parameter
                       groups applied to this DB instance.
                     items:
-                      description: 'DBParameterGroupStatus is the status of the DB
+                      description: "DBParameterGroupStatus is the status of the DB
                         parameter group. This data type is used as a response element
-                        in the following actions: * CreateDBInstance * CreateDBInstanceReadReplica
-                        * DeleteDBInstance * ModifyDBInstance * RebootDBInstance *
-                        RestoreDBInstanceFromDBSnapshot Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus'
+                        in the following actions: - CreateDBInstance - CreateDBInstanceReadReplica
+                        - DeleteDBInstance - ModifyDBInstance - RebootDBInstance -
+                        RestoreDBInstanceFromDBSnapshot \n Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus"
                       properties:
                         dbParameterGroupName:
                           description: DBParameterGroupName is the name of the DP
@@ -1437,10 +1437,10 @@ spec:
                       elements containing only DBSecurityGroup.Name and DBSecurityGroup.Status
                       subelements.
                     items:
-                      description: 'DBSecurityGroupMembership is used as a response
-                        element in the following actions: * ModifyDBInstance * RebootDBInstance
-                        * RestoreDBInstanceFromDBSnapshot * RestoreDBInstanceToPointInTime
-                        Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership'
+                      description: "DBSecurityGroupMembership is used as a response
+                        element in the following actions: - ModifyDBInstance - RebootDBInstance
+                        - RestoreDBInstanceFromDBSnapshot - RestoreDBInstanceToPointInTime
+                        \n Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership"
                       properties:
                         dbSecurityGroupName:
                           description: DBSecurityGroupName is the name of the DB security

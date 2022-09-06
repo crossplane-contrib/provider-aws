@@ -26,13 +26,14 @@ import (
 
 // MockClient is a fake implementation of eks.Client.
 type MockClient struct {
-	MockCreateCluster        func(ctx context.Context, input *eks.CreateClusterInput, opts []func(*eks.Options)) (*eks.CreateClusterOutput, error)
-	MockDescribeCluster      func(ctx context.Context, input *eks.DescribeClusterInput, opts []func(*eks.Options)) (*eks.DescribeClusterOutput, error)
-	MockUpdateClusterConfig  func(ctx context.Context, input *eks.UpdateClusterConfigInput, opts []func(*eks.Options)) (*eks.UpdateClusterConfigOutput, error)
-	MockDeleteCluster        func(ctx context.Context, input *eks.DeleteClusterInput, opts []func(*eks.Options)) (*eks.DeleteClusterOutput, error)
-	MockTagResource          func(ctx context.Context, input *eks.TagResourceInput, opts []func(*eks.Options)) (*eks.TagResourceOutput, error)
-	MockUntagResource        func(ctx context.Context, input *eks.UntagResourceInput, opts []func(*eks.Options)) (*eks.UntagResourceOutput, error)
-	MockUpdateClusterVersion func(ctx context.Context, input *eks.UpdateClusterVersionInput, opts []func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error)
+	MockCreateCluster             func(ctx context.Context, input *eks.CreateClusterInput, opts []func(*eks.Options)) (*eks.CreateClusterOutput, error)
+	MockDescribeCluster           func(ctx context.Context, input *eks.DescribeClusterInput, opts []func(*eks.Options)) (*eks.DescribeClusterOutput, error)
+	MockUpdateClusterConfig       func(ctx context.Context, input *eks.UpdateClusterConfigInput, opts []func(*eks.Options)) (*eks.UpdateClusterConfigOutput, error)
+	MockDeleteCluster             func(ctx context.Context, input *eks.DeleteClusterInput, opts []func(*eks.Options)) (*eks.DeleteClusterOutput, error)
+	MockTagResource               func(ctx context.Context, input *eks.TagResourceInput, opts []func(*eks.Options)) (*eks.TagResourceOutput, error)
+	MockUntagResource             func(ctx context.Context, input *eks.UntagResourceInput, opts []func(*eks.Options)) (*eks.UntagResourceOutput, error)
+	MockUpdateClusterVersion      func(ctx context.Context, input *eks.UpdateClusterVersionInput, opts []func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error)
+	MockAssociateEncryptionConfig func(ctx context.Context, input *eks.AssociateEncryptionConfigInput, opts []func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error)
 
 	MockDescribeNodegroup      func(ctx context.Context, input *eks.DescribeNodegroupInput, opts []func(*eks.Options)) (*eks.DescribeNodegroupOutput, error)
 	MockCreateNodegroup        func(ctx context.Context, input *eks.CreateNodegroupInput, opts []func(*eks.Options)) (*eks.CreateNodegroupOutput, error)
@@ -95,6 +96,12 @@ func (c *MockClient) UntagResource(ctx context.Context, input *eks.UntagResource
 // MockUpdateClusterVersion method.
 func (c *MockClient) UpdateClusterVersion(ctx context.Context, input *eks.UpdateClusterVersionInput, opts ...func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error) {
 	return c.MockUpdateClusterVersion(ctx, input, opts)
+}
+
+// AssociateEncryptionConfig calls the underlying
+// MockAssociateEncryptionConfig method.
+func (c *MockClient) AssociateEncryptionConfig(ctx context.Context, input *eks.AssociateEncryptionConfigInput, opts ...func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error) {
+	return c.MockAssociateEncryptionConfig(ctx, input, opts)
 }
 
 // DescribeNodegroup calls the underlying MockDescribeNodegroup

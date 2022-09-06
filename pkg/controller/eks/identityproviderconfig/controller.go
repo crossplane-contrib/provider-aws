@@ -111,7 +111,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		},
 		ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		// Failed IdentityProviderConfigs will be garbage collected by AWS after
+		// some time.
+		// Since we are using cr.Status.AtProvider.Status in Create() to
+		// determine if we need to associate this fields needs to be reset if
+		// the config does not exist.
+		// Otherwise the controller will never retry associating again.
+		if eks.IsErrorNotFound(err) {
+			cr.Status.AtProvider.Status = ""
+			return managed.ExternalObservation{}, nil
+		}
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
