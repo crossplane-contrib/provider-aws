@@ -63,8 +63,6 @@ When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1`and
 then re-run the command.
 
-If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
-
 ### Crossplane Code Generation
 
 After ACK generation process completes, we need to run Crossplane generation procedure
