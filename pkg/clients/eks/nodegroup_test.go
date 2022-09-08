@@ -40,6 +40,7 @@ var (
 	currentSize = int32(5)
 	maxSize     = int32(8)
 	nodeRole    = "cool-role"
+	ltVersion   = "1"
 )
 
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
@@ -556,6 +557,23 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 				},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
+			},
+		},
+		"SetLaunchTemplateVersionIfEmpty": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{},
+				},
+				n: &ekstypes.Nodegroup{
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+					Version: &ltVersion,
+				},
 			},
 		},
 	}

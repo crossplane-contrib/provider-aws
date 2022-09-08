@@ -208,6 +208,9 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 			MaxSize:     ng.ScalingConfig.MaxSize,
 		}
 	}
+	if in.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
+		in.LaunchTemplate.Version = awsclient.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
+	}
 	in.ReleaseVersion = awsclient.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
 	in.Version = awsclient.LateInitializeStringPtr(in.Version, ng.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
