@@ -1,0 +1,31 @@
+model_name: opensearch
+ignore:
+  resource_names:
+    - Package
+    # - Domain
+    - OutboundConnection
+  field_paths:
+    # SnapshotOptions is irrelevant for OpenSearch 5.3+
+    - CreateDomainInput.SnapshotOptions
+    - CreateDomainInput.Name
+    - DeleteDomainInput.Name
+resources:
+  Domain:
+    renames:
+      operations:
+        CreateDomain:
+          input_fields:
+            DomainName: Name
+            TagList: Tags
+        DeleteDomain:
+          input_fields:
+            DomainName: Name
+        DescribeDomain:
+          input_fields:
+            DomainName: Name
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - ValidationException
