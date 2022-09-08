@@ -22,9 +22,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 
 	"github.com/crossplane/provider-aws/pkg/controller/config"
-	ec2route "github.com/crossplane/provider-aws/pkg/controller/ec2/route"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 )
 
@@ -32,10 +29,7 @@ import (
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		securitygroup.SetupSecurityGroup,
-		routetable.SetupRouteTable,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
-		ec2route.SetupRoute,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

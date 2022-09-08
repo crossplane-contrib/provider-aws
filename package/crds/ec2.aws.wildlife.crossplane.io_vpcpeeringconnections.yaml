@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
-  name: vpcpeeringconnections.ec2.aws.crossplane.io
+  name: vpcpeeringconnections.ec2.aws.wildlife.crossplane.io
 spec:
-  group: ec2.aws.crossplane.io
+  group: ec2.aws.wildlife.crossplane.io
   names:
     categories:
     - crossplane
