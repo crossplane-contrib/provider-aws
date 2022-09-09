@@ -17,6 +17,8 @@ limitations under the License.
 package eks
 
 import (
+	"reflect"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
@@ -85,6 +87,46 @@ func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParame
 		}
 	}
 	return c
+}
+
+// GenerateUpdateNodeGroupVersionInput will check if version properties of the
+// nodegroup have changed. If no version property has changed, it will return false
+// and an incomplete update object. If true,
+func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) (bool, *eks.UpdateNodegroupVersionInput) {
+	u := false
+	i := &eks.UpdateNodegroupVersionInput{
+		NodegroupName: &name,
+		ClusterName:   &p.ClusterName,
+	}
+	if !reflect.DeepEqual(p.Version, ng.Version) {
+		u = true
+		i.Version = p.Version
+	}
+	if !reflect.DeepEqual(p.ReleaseVersion, ng.ReleaseVersion) {
+		u = true
+		i.ReleaseVersion = p.ReleaseVersion
+	}
+	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
+		// Since we late initialize the LaunchTemplate Version we can be sure that
+		// there is a version set at this point
+		if !reflect.DeepEqual(p.LaunchTemplate.Version, ng.LaunchTemplate.Version) {
+			u = true
+			i.LaunchTemplate = &ekstypes.LaunchTemplateSpecification{
+				Version: p.LaunchTemplate.Version,
+			}
+			if p.LaunchTemplate.Name != nil {
+				i.LaunchTemplate.Name = p.LaunchTemplate.Name
+			} else {
+				i.LaunchTemplate.Id = p.LaunchTemplate.ID
+			}
+		}
+	}
+
+	if !u {
+		return false, nil
+	}
+
+	return true, i
 }
 
 // GenerateUpdateNodeGroupConfigInput from NodeGroupParameters.

@@ -45,6 +45,8 @@ var (
 	releaseVersion      = "1.16.3-20220523"
 	otherReleaseVersion = "1.17.4-20220523"
 	ltVersion           = "1"
+	ltID                = "lt-id"
+	ltName              = "my-cool-lt"
 	otherLtVersion      = "2"
 )
 
@@ -175,6 +177,203 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateCreateNodeGroupInput(tc.args.name, tc.args.p)
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
+	type args struct {
+		name string
+		p    *manualv1alpha1.NodeGroupParameters
+		n    *ekstypes.Nodegroup
+	}
+
+	cases := map[string]struct {
+		args
+		wantUpdate bool
+		wantInput  *eks.UpdateNodegroupVersionInput
+	}{
+		"NothingChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: false,
+			wantInput:  nil,
+		},
+		"VersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &otherVersion,
+					ReleaseVersion: &releaseVersion,
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName:  &ngName,
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				Version:       &otherVersion,
+			},
+		},
+		"ReleaseVersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &otherReleaseVersion,
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName:  &ngName,
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:    &clusterName,
+				NodegroupName:  &ngName,
+				ReleaseVersion: &otherReleaseVersion,
+			},
+		},
+		"LaunchTemplateVersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Name:    &ltName,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"LaunchTemplateVersionChangedWithId": {
+			// The launch template can be referenced via ID or via Name. If there is no Name we should use the ID.
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						ID:      &ltID,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						// Having a name here and not an ID is on purpose to
+						// make sure that the k8s resource is "leading"
+						Name:    &ltName,
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Id:      &ltID,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"EverythingChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &otherVersion,
+					ReleaseVersion: &otherReleaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:    &clusterName,
+				NodegroupName:  &ngName,
+				Version:        &otherVersion,
+				ReleaseVersion: &otherReleaseVersion,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Name:    &ltName,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			gotUpdate, gotInput := GenerateUpdateNodeGroupVersionInput(tc.args.name, tc.args.p, tc.args.n)
+			if diff := cmp.Diff(tc.wantUpdate, gotUpdate); diff != "" {
+				t.Errorf("r: -want, +got\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.wantInput, gotInput, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
