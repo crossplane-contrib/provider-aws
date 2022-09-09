@@ -33,14 +33,19 @@ import (
 )
 
 var (
-	ngName      = "my-cool-ng"
-	amiType     = "cool-ami"
-	diskSize    = int32(20)
-	size        = int32(2)
-	currentSize = int32(5)
-	maxSize     = int32(8)
-	nodeRole    = "cool-role"
-	ltVersion   = "1"
+	ngName              = "my-cool-ng"
+	amiType             = "cool-ami"
+	diskSize            = int32(20)
+	otherSize           = int32(100)
+	size                = int32(2)
+	currentSize         = int32(5)
+	maxSize             = int32(8)
+	nodeRole            = "cool-role"
+	otherVersion        = "1.17"
+	releaseVersion      = "1.16.3-20220523"
+	otherReleaseVersion = "1.17.4-20220523"
+	ltVersion           = "1"
+	otherLtVersion      = "2"
 )
 
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
@@ -589,9 +594,6 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 }
 
 func TestIsNodeGroupUpToDate(t *testing.T) {
-	otherVersion := "1.17"
-	otherSize := int32(100)
-
 	type args struct {
 		p *manualv1alpha1.NodeGroupParameters
 		n *ekstypes.Nodegroup
@@ -654,9 +656,37 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		"UpdateVersion": {
 			args: args{
 				p: &manualv1alpha1.NodeGroupParameters{
-					Tags:    map[string]string{"cool": "tag"},
-					Version: &otherVersion,
-					Labels:  map[string]string{"cool": "label"},
+					Tags:           map[string]string{"cool": "tag"},
+					ReleaseVersion: &releaseVersion,
+					Version:        &otherVersion,
+					Labels:         map[string]string{"cool": "label"},
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					Labels: map[string]string{"cool": "label"},
+					ScalingConfig: &ekstypes.NodegroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+					ReleaseVersion: &releaseVersion,
+					Version:        &version,
+					Tags:           map[string]string{"cool": "tag"},
+				},
+			},
+			want: false,
+		},
+		"UpdateReleaseVersion": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					Tags:           map[string]string{"cool": "tag"},
+					Version:        &version,
+					ReleaseVersion: &otherReleaseVersion,
+					Labels:         map[string]string{"cool": "label"},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
@@ -671,8 +701,23 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MinSize:     &size,
 					},
 					ReleaseVersion: &version,
-					Version:        &version,
+					Version:        &releaseVersion,
 					Tags:           map[string]string{"cool": "tag"},
+				},
+			},
+			want: false,
+		},
+		"UpdateLaunchTemplate": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
 				},
 			},
 			want: false,
@@ -706,9 +751,10 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		"IgnoreDesiredSize": {
 			args: args{
 				p: &manualv1alpha1.NodeGroupParameters{
-					Tags:    map[string]string{"cool": "tag"},
-					Version: &version,
-					Labels:  map[string]string{"cool": "label"},
+					Tags:           map[string]string{"cool": "tag"},
+					ReleaseVersion: &releaseVersion,
+					Version:        &version,
+					Labels:         map[string]string{"cool": "label"},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: nil,
 						MaxSize:     &maxSize,
@@ -722,7 +768,7 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
-					ReleaseVersion: &version,
+					ReleaseVersion: &releaseVersion,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
 				},

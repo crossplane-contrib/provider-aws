@@ -239,8 +239,16 @@ func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nod
 	if !cmp.Equal(p.Version, ng.Version) {
 		return false
 	}
+	if !cmp.Equal(p.ReleaseVersion, ng.ReleaseVersion) {
+		return false
+	}
 	if !cmp.Equal(p.Labels, ng.Labels, cmpopts.EquateEmpty()) {
 		return false
+	}
+	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
+		if !cmp.Equal(p.LaunchTemplate.Version, ng.LaunchTemplate.Version) {
+			return false
+		}
 	}
 	if p.ScalingConfig == nil && ng.ScalingConfig == nil {
 		return true
