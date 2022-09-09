@@ -32,10 +32,10 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb"
-	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticloadbalancing/elb"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticloadbalancing/elb/fake"
 )
 
 var (

@@ -1,0 +1,16 @@
+---
+apiVersion: apigateway.aws.crossplane.io/v1alpha1
+kind: Method
+metadata:
+  name: example
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    restApiIdRef:
+      name: example
+    region: eu-central-1
+    resourceIdRef:
+      name: example
+    httpMethod: GET
+    authorizationType: None
+    operationName: GetExample

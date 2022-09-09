@@ -2,9 +2,12 @@ model_name: amp
 ignore:
   field_paths:
     - CreateWorkspaceInput.ClientToken
-  resource_names:
-    - AlertManagerDefinition
-    - RuleGroupsNamespace
+    - CreateRuleGroupsNamespaceInput.ClientToken
+    - CreateRuleGroupsNamespaceInput.WorkspaceId
+    - DeleteRuleGroupsNamespaceInput.WorkspaceId
+    - CreateAlertManagerDefinitionInput.ClientToken
+    - CreateAlertManagerDefinitionInput.WorkspaceId
+    - DeleteAlertManagerDefinitionInput.WorkspaceId
 resources:
   Workspace:
     fields:

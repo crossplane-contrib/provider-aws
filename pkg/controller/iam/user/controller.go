@@ -23,6 +23,7 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -34,11 +35,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -49,6 +50,8 @@ const (
 	errDelete = "cannot delete the IAM User resource"
 	errUpdate = "cannot update the IAM User resource"
 	errSDK    = "empty IAM User received from IAM API"
+	errTag    = "cannot tag the IAM User resource"
+	errUntag  = "cannot remove tags from the IAM User resource"
 
 	errKubeUpdateFailed = "cannot late initialize IAM User"
 )
@@ -69,6 +72,9 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.UserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				&tagger{kube: mgr.GetClient()}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -128,9 +134,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		UserID: aws.ToString(user.UserId),
 	}
 
+	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
+	for _, v := range cr.Spec.ForProvider.Tags {
+		crTagMap[v.Key] = v.Value
+	}
+	_, _, areTagsUpdated := iam.DiffIAMTags(crTagMap, observed.User.Tags)
+
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path),
+		ResourceExists: true,
+		ResourceUpToDate: aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path) &&
+			areTagsUpdated,
 	}, nil
 }
 
@@ -162,6 +175,38 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		UserName: aws.String(meta.GetExternalName(cr)),
 	})
 
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	}
+
+	observed, err := e.client.GetUser(ctx, &awsiam.GetUserInput{
+		UserName: aws.String(meta.GetExternalName(cr)),
+	})
+
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
+	}
+
+	add, remove, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observed.User.Tags)
+
+	if len(add) > 0 {
+		if _, err := e.client.TagUser(ctx, &awsiam.TagUserInput{
+			UserName: aws.String(meta.GetExternalName(cr)),
+			Tags:     add,
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
+		}
+	}
+
+	if len(remove) > 0 {
+		if _, err := e.client.UntagUser(ctx, &awsiam.UntagUserInput{
+			TagKeys:  remove,
+			UserName: aws.String(meta.GetExternalName(cr)),
+		}); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUntag)
+		}
+	}
+
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
@@ -178,4 +223,37 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1beta1.User)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+
+	added := false
+	defaultTags := resource.GetExternalTags(mgd)
+
+	for i, t := range cr.Spec.ForProvider.Tags {
+		if v, ok := defaultTags[t.Key]; ok {
+			if v != t.Value {
+				cr.Spec.ForProvider.Tags[i].Value = v
+				added = true
+			}
+			delete(defaultTags, t.Key)
+		}
+	}
+
+	for k, v := range defaultTags {
+		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+		added = true
+	}
+	if !added {
+		return nil
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

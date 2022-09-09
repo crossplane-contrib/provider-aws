@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/google/go-cmp/cmp"
 
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // PolicyClient is the external client used for Policy Custom Resource

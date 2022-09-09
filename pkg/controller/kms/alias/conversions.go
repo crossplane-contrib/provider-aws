@@ -15,15 +15,16 @@ limitations under the License.
 */
 
 // NOTE(muvaf): This code ported from ACK-generated code. See details here:
-// https://github.com/crossplane/provider-aws/pull/950#issue-1055573793
+// https://github.com/crossplane-contrib/provider-aws/pull/950#issue-1055573793
 
 package alias
 
 import (
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"errors"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -79,6 +80,6 @@ func GenerateDeleteAliasInput(_ *svcapitypes.Alias) *svcsdk.DeleteAliasInput {
 
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "NotFoundException"
+	var notFoundException *svcsdk.NotFoundException
+	return errors.As(err, &notFoundException)
 }

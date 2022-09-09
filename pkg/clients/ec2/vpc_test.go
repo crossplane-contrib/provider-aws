@@ -6,8 +6,8 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (
@@ -32,6 +32,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 				IsDefault: boolFalse,
 				OwnerID:   vpcOwner,
 				VPCState:  vpcStateAvailable,
+				VPCID:     vpcID,
 			},
 		},
 		"NoOwner": {
@@ -43,6 +44,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
 				VPCState:  vpcStateAvailable,
+				VPCID:     vpcID,
 			},
 		},
 	}

@@ -25,8 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // SubscriptionAttributes refers to AWS SNS Subscription Attributes List

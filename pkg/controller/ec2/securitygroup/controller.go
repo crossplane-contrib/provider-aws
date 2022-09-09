@@ -38,11 +38,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -241,7 +241,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	{
+	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnorIngress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Ingress), response.SecurityGroups[0].IpPermissions)
 		if len(remove) > 0 {
 			if _, err := e.sg.RevokeSecurityGroupIngress(ctx, &awsec2.RevokeSecurityGroupIngressInput{
@@ -261,7 +261,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	{
+	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnorEgress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Egress), response.SecurityGroups[0].IpPermissionsEgress)
 		if len(remove) > 0 {
 			if _, err = e.sg.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{

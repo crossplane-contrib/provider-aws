@@ -24,7 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this Zone

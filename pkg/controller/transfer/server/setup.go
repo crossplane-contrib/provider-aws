@@ -27,10 +27,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/transfer/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupServer adds a controller that reconciles Server.
@@ -120,23 +120,17 @@ func preCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateServ
 
 	if len(cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs) > 0 {
 		obj.EndpointDetails.SecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs))
-		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs {
-			obj.EndpointDetails.SecurityGroupIds[i] = v
-		}
+		copy(obj.EndpointDetails.SecurityGroupIds, cr.Spec.ForProvider.CustomEndpointDetails.SecurityGroupIDs)
 	}
 
 	if len(cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs) > 0 {
 		obj.EndpointDetails.SubnetIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs))
-		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs {
-			obj.EndpointDetails.SubnetIds[i] = v
-		}
+		copy(obj.EndpointDetails.SubnetIds, cr.Spec.ForProvider.CustomEndpointDetails.SubnetIDs)
 	}
 
 	if len(cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs) > 0 {
 		obj.EndpointDetails.AddressAllocationIds = make([]*string, len(cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs))
-		for i, v := range cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs {
-			obj.EndpointDetails.AddressAllocationIds[i] = v
-		}
+		copy(obj.EndpointDetails.AddressAllocationIds, cr.Spec.ForProvider.CustomEndpointDetails.AddressAllocationIDs)
 	}
 
 	if cr.Spec.ForProvider.CustomEndpointDetails.VPCEndpointID != nil {

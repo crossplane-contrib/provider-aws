@@ -16,14 +16,18 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
+)
 
 // CustomGroupParameters includes custom additional fields for GroupParameters.
 type CustomGroupParameters struct {
 	// The role ARN for the group.
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	RoleARN *string `json:"roleArn,omitempty"`
 
 	// UserPoolIDRef is a reference to an server instance.
@@ -118,4 +122,37 @@ type CustomUserPoolClientParameters struct {
 	// UserPoolIDSelector selects references to an server instance.
 	// +optional
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
+}
+
+// CustomResourceServerParameters includes the custom fields of ResourceServerParameters.
+type CustomResourceServerParameters struct {
+	// The user pool ID.
+	// +immutable
+	// +crossplane:generate:reference:type=UserPool
+	UserPoolID *string `json:"userPoolId,omitempty"`
+
+	// UserPoolIDRef is a reference to an server instance.
+	// +optional
+	UserPoolIDRef *xpv1.Reference `json:"userPoolIdRef,omitempty"`
+
+	// UserPoolIDSelector selects references to an server instance.
+	// +optional
+	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
+}
+
+// UserPoolName returns the status.atProvider.name of a UserPool.
+func UserPoolName() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*UserPool)
+		if !ok {
+			return ""
+		}
+
+		if r.Status.AtProvider.ID == nil {
+			return ""
+		}
+
+		return "cognito-idp." + r.Spec.ForProvider.Region + ".amazonaws.com/" + *r.Status.AtProvider.ID
+
+	}
 }

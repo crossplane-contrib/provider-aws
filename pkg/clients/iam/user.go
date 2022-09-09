@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // UserClient is the external client used for IAM User Custom Resource
@@ -17,6 +17,8 @@ type UserClient interface {
 	CreateUser(ctx context.Context, input *iam.CreateUserInput, opts ...func(*iam.Options)) (*iam.CreateUserOutput, error)
 	DeleteUser(ctx context.Context, input *iam.DeleteUserInput, opts ...func(*iam.Options)) (*iam.DeleteUserOutput, error)
 	UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error)
+	TagUser(ctx context.Context, params *iam.TagUserInput, opts ...func(*iam.Options)) (*iam.TagUserOutput, error)
+	UntagUser(ctx context.Context, params *iam.UntagUserInput, opts ...func(*iam.Options)) (*iam.UntagUserOutput, error)
 }
 
 // NewUserClient returns a new client using AWS credentials as JSON encoded data.

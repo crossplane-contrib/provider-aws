@@ -39,10 +39,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/rds"
-	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds/fake"
 )
 
 const (
@@ -57,8 +57,10 @@ var (
 	snapshotSourceType              = "Snapshot"
 	pointInTimeSourceType           = "PointInTime"
 	s3BucketName                    = "database-backup"
+	backupWindow                    = "21:00-23:00"
 	snapshotIdentifier              = "my-snapshot"
 	pointInTimeDBInstanceIdentifier = "my-instance"
+	awsBackupRecoveryPointARN       = "arn:aws:backup:us-east-1:123456789012:recovery-point:1EB3B5E7-9EB-A80B-108B488B0D45"
 	s3Backup                        = v1beta1.RestoreBackupConfiguration{
 		Source: &s3SourceType,
 		S3: &v1beta1.S3RestoreBackupConfiguration{
@@ -154,6 +156,26 @@ func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = &s }
 }
 
+func withDeleteAutomatedBackups(b bool) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.DeleteAutomatedBackups = &b }
+}
+
+func withBackupRetentionPeriod(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.BackupRetentionPeriod = &i }
+}
+
+func withPreferredBackupWindow(s string) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.PreferredBackupWindow = &s }
+}
+
+func withStatusBackupRetentionPeriod(i int) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.BackupRetentionPeriod = i }
+}
+
+func withStatusAWSBackupRecoveryPointARN(s string) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.AWSBackupRecoveryPointARN = s }
+}
+
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	falseFlag := false
 	cr := &v1beta1.RDSInstance{
@@ -238,6 +260,66 @@ func TestObserve(t *testing.T) {
 					withMaxAllocatedStorage(100),
 					withAllocatedStorage(20),
 					withStatusAllocatedStorage(30),
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"AWSBackupManagedBackupRetentionPeriodIsUpToDate": { // Ignore BackupRetentionPeriod if using AWS Backup
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:          aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									BackupRetentionPeriod:     10,
+									AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(1), withStatusBackupRetentionPeriod(1), withStatusAWSBackupRecoveryPointARN(awsBackupRecoveryPointARN)),
+			},
+			want: want{
+				cr: instance(
+					withBackupRetentionPeriod(1),
+					withStatusBackupRetentionPeriod(10),
+					withStatusAWSBackupRecoveryPointARN(awsBackupRecoveryPointARN),
+					withConditions(xpv1.Available()),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
+				},
+			},
+		},
+		"RDSManagedBackupRetentionPeriod": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{
+								{
+									DBInstanceStatus:      aws.String(string(v1beta1.RDSInstanceStateAvailable)),
+									BackupRetentionPeriod: 10,
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(10), withStatusBackupRetentionPeriod(10)),
+			},
+			want: want{
+				cr: instance(
+					withBackupRetentionPeriod(10),
+					withStatusBackupRetentionPeriod(10),
 					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
@@ -678,6 +760,37 @@ func TestUpdate(t *testing.T) {
 				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
 			},
 		},
+		"AWSManagedBackupRetentionTargetIgnore": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						if input.BackupRetentionPeriod != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("BackupRetentionPeriod must not be set when AWS Backup is used")
+						}
+						if input.PreferredBackupWindow != nil {
+							return &awsrds.ModifyDBInstanceOutput{}, errors.New("PreferredBackupWindow must not be set when AWS Backup is used")
+						}
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{
+								BackupRetentionPeriod:     7,
+								PreferredBackupWindow:     &backupWindow,
+								AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
+							}},
+						}, nil
+					},
+					MockAddTags: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
+					},
+				},
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7), withPreferredBackupWindow("x")),
+			},
+			want: want{
+				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7), withPreferredBackupWindow("x")),
+			},
+		},
 		"AlreadyModifying": {
 			args: args{
 				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateModifying)),
@@ -790,6 +903,30 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withConditions(xpv1.Deleting())),
+			},
+		},
+		"SuccessfulWithOptions": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDelete: func(ctx context.Context, input *awsrds.DeleteDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.DeleteDBInstanceOutput, error) {
+						if input.DeleteAutomatedBackups == nil || !*input.DeleteAutomatedBackups {
+							return nil, errors.New("expected DeletedAutomatedBackups to be set")
+						}
+						return &awsrds.DeleteDBInstanceOutput{}, nil
+					},
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{}},
+						}, nil
+					},
+				},
+				cr: instance(withDeleteAutomatedBackups(true)),
+			},
+			want: want{
+				cr: instance(withDeleteAutomatedBackups(true), withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {

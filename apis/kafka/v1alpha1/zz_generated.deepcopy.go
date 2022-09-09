@@ -976,7 +976,9 @@ func (in *CustomBrokerNodeGroupInfo) DeepCopyInto(out *CustomBrokerNodeGroupInfo
 	if in.ClientSubnetRefs != nil {
 		in, out := &in.ClientSubnetRefs, &out.ClientSubnetRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.ClientSubnetSelector != nil {
 		in, out := &in.ClientSubnetSelector, &out.ClientSubnetSelector
@@ -1002,7 +1004,9 @@ func (in *CustomBrokerNodeGroupInfo) DeepCopyInto(out *CustomBrokerNodeGroupInfo
 	if in.SecurityGroupRefs != nil {
 		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupSelector != nil {
 		in, out := &in.SecurityGroupSelector, &out.SecurityGroupSelector
@@ -1062,7 +1066,7 @@ func (in *CustomConfigurationInfo) DeepCopyInto(out *CustomConfigurationInfo) {
 	if in.ARNRef != nil {
 		in, out := &in.ARNRef, &out.ARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ARNSelector != nil {
 		in, out := &in.ARNSelector, &out.ARNSelector

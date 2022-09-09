@@ -1,0 +1,116 @@
+# ---
+# apiVersion: iam.aws.crossplane.io/v1beta1
+# kind: Role
+# metadata:
+#   name: flowlogs-role
+# spec:
+#   forProvider:
+#     assumeRolePolicyDocument: |
+#       {
+#         "Version": "2012-10-17",
+#         "Statement": [
+#           {
+#             "Sid": "",
+#             "Effect": "Allow",
+#             "Principal": {
+#               "Service": "vpc-flow-logs.amazonaws.com"
+#             },
+#             "Action": "sts:AssumeRole"
+#           }
+#         ]
+#       }
+#   providerConfigRef:
+#     name: example
+# ---
+# apiVersion: iam.aws.crossplane.io/v1beta1
+# kind: Policy
+# metadata:
+#   name: flowlogs-policy  
+# spec:
+#   forProvider:
+#     name: flowlogs-policy
+#     document: |
+#       {
+#         "Version": "2012-10-17",
+#         "Statement": [
+#           {
+#             "Action": [
+#               "logs:CreateLogGroup",
+#               "logs:CreateLogStream",
+#               "logs:PutLogEvents",
+#               "logs:DescribeLogGroups",
+#               "logs:DescribeLogStreams"
+#             ],
+#             "Effect": "Allow",
+#             "Resource": "*"
+#           }
+#         ]
+#       }
+#   providerConfigRef:
+#     name: example
+# ---
+# apiVersion: iam.aws.crossplane.io/v1beta1
+# kind: RolePolicyAttachment
+# metadata:
+#   name: flowlogs-policy-attachement 
+# spec:
+#   forProvider:
+#     policyArnRef:
+#       name: flowlogs-policy 
+#     roleNameRef:
+#       name: flowlogs-role
+#   providerConfigRef:
+#     name: example
+
+# ---
+# apiVersion: cloudwatchlogs.aws.crossplane.io/v1alpha1
+# kind: LogGroup
+# metadata:
+#   name: sample-loggroup
+# spec:
+#   forProvider:
+#     logGroupName: /aws/flow-logs-test
+#     region: us-east-1
+#     retentionInDays: 1
+#   providerConfigRef:
+#     name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: FlowLog
+metadata:
+  name: flowlog-example-cloud-watch
+spec:
+  forProvider:
+    region: us-east-1
+    trafficType: ALL
+    deliverLogsPermissionArnRef:
+      name: flowlogs-role
+    cloudWatchLogDestinationRef:
+      name: sample-loggroup
+    vpcId: vpc-0123456789
+    tags: 
+      - key: Name
+        value: example
+  providerConfigRef:
+    name: example
+---
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: FlowLog
+metadata:
+  name: flowlog-example-s3
+spec:
+  forProvider:
+    region: us-east-1
+    trafficType: ALL
+    logDestinationType: s3
+    s3BucketLogDestination: arn:aws:s3:::ctest-bucket
+    s3BucketSubfolder: test/test2
+    vpcId: vpc-0123456789
+    destinationOptions:
+      fileFormat: parquet
+      perHourPartition: true
+    tags: 
+      - key: Name
+        value: example
+  providerConfigRef:
+    name: example

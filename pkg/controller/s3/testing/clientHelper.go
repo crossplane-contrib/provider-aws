@@ -6,9 +6,9 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go"
 
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
-	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 )
 
 // Client creates a MockBucketClient with default request functions and an optional list of
@@ -66,6 +66,12 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		MockDeletePublicAccessBlock: func(ctx context.Context, input *awss3.DeletePublicAccessBlockInput, opts []func(*awss3.Options)) (*awss3.DeletePublicAccessBlockOutput, error) {
 			return &awss3.DeletePublicAccessBlockOutput{}, nil
 		},
+		MockPutBucketOwnershipControls: func(ctx context.Context, input *awss3.PutBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.PutBucketOwnershipControlsOutput, error) {
+			return &awss3.PutBucketOwnershipControlsOutput{}, nil
+		},
+		MockDeleteBucketOwnershipControls: func(ctx context.Context, input *awss3.DeleteBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOwnershipControlsOutput, error) {
+			return &awss3.DeleteBucketOwnershipControlsOutput{}, nil
+		},
 	}
 	for _, v := range m {
 		v(client)
@@ -115,5 +121,19 @@ func WithDeleteSSE(input func(ctx context.Context, input *awss3.DeleteBucketEncr
 func WithPutACL(input func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
 		client.MockPutBucketAcl = input
+	}
+}
+
+// WithPutOwnershipControls sets the MockPutBucketOwnershipControlsRequest of the mock S3 Client
+func WithPutOwnershipControls(input func(ctx context.Context, input *awss3.PutBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.PutBucketOwnershipControlsOutput, error)) ClientModifier {
+	return func(client *fake.MockBucketClient) {
+		client.MockPutBucketOwnershipControls = input
+	}
+}
+
+// WithDeleteOwnershipControls sets the MockDeleteBucketOwnershipControlsRequest of the mock S3 Client
+func WithDeleteOwnershipControls(input func(ctx context.Context, input *awss3.DeleteBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOwnershipControlsOutput, error)) ClientModifier {
+	return func(client *fake.MockBucketClient) {
+		client.MockDeleteBucketOwnershipControls = input
 	}
 }

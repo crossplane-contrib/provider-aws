@@ -36,12 +36,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3/bucket"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -112,7 +112,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
 
-	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr))
+	// get the proper partitionId for the bucket's region
+	resolver := awss3.NewDefaultEndpointResolver()
+	endpoint, err1 := resolver.ResolveEndpoint(cr.Spec.ForProvider.LocationConstraint, awss3.EndpointResolverOptions{})
+	if err1 != nil {
+		return managed.ExternalObservation{}, err1
+	}
+
+	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr), endpoint.PartitionID)
 
 	lateInit := false
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -142,8 +149,22 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 
-	// TODO: smarter updating for the bucket, we dont need to update the ACL every time
-	err := s3.UpdateBucketACL(ctx, e.s3client, cr)
+	// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketAcl.html
+	// If your bucket uses the bucket owner enforced setting for S3 Object
+	// Ownership, ACLs are disabled and no longer affect permissions. You
+	// must use policies to grant access to your bucket and the objects in
+	// it. Requests to set ACLs or update ACLs fail and return the
+	// AccessControlListNotSupported error code.
+	if !s3.BucketHasACLsDisabled(cr) {
+		// TODO: smarter updating for the bucket, we don't need to update the ACL every time
+		err := s3.UpdateBucketACL(ctx, e.s3client, cr)
+		if err != nil {
+			return managed.ExternalObservation{}, err
+		}
+	}
+
+	// TODO: smarter updating for the bucket, we don't need to update the ObjectOwnership every time
+	err := s3.UpdateBucketOwnershipControls(ctx, e.s3client, cr)
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}

@@ -19,7 +19,6 @@ package commonnamespace
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
 	"github.com/pkg/errors"
@@ -32,8 +31,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -174,13 +173,13 @@ func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
 // ActualIsNotFound reimplements IsNotFound which doesn't do it's job
 // IsNotFound test for error code UNKNOWN
 func ActualIsNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && (awsErr.Code() == svcsdk.ErrCodeNamespaceNotFound ||
-		awsErr.Code() == svcsdk.ErrCodeOperationNotFound)
+	var namespaceNotFound *svcsdk.NamespaceNotFound
+	var operationNotFound *svcsdk.OperationNotFound
+	return errors.As(err, &namespaceNotFound) || errors.As(err, &operationNotFound)
 }
 
 // IsDuplicateRequest checks if an error is DuplicateRequest
 func IsDuplicateRequest(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && (awsErr.Code() == svcsdk.ErrCodeDuplicateRequest)
+	var duplicateRequest *svcsdk.DuplicateRequest
+	return errors.As(err, &duplicateRequest)
 }

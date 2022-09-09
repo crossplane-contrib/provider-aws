@@ -76,6 +76,11 @@ type TopicParameters struct {
 	// +optional
 	DeliveryPolicy *string `json:"deliveryPolicy,omitempty"`
 
+	// Whether or not this should be a fifo-topic
+	// +immutable
+	// +optional
+	FifoTopic *bool `json:"fifoTopic,omitempty"`
+
 	// Tags represetnt a list of user-provided metadata that can be associated with a
 	// SNS Topic. For more information about tagging,
 	// see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html)

@@ -28,7 +28,7 @@ import (
 	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
 )
 
 var (

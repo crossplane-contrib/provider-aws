@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -134,7 +134,7 @@ func GenerateTargetGroup(resp *svcsdk.DescribeTargetGroupsOutput) *svcapitypes.T
 		break
 	}
 	if !found {
-		return cr
+		_ = found
 	}
 
 	return cr

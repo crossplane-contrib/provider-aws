@@ -26,8 +26,8 @@ import (
 	route53resolver "github.com/aws/aws-sdk-go-v2/service/route53resolver"
 	route53resolvertypes "github.com/aws/aws-sdk-go-v2/service/route53resolver/types"
 
-	"github.com/crossplane/provider-aws/apis/route53resolver/manualv1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/route53resolver/manualv1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // Client defines AssociateResolverRule operations

@@ -38,8 +38,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
@@ -60,6 +60,7 @@ type Client interface {
 	TagResource(ctx context.Context, input *eks.TagResourceInput, opts ...func(*eks.Options)) (*eks.TagResourceOutput, error)
 	UntagResource(ctx context.Context, input *eks.UntagResourceInput, opts ...func(*eks.Options)) (*eks.UntagResourceOutput, error)
 	UpdateClusterVersion(ctx context.Context, input *eks.UpdateClusterVersionInput, opts ...func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error)
+	AssociateEncryptionConfig(ctx context.Context, params *eks.AssociateEncryptionConfigInput, optFns ...func(*eks.Options)) (*eks.AssociateEncryptionConfigOutput, error)
 
 	DescribeNodegroup(ctx context.Context, input *eks.DescribeNodegroupInput, opts ...func(*eks.Options)) (*eks.DescribeNodegroupOutput, error)
 	CreateNodegroup(ctx context.Context, input *eks.CreateNodegroupInput, opts ...func(*eks.Options)) (*eks.CreateNodegroupOutput, error)
@@ -118,15 +119,7 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	}
 
 	if len(p.EncryptionConfig) > 0 {
-		c.EncryptionConfig = make([]ekstypes.EncryptionConfig, len(p.EncryptionConfig))
-		for i, conf := range p.EncryptionConfig {
-			c.EncryptionConfig[i] = ekstypes.EncryptionConfig{
-				Provider: &ekstypes.Provider{
-					KeyArn: awsclients.String(conf.Provider.KeyArn),
-				},
-				Resources: conf.Resources,
-			}
-		}
+		c.EncryptionConfig = GenerateEncryptionConfig(p)
 	}
 
 	c.ResourcesVpcConfig = &ekstypes.VpcConfigRequest{
@@ -158,6 +151,22 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	return c
 }
 
+// GenerateEncryptionConfig creates the config needed to enable encryption
+func GenerateEncryptionConfig(parameters *v1beta1.ClusterParameters) []ekstypes.EncryptionConfig {
+	encryptionConfig := make([]ekstypes.EncryptionConfig, len(parameters.EncryptionConfig))
+	if len(parameters.EncryptionConfig) > 0 {
+		for i, conf := range parameters.EncryptionConfig {
+			encryptionConfig[i] = ekstypes.EncryptionConfig{
+				Provider: &ekstypes.Provider{
+					KeyArn: awsclients.String(conf.Provider.KeyArn),
+				},
+				Resources: conf.Resources,
+			}
+		}
+	}
+	return encryptionConfig
+}
+
 // CreatePatch creates a *v1beta1.ClusterParameters that has only the changed
 // values between the target *v1beta1.ClusterParameters and the current
 // *ekstypes.Cluster.
@@ -176,26 +185,32 @@ func CreatePatch(in *ekstypes.Cluster, target *v1beta1.ClusterParameters) (*v1be
 	return patch, nil
 }
 
-// GenerateUpdateClusterConfigInput from ClusterParameters.
-func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+// GenerateUpdateClusterConfigInputForLogging from ClusterParameters.
+func GenerateUpdateClusterConfigInputForLogging(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
 	u := &eks.UpdateClusterConfigInput{
 		Name: awsclients.String(name),
 	}
 
-	if p.Logging != nil {
-		u.Logging = &ekstypes.Logging{
-			ClusterLogging: make([]ekstypes.LogSetup, len(p.Logging.ClusterLogging)),
+	u.Logging = &ekstypes.Logging{
+		ClusterLogging: make([]ekstypes.LogSetup, len(p.Logging.ClusterLogging)),
+	}
+	for i, cl := range p.Logging.ClusterLogging {
+		types := make([]ekstypes.LogType, len(cl.Types))
+		for j, t := range cl.Types {
+			types[j] = ekstypes.LogType(t)
 		}
-		for i, cl := range p.Logging.ClusterLogging {
-			types := make([]ekstypes.LogType, len(cl.Types))
-			for j, t := range cl.Types {
-				types[j] = ekstypes.LogType(t)
-			}
-			u.Logging.ClusterLogging[i] = ekstypes.LogSetup{
-				Enabled: cl.Enabled,
-				Types:   types,
-			}
+		u.Logging.ClusterLogging[i] = ekstypes.LogSetup{
+			Enabled: cl.Enabled,
+			Types:   types,
 		}
+	}
+	return u
+}
+
+// GenerateUpdateClusterConfigInputForVPC from ClusterParameters.
+func GenerateUpdateClusterConfigInputForVPC(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+	u := &eks.UpdateClusterConfigInput{
+		Name: awsclients.String(name),
 	}
 
 	// NOTE(muvaf): SecurityGroupIds and SubnetIds cannot be updated. They are

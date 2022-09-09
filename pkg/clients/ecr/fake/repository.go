@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/ecr"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 )
 
 // this ensures that the mock implements the client interface

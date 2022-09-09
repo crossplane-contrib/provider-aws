@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crossplane/provider-aws/apis/sns/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -33,10 +33,13 @@ import (
 
 var (
 	empty             = ""
+	falseFlag         = false
+	trueFlag          = true
 	topicName         = "some-topic"
 	topicDisplayName  = "some-topic-01"
 	topicDisplayName2 = "some-topic-02"
 	topicArn          = "sometopicArn"
+	topicFifo         = true
 	confirmedSubs     = "1"
 	pendingSubs       = "11"
 	deletedSubs       = "12"
@@ -83,6 +86,12 @@ func withTopicSubs(confirmed, pending, deleted string) topicAttrModifier {
 func withAttrDisplayName(s *string) topicAttrModifier {
 	return func(attr *map[string]string) {
 		(*attr)[string(TopicDisplayName)] = *s
+	}
+}
+
+func withAttrFifoTopic(b *bool) topicAttrModifier {
+	return func(attr *map[string]string) {
+		(*attr)[string(TopicFifoTopic)] = strconv.FormatBool(*b)
 	}
 }
 
@@ -140,6 +149,7 @@ func topicParams(m ...func(*v1beta1.TopicParameters)) *v1beta1.TopicParameters {
 		KMSMasterKeyID: &empty,
 		Policy:         &empty,
 		DeliveryPolicy: &empty,
+		FifoTopic:      &trueFlag,
 	}
 
 	for _, f := range m {
@@ -159,7 +169,8 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 		"FilledInput": {
 			in: *topicParams(),
 			out: awssns.CreateTopicInput{
-				Name: aws.String(topicName),
+				Name:       aws.String(topicName),
+				Attributes: map[string]string{"FifoTopic": "true"},
 				Tags: []awssnstypes.Tag{
 					{Key: aws.String(tagKey1), Value: aws.String(tagValue1)},
 					{Key: aws.String(tagKey2), Value: aws.String(tagValue2)},
@@ -213,6 +224,20 @@ func TestGetChangedAttributes(t *testing.T) {
 			},
 			want: topicAttributes(
 				withAttrDisplayName(&topicDisplayName),
+			),
+		},
+		"ChangeFifo": {
+			args: args{
+				p: v1beta1.TopicParameters{
+					Name:      topicName,
+					FifoTopic: &trueFlag,
+				},
+				attr: topicAttributes(
+					withAttrFifoTopic(&falseFlag),
+				),
+			},
+			want: topicAttributes(
+				withAttrFifoTopic(&trueFlag),
 			),
 		},
 	}
@@ -287,9 +312,11 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 			args: args{
 				attr: topicAttributes(
 					withAttrDisplayName(&topicDisplayName),
+					withAttrFifoTopic(&topicFifo),
 				),
 				p: v1beta1.TopicParameters{
 					DisplayName: &topicDisplayName,
+					FifoTopic:   &topicFifo,
 				},
 			},
 			want: true,

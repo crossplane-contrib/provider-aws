@@ -67,6 +67,12 @@ type SecurityGroupParameters struct {
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
 	// +optional
 	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
+
+	// Dont manage the ingress settings for the created resource
+	IgnorIngress *bool `json:"ignoreIngress,omitempty"`
+
+	// Dont manage the egress settings for the created resource
+	IgnorEgress *bool `json:"ignoreEgress,omitempty"`
 }
 
 // IPRange describes an IPv4 range.
@@ -125,6 +131,7 @@ type UserIDGroupPair struct {
 
 	// The ID of the security group.
 	// +optional
+	// +crossplane:generate:reference:type=SecurityGroup
 	GroupID *string `json:"groupId,omitempty"`
 
 	// GroupIDRef reference a security group to retrieve its GroupID

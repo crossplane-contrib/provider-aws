@@ -121,7 +121,7 @@ func (in *SubscriptionParameters) DeepCopyInto(out *SubscriptionParameters) {
 	if in.TopicARNRef != nil {
 		in, out := &in.TopicARNRef, &out.TopicARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TopicARNSelector != nil {
 		in, out := &in.TopicARNSelector, &out.TopicARNSelector
@@ -329,6 +329,11 @@ func (in *TopicParameters) DeepCopyInto(out *TopicParameters) {
 	if in.DeliveryPolicy != nil {
 		in, out := &in.DeliveryPolicy, &out.DeliveryPolicy
 		*out = new(string)
+		**out = **in
+	}
+	if in.FifoTopic != nil {
+		in, out := &in.FifoTopic, &out.FifoTopic
+		*out = new(bool)
 		**out = **in
 	}
 	if in.Tags != nil {

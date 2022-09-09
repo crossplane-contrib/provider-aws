@@ -62,7 +62,7 @@ type NodeGroupParameters struct {
 	//
 	// ClusterName is a required field
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/eks/v1beta1.Cluster
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1.Cluster
 	ClusterName string `json:"clusterName,omitempty"`
 
 	// ClusterNameRef is a reference to a Cluster used to set
@@ -116,8 +116,8 @@ type NodeGroupParameters struct {
 	//
 	// NodeRole is a required field
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	NodeRole string `json:"nodeRole,omitempty"`
 
 	// NodeRoleRef is a reference to a Cluster used to set the NodeRole.
@@ -156,7 +156,7 @@ type NodeGroupParameters struct {
 	//
 	// Subnets is a required field
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetSelector
 	Subnets []string `json:"subnets,omitempty"`
@@ -224,7 +224,7 @@ type LaunchTemplateSpecification struct {
 	ID *string `json:"id,omitempty"`
 
 	// The name of the launch template.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1.LaunchTemplate
 	Name *string `json:"name,omitempty"`
 
 	// NameRef is a reference to a LaunchTemplate used to set
@@ -240,7 +240,7 @@ type LaunchTemplateSpecification struct {
 
 	// The version of the launch template to use. If no version is specified, then the
 	// template's default version is used.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1alpha1.LaunchTemplateVersion
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1.LaunchTemplateVersion
 	Version *string `json:"version,omitempty"`
 
 	// VersionRef is a reference to a LaunchTemplateVersion used to set
@@ -270,7 +270,7 @@ type RemoteAccessConfig struct {
 	// Groups for Your VPC (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html)
 	// in the Amazon Virtual Private Cloud User Guide.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SourceSecurityGroupRefs
 	// +crossplane:generate:reference:selectorFieldName=SourceSecurityGroupSelector
 	SourceSecurityGroups []string `json:"sourceSecurityGroups,omitempty"`

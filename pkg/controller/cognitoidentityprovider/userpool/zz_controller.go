@@ -34,8 +34,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -418,7 +418,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f22.ExternalID = resp.UserPool.SmsConfiguration.ExternalId
 		}
 		if resp.UserPool.SmsConfiguration.SnsCallerArn != nil {
-			f22.SnsCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
+			f22.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
 		}
 		cr.Spec.ForProvider.SmsConfiguration = f22
 	} else {

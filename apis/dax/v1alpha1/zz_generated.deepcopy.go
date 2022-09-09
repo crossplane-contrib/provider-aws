@@ -429,7 +429,7 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 	if in.IAMRoleARNRef != nil {
 		in, out := &in.IAMRoleARNRef, &out.IAMRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.IAMRoleARNSelector != nil {
 		in, out := &in.IAMRoleARNSelector, &out.IAMRoleARNSelector
@@ -444,7 +444,7 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 	if in.ParameterGroupNameRef != nil {
 		in, out := &in.ParameterGroupNameRef, &out.ParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ParameterGroupNameSelector != nil {
 		in, out := &in.ParameterGroupNameSelector, &out.ParameterGroupNameSelector
@@ -459,7 +459,7 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 	if in.SubnetGroupNameRef != nil {
 		in, out := &in.SubnetGroupNameRef, &out.SubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetGroupNameSelector != nil {
 		in, out := &in.SubnetGroupNameSelector, &out.SubnetGroupNameSelector
@@ -480,7 +480,9 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -542,7 +544,9 @@ func (in *CustomSubnetGroupParameters) DeepCopyInto(out *CustomSubnetGroupParame
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

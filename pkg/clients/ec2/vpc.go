@@ -9,8 +9,8 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -64,6 +64,7 @@ func GenerateVpcObservation(vpc ec2types.Vpc) v1beta1.VPCObservation {
 		DHCPOptionsID: aws.ToString(vpc.DhcpOptionsId),
 		OwnerID:       aws.ToString(vpc.OwnerId),
 		VPCState:      string(vpc.State),
+		VPCID:         aws.ToString(vpc.VpcId),
 	}
 
 	if len(vpc.CidrBlockAssociationSet) > 0 {

@@ -2,21 +2,76 @@
 apiVersion: glue.aws.crossplane.io/v1alpha1
 kind: Connection
 metadata:
-  name: glue-connection
+  name: glue-connection-jdbc
 spec:
   forProvider:
     region: us-east-1
-    connectionInput: 
+    connectionInput:
       connectionType: JDBC
       connectionProperties:
         JDBC_CONNECTION_URL: "jdbc:mysql://example.com:3306/exampledatabase"
-        USERNAME: "test"
-        PASSWORD: "test"
+        USERNAME: "sampleUser"
+        PASSWORD: "samplePWD!"
+      description: "sample text"
+      matchCriteria:
+        - "filtermatchid123"
+        - "jdbc1"
       physicalConnectionRequirements:
-        availabilityZone: us-east-1a
-        subnetIDRef:
+        availabilityZone: us-east-1b
+        subnetIdRef:
           name: sample-subnet1
-        securityGroupIDRefs:
+        securityGroupIdRefs:
           - name: sample-cluster-sg
+    tags:
+      connec: "tion"
+      cType: "my-JDBC-connection"
+  providerConfigRef:
+    name: example
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  name: glue-connection-mongodb
+spec:
+  forProvider:
+    region: us-east-1
+    connectionInput:
+      connectionType: MONGODB
+      connectionProperties:
+        CONNECTION_URL: "mongodb://example.com:3306/exampledatabase"
+        USERNAME: "user"
+        PASSWORD: "password!"
+      physicalConnectionRequirements:
+        availabilityZone: us-east-1b
+        subnetIdRef:
+          name: sample-subnet1
+        securityGroupIdRefs:
+          - name: sample-cluster-sg
+    tags:
+      connec: "tion"
+      cType: "my-MONGODB-connection"
+  providerConfigRef:
+    name: example
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  name: glue-connection-network
+spec:
+  forProvider:
+    region: us-east-1
+    connectionInput:
+      connectionType: NETWORK
+      connectionProperties:
+        JDBC_ENFORCE_SSL: "false"
+      physicalConnectionRequirements:
+        availabilityZone: us-east-1b
+        subnetIdRef:
+          name: sample-subnet1
+        securityGroupIdRefs:
+          - name: sample-cluster-sg
+    tags:
+      connec: "tion"
+      cType: "my-NETWORK-connection"
   providerConfigRef:
     name: example

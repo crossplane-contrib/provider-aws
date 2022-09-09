@@ -34,10 +34,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
 )
 
 var (
@@ -459,7 +459,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type args struct {
-		cr   *v1beta1.Role
+		cr   resource.Managed
 		kube client.Client
 	}
 	type want struct {
@@ -471,6 +471,15 @@ func TestInitialize(t *testing.T) {
 		args
 		want
 	}{
+		"Unexpected": {
+			args: args{
+				cr:   unexpectedItem,
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				err: errors.New(errUnexpectedObject),
+			},
+		},
 		"Successful": {
 			args: args{
 				cr:   role(withTags(map[string]string{"foo": "bar"})),
@@ -480,13 +489,43 @@ func TestInitialize(t *testing.T) {
 				cr: role(withTags(resource.GetExternalTags(role()), map[string]string{"foo": "bar"})),
 			},
 		},
-		"Check Tag values": {
+		"DefaultTags": {
 			args: args{
 				cr:   role(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
 			want: want{
 				cr: role(withTags(resource.GetExternalTags(role(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
+			},
+		},
+		"UpdateDefaultTags": {
+			args: args{
+				cr: role(
+					withRoleName(&roleName),
+					withGroupVersionKind(),
+					withTags(map[string]string{resource.ExternalResourceTagKeyKind: "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: role(
+					withRoleName(&roleName),
+					withGroupVersionKind(),
+					withTags(resource.GetExternalTags(role(withRoleName(&roleName), withGroupVersionKind())))),
+			},
+		},
+		"NoChange": {
+			args: args{
+				cr: role(
+					withRoleName(&roleName),
+					withGroupVersionKind(),
+					withTags(resource.GetExternalTags(role(withRoleName(&roleName), withGroupVersionKind())))),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: role(
+					withRoleName(&roleName),
+					withGroupVersionKind(),
+					withTags(resource.GetExternalTags(role(withRoleName(&roleName), withGroupVersionKind())))),
 			},
 		},
 		"UpdateFailed": {

@@ -6,11 +6,21 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    roleArnRef:
+    ## Defined in examples/glue/gluerole.yaml
+    roleRef:
       name: glue-role
     command: 
-      name: "test.py"
+      name: "glueetl"
       pythonVersion: "3"
-      scriptLocation: "s3://aws-glue-crossplane-us-east-1/scripts"
+      scriptLocation: "s3://aws-glue-crossplane-us-east-1/scripts/sparketljob1.py"
+    defaultArguments:
+      jobarg1: "default1"
+    description: "could be a tweet, could be a novel"
+    nonOverridableArguments:
+      jobarg2: "constant2"
+    notificationProperty:
+      notifyDelayAfter: 5
+    tags:
+      job: "definition1"
   providerConfigRef:
     name: example

@@ -318,7 +318,7 @@ func (in *CustomAccessPointParameters) DeepCopyInto(out *CustomAccessPointParame
 	if in.FileSystemIDRef != nil {
 		in, out := &in.FileSystemIDRef, &out.FileSystemIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.FileSystemIDSelector != nil {
 		in, out := &in.FileSystemIDSelector, &out.FileSystemIDSelector
@@ -348,7 +348,7 @@ func (in *CustomFileSystemParameters) DeepCopyInto(out *CustomFileSystemParamete
 	if in.KMSKeyIDRef != nil {
 		in, out := &in.KMSKeyIDRef, &out.KMSKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyIDSelector != nil {
 		in, out := &in.KMSKeyIDSelector, &out.KMSKeyIDSelector
@@ -378,7 +378,9 @@ func (in *CustomMountTargetParameters) DeepCopyInto(out *CustomMountTargetParame
 	if in.SecurityGroupsRefs != nil {
 		in, out := &in.SecurityGroupsRefs, &out.SecurityGroupsRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupsSelector != nil {
 		in, out := &in.SecurityGroupsSelector, &out.SecurityGroupsSelector
@@ -393,7 +395,7 @@ func (in *CustomMountTargetParameters) DeepCopyInto(out *CustomMountTargetParame
 	if in.FileSystemIDRef != nil {
 		in, out := &in.FileSystemIDRef, &out.FileSystemIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.FileSystemIDSelector != nil {
 		in, out := &in.FileSystemIDSelector, &out.FileSystemIDSelector
@@ -408,7 +410,7 @@ func (in *CustomMountTargetParameters) DeepCopyInto(out *CustomMountTargetParame
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

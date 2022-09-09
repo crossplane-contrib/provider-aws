@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/s3"
+	clientset "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 )
 
 // this ensures that the mock implements the client interface
@@ -81,6 +81,10 @@ type MockBucketClient struct {
 	MockGetPublicAccessBlock    func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
 	MockPutPublicAccessBlock    func(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error)
 	MockDeletePublicAccessBlock func(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts []func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error)
+
+	MockGetBucketOwnershipControls    func(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
+	MockPutBucketOwnershipControls    func(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
+	MockDeleteBucketOwnershipControls func(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
 }
 
 // HeadBucket is the fake method call to invoke the internal mock method
@@ -271,4 +275,19 @@ func (m MockBucketClient) PutPublicAccessBlock(ctx context.Context, input *s3.Pu
 // DeletePublicAccessBlock is the fake method call to invoke the internal mock method
 func (m MockBucketClient) DeletePublicAccessBlock(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error) {
 	return m.MockDeletePublicAccessBlock(ctx, input, opts)
+}
+
+// GetBucketOwnershipControls is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetBucketOwnershipControls(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error) {
+	return m.MockGetBucketOwnershipControls(ctx, input, opts)
+}
+
+// PutBucketOwnershipControls is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutBucketOwnershipControls(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error) {
+	return m.MockPutBucketOwnershipControls(ctx, input, opts)
+}
+
+// DeleteBucketOwnershipControls is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeleteBucketOwnershipControls(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error) {
+	return m.MockDeleteBucketOwnershipControls(ctx, input, opts)
 }

@@ -144,7 +144,7 @@ func (in *AliasParameters) DeepCopyInto(out *AliasParameters) {
 	if in.TargetKeyIDRef != nil {
 		in, out := &in.TargetKeyIDRef, &out.TargetKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetKeyIDSelector != nil {
 		in, out := &in.TargetKeyIDSelector, &out.TargetKeyIDSelector
@@ -208,6 +208,11 @@ func (in *CustomKeyParameters) DeepCopyInto(out *CustomKeyParameters) {
 	if in.PendingWindowInDays != nil {
 		in, out := &in.PendingWindowInDays, &out.PendingWindowInDays
 		*out = new(int64)
+		**out = **in
+	}
+	if in.EnableKeyRotation != nil {
+		in, out := &in.EnableKeyRotation, &out.EnableKeyRotation
+		*out = new(bool)
 		**out = **in
 	}
 }

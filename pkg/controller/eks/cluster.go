@@ -34,11 +34,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -189,11 +189,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errPatchCreationFailed)
 	}
+	if patch.EncryptionConfig != nil {
+		_, err := e.client.AssociateEncryptionConfig(ctx, &awseks.AssociateEncryptionConfigInput{
+			ClusterName:      awsclient.String(meta.GetExternalName(cr)),
+			EncryptionConfig: eks.GenerateEncryptionConfig(&cr.Spec.ForProvider),
+		})
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+	}
 	if patch.Version != nil {
 		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: awsclient.String(meta.GetExternalName(cr)), Version: patch.Version})
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
-	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch))
+	if patch.Logging != nil {
+		_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForLogging(meta.GetExternalName(cr), patch))
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+	}
+	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForVPC(meta.GetExternalName(cr), patch))
 	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 

@@ -9,9 +9,9 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -130,14 +130,17 @@ func IsSGUpToDate(sg v1beta1.SecurityGroupParameters, observed ec2types.Security
 		return false
 	}
 
-	add, remove := DiffPermissions(GenerateEC2Permissions(sg.Ingress), observed.IpPermissions)
-	if len(add) > 0 || len(remove) > 0 {
-		return false
+	if !awsclients.BoolValue(sg.IgnorIngress) {
+		add, remove := DiffPermissions(GenerateEC2Permissions(sg.Ingress), observed.IpPermissions)
+		if len(add) > 0 || len(remove) > 0 {
+			return false
+		}
 	}
-
-	add, remove = DiffPermissions(GenerateEC2Permissions(sg.Egress), observed.IpPermissionsEgress)
-	if len(add) > 0 || len(remove) > 0 {
-		return false
+	if !awsclients.BoolValue(sg.IgnorEgress) {
+		add, remove := DiffPermissions(GenerateEC2Permissions(sg.Egress), observed.IpPermissionsEgress)
+		if len(add) > 0 || len(remove) > 0 {
+			return false
+		}
 	}
 	return true
 }

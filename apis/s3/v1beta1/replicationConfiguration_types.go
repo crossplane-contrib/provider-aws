@@ -30,8 +30,8 @@ type ReplicationConfiguration struct {
 	//
 	// At least one of role, roleRef or roleSelector fields is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	Role *string `json:"role,omitempty"`
 
 	// RoleRef references an IAMRole to retrieve its Name
@@ -209,7 +209,7 @@ type EncryptionConfiguration struct {
 	// supports symmetric customer managed CMKs. For more information, see Using
 	// Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 	// in the AWS Key Management Service Developer Guide.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	ReplicaKmsKeyID *string `json:"replicaKmsKeyId"`
 
 	// ReplicaKmsKeyIDRef references an KMSKey to retrieve its ID
@@ -303,11 +303,11 @@ type ReplicationRuleFilter struct {
 //
 // For example:
 //
-//    * If you specify both a Prefix and a Tag filter, wrap these filters in
-//    an And tag.
+//   - If you specify both a Prefix and a Tag filter, wrap these filters in
+//     an And tag.
 //
-//    * If you specify a filter based on multiple tags, wrap the Tag elements
-//    in an And tag
+//   - If you specify a filter based on multiple tags, wrap the Tag elements
+//     in an And tag
 type ReplicationRuleAndOperator struct {
 	// An object key name prefix that identifies the subset of objects to which
 	// the rule applies.

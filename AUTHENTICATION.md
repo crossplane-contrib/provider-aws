@@ -448,7 +448,7 @@ $ cat > trust.yaml <<EOF
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::${PROVIDER_POD_AWS_ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
+        "Federated": "arn:aws:iam::${TARGET_AWS_ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {

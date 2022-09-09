@@ -73,8 +73,18 @@ spec:
                       connectionProperties:
                         additionalProperties:
                           type: string
-                        description: These key-value pairs define parameters for the
-                          connection.
+                        description: "These key-value pairs define parameters for
+                          the connection. Possible keys for connection properties:
+                          \"HOST\"|\"PORT\"|\"USERNAME\"|\"PASSWORD\"|\"ENCRYPTED_PASSWORD\"|\"JDBC_DRIVER_JAR_URI\"
+                          \"JDBC_DRIVER_CLASS_NAME\"|\"JDBC_ENGINE\"|\"JDBC_ENGINE_VERSION\"|\"CONFIG_FILES\"
+                          \"INSTANCE_ID\"|\"JDBC_CONNECTION_URL\"|\"JDBC_ENFORCE_SSL\"|\"CUSTOM_JDBC_CERT\"
+                          \"SKIP_CUSTOM_JDBC_CERT_VALIDATION\"|\"CUSTOM_JDBC_CERT_STRING\"|\"CONNECTION_URL\"
+                          \"KAFKA_BOOTSTRAP_SERVERS\"|\"KAFKA_SSL_ENABLED\"|\"KAFKA_CUSTOM_CERT\"
+                          \"KAFKA_SKIP_CUSTOM_CERT_VALIDATION\"|\"KAFKA_CLIENT_KEYSTORE\"
+                          \"KAFKA_CLIENT_KEYSTORE_PASSWORD\"|\"KAFKA_CLIENT_KEY_PASSWORD\"
+                          \"ENCRYPTED_KAFKA_CLIENT_KEYSTORE_PASSWORD\"|\"ENCRYPTED_KAFKA_CLIENT_KEY_PASSWORD\"
+                          \"SECRET_ID\"|\"CONNECTOR_URL\"|\"CONNECTOR_TYPE\"|\"CONNECTOR_CLASS_NAME\"
+                          \n ConnectionProperties is a required field"
                         type: object
                       connectionType:
                         description: "The type of the connection. Currently, these
@@ -84,7 +94,21 @@ spec:
                           streaming platform. \n * MONGODB - Designates a connection
                           to a MongoDB document database. \n * NETWORK - Designates
                           a network connection to a data source within an Amazon Virtual
-                          Private Cloud environment (Amazon VPC)."
+                          Private Cloud environment (Amazon VPC). \n * MARKETPLACE
+                          - Uses configuration settings contained in a connector purchased
+                          from Amazon Web Services Marketplace to read from and write
+                          to data stores that are not natively supported by Glue.
+                          \n * CUSTOM - Uses configuration settings contained in a
+                          custom connector to read from and write to data stores that
+                          are not natively supported by Glue. \n SFTP is not supported.
+                          \n ConnectionType is a required field"
+                        enum:
+                        - JDBC
+                        - KAFKA
+                        - MONGODB
+                        - NETWORK
+                        - MARKETPLACE
+                        - CUSTOM
                         type: string
                       description:
                         description: The description of the connection.
@@ -99,12 +123,17 @@ spec:
                         description: Specifies the physical requirements for a connection.
                         properties:
                           availabilityZone:
+                            description: The connection's Availability Zone. This
+                              field is redundant because the specified subnet implies
+                              the Availability Zone to be used. Currently the field
+                              must be populated, but it will be removed in the future.
                             type: string
-                          securityGroupIDList:
+                          securityGroupIdList:
+                            description: The security group ID list used by the connection.
                             items:
                               type: string
                             type: array
-                          securityGroupIDRefs:
+                          securityGroupIdRefs:
                             description: SecurityGroupIDRefs are references to SecurityGroups
                               used to set the SecurityGroupIDs.
                             items:
@@ -113,11 +142,38 @@ spec:
                                 name:
                                   description: Name of the referenced object.
                                   type: string
+                                policy:
+                                  description: Policies for referencing.
+                                  properties:
+                                    resolution:
+                                      default: Required
+                                      description: Resolution specifies whether resolution
+                                        of this reference is required. The default
+                                        is 'Required', which means the reconcile will
+                                        fail if the reference cannot be resolved.
+                                        'Optional' means this reference will be a
+                                        no-op if it cannot be resolved.
+                                      enum:
+                                      - Required
+                                      - Optional
+                                      type: string
+                                    resolve:
+                                      description: Resolve specifies when this reference
+                                        should be resolved. The default is 'IfNotPresent',
+                                        which will attempt to resolve the reference
+                                        only when the corresponding field is not present.
+                                        Use 'Always' to resolve the reference on every
+                                        reconcile.
+                                      enum:
+                                      - Always
+                                      - IfNotPresent
+                                      type: string
+                                  type: object
                               required:
                               - name
                               type: object
                             type: array
-                          securityGroupIDSelector:
+                          securityGroupIdSelector:
                             description: SecurityGroupIDSelector selects references
                               to SecurityGroups used to set the SecurityGroupIDs.
                             properties:
@@ -132,20 +188,77 @@ spec:
                                 description: MatchLabels ensures an object with matching
                                   labels is selected.
                                 type: object
+                              policy:
+                                description: Policies for selection.
+                                properties:
+                                  resolution:
+                                    default: Required
+                                    description: Resolution specifies whether resolution
+                                      of this reference is required. The default is
+                                      'Required', which means the reconcile will fail
+                                      if the reference cannot be resolved. 'Optional'
+                                      means this reference will be a no-op if it cannot
+                                      be resolved.
+                                    enum:
+                                    - Required
+                                    - Optional
+                                    type: string
+                                  resolve:
+                                    description: Resolve specifies when this reference
+                                      should be resolved. The default is 'IfNotPresent',
+                                      which will attempt to resolve the reference
+                                      only when the corresponding field is not present.
+                                      Use 'Always' to resolve the reference on every
+                                      reconcile.
+                                    enum:
+                                    - Always
+                                    - IfNotPresent
+                                    type: string
+                                type: object
                             type: object
-                          subnetID:
+                          subnetId:
+                            description: The subnet ID used by the connection.
                             type: string
-                          subnetIDRef:
-                            description: A Reference to a named object.
+                          subnetIdRef:
+                            description: SubnetIDRef is a reference to SubnetID used
+                              to set the SubnetID.
                             properties:
                               name:
                                 description: Name of the referenced object.
                                 type: string
+                              policy:
+                                description: Policies for referencing.
+                                properties:
+                                  resolution:
+                                    default: Required
+                                    description: Resolution specifies whether resolution
+                                      of this reference is required. The default is
+                                      'Required', which means the reconcile will fail
+                                      if the reference cannot be resolved. 'Optional'
+                                      means this reference will be a no-op if it cannot
+                                      be resolved.
+                                    enum:
+                                    - Required
+                                    - Optional
+                                    type: string
+                                  resolve:
+                                    description: Resolve specifies when this reference
+                                      should be resolved. The default is 'IfNotPresent',
+                                      which will attempt to resolve the reference
+                                      only when the corresponding field is not present.
+                                      Use 'Always' to resolve the reference on every
+                                      reconcile.
+                                    enum:
+                                    - Always
+                                    - IfNotPresent
+                                    type: string
+                                type: object
                             required:
                             - name
                             type: object
-                          subnetIDSelector:
-                            description: A Selector selects an object.
+                          subnetIdSelector:
+                            description: SubnetIDSelector selects a reference to SubnetID
+                              used to set the SubnetID.
                             properties:
                               matchControllerRef:
                                 description: MatchControllerRef ensures an object
@@ -158,8 +271,38 @@ spec:
                                 description: MatchLabels ensures an object with matching
                                   labels is selected.
                                 type: object
+                              policy:
+                                description: Policies for selection.
+                                properties:
+                                  resolution:
+                                    default: Required
+                                    description: Resolution specifies whether resolution
+                                      of this reference is required. The default is
+                                      'Required', which means the reconcile will fail
+                                      if the reference cannot be resolved. 'Optional'
+                                      means this reference will be a no-op if it cannot
+                                      be resolved.
+                                    enum:
+                                    - Required
+                                    - Optional
+                                    type: string
+                                  resolve:
+                                    description: Resolve specifies when this reference
+                                      should be resolved. The default is 'IfNotPresent',
+                                      which will attempt to resolve the reference
+                                      only when the corresponding field is not present.
+                                      Use 'Always' to resolve the reference on every
+                                      reconcile.
+                                    enum:
+                                    - Always
+                                    - IfNotPresent
+                                    type: string
+                                type: object
                             type: object
                         type: object
+                    required:
+                    - connectionProperties
+                    - connectionType
                     type: object
                   region:
                     description: Region is which region the Connection will be created.
@@ -183,6 +326,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -194,6 +362,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -213,6 +406,31 @@ spec:
                       name:
                         description: Name of the referenced object.
                         type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
                     required:
                     - name
                     type: object
@@ -274,6 +492,20 @@ spec:
             properties:
               atProvider:
                 description: ConnectionObservation defines the observed state of Connection
+                properties:
+                  creationTime:
+                    description: The time that this connection definition was created.
+                    format: date-time
+                    type: string
+                  lastUpdatedBy:
+                    description: The user, group, or role that last updated this connection
+                      definition.
+                    type: string
+                  lastUpdatedTime:
+                    description: The last time that this connection definition was
+                      updated.
+                    format: date-time
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

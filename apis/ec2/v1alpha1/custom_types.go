@@ -35,7 +35,7 @@ type CustomVPCEndpointServiceConfigurationParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 
 	// The Amazon Resource Names (ARNs) of one or more Gateway Load Balancers.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
 	// +crossplane:generate:reference:refFieldName=GatewayLoadBalancerARNRefs
 	// +crossplane:generate:reference:selectorFieldName=GatewayLoadBalancerARNSelector
 	GatewayLoadBalancerARNs []*string `json:"gatewayLoadBalancerARNs,omitempty"`
@@ -52,7 +52,7 @@ type CustomVPCEndpointServiceConfigurationParameters struct {
 
 	// The Amazon Resource Names (ARNs) of one or more Network Load Balancers for
 	// your service.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1.LoadBalancer
 	// +crossplane:generate:reference:refFieldName=NetworkLoadBalancerARNRefs
 	// +crossplane:generate:reference:selectorFieldName=NetworkLoadBalancerARNSelector
 	NetworkLoadBalancerARNs []*string `json:"networkLoadBalancerARNs,omitempty"`
@@ -115,7 +115,7 @@ type CustomVolumeParameters struct {
 	// alias, or ARN that is not valid, the action can appear to complete, but eventually
 	// fails.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/kms/v1alpha1.Key
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1.Key
 	// +crossplane:generate:reference:refFieldName=KMSKeyIDRef
 	// +crossplane:generate:reference:selectorFieldName=KMSKeyIDSelector
 	KMSKeyID *string `json:"kmsKeyId,omitempty"`
@@ -132,7 +132,7 @@ type CustomVolumeParameters struct {
 // CustomVPCPeeringConnectionParameters are custom parameters for VPCPeeringConnection
 type CustomVPCPeeringConnectionParameters struct {
 	// The ID of the requester VPC. You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
 	VPCID *string `json:"vpcID,omitempty"`
 	// VPCIDRef is a reference to an API used to set
 	// the VPCID.
@@ -144,7 +144,7 @@ type CustomVPCPeeringConnectionParameters struct {
 	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
 	// The ID of the VPC with which you are creating the VPC peering connection.
 	// You must specify this parameter in the request.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
 	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// PeerVPCIDRef is a reference to an API used to set
 	// the PeerVPCID.
@@ -175,7 +175,7 @@ type CustomTransitGatewayParameters struct {
 type CustomTransitGatewayVPCAttachmentParameters struct {
 	// The ID of the VPC.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef is a reference to an API used to set
@@ -193,7 +193,7 @@ type CustomTransitGatewayVPCAttachmentParameters struct {
 	// two subnets for better availability. The transit gateway uses one IP address
 	// from each specified subnet.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []*string `json:"subnetIds,omitempty"`
@@ -247,7 +247,7 @@ type CustomRouteParameters struct {
 
 	// [IPv4 traffic only] The ID of a NAT gateway.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.NATGateway
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.NATGateway
 	NATGatewayID *string `json:"natGatewayId,omitempty"`
 
 	// NATGatewayIDRef is a reference to an API used to set
@@ -281,7 +281,7 @@ type CustomRouteParameters struct {
 	// in conjunction with any Route resources.
 	// Set the flag ignoreRoutes=true in RouteTable to use Route resource
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.RouteTable
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.RouteTable
 	RouteTableID *string `json:"routeTableId,omitempty"`
 
 	// RouteTableIDRef is a reference to an API used to set
@@ -297,7 +297,7 @@ type CustomRouteParameters struct {
 	// The ID of a NAT instance in your VPC. The operation fails if you specify
 	// an instance ID unless exactly one network interface is attached.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1.Instance
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1.Instance
 	InstanceID *string `json:"instanceId,omitempty"`
 
 	// InstanceIDRef is a reference to an API used to set
@@ -312,7 +312,7 @@ type CustomRouteParameters struct {
 
 	// The ID of an internet gateway attached to your VPC.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.InternetGateway
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.InternetGateway
 	GatewayID *string `json:"gatewayId,omitempty"`
 
 	// GatewayIDRef is a reference to an API used to set
@@ -330,7 +330,7 @@ type CustomRouteParameters struct {
 type CustomVPCEndpointParameters struct {
 	// The ID of the VPC. You must specify this parameter in the request.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef is a reference to an API used to set
@@ -345,7 +345,7 @@ type CustomVPCEndpointParameters struct {
 
 	// (Interface endpoint) The ID of one or more security groups to associate with
 	// the endpoint network interface.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []*string `json:"securityGroupIds,omitempty"`
@@ -363,7 +363,7 @@ type CustomVPCEndpointParameters struct {
 	// (Interface and Gateway Load Balancer endpoints) The ID of one or more subnets
 	// in which to create an endpoint network interface. For a Gateway Load Balancer
 	// endpoint, you can specify one subnet only.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
 	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []*string `json:"subnetIds,omitempty"`
@@ -379,7 +379,7 @@ type CustomVPCEndpointParameters struct {
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// (Gateway endpoint) One or more route table IDs.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.RouteTable
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.RouteTable
 	// +crossplane:generate:reference:refFieldName=RouteTableIDRefs
 	// +crossplane:generate:reference:selectorFieldName=RouteTableIDSelector
 	RouteTableIDs []*string `json:"routeTableIds,omitempty"`
@@ -448,4 +448,136 @@ type CustomTransitGatewayRouteTableParameters struct {
 	// Metadata tagging key value pairs
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
+}
+
+// CustomFlowLogParameters are custom parameters for FlowLogParameters
+type CustomFlowLogParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+	// The ID of the subnet, network interface, or VPC for which you want to create
+	// a flow log.
+	//
+	// Constraints: Maximum of 1000 resources
+	// +optional
+	ResourceIDs []*string `json:"resourceIDs"`
+	// The type of resource for which to create the flow log. For example, if you
+	// specified a VPC ID for the ResourceId property, specify VPC for this property.
+	// +optional
+	ResourceType *string `json:"resourceType"`
+	// The ID of the VPC for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
+	VPCID *string `json:"vpcId,omitempty"`
+	// VPCIDRef is a reference to an API used to set
+	// the VPCID.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
+	// VPCIDSelector selects references to API used
+	// to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
+
+	// The ID of the TransitGateway for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGateway
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// TransitGatewayIDRef is a reference to an API used to set
+	// the TransitGatewayID.
+	// +optional
+	TransitGatewayIDRef *xpv1.Reference `json:"transitGatewayIdRef,omitempty"`
+
+	// TransitGatewayIDSelector selects references to API used
+	// to set the TransitGatewayID.
+	// +optional
+	TransitGatewayIDSelector *xpv1.Selector `json:"transitGatewayIdSelector,omitempty"`
+
+	// The ID of the TransitGatewayAttachment for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=TransitGatewayVPCAttachment
+	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentId,omitempty"`
+
+	// TransitGatewayAttachmentIDRef is a reference to an API used to set
+	// the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDRef *xpv1.Reference `json:"transitGatewayAttachmentIdRef,omitempty"`
+
+	// TransitGatewayAttachmentIDSelector selects references to API used
+	// to set the TransitGatewayAttachmentID.
+	// +optional
+	TransitGatewayAttachmentIDSelector *xpv1.Selector `json:"transitGatewayAttachmentIdSelector,omitempty"`
+
+	// The ID of the one or more Subnets for which you want to create a flow log.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
+	SubnetID *string `json:"subnetId,omitempty"`
+
+	// SubnetIDRefs is a referenc to a SubnetID used to set
+	// the SubnetID.
+	// +optional
+	SubnetIDRef *xpv1.Reference `json:"subnetIdRef,omitempty"`
+
+	// SubnetIDSelector selects reference to a SubnetID used
+	// to set the SubnetID.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+
+	// The ID of the NetworkInterface for which you want to create a flow log.
+	// +optional
+	NetworkInterfaceID *string `json:"networkInterfaceId"`
+
+	// The ARN for the IAM role that permits Amazon EC2
+	// to publish flow logs to a CloudWatch Logs log group in your
+	// account. \n If you specify LogDestinationType as s3, do not
+	// specify DeliverLogsPermissionArn or LogGroupName.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
+	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionArn,omitempty"`
+
+	// DeliverLogsPermissionARNRef is a reference to DeliverLogsPermissionARN used to set
+	// the DeliverLogsPermissionARN.
+	// +optional
+	DeliverLogsPermissionARNRef *xpv1.Reference `json:"deliverLogsPermissionArnRef,omitempty"`
+
+	// DeliverLogsPermissionARNelector selects a reference to DeliverLogsPermissionARN used
+	// to set the DeliverLogsPermissionARN.
+	// +optional
+	DeliverLogsPermissionARNSelector *xpv1.Selector `json:"deliverLogsPermissionArnSelector,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of a CloudWatch Log Group.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1.LogGroup
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1.LogGroupARN()
+	CloudWatchLogDestination *string `json:"cloudWatchLogDestination,omitempty"`
+
+	// CloudWatchLogDestinationRef is a reference to a CloudWatch Log Group used to set
+	// the CloudWatchLogDestination.
+	// +optional
+	CloudWatchLogDestinationRef *xpv1.Reference `json:"cloudWatchLogDestinationRef,omitempty"`
+
+	// CloudWatchLogDestinationSelector selects a reference to a CloudWatch Log Group used
+	// to set the CloudWatchLogDestination.
+	// +optional
+	CloudWatchLogDestinationSelector *xpv1.Selector `json:"cloudWatchLogDestinationSelector,omitempty"`
+
+	// The Amazon Resource Names (ARNs) of a CloudWatch Log Group.
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.Bucket
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.BucketARN()
+	S3BucketLogDestination *string `json:"s3BucketLogDestination,omitempty"`
+
+	// S3BucketLogDestinationRef is a reference to a S3 Bucket  to set
+	// the S3BucketLogDestination.
+	// +optional
+	S3BucketLogDestinationRef *xpv1.Reference `json:"s3BucketLogDestinationRef,omitempty"`
+
+	// S3BucketLogDestinationSelector selects a reference to a S3 Bucket used
+	// to set the S3BucketLogDestination.
+	// +optional
+	S3BucketLogDestinationSelector *xpv1.Selector `json:"s3BucketLogDestinationSelector,omitempty"`
+
+	// S3BucketSubfolder allows you to use a subfolder in a S3Bucket, if S3BucketLogDestination is used to determin the ARN of a Bucket managed by crossplane
+	// S3BucketSubfolder starts and ends without an slash e.g. test/test2
+	// You cannot use AWSLogs as a subfolder name. This is a reserved term.
+	// +optional
+	S3BucketSubfolder *string `json:"s3BucketSubfolder,omitempty"`
 }

@@ -22,8 +22,8 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/google/go-cmp/cmp"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cloudfront/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 func TestLateInitialize(t *testing.T) {

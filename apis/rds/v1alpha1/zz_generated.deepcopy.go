@@ -410,7 +410,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
@@ -420,14 +420,18 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.KMSKeyIDRef != nil {
 		in, out := &in.KMSKeyIDRef, &out.KMSKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyIDSelector != nil {
 		in, out := &in.KMSKeyIDSelector, &out.KMSKeyIDSelector
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
-	out.MasterUserPasswordSecretRef = in.MasterUserPasswordSecretRef
+	if in.MasterUserPasswordSecretRef != nil {
+		in, out := &in.MasterUserPasswordSecretRef, &out.MasterUserPasswordSecretRef
+		*out = new(v1.SecretKeySelector)
+		**out = **in
+	}
 	if in.VPCSecurityGroupIDs != nil {
 		in, out := &in.VPCSecurityGroupIDs, &out.VPCSecurityGroupIDs
 		*out = make([]string, len(*in))
@@ -436,7 +440,9 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
@@ -446,7 +452,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
@@ -456,7 +462,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBClusterParameterGroupNameRef != nil {
 		in, out := &in.DBClusterParameterGroupNameRef, &out.DBClusterParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterParameterGroupNameSelector != nil {
 		in, out := &in.DBClusterParameterGroupNameSelector, &out.DBClusterParameterGroupNameSelector
@@ -467,6 +473,11 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 		in, out := &in.ApplyImmediately, &out.ApplyImmediately
 		*out = new(bool)
 		**out = **in
+	}
+	if in.RestoreFrom != nil {
+		in, out := &in.RestoreFrom, &out.RestoreFrom
+		*out = new(RestoreBackupConfiguration)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -486,7 +497,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBClusterIdentifierRef != nil {
 		in, out := &in.DBClusterIdentifierRef, &out.DBClusterIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterIdentifierSelector != nil {
 		in, out := &in.DBClusterIdentifierSelector, &out.DBClusterIdentifierSelector
@@ -501,7 +512,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
@@ -511,7 +522,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
@@ -526,7 +537,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.MonitoringRoleARNRef != nil {
 		in, out := &in.MonitoringRoleARNRef, &out.MonitoringRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.MonitoringRoleARNSelector != nil {
 		in, out := &in.MonitoringRoleARNSelector, &out.MonitoringRoleARNSelector
@@ -541,7 +552,9 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
@@ -551,7 +564,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBParameterGroupNameRef != nil {
 		in, out := &in.DBParameterGroupNameRef, &out.DBParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBParameterGroupNameSelector != nil {
 		in, out := &in.DBParameterGroupNameSelector, &out.DBParameterGroupNameSelector
@@ -586,7 +599,7 @@ func (in *CustomDBInstanceRoleAssociationParameters) DeepCopyInto(out *CustomDBI
 	if in.DBInstanceIdentifierRef != nil {
 		in, out := &in.DBInstanceIdentifierRef, &out.DBInstanceIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBInstanceIdentifierSelector != nil {
 		in, out := &in.DBInstanceIdentifierSelector, &out.DBInstanceIdentifierSelector
@@ -601,7 +614,7 @@ func (in *CustomDBInstanceRoleAssociationParameters) DeepCopyInto(out *CustomDBI
 	if in.RoleARNRef != nil {
 		in, out := &in.RoleARNRef, &out.RoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleARNSelector != nil {
 		in, out := &in.RoleARNSelector, &out.RoleARNSelector
@@ -658,7 +671,7 @@ func (in *CustomGlobalClusterParameters) DeepCopyInto(out *CustomGlobalClusterPa
 	if in.SourceDBClusterIdentifierRef != nil {
 		in, out := &in.SourceDBClusterIdentifierRef, &out.SourceDBClusterIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SourceDBClusterIdentifierSelector != nil {
 		in, out := &in.SourceDBClusterIdentifierSelector, &out.SourceDBClusterIdentifierSelector
@@ -4727,8 +4740,8 @@ func (in *EventSubscription) DeepCopyInto(out *EventSubscription) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SnsTopicARN != nil {
-		in, out := &in.SnsTopicARN, &out.SnsTopicARN
+	if in.SNSTopicARN != nil {
+		in, out := &in.SNSTopicARN, &out.SNSTopicARN
 		*out = new(string)
 		**out = **in
 	}
@@ -6368,6 +6381,31 @@ func (in *ResourcePendingMaintenanceActions) DeepCopy() *ResourcePendingMaintena
 }
 
 // DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *RestoreBackupConfiguration) DeepCopyInto(out *RestoreBackupConfiguration) {
+	*out = *in
+	if in.S3 != nil {
+		in, out := &in.S3, &out.S3
+		*out = new(S3RestoreBackupConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Source != nil {
+		in, out := &in.Source, &out.Source
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new RestoreBackupConfiguration.
+func (in *RestoreBackupConfiguration) DeepCopy() *RestoreBackupConfiguration {
+	if in == nil {
+		return nil
+	}
+	out := new(RestoreBackupConfiguration)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
 func (in *RestoreWindow) DeepCopyInto(out *RestoreWindow) {
 	*out = *in
 	if in.EarliestTime != nil {
@@ -6386,6 +6424,46 @@ func (in *RestoreWindow) DeepCopy() *RestoreWindow {
 		return nil
 	}
 	out := new(RestoreWindow)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *S3RestoreBackupConfiguration) DeepCopyInto(out *S3RestoreBackupConfiguration) {
+	*out = *in
+	if in.BucketName != nil {
+		in, out := &in.BucketName, &out.BucketName
+		*out = new(string)
+		**out = **in
+	}
+	if in.IngestionRoleARN != nil {
+		in, out := &in.IngestionRoleARN, &out.IngestionRoleARN
+		*out = new(string)
+		**out = **in
+	}
+	if in.Prefix != nil {
+		in, out := &in.Prefix, &out.Prefix
+		*out = new(string)
+		**out = **in
+	}
+	if in.SourceEngine != nil {
+		in, out := &in.SourceEngine, &out.SourceEngine
+		*out = new(string)
+		**out = **in
+	}
+	if in.SourceEngineVersion != nil {
+		in, out := &in.SourceEngineVersion, &out.SourceEngineVersion
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new S3RestoreBackupConfiguration.
+func (in *S3RestoreBackupConfiguration) DeepCopy() *S3RestoreBackupConfiguration {
+	if in == nil {
+		return nil
+	}
+	out := new(S3RestoreBackupConfiguration)
 	in.DeepCopyInto(out)
 	return out
 }

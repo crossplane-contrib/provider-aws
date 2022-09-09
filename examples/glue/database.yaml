@@ -6,5 +6,13 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
+    databaseInput:
+      description: "a short or lengthy description"
+      createTableDefaultPermissions:
+        - permissions:
+          - "SELECT"
+          - "DELETE"
+          principal:
+            dataLakePrincipalIdentifier: "IAM_ALLOWED_PRINCIPALS"
   providerConfigRef:
     name: example

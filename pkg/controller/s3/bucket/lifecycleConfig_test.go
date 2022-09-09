@@ -31,11 +31,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 )
 
 var (

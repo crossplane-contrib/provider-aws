@@ -69,13 +69,37 @@ spec:
                   databaseInput:
                     description: The metadata for the database.
                     properties:
+                      createTableDefaultPermissions:
+                        description: 'Creates a set of default permissions on the
+                          table for principals. If left empty on creation, AWS defaults
+                          it to [Permissions: ["All"], Principal: DataLake Prinicpal
+                          Identifier : "IAM_ALLOWED_PRINCIPALS"]'
+                        items:
+                          properties:
+                            permissions:
+                              items:
+                                type: string
+                              type: array
+                            principal:
+                              description: The Lake Formation principal.
+                              properties:
+                                dataLakePrincipalIdentifier:
+                                  type: string
+                              type: object
+                          type: object
+                        type: array
                       description:
+                        description: A description of the database.
                         type: string
                       locationURI:
+                        description: The location of the database (for example, an
+                          HDFS path).
                         type: string
                       parameters:
                         additionalProperties:
                           type: string
+                        description: These key-value pairs define parameters and properties
+                          of the database.
                         type: object
                       targetDatabase:
                         description: A structure that describes a target database
@@ -103,6 +127,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -114,6 +163,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -133,6 +207,31 @@ spec:
                       name:
                         description: Name of the referenced object.
                         type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
                     required:
                     - name
                     type: object
@@ -194,6 +293,12 @@ spec:
             properties:
               atProvider:
                 description: DatabaseObservation defines the observed state of Database
+                properties:
+                  createTime:
+                    description: The time at which the metadata database was created
+                      in the catalog.
+                    format: date-time
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

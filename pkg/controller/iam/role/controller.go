@@ -34,11 +34,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -245,16 +245,23 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
+
 	added := false
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		if p, ok := tagMap[k]; !ok || v != p {
-			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-			added = true
+	defaultTags := resource.GetExternalTags(mgd)
+
+	for i, t := range cr.Spec.ForProvider.Tags {
+		if v, ok := defaultTags[t.Key]; ok {
+			if v != t.Value {
+				cr.Spec.ForProvider.Tags[i].Value = v
+				added = true
+			}
+			delete(defaultTags, t.Key)
 		}
+	}
+
+	for k, v := range defaultTags {
+		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
+		added = true
 	}
 	if !added {
 		return nil

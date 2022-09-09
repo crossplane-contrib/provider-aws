@@ -29,18 +29,10 @@ type CrawlerParameters struct {
 	// Region is which region the Crawler will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// A list of custom classifiers that the user has registered. By default, all
-	// built-in classifiers are included in a crawl, but these custom classifiers
-	// always override the default classifiers for a given classification.
-	Classifiers []*string `json:"classifiers,omitempty"`
 	// Crawler configuration information. This versioned JSON string allows users
 	// to specify aspects of a crawler's behavior. For more information, see Configuring
 	// a Crawler (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration *string `json:"configuration,omitempty"`
-	// The name of the SecurityConfiguration structure to be used by this crawler.
-	CrawlerSecurityConfiguration *string `json:"crawlerSecurityConfiguration,omitempty"`
-	// The Glue database where results are written, such as: arn:aws:daylight:us-east-1::database/sometable/*.
-	DatabaseName *string `json:"databaseName,omitempty"`
 	// A description of the new crawler.
 	Description *string `json:"description,omitempty"`
 	// Specifies data lineage configuration settings for the crawler.
@@ -61,10 +53,7 @@ type CrawlerParameters struct {
 	// to the crawler. For more information about tags in Glue, see Amazon Web Services
 	// Tags in Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
 	// in the developer guide.
-	Tags map[string]*string `json:"tags,omitempty"`
-	// A list of collection of targets to crawl.
-	// +kubebuilder:validation:Required
-	Targets                 *CrawlerTargets `json:"targets"`
+	Tags                    map[string]*string `json:"tags,omitempty"`
 	CustomCrawlerParameters `json:",inline"`
 }
 
@@ -76,6 +65,22 @@ type CrawlerSpec struct {
 
 // CrawlerObservation defines the observed state of Crawler
 type CrawlerObservation struct {
+	// If the crawler is running, contains the total time elapsed since the last
+	// crawl began.
+	CrawlElapsedTime *int64 `json:"crawlElapsedTime,omitempty"`
+	// The time that the crawler was created.
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The status of the last crawl, and potentially error information if an error
+	// occurred.
+	LastCrawl *LastCrawlInfo `json:"lastCrawl,omitempty"`
+	// The time that the crawler was last updated.
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+	// The state of the schedule.
+	ScheduleState *string `json:"scheduleState,omitempty"`
+	// Indicates whether the crawler is running, or whether a run is pending.
+	State *string `json:"state,omitempty"`
+	// The version of the crawler.
+	Version *int64 `json:"version,omitempty"`
 }
 
 // CrawlerStatus defines the observed state of Crawler.

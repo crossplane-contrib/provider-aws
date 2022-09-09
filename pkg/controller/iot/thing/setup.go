@@ -33,11 +33,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	iottypes "github.com/crossplane/provider-aws/apis/iot/v1alpha1"
-	svcapitypes "github.com/crossplane/provider-aws/apis/iot/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	aws2 "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	iottypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	aws2 "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupThing adds a controller that reconciles Thing.

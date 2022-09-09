@@ -15,25 +15,39 @@ ignore:
   field_paths:
     - CreateJobInput.Name
     - CreateJobInput.Role
+    - CreateJobInput.Connections
+    - CreateJobInput.SecurityConfiguration
     - CreateSecurityConfigurationInput.Name
     - CreateSecurityConfigurationInput.EncryptionConfiguration
+    - CreateCrawlerInput.Classifiers
+    - CreateCrawlerInput.CrawlerSecurityConfiguration
+    - CreateCrawlerInput.DatabaseName
     - CreateCrawlerInput.Name
     - CreateCrawlerInput.Role
+    - CreateCrawlerInput.Targets
     - CreateDatabaseInput.DatabaseInput
     - CreateClassifierInput.CsvClassifier
     - CreateClassifierInput.XMLClassifier
     - CreateClassifierInput.JsonClassifier
     - CreateClassifierInput.GrokClassifier
     - CreateConnectionInput.ConnectionInput
-    # See https://github.com/aws-controllers-k8s/community/issues/1078
-    - Crawler.Schedule
-
 resources:
   Job:
     exceptions:
       errors:
         404:
           code: EntityNotFoundException
+    fields:
+      CreatedOn:
+        is_read_only: true
+        from:
+          operation: GetJob
+          path: Job.CreatedOn
+      LastModifiedOn:
+        is_read_only: true
+        from:
+          operation: GetJob
+          path: Job.LastModifiedOn
   SecurityConfiguration:
     exceptions:
       errors:
@@ -44,18 +58,117 @@ resources:
       errors:
         404:
           code: EntityNotFoundException
+    fields:
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: GetConnection
+          path: Connection.CreationTime
+        # set: # makes ACK ignore the field in zz_conversion.go GenerateConnection (did not import metav1...), so it needs to be set manually 
+        #   - methode: ReadOne
+        #     ignore: true  ##worksaroundfix not needed as long as metav1 is imported(&used) in setup.go, it gets correctly imported in zz_conversion.go too 
+      LastUpdatedBy:
+        is_read_only: true
+        from:
+          operation: GetConnection
+          path: Connection.LastUpdatedBy
+      LastUpdatedTime:
+        is_read_only: true
+        from:
+          operation: GetConnection
+          path: Connection.LastUpdatedTime
+        # set: # workaround-fix for missing metav1 import (same as CreationTime)
+        #   - methode: ReadOne
+        #     ignore: true
   Database:
     exceptions:
       errors:
         404:
           code: EntityNotFoundException
+    fields:
+      CreateTime:
+        is_read_only: true
+        from:
+          operation: GetDatabase
+          path: Database.CreateTime
+        # set: # workaround-fix for missing metav1 import
+        #   - methode: ReadOne
+        #     ignore: true
   Crawler:
     exceptions:
       errors:
         404:
           code: EntityNotFoundException
+    fields:
+      Schedule:
+        set:
+          - methode: ReadOne
+            from: Schedule.ScheduleExpression # works now, with solved issue (https://github.com/aws-controllers-k8s/community/issues/1078) 
+      CrawlElapsedTime:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.CrawlElapsedTime
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.CreationTime
+        # set: # workaround-fix for missing metav1 import
+        #   - methode: ReadOne
+        #     ignore: true
+      LastCrawl:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.LastCrawl
+        # set: # workaround-fix for missing metav1 import
+        #   - methode: ReadOne
+        #     ignore: true
+      LastUpdated:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.LastUpdated
+        # set: # workaround-fix for missing metav1 import
+        #   - methode: ReadOne
+        #     ignore: true
+      ScheduleState:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.Schedule.State
+        set:
+          - methode: ReadOne
+            from: Crawler.Schedule.State
+      State:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.State
+      Version:
+        is_read_only: true
+        from:
+          operation: GetCrawler
+          path: Crawler.Version
   Classifier:
     exceptions:
       errors:
         404:
           code: EntityNotFoundException
+    fields:
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: GetClassifier
+          path: Classifier.CsvClassifier.CreationTime # seems to work fine with the 3 other classifier types
+      LastUpdated:
+        is_read_only: true
+        from:
+          operation: GetClassifier
+          path: Classifier.CsvClassifier.LastUpdated
+      Version:
+        is_read_only: true
+        from:
+          operation: GetClassifier
+          path: Classifier.CsvClassifier.Version

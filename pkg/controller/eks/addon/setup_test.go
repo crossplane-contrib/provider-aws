@@ -31,9 +31,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	mockeksiface "github.com/crossplane/provider-aws/pkg/clients/eks/fake/eksiface"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/eks/fake/eksiface"
 )
 
 var (

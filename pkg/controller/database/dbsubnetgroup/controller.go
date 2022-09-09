@@ -37,11 +37,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	dbsg "github.com/crossplane-contrib/provider-aws/pkg/clients/dbsubnetgroup"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (

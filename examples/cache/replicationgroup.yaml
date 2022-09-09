@@ -11,12 +11,12 @@ spec:
     replicationGroupDescription: "An example replication group"
     applyModificationsImmediately: true
     engine: "redis"
-    engineVersion: "5.0.6"
+    engineVersion: "6.2"
     port: 6379
     cacheSubnetGroupNameRef:
       name: sample-cache-subnet-group
     numCacheClusters: 3
-    cacheParameterGroupName: default.redis5.0
+    cacheParameterGroupName: default.redis6.x
     cacheNodeType: cache.t3.medium
     automaticFailoverEnabled: true
   writeConnectionSecretToRef:

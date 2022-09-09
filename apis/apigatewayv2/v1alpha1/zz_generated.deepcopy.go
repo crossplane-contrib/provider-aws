@@ -927,7 +927,7 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -942,7 +942,7 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	if in.StageRef != nil {
 		in, out := &in.StageRef, &out.StageRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StageSelector != nil {
 		in, out := &in.StageSelector, &out.StageSelector
@@ -957,7 +957,7 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	if in.DomainNameRef != nil {
 		in, out := &in.DomainNameRef, &out.DomainNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainNameSelector != nil {
 		in, out := &in.DomainNameSelector, &out.DomainNameSelector
@@ -1002,7 +1002,7 @@ func (in *CustomAuthorizerParameters) DeepCopyInto(out *CustomAuthorizerParamete
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1032,7 +1032,7 @@ func (in *CustomDeploymentParameters) DeepCopyInto(out *CustomDeploymentParamete
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1042,7 +1042,7 @@ func (in *CustomDeploymentParameters) DeepCopyInto(out *CustomDeploymentParamete
 	if in.StageNameRef != nil {
 		in, out := &in.StageNameRef, &out.StageNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StageNameSelector != nil {
 		in, out := &in.StageNameSelector, &out.StageNameSelector
@@ -1094,7 +1094,7 @@ func (in *CustomIntegrationParameters) DeepCopyInto(out *CustomIntegrationParame
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1124,7 +1124,7 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1139,7 +1139,7 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	if in.IntegrationIDRef != nil {
 		in, out := &in.IntegrationIDRef, &out.IntegrationIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.IntegrationIDSelector != nil {
 		in, out := &in.IntegrationIDSelector, &out.IntegrationIDSelector
@@ -1169,7 +1169,7 @@ func (in *CustomModelParameters) DeepCopyInto(out *CustomModelParameters) {
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1199,7 +1199,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1209,7 +1209,7 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	if in.AuthorizerIDRef != nil {
 		in, out := &in.AuthorizerIDRef, &out.AuthorizerIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.AuthorizerIDSelector != nil {
 		in, out := &in.AuthorizerIDSelector, &out.AuthorizerIDSelector
@@ -1239,7 +1239,7 @@ func (in *CustomRouteResponseParameters) DeepCopyInto(out *CustomRouteResponsePa
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1254,7 +1254,7 @@ func (in *CustomRouteResponseParameters) DeepCopyInto(out *CustomRouteResponsePa
 	if in.RouteIDRef != nil {
 		in, out := &in.RouteIDRef, &out.RouteIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RouteIDSelector != nil {
 		in, out := &in.RouteIDSelector, &out.RouteIDSelector
@@ -1284,7 +1284,7 @@ func (in *CustomStageParameters) DeepCopyInto(out *CustomStageParameters) {
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
@@ -1314,7 +1314,9 @@ func (in *CustomVPCLinkParameters) DeepCopyInto(out *CustomVPCLinkParameters) {
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
@@ -1329,7 +1331,9 @@ func (in *CustomVPCLinkParameters) DeepCopyInto(out *CustomVPCLinkParameters) {
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector

@@ -160,6 +160,15 @@ type DBParameterGroupFamilyNameSelector struct {
 // CustomDBClusterParameters are custom parameters for DBCluster
 type CustomDBClusterParameters struct {
 
+	// AutogeneratePassword indicates whether the controller should generate
+	// a random password for the master user if one is not provided via
+	// MasterUserPasswordSecretRef.
+	//
+	// If a password is generated, it will
+	// be stored as a secret at the location specified by MasterUserPasswordSecretRef.
+	// +optional
+	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
+
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
 	// DomainIAMRoleName.
 	// +optional
@@ -182,7 +191,7 @@ type CustomDBClusterParameters struct {
 	// printable ASCII character except "/", """, or "@".
 	//
 	// Constraints: Must contain from 8 to 41 characters. Required.
-	MasterUserPasswordSecretRef xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
+	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
 
 	// A list of EC2 VPC security groups to associate with this DB cluster.
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIDs,omitempty"`
@@ -263,6 +272,41 @@ type CustomDBClusterParameters struct {
 	//
 	// By default, this parameter is disabled.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
+
+	// RestoreFrom specifies the details of the backup to restore when creating a new DBCluster.
+	// +optional
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
+}
+
+// S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
+type S3RestoreBackupConfiguration struct {
+	// BucketName is the name of the S3 bucket containing the backup to restore.
+	BucketName *string `json:"bucketName"`
+
+	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
+	IngestionRoleARN *string `json:"ingestionRoleARN"`
+
+	// Prefix is the path prefix of the S3 bucket within which the backup to restore is located.
+	// +optional
+	Prefix *string `json:"prefix,omitempty"`
+
+	// SourceEngine is the engine used to create the backup.
+	// Must be "mysql".
+	SourceEngine *string `json:"sourceEngine"`
+
+	// SourceEngineVersion is the version of the engine used to create the backup.
+	// Example: "5.7.30"
+	SourceEngineVersion *string `json:"sourceEngineVersion"`
+}
+
+// RestoreBackupConfiguration defines the backup to restore a new DBCluster from.
+type RestoreBackupConfiguration struct {
+	// S3 specifies the details of the S3 backup to restore from.
+	// +optional
+	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
+
+	// Source is the type of the backup to restore when creating a new DBCluster. Only S3 is supported at present.
+	Source *string `json:"source"`
 }
 
 // CustomGlobalClusterParameters are custom parameters for a GlobalCluster
@@ -435,8 +479,8 @@ type CustomDBInstanceRoleAssociationParameters struct {
 
 	// The Amazon Resource Name (ARN) of the IAM role to associate with the DB instance,
 	// for example arn:aws:iam::123456789012:role/AccessRole.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	// +optional
 	RoleARN *string `json:"roleArn,omitempty"`
 

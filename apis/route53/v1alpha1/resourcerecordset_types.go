@@ -439,11 +439,11 @@ type ResourceRecordSetParameters struct {
 //
 // When creating resource record sets for a private hosted zone, note the following:
 //
-//    * Creating geolocation alias resource record sets or latency alias resource
-//    record sets in a private hosted zone is unsupported.
+//   - Creating geolocation alias resource record sets or latency alias resource
+//     record sets in a private hosted zone is unsupported.
 //
-//    * For information about creating failover resource record sets in a private
-//    hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
+//   - For information about creating failover resource record sets in a private
+//     hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
 type AliasTarget struct {
 
 	// Alias resource record sets only: The value that you specify depends on where

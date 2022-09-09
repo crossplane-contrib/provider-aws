@@ -1,0 +1,14 @@
+apiVersion: cognitoidentityprovider.aws.crossplane.io/v1alpha1
+kind: GroupUserMembership
+metadata:
+  name: example-group-user-membership
+spec:
+  forProvider:
+    region: us-east-1
+    userPoolIdRef:
+      name: examplePool
+    groupnameRef:
+      name: example-group
+    username: example-username
+  providerConfigRef:
+    name: example

@@ -19,6 +19,9 @@ package bucket
 import (
 	"context"
 	"sort"
+	"strings"
+
+	"github.com/barkimedes/go-deepcopy"
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -29,9 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 )
 
 const (
@@ -93,6 +96,11 @@ func IsNotificationConfigurationUpToDate(cr *v1beta1.NotificationConfiguration, 
 	sortTopic(generated.TopicConfigurations)
 	sortTopic(external.TopicConfigurations)
 
+	// The AWS API returns QueueConfiguration.Filter.Key.FilterRules.Name as "Prefix"/"Suffix" but expects
+	// "prefix"/"suffix" this leads to inconsistency and a constant diff. Fixes
+	// https://github.com/crossplane-contrib/provider-aws/issues/1165
+	external.QueueConfigurations = sanitizedQueueConfigurations(external.QueueConfigurations)
+
 	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.LambdaFunctionConfiguration{}.Id), cmpopts.EquateEmpty()) &&
 		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.QueueConfiguration{}.Id), cmpopts.EquateEmpty()) &&
 		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations, cmpopts.IgnoreTypes(document.NoSerde{}, types.TopicConfiguration{}.Id), cmpopts.EquateEmpty()) {
@@ -127,6 +135,30 @@ func sortTopic(configs []types.TopicConfiguration) {
 		}
 		return true
 	})
+}
+
+func sanitizedQueueConfigurations(configs []types.QueueConfiguration) []types.QueueConfiguration {
+	rawConfig, err := deepcopy.Anything(configs)
+	if err != nil {
+		return configs
+	}
+
+	sConfig := rawConfig.([]types.QueueConfiguration)
+
+	for c := range sConfig {
+		if sConfig[c].Filter == nil {
+			continue
+		}
+		if sConfig[c].Filter.Key == nil {
+			continue
+		}
+		for r := range sConfig[c].Filter.Key.FilterRules {
+			name := string(sConfig[c].Filter.Key.FilterRules[r].Name)
+			sConfig[c].Filter.Key.FilterRules[r].Name = types.FilterRuleName(strings.ToLower(name))
+		}
+	}
+
+	return sConfig
 }
 
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration

@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/lambda/v1beta1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an

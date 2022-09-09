@@ -23,25 +23,22 @@ import (
 
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
-	"github.com/google/go-cmp/cmp"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
 
-	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
-	uid       = types.UID("definitely-a-uuid")
 )
 
 var (
@@ -89,57 +86,6 @@ var (
 	description = "Crossplane managed " + v1beta1.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
 
 	nodeGroupAZs = []string{"us-cool-1a", "us-cool-1b"}
-
-	meta             = metav1.ObjectMeta{Namespace: namespace, Name: name, UID: uid}
-	replicationGroup = &v1beta1.ReplicationGroup{
-		ObjectMeta: meta,
-		Spec: v1beta1.ReplicationGroupSpec{
-			ForProvider: v1beta1.ReplicationGroupParameters{
-				ApplyModificationsImmediately: true,
-				AtRestEncryptionEnabled:       &atRestEncryptionEnabled,
-				AuthEnabled:                   &authEnabled,
-				AutomaticFailoverEnabled:      &autoFailoverEnabled,
-				CacheNodeType:                 cacheNodeType,
-				CacheParameterGroupName:       &cacheParameterGroupName,
-				CacheSecurityGroupNames:       cacheSecurityGroupNames,
-				CacheSubnetGroupName:          &cacheSubnetGroupName,
-				Engine:                        engine,
-				EngineVersion:                 &engineVersion,
-				MultiAZEnabled:                &multiAZ,
-				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
-					{
-						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
-						ReplicaAvailabilityZones: nodeGroupAZs,
-						ReplicaCount:             &nodeGroupReplicaCount,
-						Slots:                    &nodeGroupSlots,
-					},
-				},
-				NotificationTopicARN:        &notificationTopicARN,
-				NotificationTopicStatus:     &notificationTopicStatus,
-				NumCacheClusters:            &numCacheClusters,
-				NumNodeGroups:               &numNodeGroups,
-				PrimaryClusterID:            &primaryClusterID,
-				Port:                        &port,
-				PreferredCacheClusterAZs:    preferredCacheClusterAZs,
-				PreferredMaintenanceWindow:  &maintenanceWindow,
-				ReplicasPerNodeGroup:        &replicasPerNodeGroup,
-				ReplicationGroupDescription: description,
-				SecurityGroupIDs:            securityGroupIDs,
-				SnapshotARNs:                snapshotARNs,
-				SnapshotName:                &snapshotName,
-				SnapshotRetentionLimit:      &snapshotRetentionLimit,
-				SnapshottingClusterID:       &snapshottingClusterID,
-				SnapshotWindow:              &snapshotWindow,
-				Tags: []v1beta1.Tag{
-					{
-						Key:   tagKey,
-						Value: tagValue,
-					},
-				},
-				TransitEncryptionEnabled: &transitEncryptionEnabled,
-			},
-		},
-	}
 )
 
 var (
@@ -148,16 +94,69 @@ var (
 	subnetID2       = "subnetId2"
 )
 
+func replicationGroupParams(m ...func(parameters *v1beta1.ReplicationGroupParameters)) *v1beta1.ReplicationGroupParameters {
+	o := &v1beta1.ReplicationGroupParameters{
+		ApplyModificationsImmediately: true,
+		AtRestEncryptionEnabled:       &atRestEncryptionEnabled,
+		AuthEnabled:                   &authEnabled,
+		AutomaticFailoverEnabled:      &autoFailoverEnabled,
+		CacheNodeType:                 cacheNodeType,
+		CacheParameterGroupName:       &cacheParameterGroupName,
+		CacheSecurityGroupNames:       cacheSecurityGroupNames,
+		CacheSubnetGroupName:          &cacheSubnetGroupName,
+		Engine:                        engine,
+		EngineVersion:                 &engineVersion,
+		MultiAZEnabled:                &multiAZ,
+		NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
+			{
+				PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
+				ReplicaAvailabilityZones: nodeGroupAZs,
+				ReplicaCount:             &nodeGroupReplicaCount,
+				Slots:                    &nodeGroupSlots,
+			},
+		},
+		NotificationTopicARN:        &notificationTopicARN,
+		NotificationTopicStatus:     &notificationTopicStatus,
+		NumCacheClusters:            &numCacheClusters,
+		NumNodeGroups:               &numNodeGroups,
+		PrimaryClusterID:            &primaryClusterID,
+		Port:                        &port,
+		PreferredCacheClusterAZs:    preferredCacheClusterAZs,
+		PreferredMaintenanceWindow:  &maintenanceWindow,
+		ReplicasPerNodeGroup:        &replicasPerNodeGroup,
+		ReplicationGroupDescription: description,
+		SecurityGroupIDs:            securityGroupIDs,
+		SnapshotARNs:                snapshotARNs,
+		SnapshotName:                &snapshotName,
+		SnapshotRetentionLimit:      &snapshotRetentionLimit,
+		SnapshottingClusterID:       &snapshottingClusterID,
+		SnapshotWindow:              &snapshotWindow,
+		Tags: []v1beta1.Tag{
+			{
+				Key:   tagKey,
+				Value: tagValue,
+			},
+		},
+		TransitEncryptionEnabled: &transitEncryptionEnabled,
+	}
+
+	for _, f := range m {
+		f(o)
+	}
+
+	return o
+}
+
 func TestNewCreateReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name      string
-		params    v1beta1.ReplicationGroupParameters
+		params    *v1beta1.ReplicationGroupParameters
 		authToken *string
 		want      *elasticache.CreateReplicationGroupInput
 	}{
 		{
 			name:      "AllPossibleFields",
-			params:    replicationGroup.Spec.ForProvider,
+			params:    replicationGroupParams(),
 			authToken: &authToken,
 			want: &elasticache.CreateReplicationGroupInput{
 				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
@@ -204,7 +203,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			params: v1beta1.ReplicationGroupParameters{
+			params: &v1beta1.ReplicationGroupParameters{
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
 				Engine:                      engine,
@@ -220,7 +219,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewCreateReplicationGroupInput(tc.params, name, tc.authToken)
+			got := NewCreateReplicationGroupInput(*tc.params, name, tc.authToken)
 
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewCreateReplicationGroupInput(...): -want, +got:\n%s", diff)
@@ -232,12 +231,12 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 func TestNewModifyReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name   string
-		params v1beta1.ReplicationGroupParameters
+		params *v1beta1.ReplicationGroupParameters
 		want   *elasticache.ModifyReplicationGroupInput
 	}{
 		{
 			name:   "AllPossibleFields",
-			params: replicationGroup.Spec.ForProvider,
+			params: replicationGroupParams(),
 			want: &elasticache.ModifyReplicationGroupInput{
 				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ApplyImmediately:            true,
@@ -260,7 +259,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			params: v1beta1.ReplicationGroupParameters{
+			params: &v1beta1.ReplicationGroupParameters{
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
 			},
@@ -273,7 +272,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "SuperfluousFields",
-			params: v1beta1.ReplicationGroupParameters{
+			params: &v1beta1.ReplicationGroupParameters{
 				AtRestEncryptionEnabled:     &atRestEncryptionEnabled,
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
@@ -289,7 +288,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewModifyReplicationGroupInput(tc.params, name)
+			got := NewModifyReplicationGroupInput(*tc.params, name)
 
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewModifyReplicationGroupInput(...): -want, +got:\n%s", diff)
@@ -301,13 +300,13 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 	cases := []struct {
 		name     string
-		params   v1beta1.ReplicationGroupParameters
+		params   *v1beta1.ReplicationGroupParameters
 		observed elasticachetypes.ReplicationGroup
 		want     *elasticache.ModifyReplicationGroupShardConfigurationInput
 	}{
 		{
 			name:   "ScaleUp",
-			params: replicationGroup.Spec.ForProvider,
+			params: replicationGroupParams(),
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
 					{
@@ -323,7 +322,7 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 		},
 		{
 			name:   "ScaleDown",
-			params: replicationGroup.Spec.ForProvider,
+			params: replicationGroupParams(),
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
 					{NodeGroupId: aws.String("ng-01")},
@@ -340,7 +339,7 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 		},
 		{
 			name: "ApplyImmediatelyFromRG",
-			params: v1beta1.ReplicationGroupParameters{
+			params: &v1beta1.ReplicationGroupParameters{
 				ApplyModificationsImmediately: false,
 				NumNodeGroups:                 &numNodeGroups,
 			},
@@ -362,7 +361,7 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewModifyReplicationGroupShardConfigurationInput(tc.params, name, tc.observed)
+			got := NewModifyReplicationGroupShardConfigurationInput(*tc.params, name, tc.observed)
 
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewModifyReplicationGroupShardConfigurationInput(...): -want, +got:\n%s", diff)
@@ -656,20 +655,20 @@ func TestGenerateObservation(t *testing.T) {
 func TestReplicationGroupNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name   string
-		kube   v1beta1.ReplicationGroupParameters
+		kube   *v1beta1.ReplicationGroupParameters
 		rg     elasticachetypes.ReplicationGroup
 		ccList []elasticachetypes.CacheCluster
 		want   bool
 	}{
 		{
 			name: "NeedsFailoverEnabled",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg:   elasticachetypes.ReplicationGroup{AutomaticFailover: elasticachetypes.AutomaticFailoverStatusDisabled},
 			want: true,
 		},
 		{
 			name: "NeedsNewCacheNodeType",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover: elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:     aws.String("n1.insufficiently.cool"),
@@ -678,7 +677,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSnapshotRetentionLimit",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -688,7 +687,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSnapshotWindow",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -699,7 +698,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "CacheClusterNeedsUpdate",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -715,7 +714,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNoUpdate",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -749,7 +748,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsMultiAZUpdate",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -783,7 +782,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsUpdateNumCacheClusters",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -798,7 +797,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ReplicationGroupNeedsUpdate(tc.kube, tc.rg, tc.ccList)
+			got := ReplicationGroupNeedsUpdate(*tc.kube, tc.rg, tc.ccList) != ""
 			if got != tc.want {
 				t.Errorf("ReplicationGroupNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
@@ -809,14 +808,14 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 func TestReplicationGroupShardConfigurationNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name   string
-		kube   v1beta1.ReplicationGroupParameters
+		kube   *v1beta1.ReplicationGroupParameters
 		rg     elasticachetypes.ReplicationGroup
 		ccList []elasticachetypes.CacheCluster
 		want   bool
 	}{
 		{
 			name: "NodeMismatch",
-			kube: replicationGroup.Spec.ForProvider, // 2
+			kube: replicationGroupParams(), // 2
 			rg: elasticachetypes.ReplicationGroup{
 				NodeGroups: make([]elasticachetypes.NodeGroup, 3),
 			},
@@ -824,7 +823,7 @@ func TestReplicationGroupShardConfigurationNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "UpToDate",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				NodeGroups: make([]elasticachetypes.NodeGroup, numNodeGroups),
 			},
@@ -832,7 +831,7 @@ func TestReplicationGroupShardConfigurationNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NilNumNodes",
-			kube: v1beta1.ReplicationGroupParameters{
+			kube: &v1beta1.ReplicationGroupParameters{
 				NumNodeGroups: nil,
 			},
 			rg: elasticachetypes.ReplicationGroup{
@@ -844,7 +843,7 @@ func TestReplicationGroupShardConfigurationNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ReplicationGroupShardConfigurationNeedsUpdate(tc.kube, tc.rg)
+			got := ReplicationGroupShardConfigurationNeedsUpdate(*tc.kube, tc.rg)
 			if got != tc.want {
 				t.Errorf("ReplicationGroupShardConfigurationNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
@@ -855,13 +854,13 @@ func TestReplicationGroupShardConfigurationNeedsUpdate(t *testing.T) {
 func TestCacheClusterNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name string
-		kube v1beta1.ReplicationGroupParameters
+		kube *v1beta1.ReplicationGroupParameters
 		cc   elasticachetypes.CacheCluster
 		want bool
 	}{
 		{
 			name: "NeedsNewEngineVersion",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion: aws.String("4.0.0"),
 			},
@@ -869,7 +868,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewCacheParameterGroup",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:       aws.String(engineVersion),
 				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String("okaygroupiguess")},
@@ -878,7 +877,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewNotificationTopicARN",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:             aws.String(engineVersion),
 				CacheParameterGroup:       &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -888,7 +887,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewMaintenanceWindow",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -899,7 +898,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSecurityGroupIDs",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -914,7 +913,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsSecurityGroupIDs",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -925,7 +924,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSecurityGroupNames",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -947,7 +946,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsSecurityGroupNames",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -965,7 +964,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNoUpdate",
-			kube: replicationGroup.Spec.ForProvider,
+			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
@@ -988,11 +987,39 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "NeedsNoUpdateNormalizedMaintenanceWindow",
+			kube: replicationGroupParams(func(p *v1beta1.ReplicationGroupParameters) {
+				p.PreferredMaintenanceWindow = aws.String("Mon:00:00-Fri:23:59")
+
+			}),
+			cc: elasticachetypes.CacheCluster{
+				EngineVersion:              aws.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: aws.String("mon:00:00-fri:23:59"),
+				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
+					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
+					for i, id := range securityGroupIDs {
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+					}
+					return ids
+				}(),
+				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
+					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+					for i, n := range cacheSecurityGroupNames {
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+					}
+					return names
+				}(),
+			},
+			want: false,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := cacheClusterNeedsUpdate(tc.kube, tc.cc)
+			got := cacheClusterNeedsUpdate(*tc.kube, tc.cc) != ""
 			if got != tc.want {
 				t.Errorf("cacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
@@ -1175,9 +1202,15 @@ func TestVersionMatches(t *testing.T) {
 			want:        true,
 		},
 		{
-			name:        "pattern mismatch",
-			kubeVersion: aws.String("6.x"),
-			awsVersion:  aws.String("5.0.8"),
+			name:        "minor match",
+			kubeVersion: aws.String("6.2"),
+			awsVersion:  aws.String("6.2.6"),
+			want:        true,
+		},
+		{
+			name:        "zero major mismatch",
+			kubeVersion: aws.String("0.2"),
+			awsVersion:  aws.String("6.2.6"),
 			want:        false,
 		},
 	}
@@ -1188,6 +1221,94 @@ func TestVersionMatches(t *testing.T) {
 			if got != tc.want {
 				t.Errorf("versionMatches(%+v) - got %v", tc, got)
 			}
+		})
+	}
+}
+
+func TestParseVersion(t *testing.T) {
+	cases := []struct {
+		name    string
+		version *string
+		parsed  *PartialSemanticVersion
+		wantErr error
+	}{
+		{
+			name:    "nil",
+			version: nil,
+			parsed:  nil,
+			wantErr: errors.New("empty string"),
+		},
+		{
+			name:    "",
+			version: nil,
+			parsed:  nil,
+			wantErr: errors.New("empty string"),
+		},
+		{
+			name:    "bad version",
+			version: aws.String("badversion"),
+			parsed:  nil,
+			wantErr: errors.New("major version must be a number"),
+		},
+		{
+			name:    "major only",
+			version: aws.String("6"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor",
+			version: aws.String("6.2"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6), Minor: aws.Int64(2)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.x",
+			version: aws.String("6.x"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.",
+			version: aws.String("6."),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			wantErr: nil,
+		},
+		{
+			name:    "majorLarge.",
+			version: aws.String("999."),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(999)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor.patch",
+			version: aws.String("5.0.9"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired), Patch: aws.Int64(9)},
+			wantErr: nil,
+		},
+		{
+			name:    "major.minor.x",
+			version: aws.String("5.0.x"),
+			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired)},
+			wantErr: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := ParseVersion(tc.version)
+			if diff := cmp.Diff(tc.parsed, got); diff != "" {
+				t.Errorf("ParseVersion(...): -want, +got:\n%s", diff)
+			}
+			if (tc.wantErr == nil) != (gotErr == nil) {
+				t.Errorf("ParseVersion Error (%+v) - got %v", tc.wantErr, gotErr)
+			}
+			if tc.wantErr != nil {
+				if tc.wantErr.Error() != gotErr.Error() {
+					t.Errorf("ParseVersion ErrorString (%s) - got %s", tc.wantErr.Error(), gotErr.Error())
+				}
+			}
+
 		})
 	}
 }
@@ -1490,7 +1611,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					{EngineVersion: aws.String(engineVersion)},
 				},
 			},
-			want: want{res: true},
+			want: want{res: false},
 		},
 	}
 

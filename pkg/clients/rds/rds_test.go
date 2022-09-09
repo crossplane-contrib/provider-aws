@@ -39,8 +39,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (
@@ -178,6 +178,28 @@ func TestIsUpToDate(t *testing.T) {
 							AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"IgnoreDeletionOptions": {
+			args: args{
+				db: rdstypes.DBInstance{
+					AllocatedStorage: allocatedStorage,
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							AllocatedStorage:                awsclient.IntAddress(awsclient.Int64(20)),
+							CharacterSetName:                &characterSetName,
+							DBName:                          &dbName,
+							DeleteAutomatedBackups:          awsclient.Bool(true),
+							SkipFinalSnapshotBeforeDeletion: awsclient.Bool(true),
+							FinalDBSnapshotIdentifier:       awsclient.String("final"),
 						},
 					},
 				},
@@ -590,6 +612,7 @@ func TestGenerateObservation(t *testing.T) {
 				InstanceCreateTime:                    &createTime,
 				DbInstancePort:                        port32,
 				DbiResourceId:                         &resourceID,
+				BackupRetentionPeriod:                 retention32,
 				EnhancedMonitoringResourceArn:         &arn,
 				PerformanceInsightsEnabled:            &trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
@@ -642,6 +665,7 @@ func TestGenerateObservation(t *testing.T) {
 				},
 				DBInstancePort:                port,
 				DBResourceID:                  resourceID,
+				BackupRetentionPeriod:         retention,
 				DomainMemberships:             []v1beta1.DomainMembership{{Domain: domain, FQDN: name, IAMRoleName: name, Status: status}},
 				InstanceCreateTime:            &metav1.Time{Time: createTime},
 				Endpoint:                      v1beta1.Endpoint{Port: port, HostedZoneID: zone, Address: address},

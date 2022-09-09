@@ -21,8 +21,9 @@ package job
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -60,20 +61,10 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 	} else {
 		cr.Spec.ForProvider.Command = nil
 	}
-	if resp.Job.Connections != nil {
-		f2 := &svcapitypes.ConnectionsList{}
-		if resp.Job.Connections.Connections != nil {
-			f2f0 := []*string{}
-			for _, f2f0iter := range resp.Job.Connections.Connections {
-				var f2f0elem string
-				f2f0elem = *f2f0iter
-				f2f0 = append(f2f0, &f2f0elem)
-			}
-			f2.Connections = f2f0
-		}
-		cr.Spec.ForProvider.Connections = f2
+	if resp.Job.CreatedOn != nil {
+		cr.Status.AtProvider.CreatedOn = &metav1.Time{*resp.Job.CreatedOn}
 	} else {
-		cr.Spec.ForProvider.Connections = nil
+		cr.Status.AtProvider.CreatedOn = nil
 	}
 	if resp.Job.DefaultArguments != nil {
 		f4 := map[string]*string{}
@@ -104,6 +95,11 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 		cr.Spec.ForProvider.GlueVersion = resp.Job.GlueVersion
 	} else {
 		cr.Spec.ForProvider.GlueVersion = nil
+	}
+	if resp.Job.LastModifiedOn != nil {
+		cr.Status.AtProvider.LastModifiedOn = &metav1.Time{*resp.Job.LastModifiedOn}
+	} else {
+		cr.Status.AtProvider.LastModifiedOn = nil
 	}
 	if resp.Job.LogUri != nil {
 		cr.Spec.ForProvider.LogURI = resp.Job.LogUri
@@ -150,11 +146,6 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 	} else {
 		cr.Spec.ForProvider.NumberOfWorkers = nil
 	}
-	if resp.Job.SecurityConfiguration != nil {
-		cr.Spec.ForProvider.SecurityConfiguration = resp.Job.SecurityConfiguration
-	} else {
-		cr.Spec.ForProvider.SecurityConfiguration = nil
-	}
 	if resp.Job.Timeout != nil {
 		cr.Spec.ForProvider.Timeout = resp.Job.Timeout
 	} else {
@@ -189,37 +180,24 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 		}
 		res.SetCommand(f1)
 	}
-	if cr.Spec.ForProvider.Connections != nil {
-		f2 := &svcsdk.ConnectionsList{}
-		if cr.Spec.ForProvider.Connections.Connections != nil {
-			f2f0 := []*string{}
-			for _, f2f0iter := range cr.Spec.ForProvider.Connections.Connections {
-				var f2f0elem string
-				f2f0elem = *f2f0iter
-				f2f0 = append(f2f0, &f2f0elem)
-			}
-			f2.SetConnections(f2f0)
-		}
-		res.SetConnections(f2)
-	}
 	if cr.Spec.ForProvider.DefaultArguments != nil {
-		f3 := map[string]*string{}
-		for f3key, f3valiter := range cr.Spec.ForProvider.DefaultArguments {
-			var f3val string
-			f3val = *f3valiter
-			f3[f3key] = &f3val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.DefaultArguments {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetDefaultArguments(f3)
+		res.SetDefaultArguments(f2)
 	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
 	if cr.Spec.ForProvider.ExecutionProperty != nil {
-		f5 := &svcsdk.ExecutionProperty{}
+		f4 := &svcsdk.ExecutionProperty{}
 		if cr.Spec.ForProvider.ExecutionProperty.MaxConcurrentRuns != nil {
-			f5.SetMaxConcurrentRuns(*cr.Spec.ForProvider.ExecutionProperty.MaxConcurrentRuns)
+			f4.SetMaxConcurrentRuns(*cr.Spec.ForProvider.ExecutionProperty.MaxConcurrentRuns)
 		}
-		res.SetExecutionProperty(f5)
+		res.SetExecutionProperty(f4)
 	}
 	if cr.Spec.ForProvider.GlueVersion != nil {
 		res.SetGlueVersion(*cr.Spec.ForProvider.GlueVersion)
@@ -234,35 +212,32 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 		res.SetMaxRetries(*cr.Spec.ForProvider.MaxRetries)
 	}
 	if cr.Spec.ForProvider.NonOverridableArguments != nil {
-		f10 := map[string]*string{}
-		for f10key, f10valiter := range cr.Spec.ForProvider.NonOverridableArguments {
-			var f10val string
-			f10val = *f10valiter
-			f10[f10key] = &f10val
+		f9 := map[string]*string{}
+		for f9key, f9valiter := range cr.Spec.ForProvider.NonOverridableArguments {
+			var f9val string
+			f9val = *f9valiter
+			f9[f9key] = &f9val
 		}
-		res.SetNonOverridableArguments(f10)
+		res.SetNonOverridableArguments(f9)
 	}
 	if cr.Spec.ForProvider.NotificationProperty != nil {
-		f11 := &svcsdk.NotificationProperty{}
+		f10 := &svcsdk.NotificationProperty{}
 		if cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter != nil {
-			f11.SetNotifyDelayAfter(*cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter)
+			f10.SetNotifyDelayAfter(*cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter)
 		}
-		res.SetNotificationProperty(f11)
+		res.SetNotificationProperty(f10)
 	}
 	if cr.Spec.ForProvider.NumberOfWorkers != nil {
 		res.SetNumberOfWorkers(*cr.Spec.ForProvider.NumberOfWorkers)
 	}
-	if cr.Spec.ForProvider.SecurityConfiguration != nil {
-		res.SetSecurityConfiguration(*cr.Spec.ForProvider.SecurityConfiguration)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f14 := map[string]*string{}
-		for f14key, f14valiter := range cr.Spec.ForProvider.Tags {
-			var f14val string
-			f14val = *f14valiter
-			f14[f14key] = &f14val
+		f12 := map[string]*string{}
+		for f12key, f12valiter := range cr.Spec.ForProvider.Tags {
+			var f12val string
+			f12val = *f12valiter
+			f12[f12key] = &f12val
 		}
-		res.SetTags(f14)
+		res.SetTags(f12)
 	}
 	if cr.Spec.ForProvider.Timeout != nil {
 		res.SetTimeout(*cr.Spec.ForProvider.Timeout)

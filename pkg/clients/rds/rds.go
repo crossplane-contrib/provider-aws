@@ -38,8 +38,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -333,6 +333,19 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 		currentParams.AllocatedStorage = target.AllocatedStorage
 	}
 
+	// AWS Backup takes ownership of backupRetentionPeriod and
+	// preferredBackupWindow if it is in use, so we need to exclude
+	// the field in the diff
+	if in.AwsBackupRecoveryPointArn != nil {
+		if target.BackupRetentionPeriod != nil {
+			currentParams.BackupRetentionPeriod = target.BackupRetentionPeriod
+		}
+
+		if target.PreferredBackupWindow != nil {
+			currentParams.PreferredBackupWindow = target.PreferredBackupWindow
+		}
+	}
+
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -411,6 +424,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
 		AllocatedStorage:                      int(db.AllocatedStorage),
+		AWSBackupRecoveryPointARN:             aws.ToString(db.AwsBackupRecoveryPointArn),
+		BackupRetentionPeriod:                 int(db.BackupRetentionPeriod),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),
@@ -656,6 +671,7 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "DeleteAutomatedBackups"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "ApplyModificationsImmediately"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),

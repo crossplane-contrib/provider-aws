@@ -19,7 +19,7 @@ package iam
 import (
 	"context"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -43,6 +43,8 @@ type OpenIDConnectProviderClient interface {
 	DeleteOpenIDConnectProvider(ctx context.Context, input *iam.DeleteOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error)
 	TagOpenIDConnectProvider(ctx context.Context, input *iam.TagOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.TagOpenIDConnectProviderOutput, error)
 	UntagOpenIDConnectProvider(ctx context.Context, input *iam.UntagOpenIDConnectProviderInput, optFns ...func(*iam.Options)) (*iam.UntagOpenIDConnectProviderOutput, error)
+	ListOpenIDConnectProviders(ctx context.Context, input *iam.ListOpenIDConnectProvidersInput, optFns ...func(*iam.Options)) (*iam.ListOpenIDConnectProvidersOutput, error)
+	ListOpenIDConnectProviderTags(ctx context.Context, input *iam.ListOpenIDConnectProviderTagsInput, optFns ...func(*iam.Options)) (*iam.ListOpenIDConnectProviderTagsOutput, error)
 }
 
 // GenerateOIDCProviderObservation is used to produce v1alpha1.OpenIDConnectProvider

@@ -226,7 +226,9 @@ func (in *DBSubnetGroupParameters) DeepCopyInto(out *DBSubnetGroupParameters) {
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
@@ -615,12 +617,17 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.DeleteAutomatedBackups != nil {
+		in, out := &in.DeleteAutomatedBackups, &out.DeleteAutomatedBackups
+		*out = new(bool)
+		**out = **in
 	}
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
@@ -695,7 +702,7 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.MonitoringRoleARNRef != nil {
 		in, out := &in.MonitoringRoleARNRef, &out.MonitoringRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.MonitoringRoleARNSelector != nil {
 		in, out := &in.MonitoringRoleARNSelector, &out.MonitoringRoleARNSelector
@@ -780,7 +787,9 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
@@ -820,7 +829,7 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
@@ -939,7 +948,7 @@ func (in *S3RestoreBackupConfiguration) DeepCopyInto(out *S3RestoreBackupConfigu
 	if in.BucketNameRef != nil {
 		in, out := &in.BucketNameRef, &out.BucketNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.BucketNameSelector != nil {
 		in, out := &in.BucketNameSelector, &out.BucketNameSelector
@@ -954,7 +963,7 @@ func (in *S3RestoreBackupConfiguration) DeepCopyInto(out *S3RestoreBackupConfigu
 	if in.IngestionRoleARNRef != nil {
 		in, out := &in.IngestionRoleARNRef, &out.IngestionRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.IngestionRoleARNSelector != nil {
 		in, out := &in.IngestionRoleARNSelector, &out.IngestionRoleARNSelector

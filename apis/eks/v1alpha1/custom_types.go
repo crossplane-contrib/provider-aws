@@ -25,7 +25,7 @@ import (
 // CustomAddonParameters contains the additional fields for AddonParameters.
 type CustomAddonParameters struct {
 	// The name of the cluster to create the add-on for.
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/eks/v1beta1.Cluster
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1.Cluster
 	// +crossplane:generate:reference:refFieldName=ClusterNameRef
 	// +crossplane:generate:reference:selectorFieldName=ClusterNameSelector
 	ClusterName *string `json:"clusterName,omitempty"`

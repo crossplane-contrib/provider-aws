@@ -28,11 +28,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/commonnamespace"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.

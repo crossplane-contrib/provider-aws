@@ -47,7 +47,7 @@ type ActiveTrustedSigners struct {
 
 // +kubebuilder:skipversion
 type AliasICPRecordal struct {
-	CNAME *string `json:"cNAME,omitempty"`
+	CNAME *string `json:"cname,omitempty"`
 
 	ICPRecordalStatus *string `json:"iCPRecordalStatus,omitempty"`
 }

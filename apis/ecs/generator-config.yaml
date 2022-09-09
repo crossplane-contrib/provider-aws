@@ -1,0 +1,39 @@
+ignore:
+  field_paths:
+  - CreateServiceInput.ClientToken
+  - CreateServiceInput.Cluster
+  - CreateServiceInput.LoadBalancers
+  - CreateServiceInput.NetworkConfiguration
+  - CreateServiceInput.ServiceName
+  - CreateServiceInput.TaskDefinition
+  # DescribeTaskDefinition and DeregisterTaskDefinition operations expect an
+  # ARN, but the Status field TaskDefinition is a struct containing the ARN
+  # under a *different* name than the Set method. So ignore these fields and
+  # implement them manually.
+  - DescribeTaskDefinitionInput.TaskDefinition
+  - DeregisterTaskDefinitionInput.TaskDefinition
+  - RegisterTaskDefinitionInput.ExecutionRoleArn
+  - RegisterTaskDefinitionInput.TaskRoleArn
+  - RegisterTaskDefinitionInput.Volumes
+  resource_names:
+  - CapacityProvider
+  - TaskSet
+operations:
+  DeregisterTaskDefinition:
+    operation_type:
+    - Delete
+    resource_name: TaskDefinition
+  # The Describe actions for Clusters and Services output two fields of lists,
+  # ACK has trouble handling these lists, so specify the field path here.
+  DescribeClusters:
+    operation_type:
+    - Get
+    output_wrapper_field_path: Clusters
+  DescribeServices:
+    operation_type:
+    - Get
+    output_wrapper_field_path: Services
+  RegisterTaskDefinition:
+    operation_type:
+    - Create
+    resource_name: TaskDefinition

@@ -36,12 +36,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3/bucket"
+	s3Testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -127,6 +127,21 @@ func TestObserve(t *testing.T) {
 		"ValidInputNoLateInitializeUpdateACLFail": {
 			args: args{
 				s3: s3Testing.Client(s3Testing.WithPutACL(func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error) {
+					return nil, errBoom
+				})),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
+				),
+				err:    errBoom,
+				result: managed.ExternalObservation{},
+			},
+		},
+		"ValidInputNoLateInitializeUpdateBucketOwnershipControlsFail": {
+			args: args{
+				s3: s3Testing.Client(s3Testing.WithDeleteOwnershipControls(func(ctx context.Context, input *awss3.DeleteBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOwnershipControlsOutput, error) {
 					return nil, errBoom
 				})),
 				cr: s3Testing.Bucket(),

@@ -30,26 +30,69 @@ var (
 // +kubebuilder:skipversion
 type AlertManagerDefinitionDescription struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// The alert manager definition data.
+	Data []byte `json:"data,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+	// Represents the status of a definition.
+	Status *AlertManagerDefinitionStatus_SDK `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AlertManagerDefinitionStatus_SDK struct {
+	// State of an alert manager definition.
+	StatusCode *string `json:"statusCode,omitempty"`
+
+	StatusReason *string `json:"statusReason,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type RuleGroupsNamespaceDescription struct {
+	// An ARN identifying a rule groups namespace.
+	ARN *string `json:"arn,omitempty"`
+
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// The rule groups namespace data.
+	Data []byte `json:"data,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+	// The namespace name that the rule group belong to.
+	Name *string `json:"name,omitempty"`
+	// Represents the status of a namespace.
+	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
+type RuleGroupsNamespaceStatus_SDK struct {
+	// State of a namespace.
+	StatusCode *string `json:"statusCode,omitempty"`
+
+	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type RuleGroupsNamespaceSummary struct {
+	// An ARN identifying a rule groups namespace.
+	ARN *string `json:"arn,omitempty"`
+
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+	// The namespace name that the rule group belong to.
+	Name *string `json:"name,omitempty"`
+	// Represents the status of a namespace.
+	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ValidationExceptionField struct {
+	Message *string `json:"message,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion

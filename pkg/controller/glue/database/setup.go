@@ -15,8 +15,14 @@ package database
 
 import (
 	"context"
+	"errors"
+	"sort"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -27,10 +33,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
+)
+
+const (
+	errUpdateNoPrincipal    = "cannot update Glue Database. Missing principal in createTableDefaultPermissions entry"
+	errCreateSameIdentifier = "cannot create Glue Database. Combine permissions for same principals under one createTableDefaultPermissions entry"
 )
 
 // SetupDatabase adds a controller that reconciles Database.
@@ -43,6 +54,9 @@ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 			e.preDelete = preDelete
 			e.postCreate = postCreate
 			e.preCreate = preCreate
+			e.lateInitialize = lateInitialize
+			e.isUpToDate = isUpToDate
+			e.preUpdate = preUpdate
 		},
 	}
 
@@ -78,8 +92,140 @@ func postObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDat
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+
+	cr.Status.AtProvider.CreateTime = fromTimePtr(obj.Database.CreateTime)
+
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
+}
+
+func lateInitialize(spec *svcapitypes.DatabaseParameters, resp *svcsdk.GetDatabaseOutput) error {
+
+	spec.CatalogID = awsclients.LateInitializeStringPtr(spec.CatalogID, resp.Database.CatalogId)
+
+	if spec.CustomDatabaseInput == nil {
+		spec.CustomDatabaseInput = &svcapitypes.CustomDatabaseInput{}
+	}
+	if spec.CustomDatabaseInput.CreateTableDefaultPermissions == nil {
+
+		spec.CustomDatabaseInput.CreateTableDefaultPermissions = []*svcapitypes.PrincipalPermissions{}
+		for _, createPerms := range resp.Database.CreateTableDefaultPermissions {
+			specPrins := &svcapitypes.PrincipalPermissions{
+				Permissions: createPerms.Permissions,
+				Principal:   &svcapitypes.DataLakePrincipal{DataLakePrincipalIdentifier: createPerms.Principal.DataLakePrincipalIdentifier},
+			}
+			spec.CustomDatabaseInput.CreateTableDefaultPermissions = append(spec.CustomDatabaseInput.CreateTableDefaultPermissions, specPrins)
+		}
+	}
+
+	return nil
+}
+
+func isUpToDate(cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool, error) {
+
+	currentParams := customGenerateDatabase(resp).Spec.ForProvider
+
+	// checks for isuptodate-state of CustomDatabaseInput.CreateTableDefaultPermissions
+	if cr.Spec.ForProvider.CustomDatabaseInput != nil && currentParams.CustomDatabaseInput.CreateTableDefaultPermissions != nil {
+
+		if len(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions) != len(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions) {
+			// will also partly catch edgecase when user made 2+ entries for same principal (which AWS combines to one entry)
+			// this will ensure no panic error, but open an endless update-loop until user fixes the edgecase in specs
+			// -> error message for user info is thrown in (pre)create and (pre)update
+			return false, nil
+		}
+
+		// sorting both just to be safe
+		sort.SliceStable(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions, func(i, j int) bool {
+			return awsclients.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > awsclients.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
+		})
+
+		sort.SliceStable(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions, func(i, j int) bool {
+			return awsclients.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > awsclients.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
+		})
+
+		// check all CreateTableDefaultPermissions entries if they are uptodate
+		for i, prins := range cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions {
+			currPrins := currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[i]
+
+			// to avoid panic
+			if prins.Principal == nil {
+				return false, errors.New(errUpdateNoPrincipal)
+			}
+			// check if this entry is uptodate
+			if awsclients.StringValue(prins.Principal.DataLakePrincipalIdentifier) != awsclients.StringValue(currPrins.Principal.DataLakePrincipalIdentifier) {
+				// both should be sorted the same way, so if we land here that would mean that
+				// at least one entry has been added to spec and one has been removed from spec
+				// or aka one entry was simply changed /"updated"
+				return false, nil
+			}
+
+			sortOpts := cmpopts.SortSlices(func(a, b *string) bool {
+				return awsclients.StringValue(a) < awsclients.StringValue(b)
+			})
+
+			// check if the permissions of this entry are uptodate
+			if !cmp.Equal(prins.Permissions, currPrins.Permissions, sortOpts, cmpopts.EquateEmpty()) {
+				return false, nil
+			}
+		}
+	}
+
+	return cmp.Equal(cr.Spec.ForProvider, currentParams,
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
+		cmpopts.IgnoreFields(svcapitypes.DatabaseParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDatabaseInput{}, "CreateTableDefaultPermissions"),
+		cmpopts.EquateEmpty()), nil
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDatabaseInput) error {
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
+
+	obj.DatabaseInput = &svcsdk.DatabaseInput{
+		Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
+		LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
+		Name:        awsclients.String(meta.GetExternalName(cr)),
+		Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
+	}
+
+	if cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions != nil {
+		obj.DatabaseInput.CreateTableDefaultPermissions = make([]*svcsdk.PrincipalPermissions, len(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions))
+		for i, prins := range cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions {
+			sdkPrins := &svcsdk.PrincipalPermissions{
+				Permissions: make([]*string, len(prins.Permissions)),
+			}
+
+			copy(sdkPrins.Permissions, prins.Permissions)
+
+			if prins.Principal != nil {
+				sdkPrins.Principal = &svcsdk.DataLakePrincipal{
+					DataLakePrincipalIdentifier: prins.Principal.DataLakePrincipalIdentifier,
+				}
+
+				// handle case when user made 2+ createTableDefaultpermissions entries with same dataLakePrincipalIdentifier?
+				// bc AWS will auto-combine these into 1 createTableDefaultpermissions entry
+
+				// check for identical previous PrincipalIdentifiers
+				for i3 := 0; i3 < i; i3++ {
+					if obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal != nil &&
+						awsclients.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == awsclients.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
+						return errors.New(errCreateSameIdentifier)
+					}
+				}
+			}
+
+			obj.DatabaseInput.CreateTableDefaultPermissions[i] = sdkPrins
+		}
+	}
+
+	if cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase != nil {
+		obj.DatabaseInput.TargetDatabase = &svcsdk.DatabaseIdentifier{
+			CatalogId:    cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase.CatalogID,
+			DatabaseName: cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase.DatabaseName,
+		}
+	}
+
+	return nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDatabaseOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
@@ -104,14 +250,109 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 			Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
 		}
 
+		if cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions != nil {
+			obj.DatabaseInput.CreateTableDefaultPermissions = make([]*svcsdk.PrincipalPermissions, len(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions))
+			for i, prins := range cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions {
+				sdkPrins := &svcsdk.PrincipalPermissions{
+					Permissions: make([]*string, len(prins.Permissions)),
+				}
+
+				copy(sdkPrins.Permissions, prins.Permissions)
+
+				if prins.Principal != nil {
+					sdkPrins.Principal = &svcsdk.DataLakePrincipal{
+						DataLakePrincipalIdentifier: prins.Principal.DataLakePrincipalIdentifier,
+					}
+
+					// handle case when user made 2+ createTableDefaultpermissions entries with same dataLakePrincipalIdentifier?
+					// bc AWS will auto-combine these into 1 createTableDefaultpermissions entry
+
+					// check for identical previous PrincipalIdentifiers
+					for i3 := 0; i3 < i; i3++ {
+						if obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal != nil &&
+							awsclients.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == awsclients.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
+							return errors.New(errCreateSameIdentifier)
+						}
+					}
+				}
+
+				obj.DatabaseInput.CreateTableDefaultPermissions[i] = sdkPrins
+			}
+		}
+
 		if cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase != nil {
 			obj.DatabaseInput.TargetDatabase = &svcsdk.DatabaseIdentifier{
 				CatalogId:    cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase.CatalogID,
 				DatabaseName: cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase.DatabaseName,
 			}
 		}
-
 	}
 
+	return nil
+}
+
+// Custom GenerateDatabase for isuptodate (the generated one in zz_conversion.go is missing too much)
+func customGenerateDatabase(resp *svcsdk.GetDatabaseOutput) *svcapitypes.Database {
+
+	cr := &svcapitypes.Database{}
+	cr.Spec.ForProvider.CustomDatabaseInput = &svcapitypes.CustomDatabaseInput{}
+
+	if resp.Database.CatalogId != nil {
+		cr.Spec.ForProvider.CatalogID = resp.Database.CatalogId
+	} else {
+		cr.Spec.ForProvider.CatalogID = nil
+	}
+
+	if resp.Database.CreateTableDefaultPermissions != nil {
+		cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions = []*svcapitypes.PrincipalPermissions{}
+
+		for _, createPerms := range resp.Database.CreateTableDefaultPermissions {
+
+			specPrins := &svcapitypes.PrincipalPermissions{
+				Permissions: createPerms.Permissions,
+				Principal:   &svcapitypes.DataLakePrincipal{DataLakePrincipalIdentifier: createPerms.Principal.DataLakePrincipalIdentifier},
+			}
+			cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions = append(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions, specPrins)
+		}
+	} else {
+		cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions = nil
+	}
+
+	if resp.Database.Description != nil {
+		cr.Spec.ForProvider.CustomDatabaseInput.Description = resp.Database.Description
+	} else {
+		cr.Spec.ForProvider.CustomDatabaseInput.Description = nil
+	}
+
+	if resp.Database.LocationUri != nil {
+		cr.Spec.ForProvider.CustomDatabaseInput.LocationURI = resp.Database.LocationUri
+	} else {
+		cr.Spec.ForProvider.CustomDatabaseInput.LocationURI = nil
+	}
+
+	if resp.Database.Parameters != nil {
+		cr.Spec.ForProvider.CustomDatabaseInput.Parameters = resp.Database.Parameters
+	} else {
+		cr.Spec.ForProvider.CustomDatabaseInput.Parameters = nil
+	}
+
+	if resp.Database.TargetDatabase != nil {
+		cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase = &svcapitypes.DatabaseIdentifier{
+			CatalogID:    resp.Database.TargetDatabase.CatalogId,
+			DatabaseName: resp.Database.TargetDatabase.DatabaseName,
+		}
+	} else {
+		cr.Spec.ForProvider.CustomDatabaseInput.TargetDatabase = nil
+	}
+
+	return cr
+}
+
+// fromTimePtr is a helper for converting a *time.Time to a *metav1.Time
+func fromTimePtr(t *time.Time) *metav1.Time {
+	if t != nil {
+		m := metav1.NewTime(*t)
+		return &m
+	}
 	return nil
 }

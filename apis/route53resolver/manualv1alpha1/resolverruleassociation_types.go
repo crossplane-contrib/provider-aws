@@ -68,7 +68,7 @@ type ResolverRuleAssociationParameters struct {
 	// The ID of the Resolver rule that you want to associate with the VPC. To list
 	// the existing Resolver rules, use ListResolverRules (https://docs.aws.amazon.com/Route53/latest/APIReference/API_route53resolver_ListResolverRules.html).
 	//
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/route53resolver/v1alpha1.ResolverRule
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/route53resolver/v1alpha1.ResolverRule
 	// +optional
 	ResolverRuleID *string `json:"resolverRuleId,omitempty"`
 
@@ -86,7 +86,7 @@ type ResolverRuleAssociationParameters struct {
 
 	// The ID of the VPC that you want to associate the Resolver rule with.
 	//
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.VPC
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC
 	// +optional
 	VPCId *string `json:"vpcId,omitempty"`
 

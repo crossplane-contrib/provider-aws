@@ -111,7 +111,7 @@ func (in *ResolverRuleAssociationParameters) DeepCopyInto(out *ResolverRuleAssoc
 	if in.ResolverRuleIDRef != nil {
 		in, out := &in.ResolverRuleIDRef, &out.ResolverRuleIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResolverRuleIDSelector != nil {
 		in, out := &in.ResolverRuleIDSelector, &out.ResolverRuleIDSelector
@@ -126,7 +126,7 @@ func (in *ResolverRuleAssociationParameters) DeepCopyInto(out *ResolverRuleAssoc
 	if in.VPCIdRef != nil {
 		in, out := &in.VPCIdRef, &out.VPCIdRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.VPCIdSelector != nil {
 		in, out := &in.VPCIdSelector, &out.VPCIdSelector

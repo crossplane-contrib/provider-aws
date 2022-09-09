@@ -6,7 +6,7 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 type CustomInstanceProfileParameters struct {
 	// Role is the ID for the Role to add to Instance Profile.
 	// +immutable
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	Role *string `json:"role,omitempty"`
 
 	// RoleRef is a reference to an Role

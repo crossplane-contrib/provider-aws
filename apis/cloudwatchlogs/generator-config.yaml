@@ -4,3 +4,41 @@ ignore:
     - ExportTask
   field_paths:
     - CreateLogGroupInput.KmsKeyId
+resources:
+  LogGroup:
+    fields:
+      ARN:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.Arn
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.CreationTime
+      KmsKeyId:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.KmsKeyId
+      LogGroupName:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.LogGroupName
+      MetricFilterCount:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.MetricFilterCount
+      RetentionInDays:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.RetentionInDays
+      StoredBytes:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.StoredBytes

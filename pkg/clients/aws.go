@@ -30,7 +30,7 @@ import (
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 
 	ec2type "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -56,9 +56,9 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/v1alpha3"
-	"github.com/crossplane/provider-aws/apis/v1beta1"
-	"github.com/crossplane/provider-aws/pkg/version"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha3"
+	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/version"
 )
 
 // DefaultSection for INI files.
@@ -188,9 +188,9 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 			if pc.Spec.Endpoint.URL.Dynamic == nil {
 				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
 			}
-			// NOTE(muvaf): IAM does not have any region.
-			if service == "IAM" {
-				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), pc.Spec.Endpoint.URL.Dynamic.Host)
+			// NOTE(muvaf): IAM and Route 53 do not have a region.
+			if service == "IAM" || service == "Route 53" {
+				fullURL = fmt.Sprintf("%s://%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ReplaceAll(strings.ToLower(service), " ", ""), pc.Spec.Endpoint.URL.Dynamic.Host)
 			} else {
 				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
 			}
@@ -210,7 +210,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 		// to be set.
 		if region == "aws-global" {
 			switch StringValue(pc.Spec.Endpoint.PartitionID) {
-			case "aws-us-gov", "aws-cn":
+			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
 				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
@@ -356,22 +356,20 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 // assume Cross account IAM roles
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
-
 	roleArn, err := GetAssumeRoleARN(pc.Spec.DeepCopy())
 	if err != nil {
 		return nil, err
 	}
-
-	stsclient := sts.NewFromConfig(cfg)
+	stsclient := sts.NewFromConfig(*cfg)
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
-		config.WithRegion(region),
+		config.WithRegion(cfg.Region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
@@ -425,13 +423,20 @@ func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
+	if region == GlobalRegion {
+		cfg, err := config.LoadDefaultConfig(
+			ctx,
+			userAgentV2,
+		)
+		return &cfg, errors.Wrap(err, "failed to load default AWS config")
+	}
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load default AWS config")
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to load default AWS config with region %s", region))
 	}
 	return &cfg, err
 }
@@ -456,7 +461,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
-		if pc.Spec.AssumeRoleARN != nil {
+		if pc.Spec.AssumeRoleARN != nil || pc.Spec.AssumeRole != nil {
 			cfg, err := UsePodServiceAccountV1AssumeRole(ctx, []byte{}, pc, DefaultSection, region)
 			if err != nil {
 				return nil, errors.Wrap(err, "cannot use pod service account to assume role")
@@ -600,6 +605,9 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 	}
 	stsclient := sts.NewFromConfig(cfg)
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
+	if region == GlobalRegion {
+		region = cfg.Region
+	}
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
@@ -676,7 +684,6 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
 		userAgentV2,
-		config.WithRegion(region),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
@@ -684,6 +691,9 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 	v2creds, err := cfg.Credentials.Retrieve(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	}
+	if region == GlobalRegion {
+		region = cfg.Region
 	}
 	v1creds := credentialsv1.NewStaticCredentials(
 		v2creds.AccessKeyID,
@@ -731,7 +741,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		// to be set.
 		if region == "aws-global" {
 			switch StringValue(pc.Spec.Endpoint.PartitionID) {
-			case "aws-us-gov", "aws-cn":
+			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
 				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
@@ -744,10 +754,8 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 
 // GetAssumeRoleARN gets the AssumeRoleArn from a ProviderConfigSpec
 func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
-	if pcs.AssumeRole != nil {
-		if pcs.AssumeRole.RoleARN != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
-			return pcs.AssumeRole.RoleARN, nil
-		}
+	if pcs.AssumeRole != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
+		return pcs.AssumeRole.RoleARN, nil
 	}
 
 	// Deprecated. Use AssumeRole.RoleARN
@@ -890,6 +898,15 @@ func BoolValue(v *bool) bool {
 // Int64Value converts the supplied int64 pointer to a int64, returning
 // 0 if the pointer is nil.
 func Int64Value(v *int64) int64 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Int32Value converts the supplied int32 pointer to a int32, returning
+// 0 if the pointer is nil.
+func Int32Value(v *int32) int32 {
 	if v != nil {
 		return *v
 	}
@@ -1243,7 +1260,7 @@ func Wrap(err error, msg string) error {
 	// AWS SDK v1 uses different interfaces than v2 and it doesn't unwrap to
 	// the underlying error. So, we need to strip off the unique request ID
 	// manually.
-	if v1RequestError, ok := err.(awserr.RequestFailure); ok {
+	if v1RequestError, ok := err.(awserr.RequestFailure); ok { //nolint:errorlint
 		// TODO(negz): This loses context about the underlying error
 		// type, preventing us from using errors.As to figure out what
 		// kind of error it is. Could we do this without losing

@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cloudwatchlogs/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -42,10 +42,35 @@ func GenerateLogGroup(resp *svcsdk.DescribeLogGroupsOutput) *svcapitypes.LogGrou
 
 	found := false
 	for _, elem := range resp.LogGroups {
+		if elem.CreationTime != nil {
+			cr.Status.AtProvider.CreationTime = elem.CreationTime
+		} else {
+			cr.Status.AtProvider.CreationTime = nil
+		}
+		if elem.KmsKeyId != nil {
+			cr.Status.AtProvider.KMSKeyID = elem.KmsKeyId
+		} else {
+			cr.Status.AtProvider.KMSKeyID = nil
+		}
 		if elem.LogGroupName != nil {
 			cr.Spec.ForProvider.LogGroupName = elem.LogGroupName
 		} else {
 			cr.Spec.ForProvider.LogGroupName = nil
+		}
+		if elem.MetricFilterCount != nil {
+			cr.Status.AtProvider.MetricFilterCount = elem.MetricFilterCount
+		} else {
+			cr.Status.AtProvider.MetricFilterCount = nil
+		}
+		if elem.RetentionInDays != nil {
+			cr.Status.AtProvider.RetentionInDays = elem.RetentionInDays
+		} else {
+			cr.Status.AtProvider.RetentionInDays = nil
+		}
+		if elem.StoredBytes != nil {
+			cr.Status.AtProvider.StoredBytes = elem.StoredBytes
+		} else {
+			cr.Status.AtProvider.StoredBytes = nil
 		}
 		found = true
 		break

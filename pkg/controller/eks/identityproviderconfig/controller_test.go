@@ -31,10 +31,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
-	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks/fake"
 )
 
 var (
@@ -169,6 +169,23 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: identityProviderConfig(),
+			},
+		},
+		"NotFoundResetStatus": {
+			args: args{
+				eks: &fake.MockClient{
+					MockDescribeIdentityProviderConfig: func(ctx context.Context, input *awseks.DescribeIdentityProviderConfigInput, opts []func(*awseks.Options)) (*awseks.DescribeIdentityProviderConfigOutput, error) {
+						return nil, &awsekstypes.ResourceNotFoundException{}
+					},
+				},
+				cr: identityProviderConfig(
+					withStatus(manualv1alpha1.IdentityProviderConfigStatusCreateFailed),
+				),
+			},
+			want: want{
+				cr: identityProviderConfig(
+					withStatus(""),
+				),
 			},
 		},
 		"LateInitSuccess": {

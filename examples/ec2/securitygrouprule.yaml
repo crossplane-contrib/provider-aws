@@ -1,0 +1,17 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: SecurityGroupRule
+metadata:
+  name: sample-sgr
+spec:
+  forProvider:
+    region: us-east-1
+    protocol: "tcp"
+    fromPort: 443
+    toPort: 443
+    type: "ingress"
+    securityGroupIdRef:
+      name: sample-cluster-sg
+    cidrBlock: "123.12.0.0/16" 
+    description: "sample-sgr description"
+  providerConfigRef:
+    name: example

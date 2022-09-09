@@ -37,10 +37,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupTable adds a controller that reconciles Table.
@@ -344,7 +344,7 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 	}
 
 	// TODO(negz): Support updating tags if possible.
-	// https://github.com/crossplane/provider-aws/issues/945
+	// https://github.com/crossplane-contrib/provider-aws/issues/945
 
 	// At least one of ProvisionedThroughput, BillingMode, UpdateStreamEnabled,
 	// GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is

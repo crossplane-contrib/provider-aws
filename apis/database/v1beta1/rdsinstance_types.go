@@ -110,7 +110,7 @@ type ScalingConfiguration struct {
 type S3RestoreBackupConfiguration struct {
 	// BucketName is the name of the S3 bucket containing the backup to restore.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/s3/v1beta1.Bucket
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1.Bucket
 	BucketName *string `json:"bucketName"`
 
 	// BucketNameRef is a reference to a Bucket used to set
@@ -127,8 +127,8 @@ type S3RestoreBackupConfiguration struct {
 
 	// IngestionRoleARN is the IAM role RDS can assume that will allow it to access the contents of the S3 bucket.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	IngestionRoleARN *string `json:"ingestionRoleARN,omitempty"`
 
 	// IngestionRoleARNRef is a reference to a IAM Role used to set
@@ -396,6 +396,13 @@ type RDSInstanceParameters struct {
 	// +optional
 	DBSubnetGroupNameSelector *xpv1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
 
+	// DeleteAutomatedBackups indicates whether to remove automated backups
+	// immediately after the DB instance is deleted. The default is to
+	// remove automated backups immediately after the DB instance is
+	// deleted.
+	// +optional
+	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
+
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
 	// false. For more information, see  Deleting a DB Instance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html).
@@ -584,8 +591,8 @@ type RDSInstanceParameters struct {
 	// If MonitoringInterval is set to a value other than 0, then you must supply
 	// a MonitoringRoleARN value.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
-	// +crossplane:generate:reference:extractor=github.com/crossplane/provider-aws/apis/iam/v1beta1.RoleARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	MonitoringRoleARN *string `json:"monitoringRoleArn,omitempty"`
 
 	// MonitoringRoleARNRef is a reference to an IAMRole used to set
@@ -760,7 +767,7 @@ type RDSInstanceParameters struct {
 	// by the DB cluster. For more information, see CreateDBCluster.
 	// Default: The default EC2 VPC security group for the DB subnet group's VPC.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=VPCSecurityGroupIDRefs
 	// +crossplane:generate:reference:selectorFieldName=VPCSecurityGroupIDSelector
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
@@ -826,7 +833,7 @@ type RDSInstanceParameters struct {
 	// DomainIAMRoleName specifies the name of the IAM role to be used when making API calls to the
 	// Directory Service.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
@@ -908,12 +915,13 @@ const (
 
 // DBParameterGroupStatus is the status of the DB parameter group.
 // This data type is used as a response element in the following actions:
-//    * CreateDBInstance
-//    * CreateDBInstanceReadReplica
-//    * DeleteDBInstance
-//    * ModifyDBInstance
-//    * RebootDBInstance
-//    * RestoreDBInstanceFromDBSnapshot
+//   - CreateDBInstance
+//   - CreateDBInstanceReadReplica
+//   - DeleteDBInstance
+//   - ModifyDBInstance
+//   - RebootDBInstance
+//   - RestoreDBInstanceFromDBSnapshot
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus
 type DBParameterGroupStatus struct {
 	// DBParameterGroupName is the name of the DP parameter group.
@@ -924,10 +932,11 @@ type DBParameterGroupStatus struct {
 }
 
 // DBSecurityGroupMembership is used as a response element in the following actions:
-//    * ModifyDBInstance
-//    * RebootDBInstance
-//    * RestoreDBInstanceFromDBSnapshot
-//    * RestoreDBInstanceToPointInTime
+//   - ModifyDBInstance
+//   - RebootDBInstance
+//   - RestoreDBInstanceFromDBSnapshot
+//   - RestoreDBInstanceToPointInTime
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership
 type DBSecurityGroupMembership struct {
 	// DBSecurityGroupName is the name of the DB security group.
@@ -939,7 +948,8 @@ type DBSecurityGroupMembership struct {
 
 // AvailabilityZone contains Availability Zone information.
 // This data type is used as an element in the following data type:
-//    * OrderableDBInstanceOption
+//   - OrderableDBInstanceOption
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/AvailabilityZone
 type AvailabilityZone struct {
 	// Name of the Availability Zone.
@@ -1006,9 +1016,10 @@ type DomainMembership struct {
 }
 
 // Endpoint is used as a response element in the following actions:
-//    * CreateDBInstance
-//    * DescribeDBInstances
-//    * DeleteDBInstance
+//   - CreateDBInstance
+//   - DescribeDBInstances
+//   - DeleteDBInstance
+//
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Endpoint
 type Endpoint struct {
 	// Address specifies the DNS address of the DB instance.
@@ -1131,6 +1142,12 @@ type VPCSecurityGroupMembership struct {
 
 // RDSInstanceObservation is the representation of the current state that is observed.
 type RDSInstanceObservation struct {
+	// AWSBackupRecoveryPointARN is the Amazon Resource Name (ARN) of the recovery point in Amazon Web Services Backup.
+	AWSBackupRecoveryPointARN string `json:"awsBackupRecoveryPointARN,omitempty"`
+
+	// BackupRetentionPeriod is the number of days for which automated backups are retained.
+	BackupRetentionPeriod int `json:"backupRetentionPeriod,omitempty"`
+
 	// DBInstanceStatus specifies the current state of this database.
 	DBInstanceStatus string `json:"dbInstanceStatus,omitempty"`
 

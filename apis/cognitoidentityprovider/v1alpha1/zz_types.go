@@ -332,7 +332,20 @@ type RecoveryOptionType struct {
 }
 
 // +kubebuilder:skipversion
+type ResourceServerScopeType struct {
+	ScopeDescription *string `json:"scopeDescription,omitempty"`
+
+	ScopeName *string `json:"scopeName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ResourceServerType struct {
+	Identifier *string `json:"identifier,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Scopes []*ResourceServerScopeType `json:"scopes,omitempty"`
+
 	UserPoolID *string `json:"userPoolID,omitempty"`
 }
 
@@ -374,7 +387,7 @@ type SchemaAttributeType struct {
 type SmsConfigurationType struct {
 	ExternalID *string `json:"externalID,omitempty"`
 
-	SnsCallerARN *string `json:"snsCallerARN,omitempty"`
+	SNSCallerARN *string `json:"snsCallerARN,omitempty"`
 }
 
 // +kubebuilder:skipversion

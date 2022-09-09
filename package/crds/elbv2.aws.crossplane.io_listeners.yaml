@@ -89,6 +89,32 @@ spec:
                             name:
                               description: Name of the referenced object.
                               type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
                           required:
                           - name
                           type: object
@@ -106,6 +132,32 @@ spec:
                                 type: string
                               description: MatchLabels ensures an object with matching
                                 labels is selected.
+                              type: object
+                            policy:
+                              description: Policies for selection.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
                               type: object
                           type: object
                         isDefault:
@@ -221,6 +273,35 @@ spec:
                                       name:
                                         description: Name of the referenced object.
                                         type: string
+                                      policy:
+                                        description: Policies for referencing.
+                                        properties:
+                                          resolution:
+                                            default: Required
+                                            description: Resolution specifies whether
+                                              resolution of this reference is required.
+                                              The default is 'Required', which means
+                                              the reconcile will fail if the reference
+                                              cannot be resolved. 'Optional' means
+                                              this reference will be a no-op if it
+                                              cannot be resolved.
+                                            enum:
+                                            - Required
+                                            - Optional
+                                            type: string
+                                          resolve:
+                                            description: Resolve specifies when this
+                                              reference should be resolved. The default
+                                              is 'IfNotPresent', which will attempt
+                                              to resolve the reference only when the
+                                              corresponding field is not present.
+                                              Use 'Always' to resolve the reference
+                                              on every reconcile.
+                                            enum:
+                                            - Always
+                                            - IfNotPresent
+                                            type: string
+                                        type: object
                                     required:
                                     - name
                                     type: object
@@ -238,6 +319,35 @@ spec:
                                           type: string
                                         description: MatchLabels ensures an object
                                           with matching labels is selected.
+                                        type: object
+                                      policy:
+                                        description: Policies for selection.
+                                        properties:
+                                          resolution:
+                                            default: Required
+                                            description: Resolution specifies whether
+                                              resolution of this reference is required.
+                                              The default is 'Required', which means
+                                              the reconcile will fail if the reference
+                                              cannot be resolved. 'Optional' means
+                                              this reference will be a no-op if it
+                                              cannot be resolved.
+                                            enum:
+                                            - Required
+                                            - Optional
+                                            type: string
+                                          resolve:
+                                            description: Resolve specifies when this
+                                              reference should be resolved. The default
+                                              is 'IfNotPresent', which will attempt
+                                              to resolve the reference only when the
+                                              corresponding field is not present.
+                                              Use 'Always' to resolve the reference
+                                              on every reconcile.
+                                            enum:
+                                            - Always
+                                            - IfNotPresent
+                                            type: string
                                         type: object
                                     type: object
                                   weight:
@@ -290,6 +400,32 @@ spec:
                             name:
                               description: Name of the referenced object.
                               type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
                           required:
                           - name
                           type: object
@@ -308,6 +444,32 @@ spec:
                               description: MatchLabels ensures an object with matching
                                 labels is selected.
                               type: object
+                            policy:
+                              description: Policies for selection.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
                           type: object
                       required:
                       - actionType
@@ -322,6 +484,31 @@ spec:
                       name:
                         description: Name of the referenced object.
                         type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
                     required:
                     - name
                     type: object
@@ -337,6 +524,31 @@ spec:
                           type: string
                         description: MatchLabels ensures an object with matching labels
                           is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
                         type: object
                     type: object
                   port:
@@ -387,6 +599,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -398,6 +635,31 @@ spec:
                   name:
                     description: Name of the referenced object.
                     type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
                 required:
                 - name
                 type: object
@@ -417,6 +679,31 @@ spec:
                       name:
                         description: Name of the referenced object.
                         type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
                     required:
                     - name
                     type: object
@@ -479,167 +766,154 @@ spec:
               atProvider:
                 description: ListenerObservation defines the observed state of Listener
                 properties:
-                  listeners:
-                    description: Information about the listener.
+                  certificates:
+                    description: '[HTTPS or TLS listener] The default certificate
+                      for the listener.'
                     items:
                       properties:
-                        alpnPolicy:
-                          items:
-                            type: string
-                          type: array
-                        certificates:
-                          items:
-                            properties:
-                              certificateARN:
+                        certificateARN:
+                          type: string
+                        isDefault:
+                          type: boolean
+                      type: object
+                    type: array
+                  defaultActions:
+                    description: The default actions for the listener.
+                    items:
+                      properties:
+                        authenticateCognitoConfig:
+                          description: Request parameters to use when integrating
+                            with Amazon Cognito to authenticate users.
+                          properties:
+                            authenticationRequestExtraParams:
+                              additionalProperties:
                                 type: string
-                              isDefault:
-                                type: boolean
-                            type: object
-                          type: array
-                        defaultActions:
-                          items:
-                            properties:
-                              authenticateCognitoConfig:
-                                description: Request parameters to use when integrating
-                                  with Amazon Cognito to authenticate users.
+                              type: object
+                            onUnauthenticatedRequest:
+                              type: string
+                            scope:
+                              type: string
+                            sessionCookieName:
+                              type: string
+                            sessionTimeout:
+                              format: int64
+                              type: integer
+                            userPoolARN:
+                              type: string
+                            userPoolClientID:
+                              type: string
+                            userPoolDomain:
+                              type: string
+                          type: object
+                        authenticateOIDCConfig:
+                          description: Request parameters when using an identity provider
+                            (IdP) that is compliant with OpenID Connect (OIDC) to
+                            authenticate users.
+                          properties:
+                            authenticationRequestExtraParams:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            authorizationEndpoint:
+                              type: string
+                            clientID:
+                              type: string
+                            clientSecret:
+                              type: string
+                            issuer:
+                              type: string
+                            onUnauthenticatedRequest:
+                              type: string
+                            scope:
+                              type: string
+                            sessionCookieName:
+                              type: string
+                            sessionTimeout:
+                              format: int64
+                              type: integer
+                            tokenEndpoint:
+                              type: string
+                            useExistingClientSecret:
+                              type: boolean
+                            userInfoEndpoint:
+                              type: string
+                          type: object
+                        fixedResponseConfig:
+                          description: Information about an action that returns a
+                            custom HTTP response.
+                          properties:
+                            contentType:
+                              type: string
+                            messageBody:
+                              type: string
+                            statusCode:
+                              type: string
+                          type: object
+                        forwardConfig:
+                          description: Information about a forward action.
+                          properties:
+                            targetGroupStickinessConfig:
+                              description: Information about the target group stickiness
+                                for a rule.
+                              properties:
+                                durationSeconds:
+                                  format: int64
+                                  type: integer
+                                enabled:
+                                  type: boolean
+                              type: object
+                            targetGroups:
+                              items:
                                 properties:
-                                  authenticationRequestExtraParams:
-                                    additionalProperties:
-                                      type: string
-                                    type: object
-                                  onUnauthenticatedRequest:
+                                  targetGroupARN:
                                     type: string
-                                  scope:
-                                    type: string
-                                  sessionCookieName:
-                                    type: string
-                                  sessionTimeout:
+                                  weight:
                                     format: int64
                                     type: integer
-                                  userPoolARN:
-                                    type: string
-                                  userPoolClientID:
-                                    type: string
-                                  userPoolDomain:
-                                    type: string
                                 type: object
-                              authenticateOIDCConfig:
-                                description: Request parameters when using an identity
-                                  provider (IdP) that is compliant with OpenID Connect
-                                  (OIDC) to authenticate users.
-                                properties:
-                                  authenticationRequestExtraParams:
-                                    additionalProperties:
-                                      type: string
-                                    type: object
-                                  authorizationEndpoint:
-                                    type: string
-                                  clientID:
-                                    type: string
-                                  clientSecret:
-                                    type: string
-                                  issuer:
-                                    type: string
-                                  onUnauthenticatedRequest:
-                                    type: string
-                                  scope:
-                                    type: string
-                                  sessionCookieName:
-                                    type: string
-                                  sessionTimeout:
-                                    format: int64
-                                    type: integer
-                                  tokenEndpoint:
-                                    type: string
-                                  useExistingClientSecret:
-                                    type: boolean
-                                  userInfoEndpoint:
-                                    type: string
-                                type: object
-                              fixedResponseConfig:
-                                description: Information about an action that returns
-                                  a custom HTTP response.
-                                properties:
-                                  contentType:
-                                    type: string
-                                  messageBody:
-                                    type: string
-                                  statusCode:
-                                    type: string
-                                type: object
-                              forwardConfig:
-                                description: Information about a forward action.
-                                properties:
-                                  targetGroupStickinessConfig:
-                                    description: Information about the target group
-                                      stickiness for a rule.
-                                    properties:
-                                      durationSeconds:
-                                        format: int64
-                                        type: integer
-                                      enabled:
-                                        type: boolean
-                                    type: object
-                                  targetGroups:
-                                    items:
-                                      properties:
-                                        targetGroupARN:
-                                          type: string
-                                        weight:
-                                          format: int64
-                                          type: integer
-                                      type: object
-                                    type: array
-                                type: object
-                              order:
-                                format: int64
-                                type: integer
-                              redirectConfig:
-                                description: "Information about a redirect action.
-                                  \n A URI consists of the following components: protocol://hostname:port/path?query.
-                                  You must modify at least one of the following components
-                                  to avoid a redirect loop: protocol, hostname, port,
-                                  or path. Any components that you do not modify retain
-                                  their original values. \n You can reuse URI components
-                                  using the following reserved keywords: \n * #{protocol}
-                                  \n * #{host} \n * #{port} \n * #{path} (the leading
-                                  \"/\" is removed) \n * #{query} \n For example,
-                                  you can change the path to \"/new/#{path}\", the
-                                  hostname to \"example.#{host}\", or the query to
-                                  \"#{query}&value=xyz\"."
-                                properties:
-                                  host:
-                                    type: string
-                                  path:
-                                    type: string
-                                  port:
-                                    type: string
-                                  protocol:
-                                    type: string
-                                  query:
-                                    type: string
-                                  statusCode:
-                                    type: string
-                                type: object
-                              targetGroupARN:
-                                type: string
-                              type_:
-                                type: string
-                            type: object
-                          type: array
-                        listenerARN:
-                          type: string
-                        loadBalancerARN:
-                          type: string
-                        port:
+                              type: array
+                          type: object
+                        order:
                           format: int64
                           type: integer
-                        protocol:
+                        redirectConfig:
+                          description: "Information about a redirect action. \n A
+                            URI consists of the following components: protocol://hostname:port/path?query.
+                            You must modify at least one of the following components
+                            to avoid a redirect loop: protocol, hostname, port, or
+                            path. Any components that you do not modify retain their
+                            original values. \n You can reuse URI components using
+                            the following reserved keywords: \n * #{protocol} \n *
+                            #{host} \n * #{port} \n * #{path} (the leading \"/\" is
+                            removed) \n * #{query} \n For example, you can change
+                            the path to \"/new/#{path}\", the hostname to \"example.#{host}\",
+                            or the query to \"#{query}&value=xyz\"."
+                          properties:
+                            host:
+                              type: string
+                            path:
+                              type: string
+                            port:
+                              type: string
+                            protocol:
+                              type: string
+                            query:
+                              type: string
+                            statusCode:
+                              type: string
+                          type: object
+                        targetGroupARN:
                           type: string
-                        sslPolicy:
+                        type_:
                           type: string
                       type: object
                     type: array
+                  listenerARN:
+                    description: The Amazon Resource Name (ARN) of the listener.
+                    type: string
+                  loadBalancerARN:
+                    description: The Amazon Resource Name (ARN) of the load balancer.
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

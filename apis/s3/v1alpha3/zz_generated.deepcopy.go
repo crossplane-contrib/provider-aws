@@ -37,7 +37,7 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	if in.UserARNRef != nil {
 		in, out := &in.UserARNRef, &out.UserARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserARNSelector != nil {
 		in, out := &in.UserARNSelector, &out.UserARNSelector
@@ -57,7 +57,7 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	if in.IAMRoleARNRef != nil {
 		in, out := &in.IAMRoleARNRef, &out.IAMRoleARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.IAMRoleARNSelector != nil {
 		in, out := &in.IAMRoleARNSelector, &out.IAMRoleARNSelector
@@ -178,7 +178,7 @@ func (in *BucketPolicyParameters) DeepCopyInto(out *BucketPolicyParameters) {
 	if in.BucketNameRef != nil {
 		in, out := &in.BucketNameRef, &out.BucketNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.BucketNameSelector != nil {
 		in, out := &in.BucketNameSelector, &out.BucketNameSelector

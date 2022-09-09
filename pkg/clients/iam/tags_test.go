@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )
 
 func TestDiffIAMTags(t *testing.T) {

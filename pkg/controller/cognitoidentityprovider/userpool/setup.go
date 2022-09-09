@@ -28,10 +28,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/cognitoidentityprovider/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupUserPool adds a controller that reconciles UserPool.
@@ -288,7 +288,7 @@ func areSmsConfigurationEqual(spec *svcapitypes.SmsConfigurationType, current *s
 	if spec != nil && current != nil {
 		switch {
 		case awsclients.StringValue(spec.ExternalID) != awsclients.StringValue(current.ExternalId),
-			awsclients.StringValue(spec.SnsCallerARN) != awsclients.StringValue(current.SnsCallerArn):
+			awsclients.StringValue(spec.SNSCallerARN) != awsclients.StringValue(current.SnsCallerArn):
 			return false
 		}
 	}

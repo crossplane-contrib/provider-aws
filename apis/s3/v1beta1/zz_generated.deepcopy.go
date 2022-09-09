@@ -205,6 +205,11 @@ func (in *BucketParameters) DeepCopyInto(out *BucketParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ObjectOwnership != nil {
+		in, out := &in.ObjectOwnership, &out.ObjectOwnership
+		*out = new(string)
+		**out = **in
+	}
 	if in.ServerSideEncryptionConfiguration != nil {
 		in, out := &in.ServerSideEncryptionConfiguration, &out.ServerSideEncryptionConfiguration
 		*out = new(ServerSideEncryptionConfiguration)
@@ -429,7 +434,7 @@ func (in *Destination) DeepCopyInto(out *Destination) {
 	if in.BucketRef != nil {
 		in, out := &in.BucketRef, &out.BucketRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.BucketSelector != nil {
 		in, out := &in.BucketSelector, &out.BucketSelector
@@ -479,7 +484,7 @@ func (in *EncryptionConfiguration) DeepCopyInto(out *EncryptionConfiguration) {
 	if in.ReplicaKmsKeyIDRef != nil {
 		in, out := &in.ReplicaKmsKeyIDRef, &out.ReplicaKmsKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ReplicaKmsKeyIDSelector != nil {
 		in, out := &in.ReplicaKmsKeyIDSelector, &out.ReplicaKmsKeyIDSelector
@@ -730,7 +735,7 @@ func (in *LoggingConfiguration) DeepCopyInto(out *LoggingConfiguration) {
 	if in.TargetBucketRef != nil {
 		in, out := &in.TargetBucketRef, &out.TargetBucketRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetBucketSelector != nil {
 		in, out := &in.TargetBucketSelector, &out.TargetBucketSelector
@@ -938,7 +943,7 @@ func (in *QueueConfiguration) DeepCopyInto(out *QueueConfiguration) {
 	if in.QueueArnRef != nil {
 		in, out := &in.QueueArnRef, &out.QueueArnRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.QueueArnSelector != nil {
 		in, out := &in.QueueArnSelector, &out.QueueArnSelector
@@ -1018,7 +1023,7 @@ func (in *ReplicationConfiguration) DeepCopyInto(out *ReplicationConfiguration) 
 	if in.RoleRef != nil {
 		in, out := &in.RoleRef, &out.RoleRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleSelector != nil {
 		in, out := &in.RoleSelector, &out.RoleSelector
@@ -1225,7 +1230,7 @@ func (in *ServerSideEncryptionByDefault) DeepCopyInto(out *ServerSideEncryptionB
 	if in.KMSMasterKeyIDRef != nil {
 		in, out := &in.KMSMasterKeyIDRef, &out.KMSMasterKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSMasterKeyIDSelector != nil {
 		in, out := &in.KMSMasterKeyIDSelector, &out.KMSMasterKeyIDSelector
@@ -1425,7 +1430,7 @@ func (in *TopicConfiguration) DeepCopyInto(out *TopicConfiguration) {
 	if in.TopicArnRef != nil {
 		in, out := &in.TopicArnRef, &out.TopicArnRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TopicArnSelector != nil {
 		in, out := &in.TopicArnSelector, &out.TopicArnSelector

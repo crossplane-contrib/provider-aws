@@ -11,7 +11,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
 
 const (

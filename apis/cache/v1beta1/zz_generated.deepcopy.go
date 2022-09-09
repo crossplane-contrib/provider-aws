@@ -237,7 +237,9 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	if in.CacheSecurityGroupNameRefs != nil {
 		in, out := &in.CacheSecurityGroupNameRefs, &out.CacheSecurityGroupNameRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.CacheSecurityGroupNameSelector != nil {
 		in, out := &in.CacheSecurityGroupNameSelector, &out.CacheSecurityGroupNameSelector
@@ -252,12 +254,12 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	if in.CacheSubnetGroupNameRef != nil {
 		in, out := &in.CacheSubnetGroupNameRef, &out.CacheSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DeprecatedCacheSubnetGroupNameRef != nil {
 		in, out := &in.DeprecatedCacheSubnetGroupNameRef, &out.DeprecatedCacheSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.CacheSubnetGroupNameSelector != nil {
 		in, out := &in.CacheSubnetGroupNameSelector, &out.CacheSubnetGroupNameSelector
@@ -334,7 +336,9 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector

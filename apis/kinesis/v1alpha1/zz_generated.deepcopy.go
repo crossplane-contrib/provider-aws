@@ -110,7 +110,7 @@ func (in *CustomStreamParameters) DeepCopyInto(out *CustomStreamParameters) {
 	if in.KMSKeyARNRef != nil {
 		in, out := &in.KMSKeyARNRef, &out.KMSKeyARNRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyARNSelector != nil {
 		in, out := &in.KMSKeyARNSelector, &out.KMSKeyARNSelector

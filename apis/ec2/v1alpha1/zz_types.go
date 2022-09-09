@@ -840,6 +840,8 @@ type DescribeFleetsInstances struct {
 
 // +kubebuilder:skipversion
 type DestinationOptionsRequest struct {
+	FileFormat *string `json:"fileFormat,omitempty"`
+
 	HiveCompatiblePartitions *bool `json:"hiveCompatiblePartitions,omitempty"`
 
 	PerHourPartition *bool `json:"perHourPartition,omitempty"`
@@ -847,6 +849,8 @@ type DestinationOptionsRequest struct {
 
 // +kubebuilder:skipversion
 type DestinationOptionsResponse struct {
+	FileFormat *string `json:"fileFormat,omitempty"`
+
 	HiveCompatiblePartitions *bool `json:"hiveCompatiblePartitions,omitempty"`
 
 	PerHourPartition *bool `json:"perHourPartition,omitempty"`
@@ -1356,7 +1360,7 @@ type FleetSpotCapacityRebalanceRequest struct {
 }
 
 // +kubebuilder:skipversion
-type FlowLog struct {
+type FlowLog_SDK struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	DeliverLogsErrorMessage *string `json:"deliverLogsErrorMessage,omitempty"`
@@ -1364,12 +1368,16 @@ type FlowLog struct {
 	DeliverLogsPermissionARN *string `json:"deliverLogsPermissionARN,omitempty"`
 
 	DeliverLogsStatus *string `json:"deliverLogsStatus,omitempty"`
+	// Describes the destination options for a flow log.
+	DestinationOptions *DestinationOptionsResponse `json:"destinationOptions,omitempty"`
 
 	FlowLogID *string `json:"flowLogID,omitempty"`
 
 	FlowLogStatus *string `json:"flowLogStatus,omitempty"`
 
 	LogDestination *string `json:"logDestination,omitempty"`
+
+	LogDestinationType *string `json:"logDestinationType,omitempty"`
 
 	LogFormat *string `json:"logFormat,omitempty"`
 
@@ -1380,6 +1388,8 @@ type FlowLog struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+
+	TrafficType *string `json:"trafficType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1639,11 +1649,11 @@ type Image struct {
 
 	Public *bool `json:"public,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	RootDeviceName *string `json:"rootDeviceName,omitempty"`
 
-	SriovNetSupport *string `json:"sriovNetSupport,omitempty"`
+	SRIOVNetSupport *string `json:"sriovNetSupport,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
 
@@ -2215,7 +2225,7 @@ type LaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -3533,7 +3543,7 @@ type RequestLaunchTemplateData struct {
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacementRequest `json:"placement,omitempty"`
 
-	RamDiskID *string `json:"ramDiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
@@ -3558,7 +3568,7 @@ type RequestSpotLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -3755,7 +3765,7 @@ type ResponseLaunchTemplateData struct {
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacement `json:"placement,omitempty"`
 
-	RamDiskID *string `json:"ramDiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
@@ -3970,7 +3980,7 @@ type ScheduledInstancesLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 
@@ -4046,31 +4056,6 @@ type SecurityGroupReference struct {
 	ReferencingVPCID *string `json:"referencingVPCID,omitempty"`
 
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type SecurityGroupRule struct {
-	CIDRIPv4 *string `json:"cidrIPv4,omitempty"`
-
-	CIDRIPv6 *string `json:"cidrIPv6,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	FromPort *int64 `json:"fromPort,omitempty"`
-
-	GroupID *string `json:"groupID,omitempty"`
-
-	GroupOwnerID *string `json:"groupOwnerID,omitempty"`
-
-	IPProtocol *string `json:"ipProtocol,omitempty"`
-
-	IsEgress *bool `json:"isEgress,omitempty"`
-
-	PrefixListID *string `json:"prefixListID,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	ToPort *int64 `json:"toPort,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -4297,7 +4282,7 @@ type SpotFleetLaunchSpecification struct {
 
 	KeyName *string `json:"keyName,omitempty"`
 
-	RamdiskID *string `json:"ramdiskID,omitempty"`
+	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
 	SpotPrice *string `json:"spotPrice,omitempty"`
 

@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // NOTE(muvaf): This code ported from ACK-generated code. See details here:
-// https://github.com/crossplane/provider-aws/pull/950#issue-1055573793
+// https://github.com/crossplane-contrib/provider-aws/pull/950#issue-1055573793
 
 package alias
 
@@ -34,8 +34,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (

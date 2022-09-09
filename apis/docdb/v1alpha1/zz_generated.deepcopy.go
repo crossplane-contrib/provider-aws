@@ -178,7 +178,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
@@ -188,7 +188,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.DBClusterParameterGroupNameRef != nil {
 		in, out := &in.DBClusterParameterGroupNameRef, &out.DBClusterParameterGroupNameRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterParameterGroupNameSelector != nil {
 		in, out := &in.DBClusterParameterGroupNameSelector, &out.DBClusterParameterGroupNameSelector
@@ -198,7 +198,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.KMSKeyIDRef != nil {
 		in, out := &in.KMSKeyIDRef, &out.KMSKeyIDRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.KMSKeyIDSelector != nil {
 		in, out := &in.KMSKeyIDSelector, &out.KMSKeyIDSelector
@@ -208,7 +208,9 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 	if in.VPCSecurityGroupIDsRefs != nil {
 		in, out := &in.VPCSecurityGroupIDsRefs, &out.VPCSecurityGroupIDsRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.VPCSecurityGroupIDsSelector != nil {
 		in, out := &in.VPCSecurityGroupIDsSelector, &out.VPCSecurityGroupIDsSelector
@@ -248,7 +250,7 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.DBClusterIdentifierRef != nil {
 		in, out := &in.DBClusterIdentifierRef, &out.DBClusterIdentifierRef
 		*out = new(v1.Reference)
-		**out = **in
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DBClusterIdentifierSelector != nil {
 		in, out := &in.DBClusterIdentifierSelector, &out.DBClusterIdentifierSelector
@@ -284,7 +286,9 @@ func (in *CustomDBSubnetGroupParameters) DeepCopyInto(out *CustomDBSubnetGroupPa
 	if in.SubnetIDsRefs != nil {
 		in, out := &in.SubnetIDsRefs, &out.SubnetIDsRefs
 		*out = make([]v1.Reference, len(*in))
-		copy(*out, *in)
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	if in.SUbnetIDsSelector != nil {
 		in, out := &in.SUbnetIDsSelector, &out.SUbnetIDsSelector
@@ -2173,8 +2177,8 @@ func (in *EventSubscription) DeepCopyInto(out *EventSubscription) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SnsTopicARN != nil {
-		in, out := &in.SnsTopicARN, &out.SnsTopicARN
+	if in.SNSTopicARN != nil {
+		in, out := &in.SNSTopicARN, &out.SNSTopicARN
 		*out = new(string)
 		**out = **in
 	}

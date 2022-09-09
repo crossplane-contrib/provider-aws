@@ -23,7 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 )
 
 // GenerateAssociateIdentityProviderConfigInput from IdentityProviderConfigParameters

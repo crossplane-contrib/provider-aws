@@ -19,6 +19,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -40,7 +41,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 )
 
 const (
@@ -973,8 +974,6 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			g := NewGomegaWithT(t)
-
 			mg := fake.Managed{
 				ProviderConfigReferencer: fake.ProviderConfigReferencer{
 					Ref: &xpv1.Reference{Name: providerConfigReferenceName},
@@ -1001,18 +1000,20 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 			}
 
 			config, err := UseProviderConfig(context.TODO(), kubeClient, &mg, tc.args.region)
-			g.Expect(err).NotTo(HaveOccurred())
+			if err != nil {
+				t.Errorf("UseProviderConfig threw exception:\n%s", err)
+			}
 
 			// If no endpointConfig was provided the returned endpointResolver should be nil
 			if tc.args.endpointConfig != nil {
 				actual, endpointError := config.EndpointResolverWithOptions.ResolveEndpoint(tc.args.service, tc.args.region, nil)
-				if tc.want.error != nil {
-					g.Expect(endpointError).To(HaveOccurred())
-				} else {
-					g.Expect(endpointError).NotTo(HaveOccurred())
-					if diff := cmp.Diff(tc.want.url, actual.URL); diff != "" {
-						t.Errorf("add: -want, +got:\n%s", diff)
-					}
+				// Assert exceptions match
+				if diff := cmp.Diff(tc.want.error, endpointError, test.EquateConditions()); diff != "" {
+					t.Errorf("r: -want error, +got error:\n%s", diff)
+				}
+				// Assert endpoints match
+				if diff := cmp.Diff(tc.want.url, actual.URL); diff != "" {
+					t.Errorf("add: -want, +got:\n%s", diff)
 				}
 			} else if config.EndpointResolverWithOptions != nil {
 				t.Errorf("Expected config.EndpointResolverWithOptions to be nil")
@@ -1205,5 +1206,67 @@ func TestLateInitInt64PtrSlice(t *testing.T) {
 				t.Errorf("\nLateInitializeInt64PtrSlice(...): -got, +want:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestUsePodServiceAccount(t *testing.T) {
+	awsRegion := "eu-somewhere-1"
+	err := os.Setenv("AWS_REGION", awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := map[string]string{
+		"us-west-2":     "us-west-2",
+		"us-gov-east-1": "us-gov-east-1",
+		GlobalRegion:    awsRegion,
+	}
+	for inpuRegion, expectedRegion := range cases {
+		cfg, tErr := UsePodServiceAccount(context.Background(), nil, DefaultSection, inpuRegion)
+		if tErr != nil {
+			t.Error(tErr)
+			continue
+		}
+		if cfg.Region != expectedRegion {
+			t.Errorf("expected region was not returend. expected: %s, actually: %s", expectedRegion, cfg.Region)
+		}
+	}
+	err = os.Unsetenv("AWS_REGION")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestUsePodServiceAccountAssumeRole(t *testing.T) {
+	awsRegion := "eu-somewhere-1"
+	err := os.Setenv("AWS_REGION", awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	providerConfig := v1beta1.ProviderConfig{
+		Spec: v1beta1.ProviderConfigSpec{
+			AssumeRole: &v1beta1.AssumeRoleOptions{
+				RoleARN: aws.String("arn:aws:iam::123456789:role/crossplane-role"),
+			},
+			Credentials: v1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceInjectedIdentity},
+		},
+	}
+	cases := map[string]string{
+		"us-west-2":     "us-west-2",
+		"us-gov-east-1": "us-gov-east-1",
+		GlobalRegion:    awsRegion,
+	}
+	for inpuRegion, expectedRegion := range cases {
+		cfg, tErr := UsePodServiceAccountAssumeRole(context.Background(), nil, DefaultSection, inpuRegion, &providerConfig)
+		if tErr != nil {
+			t.Error(tErr)
+			continue
+		}
+		if cfg.Region != expectedRegion {
+			t.Errorf("expected region was not returend. expected: %s, received: %s", expectedRegion, cfg.Region)
+		}
+	}
+	err = os.Unsetenv("AWS_REGION")
+	if err != nil {
+		t.Error(err)
 	}
 }

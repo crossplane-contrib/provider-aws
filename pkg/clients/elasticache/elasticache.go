@@ -35,9 +35,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 
-	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	clients "github.com/crossplane/provider-aws/pkg/clients"
+	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const errCheckUpToDate = "unable to determine if external resource is up to date"
@@ -274,28 +274,28 @@ func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroup
 
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
 // the configuration of its member clusters differ from given desired state.
-func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) bool {
+func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) string {
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
-		return true
+		return "AutomaticFailover"
 	case !reflect.DeepEqual(&kube.CacheNodeType, rg.CacheNodeType):
-		return true
+		return "CacheNotType"
 	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, clients.IntFrom32Address(rg.SnapshotRetentionLimit)):
-		return true
+		return "SnapshotRetentionLimit"
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
-		return true
+		return "SnapshotWindow"
 	case aws.ToBool(kube.MultiAZEnabled) != aws.ToBool(multiAZEnabled(rg.MultiAZ)):
-		return true
+		return "MultiAZ"
 	case ReplicationGroupNumCacheClustersNeedsUpdate(kube, ccList):
-		return true
+		return "NumCacheClusters"
 	}
 
 	for _, cc := range ccList {
-		if cacheClusterNeedsUpdate(kube, cc) {
-			return true
+		if reason := cacheClusterNeedsUpdate(kube, cc); reason != "" {
+			return reason
 		}
 	}
-	return false
+	return ""
 }
 
 func automaticFailoverEnabled(af elasticachetypes.AutomaticFailoverStatus) *bool {
@@ -317,41 +317,119 @@ func multiAZEnabled(maz elasticachetypes.MultiAZStatus) *bool {
 	}
 }
 
-func versionMatches(kubeVersion *string, awsVersion *string) bool {
-	switch {
-	case clients.StringValue(kubeVersion) == clients.StringValue(awsVersion):
-		return true
-
-	case kubeVersion == nil || awsVersion == nil:
-		return false
-
-	default:
-		return strings.HasSuffix(*kubeVersion, ".x") && strings.HasPrefix(*awsVersion, strings.TrimSuffix(*kubeVersion, "x"))
-	}
+// PartialSemanticVersion is semantic version that does not fulfill
+// the specification. This allows for partial matching.
+type PartialSemanticVersion struct {
+	Major *int64
+	Minor *int64
+	Patch *int64
 }
 
-func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) bool { // nolint:gocyclo
-	// AWS will set and return a default version if we don't specify one.
-	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
+// ParseVersion parses the semantic version of an Elasticache Cluster
+// See https://docs.aws.amazon.com/memorydb/latest/devguide/engine-versions.html
+func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
+	if ver == nil || aws.ToString(ver) == "" {
+		return nil, errors.New("empty string")
+	}
+
+	parts := strings.Split(strings.TrimSpace(aws.ToString(ver)), ".")
+
+	major, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return nil, errors.New("major version must be a number")
+	}
+
+	p := &PartialSemanticVersion{Major: aws.Int64(major)}
+
+	if len(parts) > 1 {
+		minor, err := strconv.ParseInt(parts[1], 10, 64)
+		// if not a digit (i.e. .x, ignore)
+		if err != nil {
+			return p, nil
+		}
+		p.Minor = aws.Int64(minor)
+	}
+
+	if len(parts) > 2 {
+		patch, err := strconv.ParseInt(parts[2], 10, 64)
+		if err != nil {
+			return p, nil
+		}
+		p.Patch = aws.Int64(patch)
+	}
+
+	return p, nil
+}
+
+// For versions before 6.x, the version string can be exact (i.e. 5.0.6)
+// For versions 6, 6.2, 6.x, etc., we only need a major version
+func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: gocyclo
+
+	if clients.StringValue(kubeVersion) == clients.StringValue(awsVersion) {
 		return true
 	}
+
+	if kubeVersion == nil || awsVersion == nil {
+		return false
+	}
+
+	kv, err := ParseVersion(kubeVersion)
+	if err != nil {
+		return false
+	}
+
+	av, err := ParseVersion(awsVersion)
+	if err != nil {
+		return false
+	}
+
+	if aws.ToInt64(kv.Major) != aws.ToInt64(av.Major) {
+		return false
+	}
+
+	if kv.Minor != nil {
+		if aws.ToInt64(kv.Minor) != aws.ToInt64(av.Minor) {
+			return false
+		}
+	}
+
+	// Setting the patch level is valid for Redis versions < 6
+	if kv.Patch != nil && aws.ToInt64(kv.Major) < 6 {
+		if aws.ToInt64(kv.Patch) != aws.ToInt64(av.Patch) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { // nolint:gocyclo
+	// AWS will set and return a default version if we don't specify one.
+	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
+		return "EngineVersion"
+	}
 	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
-		return true
+		return "CacheParameterGroup"
 	}
 	if cc.NotificationConfiguration != nil {
 		if !reflect.DeepEqual(kube.NotificationTopicARN, cc.NotificationConfiguration.TopicArn) {
-			return true
+			return "NoticationTopicARN"
 		}
 		if !reflect.DeepEqual(cc.NotificationConfiguration.TopicStatus, kube.NotificationTopicStatus) {
-			return true
+			return "TopicStatus"
 		}
 	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
-		return true
+		return "NotificationTopicARN"
 	}
-	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
-		return true
+	// AWS will normalize preferred maintenance windows to lowercase
+	if !strings.EqualFold(clients.StringValue(kube.PreferredMaintenanceWindow),
+		clients.StringValue(cc.PreferredMaintenanceWindow)) {
+		return "PreferredMaintainenceWindow"
 	}
-	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)
+	if sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups) {
+		return "SecurityGroups"
+	}
+	return ""
 }
 
 func sgIDsNeedUpdate(kube []string, cc []elasticachetypes.SecurityGroupMembership) bool {
@@ -416,7 +494,7 @@ func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string
 // ReplicationGroupNumCacheClustersNeedsUpdate determines if the number of Cache Clusters
 // in a replication group needs to be updated
 func ReplicationGroupNumCacheClustersNeedsUpdate(kube v1beta1.ReplicationGroupParameters, ccList []elasticachetypes.CacheCluster) bool {
-	return aws.ToInt(kube.NumCacheClusters) != len(ccList)
+	return kube.NumCacheClusters != nil && aws.ToInt(kube.NumCacheClusters) != len(ccList)
 }
 
 // GenerateObservation produces a ReplicationGroupObservation object out of

@@ -37,11 +37,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // Error strings.
@@ -55,6 +55,7 @@ const (
 	errModifyReplicationGroup              = "cannot modify ElastiCache replication group"
 	errDeleteReplicationGroup              = "cannot delete ElastiCache replication group"
 	errModifyReplicationGroupSC            = "cannot modify ElastiCache replication group shard configuration"
+	errModifyReplicationGroupCC            = "cannot modify ElastiCache replication group num cache clusters"
 	errListReplicationGroupTags            = "cannot list ElastiCache replication group tags"
 	errUpdateReplicationGroupTags          = "cannot update ElastiCache replication group tags"
 	errReplicationGroupCacheClusterMinimum = "at least 1 replica is required"
@@ -159,12 +160,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		tagsNeedUpdate = elasticache.ReplicationGroupTagsNeedsUpdate(cr.Spec.ForProvider.Tags, tags.TagList)
 	}
 
+	rgDiff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList)
 	return managed.ExternalObservation{
 		ResourceExists: true,
-		ResourceUpToDate: !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) &&
+		ResourceUpToDate: rgDiff == "" &&
 			!elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg) &&
 			!tagsNeedUpdate,
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
+		Diff:              rgDiff,
 	}, nil
 }
 
@@ -236,12 +239,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if elasticache.ReplicationGroupNumCacheClustersNeedsUpdate(cr.Spec.ForProvider, ccList) {
 		err := e.updateReplicationGroupNumCacheClusters(ctx, meta.GetExternalName(cr), len(ccList), aws.ToInt(cr.Spec.ForProvider.NumCacheClusters))
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroupCC)
 		}
 		return managed.ExternalUpdate{}, nil
 	}
 
-	if elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList) {
+	if diff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList); diff != "" {
 		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)

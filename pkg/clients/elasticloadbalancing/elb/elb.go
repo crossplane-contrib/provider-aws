@@ -31,8 +31,8 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
-	clients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // A Client handles CRUD operations for Elastic Load Balancing resources.

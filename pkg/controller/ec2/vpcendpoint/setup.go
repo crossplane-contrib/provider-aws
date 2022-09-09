@@ -21,10 +21,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
@@ -299,7 +299,9 @@ func formatModifyVpcEndpointInput(obj *svcsdk.ModifyVpcEndpointInput) {
 // ([]*string) "base", "subtract", and returns a "result" list
 // of string pointers where "result" = "base" - "subtract".
 // Comparisons of the underlying string is done
-//  Example:
+//
+// Example:
+//
 //  "base": ["a", "b", "g", "x"]
 //  "subtract": ["b", "x", "y"]
 //  "result": ["a", "g"]

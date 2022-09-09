@@ -19,11 +19,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/features"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -271,8 +271,7 @@ func DifferenceARN(local []*string, remote []*string) ([]*string, []*string) {
 	return createKey, removeKey
 }
 
-// GenerateObservation is used to produce v1beta1.ClusterObservation from
-// ekstypes.Cluster.
+// GenerateObservation is used to produce v1alpha1.vpcendpointserviceconfigurationObservation
 func GenerateObservation(obj *svcsdk.ServiceConfiguration) *svcapitypes.ServiceConfiguration { // nolint:gocyclo
 	if obj == nil {
 		return &svcapitypes.ServiceConfiguration{}
@@ -283,15 +282,18 @@ func GenerateObservation(obj *svcsdk.ServiceConfiguration) *svcapitypes.ServiceC
 		BaseEndpointDNSNames: obj.BaseEndpointDnsNames,
 		ManagesVPCEndpoints:  obj.ManagesVpcEndpoints,
 		PrivateDNSName:       obj.PrivateDnsName,
-		PrivateDNSNameConfiguration: &svcapitypes.PrivateDNSNameConfiguration{
+		ServiceID:            obj.ServiceId,
+		ServiceName:          obj.ServiceName,
+		ServiceState:         obj.ServiceState,
+	}
+
+	if obj.PrivateDnsNameConfiguration != nil {
+		o.PrivateDNSNameConfiguration = &svcapitypes.PrivateDNSNameConfiguration{
 			Name:  obj.PrivateDnsNameConfiguration.Name,
 			State: obj.PrivateDnsNameConfiguration.State,
 			Value: obj.PrivateDnsNameConfiguration.Value,
 			Type:  obj.PrivateDnsNameConfiguration.Type,
-		},
-		ServiceID:    obj.ServiceId,
-		ServiceName:  obj.ServiceName,
-		ServiceState: obj.ServiceState,
+		}
 	}
 
 	o.NetworkLoadBalancerARNs = append(o.NetworkLoadBalancerARNs, obj.NetworkLoadBalancerArns...)

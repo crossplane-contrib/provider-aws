@@ -1,0 +1,31 @@
+operations:
+  PutLifecyclePolicy:
+    resource_name: LifecyclePolicy
+    operation_type:
+    - Create
+# code-generation with two operations will create two functions with the same name in zz_conversions.go 
+#    - Update 
+  DeleteLifecyclePolicy:
+    resource_name: LifecyclePolicy
+    operation_type: Delete
+ignore:
+  field_paths:
+    - PutLifecyclePolicyInput.RepositoryName
+    - DeleteLifecyclePolicyInput.RepositoryName
+    - GetLifecyclePolicyInput.RepositoryName
+  resource_names:
+    - Repository
+    - RepositoryPolicy
+  shape_names:
+    - Image
+    - ImageDetail
+    - Repository
+    - ReplicationDestination
+resources:
+  LifecyclePolicy:
+    update_operation:
+      custom_method_name: updatelifecyclepolicy
+    exceptions:
+      errors:
+        404:
+          code: LifecyclePolicyNotFoundException

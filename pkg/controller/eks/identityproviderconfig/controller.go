@@ -35,11 +35,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/eks/manualv1alpha1"
-	"github.com/crossplane/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
-	"github.com/crossplane/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -111,7 +111,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		},
 		ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		// Failed IdentityProviderConfigs will be garbage collected by AWS after
+		// some time.
+		// Since we are using cr.Status.AtProvider.Status in Create() to
+		// determine if we need to associate this fields needs to be reset if
+		// the config does not exist.
+		// Otherwise the controller will never retry associating again.
+		if eks.IsErrorNotFound(err) {
+			cr.Status.AtProvider.Status = ""
+			return managed.ExternalObservation{}, nil
+		}
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()

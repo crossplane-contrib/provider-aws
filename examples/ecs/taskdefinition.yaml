@@ -1,0 +1,68 @@
+---
+apiVersion: ecs.aws.crossplane.io/v1alpha1
+kind: TaskDefinition
+metadata:
+  name: example
+spec:
+  forProvider:
+    family: example-taskdefinition
+    region: us-east-1
+    containerDefinitions:
+    - cpu: 0
+      portMappings:
+      - containerPort: 8080
+        hostPort: 8080
+        protocol: tcp
+      image: bitnami/wordpress
+      name: wordpress
+    cpu: "256"
+    memory: "512"
+    networkMode: awsvpc
+    requiresCompatibilities:
+    - FARGATE
+    tags:
+    - key: Type
+      value: example
+  providerConfigRef:
+    name: example
+---
+apiVersion: ecs.aws.crossplane.io/v1alpha1
+kind: TaskDefinition
+metadata:
+  name: example-with-volume
+spec:
+  forProvider:
+    family: example-taskdefinition-with-volume
+    region: us-east-1
+    containerDefinitions:
+    - cpu: 0
+      portMappings:
+      - containerPort: 8080
+        hostPort: 8080
+        protocol: tcp
+      image: bitnami/wordpress
+      name: wordpress
+      mountPoints:
+      - containerPath: /bitnami/wordpress
+        sourceVolume: wordpress
+    cpu: "256"
+    memory: "512"
+    networkMode: awsvpc
+    requiresCompatibilities:
+    - FARGATE
+    tags:
+    - key: Type
+      value: example
+    volumes:
+    - name: wordpress
+      efsVolumeConfiguration:
+        authorizationConfig:
+          iam: DISABLED
+          accessPointIDRef:
+            name: example
+        fileSystemIDRef:
+          name: example
+        rootDirectory: "/"
+        transitEncryption: ENABLED
+  providerConfigRef:
+    name: example
