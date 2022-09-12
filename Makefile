@@ -134,6 +134,8 @@ run: go.build
 
 .PHONY: cobertura manifests submodules fallthrough test-integration run crds.clean
 
+AWS_SDK_GO_VERSION ?= $(shell awk '/github.com\/aws\/aws-sdk-go / { print $$2 }' < go.mod)
+
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
@@ -144,7 +146,7 @@ services: $(GOIMPORTS)
 	@for svc in $(SERVICES); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
-		cd $(WORK_DIR)/code-generator && ./ack-generate crossplane $$svc --output ../../ || exit 1; \
+		cd $(WORK_DIR)/code-generator && ./ack-generate crossplane --aws-sdk-go-version $(AWS_SDK_GO_VERSION) $$svc --output ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 
