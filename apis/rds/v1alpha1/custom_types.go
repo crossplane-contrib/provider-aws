@@ -458,6 +458,14 @@ type CustomDBInstanceParameters struct {
 	// ApplyImmediately for each modified parameter and to determine when the changes
 	// are applied.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
+
+	// KMSKeyIDRef is a reference to a KMS Key used to set KMSKeyID.
+	// +optional
+	KMSKeyIDRef *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
+
+	// KMSKeyIDSelector selects a reference to a KMS Key used to set KMSKeyID.
+	// +optional
+	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
 }
 
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
