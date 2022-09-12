@@ -140,11 +140,11 @@ services: $(GOIMPORTS)
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "$(CODE_GENERATOR_REPO)"; \
 	fi
-	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
+	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT) && go build -tags codegen -o ack-generate cmd/ack-generate/main.go
 	@for svc in $(SERVICES); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
 		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
-		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --output ../../ || exit 1; \
+		cd $(WORK_DIR)/code-generator && ./ack-generate crossplane $$svc --output ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 
