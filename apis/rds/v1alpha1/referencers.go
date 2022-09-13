@@ -228,5 +228,19 @@ func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) er
 	mg.Spec.ForProvider.VPCSecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.VPCSecurityGroupIDRefs = mrsp.ResolvedReferences
 
+	// Resolve spec.forProvider.kmsKeyID
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.KMSKeyID),
+		Reference:    mg.Spec.ForProvider.KMSKeyIDRef,
+		Selector:     mg.Spec.ForProvider.KMSKeyIDSelector,
+		To:           reference.To{Managed: &kmsv1alpha1.Key{}, List: &kmsv1alpha1.KeyList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.kmsKeyID")
+	}
+	mg.Spec.ForProvider.KMSKeyID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.KMSKeyIDRef = rsp.ResolvedReference
+
 	return nil
 }
