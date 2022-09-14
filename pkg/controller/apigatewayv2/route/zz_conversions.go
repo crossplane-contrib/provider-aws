@@ -125,9 +125,9 @@ func GenerateRoute(resp *svcsdk.GetRouteOutput) *svcapitypes.Route {
 		cr.Spec.ForProvider.RouteResponseSelectionExpression = nil
 	}
 	if resp.Target != nil {
-		cr.Spec.ForProvider.Target = resp.Target
+		cr.Status.AtProvider.Target = resp.Target
 	} else {
-		cr.Spec.ForProvider.Target = nil
+		cr.Status.AtProvider.Target = nil
 	}
 
 	return cr
@@ -186,9 +186,6 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 	}
 	if cr.Spec.ForProvider.RouteResponseSelectionExpression != nil {
 		res.SetRouteResponseSelectionExpression(*cr.Spec.ForProvider.RouteResponseSelectionExpression)
-	}
-	if cr.Spec.ForProvider.Target != nil {
-		res.SetTarget(*cr.Spec.ForProvider.Target)
 	}
 
 	return res
@@ -251,8 +248,8 @@ func GenerateUpdateRouteInput(cr *svcapitypes.Route) *svcsdk.UpdateRouteInput {
 	if cr.Spec.ForProvider.RouteResponseSelectionExpression != nil {
 		res.SetRouteResponseSelectionExpression(*cr.Spec.ForProvider.RouteResponseSelectionExpression)
 	}
-	if cr.Spec.ForProvider.Target != nil {
-		res.SetTarget(*cr.Spec.ForProvider.Target)
+	if cr.Status.AtProvider.Target != nil {
+		res.SetTarget(*cr.Status.AtProvider.Target)
 	}
 
 	return res

@@ -50,9 +50,7 @@ type RouteParameters struct {
 	RouteKey *string `json:"routeKey"`
 
 	RouteResponseSelectionExpression *string `json:"routeResponseSelectionExpression,omitempty"`
-
-	Target                *string `json:"target,omitempty"`
-	CustomRouteParameters `json:",inline"`
+	CustomRouteParameters            `json:",inline"`
 }
 
 // RouteSpec defines the desired state of Route
@@ -66,6 +64,8 @@ type RouteObservation struct {
 	APIGatewayManaged *bool `json:"apiGatewayManaged,omitempty"`
 
 	RouteID *string `json:"routeID,omitempty"`
+
+	Target *string `json:"target,omitempty"`
 }
 
 // RouteStatus defines the observed state of Route.

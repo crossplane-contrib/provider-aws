@@ -195,9 +195,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.RouteResponseSelectionExpression = nil
 	}
 	if resp.Target != nil {
-		cr.Spec.ForProvider.Target = resp.Target
+		cr.Status.AtProvider.Target = resp.Target
 	} else {
-		cr.Spec.ForProvider.Target = nil
+		cr.Status.AtProvider.Target = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

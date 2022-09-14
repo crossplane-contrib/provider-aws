@@ -246,6 +246,21 @@ type CustomRouteParameters struct {
 	// to set the AuthorizerID.
 	// +optional
 	AuthorizerIDSelector *xpv1.Selector `json:"authorizerIDSelector,omitempty"`
+
+	// Target for the route, of the form integrations/IntegrationID,
+	// where IntegrationID is the identifier of an AWS API Gateway Integration
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/apigatewayv2/v1alpha1.Integration
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/apigatewayv2/v1alpha1.IntegrationID()
+	// +optional
+	Target *string `json:"target,omitempty"`
+
+	// TargetRef is a reference to an Integration ID
+	// +optional
+	TargetRef *xpv1.Reference `json:"targetRef,omitempty"`
+
+	// TargetSelector is a selector for an Integration ID
+	// +optional
+	TargetSelector *xpv1.Selector `json:"targetSelector,omitempty"`
 }
 
 // CustomRouteResponseParameters includes the custom fields.
