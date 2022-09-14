@@ -9,7 +9,8 @@ spec:
       name: test-ws-api
     routeKey: "GET /newpath"
     # You'll need to update this to the ID (i.e. external name) of the
-    # integration created by integration.yaml.
+    # integration created by integration.yaml. References/Selectors
+    # are also supported for Targets.
     target: "integrations/5kzavuj"
   providerConfigRef:
     name: example
