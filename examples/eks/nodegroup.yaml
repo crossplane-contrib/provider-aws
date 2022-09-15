@@ -18,6 +18,9 @@ spec:
     scalingConfig:
       desiredSize: 1
       maxSize: 1
-      minSize: 1 
+      minSize: 1
+    updateConfig:
+      maxUnavailablePercentage: 50
+      force: true
   providerConfigRef:
     name: example

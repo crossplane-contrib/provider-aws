@@ -180,6 +180,10 @@ type NodeGroupParameters struct {
 	// The Kubernetes taints to be applied to the nodes in the node group.
 	Taints []Taint `json:"taints,omitempty"`
 
+	// Specifies details on how the Nodes in this NodeGroup should be updated.
+	// +optional
+	UpdateConfig *NodeGroupUpdateConfig `json:"updateConfig,omitempty"`
+
 	// The Kubernetes version to use for your managed nodes. By default, the Kubernetes
 	// version of the cluster is used, and this is the only accepted specified value.
 	// +optional
@@ -310,6 +314,34 @@ type NodeGroupScalingConfig struct {
 type NodeGroupScalingConfigStatus struct {
 	// The current number of worker nodes for the managed node group.
 	DesiredSize *int32 `json:"desiredSize,omitempty"`
+}
+
+// NodeGroupUpdateConfig specifies how an Update to the NodeGroup should be
+// performed.
+type NodeGroupUpdateConfig struct {
+	// The maximum number of nodes unavailable at once during a version update.
+	// Nodes will be updated in parallel. The maximum number is 100.
+	// This value or maxUnavailablePercentage is required to have a value, but
+	// not both.
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=100
+	// +optional
+	MaxUnavailable *int32 `json:"maxUnavailable,omitempty"`
+
+	// The maximum percentage of nodes unavailable during a version update. This
+	// percentage of nodes will be updated in parallel, up to 100 nodes at once.
+	// This value or maxUnavailable is required to have a value, but not both.
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=100
+	// +optional
+	MaxUnavailablePercentage *int32 `json:"maxUnavailablePercentage,omitempty"`
+
+	// Force the update if the existing node group's pods are unable to be
+	// drained due to a pod disruption budget issue. If an update fails because
+	// pods could not be drained, you can force the update after it fails to
+	// terminate the old node whether any pods are running on the node.
+	// +optional
+	Force *bool `json:"force,omitempty"`
 }
 
 // NodeGroupObservation is the observed state of a NodeGroup.

@@ -697,6 +697,36 @@ spec:
                       - effect
                       type: object
                     type: array
+                  updateConfig:
+                    description: Specifies details on how the Nodes in this NodeGroup
+                      should be updated.
+                    properties:
+                      force:
+                        description: Force the update if the existing node group's
+                          pods are unable to be drained due to a pod disruption budget
+                          issue. If an update fails because pods could not be drained,
+                          you can force the update after it fails to terminate the
+                          old node whether any pods are running on the node.
+                        type: boolean
+                      maxUnavailable:
+                        description: The maximum number of nodes unavailable at once
+                          during a version update. Nodes will be updated in parallel.
+                          The maximum number is 100. This value or maxUnavailablePercentage
+                          is required to have a value, but not both.
+                        format: int32
+                        maximum: 100
+                        minimum: 1
+                        type: integer
+                      maxUnavailablePercentage:
+                        description: The maximum percentage of nodes unavailable during
+                          a version update. This percentage of nodes will be updated
+                          in parallel, up to 100 nodes at once. This value or maxUnavailable
+                          is required to have a value, but not both.
+                        format: int32
+                        maximum: 100
+                        minimum: 1
+                        type: integer
+                    type: object
                   version:
                     description: The Kubernetes version to use for your managed nodes.
                       By default, the Kubernetes version of the cluster is used, and
