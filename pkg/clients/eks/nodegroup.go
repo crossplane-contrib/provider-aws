@@ -127,6 +127,9 @@ func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGrou
 			}
 		}
 	}
+	if p.UpdateConfig != nil && *p.UpdateConfig.Force {
+		i.Force = true
+	}
 
 	if !u {
 		return false, nil

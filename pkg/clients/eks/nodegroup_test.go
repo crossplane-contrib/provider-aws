@@ -359,6 +359,9 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 						Name:    &ltName,
 						Version: &otherLtVersion,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &dontForce,
+					},
 				},
 				n: &ekstypes.Nodegroup{
 					ClusterName:    &clusterName,
@@ -381,6 +384,30 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 					Name:    &ltName,
 					Version: &otherLtVersion,
 				},
+			},
+		},
+		"ForceUpdate": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					Version:     &otherVersion,
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:   &clusterName,
+					NodegroupName: &ngName,
+					Version:       &version,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				Version:       &otherVersion,
+				Force:         true,
 			},
 		},
 	}
