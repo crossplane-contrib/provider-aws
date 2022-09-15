@@ -69,6 +69,12 @@ func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParame
 			c.ScalingConfig.DesiredSize = p.ScalingConfig.MinSize
 		}
 	}
+	if p.UpdateConfig != nil {
+		c.UpdateConfig = &ekstypes.NodegroupUpdateConfig{
+			MaxUnavailable:           p.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: p.UpdateConfig.MaxUnavailablePercentage,
+		}
+	}
 	if p.LaunchTemplate != nil {
 		c.LaunchTemplate = &ekstypes.LaunchTemplateSpecification{
 			Id:      p.LaunchTemplate.ID,

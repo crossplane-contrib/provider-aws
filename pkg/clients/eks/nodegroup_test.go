@@ -33,21 +33,25 @@ import (
 )
 
 var (
-	ngName              = "my-cool-ng"
-	amiType             = "cool-ami"
-	diskSize            = int32(20)
-	otherSize           = int32(100)
-	size                = int32(2)
-	currentSize         = int32(5)
-	maxSize             = int32(8)
-	nodeRole            = "cool-role"
-	otherVersion        = "1.17"
-	releaseVersion      = "1.16.3-20220523"
-	otherReleaseVersion = "1.17.4-20220523"
-	ltVersion           = "1"
-	ltID                = "lt-id"
-	ltName              = "my-cool-lt"
-	otherLtVersion      = "2"
+	ngName                   = "my-cool-ng"
+	amiType                  = "cool-ami"
+	diskSize                 = int32(20)
+	otherSize                = int32(100)
+	size                     = int32(2)
+	currentSize              = int32(5)
+	maxSize                  = int32(8)
+	nodeRole                 = "cool-role"
+	otherVersion             = "1.17"
+	releaseVersion           = "1.16.3-20220523"
+	otherReleaseVersion      = "1.17.4-20220523"
+	ltVersion                = "1"
+	ltID                     = "lt-id"
+	ltName                   = "my-cool-lt"
+	otherLtVersion           = "2"
+	maxUnavailablePercentage = int32(80)
+	maxUnavailable           = int32(2)
+	force                    = true
+	dontForce                = false
 )
 
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
@@ -80,6 +84,10 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+						Force:                    &force,
+					},
 					Subnets: []string{"cool-subnet"},
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &version,
@@ -103,6 +111,9 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 					MaxSize:     &size,
 					MinSize:     &size,
 				},
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
+				},
 				Subnets: []string{"cool-subnet"},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
@@ -122,6 +133,10 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+						Force:          &dontForce,
+					},
 					Subnets: []string{"cool-subnet"},
 				},
 			},
@@ -136,6 +151,9 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 					DesiredSize: &size,
 					MaxSize:     &size,
 					MinSize:     &size,
+				},
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
 				},
 				Subnets: []string{"cool-subnet"},
 			},
