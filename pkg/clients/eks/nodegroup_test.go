@@ -586,6 +586,35 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				},
 			},
 		},
+		"UpdateConfig": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailablePercentage,
+						MaxUnavailablePercentage: &maxUnavailable,
+						Force:                    &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName: &ngName,
+					ClusterName:   &clusterName,
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailable,
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: &eks.UpdateNodegroupConfigInput{
+				NodegroupName: &ngName,
+				ClusterName:   &clusterName,
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailable:           &maxUnavailablePercentage,
+					MaxUnavailablePercentage: &maxUnavailable,
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
@@ -888,6 +917,10 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+						Force:          &dontForce,
+					},
 				},
 				n: &ekstypes.Nodegroup{
 					Labels: map[string]string{"cool": "label"},
@@ -895,6 +928,9 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
+					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
 					},
 					Version: &version,
 					Tags:    map[string]string{"cool": "tag"},
@@ -1048,6 +1084,51 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 				},
 			},
 			want: true,
+		},
+		"UpdateConfigMaxUnavailable": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: false,
+		},
+		"UpdateConfigMaxUnavailablePercentage": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailable,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: false,
+		},
+		"UpdateConfigAbsoluteToPercentage": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+			},
+			want: false,
 		},
 	}
 

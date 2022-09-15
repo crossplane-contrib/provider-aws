@@ -173,6 +173,12 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 			}
 		}
 	}
+	if p.UpdateConfig != nil {
+		u.UpdateConfig = &ekstypes.NodegroupUpdateConfig{
+			MaxUnavailable:           p.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: p.UpdateConfig.MaxUnavailablePercentage,
+		}
+	}
 	// TODO(muvaf): Add support for updating taints.
 	return u
 }
@@ -307,6 +313,14 @@ func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nod
 	}
 	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
 		if !cmp.Equal(p.LaunchTemplate.Version, ng.LaunchTemplate.Version) {
+			return false
+		}
+	}
+	if p.UpdateConfig != nil && ng.UpdateConfig != nil {
+		if !cmp.Equal(p.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable) {
+			return false
+		}
+		if !cmp.Equal(p.UpdateConfig.MaxUnavailablePercentage, ng.UpdateConfig.MaxUnavailablePercentage) {
 			return false
 		}
 	}
