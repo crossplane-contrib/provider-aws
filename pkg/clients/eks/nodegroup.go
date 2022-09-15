@@ -256,6 +256,18 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 			MaxSize:     ng.ScalingConfig.MaxSize,
 		}
 	}
+	// We will always have an UpdateConfig, because AWS will always create one
+	// and even if not - will create one to add the default value for force.
+	// We do not need to late init maxUnavailablePercentage. If it is set, it
+	// must already be part of the Object, since there is no default for that
+	// value.
+	if in.UpdateConfig == nil {
+		in.UpdateConfig = &manualv1alpha1.NodeGroupUpdateConfig{}
+	}
+	in.UpdateConfig.Force = awsclient.LateInitializeBoolPtr(in.UpdateConfig.Force, aws.Bool(false))
+	if ng.UpdateConfig != nil {
+		in.UpdateConfig.MaxUnavailable = awsclient.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
+	}
 	if in.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
 		in.LaunchTemplate.Version = awsclient.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
 	}

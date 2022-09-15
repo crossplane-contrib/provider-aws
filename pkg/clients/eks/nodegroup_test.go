@@ -711,6 +711,9 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
 					ReleaseVersion: &version,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
@@ -730,6 +733,10 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					DesiredSize: &size,
 					MaxSize:     &size,
 					MinSize:     &size,
+				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
+					Force:          &dontForce,
 				},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
@@ -758,6 +765,9 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
 					ReleaseVersion: &version,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
@@ -777,6 +787,10 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					MaxSize: &maxSize,
 					MinSize: &size,
 				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
+					Force:          &dontForce,
+				},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
 			},
@@ -795,6 +809,49 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 			want: &manualv1alpha1.NodeGroupParameters{
 				LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
 					Version: &ltVersion,
+				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					Force: &dontForce,
+				},
+			},
+		},
+		"UpdateConfigDefaultDontForce": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
+					Force:                    &dontForce,
+				},
+			},
+		},
+		"UpdateConfigForceIfWanted": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					Force:          &force,
+					MaxUnavailable: &maxUnavailable,
 				},
 			},
 		},
