@@ -234,6 +234,13 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 			DesiredSize: ng.ScalingConfig.DesiredSize,
 		}
 	}
+
+	if ng.UpdateConfig != nil {
+		o.UpdateConfig = manualv1alpha1.NodeGroupUpdateConfigStatus{
+			MaxUnavailable:           ng.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: ng.UpdateConfig.MaxUnavailablePercentage,
+		}
+	}
 	return o
 }
 

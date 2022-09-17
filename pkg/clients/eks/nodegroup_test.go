@@ -698,6 +698,10 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailable,
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
 				},
 			},
 			want: manualv1alpha1.NodeGroupObservation{
@@ -724,6 +728,10 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 				},
 				ScalingConfig: manualv1alpha1.NodeGroupScalingConfigStatus{
 					DesiredSize: &size,
+				},
+				UpdateConfig: manualv1alpha1.NodeGroupUpdateConfigStatus{
+					MaxUnavailable:           &maxUnavailable,
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
 				},
 			},
 		},

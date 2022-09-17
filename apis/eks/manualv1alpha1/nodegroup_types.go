@@ -344,6 +344,18 @@ type NodeGroupUpdateConfig struct {
 	Force *bool `json:"force,omitempty"`
 }
 
+// NodeGroupUpdateConfigStatus is the observed update configuration for a node group.
+type NodeGroupUpdateConfigStatus struct {
+	// The current maximum number of nodes unavailable at once during a version update.
+	// +optional
+	MaxUnavailable *int32 `json:"maxUnavailable,omitempty"`
+
+	// The current maximum percentage of nodes unavailable during a version
+	// update. This percentage of nodes will be updated in parallel.
+	// +optional
+	MaxUnavailablePercentage *int32 `json:"maxUnavailablePercentage,omitempty"`
+}
+
 // NodeGroupObservation is the observed state of a NodeGroup.
 type NodeGroupObservation struct {
 	// The Unix epoch timestamp in seconds for when the managed node group was created.
@@ -378,6 +390,9 @@ type NodeGroupObservation struct {
 	// The scaling configuration details for the Auto Scaling group that is created
 	// for your node group.
 	ScalingConfig NodeGroupScalingConfigStatus `json:"scalingConfig,omitempty"`
+
+	// The current update configuration of the node group
+	UpdateConfig NodeGroupUpdateConfigStatus `json:"updateConfig,omitempty"`
 
 	// The current status of the managed node group.
 	Status NodeGroupStatusType `json:"status,omitempty"`
