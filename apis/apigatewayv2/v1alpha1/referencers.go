@@ -18,10 +18,14 @@ package v1alpha1
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -77,6 +81,20 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	}
 	mg.Spec.ForProvider.AuthorizerID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.AuthorizerIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.target for an Integration Target
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Target),
+		Reference:    mg.Spec.ForProvider.TargetRef,
+		Selector:     mg.Spec.ForProvider.TargetSelector,
+		To:           reference.To{Managed: &Integration{}, List: &IntegrationList{}},
+		Extract:      IntegrationID(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.target")
+	}
+	mg.Spec.ForProvider.Target = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.TargetRef = rsp.ResolvedReference
 
 	return nil
 }
@@ -276,4 +294,23 @@ func (mg *VPCLink) ResolveReferences(ctx context.Context, c client.Reader) error
 	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
 	return nil
+}
+
+// IntegrationID returns the ID for an Integration
+func IntegrationID() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*Integration)
+		if !ok {
+			return ""
+		}
+
+		id := aws.ToString(r.Status.AtProvider.IntegrationID)
+
+		// The Integration ID target requires the integrations/ prefix
+		if id == "" || strings.HasPrefix(id, "integrations/") {
+			return id
+		}
+
+		return fmt.Sprintf("integrations/%s", id)
+	}
 }

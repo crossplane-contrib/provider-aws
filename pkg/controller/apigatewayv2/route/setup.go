@@ -84,6 +84,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk.GetRouteOut
 
 func preCreate(_ context.Context, cr *svcapitypes.Route, obj *svcsdk.CreateRouteInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.Target = cr.Spec.ForProvider.Target
 	return nil
 }
 
