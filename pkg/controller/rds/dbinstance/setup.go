@@ -417,8 +417,8 @@ func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBInsta
 func handleKmsKey(inKey *string, dbKey *string) *string {
 	if inKey != nil && dbKey != nil && !strings.Contains(*inKey, "/") {
 		lastInd := strings.LastIndex(*dbKey, "/")
-		keyId := (*dbKey)[lastInd+1:]
-		return &keyId
+		keyID := (*dbKey)[lastInd+1:]
+		return &keyID
 	}
 	return dbKey
 }
