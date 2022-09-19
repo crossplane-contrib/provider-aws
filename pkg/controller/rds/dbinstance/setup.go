@@ -220,7 +220,8 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.DBName = aws.LateInitializeStringPtr(in.DBName, db.DBName)
 	in.EnablePerformanceInsights = aws.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
 	in.IOPS = aws.LateInitializeInt64Ptr(in.IOPS, db.Iops)
-	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
+	kmsKey := handleKmsKey(in.KMSKeyID, db.KmsKeyId)
+	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
 	in.LicenseModel = aws.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
 
@@ -344,6 +345,7 @@ func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBIn
 	if err != nil {
 		return nil, err
 	}
+	currentParams.KMSKeyID = handleKmsKey(target.KMSKeyID, currentParams.KMSKeyID)
 	jsonPatch, err := aws.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -410,4 +412,13 @@ func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBInsta
 		},
 	}
 	return patcher.Apply(ctx, sc)
+}
+
+func handleKmsKey(inKey *string, dbKey *string) *string {
+	if inKey != nil && dbKey != nil && !strings.Contains(*inKey, "/") {
+		lastInd := strings.LastIndex(*dbKey, "/")
+		keyId := (*dbKey)[lastInd+1:]
+		return &keyId
+	}
+	return dbKey
 }

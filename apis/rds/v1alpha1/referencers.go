@@ -234,7 +234,7 @@ func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.ForProvider.KMSKeyIDRef,
 		Selector:     mg.Spec.ForProvider.KMSKeyIDSelector,
 		To:           reference.To{Managed: &kmsv1alpha1.Key{}, List: &kmsv1alpha1.KeyList{}},
-		Extract:      reference.ExternalName(),
+		Extract:      kmsv1alpha1.KMSKeyARN(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.kmsKeyID")
