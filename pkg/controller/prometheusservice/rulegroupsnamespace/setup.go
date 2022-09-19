@@ -150,9 +150,7 @@ func isUpToDate(cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGr
 		return true, nil
 	}
 
-	cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.RuleGroupsNamespace.Data)
-	switch {
-	case cmp != 0:
+	if cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.RuleGroupsNamespace.Data); cmp != 0 {
 		return false, nil
 	}
 	return true, nil
