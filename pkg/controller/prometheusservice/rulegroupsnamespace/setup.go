@@ -1,6 +1,7 @@
 package rulegroupsnamespace
 
 import (
+	"bytes"
 	"context"
 	"strings"
 
@@ -40,6 +41,8 @@ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 			e.postCreate = postCreate
 			e.postDelete = postDelete
 			e.postObserve = postObserve
+			e.isUpToDate = isUpToDate
+			e.preUpdate = preUpdate
 		},
 	}
 
@@ -136,4 +139,29 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
+}
+
+func isUpToDate(cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, error) {
+	// A rule that's currently creating, deleting, or updating can't be
+	// updated, so we temporarily consider it to be up-to-date no matter
+	// what.
+	switch aws.StringValue(cr.Status.AtProvider.Status.StatusCode) {
+	case string(svcapitypes.RuleGroupsNamespaceStatusCode_CREATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_UPDATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_DELETING):
+		return true, nil
+	}
+
+	cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.RuleGroupsNamespace.Data)
+	switch {
+	case cmp != 0:
+		return false, nil
+	}
+	return true, nil
+}
+
+func preUpdate(ctx context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.PutRuleGroupsNamespaceInput) error {
+	obj.WorkspaceId = cr.Spec.ForProvider.WorkspaceID
+	obj.Name = cr.Spec.ForProvider.Name
+	obj.Data = cr.Spec.ForProvider.Data
+
+	return nil
 }
