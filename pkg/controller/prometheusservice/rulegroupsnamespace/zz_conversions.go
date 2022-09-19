@@ -109,23 +109,6 @@ func GenerateCreateRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace)
 	return res
 }
 
-// GeneratePutRuleGroupsNamespaceInput returns a update input.
-func GeneratePutRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace) *svcsdk.PutRuleGroupsNamespaceInput {
-	res := &svcsdk.PutRuleGroupsNamespaceInput{}
-
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetName(*cr.Spec.ForProvider.Name)
-	}
-	if cr.Spec.ForProvider.WorkspaceID != nil {
-		res.SetWorkspaceId(*cr.Spec.ForProvider.WorkspaceID)
-	}
-	if cr.Spec.ForProvider.Data != nil {
-		res.SetData(cr.Spec.ForProvider.Data)
-	}
-
-	return res
-}
-
 // GenerateDeleteRuleGroupsNamespaceInput returns a deletion input.
 func GenerateDeleteRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace) *svcsdk.DeleteRuleGroupsNamespaceInput {
 	res := &svcsdk.DeleteRuleGroupsNamespaceInput{}

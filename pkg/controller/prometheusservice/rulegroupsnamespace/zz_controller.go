@@ -152,16 +152,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.RuleGroupsNamespace)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-	input := GeneratePutRuleGroupsNamespaceInput(cr)
-	if err := e.preUpdate(ctx, cr, input); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
-	}
-	resp, err := e.client.PutRuleGroupsNamespaceWithContext(ctx, input)
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
+	return e.update(ctx, mg)
+
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -196,8 +188,6 @@ func newExternal(kube client.Client, client svcsdkapi.PrometheusServiceAPI, opts
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
 		postDelete:     nopPostDelete,
-		preUpdate:      nopPreUpdate,
-		postUpdate:     nopPostUpdate,
 		update:         nopUpdate,
 	}
 	for _, f := range opts {
@@ -217,8 +207,6 @@ type external struct {
 	postCreate     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.CreateRuleGroupsNamespaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DeleteRuleGroupsNamespaceInput) (bool, error)
 	postDelete     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DeleteRuleGroupsNamespaceOutput, error) error
-	preUpdate      func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.PutRuleGroupsNamespaceInput) error
-	postUpdate     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.PutRuleGroupsNamespaceOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -247,12 +235,6 @@ func nopPreDelete(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.Del
 }
 func nopPostDelete(_ context.Context, _ *svcapitypes.RuleGroupsNamespace, _ *svcsdk.DeleteRuleGroupsNamespaceOutput, err error) error {
 	return err
-}
-func nopPreUpdate(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.PutRuleGroupsNamespaceInput) error {
-	return nil
-}
-func nopPostUpdate(_ context.Context, _ *svcapitypes.RuleGroupsNamespace, _ *svcsdk.PutRuleGroupsNamespaceOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

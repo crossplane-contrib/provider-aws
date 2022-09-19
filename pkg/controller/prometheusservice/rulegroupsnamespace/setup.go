@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/prometheusservice"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/prometheusservice/prometheusserviceiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -42,7 +43,8 @@ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 			e.postDelete = postDelete
 			e.postObserve = postObserve
 			e.isUpToDate = isUpToDate
-			e.preUpdate = preUpdate
+			u := &updateClient{client: e.client}
+			e.update = u.update
 		},
 	}
 
@@ -156,10 +158,36 @@ func isUpToDate(cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGr
 	return true, nil
 }
 
-func preUpdate(ctx context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.PutRuleGroupsNamespaceInput) error {
-	obj.WorkspaceId = cr.Spec.ForProvider.WorkspaceID
-	obj.Name = cr.Spec.ForProvider.Name
-	obj.Data = cr.Spec.ForProvider.Data
+type updateClient struct {
+	client svcsdkapi.PrometheusServiceAPI
+}
 
-	return nil
+// GeneratePutRuleGroupsNamespaceInput returns a update input.
+func GeneratePutRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace) *svcsdk.PutRuleGroupsNamespaceInput {
+	res := &svcsdk.PutRuleGroupsNamespaceInput{}
+
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.WorkspaceID != nil {
+		res.SetWorkspaceId(*cr.Spec.ForProvider.WorkspaceID)
+	}
+	if cr.Spec.ForProvider.Data != nil {
+		res.SetData(cr.Spec.ForProvider.Data)
+	}
+
+	return res
+}
+
+func (e *updateClient) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*svcapitypes.RuleGroupsNamespace)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+	input := GeneratePutRuleGroupsNamespaceInput(cr)
+	_, err := e.client.PutRuleGroupsNamespaceWithContext(ctx, input)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "update failed")
+	}
+	return managed.ExternalUpdate{}, nil
 }
