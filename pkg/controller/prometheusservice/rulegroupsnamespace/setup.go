@@ -1,6 +1,7 @@
 package rulegroupsnamespace
 
 import (
+	"bytes"
 	"context"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/prometheusservice"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/prometheusservice/prometheusserviceiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -40,6 +42,9 @@ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 			e.postCreate = postCreate
 			e.postDelete = postDelete
 			e.postObserve = postObserve
+			e.isUpToDate = isUpToDate
+			u := &updateClient{client: e.client}
+			e.update = u.update
 		},
 	}
 
@@ -136,4 +141,53 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
+}
+
+func isUpToDate(cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, error) {
+	// A rule that's currently creating, deleting, or updating can't be
+	// updated, so we temporarily consider it to be up-to-date no matter
+	// what.
+	switch aws.StringValue(cr.Status.AtProvider.Status.StatusCode) {
+	case string(svcapitypes.RuleGroupsNamespaceStatusCode_CREATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_UPDATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_DELETING):
+		return true, nil
+	}
+
+	if cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.RuleGroupsNamespace.Data); cmp != 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+type updateClient struct {
+	client svcsdkapi.PrometheusServiceAPI
+}
+
+// GeneratePutRuleGroupsNamespaceInput returns a update input.
+func GeneratePutRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace) *svcsdk.PutRuleGroupsNamespaceInput {
+	res := &svcsdk.PutRuleGroupsNamespaceInput{}
+
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.WorkspaceID != nil {
+		res.SetWorkspaceId(*cr.Spec.ForProvider.WorkspaceID)
+	}
+	if cr.Spec.ForProvider.Data != nil {
+		res.SetData(cr.Spec.ForProvider.Data)
+	}
+
+	return res
+}
+
+func (e *updateClient) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*svcapitypes.RuleGroupsNamespace)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+	input := GeneratePutRuleGroupsNamespaceInput(cr)
+	_, err := e.client.PutRuleGroupsNamespaceWithContext(ctx, input)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "update failed")
+	}
+	return managed.ExternalUpdate{}, nil
 }
