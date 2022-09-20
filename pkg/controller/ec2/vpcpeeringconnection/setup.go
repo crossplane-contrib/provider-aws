@@ -102,20 +102,8 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 		req := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
 			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
-		if cr.Spec.ForProvider.AccepterPeeringOptions != nil {
-			req.AccepterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
-				AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.AccepterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
-				AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
-				AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
-			}
-		}
-		if cr.Spec.ForProvider.RequesterPeeringOptions != nil {
-			req.RequesterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
-				AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.RequesterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
-				AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
-				AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
-			}
-		}
+		setAccepterRequester(&req, cr)
+
 		request, _ := e.client.ModifyVpcPeeringConnectionOptionsRequest(&req)
 		err := request.Send()
 		if err != nil {
@@ -131,20 +119,34 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 	return obs, nil
 }
 
+func setAccepterRequester(req *svcsdk.ModifyVpcPeeringConnectionOptionsInput, cr *svcapitypes.VPCPeeringConnection) {
+	if cr.Spec.ForProvider.AccepterPeeringOptions != nil {
+		req.AccepterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
+			AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.AccepterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
+			AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
+			AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.AccepterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
+		}
+	}
+	if cr.Spec.ForProvider.RequesterPeeringOptions != nil {
+		req.RequesterPeeringConnectionOptions = &svcsdk.PeeringConnectionOptionsRequest{
+			AllowDnsResolutionFromRemoteVpc:            cr.Spec.ForProvider.RequesterPeeringOptions.AllowDNSResolutionFromRemoteVPC,
+			AllowEgressFromLocalClassicLinkToRemoteVpc: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalClassicLinkToRemoteVPC,
+			AllowEgressFromLocalVpcToRemoteClassicLink: cr.Spec.ForProvider.RequesterPeeringOptions.AllowEgressFromLocalVPCToRemoteClassicLink,
+		}
+	}
+}
+
 func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.VPCPeeringConnection) bool {
 	switch aws.StringValue(code.Code) {
 	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_pending_acceptance):
 		cr.SetConditions(xpv1.Creating())
 		return true
-	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_deleted):
+	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_deleted), string(svcapitypes.VPCPeeringConnectionStateReasonCode_failed):
 		cr.SetConditions(xpv1.Unavailable())
 		return false
 	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_active):
 		cr.SetConditions(xpv1.Available())
 		return true
-	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_failed):
-		cr.SetConditions(xpv1.Unavailable())
-		return false
 	}
 	return false
 }
