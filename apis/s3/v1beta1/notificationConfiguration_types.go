@@ -175,8 +175,8 @@ type TopicConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	// At least one of topicArn, topicArnRef or topicSelector is required.
 	// +optional
-	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1.SNSTopic
-	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1.SNSTopicARN()
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.Topic
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.SNSTopicARN()
 	TopicArn *string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn

@@ -22,7 +22,7 @@ import (
 	"context"
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
-	v1alpha11 "github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
+	v1beta12 "github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	v1beta11 "github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	errors "github.com/pkg/errors"
@@ -158,12 +158,12 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 		for i4 := 0; i4 < len(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations); i4++ {
 			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i4].TopicArn),
-				Extract:      v1alpha11.SNSTopicARN(),
+				Extract:      v1beta12.SNSTopicARN(),
 				Reference:    mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i4].TopicArnRef,
 				Selector:     mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i4].TopicArnSelector,
 				To: reference.To{
-					List:    &v1alpha11.SNSTopicList{},
-					Managed: &v1alpha11.SNSTopic{},
+					List:    &v1beta12.TopicList{},
+					Managed: &v1beta12.Topic{},
 				},
 			})
 			if err != nil {
