@@ -27,7 +27,7 @@ spec:
     name: example-activemq
     namespace: default
   providerConfigRef:
-    name: default
+    name: example
 ---
 apiVersion: v1
 kind: Secret

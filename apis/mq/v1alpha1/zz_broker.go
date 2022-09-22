@@ -79,6 +79,28 @@ type BrokerObservation struct {
 	BrokerARN *string `json:"brokerARN,omitempty"`
 
 	BrokerID *string `json:"brokerID,omitempty"`
+
+	BrokerInstances []*BrokerInstance `json:"brokerInstances,omitempty"`
+
+	BrokerState *string `json:"brokerState,omitempty"`
+
+	Configurations *Configurations `json:"configurations,omitempty"`
+
+	Created *metav1.Time `json:"created,omitempty"`
+
+	LogsSummary *LogsSummary `json:"logsSummary,omitempty"`
+
+	PendingAuthenticationStrategy *string `json:"pendingAuthenticationStrategy,omitempty"`
+
+	PendingEngineVersion *string `json:"pendingEngineVersion,omitempty"`
+
+	PendingHostInstanceType *string `json:"pendingHostInstanceType,omitempty"`
+
+	PendingLDAPServerMetadata *LDAPServerMetadataOutput `json:"pendingLDAPServerMetadata,omitempty"`
+
+	PendingSecurityGroups []*string `json:"pendingSecurityGroups,omitempty"`
+
+	Users []*UserSummary `json:"users,omitempty"`
 }
 
 // BrokerStatus defines the observed state of Broker.

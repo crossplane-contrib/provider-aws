@@ -9,3 +9,61 @@ ignore:
     - CreateUserRequest.Password
   resource_names:
     - Configuration
+resources:
+  Broker:
+    fields:
+      BrokerInstances:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: BrokerInstances
+      BrokerState:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: BrokerState
+      Configurations:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: Configurations
+      Created:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: Created
+      LogsSummary:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: Logs
+      PendingAuthenticationStrategy:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: PendingAuthenticationStrategy
+      PendingEngineVersion:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: PendingEngineVersion
+      PendingHostInstanceType:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: PendingHostInstanceType
+      PendingLdapServerMetadata:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: PendingLdapServerMetadata
+      PendingSecurityGroups:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: PendingSecurityGroups
+      Users:
+        is_read_only: true
+        from:
+          operation: DescribeBroker
+          path: Users
