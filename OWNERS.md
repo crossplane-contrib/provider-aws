@@ -19,3 +19,4 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Aaron Eaton <aaron@upbound.io>  ([AaronME](https://github.com/AaronME))
 * Carl Henrik Lunde <chlunde@gmail.com> ([chlunde](https://github.com/chlunde))
 * Christopher Haar <chhaar30@googlemail.com> ([haarchri](https://github.com/haarchri))
+* Maximilian Blatt ([MisterMX](https://github.com/MisterMX))
