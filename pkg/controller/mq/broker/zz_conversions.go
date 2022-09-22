@@ -21,6 +21,7 @@ package broker
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mq/v1alpha1"
 )
@@ -63,6 +64,81 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Status.AtProvider.BrokerID = resp.BrokerId
 	} else {
 		cr.Status.AtProvider.BrokerID = nil
+	}
+	if resp.BrokerInstances != nil {
+		f4 := []*svcapitypes.BrokerInstance{}
+		for _, f4iter := range resp.BrokerInstances {
+			f4elem := &svcapitypes.BrokerInstance{}
+			if f4iter.ConsoleURL != nil {
+				f4elem.ConsoleURL = f4iter.ConsoleURL
+			}
+			if f4iter.Endpoints != nil {
+				f4elemf1 := []*string{}
+				for _, f4elemf1iter := range f4iter.Endpoints {
+					var f4elemf1elem string
+					f4elemf1elem = *f4elemf1iter
+					f4elemf1 = append(f4elemf1, &f4elemf1elem)
+				}
+				f4elem.Endpoints = f4elemf1
+			}
+			if f4iter.IpAddress != nil {
+				f4elem.IPAddress = f4iter.IpAddress
+			}
+			f4 = append(f4, f4elem)
+		}
+		cr.Status.AtProvider.BrokerInstances = f4
+	} else {
+		cr.Status.AtProvider.BrokerInstances = nil
+	}
+	if resp.BrokerState != nil {
+		cr.Status.AtProvider.BrokerState = resp.BrokerState
+	} else {
+		cr.Status.AtProvider.BrokerState = nil
+	}
+	if resp.Configurations != nil {
+		f7 := &svcapitypes.Configurations{}
+		if resp.Configurations.Current != nil {
+			f7f0 := &svcapitypes.ConfigurationID{}
+			if resp.Configurations.Current.Id != nil {
+				f7f0.ID = resp.Configurations.Current.Id
+			}
+			if resp.Configurations.Current.Revision != nil {
+				f7f0.Revision = resp.Configurations.Current.Revision
+			}
+			f7.Current = f7f0
+		}
+		if resp.Configurations.History != nil {
+			f7f1 := []*svcapitypes.ConfigurationID{}
+			for _, f7f1iter := range resp.Configurations.History {
+				f7f1elem := &svcapitypes.ConfigurationID{}
+				if f7f1iter.Id != nil {
+					f7f1elem.ID = f7f1iter.Id
+				}
+				if f7f1iter.Revision != nil {
+					f7f1elem.Revision = f7f1iter.Revision
+				}
+				f7f1 = append(f7f1, f7f1elem)
+			}
+			f7.History = f7f1
+		}
+		if resp.Configurations.Pending != nil {
+			f7f2 := &svcapitypes.ConfigurationID{}
+			if resp.Configurations.Pending.Id != nil {
+				f7f2.ID = resp.Configurations.Pending.Id
+			}
+			if resp.Configurations.Pending.Revision != nil {
+				f7f2.Revision = resp.Configurations.Pending.Revision
+			}
+			f7.Pending = f7f2
+		}
+		cr.Status.AtProvider.Configurations = f7
+	} else {
+		cr.Status.AtProvider.Configurations = nil
+	}
+	if resp.Created != nil {
+		cr.Status.AtProvider.Created = &metav1.Time{*resp.Created}
+	} else {
+		cr.Status.AtProvider.Created = nil
 	}
 	if resp.DeploymentMode != nil {
 		cr.Spec.ForProvider.DeploymentMode = resp.DeploymentMode
@@ -165,6 +241,74 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 	} else {
 		cr.Spec.ForProvider.MaintenanceWindowStartTime = nil
 	}
+	if resp.PendingAuthenticationStrategy != nil {
+		cr.Status.AtProvider.PendingAuthenticationStrategy = resp.PendingAuthenticationStrategy
+	} else {
+		cr.Status.AtProvider.PendingAuthenticationStrategy = nil
+	}
+	if resp.PendingEngineVersion != nil {
+		cr.Status.AtProvider.PendingEngineVersion = resp.PendingEngineVersion
+	} else {
+		cr.Status.AtProvider.PendingEngineVersion = nil
+	}
+	if resp.PendingHostInstanceType != nil {
+		cr.Status.AtProvider.PendingHostInstanceType = resp.PendingHostInstanceType
+	} else {
+		cr.Status.AtProvider.PendingHostInstanceType = nil
+	}
+	if resp.PendingLdapServerMetadata != nil {
+		f20 := &svcapitypes.LDAPServerMetadataOutput{}
+		if resp.PendingLdapServerMetadata.Hosts != nil {
+			f20f0 := []*string{}
+			for _, f20f0iter := range resp.PendingLdapServerMetadata.Hosts {
+				var f20f0elem string
+				f20f0elem = *f20f0iter
+				f20f0 = append(f20f0, &f20f0elem)
+			}
+			f20.Hosts = f20f0
+		}
+		if resp.PendingLdapServerMetadata.RoleBase != nil {
+			f20.RoleBase = resp.PendingLdapServerMetadata.RoleBase
+		}
+		if resp.PendingLdapServerMetadata.RoleName != nil {
+			f20.RoleName = resp.PendingLdapServerMetadata.RoleName
+		}
+		if resp.PendingLdapServerMetadata.RoleSearchMatching != nil {
+			f20.RoleSearchMatching = resp.PendingLdapServerMetadata.RoleSearchMatching
+		}
+		if resp.PendingLdapServerMetadata.RoleSearchSubtree != nil {
+			f20.RoleSearchSubtree = resp.PendingLdapServerMetadata.RoleSearchSubtree
+		}
+		if resp.PendingLdapServerMetadata.ServiceAccountUsername != nil {
+			f20.ServiceAccountUsername = resp.PendingLdapServerMetadata.ServiceAccountUsername
+		}
+		if resp.PendingLdapServerMetadata.UserBase != nil {
+			f20.UserBase = resp.PendingLdapServerMetadata.UserBase
+		}
+		if resp.PendingLdapServerMetadata.UserRoleName != nil {
+			f20.UserRoleName = resp.PendingLdapServerMetadata.UserRoleName
+		}
+		if resp.PendingLdapServerMetadata.UserSearchMatching != nil {
+			f20.UserSearchMatching = resp.PendingLdapServerMetadata.UserSearchMatching
+		}
+		if resp.PendingLdapServerMetadata.UserSearchSubtree != nil {
+			f20.UserSearchSubtree = resp.PendingLdapServerMetadata.UserSearchSubtree
+		}
+		cr.Status.AtProvider.PendingLDAPServerMetadata = f20
+	} else {
+		cr.Status.AtProvider.PendingLDAPServerMetadata = nil
+	}
+	if resp.PendingSecurityGroups != nil {
+		f21 := []*string{}
+		for _, f21iter := range resp.PendingSecurityGroups {
+			var f21elem string
+			f21elem = *f21iter
+			f21 = append(f21, &f21elem)
+		}
+		cr.Status.AtProvider.PendingSecurityGroups = f21
+	} else {
+		cr.Status.AtProvider.PendingSecurityGroups = nil
+	}
 	if resp.PubliclyAccessible != nil {
 		cr.Spec.ForProvider.PubliclyAccessible = resp.PubliclyAccessible
 	} else {
@@ -185,6 +329,22 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Spec.ForProvider.Tags = f26
 	} else {
 		cr.Spec.ForProvider.Tags = nil
+	}
+	if resp.Users != nil {
+		f27 := []*svcapitypes.UserSummary{}
+		for _, f27iter := range resp.Users {
+			f27elem := &svcapitypes.UserSummary{}
+			if f27iter.PendingChange != nil {
+				f27elem.PendingChange = f27iter.PendingChange
+			}
+			if f27iter.Username != nil {
+				f27elem.Username = f27iter.Username
+			}
+			f27 = append(f27, f27elem)
+		}
+		cr.Status.AtProvider.Users = f27
+	} else {
+		cr.Status.AtProvider.Users = nil
 	}
 
 	return cr

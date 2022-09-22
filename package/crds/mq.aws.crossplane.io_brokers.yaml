@@ -530,6 +530,123 @@ spec:
                     type: string
                   brokerID:
                     type: string
+                  brokerInstances:
+                    items:
+                      properties:
+                        consoleURL:
+                          type: string
+                        endpoints:
+                          items:
+                            type: string
+                          type: array
+                        ipAddress:
+                          type: string
+                      type: object
+                    type: array
+                  brokerState:
+                    type: string
+                  configurations:
+                    properties:
+                      current:
+                        description: "A list of information about the configuration.
+                          \n Does not apply to RabbitMQ brokers."
+                        properties:
+                          id:
+                            type: string
+                          revision:
+                            format: int64
+                            type: integer
+                        type: object
+                      history:
+                        items:
+                          properties:
+                            id:
+                              type: string
+                            revision:
+                              format: int64
+                              type: integer
+                          type: object
+                        type: array
+                      pending:
+                        description: "A list of information about the configuration.
+                          \n Does not apply to RabbitMQ brokers."
+                        properties:
+                          id:
+                            type: string
+                          revision:
+                            format: int64
+                            type: integer
+                        type: object
+                    type: object
+                  created:
+                    format: date-time
+                    type: string
+                  logsSummary:
+                    properties:
+                      audit:
+                        type: boolean
+                      auditLogGroup:
+                        type: string
+                      general:
+                        type: boolean
+                      generalLogGroup:
+                        type: string
+                      pending:
+                        description: The list of information about logs to be enabled
+                          for the specified broker.
+                        properties:
+                          audit:
+                            type: boolean
+                          general:
+                            type: boolean
+                        type: object
+                    type: object
+                  pendingAuthenticationStrategy:
+                    type: string
+                  pendingEngineVersion:
+                    type: string
+                  pendingHostInstanceType:
+                    type: string
+                  pendingLDAPServerMetadata:
+                    properties:
+                      hosts:
+                        items:
+                          type: string
+                        type: array
+                      roleBase:
+                        type: string
+                      roleName:
+                        type: string
+                      roleSearchMatching:
+                        type: string
+                      roleSearchSubtree:
+                        type: boolean
+                      serviceAccountUsername:
+                        type: string
+                      userBase:
+                        type: string
+                      userRoleName:
+                        type: string
+                      userSearchMatching:
+                        type: string
+                      userSearchSubtree:
+                        type: boolean
+                    type: object
+                  pendingSecurityGroups:
+                    items:
+                      type: string
+                    type: array
+                  users:
+                    items:
+                      properties:
+                        pendingChange:
+                          description: The type of change pending for the ActiveMQ
+                            user.
+                          type: string
+                        username:
+                          type: string
+                      type: object
+                    type: array
                 type: object
               conditions:
                 description: Conditions of the resource.

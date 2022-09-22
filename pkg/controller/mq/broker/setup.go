@@ -2,8 +2,10 @@ package broker
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -69,6 +71,7 @@ func preObserve(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeB
 	return nil
 }
 
+// nolint:gocyclo
 func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
@@ -89,6 +92,25 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Broker, obj *s
 	pw, _, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.CustomUsers[0].PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil || pw == "" {
 		return obs, errors.Wrap(err, "cannot get password from the given secret")
+	}
+
+	// not needed if we get the field properly set in GenerateBroker() (metav1 import issue)
+	cr.Status.AtProvider.Created = fromTimePtr(obj.Created)
+
+	// somehow not in zz_conversions.go/GenerateBroker()
+	if obj.Logs != nil {
+		cr.Status.AtProvider.LogsSummary = &svcapitypes.LogsSummary{
+			Audit:           obj.Logs.Audit,
+			AuditLogGroup:   obj.Logs.AuditLogGroup,
+			General:         obj.Logs.General,
+			GeneralLogGroup: obj.Logs.GeneralLogGroup,
+		}
+		if obj.Logs.Pending != nil {
+			cr.Status.AtProvider.LogsSummary.Pending = &svcapitypes.PendingLogs{
+				Audit:   obj.Logs.Pending.Audit,
+				General: obj.Logs.Pending.General,
+			}
+		}
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
@@ -116,6 +138,9 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.Broker, obj *svc
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
 
+	obj.SecurityGroups = cr.Spec.ForProvider.SecurityGroups
+	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
+
 	obj.Users = []*svcsdk.User{
 		{
 			Username:      cr.Spec.ForProvider.CustomUsers[0].Username,
@@ -141,13 +166,51 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 // the values seen in svcsdk.DescribeBrokerResponse.
 // nolint:gocyclo
 func LateInitialize(cr *svcapitypes.BrokerParameters, obj *svcsdk.DescribeBrokerResponse) error {
+	if cr.AuthenticationStrategy == nil && obj.AuthenticationStrategy != nil {
+		cr.AuthenticationStrategy = awsclients.LateInitializeStringPtr(cr.AuthenticationStrategy, obj.AuthenticationStrategy)
+	}
+
 	if cr.AutoMinorVersionUpgrade == nil && obj.AutoMinorVersionUpgrade != nil {
 		cr.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, obj.AutoMinorVersionUpgrade)
+	}
+
+	if cr.EncryptionOptions == nil && obj.EncryptionOptions != nil {
+		cr.EncryptionOptions = &svcapitypes.EncryptionOptions{
+			KMSKeyID:       obj.EncryptionOptions.KmsKeyId,
+			UseAWSOwnedKey: obj.EncryptionOptions.UseAwsOwnedKey,
+		}
+	}
+
+	if cr.Logs == nil && obj.Logs != nil {
+		cr.Logs = &svcapitypes.Logs{
+			Audit:   obj.Logs.Audit,
+			General: obj.Logs.General,
+		}
+	}
+
+	if cr.MaintenanceWindowStartTime == nil && obj.MaintenanceWindowStartTime != nil {
+		cr.MaintenanceWindowStartTime = &svcapitypes.WeeklyStartTime{
+			DayOfWeek: obj.MaintenanceWindowStartTime.DayOfWeek,
+			TimeOfDay: obj.MaintenanceWindowStartTime.TimeOfDay,
+			TimeZone:  obj.MaintenanceWindowStartTime.TimeZone,
+		}
 	}
 
 	if cr.PubliclyAccessible == nil && obj.PubliclyAccessible != nil {
 		cr.PubliclyAccessible = awsclients.LateInitializeBoolPtr(cr.PubliclyAccessible, obj.PubliclyAccessible)
 	}
 
+	return nil
+}
+
+// fromTimePtr probably not needed if metav1 import issue in zz_conversions.go is fixed
+// see https://github.com/aws-controllers-k8s/community/issues/1372
+
+// fromTimePtr is a helper for converting a *time.Time to a *metav1.Time
+func fromTimePtr(t *time.Time) *metav1.Time {
+	if t != nil {
+		m := metav1.NewTime(*t)
+		return &m
+	}
 	return nil
 }
