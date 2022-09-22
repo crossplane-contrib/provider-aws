@@ -178,11 +178,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
-	if !reflect.DeepEqual(rsp.Nodegroup.Version, cr.Spec.ForProvider.Version) {
-		_, err := e.client.UpdateNodegroupVersion(ctx, &awseks.UpdateNodegroupVersionInput{
-			ClusterName:   &cr.Spec.ForProvider.ClusterName,
-			NodegroupName: awsclient.String(meta.GetExternalName(cr)),
-			Version:       cr.Spec.ForProvider.Version})
+	if update, updateInput := eks.GenerateUpdateNodeGroupVersionInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup); update {
+		_, err := e.client.UpdateNodegroupVersion(ctx, updateInput)
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	_, err = e.client.UpdateNodegroupConfig(ctx, eks.GenerateUpdateNodeGroupConfigInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup))

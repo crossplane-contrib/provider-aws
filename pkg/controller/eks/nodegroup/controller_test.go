@@ -40,6 +40,7 @@ import (
 var (
 	version           = "1.16"
 	desiredSize int32 = 3
+	force             = false
 
 	errBoom = errors.New("boom")
 )
@@ -82,6 +83,14 @@ func withScalingConfig(c *manualv1alpha1.NodeGroupScalingConfig) nodeGroupModifi
 	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.ScalingConfig = c }
 }
 
+func withUpdateConfig(c *manualv1alpha1.NodeGroupUpdateConfig) nodeGroupModifier {
+	return func(r *manualv1alpha1.NodeGroup) { r.Spec.ForProvider.UpdateConfig = c }
+}
+
+func withDefaultUpdateConfig() nodeGroupModifier {
+	return withUpdateConfig(&manualv1alpha1.NodeGroupUpdateConfig{Force: &force})
+}
+
 func nodeGroup(m ...nodeGroupModifier) *manualv1alpha1.NodeGroup {
 	cr := &manualv1alpha1.NodeGroup{}
 	for _, f := range m {
@@ -115,12 +124,13 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: nodeGroup(),
+				cr: nodeGroup(withDefaultUpdateConfig()),
 			},
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Available()),
-					withStatus(manualv1alpha1.NodeGroupStatusActive)),
+					withStatus(manualv1alpha1.NodeGroupStatusActive),
+					withDefaultUpdateConfig()),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -138,12 +148,13 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: nodeGroup(),
+				cr: nodeGroup(withDefaultUpdateConfig()),
 			},
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Deleting()),
-					withStatus(manualv1alpha1.NodeGroupStatusDeleting)),
+					withStatus(manualv1alpha1.NodeGroupStatusDeleting),
+					withDefaultUpdateConfig()),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -161,12 +172,13 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: nodeGroup(),
+				cr: nodeGroup(withDefaultUpdateConfig()),
 			},
 			want: want{
 				cr: nodeGroup(
 					withConditions(xpv1.Unavailable()),
-					withStatus(manualv1alpha1.NodeGroupStatusDegraded)),
+					withStatus(manualv1alpha1.NodeGroupStatusDegraded),
+					withDefaultUpdateConfig()),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -223,6 +235,7 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Creating()),
 					withVersion(&version),
 					withStatusVersion(&version),
+					withDefaultUpdateConfig(),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -248,7 +261,7 @@ func TestObserve(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  nodeGroup(withVersion(&version)),
+				cr:  nodeGroup(withVersion(&version), withUpdateConfig(&manualv1alpha1.NodeGroupUpdateConfig{Force: &force})),
 				err: errors.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},

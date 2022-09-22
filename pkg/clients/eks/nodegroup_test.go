@@ -33,13 +33,25 @@ import (
 )
 
 var (
-	ngName      = "my-cool-ng"
-	amiType     = "cool-ami"
-	diskSize    = int32(20)
-	size        = int32(2)
-	currentSize = int32(5)
-	maxSize     = int32(8)
-	nodeRole    = "cool-role"
+	ngName                   = "my-cool-ng"
+	amiType                  = "cool-ami"
+	diskSize                 = int32(20)
+	otherSize                = int32(100)
+	size                     = int32(2)
+	currentSize              = int32(5)
+	maxSize                  = int32(8)
+	nodeRole                 = "cool-role"
+	otherVersion             = "1.17"
+	releaseVersion           = "1.16.3-20220523"
+	otherReleaseVersion      = "1.17.4-20220523"
+	ltVersion                = "1"
+	ltID                     = "lt-id"
+	ltName                   = "my-cool-lt"
+	otherLtVersion           = "2"
+	maxUnavailablePercentage = int32(80)
+	maxUnavailable           = int32(2)
+	force                    = true
+	dontForce                = false
 )
 
 func TestGenerateCreateNodeGroupInput(t *testing.T) {
@@ -72,6 +84,10 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+						Force:                    &force,
+					},
 					Subnets: []string{"cool-subnet"},
 					Tags:    map[string]string{"cool": "tag"},
 					Version: &version,
@@ -95,6 +111,9 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 					MaxSize:     &size,
 					MinSize:     &size,
 				},
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
+				},
 				Subnets: []string{"cool-subnet"},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
@@ -114,6 +133,10 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+						Force:          &dontForce,
+					},
 					Subnets: []string{"cool-subnet"},
 				},
 			},
@@ -128,6 +151,9 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 					DesiredSize: &size,
 					MaxSize:     &size,
 					MinSize:     &size,
+				},
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
 				},
 				Subnets: []string{"cool-subnet"},
 			},
@@ -169,6 +195,230 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateCreateNodeGroupInput(tc.args.name, tc.args.p)
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
+	type args struct {
+		name string
+		p    *manualv1alpha1.NodeGroupParameters
+		n    *ekstypes.Nodegroup
+	}
+
+	cases := map[string]struct {
+		args
+		wantUpdate bool
+		wantInput  *eks.UpdateNodegroupVersionInput
+	}{
+		"NothingChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: false,
+			wantInput:  nil,
+		},
+		"VersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &otherVersion,
+					ReleaseVersion: &releaseVersion,
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName:  &ngName,
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				Version:       &otherVersion,
+			},
+		},
+		"ReleaseVersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &otherReleaseVersion,
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName:  &ngName,
+					ClusterName:    &clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:    &clusterName,
+				NodegroupName:  &ngName,
+				ReleaseVersion: &otherReleaseVersion,
+			},
+		},
+		"LaunchTemplateVersionChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Name:    &ltName,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"LaunchTemplateVersionChangedWithId": {
+			// The launch template can be referenced via ID or via Name. If there is no Name we should use the ID.
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						ID:      &ltID,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						// Having a name here and not an ID is on purpose to
+						// make sure that the k8s resource is "leading"
+						Name:    &ltName,
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Id:      &ltID,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"EverythingChanged": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					Version:        &otherVersion,
+					ReleaseVersion: &otherReleaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &otherLtVersion,
+					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &dontForce,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:    &clusterName,
+				NodegroupName:  &ngName,
+				Version:        &otherVersion,
+				ReleaseVersion: &otherReleaseVersion,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Name:    &ltName,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"ForceUpdate": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					Version:     &otherVersion,
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:   &clusterName,
+					NodegroupName: &ngName,
+					Version:       &version,
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				Version:       &otherVersion,
+				Force:         true,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			gotUpdate, gotInput := GenerateUpdateNodeGroupVersionInput(tc.args.name, tc.args.p, tc.args.n)
+			if diff := cmp.Diff(tc.wantUpdate, gotUpdate); diff != "" {
+				t.Errorf("r: -want, +got\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.wantInput, gotInput, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -363,6 +613,35 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				},
 			},
 		},
+		"UpdateConfig": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailablePercentage,
+						MaxUnavailablePercentage: &maxUnavailable,
+						Force:                    &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName: &ngName,
+					ClusterName:   &clusterName,
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailable,
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: &eks.UpdateNodegroupConfigInput{
+				NodegroupName: &ngName,
+				ClusterName:   &clusterName,
+				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+					MaxUnavailable:           &maxUnavailablePercentage,
+					MaxUnavailablePercentage: &maxUnavailable,
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
@@ -419,6 +698,10 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable:           &maxUnavailable,
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
 				},
 			},
 			want: manualv1alpha1.NodeGroupObservation{
@@ -445,6 +728,10 @@ func TestGenerateUpdateNodeObservation(t *testing.T) {
 				},
 				ScalingConfig: manualv1alpha1.NodeGroupScalingConfigStatus{
 					DesiredSize: &size,
+				},
+				UpdateConfig: manualv1alpha1.NodeGroupUpdateConfigStatus{
+					MaxUnavailable:           &maxUnavailable,
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
 				},
 			},
 		},
@@ -488,6 +775,9 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
 					ReleaseVersion: &version,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
@@ -507,6 +797,10 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					DesiredSize: &size,
 					MaxSize:     &size,
 					MinSize:     &size,
+				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
+					Force:          &dontForce,
 				},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
@@ -535,6 +829,9 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
 					ReleaseVersion: &version,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
@@ -554,8 +851,72 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 					MaxSize: &maxSize,
 					MinSize: &size,
 				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailable: &maxUnavailable,
+					Force:          &dontForce,
+				},
 				Tags:    map[string]string{"cool": "tag"},
 				Version: &version,
+			},
+		},
+		"SetLaunchTemplateVersionIfEmpty": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{},
+				},
+				n: &ekstypes.Nodegroup{
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+					Version: &ltVersion,
+				},
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					Force: &dontForce,
+				},
+			},
+		},
+		"UpdateConfigDefaultDontForce": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					MaxUnavailablePercentage: &maxUnavailablePercentage,
+					Force:                    &dontForce,
+				},
+			},
+		},
+		"UpdateConfigForceIfWanted": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						Force: &force,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+			},
+			want: &manualv1alpha1.NodeGroupParameters{
+				UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+					Force:          &force,
+					MaxUnavailable: &maxUnavailable,
+				},
 			},
 		},
 	}
@@ -571,9 +932,6 @@ func TestLateInitializeNodeGroup(t *testing.T) {
 }
 
 func TestIsNodeGroupUpToDate(t *testing.T) {
-	otherVersion := "1.17"
-	otherSize := int32(100)
-
 	type args struct {
 		p *manualv1alpha1.NodeGroupParameters
 		n *ekstypes.Nodegroup
@@ -594,6 +952,10 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MaxSize:     &size,
 						MinSize:     &size,
 					},
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+						Force:          &dontForce,
+					},
 				},
 				n: &ekstypes.Nodegroup{
 					Labels: map[string]string{"cool": "label"},
@@ -601,6 +963,9 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						DesiredSize: &size,
 						MaxSize:     &size,
 						MinSize:     &size,
+					},
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
 					},
 					Version: &version,
 					Tags:    map[string]string{"cool": "tag"},
@@ -636,9 +1001,37 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		"UpdateVersion": {
 			args: args{
 				p: &manualv1alpha1.NodeGroupParameters{
-					Tags:    map[string]string{"cool": "tag"},
-					Version: &otherVersion,
-					Labels:  map[string]string{"cool": "label"},
+					Tags:           map[string]string{"cool": "tag"},
+					ReleaseVersion: &releaseVersion,
+					Version:        &otherVersion,
+					Labels:         map[string]string{"cool": "label"},
+					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					Labels: map[string]string{"cool": "label"},
+					ScalingConfig: &ekstypes.NodegroupScalingConfig{
+						DesiredSize: &size,
+						MaxSize:     &size,
+						MinSize:     &size,
+					},
+					ReleaseVersion: &releaseVersion,
+					Version:        &version,
+					Tags:           map[string]string{"cool": "tag"},
+				},
+			},
+			want: false,
+		},
+		"UpdateReleaseVersion": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					Tags:           map[string]string{"cool": "tag"},
+					Version:        &version,
+					ReleaseVersion: &otherReleaseVersion,
+					Labels:         map[string]string{"cool": "label"},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
@@ -653,8 +1046,23 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MinSize:     &size,
 					},
 					ReleaseVersion: &version,
-					Version:        &version,
+					Version:        &releaseVersion,
 					Tags:           map[string]string{"cool": "tag"},
+				},
+			},
+			want: false,
+		},
+		"UpdateLaunchTemplate": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
 				},
 			},
 			want: false,
@@ -688,9 +1096,10 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 		"IgnoreDesiredSize": {
 			args: args{
 				p: &manualv1alpha1.NodeGroupParameters{
-					Tags:    map[string]string{"cool": "tag"},
-					Version: &version,
-					Labels:  map[string]string{"cool": "label"},
+					Tags:           map[string]string{"cool": "tag"},
+					ReleaseVersion: &releaseVersion,
+					Version:        &version,
+					Labels:         map[string]string{"cool": "label"},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
 						DesiredSize: nil,
 						MaxSize:     &maxSize,
@@ -704,12 +1113,57 @@ func TestIsNodeGroupUpToDate(t *testing.T) {
 						MaxSize:     &maxSize,
 						MinSize:     &size,
 					},
-					ReleaseVersion: &version,
+					ReleaseVersion: &releaseVersion,
 					Version:        &version,
 					Tags:           map[string]string{"cool": "tag"},
 				},
 			},
 			want: true,
+		},
+		"UpdateConfigMaxUnavailable": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: false,
+		},
+		"UpdateConfigMaxUnavailablePercentage": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailable,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+			},
+			want: false,
+		},
+		"UpdateConfigAbsoluteToPercentage": {
+			args: args{
+				p: &manualv1alpha1.NodeGroupParameters{
+					UpdateConfig: &manualv1alpha1.NodeGroupUpdateConfig{
+						MaxUnavailablePercentage: &maxUnavailablePercentage,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					UpdateConfig: &ekstypes.NodegroupUpdateConfig{
+						MaxUnavailable: &maxUnavailable,
+					},
+				},
+			},
+			want: false,
 		},
 	}
 

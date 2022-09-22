@@ -17,6 +17,8 @@ limitations under the License.
 package eks
 
 import (
+	"reflect"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
@@ -67,6 +69,12 @@ func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParame
 			c.ScalingConfig.DesiredSize = p.ScalingConfig.MinSize
 		}
 	}
+	if p.UpdateConfig != nil {
+		c.UpdateConfig = &ekstypes.NodegroupUpdateConfig{
+			MaxUnavailable:           p.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: p.UpdateConfig.MaxUnavailablePercentage,
+		}
+	}
 	if p.LaunchTemplate != nil {
 		c.LaunchTemplate = &ekstypes.LaunchTemplateSpecification{
 			Id:      p.LaunchTemplate.ID,
@@ -85,6 +93,49 @@ func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParame
 		}
 	}
 	return c
+}
+
+// GenerateUpdateNodeGroupVersionInput will check if version properties of the
+// nodegroup have changed. If no version property has changed, it will return false
+// and an incomplete update object. If true,
+func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) (bool, *eks.UpdateNodegroupVersionInput) {
+	u := false
+	i := &eks.UpdateNodegroupVersionInput{
+		NodegroupName: &name,
+		ClusterName:   &p.ClusterName,
+	}
+	if !reflect.DeepEqual(p.Version, ng.Version) {
+		u = true
+		i.Version = p.Version
+	}
+	if !reflect.DeepEqual(p.ReleaseVersion, ng.ReleaseVersion) {
+		u = true
+		i.ReleaseVersion = p.ReleaseVersion
+	}
+	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
+		// Since we late initialize the LaunchTemplate Version we can be sure that
+		// there is a version set at this point
+		if !reflect.DeepEqual(p.LaunchTemplate.Version, ng.LaunchTemplate.Version) {
+			u = true
+			i.LaunchTemplate = &ekstypes.LaunchTemplateSpecification{
+				Version: p.LaunchTemplate.Version,
+			}
+			if p.LaunchTemplate.Name != nil {
+				i.LaunchTemplate.Name = p.LaunchTemplate.Name
+			} else {
+				i.LaunchTemplate.Id = p.LaunchTemplate.ID
+			}
+		}
+	}
+	if p.UpdateConfig != nil && *p.UpdateConfig.Force {
+		i.Force = true
+	}
+
+	if !u {
+		return false, nil
+	}
+
+	return true, i
 }
 
 // GenerateUpdateNodeGroupConfigInput from NodeGroupParameters.
@@ -123,6 +174,12 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 			default:
 				u.ScalingConfig.DesiredSize = ng.ScalingConfig.DesiredSize
 			}
+		}
+	}
+	if p.UpdateConfig != nil {
+		u.UpdateConfig = &ekstypes.NodegroupUpdateConfig{
+			MaxUnavailable:           p.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: p.UpdateConfig.MaxUnavailablePercentage,
 		}
 	}
 	// TODO(muvaf): Add support for updating taints.
@@ -177,6 +234,13 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 			DesiredSize: ng.ScalingConfig.DesiredSize,
 		}
 	}
+
+	if ng.UpdateConfig != nil {
+		o.UpdateConfig = manualv1alpha1.NodeGroupUpdateConfigStatus{
+			MaxUnavailable:           ng.UpdateConfig.MaxUnavailable,
+			MaxUnavailablePercentage: ng.UpdateConfig.MaxUnavailablePercentage,
+		}
+	}
 	return o
 }
 
@@ -208,6 +272,21 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 			MaxSize:     ng.ScalingConfig.MaxSize,
 		}
 	}
+	// We will always have an UpdateConfig, because AWS will always create one
+	// and even if not - will create one to add the default value for force.
+	// We do not need to late init maxUnavailablePercentage. If it is set, it
+	// must already be part of the Object, since there is no default for that
+	// value.
+	if in.UpdateConfig == nil {
+		in.UpdateConfig = &manualv1alpha1.NodeGroupUpdateConfig{}
+	}
+	in.UpdateConfig.Force = awsclient.LateInitializeBoolPtr(in.UpdateConfig.Force, aws.Bool(false))
+	if ng.UpdateConfig != nil {
+		in.UpdateConfig.MaxUnavailable = awsclient.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
+	}
+	if in.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
+		in.LaunchTemplate.Version = awsclient.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
+	}
 	in.ReleaseVersion = awsclient.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
 	in.Version = awsclient.LateInitializeStringPtr(in.Version, ng.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
@@ -236,8 +315,24 @@ func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nod
 	if !cmp.Equal(p.Version, ng.Version) {
 		return false
 	}
+	if !cmp.Equal(p.ReleaseVersion, ng.ReleaseVersion) {
+		return false
+	}
 	if !cmp.Equal(p.Labels, ng.Labels, cmpopts.EquateEmpty()) {
 		return false
+	}
+	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
+		if !cmp.Equal(p.LaunchTemplate.Version, ng.LaunchTemplate.Version) {
+			return false
+		}
+	}
+	if p.UpdateConfig != nil && ng.UpdateConfig != nil {
+		if !cmp.Equal(p.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable) {
+			return false
+		}
+		if !cmp.Equal(p.UpdateConfig.MaxUnavailablePercentage, ng.UpdateConfig.MaxUnavailablePercentage) {
+			return false
+		}
 	}
 	if p.ScalingConfig == nil && ng.ScalingConfig == nil {
 		return true
