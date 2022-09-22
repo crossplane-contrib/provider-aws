@@ -466,7 +466,7 @@ data:
 apiVersion: aws.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
-  name: default
+  name: example
 spec:
   credentials:
     source: Secret
