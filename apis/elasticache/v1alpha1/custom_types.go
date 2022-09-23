@@ -27,5 +27,5 @@ type CustomCacheParameterGroupParameters struct {
 
 // CustomUserParameters contains the addtionals fields for UserParameters
 type CustomUserParameters struct {
-	PasswordSecretRef xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
+	PasswordSecretRef []xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
 }

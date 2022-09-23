@@ -33,8 +33,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/elasticache/v1alpha1"
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elasticache/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 const (
@@ -123,6 +123,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.ARN = nil
 	}
+	if resp.AccessString != nil {
+		cr.Spec.ForProvider.AccessString = resp.AccessString
+	} else {
+		cr.Spec.ForProvider.AccessString = nil
+	}
 	if resp.Authentication != nil {
 		f2 := &svcapitypes.Authentication{}
 		if resp.Authentication.PasswordCount != nil {
@@ -134,6 +139,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Authentication = f2
 	} else {
 		cr.Status.AtProvider.Authentication = nil
+	}
+	if resp.Engine != nil {
+		cr.Spec.ForProvider.Engine = resp.Engine
+	} else {
+		cr.Spec.ForProvider.Engine = nil
 	}
 	if resp.Status != nil {
 		cr.Status.AtProvider.Status = resp.Status
@@ -155,6 +165,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.UserID = resp.UserId
 	} else {
 		cr.Status.AtProvider.UserID = nil
+	}
+	if resp.UserName != nil {
+		cr.Spec.ForProvider.UserName = resp.UserName
+	} else {
+		cr.Spec.ForProvider.UserName = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

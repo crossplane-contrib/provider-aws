@@ -10,14 +10,17 @@ spec:
     engine: redis
     noPasswordRequired: false
     passwordSecretRef:
-      name: example-elasticache
-      key: password
-      namespace: crossplane-system
+      - name: example-elasticache
+        key: password1
+        namespace: crossplane-system
+      # - name: example-elasticache
+      #   key: password2
+      #   namespace: crossplane-system
   writeConnectionSecretToRef:
     name: example-elasticache
     namespace: default
   providerConfigRef:
-    name: example
+    name: default
 ---
 apiVersion: v1
 kind: Secret
@@ -25,5 +28,6 @@ metadata:
   name: example-elasticache
   namespace: crossplane-system
 type: Opaque
-data:
-  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123
+stringData:
+  password1: testAPassword!123
+  password2: startBPassword!123

@@ -25,22 +25,13 @@ import (
 
 // Package type metadata.
 const (
-<<<<<<< HEAD
 	CRDGroup   = "elasticache.aws.crossplane.io"
 	CRDVersion = "v1alpha1"
-=======
-	Group   = "elasticache.aws.crossplane.io"
-	Version = "v1alpha1"
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 )
 
 var (
 	// GroupVersion is the API Group Version used to register the objects
-<<<<<<< HEAD
 	GroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-=======
-	GroupVersion = schema.GroupVersion{Group: Group, Version: Version}
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

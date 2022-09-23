@@ -47,6 +47,8 @@ import (
 const (
 	errCheckUpToDate           = "unable to determine if external resource is up to date"
 	errGetPasswordSecretFailed = "cannot get password secret"
+	PasswordKey1               = xpv1.ResourceCredentialsSecretPasswordKey
+	PasswordKey2               = "password2"
 )
 
 // A Client handles CRUD operations for ElastiCache resources.
@@ -818,37 +820,70 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 	return cmp.Equal(desired, observed, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(document.NoSerde{})), nil
 }
 
-// GetPassword fetches the referenced input password for an ElastiCacheUser CRD and determines whether it has changed or not
-func GetPassword(ctx context.Context, kube client.Client, in *xpv1.SecretKeySelector, out *xpv1.SecretReference) (newPwd string, changed bool, err error) {
-	if in == nil {
-		return "", false, nil
+// GetPasswords fetches the referenced input passwords for an ElastiCacheUser CRD
+func GetPasswords(ctx context.Context, kube client.Client, in []xpv1.SecretKeySelector) (newPwd []*string, err error) {
+	if in == nil || len(in) == 0 {
+		return nil, errors.Wrap(err, "empty")
 	}
 
-	nn := types.NamespacedName{
-		Name:      in.Name,
-		Namespace: in.Namespace,
-	}
-	s := &corev1.Secret{}
-	if err := kube.Get(ctx, nn, s); err != nil {
-		return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
-	}
-	newPwd = string(s.Data[in.Key])
+	pwds := []*string{}
 
-	if out != nil {
-		nn = types.NamespacedName{
+	for _, keySelector := range in {
+		nn := types.NamespacedName{
+			Name:      keySelector.Name,
+			Namespace: keySelector.Namespace,
+		}
+
+		s := &corev1.Secret{}
+		if err := kube.Get(ctx, nn, s); err != nil {
+			return nil, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+		strPointerValue := string(s.Data[keySelector.Key])
+		pwds = append(pwds, &strPointerValue)
+
+	}
+
+	return pwds, nil
+}
+
+// PasswordsUpToDate checks passwords for an ElastiCacheUser CRD and determines whether it has changed or not
+func PasswordsUpToDate(ctx context.Context, kube client.Client, in []xpv1.SecretKeySelector, out *xpv1.SecretReference) (upToDate bool, err error) {
+
+	passwords, err := GetPasswords(ctx, kube, in)
+	if err != nil {
+
+	}
+
+	if len(passwords) > 0 {
+		nn := types.NamespacedName{
 			Name:      out.Name,
 			Namespace: out.Namespace,
 		}
-		s = &corev1.Secret{}
+		s := &corev1.Secret{}
 		// the output secret may not exist yet, so we can skip returning an
 		// error if the error is NotFound
 		if err := kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
-			return "", false, err
+			return false, err
 		}
-		// if newPwd was set to some value, compare value in output secret with
-		// newPwd
-		changed = newPwd != "" && newPwd != string(s.Data[xpv1.ResourceCredentialsSecretPasswordKey])
-	}
 
-	return newPwd, changed, nil
+		// if user delete one array entry for passwords in cr
+		if len(passwords) != len(s.Data) {
+			return false, nil
+		}
+
+		for key, pw := range passwords {
+			if key == 0 {
+				if *pw != string(s.Data[PasswordKey1]) {
+					return false, nil
+				}
+			}
+
+			if key == 1 {
+				if *pw != string(s.Data[PasswordKey2]) {
+					return false, nil
+				}
+			}
+		}
+	}
+	return true, nil
 }

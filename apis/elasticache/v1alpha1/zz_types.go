@@ -18,10 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 88b52363 (feat(elasticache-cache): #585 added elasticache user)
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -31,41 +27,27 @@ var (
 	_ = &metav1.Time{}
 )
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type Authentication struct {
-	PasswordCount *int64 `json:"passwordCount,omitempty"`
-}
-
-// +kubebuilder:skipversion
-=======
-=======
->>>>>>> 88b52363 (feat(elasticache-cache): #585 added elasticache user)
 type Authentication struct {
 	PasswordCount *int64 `json:"passwordCount,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
 }
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+// +kubebuilder:skipversion
 type AvailabilityZone struct {
 	Name *string `json:"name,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type CacheCluster struct {
-	ARN *string `json:"arn,omitempty"`
-
-	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
-=======
 type CacheCluster struct {
 	ARN *string `json:"arn,omitempty"`
 
 	AtRestEncryptionEnabled *bool `json:"atRestEncryptionEnabled,omitempty"`
 
 	AuthTokenEnabled *bool `json:"authTokenEnabled,omitempty"`
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -91,16 +73,8 @@ type CacheCluster struct {
 
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
-<<<<<<< HEAD
 	ReplicationGroupLogDeliveryEnabled *bool `json:"replicationGroupLogDeliveryEnabled,omitempty"`
 
-	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
-
-	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
-}
-
-// +kubebuilder:skipversion
-=======
 	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
 
 	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
@@ -108,7 +82,7 @@ type CacheCluster struct {
 	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+// +kubebuilder:skipversion
 type CacheEngineVersion struct {
 	CacheEngineDescription *string `json:"cacheEngineDescription,omitempty"`
 
@@ -121,10 +95,7 @@ type CacheEngineVersion struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheNode struct {
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
 
@@ -139,10 +110,7 @@ type CacheNode struct {
 	SourceCacheNodeID *string `json:"sourceCacheNodeID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheNodeTypeSpecificParameter struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -150,11 +118,8 @@ type CacheNodeTypeSpecificParameter struct {
 
 	Description *string `json:"description,omitempty"`
 
-<<<<<<< HEAD
 	IsModifiable *bool `json:"isModifiable,omitempty"`
 
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	MinimumEngineVersion *string `json:"minimumEngineVersion,omitempty"`
 
 	ParameterName *string `json:"parameterName,omitempty"`
@@ -162,25 +127,18 @@ type CacheNodeTypeSpecificParameter struct {
 	Source *string `json:"source,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheNodeTypeSpecificValue struct {
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheNodeUpdateStatus struct {
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
 type CacheParameterGroupStatus_SDK struct {
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
@@ -190,9 +148,6 @@ type CacheParameterGroupStatus_SDK struct {
 
 // +kubebuilder:skipversion
 type CacheParameterGroup_SDK struct {
-=======
-type CacheParameterGroup struct {
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	ARN *string `json:"arn,omitempty"`
 
 	CacheParameterGroupFamily *string `json:"cacheParameterGroupFamily,omitempty"`
@@ -200,22 +155,11 @@ type CacheParameterGroup struct {
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
 
 	Description *string `json:"description,omitempty"`
-<<<<<<< HEAD
 
 	IsGlobal *bool `json:"isGlobal,omitempty"`
 }
 
 // +kubebuilder:skipversion
-=======
-}
-
-type CacheParameterGroupStatus struct {
-	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
-
-	ParameterApplyStatus *string `json:"parameterApplyStatus,omitempty"`
-}
-
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheSecurityGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -226,20 +170,14 @@ type CacheSecurityGroup struct {
 	OwnerID *string `json:"ownerID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheSecurityGroupMembership struct {
 	CacheSecurityGroupName *string `json:"cacheSecurityGroupName,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CacheSubnetGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -250,25 +188,19 @@ type CacheSubnetGroup struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
 type CloudWatchLogsDestinationDetails struct {
 	LogGroup *string `json:"logGroup,omitempty"`
 }
 
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type CustomerNodeEndpoint struct {
 	Address *string `json:"address,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type EC2SecurityGroup struct {
 	EC2SecurityGroupName *string `json:"ec2SecurityGroupName,omitempty"`
 
@@ -277,58 +209,40 @@ type EC2SecurityGroup struct {
 	Status *string `json:"status,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type Endpoint struct {
 	Address *string `json:"address,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type EngineDefaults struct {
 	CacheParameterGroupFamily *string `json:"cacheParameterGroupFamily,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type Event struct {
 	Message *string `json:"message,omitempty"`
 
 	SourceIdentifier *string `json:"sourceIdentifier,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
 type Filter struct {
 	Name *string `json:"name,omitempty"`
 
 	Values []*string `json:"values,omitempty"`
 }
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+// +kubebuilder:skipversion
 type GlobalNodeGroup struct {
 	GlobalNodeGroupID *string `json:"globalNodeGroupID,omitempty"`
 
 	Slots *string `json:"slots,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type GlobalReplicationGroup struct {
-	ARN *string `json:"arn,omitempty"`
-
-	CacheNodeType *string `json:"cacheNodeType,omitempty"`
-
-=======
 type GlobalReplicationGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -340,7 +254,6 @@ type GlobalReplicationGroup struct {
 
 	ClusterEnabled *bool `json:"clusterEnabled,omitempty"`
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -350,26 +263,18 @@ type GlobalReplicationGroup struct {
 	GlobalReplicationGroupID *string `json:"globalReplicationGroupID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
-<<<<<<< HEAD
-}
-
-// +kubebuilder:skipversion
-=======
 
 	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+// +kubebuilder:skipversion
 type GlobalReplicationGroupInfo struct {
 	GlobalReplicationGroupID *string `json:"globalReplicationGroupID,omitempty"`
 
 	GlobalReplicationGroupMemberRole *string `json:"globalReplicationGroupMemberRole,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type GlobalReplicationGroupMember struct {
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
@@ -380,7 +285,6 @@ type GlobalReplicationGroupMember struct {
 	Status *string `json:"status,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
 type KinesisFirehoseDestinationDetails struct {
 	DeliveryStream *string `json:"deliveryStream,omitempty"`
@@ -392,8 +296,11 @@ type LogDeliveryConfiguration struct {
 }
 
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+type LogDeliveryConfigurationRequest struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type NodeGroup struct {
 	NodeGroupID *string `json:"nodeGroupID,omitempty"`
 
@@ -402,10 +309,7 @@ type NodeGroup struct {
 	Status *string `json:"status,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NodeGroupConfiguration struct {
 	PrimaryAvailabilityZone *string `json:"primaryAvailabilityZone,omitempty"`
 
@@ -416,10 +320,7 @@ type NodeGroupConfiguration struct {
 	Slots *string `json:"slots,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NodeGroupMember struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -432,28 +333,19 @@ type NodeGroupMember struct {
 	PreferredOutpostARN *string `json:"preferredOutpostARN,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NodeGroupMemberUpdateStatus struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NodeGroupUpdateStatus struct {
 	NodeGroupID *string `json:"nodeGroupID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NodeSnapshot struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -464,20 +356,14 @@ type NodeSnapshot struct {
 	NodeGroupID *string `json:"nodeGroupID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type NotificationConfiguration struct {
 	TopicARN *string `json:"topicARN,omitempty"`
 
 	TopicStatus *string `json:"topicStatus,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type Parameter struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
@@ -485,11 +371,8 @@ type Parameter struct {
 
 	Description *string `json:"description,omitempty"`
 
-<<<<<<< HEAD
 	IsModifiable *bool `json:"isModifiable,omitempty"`
 
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	MinimumEngineVersion *string `json:"minimumEngineVersion,omitempty"`
 
 	ParameterName *string `json:"parameterName,omitempty"`
@@ -499,20 +382,14 @@ type Parameter struct {
 	Source *string `json:"source,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type ParameterNameValue struct {
 	ParameterName *string `json:"parameterName,omitempty"`
 
 	ParameterValue *string `json:"parameterValue,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type PendingModifiedValues struct {
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
@@ -521,10 +398,7 @@ type PendingModifiedValues struct {
 	NumCacheNodes *int64 `json:"numCacheNodes,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type ProcessedUpdateAction struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -533,32 +407,19 @@ type ProcessedUpdateAction struct {
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type RecurringCharge struct {
 	RecurringChargeFrequency *string `json:"recurringChargeFrequency,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type RegionalConfiguration struct {
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
 	ReplicationGroupRegion *string `json:"replicationGroupRegion,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type ReplicationGroup struct {
-	ARN *string `json:"arn,omitempty"`
-
-	CacheNodeType *string `json:"cacheNodeType,omitempty"`
-
-=======
 type ReplicationGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -570,7 +431,6 @@ type ReplicationGroup struct {
 
 	ClusterEnabled *bool `json:"clusterEnabled,omitempty"`
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	Description *string `json:"description,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
@@ -584,26 +444,18 @@ type ReplicationGroup struct {
 	SnapshottingClusterID *string `json:"snapshottingClusterID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
-<<<<<<< HEAD
-}
-
-// +kubebuilder:skipversion
-=======
 
 	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 
 	UserGroupIDs []*string `json:"userGroupIDs,omitempty"`
 }
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
+// +kubebuilder:skipversion
 type ReplicationGroupPendingModifiedValues struct {
 	PrimaryClusterID *string `json:"primaryClusterID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type ReservedCacheNode struct {
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
@@ -620,10 +472,7 @@ type ReservedCacheNode struct {
 	State *string `json:"state,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type ReservedCacheNodesOffering struct {
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
@@ -634,24 +483,17 @@ type ReservedCacheNodesOffering struct {
 	ReservedCacheNodesOfferingID *string `json:"reservedCacheNodesOfferingID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type SecurityGroupMembership struct {
 	SecurityGroupID *string `json:"securityGroupID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type ServiceUpdate struct {
-=======
 type ServiceUpdate struct {
 	AutoUpdateAfterRecommendedApplyByDate *bool `json:"autoUpdateAfterRecommendedApplyByDate,omitempty"`
 
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -663,18 +505,12 @@ type ServiceUpdate struct {
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
 type Snapshot struct {
 	ARN *string `json:"arn,omitempty"`
 
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
-=======
-type Snapshot struct {
-	ARN *string `json:"arn,omitempty"`
-
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
@@ -720,36 +556,24 @@ type Snapshot struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type Subnet struct {
 	SubnetIdentifier *string `json:"subnetIdentifier,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type SubnetOutpost struct {
 	SubnetOutpostARN *string `json:"subnetOutpostARN,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type UnprocessedUpdateAction struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -762,10 +586,7 @@ type UnprocessedUpdateAction struct {
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-=======
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type UpdateAction struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -780,28 +601,7 @@ type UpdateAction struct {
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
 }
 
-<<<<<<< HEAD
 // +kubebuilder:skipversion
-type User struct {
-	ARN *string `json:"arn,omitempty"`
-
-	AccessString *string `json:"accessString,omitempty"`
-
-	Status *string `json:"status,omitempty"`
-
-	UserID *string `json:"userID,omitempty"`
-
-	UserName *string `json:"userName,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type UserGroup struct {
-	ARN *string `json:"arn,omitempty"`
-
-	Status *string `json:"status,omitempty"`
-
-	UserGroupID *string `json:"userGroupID,omitempty"`
-=======
 type UserGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -812,12 +612,14 @@ type UserGroup struct {
 	UserGroupID *string `json:"userGroupID,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type UserGroupsUpdateStatus struct {
 	UserGroupIDsToAdd []*string `json:"userGroupIDsToAdd,omitempty"`
 
 	UserGroupIDsToRemove []*string `json:"userGroupIDsToRemove,omitempty"`
 }
 
+// +kubebuilder:skipversion
 type User_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -834,5 +636,4 @@ type User_SDK struct {
 	UserID *string `json:"userID,omitempty"`
 
 	UserName *string `json:"userName,omitempty"`
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 }

@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
 Copyright 2021 The Crossplane Authors.
-=======
-Copyright 2020 The Crossplane Authors.
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +20,6 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-<<<<<<< HEAD
 // GetCondition of this CacheParameterGroup.
 func (mg *CacheParameterGroup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
@@ -37,25 +32,10 @@ func (mg *CacheParameterGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 
 // GetProviderConfigReference of this CacheParameterGroup.
 func (mg *CacheParameterGroup) GetProviderConfigReference() *xpv1.Reference {
-=======
-// GetCondition of this User.
-func (mg *User) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
-	return mg.Status.GetCondition(ct)
-}
-
-// GetDeletionPolicy of this User.
-func (mg *User) GetDeletionPolicy() xpv1.DeletionPolicy {
-	return mg.Spec.DeletionPolicy
-}
-
-// GetProviderConfigReference of this User.
-func (mg *User) GetProviderConfigReference() *xpv1.Reference {
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-<<<<<<< HEAD
 GetProviderReference of this CacheParameterGroup.
 Deprecated: Use GetProviderConfigReference.
 */
@@ -85,12 +65,53 @@ func (mg *CacheParameterGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 
 // SetProviderConfigReference of this CacheParameterGroup.
 func (mg *CacheParameterGroup) SetProviderConfigReference(r *xpv1.Reference) {
-=======
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CacheParameterGroup.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CacheParameterGroup) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetPublishConnectionDetailsTo of this CacheParameterGroup.
+func (mg *CacheParameterGroup) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+	mg.Spec.PublishConnectionDetailsTo = r
+}
+
+// SetWriteConnectionSecretToReference of this CacheParameterGroup.
+func (mg *CacheParameterGroup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this User.
+func (mg *User) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this User.
+func (mg *User) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this User.
+func (mg *User) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
 GetProviderReference of this User.
 Deprecated: Use GetProviderConfigReference.
 */
 func (mg *User) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
+}
+
+// GetPublishConnectionDetailsTo of this User.
+func (mg *User) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
+	return mg.Spec.PublishConnectionDetailsTo
 }
 
 // GetWriteConnectionSecretToReference of this User.
@@ -110,27 +131,10 @@ func (mg *User) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 
 // SetProviderConfigReference of this User.
 func (mg *User) SetProviderConfigReference(r *xpv1.Reference) {
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-<<<<<<< HEAD
-SetProviderReference of this CacheParameterGroup.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *CacheParameterGroup) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
-}
-
-// SetPublishConnectionDetailsTo of this CacheParameterGroup.
-func (mg *CacheParameterGroup) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
-	mg.Spec.PublishConnectionDetailsTo = r
-}
-
-// SetWriteConnectionSecretToReference of this CacheParameterGroup.
-func (mg *CacheParameterGroup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
-=======
 SetProviderReference of this User.
 Deprecated: Use SetProviderConfigReference.
 */
@@ -138,8 +142,12 @@ func (mg *User) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
+// SetPublishConnectionDetailsTo of this User.
+func (mg *User) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+	mg.Spec.PublishConnectionDetailsTo = r
+}
+
 // SetWriteConnectionSecretToReference of this User.
 func (mg *User) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
->>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 	mg.Spec.WriteConnectionSecretToReference = r
 }

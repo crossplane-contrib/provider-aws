@@ -37,6 +37,9 @@ type UserParameters struct {
 	Engine *string `json:"engine"`
 	// Indicates a password is not required for this user.
 	NoPasswordRequired *bool `json:"noPasswordRequired,omitempty"`
+	// A list of tags to be added to this resource. A tag is a key-value pair. A
+	// tag key must be accompanied by a tag value, although null is accepted.
+	Tags []*Tag `json:"tags,omitempty"`
 	// The username of the user.
 	// +kubebuilder:validation:Required
 	UserName             *string `json:"userName"`
@@ -76,6 +79,7 @@ type UserStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type User struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -96,7 +100,7 @@ type UserList struct {
 // Repository type metadata.
 var (
 	UserKind             = "User"
-	UserGroupKind        = schema.GroupKind{Group: Group, Kind: UserKind}.String()
+	UserGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: UserKind}.String()
 	UserKindAPIVersion   = UserKind + "." + GroupVersion.String()
 	UserGroupVersionKind = GroupVersion.WithKind(UserKind)
 )

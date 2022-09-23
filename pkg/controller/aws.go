@@ -107,7 +107,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/eks/identityproviderconfig"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticache/cacheparametergroup"
-	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticache/user"
+	elasticacheuser "github.com/crossplane-contrib/provider-aws/pkg/controller/elasticache/user"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/listener"
@@ -337,7 +337,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cognitoidentitypool.SetupIdentityPool,
 		flowlog.SetupFlowLog,
 		opensearchdomain.SetupDomain,
-		user.SetupUser,
+		elasticacheuser.SetupUser,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

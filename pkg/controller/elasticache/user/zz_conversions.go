@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/elasticache"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/elasticache/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elasticache/v1alpha1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
@@ -124,6 +124,20 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 	}
 	if cr.Spec.ForProvider.NoPasswordRequired != nil {
 		res.SetNoPasswordRequired(*cr.Spec.ForProvider.NoPasswordRequired)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f3 := []*svcsdk.Tag{}
+		for _, f3iter := range cr.Spec.ForProvider.Tags {
+			f3elem := &svcsdk.Tag{}
+			if f3iter.Key != nil {
+				f3elem.SetKey(*f3iter.Key)
+			}
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetTags(f3)
 	}
 	if cr.Spec.ForProvider.UserName != nil {
 		res.SetUserName(*cr.Spec.ForProvider.UserName)

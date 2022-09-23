@@ -4,11 +4,12 @@ ignore:
     - CreateCacheParameterGroupInput.CacheParameterGroupName
     - ModifyCacheParameterGroupInput.CacheParameterGroupName
     - DeleteCacheParameterGroupInput.CacheParameterGroupName
+    - CreateUserInput.UserId
+    - CreateUserInput.Passwords
   resource_names:
     - CacheCluster
     - CacheSecurityGroup
     - CacheSubnetGroup
-    - User
     - UserGroup
     - ReplicationGroup
     - GlobalReplicationGroup
