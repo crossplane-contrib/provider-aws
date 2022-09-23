@@ -47,8 +47,10 @@ import (
 const (
 	errCheckUpToDate           = "unable to determine if external resource is up to date"
 	errGetPasswordSecretFailed = "cannot get password secret"
-	PasswordKey1               = xpv1.ResourceCredentialsSecretPasswordKey
-	PasswordKey2               = "password2"
+	// PasswordKey1 used for key1
+	PasswordKey1 = xpv1.ResourceCredentialsSecretPasswordKey
+	// PasswordKey2 used for key2
+	PasswordKey2 = "password2"
 )
 
 // A Client handles CRUD operations for ElastiCache resources.
@@ -822,7 +824,7 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 
 // GetPasswords fetches the referenced input passwords for an ElastiCacheUser CRD
 func GetPasswords(ctx context.Context, kube client.Client, in []xpv1.SecretKeySelector) (newPwd []*string, err error) {
-	if in == nil || len(in) == 0 {
+	if len(in) == 0 {
 		return nil, errors.Wrap(err, "empty")
 	}
 
@@ -851,7 +853,7 @@ func PasswordsUpToDate(ctx context.Context, kube client.Client, in []xpv1.Secret
 
 	passwords, err := GetPasswords(ctx, kube, in)
 	if err != nil {
-
+		return false, err
 	}
 
 	if len(passwords) > 0 {

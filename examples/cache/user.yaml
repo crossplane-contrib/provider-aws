@@ -13,9 +13,9 @@ spec:
       - name: example-elasticache
         key: password1
         namespace: crossplane-system
-      # - name: example-elasticache
-      #   key: password2
-      #   namespace: crossplane-system
+      - name: example-elasticache
+        key: password2
+        namespace: crossplane-system
   writeConnectionSecretToRef:
     name: example-elasticache
     namespace: default

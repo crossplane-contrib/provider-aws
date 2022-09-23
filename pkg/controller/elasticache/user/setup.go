@@ -180,6 +180,9 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcsd
 	}
 
 	pwds, err := elasticache.GetPasswords(ctx, e.kube, cr.Spec.ForProvider.PasswordSecretRef)
+	if err != nil {
+		return upd, err
+	}
 
 	connectionDetails := managed.ConnectionDetails{}
 

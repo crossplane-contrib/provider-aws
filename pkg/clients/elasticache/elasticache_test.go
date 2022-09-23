@@ -75,14 +75,6 @@ var (
 	nodeGroupSlots        = "coolslots"
 
 	cacheClusterID = name + "-0001"
-
-	secretNamespace      = "crossplane-system"
-	connectionSecretName = "my-little-secret"
-	connectionSecretKey  = "credentials"
-	connectionCredData   = "confidential!"
-	outputSecretName     = "my-saved-secret"
-
-	errBoom = errors.New("boom")
 )
 
 var (
