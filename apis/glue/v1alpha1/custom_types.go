@@ -354,6 +354,7 @@ type CustomCrawlerParameters struct {
 	// AWS API seems to give just name of the role back (not ARN)
 	// +immutable
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.RoleARN()
 	// +crossplane:generate:reference:refFieldName=RoleRef
 	// +crossplane:generate:reference:selectorFieldName=RoleSelector
 	Role string `json:"role,omitempty"`

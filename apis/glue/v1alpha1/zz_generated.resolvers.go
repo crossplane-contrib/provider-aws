@@ -139,7 +139,7 @@ func (mg *Crawler) ResolveReferences(ctx context.Context, c client.Reader) error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.CustomCrawlerParameters.Role,
-		Extract:      reference.ExternalName(),
+		Extract:      v1beta11.RoleARN(),
 		Reference:    mg.Spec.ForProvider.CustomCrawlerParameters.RoleRef,
 		Selector:     mg.Spec.ForProvider.CustomCrawlerParameters.RoleSelector,
 		To: reference.To{
