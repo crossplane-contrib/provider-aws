@@ -48,7 +48,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,7 +55,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha3"
 	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/version"
 )
@@ -101,14 +99,7 @@ var userAgentV1 = requestv1.NamedHandler{
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
 func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
-	switch {
-	case mg.GetProviderConfigReference() != nil:
-		return UseProviderConfig(ctx, c, mg, region)
-	case mg.GetProviderReference() != nil:
-		return UseProvider(ctx, c, mg, region)
-	default:
-		return nil, errors.New("neither providerConfigRef nor providerRef is given")
-	}
+	return UseProviderConfig(ctx, c, mg, region)
 }
 
 // UseProviderConfig to produce a config that can be used to authenticate to AWS.
@@ -227,35 +218,6 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 		return e, nil
 	})
 	return cfg
-}
-
-// UseProvider to produce a config that can be used to authenticate to AWS.
-// Deprecated: Use UseProviderConfig.
-func UseProvider(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
-	p := &v1alpha3.Provider{}
-	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderReference().Name}, p); err != nil {
-		return nil, errors.Wrap(err, "cannot get referenced Provider")
-	}
-
-	if region == "" {
-		region = p.Spec.Region
-	}
-
-	if BoolValue(p.Spec.UseServiceAccount) {
-		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
-	}
-
-	if p.Spec.CredentialsSecretRef == nil {
-		return nil, errors.New("provider does not have a secret reference")
-	}
-
-	csr := p.Spec.CredentialsSecretRef
-	secret := &corev1.Secret{}
-	if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, secret); err != nil {
-		return nil, errors.Wrap(err, "cannot get credentials secret")
-	}
-
-	return UseProviderSecret(ctx, secret.Data[csr.Key], DefaultSection, region)
 }
 
 // CredentialsIDSecret retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from the data which contains
@@ -1017,23 +979,6 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 		return in
 	}
 	if from != nil {
-		i := int(*from)
-		return &i
-	}
-	return nil
-}
-
-// LateInitializeIntFrom32Ptr returns in if it's non-nil, otherwise returns from
-// which is the backup for the cases in is nil.
-// This function considered that nil and 0 values are same. However, for a *int32, nil and 0 values must be different
-// because if the external AWS resource has a field with 0 value, during late initialization setting this value
-// in CR must be allowed. Please see the LateInitializeIntFromInt32Ptr func.
-// Deprecated: Please use LateInitializeIntFromInt32Ptr instead.
-func LateInitializeIntFrom32Ptr(in *int, from *int32) *int {
-	if in != nil {
-		return in
-	}
-	if from != nil && *from != 0 {
 		i := int(*from)
 		return &i
 	}
