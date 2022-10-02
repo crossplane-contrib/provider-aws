@@ -26,6 +26,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
+	sns "github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 )
 
 const errDeprecatedRef = "spec.forProvider.cacheSubnetGroupNameRefs is deprecated - please set only spec.forProvider.cacheSubnetGroupNameRef"
@@ -33,6 +34,8 @@ const errDeprecatedRef = "spec.forProvider.cacheSubnetGroupNameRefs is deprecate
 // ResolveReferences of this ReplicationGroup
 func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
 
 	// We have two variants of this reference because it was originally
 	// introduced with a plural JSON tag, when it should be singular. We
@@ -97,6 +100,22 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 	}
 	mg.Spec.ForProvider.CacheSecurityGroupNames = mrsp.ResolvedValues
 	mg.Spec.ForProvider.CacheSecurityGroupNameRefs = mrsp.ResolvedReferences
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.NotificationTopicARN),
+		Extract:      sns.SNSTopicARN(),
+		Reference:    mg.Spec.ForProvider.NotificationTopicARNRef,
+		Selector:     mg.Spec.ForProvider.NotificationTopicARNSelector,
+		To: reference.To{
+			List:    &sns.TopicList{},
+			Managed: &sns.Topic{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.NotificationTopicARN")
+	}
+	mg.Spec.ForProvider.NotificationTopicARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.NotificationTopicARNRef = rsp.ResolvedReference
 
 	return nil
 }

@@ -6,6 +6,7 @@ ignore:
     - UpdateClusterInput.ParameterGroupName
     - CreateClusterInput.SubnetGroupName
     - CreateClusterInput.SecurityGroupIds
+    - CreateClusterInput.NotificationTopicArn
     - UpdateClusterInput.SecurityGroupIds
     - CreateParameterGroupInput.ParameterGroupName
     - UpdateParameterGroupInput.ParameterNameValues

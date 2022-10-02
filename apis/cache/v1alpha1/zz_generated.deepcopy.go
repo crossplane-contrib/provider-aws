@@ -179,6 +179,16 @@ func (in *CacheClusterParameters) DeepCopyInto(out *CacheClusterParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.NotificationTopicARNRef != nil {
+		in, out := &in.NotificationTopicARNRef, &out.NotificationTopicARNRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.NotificationTopicARNSelector != nil {
+		in, out := &in.NotificationTopicARNSelector, &out.NotificationTopicARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
 		*out = new(int32)

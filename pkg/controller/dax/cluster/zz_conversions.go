@@ -258,9 +258,6 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 	if cr.Spec.ForProvider.NodeType != nil {
 		res.SetNodeType(*cr.Spec.ForProvider.NodeType)
 	}
-	if cr.Spec.ForProvider.NotificationTopicARN != nil {
-		res.SetNotificationTopicArn(*cr.Spec.ForProvider.NotificationTopicARN)
-	}
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
@@ -268,25 +265,25 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		res.SetReplicationFactor(*cr.Spec.ForProvider.ReplicationFactor)
 	}
 	if cr.Spec.ForProvider.SSESpecification != nil {
-		f7 := &svcsdk.SSESpecification{}
+		f6 := &svcsdk.SSESpecification{}
 		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
-			f7.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+			f6.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
 		}
-		res.SetSSESpecification(f7)
+		res.SetSSESpecification(f6)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f8 := []*svcsdk.Tag{}
-		for _, f8iter := range cr.Spec.ForProvider.Tags {
-			f8elem := &svcsdk.Tag{}
-			if f8iter.Key != nil {
-				f8elem.SetKey(*f8iter.Key)
+		f7 := []*svcsdk.Tag{}
+		for _, f7iter := range cr.Spec.ForProvider.Tags {
+			f7elem := &svcsdk.Tag{}
+			if f7iter.Key != nil {
+				f7elem.SetKey(*f7iter.Key)
 			}
-			if f8iter.Value != nil {
-				f8elem.SetValue(*f8iter.Value)
+			if f7iter.Value != nil {
+				f7elem.SetValue(*f7iter.Value)
 			}
-			f8 = append(f8, f8elem)
+			f7 = append(f7, f7elem)
 		}
-		res.SetTags(f8)
+		res.SetTags(f7)
 	}
 
 	return res
@@ -301,9 +298,6 @@ func GenerateUpdateClusterInput(cr *svcapitypes.Cluster) *svcsdk.UpdateClusterIn
 	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
-	}
-	if cr.Spec.ForProvider.NotificationTopicARN != nil {
-		res.SetNotificationTopicArn(*cr.Spec.ForProvider.NotificationTopicARN)
 	}
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
