@@ -143,8 +143,6 @@ import (
 	mquser "github.com/crossplane-contrib/provider-aws/pkg/controller/mq/user"
 	mwaaenvironment "github.com/crossplane-contrib/provider-aws/pkg/controller/mwaa/environment"
 	neptunecluster "github.com/crossplane-contrib/provider-aws/pkg/controller/neptune/dbcluster"
-	notsubscription "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snssubscription"
-	nottopic "github.com/crossplane-contrib/provider-aws/pkg/controller/notification/snstopic"
 	opensearchdomain "github.com/crossplane-contrib/provider-aws/pkg/controller/opensearchservice/domain"
 	prometheusservicealertmanagerdefinition "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/alertmanagerdefinition"
 	prometheusservicerulegroupnamespace "github.com/crossplane-contrib/provider-aws/pkg/controller/prometheusservice/rulegroupsnamespace"
@@ -325,8 +323,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		neptunecluster.SetupDBCluster,
 		topic.SetupSNSTopic,
 		subscription.SetupSubscription,
-		nottopic.SetupSNSTopic,
-		notsubscription.SetupSubscription,
 		prometheusserviceworkspace.SetupWorkspace,
 		prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
 		prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,

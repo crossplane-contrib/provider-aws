@@ -279,16 +279,16 @@ func baseClusterParameters() svcapitypes.ClusterParameters {
 		ClusterEndpointEncryptionType: awsclient.String(testClusterEndpointEncryptionType),
 		Description:                   awsclient.String(testDescription),
 		NodeType:                      awsclient.String(testNodeType),
-		NotificationTopicARN:          awsclient.String(testTopicARN),
 		PreferredMaintenanceWindow:    awsclient.String(testPreferredMaintenanceWindow),
 		ReplicationFactor:             awsclient.Int64(testReplicationFactor),
 		SSESpecification:              &svcapitypes.SSESpecification{Enabled: awsclient.Bool(testSSESpecificationEnabled)},
 		Tags:                          []*svcapitypes.Tag{{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)}},
 		CustomClusterParameters: svcapitypes.CustomClusterParameters{
-			IAMRoleARN:         awsclient.String(testIamRoleARN),
-			ParameterGroupName: awsclient.String(testParameterGroupName),
-			SubnetGroupName:    awsclient.String(testSubnetGroupName),
-			SecurityGroupIDs:   []*string{awsclient.String(testSecurityGroupIdentifier)},
+			NotificationTopicARN: awsclient.String(testTopicARN),
+			IAMRoleARN:           awsclient.String(testIamRoleARN),
+			ParameterGroupName:   awsclient.String(testParameterGroupName),
+			SubnetGroupName:      awsclient.String(testSubnetGroupName),
+			SecurityGroupIDs:     []*string{awsclient.String(testSecurityGroupIdentifier)},
 		},
 	}
 }

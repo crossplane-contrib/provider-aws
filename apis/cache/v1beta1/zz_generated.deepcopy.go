@@ -288,6 +288,16 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 		*out = new(string)
 		**out = **in
 	}
+	if in.NotificationTopicARNRef != nil {
+		in, out := &in.NotificationTopicARNRef, &out.NotificationTopicARNRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.NotificationTopicARNSelector != nil {
+		in, out := &in.NotificationTopicARNSelector, &out.NotificationTopicARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.NotificationTopicStatus != nil {
 		in, out := &in.NotificationTopicStatus, &out.NotificationTopicStatus
 		*out = new(string)

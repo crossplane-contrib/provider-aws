@@ -31,6 +31,9 @@ type CacheSubnetGroupParameters struct {
 
 	// A list of  Subnet IDs for the cache subnet group.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
+	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SubnetIDSelector
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs references to a Subnet to and retrieves its SubnetID

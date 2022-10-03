@@ -217,11 +217,6 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.NotificationTopicARN != nil {
-		in, out := &in.NotificationTopicARN, &out.NotificationTopicARN
-		*out = new(string)
-		**out = **in
-	}
 	if in.PreferredMaintenanceWindow != nil {
 		in, out := &in.PreferredMaintenanceWindow, &out.PreferredMaintenanceWindow
 		*out = new(string)
@@ -486,6 +481,21 @@ func (in *CustomClusterParameters) DeepCopyInto(out *CustomClusterParameters) {
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.NotificationTopicARN != nil {
+		in, out := &in.NotificationTopicARN, &out.NotificationTopicARN
+		*out = new(string)
+		**out = **in
+	}
+	if in.NotificationTopicARNRef != nil {
+		in, out := &in.NotificationTopicARNRef, &out.NotificationTopicARNRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.NotificationTopicARNSelector != nil {
+		in, out := &in.NotificationTopicARNSelector, &out.NotificationTopicARNSelector
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
