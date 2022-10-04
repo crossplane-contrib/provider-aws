@@ -985,6 +985,22 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 	return nil
 }
 
+// LateInitializeIntFrom32Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+// This function considered that nil and 0 values are same. However, for a *int32, nil and 0 values must be different
+// because if the external AWS resource has a field with 0 value, during late initialization setting this value
+// in CR must be allowed. Please see the LateInitializeIntFromInt32Ptr func.
+func LateInitializeIntFrom32Ptr(in *int, from *int32) *int {
+	if in != nil {
+		return in
+	}
+	if from != nil && *from != 0 {
+		i := int(*from)
+		return &i
+	}
+	return nil
+}
+
 // LateInitializeIntFromInt32Ptr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeIntFromInt32Ptr(in *int, from *int32) *int {
