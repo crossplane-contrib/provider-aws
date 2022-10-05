@@ -365,14 +365,21 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 		res.SetPort(*cr.Spec.ForProvider.Port)
 	}
 
-	if cr.Spec.ForProvider.ScalingConfiguration != nil {
-		res.SetScalingConfiguration((*svcsdk.ScalingConfiguration)(cr.Spec.ForProvider.ScalingConfiguration))
-	}
-
 	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.Snapshot != nil {
 		if cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier != nil {
 			res.SetSnapshotIdentifier(*cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
 		}
+	}
+
+	if cr.Spec.ForProvider.ScalingConfiguration != nil {
+		var scalingConfiguration *svcsdk.ScalingConfiguration
+		scalingConfiguration.AutoPause = cr.Spec.ForProvider.ScalingConfiguration.AutoPause
+		scalingConfiguration.MaxCapacity = cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity
+		scalingConfiguration.MinCapacity = cr.Spec.ForProvider.ScalingConfiguration.MinCapacity
+		scalingConfiguration.SecondsBeforeTimeout = cr.Spec.ForProvider.ScalingConfiguration.SecondsBeforeTimeout
+		scalingConfiguration.SecondsUntilAutoPause = cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause
+		scalingConfiguration.TimeoutAction = cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction
+		res.SetScalingConfiguration(scalingConfiguration)
 	}
 
 	if cr.Spec.ForProvider.Tags != nil {
