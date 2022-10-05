@@ -35,7 +35,9 @@ import (
 
 // error constants
 const (
-	errSaveSecretFailed = "failed to save generated password to Kubernetes secret"
+	errSaveSecretFailed         = "failed to save generated password to Kubernetes secret"
+	errUnknownRestoreFromSource = "unknown restoreFrom source"
+	errRestore                  = "cannot restore DBInstance in AWS"
 )
 
 // time formats
@@ -119,7 +121,340 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 			obj.DBSecurityGroups[i] = aws.String(v)
 		}
 	}
+	if cr.Spec.ForProvider.RestoreFrom != nil {
+		switch *cr.Spec.ForProvider.RestoreFrom.Source {
+		case "S3":
+			input := generateRestoreDBInstanceFromS3Input(cr)
+			input.MasterUserPassword = obj.MasterUserPassword
+			input.DBInstanceIdentifier = obj.DBInstanceIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBInstanceFromS3WithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		case "Snapshot":
+			input := generateRestoreDBInstanceFromSnapshotInput(cr)
+			input.DBInstanceIdentifier = obj.DBInstanceIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBInstanceFromDBSnapshotWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		default:
+			return errors.New(errUnknownRestoreFromSource)
+		}
+	}
+
 	return nil
+}
+
+func generateRestoreDBInstanceFromS3Input(cr *svcapitypes.DBInstance) *svcsdk.RestoreDBInstanceFromS3Input { // nolint:gocyclo
+	res := &svcsdk.RestoreDBInstanceFromS3Input{}
+
+	if cr.Spec.ForProvider.AllocatedStorage != nil {
+		res.SetAllocatedStorage(*cr.Spec.ForProvider.AllocatedStorage)
+	}
+
+	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
+		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
+	}
+
+	if cr.Spec.ForProvider.AvailabilityZone != nil {
+		res.SetAvailabilityZone(*cr.Spec.ForProvider.AvailabilityZone)
+	}
+
+	if cr.Spec.ForProvider.BackupRetentionPeriod != nil {
+		res.SetBackupRetentionPeriod(*cr.Spec.ForProvider.BackupRetentionPeriod)
+	}
+
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+
+	if cr.Spec.ForProvider.DBInstanceClass != nil {
+		res.SetDBInstanceClass(*cr.Spec.ForProvider.DBInstanceClass)
+	}
+
+	if cr.Spec.ForProvider.DBName != nil {
+		res.SetDBName(*cr.Spec.ForProvider.DBName)
+	}
+
+	if cr.Spec.ForProvider.DBParameterGroupName != nil {
+		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(*&cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+
+	if cr.Spec.ForProvider.EnablePerformanceInsights != nil {
+		res.SetEnablePerformanceInsights(*cr.Spec.ForProvider.EnablePerformanceInsights)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+
+	if cr.Spec.ForProvider.IOPS != nil {
+		res.SetIops(*cr.Spec.ForProvider.IOPS)
+	}
+
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.LicenseModel != nil {
+		res.SetLicenseModel(*cr.Spec.ForProvider.LicenseModel)
+	}
+
+	if cr.Spec.ForProvider.MasterUsername != nil {
+		res.SetMasterUsername(*cr.Spec.ForProvider.MasterUsername)
+	}
+
+	if cr.Spec.ForProvider.MaxAllocatedStorage != nil {
+		res.SetMaxAllocatedStorage(*cr.Spec.ForProvider.MaxAllocatedStorage)
+	}
+
+	if cr.Spec.ForProvider.MonitoringInterval != nil {
+		res.SetMonitoringInterval(*cr.Spec.ForProvider.MonitoringInterval)
+	}
+
+	if cr.Spec.ForProvider.MonitoringRoleARN != nil {
+		res.SetMonitoringRoleArn(*cr.Spec.ForProvider.MonitoringRoleARN)
+	}
+
+	if cr.Spec.ForProvider.MultiAZ != nil {
+		res.SetMultiAZ(*cr.Spec.ForProvider.MultiAZ)
+	}
+
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+
+	if cr.Spec.ForProvider.PerformanceInsightsKMSKeyID != nil {
+		res.SetPerformanceInsightsKMSKeyId(*cr.Spec.ForProvider.PerformanceInsightsKMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod != nil {
+		res.SetPerformanceInsightsRetentionPeriod(*cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.PreferredBackupWindow != nil {
+		res.SetPreferredBackupWindow(*cr.Spec.ForProvider.PreferredBackupWindow)
+	}
+
+	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
+		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
+	}
+
+	if cr.Spec.ForProvider.PubliclyAccessible != nil {
+		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
+	}
+
+	if cr.Spec.ForProvider.StorageEncrypted != nil {
+		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
+	}
+
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.S3 != nil {
+		if cr.Spec.ForProvider.RestoreFrom.S3.BucketName != nil {
+			res.SetS3BucketName(*cr.Spec.ForProvider.RestoreFrom.S3.BucketName)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.IngestionRoleARN != nil {
+			res.SetS3IngestionRoleArn(*cr.Spec.ForProvider.RestoreFrom.S3.IngestionRoleARN)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.Prefix != nil {
+			res.SetS3Prefix(*cr.Spec.ForProvider.RestoreFrom.S3.Prefix)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.SourceEngine != nil {
+			res.SetSourceEngine(*cr.Spec.ForProvider.RestoreFrom.S3.SourceEngine)
+		}
+
+		if cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion != nil {
+			res.SetSourceEngineVersion(*cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion)
+		}
+	}
+
+	if cr.Spec.ForProvider.DBSecurityGroups != nil {
+		var dbSecurityGroups []*string
+		for _, dbSecurityGroup := range cr.Spec.ForProvider.DBSecurityGroups {
+			dbSecurityGroups = append(dbSecurityGroups, &dbSecurityGroup)
+		}
+
+		res.SetDBSecurityGroups(dbSecurityGroups)
+	}
+
+	if cr.Spec.ForProvider.ProcessorFeatures != nil {
+		var processorFeatures []*svcsdk.ProcessorFeature
+		for _, processorFeature := range cr.Spec.ForProvider.ProcessorFeatures {
+			processorFeatures = append(processorFeatures, &svcsdk.ProcessorFeature{Name: processorFeature.Name, Value: processorFeature.Value})
+		}
+
+		res.SetProcessorFeatures(processorFeatures)
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
+}
+
+func generateRestoreDBInstanceFromSnapshotInput(cr *svcapitypes.DBInstance) *svcsdk.RestoreDBInstanceFromDBSnapshotInput { // nolint:gocyclo
+	res := &svcsdk.RestoreDBInstanceFromDBSnapshotInput{}
+
+	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
+		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
+	}
+
+	if cr.Spec.ForProvider.AvailabilityZone != nil {
+		res.SetAvailabilityZone(*cr.Spec.ForProvider.AvailabilityZone)
+	}
+
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+
+	if cr.Spec.ForProvider.CustomIAMInstanceProfile != nil {
+		res.SetCustomIamInstanceProfile(*cr.Spec.ForProvider.CustomIAMInstanceProfile)
+	}
+
+	if cr.Spec.ForProvider.DBInstanceClass != nil {
+		res.SetDBInstanceClass(*cr.Spec.ForProvider.DBInstanceClass)
+	}
+
+	if cr.Spec.ForProvider.DBName != nil {
+		res.SetDBName(*cr.Spec.ForProvider.DBName)
+	}
+
+	if cr.Spec.ForProvider.DBParameterGroupName != nil {
+		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.Domain != nil {
+		res.SetDomain(*cr.Spec.ForProvider.Domain)
+	}
+
+	if cr.Spec.ForProvider.DomainIAMRoleName != nil {
+		res.SetDomainIAMRoleName(*cr.Spec.ForProvider.DomainIAMRoleName)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.EnableCustomerOwnedIP != nil {
+		res.SetEnableCustomerOwnedIp(*cr.Spec.ForProvider.EnableCustomerOwnedIP)
+	}
+
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.IOPS != nil {
+		res.SetIops(*cr.Spec.ForProvider.IOPS)
+	}
+
+	if cr.Spec.ForProvider.LicenseModel != nil {
+		res.SetLicenseModel(*cr.Spec.ForProvider.LicenseModel)
+	}
+
+	if cr.Spec.ForProvider.MultiAZ != nil {
+		res.SetMultiAZ(*cr.Spec.ForProvider.MultiAZ)
+	}
+
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.PubliclyAccessible != nil {
+		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
+	}
+
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
+
+	if cr.Spec.ForProvider.TDECredentialARN != nil {
+		res.SetTdeCredentialArn(*cr.Spec.ForProvider.TDECredentialARN)
+	}
+
+	if cr.Spec.ForProvider.TDECredentialPassword != nil {
+		res.SetTdeCredentialPassword(*cr.Spec.ForProvider.TDECredentialPassword)
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.Snapshot != nil {
+		if cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier != nil {
+			res.SetDBSnapshotIdentifier(*cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
+		}
+	}
+
+	if cr.Spec.ForProvider.ProcessorFeatures != nil {
+		var processorFeatures []*svcsdk.ProcessorFeature
+		for _, processorFeature := range cr.Spec.ForProvider.ProcessorFeatures {
+			processorFeatures = append(processorFeatures, &svcsdk.ProcessorFeature{Name: processorFeature.Name, Value: processorFeature.Value})
+		}
+
+		res.SetProcessorFeatures(processorFeatures)
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
 }
 
 func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.DBInstance) (managed.ConnectionDetails, error) {

@@ -153,6 +153,14 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			if _, err = e.client.RestoreDBClusterFromS3WithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
+		case "Snapshot":
+			input := generateRestoreDBClusterFromSnapshotInput(cr)
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
 		default:
 			return errors.New(errUnknownRestoreFromSource)
 		}
@@ -271,6 +279,99 @@ func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.Rest
 
 		if cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion != nil {
 			res.SetSourceEngineVersion(*cr.Spec.ForProvider.RestoreFrom.S3.SourceEngineVersion)
+		}
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
+}
+
+func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { // nolint:gocyclo
+	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
+
+	if cr.Spec.ForProvider.AvailabilityZones != nil {
+		res.SetAvailabilityZones(cr.Spec.ForProvider.AvailabilityZones)
+	}
+
+	if cr.Spec.ForProvider.BacktrackWindow != nil {
+		res.SetBacktrackWindow(*cr.Spec.ForProvider.BacktrackWindow)
+	}
+
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+
+	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil {
+		res.SetDBClusterParameterGroupName(*cr.Spec.ForProvider.DBClusterParameterGroupName)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DatabaseName != nil {
+		res.SetDatabaseName(*cr.Spec.ForProvider.DatabaseName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.Domain != nil {
+		res.SetDomain(*cr.Spec.ForProvider.Domain)
+	}
+
+	if cr.Spec.ForProvider.DomainIAMRoleName != nil {
+		res.SetDomainIAMRoleName(*cr.Spec.ForProvider.DomainIAMRoleName)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.EngineMode != nil {
+		res.SetEngineMode(*cr.Spec.ForProvider.EngineMode)
+	}
+
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.ScalingConfiguration != nil {
+		res.SetScalingConfiguration((*svcsdk.ScalingConfiguration)(cr.Spec.ForProvider.ScalingConfiguration))
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.Snapshot != nil {
+		if cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier != nil {
+			res.SetSnapshotIdentifier(*cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
 		}
 	}
 

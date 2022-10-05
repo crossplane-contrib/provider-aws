@@ -16,7 +16,11 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+)
 
 // CustomDBParameterGroupParameters are custom parameters for DBParameterGroup
 type CustomDBParameterGroupParameters struct {
@@ -299,11 +303,56 @@ type S3RestoreBackupConfiguration struct {
 	SourceEngineVersion *string `json:"sourceEngineVersion"`
 }
 
+// SnapshotRestoreBackupConfiguration defines the details of the database snapshot to restore from.
+type SnapshotRestoreBackupConfiguration struct {
+	// SnapshotIdentifier is the identifier of the database snapshot to restore.
+	SnapshotIdentifier *string `json:"snapshotIdentifier"`
+}
+
+// PointInTimeRestoreBackupConfiguration defines the details of the point in time to restore from.
+// restoreTime or useLatestRestorableTime must be defined together with one of sourceDBInstanceAutomatedBackupArn,
+// sourceDBInstanceIdentifier or sourceDbiResourceId.
+type PointInTimeRestoreBackupConfiguration struct {
+	// RestoreTime is the date and time (UTC) to restore from.
+	// Must be before the latest restorable time for the DB instance.
+	// Can't be specified if the useLatestRestorableTime parameter is enabled.
+	// Example: 2011-09-07T23:45:00Z
+	// +optional
+	RestoreTime *metav1.Time `json:"restoreTime"`
+
+	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
+	// Can't be specified if the restoreTime parameter is provided.
+	// +optional
+	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
+
+	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
+	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
+	// +optional
+	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
+
+	// SourceDBInstanceIdentifier specifies the identifier of the source DB instance from which to restore. Constraints:
+	// Must match the identifier of an existing DB instance.
+	// +optional
+	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier"`
+
+	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
+	// +optional
+	SourceDbiResourceID *string `json:"sourceDbiResourceId"`
+}
+
 // RestoreBackupConfiguration defines the backup to restore a new DBCluster from.
 type RestoreBackupConfiguration struct {
 	// S3 specifies the details of the S3 backup to restore from.
 	// +optional
 	S3 *S3RestoreBackupConfiguration `json:"s3,omitempty"`
+
+	// Snapshot specifies the details of the database snapshot to restore from.
+	// +optional
+	Snapshot *SnapshotRestoreBackupConfiguration `json:"snapshot,omitempty"`
+
+	// PointInTime specifies the details of the point in time restore.
+	// +optional
+	PointInTime *PointInTimeRestoreBackupConfiguration `json:"pointInTime,omitempty"`
 
 	// Source is the type of the backup to restore when creating a new DBCluster. Only S3 is supported at present.
 	Source *string `json:"source"`
@@ -466,6 +515,10 @@ type CustomDBInstanceParameters struct {
 	// KMSKeyIDSelector selects a reference to a KMS Key used to set KMSKeyID.
 	// +optional
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
+
+	// RestoreFrom specifies the details of the backup to restore when creating a new DBCluster.
+	// +optional
+	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
 }
 
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
