@@ -709,9 +709,23 @@ spec:
                         - sourceEngine
                         - sourceEngineVersion
                         type: object
+                      snapshot:
+                        description: Snapshot specifies the details of the DB Snapshot backup to
+                          restore from.
+                        properties:
+                          snapshotIdentifier:
+                            description: SnapshotIdentifier is the name of the Snapshot containing
+                              the backup to restore.
+                            type: string
+                        required:
+                        - snapshotIdentifier
+                        type: object
                       source:
                         description: Source is the type of the backup to restore when
-                          creating a new DBCluster. Only S3 is supported at present.
+                          creating a new DBCluster. S3 and Snapshot are supported.
+                        enum:
+                        - S3
+                        - Snapshot
                         type: string
                     required:
                     - source

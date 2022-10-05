@@ -1054,6 +1054,62 @@ spec:
                   region:
                     description: Region is which region the DBInstance will be created.
                     type: string
+                  restoreFrom:
+                    description: RestoreFrom specifies the details of the backup to
+                      restore when creating a new DBInstance.
+                    properties:
+                      s3:
+                        description: S3 specifies the details of the S3 backup to
+                          restore from.
+                        properties:
+                          bucketName:
+                            description: BucketName is the name of the S3 bucket containing
+                              the backup to restore.
+                            type: string
+                          ingestionRoleARN:
+                            description: IngestionRoleARN is the IAM role RDS can
+                              assume that will allow it to access the contents of
+                              the S3 bucket.
+                            type: string
+                          prefix:
+                            description: Prefix is the path prefix of the S3 bucket
+                              within which the backup to restore is located.
+                            type: string
+                          sourceEngine:
+                            description: SourceEngine is the engine used to create
+                              the backup. Must be "mysql".
+                            type: string
+                          sourceEngineVersion:
+                            description: 'SourceEngineVersion is the version of the
+                              engine used to create the backup. Example: "5.7.30"'
+                            type: string
+                        required:
+                        - bucketName
+                        - ingestionRoleARN
+                        - sourceEngine
+                        - sourceEngineVersion
+                        type: object
+                      snapshot:
+                        description: Snapshot specifies the details of the DB Snapshot backup to
+                          restore from.
+                        properties:
+                          snapshotIdentifier:
+                            description: SnapshotIdentifier is the name of the Snapshot containing
+                              the backup to restore.
+                            type: string
+                        required:
+                        - snapshotIdentifier
+                        type: object
+                      source:
+                        description: Source is the type of the backup to restore when
+                          creating a new DBInstance. S3 and Snapshot are supported.
+                        enum:
+                        - S3
+                        - Snapshot
+                        type: string
+                    required:
+                    - source
+                    type: object
                   skipFinalSnapshot:
                     description: "A value that indicates whether to skip the creation
                       of a final DB instance snapshot before the DB instance is deleted.
