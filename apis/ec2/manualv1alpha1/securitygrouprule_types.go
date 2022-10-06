@@ -58,6 +58,9 @@ type SecurityGroupRuleParameters struct {
 	// +kubebuilder:validation:Required
 	Region *string `json:"region"`
 
+	// If using a SecurityGroup managed by crossplane as reference,
+	// enable ignoreIngress or ignoreEgress on the sg to prevent the
+	// rules to be constantly created and deleted
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +kubebuilder:validation:Optional
 	// +immutable
