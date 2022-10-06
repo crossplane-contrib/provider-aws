@@ -63,9 +63,9 @@ type SecurityGroupRuleParameters struct {
 	// +immutable
 	SecurityGroupID *string `json:"securityGroupId,omitempty"`
 
-	// If using a SecurittyGroup managed by crossplane as reference,
+	// If using a SecurityGroup managed by crossplane as reference,
 	// enable ignoreIngress or ignoreEgress on the sg to prevent the
-	// roules to be constantly created and deleted
+	// rules to be constantly created and deleted
 	// +kubebuilder:validation:Optional
 	// +immutable
 	SecurityGroupIDRef *xpv1.Reference `json:"securityGroupIdRef,omitempty"`
