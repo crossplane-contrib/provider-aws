@@ -69,10 +69,10 @@ type SecurityGroupParameters struct {
 	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// Dont manage the ingress settings for the created resource
-	IgnorIngress *bool `json:"ignoreIngress,omitempty"`
+	IgnoreIngress *bool `json:"ignoreIngress,omitempty"`
 
 	// Dont manage the egress settings for the created resource
-	IgnorEgress *bool `json:"ignoreEgress,omitempty"`
+	IgnoreEgress *bool `json:"ignoreEgress,omitempty"`
 }
 
 // IPRange describes an IPv4 range.

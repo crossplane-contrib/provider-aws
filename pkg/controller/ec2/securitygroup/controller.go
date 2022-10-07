@@ -241,7 +241,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnorIngress) {
+	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnoreIngress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Ingress), response.SecurityGroups[0].IpPermissions)
 		if len(remove) > 0 {
 			if _, err := e.sg.RevokeSecurityGroupIngress(ctx, &awsec2.RevokeSecurityGroupIngressInput{
@@ -261,7 +261,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnorEgress) {
+	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnoreEgress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Egress), response.SecurityGroups[0].IpPermissionsEgress)
 		if len(remove) > 0 {
 			if _, err = e.sg.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{
