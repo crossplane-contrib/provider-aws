@@ -15,7 +15,7 @@ The first step is to upgrade to the new version:
 kubectl get provider.pkg
 # Patch it with the new version. Make sure you use the latest patch release of
 # v0.33.x
-kubectl patch provider.pkg <provider object name> -p '{"spec":{"package": "crossplane/provider-aws:v0.33.0"}}' --type=merge
+kubectl patch provider.pkg <provider object name> -p '{"spec":{"package": "crossplanecontrib/provider-aws:v0.33.0"}}' --type=merge
 ```
 
 At this point, there is no controller reconciling your existing `notification` custom resources.
