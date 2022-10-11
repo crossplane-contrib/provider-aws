@@ -318,6 +318,7 @@ type PropagateTags string
 const (
 	PropagateTags_TASK_DEFINITION PropagateTags = "TASK_DEFINITION"
 	PropagateTags_SERVICE         PropagateTags = "SERVICE"
+	PropagateTags_NONE            PropagateTags = "NONE"
 )
 
 type ProxyConfigurationType string

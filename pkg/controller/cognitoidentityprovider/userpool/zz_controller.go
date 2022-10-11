@@ -420,6 +420,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.UserPool.SmsConfiguration.SnsCallerArn != nil {
 			f22.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
 		}
+		if resp.UserPool.SmsConfiguration.SnsRegion != nil {
+			f22.SNSRegion = resp.UserPool.SmsConfiguration.SnsRegion
+		}
 		cr.Spec.ForProvider.SmsConfiguration = f22
 	} else {
 		cr.Spec.ForProvider.SmsConfiguration = nil

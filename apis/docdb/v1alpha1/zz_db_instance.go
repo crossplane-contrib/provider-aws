@@ -36,25 +36,40 @@ type DBInstanceParameters struct {
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 	// The Amazon EC2 Availability Zone that the instance is created in.
 	//
-	// Default: A random, system-chosen Availability Zone in the endpoint's Region.
+	// Default: A random, system-chosen Availability Zone in the endpoint's Amazon
+	// Web Services Region.
 	//
 	// Example: us-east-1d
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 	// The compute and memory capacity of the instance; for example, db.r5.large.
 	// +kubebuilder:validation:Required
 	DBInstanceClass *string `json:"dbInstanceClass"`
+	// A value that indicates whether to enable Performance Insights for the DB
+	// Instance. For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html).
+	EnablePerformanceInsights *bool `json:"enablePerformanceInsights,omitempty"`
 	// The name of the database engine to be used for this instance.
 	//
 	// Valid value: docdb
 	// +kubebuilder:validation:Required
 	Engine *string `json:"engine"`
+	// The KMS key identifier for encryption of Performance Insights data.
+	//
+	// The KMS key identifier is the key ARN, key ID, alias ARN, or alias name for
+	// the KMS key.
+	//
+	// If you do not specify a value for PerformanceInsightsKMSKeyId, then Amazon
+	// DocumentDB uses your default KMS key. There is a default KMS key for your
+	// Amazon Web Services account. Your Amazon Web Services account has a different
+	// default KMS key for each Amazon Web Services region.
+	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
 	// The time range each week during which system maintenance can occur, in Universal
 	// Coordinated Time (UTC).
 	//
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Region, occurring on a random day of the week.
+	// of time for each Amazon Web Services Region, occurring on a random day of
+	// the week.
 	//
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
@@ -99,9 +114,9 @@ type DBInstanceObservation struct {
 	// Specifies information on the subnet group that is associated with the instance,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *DBSubnetGroup_SDK `json:"dbSubnetGroup,omitempty"`
-	// The Region-unique, immutable identifier for the instance. This identifier
-	// is found in CloudTrail log entries whenever the KMS key for the instance
-	// is accessed.
+	// The Amazon Web Services Region-unique, immutable identifier for the instance.
+	// This identifier is found in CloudTrail log entries whenever the KMS key for
+	// the instance is accessed.
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 	// A list of log types that this instance is configured to export to CloudWatch
 	// Logs.

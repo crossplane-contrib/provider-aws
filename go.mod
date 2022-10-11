@@ -3,7 +3,7 @@ module github.com/crossplane-contrib/provider-aws
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.43.0
+	github.com/aws/aws-sdk-go v1.44.0
 	github.com/aws/aws-sdk-go-v2 v1.16.7
 	github.com/aws/aws-sdk-go-v2/config v1.11.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.5
@@ -38,7 +38,7 @@ require (
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
@@ -128,7 +128,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/tools v0.1.6-0.20210820212750-d4cc65f0b2ff // indirect

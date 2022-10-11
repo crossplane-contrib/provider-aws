@@ -118,7 +118,9 @@ type DBInstanceParameters struct {
 	//
 	// Amazon Aurora
 	//
-	// Not applicable. Availability Zones are managed by the DB cluster.
+	// Each Aurora DB cluster hosts copies of its storage in three separate Availability
+	// Zones. Specify one of these Availability Zones. Aurora automatically chooses
+	// an appropriate Availability Zone if you don't specify one.
 	//
 	// Default: A random, system-chosen Availability Zone in the endpoint's Amazon
 	// Web Services Region.
@@ -196,7 +198,7 @@ type DBInstanceParameters struct {
 	//
 	// For the list of permissions required for the IAM role, see Configure IAM
 	// and your VPC (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-setup-orcl.html#custom-setup-orcl.iam-vpc)
-	// in the Amazon Relational Database Service User Guide.
+	// in the Amazon RDS User Guide.
 	//
 	// This setting is required for RDS Custom.
 	CustomIAMInstanceProfile *string `json:"customIAMInstanceProfile,omitempty"`
@@ -370,7 +372,7 @@ type DBInstanceParameters struct {
 	// The list of log types that need to be enabled for exporting to CloudWatch
 	// Logs. The values in the list depend on the DB engine. For more information,
 	// see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-	// in the Amazon Relational Database Service User Guide.
+	// in the Amazon RDS User Guide.
 	//
 	// Amazon Aurora
 	//
@@ -429,7 +431,7 @@ type DBInstanceParameters struct {
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
 	// A value that indicates whether to enable Performance Insights for the DB
 	// instance. For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
-	// in the Amazon Relational Database Service User Guide.
+	// in the Amazon RDS User Guide.
 	//
 	// This setting doesn't apply to RDS Custom.
 	EnablePerformanceInsights *bool `json:"enablePerformanceInsights,omitempty"`
@@ -495,7 +497,7 @@ type DBInstanceParameters struct {
 	// is required for RDS Custom for Oracle. The CEV name has the following format:
 	// 19.customized_string . An example identifier is 19.my_cev1. For more information,
 	// see Creating an RDS Custom for Oracle DB instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-creating.html#custom-creating.create)
-	// in the Amazon RDS User Guide..
+	// in the Amazon RDS User Guide.
 	//
 	// Amazon RDS Custom for SQL Server
 	//

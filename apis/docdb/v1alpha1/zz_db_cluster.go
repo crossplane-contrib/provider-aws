@@ -77,17 +77,18 @@ type DBClusterParameters struct {
 	// The KMS key identifier for an encrypted cluster.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
-	// key. If you are creating a cluster using the same account that owns the KMS
-	// encryption key that is used to encrypt the new cluster, you can use the KMS
-	// key alias instead of the ARN for the KMS encryption key.
+	// key. If you are creating a cluster using the same Amazon Web Services account
+	// that owns the KMS encryption key that is used to encrypt the new cluster,
+	// you can use the KMS key alias instead of the ARN for the KMS encryption key.
 	//
 	// If an encryption key is not specified in KmsKeyId:
 	//
 	//    * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
 	//    default encryption key.
 	//
-	// KMS creates the default encryption key for your account. Your account has
-	// a different default encryption key for each Regions.
+	// KMS creates the default encryption key for your Amazon Web Services account.
+	// Your Amazon Web Services account has a different default encryption key for
+	// each Amazon Web Services Regions.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The name of the master user for the cluster.
 	//
@@ -107,7 +108,7 @@ type DBClusterParameters struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Region.
+	// of time for each Amazon Web Services Region.
 	//
 	// Constraints:
 	//
@@ -125,7 +126,8 @@ type DBClusterParameters struct {
 	// Format: ddd:hh24:mi-ddd:hh24:mi
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Region, occurring on a random day of the week.
+	// of time for each Amazon Web Services Region, occurring on a random day of
+	// the week.
 	//
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
@@ -172,9 +174,9 @@ type DBClusterObservation struct {
 	// Specifies information on the subnet group that is associated with the cluster,
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
-	// The Region-unique, immutable identifier for the cluster. This identifier
-	// is found in CloudTrail log entries whenever the KMS key for the cluster is
-	// accessed.
+	// The Amazon Web Services Region-unique, immutable identifier for the cluster.
+	// This identifier is found in CloudTrail log entries whenever the KMS key for
+	// the cluster is accessed.
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 	// The earliest time to which a database can be restored with point-in-time
 	// restore.

@@ -200,6 +200,12 @@ type ContainerDefinition struct {
 	// that exist in the container image (such as those specified in a parent image
 	// or from the image's Dockerfile).
 	//
+	// The Amazon ECS container agent only monitors and reports on the health checks
+	// specified in the task definition. Amazon ECS does not monitor Docker health
+	// checks that are embedded in a container image and not specified in the container
+	// definition. Health check parameters that are specified in a container definition
+	// override any Docker health checks that exist in the container image.
+	//
 	// You can view the health status of both individual containers and a task with
 	// the DescribeTasks API operation or when viewing the task details in the console.
 	//
@@ -443,7 +449,7 @@ type DeploymentConfiguration struct {
 	// The deployment circuit breaker determines whether a service deployment will
 	// fail if the service can't reach a steady state. If enabled, a service deployment
 	// will transition to a failed state and stop launching new tasks. You can also
-	// enable Amazon ECS to roll back your service to the last completed deployment
+	// configure Amazon ECS to roll back your service to the last completed deployment
 	// after a failure. For more information, see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	DeploymentCircuitBreaker *DeploymentCircuitBreaker `json:"deploymentCircuitBreaker,omitempty"`
@@ -958,12 +964,9 @@ type Task struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using the following
-	// platform versions:
-	//
-	//    * Linux platform version 1.4.0 or later.
-	//
-	//    * Windows platform version 1.0.0 or later.
+	// This parameter is only supported for tasks hosted on Fargate using Linux
+	// platform version 1.4.0 or later. This parameter is not supported for Windows
+	// containers on Fargate.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionStoppedAt *metav1.Time `json:"executionStoppedAt,omitempty"`
@@ -1025,12 +1028,9 @@ type TaskDefinition_SDK struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using the following
-	// platform versions:
-	//
-	//    * Linux platform version 1.4.0 or later.
-	//
-	//    * Windows platform version 1.0.0 or later.
+	// This parameter is only supported for tasks hosted on Fargate using Linux
+	// platform version 1.4.0 or later. This parameter is not supported for Windows
+	// containers on Fargate.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
@@ -1052,10 +1052,10 @@ type TaskDefinition_SDK struct {
 	//
 	// For tasks that use the EC2 launch type, the container instances require at
 	// least version 1.26.0 of the container agent and at least version 1.26.0-1
-	// of the ecs-init package to enable a proxy configuration. If your container
-	// instances are launched from the Amazon ECS optimized AMI version 20190301
-	// or later, then they contain the required versions of the container agent
-	// and ecs-init. For more information, see Amazon ECS-optimized Linux AMI (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html)
+	// of the ecs-init package to use a proxy configuration. If your container instances
+	// are launched from the Amazon ECS optimized AMI version 20190301 or later,
+	// then they contain the required versions of the container agent and ecs-init.
+	// For more information, see Amazon ECS-optimized Linux AMI (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html)
 	ProxyConfiguration *ProxyConfiguration `json:"proxyConfiguration,omitempty"`
 
 	RegisteredAt *metav1.Time `json:"registeredAt,omitempty"`
@@ -1091,12 +1091,9 @@ type TaskOverride struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using the following
-	// platform versions:
-	//
-	//    * Linux platform version 1.4.0 or later.
-	//
-	//    * Windows platform version 1.0.0 or later.
+	// This parameter is only supported for tasks hosted on Fargate using Linux
+	// platform version 1.4.0 or later. This parameter is not supported for Windows
+	// containers on Fargate.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`

@@ -164,19 +164,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.Environment = nil
 	}
-	if resp.FileSystemConfigs != nil {
-		f6 := []*svcapitypes.FileSystemConfig{}
-		for _, f6iter := range resp.FileSystemConfigs {
-			f6elem := &svcapitypes.FileSystemConfig{}
-			if f6iter.Arn != nil {
-				f6elem.ARN = f6iter.Arn
-			}
-			if f6iter.LocalMountPath != nil {
-				f6elem.LocalMountPath = f6iter.LocalMountPath
-			}
-			f6 = append(f6, f6elem)
+	if resp.EphemeralStorage != nil {
+		f6 := &svcapitypes.EphemeralStorage{}
+		if resp.EphemeralStorage.Size != nil {
+			f6.Size = resp.EphemeralStorage.Size
 		}
-		cr.Spec.ForProvider.FileSystemConfigs = f6
+		cr.Spec.ForProvider.EphemeralStorage = f6
+	} else {
+		cr.Spec.ForProvider.EphemeralStorage = nil
+	}
+	if resp.FileSystemConfigs != nil {
+		f7 := []*svcapitypes.FileSystemConfig{}
+		for _, f7iter := range resp.FileSystemConfigs {
+			f7elem := &svcapitypes.FileSystemConfig{}
+			if f7iter.Arn != nil {
+				f7elem.ARN = f7iter.Arn
+			}
+			if f7iter.LocalMountPath != nil {
+				f7elem.LocalMountPath = f7iter.LocalMountPath
+			}
+			f7 = append(f7, f7elem)
+		}
+		cr.Spec.ForProvider.FileSystemConfigs = f7
 	} else {
 		cr.Spec.ForProvider.FileSystemConfigs = nil
 	}
@@ -196,43 +205,43 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.Handler = nil
 	}
 	if resp.ImageConfigResponse != nil {
-		f10 := &svcapitypes.ImageConfigResponse{}
+		f11 := &svcapitypes.ImageConfigResponse{}
 		if resp.ImageConfigResponse.Error != nil {
-			f10f0 := &svcapitypes.ImageConfigError{}
+			f11f0 := &svcapitypes.ImageConfigError{}
 			if resp.ImageConfigResponse.Error.ErrorCode != nil {
-				f10f0.ErrorCode = resp.ImageConfigResponse.Error.ErrorCode
+				f11f0.ErrorCode = resp.ImageConfigResponse.Error.ErrorCode
 			}
 			if resp.ImageConfigResponse.Error.Message != nil {
-				f10f0.Message = resp.ImageConfigResponse.Error.Message
+				f11f0.Message = resp.ImageConfigResponse.Error.Message
 			}
-			f10.Error = f10f0
+			f11.Error = f11f0
 		}
 		if resp.ImageConfigResponse.ImageConfig != nil {
-			f10f1 := &svcapitypes.ImageConfig{}
+			f11f1 := &svcapitypes.ImageConfig{}
 			if resp.ImageConfigResponse.ImageConfig.Command != nil {
-				f10f1f0 := []*string{}
-				for _, f10f1f0iter := range resp.ImageConfigResponse.ImageConfig.Command {
-					var f10f1f0elem string
-					f10f1f0elem = *f10f1f0iter
-					f10f1f0 = append(f10f1f0, &f10f1f0elem)
+				f11f1f0 := []*string{}
+				for _, f11f1f0iter := range resp.ImageConfigResponse.ImageConfig.Command {
+					var f11f1f0elem string
+					f11f1f0elem = *f11f1f0iter
+					f11f1f0 = append(f11f1f0, &f11f1f0elem)
 				}
-				f10f1.Command = f10f1f0
+				f11f1.Command = f11f1f0
 			}
 			if resp.ImageConfigResponse.ImageConfig.EntryPoint != nil {
-				f10f1f1 := []*string{}
-				for _, f10f1f1iter := range resp.ImageConfigResponse.ImageConfig.EntryPoint {
-					var f10f1f1elem string
-					f10f1f1elem = *f10f1f1iter
-					f10f1f1 = append(f10f1f1, &f10f1f1elem)
+				f11f1f1 := []*string{}
+				for _, f11f1f1iter := range resp.ImageConfigResponse.ImageConfig.EntryPoint {
+					var f11f1f1elem string
+					f11f1f1elem = *f11f1f1iter
+					f11f1f1 = append(f11f1f1, &f11f1f1elem)
 				}
-				f10f1.EntryPoint = f10f1f1
+				f11f1.EntryPoint = f11f1f1
 			}
 			if resp.ImageConfigResponse.ImageConfig.WorkingDirectory != nil {
-				f10f1.WorkingDirectory = resp.ImageConfigResponse.ImageConfig.WorkingDirectory
+				f11f1.WorkingDirectory = resp.ImageConfigResponse.ImageConfig.WorkingDirectory
 			}
-			f10.ImageConfig = f10f1
+			f11.ImageConfig = f11f1
 		}
-		cr.Status.AtProvider.ImageConfigResponse = f10
+		cr.Status.AtProvider.ImageConfigResponse = f11
 	} else {
 		cr.Status.AtProvider.ImageConfigResponse = nil
 	}
@@ -322,11 +331,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.Timeout = nil
 	}
 	if resp.TracingConfig != nil {
-		f28 := &svcapitypes.TracingConfig{}
+		f29 := &svcapitypes.TracingConfig{}
 		if resp.TracingConfig.Mode != nil {
-			f28.Mode = resp.TracingConfig.Mode
+			f29.Mode = resp.TracingConfig.Mode
 		}
-		cr.Spec.ForProvider.TracingConfig = f28
+		cr.Spec.ForProvider.TracingConfig = f29
 	} else {
 		cr.Spec.ForProvider.TracingConfig = nil
 	}
@@ -336,29 +345,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f30 := &svcapitypes.VPCConfigResponse{}
+		f31 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f30f0 := []*string{}
-			for _, f30f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f30f0elem string
-				f30f0elem = *f30f0iter
-				f30f0 = append(f30f0, &f30f0elem)
+			f31f0 := []*string{}
+			for _, f31f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f31f0elem string
+				f31f0elem = *f31f0iter
+				f31f0 = append(f31f0, &f31f0elem)
 			}
-			f30.SecurityGroupIDs = f30f0
+			f31.SecurityGroupIDs = f31f0
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f30f1 := []*string{}
-			for _, f30f1iter := range resp.VpcConfig.SubnetIds {
-				var f30f1elem string
-				f30f1elem = *f30f1iter
-				f30f1 = append(f30f1, &f30f1elem)
+			f31f1 := []*string{}
+			for _, f31f1iter := range resp.VpcConfig.SubnetIds {
+				var f31f1elem string
+				f31f1elem = *f31f1iter
+				f31f1 = append(f31f1, &f31f1elem)
 			}
-			f30.SubnetIDs = f30f1
+			f31.SubnetIDs = f31f1
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f30.VPCID = resp.VpcConfig.VpcId
+			f31.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f30
+		cr.Status.AtProvider.VPCConfig = f31
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

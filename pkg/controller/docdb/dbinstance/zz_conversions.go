@@ -343,8 +343,14 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 	if cr.Spec.ForProvider.DBInstanceClass != nil {
 		res.SetDBInstanceClass(*cr.Spec.ForProvider.DBInstanceClass)
 	}
+	if cr.Spec.ForProvider.EnablePerformanceInsights != nil {
+		res.SetEnablePerformanceInsights(*cr.Spec.ForProvider.EnablePerformanceInsights)
+	}
 	if cr.Spec.ForProvider.Engine != nil {
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+	if cr.Spec.ForProvider.PerformanceInsightsKMSKeyID != nil {
+		res.SetPerformanceInsightsKMSKeyId(*cr.Spec.ForProvider.PerformanceInsightsKMSKeyID)
 	}
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
@@ -353,18 +359,18 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 		res.SetPromotionTier(*cr.Spec.ForProvider.PromotionTier)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f6 := []*svcsdk.Tag{}
-		for _, f6iter := range cr.Spec.ForProvider.Tags {
-			f6elem := &svcsdk.Tag{}
-			if f6iter.Key != nil {
-				f6elem.SetKey(*f6iter.Key)
+		f8 := []*svcsdk.Tag{}
+		for _, f8iter := range cr.Spec.ForProvider.Tags {
+			f8elem := &svcsdk.Tag{}
+			if f8iter.Key != nil {
+				f8elem.SetKey(*f8iter.Key)
 			}
-			if f6iter.Value != nil {
-				f6elem.SetValue(*f6iter.Value)
+			if f8iter.Value != nil {
+				f8elem.SetValue(*f8iter.Value)
 			}
-			f6 = append(f6, f6elem)
+			f8 = append(f8, f8elem)
 		}
-		res.SetTags(f6)
+		res.SetTags(f8)
 	}
 
 	return res
@@ -382,6 +388,12 @@ func GenerateModifyDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.ModifyDBI
 	}
 	if cr.Spec.ForProvider.DBInstanceClass != nil {
 		res.SetDBInstanceClass(*cr.Spec.ForProvider.DBInstanceClass)
+	}
+	if cr.Spec.ForProvider.EnablePerformanceInsights != nil {
+		res.SetEnablePerformanceInsights(*cr.Spec.ForProvider.EnablePerformanceInsights)
+	}
+	if cr.Spec.ForProvider.PerformanceInsightsKMSKeyID != nil {
+		res.SetPerformanceInsightsKMSKeyId(*cr.Spec.ForProvider.PerformanceInsightsKMSKeyID)
 	}
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)

@@ -81,7 +81,7 @@ type DBClusterParameters struct {
 	// A value that indicates whether to copy all tags from the DB cluster to snapshots
 	// of the DB cluster. The default is not to copy them.
 	//
-	// Valid for: Aurora DB clusters only
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 	// The compute and memory capacity of each DB instance in the Multi-AZ DB cluster,
 	// for example db.m6g.xlarge. Not all DB instance classes are available in all
@@ -147,9 +147,15 @@ type DBClusterParameters struct {
 	// Valid for: Aurora DB clusters only
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 	// The list of log types that need to be enabled for exporting to CloudWatch
-	// Logs. The values in the list depend on the DB engine being used. For more
-	// information, see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-	// in the Amazon Aurora User Guide.
+	// Logs. The values in the list depend on the DB engine being used.
+	//
+	// RDS for MySQL
+	//
+	// Possible values are error, general, and slowquery.
+	//
+	// RDS for PostgreSQL
+	//
+	// Possible values are postgresql and upgrade.
 	//
 	// Aurora MySQL
 	//
@@ -159,7 +165,15 @@ type DBClusterParameters struct {
 	//
 	// Possible value is postgresql.
 	//
-	// Valid for: Aurora DB clusters only
+	// For more information about exporting CloudWatch Logs for Amazon RDS, see
+	// Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+	// in the Amazon RDS User Guide.
+	//
+	// For more information about exporting CloudWatch Logs for Amazon Aurora, see
+	// Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+	// in the Amazon Aurora User Guide.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
 	// A value that indicates whether to enable this DB cluster to forward write
 	// operations to the primary cluster of an Aurora global database (GlobalCluster).
@@ -176,13 +190,13 @@ type DBClusterParameters struct {
 	// Valid for: Aurora DB clusters only
 	EnableGlobalWriteForwarding *bool `json:"enableGlobalWriteForwarding,omitempty"`
 	// A value that indicates whether to enable the HTTP endpoint for an Aurora
-	// Serverless DB cluster. By default, the HTTP endpoint is disabled.
+	// Serverless v1 DB cluster. By default, the HTTP endpoint is disabled.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless DB cluster. You can also
+	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
 	// query your database from inside the RDS console with the query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	//
 	// Valid for: Aurora DB clusters only
@@ -192,7 +206,7 @@ type DBClusterParameters struct {
 	// isn't enabled.
 	//
 	// For more information, see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
-	// in the Amazon Aurora User Guide.
+	// in the Amazon Aurora User Guide..
 	//
 	// Valid for: Aurora DB clusters only
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
@@ -239,7 +253,7 @@ type DBClusterParameters struct {
 	// Limitations and requirements apply to some DB engine modes. For more information,
 	// see the following sections in the Amazon Aurora User Guide:
 	//
-	//    * Limitations of Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
+	//    * Limitations of Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
 	//
 	//    * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
 	//
@@ -539,6 +553,8 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Aurora DB clusters only
 	ScalingConfiguration *ScalingConfiguration `json:"scalingConfiguration,omitempty"`
+
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `json:"serverlessV2ScalingConfiguration,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
 	// have the same region as the source ARN.
@@ -598,11 +614,11 @@ type DBClusterObservation struct {
 	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
 	// The number of change records stored for Backtrack.
 	BacktrackConsumedChangeRecords *int64 `json:"backtrackConsumedChangeRecords,omitempty"`
-	// The current capacity of an Aurora Serverless DB cluster. The capacity is
-	// 0 (zero) when the cluster is paused.
+	// The current capacity of an Aurora Serverless v1 DB cluster. The capacity
+	// is 0 (zero) when the cluster is paused.
 	//
-	// For more information about Aurora Serverless, see Using Amazon Aurora Serverless
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
+	// For more information about Aurora Serverless v1, see Using Amazon Aurora
+	// Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 	// in the Amazon Aurora User Guide.
 	Capacity *int64 `json:"capacity,omitempty"`
 	// Identifies the clone group to which the DB cluster is associated.
@@ -661,13 +677,13 @@ type DBClusterObservation struct {
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
 	// A value that indicates whether the HTTP endpoint for an Aurora Serverless
-	// DB cluster is enabled.
+	// v1 DB cluster is enabled.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless DB cluster. You can also
+	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
 	// query your database from inside the RDS console with the query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	HTTPEndpointEnabled *bool `json:"httpEndpointEnabled,omitempty"`
 	// A value that indicates whether the mapping of Amazon Web Services Identity

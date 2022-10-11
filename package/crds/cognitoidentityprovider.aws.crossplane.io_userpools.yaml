@@ -123,7 +123,10 @@ spec:
                         type: boolean
                     type: object
                   emailConfiguration:
-                    description: The email configuration.
+                    description: The email configuration of your user pool. The email
+                      configuration type sets your preferred sending method, Amazon
+                      Web Services Region, and sender for messages from your user
+                      pool.
                     properties:
                       configurationSet:
                         type: string
@@ -266,11 +269,19 @@ spec:
                     description: A string representing the SMS authentication message.
                     type: string
                   smsConfiguration:
-                    description: The SMS configuration.
+                    description: The SMS configuration with the settings that your
+                      Amazon Cognito user pool must use to send an SMS message from
+                      your Amazon Web Services account through Amazon Simple Notification
+                      Service. To send SMS messages with Amazon SNS in the Amazon
+                      Web Services Region that you want, the Amazon Cognito user pool
+                      uses an Identity and Access Management (IAM) role in your Amazon
+                      Web Services account.
                     properties:
                       externalID:
                         type: string
                       snsCallerARN:
+                        type: string
+                      snsRegion:
                         type: string
                     type: object
                   smsVerificationMessage:
@@ -526,8 +537,9 @@ spec:
                       associated with it.
                     type: string
                   emailConfigurationFailure:
-                    description: The reason why the email configuration can't send
-                      the messages to your users.
+                    description: Deprecated. Review error codes from API requests
+                      with EventSource:cognito-idp.amazonaws.com in CloudTrail for
+                      information about problems with user pool email configuration.
                     type: string
                   estimatedNumberOfUsers:
                     description: A number estimating the size of the user pool.
@@ -581,16 +593,16 @@ spec:
                     description: "The reason why the SMS configuration can't send
                       the messages to your users. \n This message might include comma-separated
                       values to describe why your SMS configuration can't send messages
-                      to user pool end users. \n * InvalidSmsRoleAccessPolicyException
-                      - The Identity and Access Management role that Amazon Cognito
+                      to user pool end users. \n InvalidSmsRoleAccessPolicyException
+                      \n The Identity and Access Management role that Amazon Cognito
                       uses to send SMS messages isn't properly configured. For more
                       information, see SmsConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
-                      \n * SNSSandbox - The Amazon Web Services account is in SNS
-                      Sandbox and messages will only reach verified end users. This
-                      parameter won’t get populated with SNSSandbox if the IAM user
-                      creating the user pool doesn’t have SNS permissions. To learn
-                      how to move your Amazon Web Services account out of the sandbox,
-                      see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
+                      \n SNSSandbox \n The Amazon Web Services account is in the SNS
+                      SMS Sandbox and messages will only reach verified end users.
+                      This parameter won’t get populated with SNSSandbox if the IAM
+                      user creating the user pool doesn’t have SNS permissions. To
+                      learn how to move your Amazon Web Services account out of the
+                      sandbox, see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
                     type: string
                   status:
                     description: The status of a user pool.

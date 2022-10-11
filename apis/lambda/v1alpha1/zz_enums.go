@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
+type Architecture string
+
+const (
+	Architecture_x86_64 Architecture = "x86_64"
+	Architecture_arm64  Architecture = "arm64"
+)
+
 type CodeSigningPolicy string
 
 const (
@@ -43,6 +50,13 @@ type FunctionResponseType string
 
 const (
 	FunctionResponseType_ReportBatchItemFailures FunctionResponseType = "ReportBatchItemFailures"
+)
+
+type FunctionURLAuthType string
+
+const (
+	FunctionURLAuthType_NONE    FunctionURLAuthType = "NONE"
+	FunctionURLAuthType_AWS_IAM FunctionURLAuthType = "AWS_IAM"
 )
 
 type FunctionVersion string
@@ -121,10 +135,12 @@ const (
 	Runtime_python3_6      Runtime = "python3.6"
 	Runtime_python3_7      Runtime = "python3.7"
 	Runtime_python3_8      Runtime = "python3.8"
+	Runtime_python3_9      Runtime = "python3.9"
 	Runtime_dotnetcore1_0  Runtime = "dotnetcore1.0"
 	Runtime_dotnetcore2_0  Runtime = "dotnetcore2.0"
 	Runtime_dotnetcore2_1  Runtime = "dotnetcore2.1"
 	Runtime_dotnetcore3_1  Runtime = "dotnetcore3.1"
+	Runtime_dotnet6        Runtime = "dotnet6"
 	Runtime_nodejs4_3_edge Runtime = "nodejs4.3-edge"
 	Runtime_go1_x          Runtime = "go1.x"
 	Runtime_ruby2_5        Runtime = "ruby2.5"
@@ -136,11 +152,14 @@ const (
 type SourceAccessType string
 
 const (
-	SourceAccessType_BASIC_AUTH          SourceAccessType = "BASIC_AUTH"
-	SourceAccessType_VPC_SUBNET          SourceAccessType = "VPC_SUBNET"
-	SourceAccessType_VPC_SECURITY_GROUP  SourceAccessType = "VPC_SECURITY_GROUP"
-	SourceAccessType_SASL_SCRAM_512_AUTH SourceAccessType = "SASL_SCRAM_512_AUTH"
-	SourceAccessType_SASL_SCRAM_256_AUTH SourceAccessType = "SASL_SCRAM_256_AUTH"
+	SourceAccessType_BASIC_AUTH                  SourceAccessType = "BASIC_AUTH"
+	SourceAccessType_VPC_SUBNET                  SourceAccessType = "VPC_SUBNET"
+	SourceAccessType_VPC_SECURITY_GROUP          SourceAccessType = "VPC_SECURITY_GROUP"
+	SourceAccessType_SASL_SCRAM_512_AUTH         SourceAccessType = "SASL_SCRAM_512_AUTH"
+	SourceAccessType_SASL_SCRAM_256_AUTH         SourceAccessType = "SASL_SCRAM_256_AUTH"
+	SourceAccessType_VIRTUAL_HOST                SourceAccessType = "VIRTUAL_HOST"
+	SourceAccessType_CLIENT_CERTIFICATE_TLS_AUTH SourceAccessType = "CLIENT_CERTIFICATE_TLS_AUTH"
+	SourceAccessType_SERVER_ROOT_CA_CERTIFICATE  SourceAccessType = "SERVER_ROOT_CA_CERTIFICATE"
 )
 
 type State string

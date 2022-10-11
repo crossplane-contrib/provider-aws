@@ -1078,6 +1078,15 @@ spec:
                           type: string
                         type: object
                     type: object
+                  ephemeralStorage:
+                    description: The size of the function’s /tmp directory in MB.
+                      The default value is 512, but can be any whole number between
+                      512 and 10240 MB.
+                    properties:
+                      size:
+                        format: int64
+                        type: integer
+                    type: object
                   fileSystemConfigs:
                     description: Connection settings for an Amazon EFS file system.
                     items:

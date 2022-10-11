@@ -45,6 +45,9 @@ type FunctionParameters struct {
 	 Description *string `json:"description,omitempty"` 
 	// Environment variables that are accessible from function code during execution.
 	 Environment *Environment `json:"environment,omitempty"` 
+	// The size of the function’s /tmp directory in MB. The default value is 512,
+// but can be any whole number between 512 and 10240 MB.
+	 EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"` 
 	// Connection settings for an Amazon EFS file system.
 	 FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"` 
 	// The name of the method within your code that Lambda calls to execute your

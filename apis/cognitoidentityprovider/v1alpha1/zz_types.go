@@ -388,17 +388,19 @@ type SmsConfigurationType struct {
 	ExternalID *string `json:"externalID,omitempty"`
 
 	SNSCallerARN *string `json:"snsCallerARN,omitempty"`
+
+	SNSRegion *string `json:"snsRegion,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SmsMFAConfigType struct {
 	SmsAuthenticationMessage *string `json:"smsAuthenticationMessage,omitempty"`
-	// The SMS configuration type that includes the settings the Amazon Cognito
-	// User Pool must call for the Amazon Simple Notification Service service to
-	// send an SMS message from your Amazon Web Services account. The Amazon Cognito
-	// User Pool makes the request to the Amazon SNS Service by using an Identity
-	// and Access Management role that you provide for your Amazon Web Services
-	// account.
+	// The SMS configuration type is the settings that your Amazon Cognito user
+	// pool must use to send an SMS message from your Amazon Web Services account
+	// through Amazon Simple Notification Service. To send SMS messages with Amazon
+	// SNS in the Amazon Web Services Region that you want, the Amazon Cognito user
+	// pool uses an Identity and Access Management (IAM) role in your Amazon Web
+	// Services account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 }
 
@@ -485,10 +487,10 @@ type UserPoolClientType struct {
 	// The Amazon Pinpoint analytics configuration for collecting metrics for a
 	// user pool.
 	//
-	// In Regions where Pinpoint isn't available, User Pools only supports sending
-	// events to Amazon Pinpoint projects in us-east-1. In Regions where Pinpoint
-	// is available, User Pools will support sending events to Amazon Pinpoint projects
-	// within that same Region.
+	// In Regions where Amazon Pinpointisn't available, user pools only support
+	// sending events to Amazon Pinpoint projects in us-east-1. In Regions where
+	// Amazon Pinpoint is available, user pools support sending events to Amazon
+	// Pinpoint projects within that same Region.
 	AnalyticsConfiguration *AnalyticsConfigurationType `json:"analyticsConfiguration,omitempty"`
 
 	CallbackURLs []*string `json:"callbackURLs,omitempty"`
@@ -574,11 +576,14 @@ type UserPoolType struct {
 	DeviceConfiguration *DeviceConfigurationType `json:"deviceConfiguration,omitempty"`
 
 	Domain *string `json:"domain,omitempty"`
-	// The email configuration type.
+	// The email configuration of your user pool. The email configuration type sets
+	// your preferred sending method, Amazon Web Services Region, and sender for
+	// messages from your user pool.
 	//
-	// Amazon Cognito has specific Regions for use with Amazon Simple Email Service.
-	// For more information on the supported Regions, see Email settings for Amazon
-	// Cognito user pools (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html).
+	// Amazon Cognito can send email messages with Amazon Simple Email Service resources
+	// in the Amazon Web Services Region where you created your user pool, and in
+	// alternate Regions in some cases. For more information on the supported Regions,
+	// see Email settings for Amazon Cognito user pools (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html).
 	EmailConfiguration *EmailConfigurationType `json:"emailConfiguration,omitempty"`
 
 	EmailConfigurationFailure *string `json:"emailConfigurationFailure,omitempty"`
@@ -604,12 +609,12 @@ type UserPoolType struct {
 	SchemaAttributes []*SchemaAttributeType `json:"schemaAttributes,omitempty"`
 
 	SmsAuthenticationMessage *string `json:"smsAuthenticationMessage,omitempty"`
-	// The SMS configuration type that includes the settings the Amazon Cognito
-	// User Pool must call for the Amazon Simple Notification Service service to
-	// send an SMS message from your Amazon Web Services account. The Amazon Cognito
-	// User Pool makes the request to the Amazon SNS Service by using an Identity
-	// and Access Management role that you provide for your Amazon Web Services
-	// account.
+	// The SMS configuration type is the settings that your Amazon Cognito user
+	// pool must use to send an SMS message from your Amazon Web Services account
+	// through Amazon Simple Notification Service. To send SMS messages with Amazon
+	// SNS in the Amazon Web Services Region that you want, the Amazon Cognito user
+	// pool uses an Identity and Access Management (IAM) role in your Amazon Web
+	// Services account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`

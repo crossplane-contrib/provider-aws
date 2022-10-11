@@ -63,8 +63,8 @@ type ClusterParameters struct {
 	// it was created, it can be defined later with the PutClusterCapacityProviders
 	// API operation.
 	DefaultCapacityProviderStrategy []*CapacityProviderStrategyItem `json:"defaultCapacityProviderStrategy,omitempty"`
-	// The setting to use when creating a cluster. This parameter is used to enable
-	// CloudWatch Container Insights for a cluster. If this value is specified,
+	// The setting to use when creating a cluster. This parameter is used to turn
+	// on CloudWatch Container Insights for a cluster. If this value is specified,
 	// it overrides the containerInsights value set with PutAccountSetting or PutAccountSettingDefault.
 	Settings []*ClusterSetting `json:"settings,omitempty"`
 	// The metadata that you apply to the cluster to help you categorize and organize

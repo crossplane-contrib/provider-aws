@@ -100,6 +100,10 @@ type DescribedServer struct {
 	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 
 	LoggingRole *string `json:"loggingRole,omitempty"`
+
+	PostAuthenticationLoginBanner *string `json:"postAuthenticationLoginBanner,omitempty"`
+
+	PreAuthenticationLoginBanner *string `json:"preAuthenticationLoginBanner,omitempty"`
 	// The protocol settings that are configured for your server.
 	ProtocolDetails *ProtocolDetails `json:"protocolDetails,omitempty"`
 

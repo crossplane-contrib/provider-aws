@@ -92,6 +92,11 @@ type AddPrefixListEntry struct {
 }
 
 // +kubebuilder:skipversion
+type AdditionalDetail struct {
+	AdditionalDetailType *string `json:"additionalDetailType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Address struct {
 	AllocationID *string `json:"allocationID,omitempty"`
 
@@ -2568,6 +2573,16 @@ type LaunchTemplateIAMInstanceProfileSpecificationRequest struct {
 }
 
 // +kubebuilder:skipversion
+type LaunchTemplateInstanceMaintenanceOptions struct {
+	AutoRecovery *string `json:"autoRecovery,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplateInstanceMaintenanceOptionsRequest struct {
+	AutoRecovery *string `json:"autoRecovery,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LaunchTemplateInstanceMarketOptions struct {
 	MarketType *string `json:"marketType,omitempty"`
 	// The options for Spot Instances.
@@ -3852,6 +3867,8 @@ type RequestLaunchTemplateData struct {
 	KeyName *string `json:"keyName,omitempty"`
 
 	LicenseSpecifications []*LaunchTemplateLicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
+	// The maintenance options of your instance.
+	MaintenanceOptions *LaunchTemplateInstanceMaintenanceOptionsRequest `json:"maintenanceOptions,omitempty"`
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
@@ -4090,6 +4107,8 @@ type ResponseLaunchTemplateData struct {
 	KeyName *string `json:"keyName,omitempty"`
 
 	LicenseSpecifications []*LaunchTemplateLicenseConfiguration `json:"licenseSpecifications,omitempty"`
+	// The maintenance options of your instance.
+	MaintenanceOptions *LaunchTemplateInstanceMaintenanceOptions `json:"maintenanceOptions,omitempty"`
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
@@ -4441,10 +4460,7 @@ type ServiceConfiguration struct {
 	PayerResponsibility *string `json:"payerResponsibility,omitempty"`
 
 	PrivateDNSName *string `json:"privateDNSName,omitempty"`
-	// Information about the private DNS name for the service endpoint. For more
-	// information about these parameters, see VPC Endpoint Service Private DNS
-	// Name Verification (https://docs.aws.amazon.com/vpc/latest/userguide/ndpoint-services-dns-validation.html)
-	// in the Amazon Virtual Private Cloud User Guide.
+	// Information about the private DNS name for the service endpoint.
 	PrivateDNSNameConfiguration *PrivateDNSNameConfiguration `json:"privateDNSNameConfiguration,omitempty"`
 
 	ServiceID *string `json:"serviceID,omitempty"`
@@ -5430,6 +5446,23 @@ type TransitGatewayRouteTablePropagation struct {
 	ResourceType *string `json:"resourceType,omitempty"`
 
 	TransitGatewayAttachmentID *string `json:"transitGatewayAttachmentID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TransitGatewayRouteTableRoute struct {
+	AttachmentID *string `json:"attachmentID,omitempty"`
+
+	DestinationCIDR *string `json:"destinationCIDR,omitempty"`
+
+	PrefixListID *string `json:"prefixListID,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	RouteOrigin *string `json:"routeOrigin,omitempty"`
+
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion

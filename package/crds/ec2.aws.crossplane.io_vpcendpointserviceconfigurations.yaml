@@ -66,8 +66,7 @@ spec:
                 properties:
                   acceptanceRequired:
                     description: Indicates whether requests from service consumers
-                      to create an endpoint to your service must be accepted. To accept
-                      a request, use AcceptVpcEndpointConnections.
+                      to create an endpoint to your service must be accepted manually.
                     type: boolean
                   gatewayLoadBalancerARNRefs:
                     description: GatewayLoadBalancerARNRefs is a list of references
@@ -487,9 +486,7 @@ spec:
                         type: string
                       privateDNSNameConfiguration:
                         description: Information about the private DNS name for the
-                          service endpoint. For more information about these parameters,
-                          see VPC Endpoint Service Private DNS Name Verification (https://docs.aws.amazon.com/vpc/latest/userguide/ndpoint-services-dns-validation.html)
-                          in the Amazon Virtual Private Cloud User Guide.
+                          service endpoint.
                         properties:
                           name:
                             type: string

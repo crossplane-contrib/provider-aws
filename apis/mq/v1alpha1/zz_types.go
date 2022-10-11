@@ -28,6 +28,13 @@ var (
 )
 
 // +kubebuilder:skipversion
+type ActionRequired struct {
+	ActionRequiredCode *string `json:"actionRequiredCode,omitempty"`
+
+	ActionRequiredInfo *string `json:"actionRequiredInfo,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AvailabilityZone struct {
 	Name *string `json:"name,omitempty"`
 }

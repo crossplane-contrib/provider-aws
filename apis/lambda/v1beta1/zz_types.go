@@ -86,6 +86,12 @@ type EnvironmentResponse struct {
 }
 
 // +kubebuilder:skipversion
+type EphemeralStorage struct {
+	
+	Size *int64 `json:"size,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemConfig struct {
 	
 	ARN *string `json:"arn,omitempty"`
@@ -128,6 +134,9 @@ type FunctionConfiguration struct {
 // operation is successful, the response contains the environment variables.
 // If it failed, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
+	// The size of the function’s /tmp directory in MB. The default value is 512,
+// but can be any whole number between 512 and 10240 MB.
+	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 	
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
 	
@@ -184,6 +193,16 @@ type FunctionConfiguration struct {
 type FunctionEventInvokeConfig struct {
 	
 	FunctionARN *string `json:"functionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FunctionURLConfig struct {
+	
+	CreationTime *string `json:"creationTime,omitempty"`
+	
+	FunctionARN *string `json:"functionARN,omitempty"`
+	
+	LastModifiedTime *string `json:"lastModifiedTime,omitempty"`
 }
 
 // +kubebuilder:skipversion

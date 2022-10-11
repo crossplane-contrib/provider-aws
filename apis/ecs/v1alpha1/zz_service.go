@@ -49,7 +49,7 @@ type ServiceParameters struct {
 	// This is required if schedulingStrategy is REPLICA or isn't specified. If
 	// schedulingStrategy is DAEMON then this isn't required.
 	DesiredCount *int64 `json:"desiredCount,omitempty"`
-	// Specifies whether to enable Amazon ECS managed tags for the tasks within
+	// Specifies whether to turn on Amazon ECS managed tags for the tasks within
 	// the service. For more information, see Tagging Your Amazon ECS Resources
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
 	// in the Amazon Elastic Container Service Developer Guide.
@@ -63,6 +63,10 @@ type ServiceParameters struct {
 	// started. This is only used when your service is configured to use a load
 	// balancer. If your service has a load balancer defined and you don't specify
 	// a health check grace period value, the default value of 0 is used.
+	//
+	// If you do not use an Elastic Load Balancing, we recomend that you use the
+	// startPeriod in the task definition healtch check parameters. For more information,
+	// see Health check (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html).
 	//
 	// If your service's tasks take a while to start and respond to Elastic Load
 	// Balancing health checks, you can specify a health check grace period of up
@@ -105,10 +109,9 @@ type ServiceParameters struct {
 	// see Fargate platform versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	PlatformVersion *string `json:"platformVersion,omitempty"`
-	// Specifies whether to propagate the tags from the task definition or the service
-	// to the tasks in the service. If no value is specified, the tags aren't propagated.
-	// Tags can only be propagated to the tasks within the service during service
-	// creation. To add tags to a task after service creation or task creation,
+	// Specifies whether to propagate the tags from the task definition to the task.
+	// If no value is specified, the tags aren't propagated. Tags can only be propagated
+	// to the task during task creation. To add tags to a task after task creation,
 	// use the TagResource API action.
 	PropagateTags *string `json:"propagateTags,omitempty"`
 	// The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon

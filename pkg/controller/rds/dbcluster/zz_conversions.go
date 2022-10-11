@@ -450,6 +450,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Status.AtProvider.ScalingConfigurationInfo = nil
 		}
+		if elem.ServerlessV2ScalingConfiguration != nil {
+			f61 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+			if elem.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+				f61.MaxCapacity = elem.ServerlessV2ScalingConfiguration.MaxCapacity
+			}
+			if elem.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+				f61.MinCapacity = elem.ServerlessV2ScalingConfiguration.MinCapacity
+			}
+			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f61
+		} else {
+			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = nil
+		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
 		} else {
@@ -466,34 +478,34 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageType = nil
 		}
 		if elem.TagList != nil {
-			f64 := []*svcapitypes.Tag{}
-			for _, f64iter := range elem.TagList {
-				f64elem := &svcapitypes.Tag{}
-				if f64iter.Key != nil {
-					f64elem.Key = f64iter.Key
+			f65 := []*svcapitypes.Tag{}
+			for _, f65iter := range elem.TagList {
+				f65elem := &svcapitypes.Tag{}
+				if f65iter.Key != nil {
+					f65elem.Key = f65iter.Key
 				}
-				if f64iter.Value != nil {
-					f64elem.Value = f64iter.Value
+				if f65iter.Value != nil {
+					f65elem.Value = f65iter.Value
 				}
-				f64 = append(f64, f64elem)
+				f65 = append(f65, f65elem)
 			}
-			cr.Status.AtProvider.TagList = f64
+			cr.Status.AtProvider.TagList = f65
 		} else {
 			cr.Status.AtProvider.TagList = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f65 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f65iter := range elem.VpcSecurityGroups {
-				f65elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f65iter.Status != nil {
-					f65elem.Status = f65iter.Status
+			f66 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f66iter := range elem.VpcSecurityGroups {
+				f66elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f66iter.Status != nil {
+					f66elem.Status = f66iter.Status
 				}
-				if f65iter.VpcSecurityGroupId != nil {
-					f65elem.VPCSecurityGroupID = f65iter.VpcSecurityGroupId
+				if f66iter.VpcSecurityGroupId != nil {
+					f66elem.VPCSecurityGroupID = f66iter.VpcSecurityGroupId
 				}
-				f65 = append(f65, f65elem)
+				f66 = append(f66, f66elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f65
+			cr.Status.AtProvider.VPCSecurityGroups = f66
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -659,6 +671,16 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		}
 		res.SetScalingConfiguration(f38)
 	}
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		f39 := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f39.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f39.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(f39)
+	}
 	if cr.Spec.ForProvider.SourceRegion != nil {
 		res.SetSourceRegion(*cr.Spec.ForProvider.SourceRegion)
 	}
@@ -669,18 +691,18 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f42 := []*svcsdk.Tag{}
-		for _, f42iter := range cr.Spec.ForProvider.Tags {
-			f42elem := &svcsdk.Tag{}
-			if f42iter.Key != nil {
-				f42elem.SetKey(*f42iter.Key)
+		f43 := []*svcsdk.Tag{}
+		for _, f43iter := range cr.Spec.ForProvider.Tags {
+			f43elem := &svcsdk.Tag{}
+			if f43iter.Key != nil {
+				f43elem.SetKey(*f43iter.Key)
 			}
-			if f42iter.Value != nil {
-				f42elem.SetValue(*f42iter.Value)
+			if f43iter.Value != nil {
+				f43elem.SetValue(*f43iter.Value)
 			}
-			f42 = append(f42, f42elem)
+			f43 = append(f43, f43elem)
 		}
-		res.SetTags(f42)
+		res.SetTags(f43)
 	}
 
 	return res
@@ -783,6 +805,16 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 			f29.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
 		}
 		res.SetScalingConfiguration(f29)
+	}
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		f30 := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f30.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f30.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(f30)
 	}
 	if cr.Spec.ForProvider.StorageType != nil {
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)

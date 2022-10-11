@@ -137,17 +137,19 @@ spec:
                     description: "The Availability Zone (AZ) where the database will
                       be created. For information on Amazon Web Services Regions and
                       Availability Zones, see Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html).
-                      \n Amazon Aurora \n Not applicable. Availability Zones are managed
-                      by the DB cluster. \n Default: A random, system-chosen Availability
-                      Zone in the endpoint's Amazon Web Services Region. \n Example:
-                      us-east-1d \n Constraint: The AvailabilityZone parameter can't
-                      be specified if the DB instance is a Multi-AZ deployment. The
-                      specified Availability Zone must be in the same Amazon Web Services
-                      Region as the current endpoint. \n If you're creating a DB instance
-                      in an RDS on VMware environment, specify the identifier of the
-                      custom Availability Zone to create the DB instance in. \n For
-                      more information about RDS on VMware, see the RDS on VMware
-                      User Guide. (https://docs.aws.amazon.com/AmazonRDS/latest/RDSonVMwareUserGuide/rds-on-vmware.html)"
+                      \n Amazon Aurora \n Each Aurora DB cluster hosts copies of its
+                      storage in three separate Availability Zones. Specify one of
+                      these Availability Zones. Aurora automatically chooses an appropriate
+                      Availability Zone if you don't specify one. \n Default: A random,
+                      system-chosen Availability Zone in the endpoint's Amazon Web
+                      Services Region. \n Example: us-east-1d \n Constraint: The AvailabilityZone
+                      parameter can't be specified if the DB instance is a Multi-AZ
+                      deployment. The specified Availability Zone must be in the same
+                      Amazon Web Services Region as the current endpoint. \n If you're
+                      creating a DB instance in an RDS on VMware environment, specify
+                      the identifier of the custom Availability Zone to create the
+                      DB instance in. \n For more information about RDS on VMware,
+                      see the RDS on VMware User Guide. (https://docs.aws.amazon.com/AmazonRDS/latest/RDSonVMwareUserGuide/rds-on-vmware.html)"
                     type: string
                   backupRetentionPeriod:
                     description: "The number of days for which automated backups are
@@ -194,8 +196,8 @@ spec:
                       profile name and the associated IAM role name must start with
                       the prefix AWSRDSCustom. \n For the list of permissions required
                       for the IAM role, see Configure IAM and your VPC (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-setup-orcl.html#custom-setup-orcl.iam-vpc)
-                      in the Amazon Relational Database Service User Guide. \n This
-                      setting is required for RDS Custom."
+                      in the Amazon RDS User Guide. \n This setting is required for
+                      RDS Custom."
                     type: string
                   dbClusterIdentifier:
                     description: "The identifier of the DB cluster that the instance
@@ -607,15 +609,14 @@ spec:
                       exporting to CloudWatch Logs. The values in the list depend
                       on the DB engine. For more information, see Publishing Database
                       Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-                      in the Amazon Relational Database Service User Guide. \n Amazon
-                      Aurora \n Not applicable. CloudWatch Logs exports are managed
-                      by the DB cluster. \n RDS Custom \n Not applicable. \n MariaDB
-                      \n Possible values are audit, error, general, and slowquery.
-                      \n Microsoft SQL Server \n Possible values are agent and error.
-                      \n MySQL \n Possible values are audit, error, general, and slowquery.
-                      \n Oracle \n Possible values are alert, audit, listener, trace,
-                      and oemagent. \n PostgreSQL \n Possible values are postgresql
-                      and upgrade."
+                      in the Amazon RDS User Guide. \n Amazon Aurora \n Not applicable.
+                      CloudWatch Logs exports are managed by the DB cluster. \n RDS
+                      Custom \n Not applicable. \n MariaDB \n Possible values are
+                      audit, error, general, and slowquery. \n Microsoft SQL Server
+                      \n Possible values are agent and error. \n MySQL \n Possible
+                      values are audit, error, general, and slowquery. \n Oracle \n
+                      Possible values are alert, audit, listener, trace, and oemagent.
+                      \n PostgreSQL \n Possible values are postgresql and upgrade."
                     items:
                       type: string
                     type: array
@@ -647,8 +648,8 @@ spec:
                     description: "A value that indicates whether to enable Performance
                       Insights for the DB instance. For more information, see Using
                       Amazon Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
-                      in the Amazon Relational Database Service User Guide. \n This
-                      setting doesn't apply to RDS Custom."
+                      in the Amazon RDS User Guide. \n This setting doesn't apply
+                      to RDS Custom."
                     type: boolean
                   engine:
                     description: "The name of the database engine to be used for this
@@ -678,9 +679,8 @@ spec:
                       The CEV name has the following format: 19.customized_string
                       . An example identifier is 19.my_cev1. For more information,
                       see Creating an RDS Custom for Oracle DB instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-creating.html#custom-creating.create)
-                      in the Amazon RDS User Guide.. \n Amazon RDS Custom for SQL
-                      Server \n See RDS Custom for SQL Server general requirements
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-reqs-limits.html#custom-reqs-limits.reqsMS)
+                      in the Amazon RDS User Guide. \n Amazon RDS Custom for SQL Server
+                      \n See RDS Custom for SQL Server general requirements (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-reqs-limits.html#custom-reqs-limits.reqsMS)
                       in the Amazon RDS User Guide. \n MariaDB \n For information,
                       see MariaDB on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MariaDB.html#MariaDB.Concepts.VersionMgmt)
                       in the Amazon RDS User Guide. \n Microsoft SQL Server \n For

@@ -797,71 +797,117 @@ func GenerateUpdateServiceInput(cr *svcapitypes.Service) *svcsdk.UpdateServiceIn
 	if cr.Spec.ForProvider.DesiredCount != nil {
 		res.SetDesiredCount(*cr.Spec.ForProvider.DesiredCount)
 	}
+	if cr.Spec.ForProvider.EnableECSManagedTags != nil {
+		res.SetEnableECSManagedTags(*cr.Spec.ForProvider.EnableECSManagedTags)
+	}
 	if cr.Spec.ForProvider.EnableExecuteCommand != nil {
 		res.SetEnableExecuteCommand(*cr.Spec.ForProvider.EnableExecuteCommand)
 	}
 	if cr.Spec.ForProvider.HealthCheckGracePeriodSeconds != nil {
 		res.SetHealthCheckGracePeriodSeconds(*cr.Spec.ForProvider.HealthCheckGracePeriodSeconds)
 	}
-	if cr.Status.AtProvider.NetworkConfiguration != nil {
-		f7 := &svcsdk.NetworkConfiguration{}
-		if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration != nil {
-			f7f0 := &svcsdk.AwsVpcConfiguration{}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP != nil {
-				f7f0.SetAssignPublicIp(*cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP)
+	if cr.Status.AtProvider.LoadBalancers != nil {
+		f8 := []*svcsdk.LoadBalancer{}
+		for _, f8iter := range cr.Status.AtProvider.LoadBalancers {
+			f8elem := &svcsdk.LoadBalancer{}
+			if f8iter.ContainerName != nil {
+				f8elem.SetContainerName(*f8iter.ContainerName)
 			}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups != nil {
-				f7f0f1 := []*string{}
-				for _, f7f0f1iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups {
-					var f7f0f1elem string
-					f7f0f1elem = *f7f0f1iter
-					f7f0f1 = append(f7f0f1, &f7f0f1elem)
-				}
-				f7f0.SetSecurityGroups(f7f0f1)
+			if f8iter.ContainerPort != nil {
+				f8elem.SetContainerPort(*f8iter.ContainerPort)
 			}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets != nil {
-				f7f0f2 := []*string{}
-				for _, f7f0f2iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets {
-					var f7f0f2elem string
-					f7f0f2elem = *f7f0f2iter
-					f7f0f2 = append(f7f0f2, &f7f0f2elem)
-				}
-				f7f0.SetSubnets(f7f0f2)
+			if f8iter.LoadBalancerName != nil {
+				f8elem.SetLoadBalancerName(*f8iter.LoadBalancerName)
 			}
-			f7.SetAwsvpcConfiguration(f7f0)
-		}
-		res.SetNetworkConfiguration(f7)
-	}
-	if cr.Spec.ForProvider.PlacementConstraints != nil {
-		f8 := []*svcsdk.PlacementConstraint{}
-		for _, f8iter := range cr.Spec.ForProvider.PlacementConstraints {
-			f8elem := &svcsdk.PlacementConstraint{}
-			if f8iter.Expression != nil {
-				f8elem.SetExpression(*f8iter.Expression)
-			}
-			if f8iter.Type != nil {
-				f8elem.SetType(*f8iter.Type)
+			if f8iter.TargetGroupARN != nil {
+				f8elem.SetTargetGroupArn(*f8iter.TargetGroupARN)
 			}
 			f8 = append(f8, f8elem)
 		}
-		res.SetPlacementConstraints(f8)
+		res.SetLoadBalancers(f8)
+	}
+	if cr.Status.AtProvider.NetworkConfiguration != nil {
+		f9 := &svcsdk.NetworkConfiguration{}
+		if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration != nil {
+			f9f0 := &svcsdk.AwsVpcConfiguration{}
+			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP != nil {
+				f9f0.SetAssignPublicIp(*cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP)
+			}
+			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups != nil {
+				f9f0f1 := []*string{}
+				for _, f9f0f1iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups {
+					var f9f0f1elem string
+					f9f0f1elem = *f9f0f1iter
+					f9f0f1 = append(f9f0f1, &f9f0f1elem)
+				}
+				f9f0.SetSecurityGroups(f9f0f1)
+			}
+			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets != nil {
+				f9f0f2 := []*string{}
+				for _, f9f0f2iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets {
+					var f9f0f2elem string
+					f9f0f2elem = *f9f0f2iter
+					f9f0f2 = append(f9f0f2, &f9f0f2elem)
+				}
+				f9f0.SetSubnets(f9f0f2)
+			}
+			f9.SetAwsvpcConfiguration(f9f0)
+		}
+		res.SetNetworkConfiguration(f9)
+	}
+	if cr.Spec.ForProvider.PlacementConstraints != nil {
+		f10 := []*svcsdk.PlacementConstraint{}
+		for _, f10iter := range cr.Spec.ForProvider.PlacementConstraints {
+			f10elem := &svcsdk.PlacementConstraint{}
+			if f10iter.Expression != nil {
+				f10elem.SetExpression(*f10iter.Expression)
+			}
+			if f10iter.Type != nil {
+				f10elem.SetType(*f10iter.Type)
+			}
+			f10 = append(f10, f10elem)
+		}
+		res.SetPlacementConstraints(f10)
 	}
 	if cr.Spec.ForProvider.PlacementStrategy != nil {
-		f9 := []*svcsdk.PlacementStrategy{}
-		for _, f9iter := range cr.Spec.ForProvider.PlacementStrategy {
-			f9elem := &svcsdk.PlacementStrategy{}
-			if f9iter.Field != nil {
-				f9elem.SetField(*f9iter.Field)
+		f11 := []*svcsdk.PlacementStrategy{}
+		for _, f11iter := range cr.Spec.ForProvider.PlacementStrategy {
+			f11elem := &svcsdk.PlacementStrategy{}
+			if f11iter.Field != nil {
+				f11elem.SetField(*f11iter.Field)
 			}
-			if f9iter.Type != nil {
-				f9elem.SetType(*f9iter.Type)
+			if f11iter.Type != nil {
+				f11elem.SetType(*f11iter.Type)
 			}
-			f9 = append(f9, f9elem)
+			f11 = append(f11, f11elem)
 		}
-		res.SetPlacementStrategy(f9)
+		res.SetPlacementStrategy(f11)
 	}
 	if cr.Spec.ForProvider.PlatformVersion != nil {
 		res.SetPlatformVersion(*cr.Spec.ForProvider.PlatformVersion)
+	}
+	if cr.Spec.ForProvider.PropagateTags != nil {
+		res.SetPropagateTags(*cr.Spec.ForProvider.PropagateTags)
+	}
+	if cr.Spec.ForProvider.ServiceRegistries != nil {
+		f15 := []*svcsdk.ServiceRegistry{}
+		for _, f15iter := range cr.Spec.ForProvider.ServiceRegistries {
+			f15elem := &svcsdk.ServiceRegistry{}
+			if f15iter.ContainerName != nil {
+				f15elem.SetContainerName(*f15iter.ContainerName)
+			}
+			if f15iter.ContainerPort != nil {
+				f15elem.SetContainerPort(*f15iter.ContainerPort)
+			}
+			if f15iter.Port != nil {
+				f15elem.SetPort(*f15iter.Port)
+			}
+			if f15iter.RegistryARN != nil {
+				f15elem.SetRegistryArn(*f15iter.RegistryARN)
+			}
+			f15 = append(f15, f15elem)
+		}
+		res.SetServiceRegistries(f15)
 	}
 	if cr.Status.AtProvider.TaskDefinition != nil {
 		res.SetTaskDefinition(*cr.Status.AtProvider.TaskDefinition)

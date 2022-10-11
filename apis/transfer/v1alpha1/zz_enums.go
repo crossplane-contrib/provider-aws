@@ -43,7 +43,14 @@ const (
 type ExecutionErrorType string
 
 const (
-	ExecutionErrorType_PERMISSION_DENIED ExecutionErrorType = "PERMISSION_DENIED"
+	ExecutionErrorType_PERMISSION_DENIED     ExecutionErrorType = "PERMISSION_DENIED"
+	ExecutionErrorType_CUSTOM_STEP_FAILED    ExecutionErrorType = "CUSTOM_STEP_FAILED"
+	ExecutionErrorType_THROTTLED             ExecutionErrorType = "THROTTLED"
+	ExecutionErrorType_ALREADY_EXISTS        ExecutionErrorType = "ALREADY_EXISTS"
+	ExecutionErrorType_NOT_FOUND             ExecutionErrorType = "NOT_FOUND"
+	ExecutionErrorType_BAD_REQUEST           ExecutionErrorType = "BAD_REQUEST"
+	ExecutionErrorType_TIMEOUT               ExecutionErrorType = "TIMEOUT"
+	ExecutionErrorType_INTERNAL_SERVER_ERROR ExecutionErrorType = "INTERNAL_SERVER_ERROR"
 )
 
 type ExecutionStatus string

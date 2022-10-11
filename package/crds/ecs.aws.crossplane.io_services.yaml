@@ -170,7 +170,7 @@ spec:
                           circuit breaker determines whether a service deployment
                           will fail if the service can't reach a steady state. If
                           enabled, a service deployment will transition to a failed
-                          state and stop launching new tasks. You can also enable
+                          state and stop launching new tasks. You can also configure
                           Amazon ECS to roll back your service to the last completed
                           deployment after a failure. For more information, see Rolling
                           update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
@@ -204,7 +204,7 @@ spec:
                     format: int64
                     type: integer
                   enableECSManagedTags:
-                    description: Specifies whether to enable Amazon ECS managed tags
+                    description: Specifies whether to turn on Amazon ECS managed tags
                       for the tasks within the service. For more information, see
                       Tagging Your Amazon ECS Resources (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
                       in the Amazon Elastic Container Service Developer Guide.
@@ -221,7 +221,10 @@ spec:
                       only used when your service is configured to use a load balancer.
                       If your service has a load balancer defined and you don't specify
                       a health check grace period value, the default value of 0 is
-                      used. \n If your service's tasks take a while to start and respond
+                      used. \n If you do not use an Elastic Load Balancing, we recomend
+                      that you use the startPeriod in the task definition healtch
+                      check parameters. For more information, see Health check (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html).
+                      \n If your service's tasks take a while to start and respond
                       to Elastic Load Balancing health checks, you can specify a health
                       check grace period of up to 2,147,483,647 seconds (about 69
                       years). During that time, the Amazon ECS service scheduler ignores
@@ -716,11 +719,10 @@ spec:
                     type: string
                   propagateTags:
                     description: Specifies whether to propagate the tags from the
-                      task definition or the service to the tasks in the service.
-                      If no value is specified, the tags aren't propagated. Tags can
-                      only be propagated to the tasks within the service during service
-                      creation. To add tags to a task after service creation or task
-                      creation, use the TagResource API action.
+                      task definition to the task. If no value is specified, the tags
+                      aren't propagated. Tags can only be propagated to the task during
+                      task creation. To add tags to a task after task creation, use
+                      the TagResource API action.
                     type: string
                   region:
                     description: Region is which region the Service will be created.

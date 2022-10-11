@@ -46,7 +46,9 @@ type UserPoolParameters struct {
 	AutoVerifiedAttributes []*string `json:"autoVerifiedAttributes,omitempty"`
 	// The device configuration.
 	DeviceConfiguration *DeviceConfigurationType `json:"deviceConfiguration,omitempty"`
-	// The email configuration.
+	// The email configuration of your user pool. The email configuration type sets
+	// your preferred sending method, Amazon Web Services Region, and sender for
+	// messages from your user pool.
 	EmailConfiguration *EmailConfigurationType `json:"emailConfiguration,omitempty"`
 	// A string representing the email verification message. EmailVerificationMessage
 	// is allowed only if EmailSendingAccount (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_EmailConfigurationType.html#CognitoUserPools-Type-EmailConfigurationType-EmailSendingAccount)
@@ -79,7 +81,12 @@ type UserPoolParameters struct {
 	Schema []*SchemaAttributeType `json:"schema,omitempty"`
 	// A string representing the SMS authentication message.
 	SmsAuthenticationMessage *string `json:"smsAuthenticationMessage,omitempty"`
-	// The SMS configuration.
+	// The SMS configuration with the settings that your Amazon Cognito user pool
+	// must use to send an SMS message from your Amazon Web Services account through
+	// Amazon Simple Notification Service. To send SMS messages with Amazon SNS
+	// in the Amazon Web Services Region that you want, the Amazon Cognito user
+	// pool uses an Identity and Access Management (IAM) role in your Amazon Web
+	// Services account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 	// A string representing the SMS verification message.
 	SmsVerificationMessage *string `json:"smsVerificationMessage,omitempty"`
@@ -125,7 +132,8 @@ type UserPoolObservation struct {
 	CustomDomain *string `json:"customDomain,omitempty"`
 	// The domain prefix, if the user pool has a domain associated with it.
 	Domain *string `json:"domain,omitempty"`
-	// The reason why the email configuration can't send the messages to your users.
+	// Deprecated. Review error codes from API requests with EventSource:cognito-idp.amazonaws.com
+	// in CloudTrail for information about problems with user pool email configuration.
 	EmailConfigurationFailure *string `json:"emailConfigurationFailure,omitempty"`
 	// A number estimating the size of the user pool.
 	EstimatedNumberOfUsers *int64 `json:"estimatedNumberOfUsers,omitempty"`
@@ -142,15 +150,19 @@ type UserPoolObservation struct {
 	// This message might include comma-separated values to describe why your SMS
 	// configuration can't send messages to user pool end users.
 	//
-	//    * InvalidSmsRoleAccessPolicyException - The Identity and Access Management
-	//    role that Amazon Cognito uses to send SMS messages isn't properly configured.
-	//    For more information, see SmsConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
+	// InvalidSmsRoleAccessPolicyException
 	//
-	//    * SNSSandbox - The Amazon Web Services account is in SNS Sandbox and messages
-	//    will only reach verified end users. This parameter won’t get populated
-	//    with SNSSandbox if the IAM user creating the user pool doesn’t have
-	//    SNS permissions. To learn how to move your Amazon Web Services account
-	//    out of the sandbox, see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
+	// The Identity and Access Management role that Amazon Cognito uses to send
+	// SMS messages isn't properly configured. For more information, see SmsConfigurationType
+	// (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
+	//
+	// SNSSandbox
+	//
+	// The Amazon Web Services account is in the SNS SMS Sandbox and messages will
+	// only reach verified end users. This parameter won’t get populated with
+	// SNSSandbox if the IAM user creating the user pool doesn’t have SNS permissions.
+	// To learn how to move your Amazon Web Services account out of the sandbox,
+	// see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`
 	// The status of a user pool.
 	Status *string `json:"status,omitempty"`

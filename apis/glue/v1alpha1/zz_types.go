@@ -43,6 +43,11 @@ type Action struct {
 }
 
 // +kubebuilder:skipversion
+type AuditContext struct {
+	AllColumnsRequested *bool `json:"allColumnsRequested,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BatchStopJobRunError struct {
 	JobName *string `json:"jobName,omitempty"`
 }
@@ -355,6 +360,13 @@ type CsvClassifier struct {
 }
 
 // +kubebuilder:skipversion
+type CustomEntityType struct {
+	Name *string `json:"name,omitempty"`
+
+	RegexString *string `json:"regexString,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DataLakePrincipal struct {
 	DataLakePrincipalIdentifier *string `json:"dataLakePrincipalIdentifier,omitempty"`
 }
@@ -616,6 +628,8 @@ type JobRun struct {
 	Arguments map[string]*string `json:"arguments,omitempty"`
 
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
+
+	DPUSeconds *float64 `json:"dPUSeconds,omitempty"`
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
@@ -963,6 +977,33 @@ type SerDeInfo struct {
 }
 
 // +kubebuilder:skipversion
+type Session struct {
+	// Specifies the connections used by a job.
+	Connections *ConnectionsList `json:"connections,omitempty"`
+
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+
+	GlueVersion *string `json:"glueVersion,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SessionCommand struct {
+	Name *string `json:"name,omitempty"`
+
+	PythonVersion *string `json:"pythonVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SortCriterion struct {
 	FieldName *string `json:"fieldName,omitempty"`
 }
@@ -972,6 +1013,29 @@ type StartingEventBatchCondition struct {
 	BatchSize *int64 `json:"batchSize,omitempty"`
 
 	BatchWindow *int64 `json:"batchWindow,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Statement struct {
+	Code *string `json:"code,omitempty"`
+
+	ID *int64 `json:"id,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StatementOutput struct {
+	ErrorName *string `json:"errorName,omitempty"`
+
+	ErrorValue *string `json:"errorValue,omitempty"`
+
+	ExecutionCount *int64 `json:"executionCount,omitempty"`
+
+	Traceback []*string `json:"traceback,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StatementOutputData struct {
+	TextPlain *string `json:"textPlain,omitempty"`
 }
 
 // +kubebuilder:skipversion

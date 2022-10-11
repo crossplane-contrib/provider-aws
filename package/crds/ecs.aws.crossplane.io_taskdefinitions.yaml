@@ -154,7 +154,14 @@ spec:
                             container definition override any Docker health checks
                             that exist in the container image (such as those specified
                             in a parent image or from the image's Dockerfile). \n
-                            You can view the health status of both individual containers
+                            The Amazon ECS container agent only monitors and reports
+                            on the health checks specified in the task definition.
+                            Amazon ECS does not monitor Docker health checks that
+                            are embedded in a container image and not specified in
+                            the container definition. Health check parameters that
+                            are specified in a container definition override any Docker
+                            health checks that exist in the container image. \n You
+                            can view the health status of both individual containers
                             and a task with the DescribeTasks API operation or when
                             viewing the task details in the console. \n The following
                             describes the possible healthStatus values for a container:
@@ -690,7 +697,7 @@ spec:
                     description: "The configuration details for the App Mesh proxy.
                       \n For tasks hosted on Amazon EC2 instances, the container instances
                       require at least version 1.26.0 of the container agent and at
-                      least version 1.26.0-1 of the ecs-init package to enable a proxy
+                      least version 1.26.0-1 of the ecs-init package to use a proxy
                       configuration. If your container instances are launched from
                       the Amazon ECS-optimized AMI version 20190301 or later, then
                       they contain the required versions of the container agent and
@@ -1400,34 +1407,42 @@ spec:
                                 in a container definition override any Docker health
                                 checks that exist in the container image (such as
                                 those specified in a parent image or from the image's
-                                Dockerfile). \n You can view the health status of
-                                both individual containers and a task with the DescribeTasks
-                                API operation or when viewing the task details in
-                                the console. \n The following describes the possible
-                                healthStatus values for a container: \n * HEALTHY-The
-                                container health check has passed successfully. \n
-                                * UNHEALTHY-The container health check has failed.
-                                \n * UNKNOWN-The container health check is being evaluated
-                                or there's no container health check defined. \n The
-                                following describes the possible healthStatus values
-                                for a task. The container health check status of nonessential
-                                containers do not have an effect on the health status
-                                of a task. \n * HEALTHY-All essential containers within
-                                the task have passed their health checks. \n * UNHEALTHY-One
-                                or more essential containers have failed their health
-                                check. \n * UNKNOWN-The essential containers within
-                                the task are still having their health checks evaluated
-                                or there are no container health checks defined. \n
-                                If a task is run manually, and not as part of a service,
-                                the task will continue its lifecycle regardless of
-                                its health status. For tasks that are part of a service,
-                                if the task reports as unhealthy then the task will
-                                be stopped and the service scheduler will replace
-                                it. \n The following are notes about container health
-                                check support: \n * Container health checks require
-                                version 1.17.0 or greater of the Amazon ECS container
-                                agent. For more information, see Updating the Amazon
-                                ECS Container Agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
+                                Dockerfile). \n The Amazon ECS container agent only
+                                monitors and reports on the health checks specified
+                                in the task definition. Amazon ECS does not monitor
+                                Docker health checks that are embedded in a container
+                                image and not specified in the container definition.
+                                Health check parameters that are specified in a container
+                                definition override any Docker health checks that
+                                exist in the container image. \n You can view the
+                                health status of both individual containers and a
+                                task with the DescribeTasks API operation or when
+                                viewing the task details in the console. \n The following
+                                describes the possible healthStatus values for a container:
+                                \n * HEALTHY-The container health check has passed
+                                successfully. \n * UNHEALTHY-The container health
+                                check has failed. \n * UNKNOWN-The container health
+                                check is being evaluated or there's no container health
+                                check defined. \n The following describes the possible
+                                healthStatus values for a task. The container health
+                                check status of nonessential containers do not have
+                                an effect on the health status of a task. \n * HEALTHY-All
+                                essential containers within the task have passed their
+                                health checks. \n * UNHEALTHY-One or more essential
+                                containers have failed their health check. \n * UNKNOWN-The
+                                essential containers within the task are still having
+                                their health checks evaluated or there are no container
+                                health checks defined. \n If a task is run manually,
+                                and not as part of a service, the task will continue
+                                its lifecycle regardless of its health status. For
+                                tasks that are part of a service, if the task reports
+                                as unhealthy then the task will be stopped and the
+                                service scheduler will replace it. \n The following
+                                are notes about container health check support: \n
+                                * Container health checks require version 1.17.0 or
+                                greater of the Amazon ECS container agent. For more
+                                information, see Updating the Amazon ECS Container
+                                Agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
                                 \n * Container health checks are supported for Fargate
                                 tasks if you're using platform version 1.1.0 or greater.
                                 For more information, see Fargate Platform Versions
@@ -1698,9 +1713,9 @@ spec:
                           amount, for tasks hosted on Fargate. For more information,
                           see Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
                           in the Amazon ECS User Guide for Fargate. \n This parameter
-                          is only supported for tasks hosted on Fargate using the
-                          following platform versions: \n * Linux platform version
-                          1.4.0 or later. \n * Windows platform version 1.0.0 or later."
+                          is only supported for tasks hosted on Fargate using Linux
+                          platform version 1.4.0 or later. This parameter is not supported
+                          for Windows containers on Fargate."
                         properties:
                           sizeInGiB:
                             format: int64
@@ -1741,7 +1756,7 @@ spec:
                           \n For tasks that use the EC2 launch type, the container
                           instances require at least version 1.26.0 of the container
                           agent and at least version 1.26.0-1 of the ecs-init package
-                          to enable a proxy configuration. If your container instances
+                          to use a proxy configuration. If your container instances
                           are launched from the Amazon ECS optimized AMI version 20190301
                           or later, then they contain the required versions of the
                           container agent and ecs-init. For more information, see

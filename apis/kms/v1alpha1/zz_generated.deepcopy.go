@@ -451,6 +451,17 @@ func (in *KeyMetadata) DeepCopyInto(out *KeyMetadata) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MacAlgorithms != nil {
+		in, out := &in.MacAlgorithms, &out.MacAlgorithms
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.MultiRegion != nil {
 		in, out := &in.MultiRegion, &out.MultiRegion
 		*out = new(bool)
@@ -559,6 +570,17 @@ func (in *KeyObservation) DeepCopyInto(out *KeyObservation) {
 		in, out := &in.KeyState, &out.KeyState
 		*out = new(string)
 		**out = **in
+	}
+	if in.MacAlgorithms != nil {
+		in, out := &in.MacAlgorithms, &out.MacAlgorithms
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.MultiRegionConfiguration != nil {
 		in, out := &in.MultiRegionConfiguration, &out.MultiRegionConfiguration

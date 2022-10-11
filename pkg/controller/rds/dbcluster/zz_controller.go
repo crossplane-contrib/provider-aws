@@ -526,6 +526,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.ScalingConfigurationInfo = nil
 	}
+	if resp.DBCluster.ServerlessV2ScalingConfiguration != nil {
+		f61 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f61.MaxCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity
+		}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f61.MinCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity
+		}
+		cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f61
+	} else {
+		cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = nil
+	}
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
 	} else {
@@ -542,34 +554,34 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.StorageType = nil
 	}
 	if resp.DBCluster.TagList != nil {
-		f64 := []*svcapitypes.Tag{}
-		for _, f64iter := range resp.DBCluster.TagList {
-			f64elem := &svcapitypes.Tag{}
-			if f64iter.Key != nil {
-				f64elem.Key = f64iter.Key
+		f65 := []*svcapitypes.Tag{}
+		for _, f65iter := range resp.DBCluster.TagList {
+			f65elem := &svcapitypes.Tag{}
+			if f65iter.Key != nil {
+				f65elem.Key = f65iter.Key
 			}
-			if f64iter.Value != nil {
-				f64elem.Value = f64iter.Value
+			if f65iter.Value != nil {
+				f65elem.Value = f65iter.Value
 			}
-			f64 = append(f64, f64elem)
+			f65 = append(f65, f65elem)
 		}
-		cr.Status.AtProvider.TagList = f64
+		cr.Status.AtProvider.TagList = f65
 	} else {
 		cr.Status.AtProvider.TagList = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f65 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f65iter := range resp.DBCluster.VpcSecurityGroups {
-			f65elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f65iter.Status != nil {
-				f65elem.Status = f65iter.Status
+		f66 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f66iter := range resp.DBCluster.VpcSecurityGroups {
+			f66elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f66iter.Status != nil {
+				f66elem.Status = f66iter.Status
 			}
-			if f65iter.VpcSecurityGroupId != nil {
-				f65elem.VPCSecurityGroupID = f65iter.VpcSecurityGroupId
+			if f66iter.VpcSecurityGroupId != nil {
+				f66elem.VPCSecurityGroupID = f66iter.VpcSecurityGroupId
 			}
-			f65 = append(f65, f65elem)
+			f66 = append(f66, f66elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f65
+		cr.Status.AtProvider.VPCSecurityGroups = f66
 	} else {
 		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}

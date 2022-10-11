@@ -204,11 +204,10 @@ type TaskDefinitionParameters struct {
 	//
 	// For tasks hosted on Amazon EC2 instances, the container instances require
 	// at least version 1.26.0 of the container agent and at least version 1.26.0-1
-	// of the ecs-init package to enable a proxy configuration. If your container
-	// instances are launched from the Amazon ECS-optimized AMI version 20190301
-	// or later, then they contain the required versions of the container agent
-	// and ecs-init. For more information, see Amazon ECS-optimized AMI versions
-	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-ami-versions.html)
+	// of the ecs-init package to use a proxy configuration. If your container instances
+	// are launched from the Amazon ECS-optimized AMI version 20190301 or later,
+	// then they contain the required versions of the container agent and ecs-init.
+	// For more information, see Amazon ECS-optimized AMI versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-ami-versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	ProxyConfiguration *ProxyConfiguration `json:"proxyConfiguration,omitempty"`
 	// The task launch type that Amazon ECS validates the task definition against.

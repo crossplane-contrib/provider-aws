@@ -120,15 +120,6 @@ type ConnectionPoolConfigurationInfo struct {
 }
 
 // +kubebuilder:skipversion
-type CustomAvailabilityZone struct {
-	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
-
-	CustomAvailabilityZoneName *string `json:"customAvailabilityZoneName,omitempty"`
-
-	CustomAvailabilityZoneStatus *string `json:"customAvailabilityZoneStatus,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type DBClusterEndpoint struct {
 	CustomEndpointType *string `json:"customEndpointType,omitempty"`
 
@@ -306,8 +297,7 @@ type DBCluster_SDK struct {
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-	// List of Active Directory Domain membership records associated with a DB instance
-	// or cluster.
+
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
 
 	EarliestBacktrackTime *metav1.Time `json:"earliestBacktrackTime,omitempty"`
@@ -372,9 +362,14 @@ type DBCluster_SDK struct {
 	// Shows the scaling configuration for an Aurora DB cluster in serverless DB
 	// engine mode.
 	//
-	// For more information, see Using Amazon Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
+	// For more information, see Using Amazon Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 	// in the Amazon Aurora User Guide.
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
+	// Shows the scaling configuration for an Aurora Serverless v2 DB cluster.
+	//
+	// For more information, see Using Amazon Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html)
+	// in the Amazon Aurora User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `json:"serverlessV2ScalingConfiguration,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
@@ -580,8 +575,7 @@ type DBInstance_SDK struct {
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-	// List of Active Directory Domain membership records associated with a DB instance
-	// or cluster.
+
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
 
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
@@ -1075,28 +1069,6 @@ type IPRange struct {
 }
 
 // +kubebuilder:skipversion
-type InstallationMedia struct {
-	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
-
-	Engine *string `json:"engine,omitempty"`
-
-	EngineInstallationMediaPath *string `json:"engineInstallationMediaPath,omitempty"`
-
-	EngineVersion *string `json:"engineVersion,omitempty"`
-
-	InstallationMediaID *string `json:"installationMediaID,omitempty"`
-
-	OSInstallationMediaPath *string `json:"oSInstallationMediaPath,omitempty"`
-
-	Status *string `json:"status,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type InstallationMediaFailureCause struct {
-	Message *string `json:"message,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type MinimumEngineVersionPerAllowedValue struct {
 	AllowedValue *string `json:"allowedValue,omitempty"`
 
@@ -1241,9 +1213,13 @@ type OrderableDBInstanceOption struct {
 
 	MaxIOPSPerDBInstance *int64 `json:"maxIOPSPerDBInstance,omitempty"`
 
+	MaxIOPSPerGib *float64 `json:"maxIOPSPerGib,omitempty"`
+
 	MaxStorageSize *int64 `json:"maxStorageSize,omitempty"`
 
 	MinIOPSPerDBInstance *int64 `json:"minIOPSPerDBInstance,omitempty"`
+
+	MinIOPSPerGib *float64 `json:"minIOPSPerGib,omitempty"`
 
 	MinStorageSize *int64 `json:"minStorageSize,omitempty"`
 
@@ -1480,6 +1456,20 @@ type ScalingConfigurationInfo struct {
 }
 
 // +kubebuilder:skipversion
+type ServerlessV2ScalingConfiguration struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessV2ScalingConfigurationInfo struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SourceRegion struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -1570,19 +1560,6 @@ type VPCSecurityGroupMembership struct {
 	Status *string `json:"status,omitempty"`
 
 	VPCSecurityGroupID *string `json:"vpcSecurityGroupID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type VPNDetails struct {
-	VPNGatewayIP *string `json:"vpnGatewayIP,omitempty"`
-
-	VPNID *string `json:"vpnID,omitempty"`
-
-	VPNName *string `json:"vpnName,omitempty"`
-
-	VPNState *string `json:"vpnState,omitempty"`
-
-	VPNTunnelOriginatorIP *string `json:"vpnTunnelOriginatorIP,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -372,6 +372,12 @@ spec:
                               type: string
                           type: object
                         type: array
+                      maintenanceOptions:
+                        description: The maintenance options of your instance.
+                        properties:
+                          autoRecovery:
+                            type: string
+                        type: object
                       metadataOptions:
                         description: The metadata options for the instance. For more
                           information, see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
@@ -1193,6 +1199,12 @@ spec:
                                   type: string
                               type: object
                             type: array
+                          maintenanceOptions:
+                            description: The maintenance options of your instance.
+                            properties:
+                              autoRecovery:
+                                type: string
+                            type: object
                           metadataOptions:
                             description: The metadata options for the instance. For
                               more information, see Instance Metadata and User Data

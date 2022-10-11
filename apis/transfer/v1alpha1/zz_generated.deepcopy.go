@@ -379,6 +379,16 @@ func (in *DescribedServer) DeepCopyInto(out *DescribedServer) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.PostAuthenticationLoginBanner != nil {
+		in, out := &in.PostAuthenticationLoginBanner, &out.PostAuthenticationLoginBanner
+		*out = new(string)
+		**out = **in
+	}
+	if in.PreAuthenticationLoginBanner != nil {
+		in, out := &in.PreAuthenticationLoginBanner, &out.PreAuthenticationLoginBanner
+		*out = new(string)
+		**out = **in
+	}
 	if in.ProtocolDetails != nil {
 		in, out := &in.ProtocolDetails, &out.ProtocolDetails
 		*out = new(ProtocolDetails)
@@ -1020,6 +1030,16 @@ func (in *ServerParameters) DeepCopyInto(out *ServerParameters) {
 	}
 	if in.IdentityProviderType != nil {
 		in, out := &in.IdentityProviderType, &out.IdentityProviderType
+		*out = new(string)
+		**out = **in
+	}
+	if in.PostAuthenticationLoginBanner != nil {
+		in, out := &in.PostAuthenticationLoginBanner, &out.PostAuthenticationLoginBanner
+		*out = new(string)
+		**out = **in
+	}
+	if in.PreAuthenticationLoginBanner != nil {
+		in, out := &in.PreAuthenticationLoginBanner, &out.PreAuthenticationLoginBanner
 		*out = new(string)
 		**out = **in
 	}

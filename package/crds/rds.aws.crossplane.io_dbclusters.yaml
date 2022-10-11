@@ -128,7 +128,8 @@ spec:
                   copyTagsToSnapshot:
                     description: "A value that indicates whether to copy all tags
                       from the DB cluster to snapshots of the DB cluster. The default
-                      is not to copy them. \n Valid for: Aurora DB clusters only"
+                      is not to copy them. \n Valid for: Aurora DB clusters and Multi-AZ
+                      DB clusters"
                     type: boolean
                   databaseName:
                     description: "The name for your database of up to 64 alphanumeric
@@ -415,12 +416,19 @@ spec:
                   enableCloudwatchLogsExports:
                     description: "The list of log types that need to be enabled for
                       exporting to CloudWatch Logs. The values in the list depend
-                      on the DB engine being used. For more information, see Publishing
+                      on the DB engine being used. \n RDS for MySQL \n Possible values
+                      are error, general, and slowquery. \n RDS for PostgreSQL \n
+                      Possible values are postgresql and upgrade. \n Aurora MySQL
+                      \n Possible values are audit, error, general, and slowquery.
+                      \n Aurora PostgreSQL \n Possible value is postgresql. \n For
+                      more information about exporting CloudWatch Logs for Amazon
+                      RDS, see Publishing Database Logs to Amazon CloudWatch Logs
+                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+                      in the Amazon RDS User Guide. \n For more information about
+                      exporting CloudWatch Logs for Amazon Aurora, see Publishing
                       Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-                      in the Amazon Aurora User Guide. \n Aurora MySQL \n Possible
-                      values are audit, error, general, and slowquery. \n Aurora PostgreSQL
-                      \n Possible value is postgresql. \n Valid for: Aurora DB clusters
-                      only"
+                      in the Amazon Aurora User Guide. \n Valid for: Aurora DB clusters
+                      and Multi-AZ DB clusters"
                     items:
                       type: string
                     type: array
@@ -441,13 +449,13 @@ spec:
                     type: boolean
                   enableHTTPEndpoint:
                     description: "A value that indicates whether to enable the HTTP
-                      endpoint for an Aurora Serverless DB cluster. By default, the
-                      HTTP endpoint is disabled. \n When enabled, the HTTP endpoint
+                      endpoint for an Aurora Serverless v1 DB cluster. By default,
+                      the HTTP endpoint is disabled. \n When enabled, the HTTP endpoint
                       provides a connectionless web service API for running SQL queries
-                      on the Aurora Serverless DB cluster. You can also query your
+                      on the Aurora Serverless v1 DB cluster. You can also query your
                       database from inside the RDS console with the query editor.
                       \n For more information, see Using the Data API for Aurora Serverless
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
                       in the Amazon Aurora User Guide. \n Valid for: Aurora DB clusters
                       only"
                     type: boolean
@@ -456,7 +464,7 @@ spec:
                       of Amazon Web Services Identity and Access Management (IAM)
                       accounts to database accounts. By default, mapping isn't enabled.
                       \n For more information, see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
-                      in the Amazon Aurora User Guide. \n Valid for: Aurora DB clusters
+                      in the Amazon Aurora User Guide.. \n Valid for: Aurora DB clusters
                       only"
                     type: boolean
                   enablePerformanceInsights:
@@ -488,7 +496,7 @@ spec:
                       currently aren't supported. \n Limitations and requirements
                       apply to some DB engine modes. For more information, see the
                       following sections in the Amazon Aurora User Guide: \n * Limitations
-                      of Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
+                      of Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
                       \n * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
                       \n * Limitations of Aurora Global Databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
                       \n * Limitations of Multi-Master Clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html#aurora-multi-master-limitations)
@@ -878,6 +886,13 @@ spec:
                       timeoutAction:
                         type: string
                     type: object
+                  serverlessV2ScalingConfiguration:
+                    properties:
+                      maxCapacity:
+                        type: number
+                      minCapacity:
+                        type: number
+                    type: object
                   skipFinalSnapshot:
                     description: "A value that indicates whether to skip the creation
                       of a final DB cluster snapshot before the DB cluster is deleted.
@@ -1227,10 +1242,10 @@ spec:
                     format: int64
                     type: integer
                   capacity:
-                    description: "The current capacity of an Aurora Serverless DB
-                      cluster. The capacity is 0 (zero) when the cluster is paused.
-                      \n For more information about Aurora Serverless, see Using Amazon
-                      Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
+                    description: "The current capacity of an Aurora Serverless v1
+                      DB cluster. The capacity is 0 (zero) when the cluster is paused.
+                      \n For more information about Aurora Serverless v1, see Using
+                      Amazon Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
                       in the Amazon Aurora User Guide."
                     format: int64
                     type: integer
@@ -1358,12 +1373,12 @@ spec:
                     type: string
                   httpEndpointEnabled:
                     description: "A value that indicates whether the HTTP endpoint
-                      for an Aurora Serverless DB cluster is enabled. \n When enabled,
+                      for an Aurora Serverless v1 DB cluster is enabled. \n When enabled,
                       the HTTP endpoint provides a connectionless web service API
-                      for running SQL queries on the Aurora Serverless DB cluster.
+                      for running SQL queries on the Aurora Serverless v1 DB cluster.
                       You can also query your database from inside the RDS console
                       with the query editor. \n For more information, see Using the
-                      Data API for Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
                       in the Amazon Aurora User Guide."
                     type: boolean
                   iamDatabaseAuthenticationEnabled:

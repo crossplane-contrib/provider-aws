@@ -52,6 +52,13 @@ const (
 	FunctionResponseType_ReportBatchItemFailures FunctionResponseType = "ReportBatchItemFailures"
 )
 
+type FunctionURLAuthType string
+
+const (
+	FunctionURLAuthType_NONE FunctionURLAuthType = "NONE"
+	FunctionURLAuthType_AWS_IAM FunctionURLAuthType = "AWS_IAM"
+)
+
 type FunctionVersion string
 
 const (
@@ -133,6 +140,7 @@ const (
 	Runtime_dotnetcore2_0 Runtime = "dotnetcore2.0"
 	Runtime_dotnetcore2_1 Runtime = "dotnetcore2.1"
 	Runtime_dotnetcore3_1 Runtime = "dotnetcore3.1"
+	Runtime_dotnet6 Runtime = "dotnet6"
 	Runtime_nodejs4_3_edge Runtime = "nodejs4.3-edge"
 	Runtime_go1_x Runtime = "go1.x"
 	Runtime_ruby2_5 Runtime = "ruby2.5"

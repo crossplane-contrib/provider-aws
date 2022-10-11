@@ -66,15 +66,22 @@ func GenerateWorkGroup(resp *svcsdk.GetWorkGroupOutput) *svcapitypes.WorkGroup {
 		}
 		if resp.WorkGroup.Configuration.ResultConfiguration != nil {
 			f0f5 := &svcapitypes.ResultConfiguration{}
+			if resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration != nil {
+				f0f5f0 := &svcapitypes.ACLConfiguration{}
+				if resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration.S3AclOption != nil {
+					f0f5f0.S3ACLOption = resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration.S3AclOption
+				}
+				f0f5.ACLConfiguration = f0f5f0
+			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration != nil {
-				f0f5f0 := &svcapitypes.EncryptionConfiguration{}
+				f0f5f1 := &svcapitypes.EncryptionConfiguration{}
 				if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption != nil {
-					f0f5f0.EncryptionOption = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption
+					f0f5f1.EncryptionOption = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption
 				}
 				if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey != nil {
-					f0f5f0.KMSKey = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey
+					f0f5f1.KMSKey = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey
 				}
-				f0f5.EncryptionConfiguration = f0f5f0
+				f0f5.EncryptionConfiguration = f0f5f1
 			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
 				f0f5.ExpectedBucketOwner = resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner
@@ -127,15 +134,22 @@ func GenerateCreateWorkGroupInput(cr *svcapitypes.WorkGroup) *svcsdk.CreateWorkG
 		}
 		if cr.Spec.ForProvider.Configuration.ResultConfiguration != nil {
 			f0f5 := &svcsdk.ResultConfiguration{}
+			if cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration != nil {
+				f0f5f0 := &svcsdk.AclConfiguration{}
+				if cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration.S3ACLOption != nil {
+					f0f5f0.SetS3AclOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration.S3ACLOption)
+				}
+				f0f5.SetAclConfiguration(f0f5f0)
+			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration != nil {
-				f0f5f0 := &svcsdk.EncryptionConfiguration{}
+				f0f5f1 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption != nil {
-					f0f5f0.SetEncryptionOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption)
+					f0f5f1.SetEncryptionOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption)
 				}
 				if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey != nil {
-					f0f5f0.SetKmsKey(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey)
+					f0f5f1.SetKmsKey(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey)
 				}
-				f0f5.SetEncryptionConfiguration(f0f5f0)
+				f0f5.SetEncryptionConfiguration(f0f5f1)
 			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
 				f0f5.SetExpectedBucketOwner(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner)

@@ -95,6 +95,8 @@ type KeyMetadata struct {
 
 	KeyUsage *string `json:"keyUsage,omitempty"`
 
+	MacAlgorithms []*string `json:"macAlgorithms,omitempty"`
+
 	MultiRegion *bool `json:"multiRegion,omitempty"`
 	// Describes the configuration of this multi-Region key. This field appears
 	// only when the KMS key is a primary or replica of a multi-Region key.

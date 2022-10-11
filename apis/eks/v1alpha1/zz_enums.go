@@ -164,6 +164,7 @@ const (
 	NodegroupIssueCode_AccessDenied                         NodegroupIssueCode = "AccessDenied"
 	NodegroupIssueCode_InternalFailure                      NodegroupIssueCode = "InternalFailure"
 	NodegroupIssueCode_ClusterUnreachable                   NodegroupIssueCode = "ClusterUnreachable"
+	NodegroupIssueCode_Ec2SubnetMissingIpv6Assignment       NodegroupIssueCode = "Ec2SubnetMissingIpv6Assignment"
 )
 
 type NodegroupStatus string

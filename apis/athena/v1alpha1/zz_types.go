@@ -28,6 +28,16 @@ var (
 )
 
 // +kubebuilder:skipversion
+type ACLConfiguration struct {
+	S3ACLOption *string `json:"s3ACLOption,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AthenaError struct {
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Column struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -114,8 +124,14 @@ type QueryExecutionStatus struct {
 
 // +kubebuilder:skipversion
 type ResultConfiguration struct {
+	// Indicates that an Amazon S3 canned ACL should be set to control ownership
+	// of stored query results. When Athena stores query results in Amazon S3, the
+	// canned ACL is set with the x-amz-acl request header. For more information
+	// about S3 Object Ownership, see Object Ownership settings (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html#object-ownership-overview)
+	// in the Amazon S3 User Guide.
+	ACLConfiguration *ACLConfiguration `json:"aclConfiguration,omitempty"`
 	// If query results are encrypted in Amazon S3, indicates the encryption option
-	// used (for example, SSE-KMS or CSE-KMS) and key information.
+	// used (for example, SSE_KMS or CSE_KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
@@ -125,13 +141,21 @@ type ResultConfiguration struct {
 
 // +kubebuilder:skipversion
 type ResultConfigurationUpdates struct {
+	// Indicates that an Amazon S3 canned ACL should be set to control ownership
+	// of stored query results. When Athena stores query results in Amazon S3, the
+	// canned ACL is set with the x-amz-acl request header. For more information
+	// about S3 Object Ownership, see Object Ownership settings (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html#object-ownership-overview)
+	// in the Amazon S3 User Guide.
+	ACLConfiguration *ACLConfiguration `json:"aclConfiguration,omitempty"`
 	// If query results are encrypted in Amazon S3, indicates the encryption option
-	// used (for example, SSE-KMS or CSE-KMS) and key information.
+	// used (for example, SSE_KMS or CSE_KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
 
 	OutputLocation *string `json:"outputLocation,omitempty"`
+
+	RemoveACLConfiguration *bool `json:"removeACLConfiguration,omitempty"`
 
 	RemoveEncryptionConfiguration *bool `json:"removeEncryptionConfiguration,omitempty"`
 

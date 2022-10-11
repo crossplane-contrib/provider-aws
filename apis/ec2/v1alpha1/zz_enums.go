@@ -1028,6 +1028,7 @@ const (
 	ImageAttributeName_blockDeviceMapping ImageAttributeName = "blockDeviceMapping"
 	ImageAttributeName_sriovNetSupport    ImageAttributeName = "sriovNetSupport"
 	ImageAttributeName_bootMode           ImageAttributeName = "bootMode"
+	ImageAttributeName_lastLaunchedTime   ImageAttributeName = "lastLaunchedTime"
 )
 
 type ImageState string
@@ -1068,6 +1069,13 @@ const (
 	InstanceAttributeName_sriovNetSupport                   InstanceAttributeName = "sriovNetSupport"
 	InstanceAttributeName_enaSupport                        InstanceAttributeName = "enaSupport"
 	InstanceAttributeName_enclaveOptions                    InstanceAttributeName = "enclaveOptions"
+)
+
+type InstanceAutoRecoveryState string
+
+const (
+	InstanceAutoRecoveryState_disabled InstanceAutoRecoveryState = "disabled"
+	InstanceAutoRecoveryState_default  InstanceAutoRecoveryState = "default"
 )
 
 type InstanceEventWindowState string
@@ -1656,6 +1664,28 @@ const (
 	InstanceType_z1d_6xlarge       InstanceType = "z1d.6xlarge"
 	InstanceType_z1d_12xlarge      InstanceType = "z1d.12xlarge"
 	InstanceType_z1d_metal         InstanceType = "z1d.metal"
+	InstanceType_x2idn_16xlarge    InstanceType = "x2idn.16xlarge"
+	InstanceType_x2idn_24xlarge    InstanceType = "x2idn.24xlarge"
+	InstanceType_x2idn_32xlarge    InstanceType = "x2idn.32xlarge"
+	InstanceType_x2iedn_xlarge     InstanceType = "x2iedn.xlarge"
+	InstanceType_x2iedn_2xlarge    InstanceType = "x2iedn.2xlarge"
+	InstanceType_x2iedn_4xlarge    InstanceType = "x2iedn.4xlarge"
+	InstanceType_x2iedn_8xlarge    InstanceType = "x2iedn.8xlarge"
+	InstanceType_x2iedn_16xlarge   InstanceType = "x2iedn.16xlarge"
+	InstanceType_x2iedn_24xlarge   InstanceType = "x2iedn.24xlarge"
+	InstanceType_x2iedn_32xlarge   InstanceType = "x2iedn.32xlarge"
+	InstanceType_c6a_large         InstanceType = "c6a.large"
+	InstanceType_c6a_xlarge        InstanceType = "c6a.xlarge"
+	InstanceType_c6a_2xlarge       InstanceType = "c6a.2xlarge"
+	InstanceType_c6a_4xlarge       InstanceType = "c6a.4xlarge"
+	InstanceType_c6a_8xlarge       InstanceType = "c6a.8xlarge"
+	InstanceType_c6a_12xlarge      InstanceType = "c6a.12xlarge"
+	InstanceType_c6a_16xlarge      InstanceType = "c6a.16xlarge"
+	InstanceType_c6a_24xlarge      InstanceType = "c6a.24xlarge"
+	InstanceType_c6a_32xlarge      InstanceType = "c6a.32xlarge"
+	InstanceType_c6a_48xlarge      InstanceType = "c6a.48xlarge"
+	InstanceType_c6a_metal         InstanceType = "c6a.metal"
+	InstanceType_m6a_metal         InstanceType = "m6a.metal"
 )
 
 type InstanceTypeHypervisor string
@@ -1684,6 +1714,13 @@ type KeyType string
 const (
 	KeyType_rsa     KeyType = "rsa"
 	KeyType_ed25519 KeyType = "ed25519"
+)
+
+type LaunchTemplateAutoRecoveryState string
+
+const (
+	LaunchTemplateAutoRecoveryState_default  LaunchTemplateAutoRecoveryState = "default"
+	LaunchTemplateAutoRecoveryState_disabled LaunchTemplateAutoRecoveryState = "disabled"
 )
 
 type LaunchTemplateErrorCode string
@@ -2188,6 +2225,7 @@ const (
 	ResourceType_spot_fleet_request                                            ResourceType = "spot-fleet-request"
 	ResourceType_spot_instances_request                                        ResourceType = "spot-instances-request"
 	ResourceType_subnet                                                        ResourceType = "subnet"
+	ResourceType_subnet_cidr_reservation                                       ResourceType = "subnet-cidr-reservation"
 	ResourceType_traffic_mirror_filter                                         ResourceType = "traffic-mirror-filter"
 	ResourceType_traffic_mirror_session                                        ResourceType = "traffic-mirror-session"
 	ResourceType_traffic_mirror_target                                         ResourceType = "traffic-mirror-target"
