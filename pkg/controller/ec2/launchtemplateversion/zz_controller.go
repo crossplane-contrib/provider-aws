@@ -497,6 +497,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				if resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.HttpTokens != nil {
 					f0f3f19.HTTPTokens = resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.HttpTokens
 				}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.InstanceMetadataTags != nil {
+					f0f3f19.InstanceMetadataTags = resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.InstanceMetadataTags
+				}
 				if resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.State != nil {
 					f0f3f19.State = resp.LaunchTemplateVersion.LaunchTemplateData.MetadataOptions.State
 				}
@@ -643,51 +646,64 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				}
 				f0f3.Placement = f0f3f22
 			}
+			if resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions != nil {
+				f0f3f23 := &svcapitypes.LaunchTemplatePrivateDNSNameOptions{}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsAAAARecord != nil {
+					f0f3f23.EnableResourceNameDNSAAAARecord = resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsAAAARecord
+				}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsARecord != nil {
+					f0f3f23.EnableResourceNameDNSARecord = resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsARecord
+				}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.HostnameType != nil {
+					f0f3f23.HostnameType = resp.LaunchTemplateVersion.LaunchTemplateData.PrivateDnsNameOptions.HostnameType
+				}
+				f0f3.PrivateDNSNameOptions = f0f3f23
+			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.RamDiskId != nil {
 				f0f3.RAMDiskID = resp.LaunchTemplateVersion.LaunchTemplateData.RamDiskId
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroupIds != nil {
-				f0f3f24 := []*string{}
-				for _, f0f3f24iter := range resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroupIds {
-					var f0f3f24elem string
-					f0f3f24elem = *f0f3f24iter
-					f0f3f24 = append(f0f3f24, &f0f3f24elem)
-				}
-				f0f3.SecurityGroupIDs = f0f3f24
-			}
-			if resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroups != nil {
 				f0f3f25 := []*string{}
-				for _, f0f3f25iter := range resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroups {
+				for _, f0f3f25iter := range resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroupIds {
 					var f0f3f25elem string
 					f0f3f25elem = *f0f3f25iter
 					f0f3f25 = append(f0f3f25, &f0f3f25elem)
 				}
-				f0f3.SecurityGroups = f0f3f25
+				f0f3.SecurityGroupIDs = f0f3f25
+			}
+			if resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroups != nil {
+				f0f3f26 := []*string{}
+				for _, f0f3f26iter := range resp.LaunchTemplateVersion.LaunchTemplateData.SecurityGroups {
+					var f0f3f26elem string
+					f0f3f26elem = *f0f3f26iter
+					f0f3f26 = append(f0f3f26, &f0f3f26elem)
+				}
+				f0f3.SecurityGroups = f0f3f26
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.TagSpecifications != nil {
-				f0f3f26 := []*svcapitypes.LaunchTemplateTagSpecification{}
-				for _, f0f3f26iter := range resp.LaunchTemplateVersion.LaunchTemplateData.TagSpecifications {
-					f0f3f26elem := &svcapitypes.LaunchTemplateTagSpecification{}
-					if f0f3f26iter.ResourceType != nil {
-						f0f3f26elem.ResourceType = f0f3f26iter.ResourceType
+				f0f3f27 := []*svcapitypes.LaunchTemplateTagSpecification{}
+				for _, f0f3f27iter := range resp.LaunchTemplateVersion.LaunchTemplateData.TagSpecifications {
+					f0f3f27elem := &svcapitypes.LaunchTemplateTagSpecification{}
+					if f0f3f27iter.ResourceType != nil {
+						f0f3f27elem.ResourceType = f0f3f27iter.ResourceType
 					}
-					if f0f3f26iter.Tags != nil {
-						f0f3f26elemf1 := []*svcapitypes.Tag{}
-						for _, f0f3f26elemf1iter := range f0f3f26iter.Tags {
-							f0f3f26elemf1elem := &svcapitypes.Tag{}
-							if f0f3f26elemf1iter.Key != nil {
-								f0f3f26elemf1elem.Key = f0f3f26elemf1iter.Key
+					if f0f3f27iter.Tags != nil {
+						f0f3f27elemf1 := []*svcapitypes.Tag{}
+						for _, f0f3f27elemf1iter := range f0f3f27iter.Tags {
+							f0f3f27elemf1elem := &svcapitypes.Tag{}
+							if f0f3f27elemf1iter.Key != nil {
+								f0f3f27elemf1elem.Key = f0f3f27elemf1iter.Key
 							}
-							if f0f3f26elemf1iter.Value != nil {
-								f0f3f26elemf1elem.Value = f0f3f26elemf1iter.Value
+							if f0f3f27elemf1iter.Value != nil {
+								f0f3f27elemf1elem.Value = f0f3f27elemf1iter.Value
 							}
-							f0f3f26elemf1 = append(f0f3f26elemf1, f0f3f26elemf1elem)
+							f0f3f27elemf1 = append(f0f3f27elemf1, f0f3f27elemf1elem)
 						}
-						f0f3f26elem.Tags = f0f3f26elemf1
+						f0f3f27elem.Tags = f0f3f27elemf1
 					}
-					f0f3f26 = append(f0f3f26, f0f3f26elem)
+					f0f3f27 = append(f0f3f27, f0f3f27elem)
 				}
-				f0f3.TagSpecifications = f0f3f26
+				f0f3.TagSpecifications = f0f3f27
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.UserData != nil {
 				f0f3.UserData = resp.LaunchTemplateVersion.LaunchTemplateData.UserData

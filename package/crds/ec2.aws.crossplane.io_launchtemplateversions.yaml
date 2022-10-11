@@ -386,6 +386,8 @@ spec:
                             type: integer
                           httpTokens:
                             type: string
+                          instanceMetadataTags:
+                            type: string
                         type: object
                       monitoring:
                         description: Describes the monitoring for the instance.
@@ -485,6 +487,16 @@ spec:
                           spreadDomain:
                             type: string
                           tenancy:
+                            type: string
+                        type: object
+                      privateDNSNameOptions:
+                        description: Describes the options for instance hostnames.
+                        properties:
+                          enableResourceNameDNSAAAARecord:
+                            type: boolean
+                          enableResourceNameDNSARecord:
+                            type: boolean
+                          hostnameType:
                             type: string
                         type: object
                       ramDiskID:
@@ -1196,6 +1208,8 @@ spec:
                                 type: integer
                               httpTokens:
                                 type: string
+                              instanceMetadataTags:
+                                type: string
                               state:
                                 type: string
                             type: object
@@ -1297,6 +1311,16 @@ spec:
                               spreadDomain:
                                 type: string
                               tenancy:
+                                type: string
+                            type: object
+                          privateDNSNameOptions:
+                            description: Describes the options for instance hostnames.
+                            properties:
+                              enableResourceNameDNSAAAARecord:
+                                type: boolean
+                              enableResourceNameDNSARecord:
+                                type: boolean
+                              hostnameType:
                                 type: string
                             type: object
                           ramDiskID:

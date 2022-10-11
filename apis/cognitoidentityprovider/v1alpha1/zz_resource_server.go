@@ -30,13 +30,13 @@ type ResourceServerParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// A unique resource server identifier for the resource server. This could be
-	// an HTTPS endpoint where the resource server is located. For example, https://my-weather-api.example.com.
+	// an HTTPS endpoint where the resource server is located, such as https://my-weather-api.example.com.
 	// +kubebuilder:validation:Required
 	Identifier *string `json:"identifier"`
 	// A friendly name for the resource server.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// A list of scopes. Each scope is map, where the keys are name and description.
+	// A list of scopes. Each scope is a key-value map with the keys name and description.
 	Scopes []*ResourceServerScopeType `json:"scopes,omitempty"`
 	// The user pool ID for the user pool.
 	// +kubebuilder:validation:Required

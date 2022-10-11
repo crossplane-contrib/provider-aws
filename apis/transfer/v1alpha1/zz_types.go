@@ -101,8 +101,6 @@ type DescribedServer struct {
 
 	LoggingRole *string `json:"loggingRole,omitempty"`
 	// The protocol settings that are configured for your server.
-	//
-	// This type is only valid in the UpdateServer API.
 	ProtocolDetails *ProtocolDetails `json:"protocolDetails,omitempty"`
 
 	Protocols []*string `json:"protocols,omitempty"`
@@ -190,6 +188,8 @@ type HomeDirectoryMapEntry struct {
 type IdentityProviderDetails struct {
 	DirectoryID *string `json:"directoryID,omitempty"`
 
+	Function *string `json:"function,omitempty"`
+
 	InvocationRole *string `json:"invocationRole,omitempty"`
 
 	URL *string `json:"url,omitempty"`
@@ -276,6 +276,8 @@ type PosixProfile struct {
 // +kubebuilder:skipversion
 type ProtocolDetails struct {
 	PassiveIP *string `json:"passiveIP,omitempty"`
+
+	TLSSessionResumptionMode *string `json:"tlsSessionResumptionMode,omitempty"`
 }
 
 // +kubebuilder:skipversion

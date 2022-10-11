@@ -29,40 +29,57 @@ type ResourceShareParameters struct {
 	// Region is which region the ResourceShare will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Indicates whether principals outside your organization in Organizations can
-	// be associated with a resource share.
+	// Specifies whether principals outside your organization in Organizations can
+	// be associated with a resource share. A value of true lets you share with
+	// individual Amazon Web Services accounts that are not in your organization.
+	// A value of false only has meaning if your account is a member of an Amazon
+	// Web Services Organization. The default value is true.
 	AllowExternalPrincipals *bool `json:"allowExternalPrincipals,omitempty"`
-	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
 	ClientToken *string `json:"clientToken,omitempty"`
-	// The name of the resource share.
+	// Specifies the name of the resource share.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// The Amazon Resource Names (ARNs) of the permissions to associate with the
-	// resource share. If you do not specify an ARN for the permission, RAM automatically
-	// attaches the default version of the permission for each resource type. Only
-	// one permission can be associated with each resource type in a resource share.
+	// Specifies the Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the RAM permission to associate with the resource share. If you do not
+	// specify an ARN for the permission, RAM automatically attaches the default
+	// version of the permission for each resource type. You can associate only
+	// one permission with each resource type included in the resource share.
 	PermissionARNs []*string `json:"permissionARNs,omitempty"`
-	// The principals to associate with the resource share. The possible values
-	// are:
+	// Specifies a list of one or more principals to associate with the resource
+	// share.
 	//
-	//    * An Amazon Web Services account ID
+	// You can include the following values:
 	//
-	//    * An Amazon Resource Name (ARN) of an organization in Organizations
+	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An ARN of an organizational unit (OU) in Organizations
+	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
-	//    * An ARN of an IAM role
+	//    * An ARN of an organizational unit (OU) in Organizations, for example:
+	//    organizations::123456789012:ou/o-exampleorgid/ou-examplerootid-exampleouid123
 	//
-	//    * An ARN of an IAM user
+	//    * An ARN of an IAM role, for example: iam::123456789012:role/rolename
 	//
-	// Not all resource types can be shared with IAM roles and IAM users. For more
-	// information, see Sharing with IAM roles and IAM users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)
+	//    * An ARN of an IAM user, for example: iam::123456789012user/username
+	//
+	// Not all resource types can be shared with IAM roles and users. For more information,
+	// see Sharing with IAM roles and users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)
 	// in the Resource Access Manager User Guide.
 	Principals []*string `json:"principals,omitempty"`
-	// The ARNs of the resources to associate with the resource share.
+	// Specifies a list of one or more ARNs of the resources to associate with the
+	// resource share.
 	ResourceARNs []*string `json:"resourceARNs,omitempty"`
-	// One or more tags.
+	// Specifies one or more tags to attach to the resource share itself. It doesn't
+	// attach the tags to the resources associated with the resource share.
 	Tags                          []*Tag `json:"tags,omitempty"`
 	CustomResourceShareParameters `json:",inline"`
 }
@@ -75,7 +92,7 @@ type ResourceShareSpec struct {
 
 // ResourceShareObservation defines the observed state of ResourceShare
 type ResourceShareObservation struct {
-	// Information about the resource share.
+	// An object with information about the new resource share.
 	ResourceShare *ResourceShare_SDK `json:"resourceShare,omitempty"`
 }
 

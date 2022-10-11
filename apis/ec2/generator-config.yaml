@@ -54,6 +54,11 @@ ignore:
     - VpnConnectionRoute
     - VpnConnection
     - VpnGateway
+    - Ipam
+    - IpamScope
+    - IpamPool
+    - NetworkInsightsAccessScope
+    - PublicIpv4Pool
   shape_names:
     - Instance
     - SecurityGroupRule

@@ -354,6 +354,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			if f12iter.ReplicaStatusPercentProgress != nil {
 				f12elem.ReplicaStatusPercentProgress = f12iter.ReplicaStatusPercentProgress
 			}
+			if f12iter.ReplicaTableClassSummary != nil {
+				f12elemf8 := &svcapitypes.TableClassSummary{}
+				if f12iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
+					f12elemf8.LastUpdateDateTime = &metav1.Time{*f12iter.ReplicaTableClassSummary.LastUpdateDateTime}
+				}
+				if f12iter.ReplicaTableClassSummary.TableClass != nil {
+					f12elemf8.TableClass = f12iter.ReplicaTableClassSummary.TableClass
+				}
+				f12elem.ReplicaTableClassSummary = f12elemf8
+			}
 			f12 = append(f12, f12elem)
 		}
 		cr.Status.AtProvider.Replicas = f12
@@ -412,6 +422,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.TableARN = resp.TableDescription.TableArn
 	} else {
 		cr.Status.AtProvider.TableARN = nil
+	}
+	if resp.TableDescription.TableClassSummary != nil {
+		f17 := &svcapitypes.TableClassSummary{}
+		if resp.TableDescription.TableClassSummary.LastUpdateDateTime != nil {
+			f17.LastUpdateDateTime = &metav1.Time{*resp.TableDescription.TableClassSummary.LastUpdateDateTime}
+		}
+		if resp.TableDescription.TableClassSummary.TableClass != nil {
+			f17.TableClass = resp.TableDescription.TableClassSummary.TableClass
+		}
+		cr.Status.AtProvider.TableClassSummary = f17
+	} else {
+		cr.Status.AtProvider.TableClassSummary = nil
 	}
 	if resp.TableDescription.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.TableDescription.TableId

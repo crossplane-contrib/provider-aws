@@ -34,7 +34,7 @@ type LoadBalancerParameters struct {
 	CustomerOwnedIPv4Pool *string `json:"customerOwnedIPv4Pool,omitempty"`
 	// The type of IP addresses used by the subnets for your load balancer. The
 	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
-	// IPv6 addresses). Internal load balancers must use ipv4.
+	// IPv6 addresses).
 	IPAddressType *string `json:"ipAddressType,omitempty"`
 	// The name of the load balancer.
 	//

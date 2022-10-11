@@ -64,9 +64,9 @@ spec:
                 properties:
                   accessTokenValidity:
                     description: The time limit, between 5 minutes and 1 day, after
-                      which the access token is no longer valid and cannot be used.
-                      This value will be overridden if you have entered a value in
-                      TokenValidityUnits.
+                      which the access token is no longer valid and can't be used.
+                      If you supply a TokenValidityUnits value, you will override
+                      the default time unit.
                     format: int64
                     type: integer
                   allowedOAuthFlows:
@@ -84,7 +84,7 @@ spec:
                     type: array
                   allowedOAuthFlowsUserPoolClient:
                     description: Set to true if the client is allowed to follow the
-                      OAuth protocol when interacting with Cognito user pools.
+                      OAuth protocol when interacting with Amazon Cognito user pools.
                     type: boolean
                   allowedOAuthScopes:
                     description: 'The allowed OAuth scopes. Possible values provided
@@ -96,11 +96,12 @@ spec:
                     type: array
                   analyticsConfiguration:
                     description: "The Amazon Pinpoint analytics configuration for
-                      collecting metrics for this user pool. \n In regions where Pinpoint
-                      is not available, Cognito User Pools only supports sending events
-                      to Amazon Pinpoint projects in us-east-1. In regions where Pinpoint
-                      is available, Cognito User Pools will support sending events
-                      to Amazon Pinpoint projects within that same region."
+                      collecting metrics for this user pool. \n In Amazon Web Services
+                      Regions where isn't available, User Pools only supports sending
+                      events to Amazon Pinpoint projects in Amazon Web Services Region
+                      us-east-1. In Regions where is available, User Pools will support
+                      sending events to Amazon Pinpoint projects within that same
+                      Region."
                     properties:
                       applicationARN:
                         type: string
@@ -140,28 +141,28 @@ spec:
                       are also supported."
                     type: string
                   enableTokenRevocation:
-                    description: "Enables or disables token revocation. For more information
-                      about revoking tokens, see RevokeToken (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RevokeToken.html).
+                    description: "Activates or deactivates token revocation. For more
+                      information about revoking tokens, see RevokeToken (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RevokeToken.html).
                       \n If you don't include this parameter, token revocation is
-                      automatically enabled for the new user pool client."
+                      automatically activated for the new user pool client."
                     type: boolean
                   explicitAuthFlows:
                     description: "The authentication flows that are supported by the
                       user pool clients. Flow names without the ALLOW_ prefix are
-                      deprecated in favor of new names with the ALLOW_ prefix. Note
-                      that values with ALLOW_ prefix cannot be used along with values
-                      without ALLOW_ prefix. \n Valid values include: \n * ALLOW_ADMIN_USER_PASSWORD_AUTH:
+                      no longer supported, in favor of new names with the ALLOW_ prefix.
+                      Note that values with ALLOW_ prefix must be used only along
+                      with the ALLOW_ prefix. \n Valid values include: \n * ALLOW_ADMIN_USER_PASSWORD_AUTH:
                       Enable admin based user password authentication flow ADMIN_USER_PASSWORD_AUTH.
                       This setting replaces the ADMIN_NO_SRP_AUTH setting. With this
-                      authentication flow, Cognito receives the password in the request
-                      instead of using the SRP (Secure Remote Password protocol) protocol
-                      to verify passwords. \n * ALLOW_CUSTOM_AUTH: Enable Lambda trigger
-                      based authentication. \n * ALLOW_USER_PASSWORD_AUTH: Enable
-                      user password-based authentication. In this flow, Cognito receives
-                      the password in the request instead of using the SRP protocol
-                      to verify passwords. \n * ALLOW_USER_SRP_AUTH: Enable SRP based
-                      authentication. \n * ALLOW_REFRESH_TOKEN_AUTH: Enable authflow
-                      to refresh tokens."
+                      authentication flow, Amazon Cognito receives the password in
+                      the request instead of using the Secure Remote Password (SRP)
+                      protocol to verify passwords. \n * ALLOW_CUSTOM_AUTH: Enable
+                      Lambda trigger based authentication. \n * ALLOW_USER_PASSWORD_AUTH:
+                      Enable user password-based authentication. In this flow, Amazon
+                      Cognito receives the password in the request instead of using
+                      the SRP protocol to verify passwords. \n * ALLOW_USER_SRP_AUTH:
+                      Enable SRP-based authentication. \n * ALLOW_REFRESH_TOKEN_AUTH:
+                      Enable authflow to refresh tokens."
                     items:
                       type: string
                     type: array
@@ -171,8 +172,9 @@ spec:
                     type: boolean
                   idTokenValidity:
                     description: The time limit, between 5 minutes and 1 day, after
-                      which the ID token is no longer valid and cannot be used. This
-                      value will be overridden if you have entered a value in TokenValidityUnits.
+                      which the access token is no longer valid and can't be used.
+                      If you supply a TokenValidityUnits value, you will override
+                      the default time unit.
                     format: int64
                     type: integer
                   logoutURLs:
@@ -181,21 +183,18 @@ spec:
                       type: string
                     type: array
                   preventUserExistenceErrors:
-                    description: "Use this setting to choose which errors and responses
-                      are returned by Cognito APIs during authentication, account
-                      confirmation, and password recovery when the user does not exist
-                      in the user pool. When set to ENABLED and the user does not
-                      exist, authentication returns an error indicating either the
-                      username or password was incorrect, and account confirmation
-                      and password recovery return a response indicating a code was
-                      sent to a simulated destination. When set to LEGACY, those APIs
-                      will return a UserNotFoundException exception if the user does
-                      not exist in the user pool. \n Valid values include: \n * ENABLED
-                      - This prevents user existence-related errors. \n * LEGACY -
-                      This represents the old behavior of Cognito where user existence
-                      related errors are not prevented. \n After February 15th 2020,
-                      the value of PreventUserExistenceErrors will default to ENABLED
-                      for newly created user pool clients if no value is provided."
+                    description: "Errors and responses that you want Amazon Cognito
+                      APIs to return during authentication, account confirmation,
+                      and password recovery when the user doesn't exist in the user
+                      pool. When set to ENABLED and the user doesn't exist, authentication
+                      returns an error indicating either the username or password
+                      was incorrect. Account confirmation and password recovery return
+                      a response indicating a code was sent to a simulated destination.
+                      When set to LEGACY, those APIs return a UserNotFoundException
+                      exception if the user doesn't exist in the user pool. \n Valid
+                      values include: \n * ENABLED - This prevents user existence-related
+                      errors. \n * LEGACY - This represents the early behavior of
+                      Amazon Cognito where user existence related errors aren't prevented."
                     type: string
                   readAttributes:
                     description: The read attributes.
@@ -204,7 +203,7 @@ spec:
                     type: array
                   refreshTokenValidity:
                     description: The time limit, in days, after which the refresh
-                      token is no longer valid and cannot be used.
+                      token is no longer valid and can't be used.
                     format: int64
                     type: integer
                   region:
@@ -219,9 +218,9 @@ spec:
                       type: string
                     type: array
                   tokenValidityUnits:
-                    description: The units in which the validity times are represented
-                      in. Default for RefreshToken is days, and default for ID and
-                      access tokens are hours.
+                    description: The units in which the validity times are represented.
+                      Default for RefreshToken is days, and default for ID and access
+                      tokens are hours.
                     properties:
                       accessToken:
                         type: string
@@ -315,7 +314,7 @@ spec:
                       updates mapped attributes when users sign in to your application
                       through an identity provider. If your app client lacks write
                       access to a mapped attribute, Amazon Cognito throws an error
-                      when it attempts to update the attribute. For more information,
+                      when it tries to update the attribute. For more information,
                       see Specifying Identity Provider Attribute Mappings for Your
                       User Pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-specifying-attribute-mapping.html)."
                     items:

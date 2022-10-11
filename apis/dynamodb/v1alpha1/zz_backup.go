@@ -63,7 +63,7 @@ type BackupObservation struct {
 	//    no additional cost). System backups allow you to restore the deleted table
 	//    to the state it was in just before the point of deletion.
 	//
-	//    * AWS_BACKUP - On-demand backup created by you from AWS Backup service.
+	//    * AWS_BACKUP - On-demand backup created by you from Backup service.
 	BackupType *string `json:"backupType,omitempty"`
 }
 

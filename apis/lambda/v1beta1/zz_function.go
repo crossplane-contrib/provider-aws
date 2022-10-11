@@ -30,7 +30,8 @@ type FunctionParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The instruction set architecture that the function supports. Enter a string
-// array with one of the valid values. The default value is x86_64.
+// array with one of the valid values (arm64 or x86_64). The default value is
+// x86_64.
 	 Architectures []*string `json:"architectures,omitempty"` 
 	// To enable code signing for this function, specify the ARN of a code-signing
 // configuration. A code-signing configuration includes a set of signing profiles,
@@ -47,9 +48,10 @@ type FunctionParameters struct {
 	// Connection settings for an Amazon EFS file system.
 	 FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"` 
 	// The name of the method within your code that Lambda calls to execute your
-// function. The format includes the file name. It can also include namespaces
-// and other qualifiers, depending on the runtime. For more information, see
-// Programming Model (https://docs.aws.amazon.com/lambda/latest/dg/programming-model-v2.html).
+// function. Handler is required if the deployment package is a .zip file archive.
+// The format includes the file name. It can also include namespaces and other
+// qualifiers, depending on the runtime. For more information, see Programming
+// Model (https://docs.aws.amazon.com/lambda/latest/dg/programming-model-v2.html).
 	 Handler *string `json:"handler,omitempty"` 
 	// Container image configuration values (https://docs.aws.amazon.com/lambda/latest/dg/configuration-images.html#configuration-images-settings)
 // that override the values in the container image Dockerfile.
@@ -72,13 +74,14 @@ type FunctionParameters struct {
 	// Set to true to publish the first version of the function during creation.
 	 Publish *bool `json:"publish,omitempty"` 
 	// The identifier of the function's runtime (https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+// Runtime is required if the deployment package is a .zip file archive.
 	 Runtime *string `json:"runtime,omitempty"` 
 	// A list of tags (https://docs.aws.amazon.com/lambda/latest/dg/tagging.html)
 // to apply to the function.
 	 Tags map[string]*string `json:"tags,omitempty"` 
-	// The amount of time that Lambda allows a function to run before stopping it.
-// The default is 3 seconds. The maximum allowed value is 900 seconds. For additional
-// information, see Lambda execution environment (https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html).
+	// The amount of time (in seconds) that Lambda allows a function to run before
+// stopping it. The default is 3 seconds. The maximum allowed value is 900 seconds.
+// For additional information, see Lambda execution environment (https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html).
 	 Timeout *int64 `json:"timeout,omitempty"` 
 	// Set Mode to Active to sample and trace a subset of incoming requests with
 // X-Ray (https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html).
@@ -114,7 +117,7 @@ type FunctionObservation struct {
 	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
 	// The reason code for the last update that was performed on the function.
 	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
-	// For Lambda@Edge functions, the ARN of the master function.
+	// For Lambda@Edge functions, the ARN of the main function.
 	MasterARN *string `json:"masterARN,omitempty"`
 	// The latest updated revision of the function or alias.
 	RevisionID *string `json:"revisionID,omitempty"`

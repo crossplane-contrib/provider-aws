@@ -537,6 +537,11 @@ func (in *LastUpdate) DeepCopyInto(out *LastUpdate) {
 		*out = new(UpdateError)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Source != nil {
+		in, out := &in.Source, &out.Source
+		*out = new(string)
+		**out = **in
+	}
 	if in.Status != nil {
 		in, out := &in.Status, &out.Status
 		*out = new(string)

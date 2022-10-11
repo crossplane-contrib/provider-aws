@@ -329,6 +329,11 @@ func (in *ResultConfiguration) DeepCopyInto(out *ResultConfiguration) {
 		*out = new(EncryptionConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ExpectedBucketOwner != nil {
+		in, out := &in.ExpectedBucketOwner, &out.ExpectedBucketOwner
+		*out = new(string)
+		**out = **in
+	}
 	if in.OutputLocation != nil {
 		in, out := &in.OutputLocation, &out.OutputLocation
 		*out = new(string)
@@ -354,6 +359,11 @@ func (in *ResultConfigurationUpdates) DeepCopyInto(out *ResultConfigurationUpdat
 		*out = new(EncryptionConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ExpectedBucketOwner != nil {
+		in, out := &in.ExpectedBucketOwner, &out.ExpectedBucketOwner
+		*out = new(string)
+		**out = **in
+	}
 	if in.OutputLocation != nil {
 		in, out := &in.OutputLocation, &out.OutputLocation
 		*out = new(string)
@@ -361,6 +371,11 @@ func (in *ResultConfigurationUpdates) DeepCopyInto(out *ResultConfigurationUpdat
 	}
 	if in.RemoveEncryptionConfiguration != nil {
 		in, out := &in.RemoveEncryptionConfiguration, &out.RemoveEncryptionConfiguration
+		*out = new(bool)
+		**out = **in
+	}
+	if in.RemoveExpectedBucketOwner != nil {
+		in, out := &in.RemoveExpectedBucketOwner, &out.RemoveExpectedBucketOwner
 		*out = new(bool)
 		**out = **in
 	}

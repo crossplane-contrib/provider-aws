@@ -33,8 +33,10 @@ type EnvironmentParameters struct {
 	// you want to attach to your environment. To learn more, see Apache Airflow
 	// configuration options (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-env-variables.html).
 	AirflowConfigurationOptions map[string]*string `json:"airflowConfigurationOptions,omitempty"`
-	// The Apache Airflow version for your environment. For example, v1.10.12. If
-	// no value is specified, defaults to the latest version. Valid values: v1.10.12.
+	// The Apache Airflow version for your environment. If no value is specified,
+	// defaults to the latest version. Valid values: 1.10.12, 2.0.2. To learn more,
+	// see Apache Airflow versions on Amazon Managed Workflows for Apache Airflow
+	// (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 	AirflowVersion *string `json:"airflowVersion,omitempty"`
 	// The relative path to the DAGs folder on your Amazon S3 bucket. For example,
 	// dags. To learn more, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
@@ -43,8 +45,7 @@ type EnvironmentParameters struct {
 	// The environment class type. Valid values: mw1.small, mw1.medium, mw1.large.
 	// To learn more, see Amazon MWAA environment class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
-	// Defines the Apache Airflow logs to send to CloudWatch Logs: DagProcessingLogs,
-	// SchedulerLogs, TaskLogs, WebserverLogs, WorkerLogs.
+	// Defines the Apache Airflow logs to send to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfigurationInput `json:"loggingConfiguration,omitempty"`
 	// The maximum number of workers that you want to run in your environment. MWAA
 	// scales the number of Apache Airflow workers up to the number you specify
@@ -75,20 +76,24 @@ type EnvironmentParameters struct {
 	// For example, requirements.txt. If specified, then a file version is required.
 	// To learn more, see Installing Python dependencies (https://docs.aws.amazon.com/mwaa/latest/userguide/working-dags-dependencies.html).
 	RequirementsS3Path *string `json:"requirementsS3Path,omitempty"`
-	// The number of Apache Airflow schedulers to run in your environment.
+	// The number of Apache Airflow schedulers to run in your environment. Valid
+	// values:
+	//
+	//    * v2.0.2 - Accepts between 2 to 5. Defaults to 2.
+	//
+	//    * v1.10.12 - Accepts 1.
 	Schedulers *int64 `json:"schedulers,omitempty"`
 	// The key-value tag pairs you want to associate to your environment. For example,
-	// "Environment": "Staging". To learn more, see Tagging AWS resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
+	// "Environment": "Staging". To learn more, see Tagging Amazon Web Services
+	// resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `json:"tags,omitempty"`
 	// The Apache Airflow Web server access mode. To learn more, see Apache Airflow
 	// access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
-	// The day and time of the week to start weekly maintenance updates of your
-	// environment in the following format: DAY:HH:MM. For example: TUE:03:30. You
-	// can specify a start time in 30 minute increments only. Supported input includes
-	// the following:
-	//
-	//    * MON|TUE|WED|THU|FRI|SAT|SUN:([01]\\d|2[0-3]):(00|30)
+	// The day and time of the week in Coordinated Universal Time (UTC) 24-hour
+	// standard time to start weekly maintenance updates of your environment in
+	// the following format: DAY:HH:MM. For example: TUE:03:30. You can specify
+	// a start time in 30 minute increments only.
 	WeeklyMaintenanceWindowStart *string `json:"weeklyMaintenanceWindowStart,omitempty"`
 	CustomEnvironmentParameters  `json:",inline"`
 }
@@ -103,7 +108,7 @@ type EnvironmentSpec struct {
 type EnvironmentObservation struct {
 	// The Amazon Resource Name (ARN) returned in the response for the environment.
 	ARN *string `json:"arn,omitempty"`
-
+	// The status of the last update on the environment.
 	LastUpdate *LastUpdate `json:"lastUpdate,omitempty"`
 	// The status of the Amazon MWAA environment. Valid values:
 	//

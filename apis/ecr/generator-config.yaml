@@ -16,6 +16,7 @@ ignore:
   resource_names:
     - Repository
     - RepositoryPolicy
+    - PullThroughCacheRule
   shape_names:
     - Image
     - ImageDetail

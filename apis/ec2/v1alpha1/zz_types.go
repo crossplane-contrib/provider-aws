@@ -56,6 +56,11 @@ type AcceleratorTotalMemoryMiBRequest struct {
 }
 
 // +kubebuilder:skipversion
+type AccessScopeAnalysisFinding struct {
+	FindingID *string `json:"findingID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AccountAttribute struct {
 	AttributeName *string `json:"attributeName,omitempty"`
 }
@@ -72,6 +77,11 @@ type ActiveInstance struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 
 	SpotInstanceRequestID *string `json:"spotInstanceRequestID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AddIPamOperatingRegion struct {
+	RegionName *string `json:"regionName,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -145,6 +155,8 @@ type AnalysisComponent struct {
 	ARN *string `json:"arn,omitempty"`
 
 	ID *string `json:"id,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -532,6 +544,20 @@ type ClientData struct {
 }
 
 // +kubebuilder:skipversion
+type ClientLoginBannerOptions struct {
+	BannerText *string `json:"bannerText,omitempty"`
+
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ClientLoginBannerResponseOptions struct {
+	BannerText *string `json:"bannerText,omitempty"`
+
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ClientVPNAuthorizationRuleStatus struct {
 	Message *string `json:"message,omitempty"`
 }
@@ -589,6 +615,8 @@ type ClientVPNEndpoint struct {
 	SelfServicePortalURL *string `json:"selfServicePortalURL,omitempty"`
 
 	ServerCertificateARN *string `json:"serverCertificateARN,omitempty"`
+
+	SessionTimeoutHours *int64 `json:"sessionTimeoutHours,omitempty"`
 
 	SplitTunnel *bool `json:"splitTunnel,omitempty"`
 
@@ -804,6 +832,19 @@ type DeregisterInstanceTagAttributeRequest struct {
 }
 
 // +kubebuilder:skipversion
+type DescribeFastLaunchImagesSuccessItem struct {
+	ImageID *string `json:"imageID,omitempty"`
+
+	MaxParallelLaunches *int64 `json:"maxParallelLaunches,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	StateTransitionReason *string `json:"stateTransitionReason,omitempty"`
+
+	StateTransitionTime *metav1.Time `json:"stateTransitionTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DescribeFastSnapshotRestoreSuccessItem struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
@@ -985,8 +1026,6 @@ type ElasticGPUAssociation struct {
 	ElasticGPUAssociationState *string `json:"elasticGPUAssociationState,omitempty"`
 
 	ElasticGPUAssociationTime *string `json:"elasticGPUAssociationTime,omitempty"`
-
-	ElasticGPUID *string `json:"elasticGPUID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1204,6 +1243,34 @@ type FPGAImageState struct {
 // +kubebuilder:skipversion
 type FailedQueuedPurchaseDeletion struct {
 	ReservedInstancesID *string `json:"reservedInstancesID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FastLaunchLaunchTemplateSpecificationRequest struct {
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
+	Version *string `json:"version,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FastLaunchLaunchTemplateSpecificationResponse struct {
+	LaunchTemplateID *string `json:"launchTemplateID,omitempty"`
+
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
+
+	Version *string `json:"version,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FastLaunchSnapshotConfigurationRequest struct {
+	TargetResourceCount *int64 `json:"targetResourceCount,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FastLaunchSnapshotConfigurationResponse struct {
+	TargetResourceCount *int64 `json:"targetResourceCount,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1459,8 +1526,6 @@ type HostOffering struct {
 
 	InstanceFamily *string `json:"instanceFamily,omitempty"`
 
-	OfferingID *string `json:"offeringID,omitempty"`
-
 	UpfrontPrice *string `json:"upfrontPrice,omitempty"`
 }
 
@@ -1485,13 +1550,9 @@ type HostReservation struct {
 
 	End *metav1.Time `json:"end,omitempty"`
 
-	HostReservationID *string `json:"hostReservationID,omitempty"`
-
 	HourlyPrice *string `json:"hourlyPrice,omitempty"`
 
 	InstanceFamily *string `json:"instanceFamily,omitempty"`
-
-	OfferingID *string `json:"offeringID,omitempty"`
 
 	Start *metav1.Time `json:"start,omitempty"`
 
@@ -1563,6 +1624,131 @@ type IPRange struct {
 	CIDRIP *string `json:"cidrIP,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPam struct {
+	Description *string `json:"description,omitempty"`
+
+	IPamRegion *string `json:"ipamRegion,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	ScopeCount *int64 `json:"scopeCount,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamAddressHistoryRecord struct {
+	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceName *string `json:"resourceName,omitempty"`
+
+	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceRegion *string `json:"resourceRegion,omitempty"`
+
+	SampledEndTime *metav1.Time `json:"sampledEndTime,omitempty"`
+
+	SampledStartTime *metav1.Time `json:"sampledStartTime,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamCIDRAuthorizationContext struct {
+	Message *string `json:"message,omitempty"`
+
+	Signature *string `json:"signature,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamOperatingRegion struct {
+	RegionName *string `json:"regionName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamPool struct {
+	AutoImport *bool `json:"autoImport,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	IPamRegion *string `json:"ipamRegion,omitempty"`
+
+	Locale *string `json:"locale,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PoolDepth *int64 `json:"poolDepth,omitempty"`
+
+	PubliclyAdvertisable *bool `json:"publiclyAdvertisable,omitempty"`
+
+	StateMessage *string `json:"stateMessage,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamPoolAllocation struct {
+	CIDR *string `json:"cidr,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceOwner *string `json:"resourceOwner,omitempty"`
+
+	ResourceRegion *string `json:"resourceRegion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamPoolCIDR struct {
+	CIDR *string `json:"cidr,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamPoolCIDRFailureReason struct {
+	Message *string `json:"message,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamResourceCIDR struct {
+	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceName *string `json:"resourceName,omitempty"`
+
+	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceRegion *string `json:"resourceRegion,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamResourceTag struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPamScope struct {
+	Description *string `json:"description,omitempty"`
+
+	IPamRegion *string `json:"ipamRegion,omitempty"`
+
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PoolCount *int64 `json:"poolCount,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1671,6 +1857,19 @@ type ImageDiskContainer struct {
 	SnapshotID *string `json:"snapshotID,omitempty"`
 
 	URL *string `json:"url,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ImageRecycleBinInfo struct {
+	Description *string `json:"description,omitempty"`
+
+	ImageID *string `json:"imageID,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	RecycleBinEnterTime *metav1.Time `json:"recycleBinEnterTime,omitempty"`
+
+	RecycleBinExitTime *metav1.Time `json:"recycleBinExitTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2392,6 +2591,8 @@ type LaunchTemplateInstanceMetadataOptions struct {
 
 	HTTPTokens *string `json:"httpTokens,omitempty"`
 
+	InstanceMetadataTags *string `json:"instanceMetadataTags,omitempty"`
+
 	State *string `json:"state,omitempty"`
 }
 
@@ -2404,6 +2605,8 @@ type LaunchTemplateInstanceMetadataOptionsRequest struct {
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
 
 	HTTPTokens *string `json:"httpTokens,omitempty"`
+
+	InstanceMetadataTags *string `json:"instanceMetadataTags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2565,6 +2768,24 @@ type LaunchTemplatePlacementRequest struct {
 	SpreadDomain *string `json:"spreadDomain,omitempty"`
 
 	Tenancy *string `json:"tenancy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplatePrivateDNSNameOptions struct {
+	EnableResourceNameDNSAAAARecord *bool `json:"enableResourceNameDNSAAAARecord,omitempty"`
+
+	EnableResourceNameDNSARecord *bool `json:"enableResourceNameDNSARecord,omitempty"`
+
+	HostnameType *string `json:"hostnameType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplatePrivateDNSNameOptionsRequest struct {
+	EnableResourceNameDNSAAAARecord *bool `json:"enableResourceNameDNSAAAARecord,omitempty"`
+
+	EnableResourceNameDNSARecord *bool `json:"enableResourceNameDNSARecord,omitempty"`
+
+	HostnameType *string `json:"hostnameType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2938,6 +3159,30 @@ type NetworkACLEntry struct {
 }
 
 // +kubebuilder:skipversion
+type NetworkInsightsAccessScope struct {
+	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	UpdatedDate *metav1.Time `json:"updatedDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NetworkInsightsAccessScopeAnalysis struct {
+	AnalyzedEniCount *int64 `json:"analyzedEniCount,omitempty"`
+
+	EndDate *metav1.Time `json:"endDate,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
+	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	WarningMessage *string `json:"warningMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type NetworkInsightsAnalysis struct {
 	NetworkPathFound *bool `json:"networkPathFound,omitempty"`
 
@@ -2946,6 +3191,8 @@ type NetworkInsightsAnalysis struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+
+	WarningMessage *string `json:"warningMessage,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2968,6 +3215,10 @@ type NetworkInterface struct {
 	DenyAllIgwTraffic *bool `json:"denyAllIgwTraffic,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+
+	IPv6Address *string `json:"ipv6Address,omitempty"`
+
+	IPv6Native *bool `json:"ipv6Native,omitempty"`
 
 	MacAddress *string `json:"macAddress,omitempty"`
 
@@ -3107,6 +3358,36 @@ type OnDemandOptionsRequest struct {
 }
 
 // +kubebuilder:skipversion
+type PacketHeaderStatement struct {
+	DestinationAddresses []*string `json:"destinationAddresses,omitempty"`
+
+	DestinationPorts []*string `json:"destinationPorts,omitempty"`
+
+	DestinationPrefixLists []*string `json:"destinationPrefixLists,omitempty"`
+
+	SourceAddresses []*string `json:"sourceAddresses,omitempty"`
+
+	SourcePorts []*string `json:"sourcePorts,omitempty"`
+
+	SourcePrefixLists []*string `json:"sourcePrefixLists,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PacketHeaderStatementRequest struct {
+	DestinationAddresses []*string `json:"destinationAddresses,omitempty"`
+
+	DestinationPorts []*string `json:"destinationPorts,omitempty"`
+
+	DestinationPrefixLists []*string `json:"destinationPrefixLists,omitempty"`
+
+	SourceAddresses []*string `json:"sourceAddresses,omitempty"`
+
+	SourcePorts []*string `json:"sourcePorts,omitempty"`
+
+	SourcePrefixLists []*string `json:"sourcePrefixLists,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type PathComponent struct {
 	SequenceNumber *int64 `json:"sequenceNumber,omitempty"`
 }
@@ -3237,6 +3518,8 @@ type Placement struct {
 
 // +kubebuilder:skipversion
 type PlacementGroup struct {
+	GroupARN *string `json:"groupARN,omitempty"`
+
 	GroupID *string `json:"groupID,omitempty"`
 
 	GroupName *string `json:"groupName,omitempty"`
@@ -3338,6 +3621,33 @@ type PrivateDNSNameConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type PrivateDNSNameOptionsOnLaunch struct {
+	EnableResourceNameDNSAAAARecord *bool `json:"enableResourceNameDNSAAAARecord,omitempty"`
+
+	EnableResourceNameDNSARecord *bool `json:"enableResourceNameDNSARecord,omitempty"`
+
+	HostnameType *string `json:"hostnameType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSNameOptionsRequest struct {
+	EnableResourceNameDNSAAAARecord *bool `json:"enableResourceNameDNSAAAARecord,omitempty"`
+
+	EnableResourceNameDNSARecord *bool `json:"enableResourceNameDNSARecord,omitempty"`
+
+	HostnameType *string `json:"hostnameType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PrivateDNSNameOptionsResponse struct {
+	EnableResourceNameDNSAAAARecord *bool `json:"enableResourceNameDNSAAAARecord,omitempty"`
+
+	EnableResourceNameDNSARecord *bool `json:"enableResourceNameDNSARecord,omitempty"`
+
+	HostnameType *string `json:"hostnameType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type PrivateIPAddressSpecification struct {
 	Primary *bool `json:"primary,omitempty"`
 
@@ -3406,8 +3716,6 @@ type PublicIPv4PoolRange struct {
 type Purchase struct {
 	Duration *int64 `json:"duration,omitempty"`
 
-	HostReservationID *string `json:"hostReservationID,omitempty"`
-
 	HourlyPrice *string `json:"hourlyPrice,omitempty"`
 
 	InstanceFamily *string `json:"instanceFamily,omitempty"`
@@ -3455,6 +3763,11 @@ type RegisterInstanceTagAttributeRequest struct {
 }
 
 // +kubebuilder:skipversion
+type RemoveIPamOperatingRegion struct {
+	RegionName *string `json:"regionName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type RemovePrefixListEntry struct {
 	CIDR *string `json:"cidr,omitempty"`
 }
@@ -3468,6 +3781,13 @@ type ReplaceRootVolumeTask struct {
 	StartTime *string `json:"startTime,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RequestIPamResourceTag struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3542,6 +3862,8 @@ type RequestLaunchTemplateData struct {
 	NetworkInterfaces []*LaunchTemplateInstanceNetworkInterfaceSpecificationRequest `json:"networkInterfaces,omitempty"`
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacementRequest `json:"placement,omitempty"`
+	// Describes the options for instance hostnames.
+	PrivateDNSNameOptions *LaunchTemplatePrivateDNSNameOptionsRequest `json:"privateDNSNameOptions,omitempty"`
 
 	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
@@ -3697,6 +4019,20 @@ type ReservedInstancesOffering struct {
 }
 
 // +kubebuilder:skipversion
+type ResourceStatement struct {
+	ResourceTypes []*string `json:"resourceTypes,omitempty"`
+
+	Resources []*string `json:"resources,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ResourceStatementRequest struct {
+	ResourceTypes []*string `json:"resourceTypes,omitempty"`
+
+	Resources []*string `json:"resources,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ResponseError struct {
 	Message *string `json:"message,omitempty"`
 }
@@ -3764,6 +4100,8 @@ type ResponseLaunchTemplateData struct {
 	NetworkInterfaces []*LaunchTemplateInstanceNetworkInterfaceSpecification `json:"networkInterfaces,omitempty"`
 	// Describes the placement of an instance.
 	Placement *LaunchTemplatePlacement `json:"placement,omitempty"`
+	// Describes the options for instance hostnames.
+	PrivateDNSNameOptions *LaunchTemplatePrivateDNSNameOptions `json:"privateDNSNameOptions,omitempty"`
 
 	RAMDiskID *string `json:"ramDiskID,omitempty"`
 
@@ -3808,6 +4146,8 @@ type RouteTableAssociationState struct {
 // +kubebuilder:skipversion
 type Route_SDK struct {
 	CarrierGatewayID *string `json:"carrierGatewayID,omitempty"`
+
+	CoreNetworkARN *string `json:"coreNetworkARN,omitempty"`
 
 	DestinationCIDRBlock *string `json:"destinationCIDRBlock,omitempty"`
 
@@ -4098,6 +4438,8 @@ type ServiceConfiguration struct {
 
 	NetworkLoadBalancerARNs []*string `json:"networkLoadBalancerARNs,omitempty"`
 
+	PayerResponsibility *string `json:"payerResponsibility,omitempty"`
+
 	PrivateDNSName *string `json:"privateDNSName,omitempty"`
 	// Information about the private DNS name for the service endpoint. For more
 	// information about these parameters, see VPC Endpoint Service Private DNS
@@ -4127,6 +4469,8 @@ type ServiceDetail struct {
 	ManagesVPCEndpoints *bool `json:"managesVPCEndpoints,omitempty"`
 
 	Owner *string `json:"owner,omitempty"`
+
+	PayerResponsibility *string `json:"payerResponsibility,omitempty"`
 
 	PrivateDNSName *string `json:"privateDNSName,omitempty"`
 
@@ -4216,6 +4560,19 @@ type SnapshotInfo struct {
 }
 
 // +kubebuilder:skipversion
+type SnapshotRecycleBinInfo struct {
+	Description *string `json:"description,omitempty"`
+
+	RecycleBinEnterTime *metav1.Time `json:"recycleBinEnterTime,omitempty"`
+
+	RecycleBinExitTime *metav1.Time `json:"recycleBinExitTime,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	VolumeID *string `json:"volumeID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SnapshotTaskDetail struct {
 	Description *string `json:"description,omitempty"`
 
@@ -4236,6 +4593,27 @@ type SnapshotTaskDetail struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 
 	URL *string `json:"url,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnapshotTierStatus struct {
+	ArchivalCompleteTime *metav1.Time `json:"archivalCompleteTime,omitempty"`
+
+	LastTieringOperationStatusDetail *string `json:"lastTieringOperationStatusDetail,omitempty"`
+
+	LastTieringProgress *int64 `json:"lastTieringProgress,omitempty"`
+
+	LastTieringStartTime *metav1.Time `json:"lastTieringStartTime,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	RestoreExpiryTime *metav1.Time `json:"restoreExpiryTime,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	VolumeID *string `json:"volumeID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -4526,6 +4904,12 @@ type Subnet struct {
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
 	DefaultForAZ *bool `json:"defaultForAZ,omitempty"`
+
+	EnableDNS64 *bool `json:"enableDNS64,omitempty"`
+
+	EnableLniAtDeviceIndex *int64 `json:"enableLniAtDeviceIndex,omitempty"`
+
+	IPv6Native *bool `json:"ipv6Native,omitempty"`
 
 	MapCustomerOwnedIPOnLaunch *bool `json:"mapCustomerOwnedIPOnLaunch,omitempty"`
 

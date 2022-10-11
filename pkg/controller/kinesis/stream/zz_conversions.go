@@ -123,6 +123,15 @@ func GenerateStream(resp *svcsdk.DescribeStreamOutput) *svcapitypes.Stream {
 	} else {
 		cr.Status.AtProvider.StreamARN = nil
 	}
+	if resp.StreamDescription.StreamModeDetails != nil {
+		f8 := &svcapitypes.StreamModeDetails{}
+		if resp.StreamDescription.StreamModeDetails.StreamMode != nil {
+			f8.StreamMode = resp.StreamDescription.StreamModeDetails.StreamMode
+		}
+		cr.Spec.ForProvider.StreamModeDetails = f8
+	} else {
+		cr.Spec.ForProvider.StreamModeDetails = nil
+	}
 	if resp.StreamDescription.StreamStatus != nil {
 		cr.Status.AtProvider.StreamStatus = resp.StreamDescription.StreamStatus
 	} else {
@@ -138,6 +147,13 @@ func GenerateCreateStreamInput(cr *svcapitypes.Stream) *svcsdk.CreateStreamInput
 
 	if cr.Spec.ForProvider.ShardCount != nil {
 		res.SetShardCount(*cr.Spec.ForProvider.ShardCount)
+	}
+	if cr.Spec.ForProvider.StreamModeDetails != nil {
+		f1 := &svcsdk.StreamModeDetails{}
+		if cr.Spec.ForProvider.StreamModeDetails.StreamMode != nil {
+			f1.SetStreamMode(*cr.Spec.ForProvider.StreamModeDetails.StreamMode)
+		}
+		res.SetStreamModeDetails(f1)
 	}
 
 	return res

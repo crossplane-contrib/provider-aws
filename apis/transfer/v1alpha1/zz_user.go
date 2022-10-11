@@ -95,6 +95,9 @@ type UserParameters struct {
 	PosixProfile *PosixProfile `json:"posixProfile,omitempty"`
 	// The public portion of the Secure Shell (SSH) key used to authenticate the
 	// user to the server.
+	//
+	// Currently, Transfer Family does not accept elliptical curve keys (keys beginning
+	// with ecdsa).
 	SshPublicKeyBody *string `json:"sshPublicKeyBody,omitempty"`
 	// Key-value pairs that can be used to group and search for users. Tags are
 	// metadata attached to users for any purpose.

@@ -105,6 +105,8 @@ spec:
                               kmsKey:
                                 type: string
                             type: object
+                          expectedBucketOwner:
+                            type: string
                           outputLocation:
                             type: string
                         type: object

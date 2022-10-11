@@ -76,6 +76,9 @@ func GenerateWorkGroup(resp *svcsdk.GetWorkGroupOutput) *svcapitypes.WorkGroup {
 				}
 				f0f5.EncryptionConfiguration = f0f5f0
 			}
+			if resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
+				f0f5.ExpectedBucketOwner = resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner
+			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.OutputLocation != nil {
 				f0f5.OutputLocation = resp.WorkGroup.Configuration.ResultConfiguration.OutputLocation
 			}
@@ -133,6 +136,9 @@ func GenerateCreateWorkGroupInput(cr *svcapitypes.WorkGroup) *svcsdk.CreateWorkG
 					f0f5f0.SetKmsKey(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey)
 				}
 				f0f5.SetEncryptionConfiguration(f0f5f0)
+			}
+			if cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
+				f0f5.SetExpectedBucketOwner(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner)
 			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.OutputLocation != nil {
 				f0f5.SetOutputLocation(*cr.Spec.ForProvider.Configuration.ResultConfiguration.OutputLocation)

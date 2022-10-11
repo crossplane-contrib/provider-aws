@@ -36,9 +36,9 @@ type ClusterParameters struct {
 	// actions.
 	//
 	// If specifying a capacity provider that uses an Auto Scaling group, the capacity
-	// provider must already be created and not already associated with another
-	// cluster. New Auto Scaling group capacity providers can be created with the
-	// CreateCapacityProvider API operation.
+	// provider must be created but not associated with another cluster. New Auto
+	// Scaling group capacity providers can be created with the CreateCapacityProvider
+	// API operation.
 	//
 	// To use a Fargate capacity provider, specify either the FARGATE or FARGATE_SPOT
 	// capacity providers. The Fargate capacity providers are available to all accounts
@@ -47,30 +47,28 @@ type ClusterParameters struct {
 	// The PutClusterCapacityProviders API operation is used to update the list
 	// of available capacity providers for a cluster after the cluster is created.
 	CapacityProviders []*string `json:"capacityProviders,omitempty"`
-	// The name of your cluster. If you do not specify a name for your cluster,
-	// you create a cluster named default. Up to 255 letters (uppercase and lowercase),
+	// The name of your cluster. If you don't specify a name for your cluster, you
+	// create a cluster that's named default. Up to 255 letters (uppercase and lowercase),
 	// numbers, underscores, and hyphens are allowed.
 	ClusterName *string `json:"clusterName,omitempty"`
 	// The execute command configuration for the cluster.
 	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
-	// The capacity provider strategy to set as the default for the cluster. When
-	// a default capacity provider strategy is set for a cluster, when calling the
-	// RunTask or CreateService APIs with no capacity provider strategy or launch
+	// The capacity provider strategy to set as the default for the cluster. After
+	// a default capacity provider strategy is set for a cluster, when you call
+	// the RunTask or CreateService APIs with no capacity provider strategy or launch
 	// type specified, the default capacity provider strategy for the cluster is
 	// used.
 	//
-	// If a default capacity provider strategy is not defined for a cluster during
-	// creation, it can be defined later with the PutClusterCapacityProviders API
-	// operation.
+	// If a default capacity provider strategy isn't defined for a cluster when
+	// it was created, it can be defined later with the PutClusterCapacityProviders
+	// API operation.
 	DefaultCapacityProviderStrategy []*CapacityProviderStrategyItem `json:"defaultCapacityProviderStrategy,omitempty"`
 	// The setting to use when creating a cluster. This parameter is used to enable
 	// CloudWatch Container Insights for a cluster. If this value is specified,
-	// it will override the containerInsights value set with PutAccountSetting or
-	// PutAccountSettingDefault.
+	// it overrides the containerInsights value set with PutAccountSetting or PutAccountSettingDefault.
 	Settings []*ClusterSetting `json:"settings,omitempty"`
 	// The metadata that you apply to the cluster to help you categorize and organize
-	// them. Each tag consists of a key and an optional value, both of which you
-	// define.
+	// them. Each tag consists of a key and an optional value. You define both.
 	//
 	// The following basic restrictions apply to tags:
 	//
@@ -110,11 +108,11 @@ type ClusterObservation struct {
 	// You can view these services with ListServices.
 	ActiveServicesCount *int64 `json:"activeServicesCount,omitempty"`
 	// The resources attached to a cluster. When using a capacity provider with
-	// a cluster, the Auto Scaling plan that is created will be returned as a cluster
+	// a cluster, the Auto Scaling plan that's created is returned as a cluster
 	// attachment.
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// The status of the capacity providers associated with the cluster. The following
-	// are the states that will be returned:
+	// are the states that are returned.
 	//
 	// UPDATE_IN_PROGRESS
 	//
@@ -141,8 +139,8 @@ type ClusterObservation struct {
 	RegisteredContainerInstancesCount *int64 `json:"registeredContainerInstancesCount,omitempty"`
 	// The number of tasks in the cluster that are in the RUNNING state.
 	RunningTasksCount *int64 `json:"runningTasksCount,omitempty"`
-	// Additional information about your clusters that are separated by launch type,
-	// including:
+	// Additional information about your clusters that are separated by launch type.
+	// They include the following:
 	//
 	//    * runningEC2TasksCount
 	//
@@ -160,8 +158,8 @@ type ClusterObservation struct {
 	//
 	//    * drainingFargateServiceCount
 	Statistics []*KeyValuePair `json:"statistics,omitempty"`
-	// The status of the cluster. The following are the possible states that will
-	// be returned.
+	// The status of the cluster. The following are the possible states that are
+	// returned.
 	//
 	// ACTIVE
 	//
@@ -170,25 +168,25 @@ type ClusterObservation struct {
 	//
 	// PROVISIONING
 	//
-	// The cluster has capacity providers associated with it and the resources needed
-	// for the capacity provider are being created.
+	// The cluster has capacity providers that are associated with it and the resources
+	// needed for the capacity provider are being created.
 	//
 	// DEPROVISIONING
 	//
-	// The cluster has capacity providers associated with it and the resources needed
-	// for the capacity provider are being deleted.
+	// The cluster has capacity providers that are associated with it and the resources
+	// needed for the capacity provider are being deleted.
 	//
 	// FAILED
 	//
-	// The cluster has capacity providers associated with it and the resources needed
-	// for the capacity provider have failed to create.
+	// The cluster has capacity providers that are associated with it and the resources
+	// needed for the capacity provider have failed to create.
 	//
 	// INACTIVE
 	//
 	// The cluster has been deleted. Clusters with an INACTIVE status may remain
 	// discoverable in your account for a period of time. However, this behavior
-	// is subject to change in the future, so you should not rely on INACTIVE clusters
-	// persisting.
+	// is subject to change in the future. We don't recommend that you rely on INACTIVE
+	// clusters persisting.
 	Status *string `json:"status,omitempty"`
 }
 

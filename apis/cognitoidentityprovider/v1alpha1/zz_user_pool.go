@@ -29,13 +29,13 @@ type UserPoolParameters struct {
 	// Region is which region the UserPool will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Use this setting to define which verified available method a user can use
-	// to recover their password when they call ForgotPassword. It allows you to
-	// define a preferred method when a user has more than one method available.
-	// With this setting, SMS does not qualify for a valid password recovery mechanism
-	// if the user also has SMS MFA enabled. In the absence of this setting, Cognito
-	// uses the legacy behavior to determine the recovery method where SMS is preferred
-	// over email.
+	// The available verified method a user can use to recover their password when
+	// they call ForgotPassword. You can use this setting to define a preferred
+	// method when a user has more than one method available. With this setting,
+	// SMS doesn't qualify for a valid password recovery mechanism if the user also
+	// has SMS multi-factor authentication (MFA) activated. In the absence of this
+	// setting, Amazon Cognito uses the legacy behavior to determine the recovery
+	// method where SMS is preferred through email.
 	AccountRecoverySetting *AccountRecoverySettingType `json:"accountRecoverySetting,omitempty"`
 	// The configuration for AdminCreateUser requests.
 	AdminCreateUserConfig *AdminCreateUserConfigType `json:"adminCreateUserConfig,omitempty"`
@@ -59,8 +59,8 @@ type UserPoolParameters struct {
 	// The Lambda trigger configuration information for the new user pool.
 	//
 	// In a push model, event sources (such as Amazon S3 and custom applications)
-	// need permission to invoke a function. So you will need to make an extra call
-	// to add permission for these event sources to invoke your Lambda function.
+	// need permission to invoke a function. So you must make an extra call to add
+	// permission for these event sources to invoke your Lambda function.
 	//
 	// For more information on using the Lambda API to add permission, see AddPermission
 	// (https://docs.aws.amazon.com/lambda/latest/dg/API_AddPermission.html).
@@ -83,21 +83,20 @@ type UserPoolParameters struct {
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 	// A string representing the SMS verification message.
 	SmsVerificationMessage *string `json:"smsVerificationMessage,omitempty"`
-	// Used to enable advanced security risk detection. Set the key AdvancedSecurityMode
+	// Enables advanced security risk detection. Set the key AdvancedSecurityMode
 	// to the value "AUDIT".
 	UserPoolAddOns *UserPoolAddOnsType `json:"userPoolAddOns,omitempty"`
 	// The tag keys and values to assign to the user pool. A tag is a label that
 	// you can use to categorize and manage user pools in different ways, such as
 	// by purpose, owner, environment, or other criteria.
 	UserPoolTags map[string]*string `json:"userPoolTags,omitempty"`
-	// Specifies whether email addresses or phone numbers can be specified as usernames
-	// when a user signs up.
+	// Specifies whether a user can use an email address or phone number as a username
+	// when they sign up.
 	UsernameAttributes []*string `json:"usernameAttributes,omitempty"`
-	// You can choose to set case sensitivity on the username input for the selected
-	// sign-in option. For example, when this is set to False, users will be able
-	// to sign in using either "username" or "Username". This configuration is immutable
-	// once it has been set. For more information, see UsernameConfigurationType
-	// (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html).
+	// Case sensitivity on the username input for the selected sign-in option. For
+	// example, when case sensitivity is set to False, users can sign in using either
+	// "username" or "Username". This configuration is immutable once it has been
+	// set. For more information, see UsernameConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html).
 	UsernameConfiguration *UsernameConfigurationType `json:"usernameConfiguration,omitempty"`
 	// The template for the verification message that the user sees when the app
 	// requests permission to access the user's information.
@@ -119,14 +118,14 @@ type UserPoolObservation struct {
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// A custom domain name that you provide to Amazon Cognito. This parameter applies
 	// only if you use a custom domain to host the sign-up and sign-in pages for
-	// your application. For example: auth.example.com.
+	// your application. An example of a custom domain name might be auth.example.com.
 	//
 	// For more information about adding a custom domain to your user pool, see
 	// Using Your Own Domain for the Hosted UI (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-add-custom-domain.html).
 	CustomDomain *string `json:"customDomain,omitempty"`
-	// Holds the domain prefix if the user pool has a domain associated with it.
+	// The domain prefix, if the user pool has a domain associated with it.
 	Domain *string `json:"domain,omitempty"`
-	// The reason why the email configuration cannot send the messages to your users.
+	// The reason why the email configuration can't send the messages to your users.
 	EmailConfigurationFailure *string `json:"emailConfigurationFailure,omitempty"`
 	// A number estimating the size of the user pool.
 	EstimatedNumberOfUsers *int64 `json:"estimatedNumberOfUsers,omitempty"`
@@ -138,20 +137,20 @@ type UserPoolObservation struct {
 	Name *string `json:"name,omitempty"`
 	// A container with the schema attributes of a user pool.
 	SchemaAttributes []*SchemaAttributeType `json:"schemaAttributes,omitempty"`
-	// The reason why the SMS configuration cannot send the messages to your users.
+	// The reason why the SMS configuration can't send the messages to your users.
 	//
 	// This message might include comma-separated values to describe why your SMS
 	// configuration can't send messages to user pool end users.
 	//
-	//    * InvalidSmsRoleAccessPolicyException - The IAM role which Cognito uses
-	//    to send SMS messages is not properly configured. For more information,
-	//    see SmsConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
+	//    * InvalidSmsRoleAccessPolicyException - The Identity and Access Management
+	//    role that Amazon Cognito uses to send SMS messages isn't properly configured.
+	//    For more information, see SmsConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
 	//
-	//    * SNSSandbox - The account is in SNS Sandbox and messages won’t reach
-	//    unverified end users. This parameter won’t get populated with SNSSandbox
-	//    if the IAM user creating the user pool doesn’t have SNS permissions.
-	//    To learn how to move your account out of the sandbox, see Moving out of
-	//    the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
+	//    * SNSSandbox - The Amazon Web Services account is in SNS Sandbox and messages
+	//    will only reach verified end users. This parameter won’t get populated
+	//    with SNSSandbox if the IAM user creating the user pool doesn’t have
+	//    SNS permissions. To learn how to move your Amazon Web Services account
+	//    out of the sandbox, see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`
 	// The status of a user pool.
 	Status *string `json:"status,omitempty"`

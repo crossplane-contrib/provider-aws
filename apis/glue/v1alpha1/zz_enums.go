@@ -178,8 +178,9 @@ const (
 type DataFormat string
 
 const (
-	DataFormat_AVRO DataFormat = "AVRO"
-	DataFormat_JSON DataFormat = "JSON"
+	DataFormat_AVRO     DataFormat = "AVRO"
+	DataFormat_JSON     DataFormat = "JSON"
+	DataFormat_PROTOBUF DataFormat = "PROTOBUF"
 )
 
 type DeleteBehavior string
@@ -288,6 +289,13 @@ const (
 	Permission_CREATE_DATABASE      Permission = "CREATE_DATABASE"
 	Permission_CREATE_TABLE         Permission = "CREATE_TABLE"
 	Permission_DATA_LOCATION_ACCESS Permission = "DATA_LOCATION_ACCESS"
+)
+
+type PermissionType string
+
+const (
+	PermissionType_COLUMN_PERMISSION      PermissionType = "COLUMN_PERMISSION"
+	PermissionType_CELL_FILTER_PERMISSION PermissionType = "CELL_FILTER_PERMISSION"
 )
 
 type PrincipalType string

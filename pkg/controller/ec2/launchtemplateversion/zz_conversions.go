@@ -410,6 +410,9 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 				if elem.LaunchTemplateData.MetadataOptions.HttpTokens != nil {
 					f3f19.HTTPTokens = elem.LaunchTemplateData.MetadataOptions.HttpTokens
 				}
+				if elem.LaunchTemplateData.MetadataOptions.InstanceMetadataTags != nil {
+					f3f19.InstanceMetadataTags = elem.LaunchTemplateData.MetadataOptions.InstanceMetadataTags
+				}
 				f3.MetadataOptions = f3f19
 			}
 			if elem.LaunchTemplateData.Monitoring != nil {
@@ -553,51 +556,64 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 				}
 				f3.Placement = f3f22
 			}
+			if elem.LaunchTemplateData.PrivateDnsNameOptions != nil {
+				f3f23 := &svcapitypes.LaunchTemplatePrivateDNSNameOptionsRequest{}
+				if elem.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsAAAARecord != nil {
+					f3f23.EnableResourceNameDNSAAAARecord = elem.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsAAAARecord
+				}
+				if elem.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsARecord != nil {
+					f3f23.EnableResourceNameDNSARecord = elem.LaunchTemplateData.PrivateDnsNameOptions.EnableResourceNameDnsARecord
+				}
+				if elem.LaunchTemplateData.PrivateDnsNameOptions.HostnameType != nil {
+					f3f23.HostnameType = elem.LaunchTemplateData.PrivateDnsNameOptions.HostnameType
+				}
+				f3.PrivateDNSNameOptions = f3f23
+			}
 			if elem.LaunchTemplateData.RamDiskId != nil {
 				f3.RAMDiskID = elem.LaunchTemplateData.RamDiskId
 			}
 			if elem.LaunchTemplateData.SecurityGroupIds != nil {
-				f3f24 := []*string{}
-				for _, f3f24iter := range elem.LaunchTemplateData.SecurityGroupIds {
-					var f3f24elem string
-					f3f24elem = *f3f24iter
-					f3f24 = append(f3f24, &f3f24elem)
-				}
-				f3.SecurityGroupIDs = f3f24
-			}
-			if elem.LaunchTemplateData.SecurityGroups != nil {
 				f3f25 := []*string{}
-				for _, f3f25iter := range elem.LaunchTemplateData.SecurityGroups {
+				for _, f3f25iter := range elem.LaunchTemplateData.SecurityGroupIds {
 					var f3f25elem string
 					f3f25elem = *f3f25iter
 					f3f25 = append(f3f25, &f3f25elem)
 				}
-				f3.SecurityGroups = f3f25
+				f3.SecurityGroupIDs = f3f25
+			}
+			if elem.LaunchTemplateData.SecurityGroups != nil {
+				f3f26 := []*string{}
+				for _, f3f26iter := range elem.LaunchTemplateData.SecurityGroups {
+					var f3f26elem string
+					f3f26elem = *f3f26iter
+					f3f26 = append(f3f26, &f3f26elem)
+				}
+				f3.SecurityGroups = f3f26
 			}
 			if elem.LaunchTemplateData.TagSpecifications != nil {
-				f3f26 := []*svcapitypes.LaunchTemplateTagSpecificationRequest{}
-				for _, f3f26iter := range elem.LaunchTemplateData.TagSpecifications {
-					f3f26elem := &svcapitypes.LaunchTemplateTagSpecificationRequest{}
-					if f3f26iter.ResourceType != nil {
-						f3f26elem.ResourceType = f3f26iter.ResourceType
+				f3f27 := []*svcapitypes.LaunchTemplateTagSpecificationRequest{}
+				for _, f3f27iter := range elem.LaunchTemplateData.TagSpecifications {
+					f3f27elem := &svcapitypes.LaunchTemplateTagSpecificationRequest{}
+					if f3f27iter.ResourceType != nil {
+						f3f27elem.ResourceType = f3f27iter.ResourceType
 					}
-					if f3f26iter.Tags != nil {
-						f3f26elemf1 := []*svcapitypes.Tag{}
-						for _, f3f26elemf1iter := range f3f26iter.Tags {
-							f3f26elemf1elem := &svcapitypes.Tag{}
-							if f3f26elemf1iter.Key != nil {
-								f3f26elemf1elem.Key = f3f26elemf1iter.Key
+					if f3f27iter.Tags != nil {
+						f3f27elemf1 := []*svcapitypes.Tag{}
+						for _, f3f27elemf1iter := range f3f27iter.Tags {
+							f3f27elemf1elem := &svcapitypes.Tag{}
+							if f3f27elemf1iter.Key != nil {
+								f3f27elemf1elem.Key = f3f27elemf1iter.Key
 							}
-							if f3f26elemf1iter.Value != nil {
-								f3f26elemf1elem.Value = f3f26elemf1iter.Value
+							if f3f27elemf1iter.Value != nil {
+								f3f27elemf1elem.Value = f3f27elemf1iter.Value
 							}
-							f3f26elemf1 = append(f3f26elemf1, f3f26elemf1elem)
+							f3f27elemf1 = append(f3f27elemf1, f3f27elemf1elem)
 						}
-						f3f26elem.Tags = f3f26elemf1
+						f3f27elem.Tags = f3f27elemf1
 					}
-					f3f26 = append(f3f26, f3f26elem)
+					f3f27 = append(f3f27, f3f27elem)
 				}
-				f3.TagSpecifications = f3f26
+				f3.TagSpecifications = f3f27
 			}
 			if elem.LaunchTemplateData.UserData != nil {
 				f3.UserData = elem.LaunchTemplateData.UserData
@@ -992,6 +1008,9 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPTokens != nil {
 				f0f19.SetHttpTokens(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.HTTPTokens)
 			}
+			if cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.InstanceMetadataTags != nil {
+				f0f19.SetInstanceMetadataTags(*cr.Spec.ForProvider.LaunchTemplateData.MetadataOptions.InstanceMetadataTags)
+			}
 			f0.SetMetadataOptions(f0f19)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.Monitoring != nil {
@@ -1135,51 +1154,64 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			}
 			f0.SetPlacement(f0f22)
 		}
+		if cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions != nil {
+			f0f23 := &svcsdk.LaunchTemplatePrivateDnsNameOptionsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.EnableResourceNameDNSAAAARecord != nil {
+				f0f23.SetEnableResourceNameDnsAAAARecord(*cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.EnableResourceNameDNSAAAARecord)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.EnableResourceNameDNSARecord != nil {
+				f0f23.SetEnableResourceNameDnsARecord(*cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.EnableResourceNameDNSARecord)
+			}
+			if cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.HostnameType != nil {
+				f0f23.SetHostnameType(*cr.Spec.ForProvider.LaunchTemplateData.PrivateDNSNameOptions.HostnameType)
+			}
+			f0.SetPrivateDnsNameOptions(f0f23)
+		}
 		if cr.Spec.ForProvider.LaunchTemplateData.RAMDiskID != nil {
 			f0.SetRamDiskId(*cr.Spec.ForProvider.LaunchTemplateData.RAMDiskID)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs != nil {
-			f0f24 := []*string{}
-			for _, f0f24iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs {
-				var f0f24elem string
-				f0f24elem = *f0f24iter
-				f0f24 = append(f0f24, &f0f24elem)
-			}
-			f0.SetSecurityGroupIds(f0f24)
-		}
-		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups != nil {
 			f0f25 := []*string{}
-			for _, f0f25iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups {
+			for _, f0f25iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroupIDs {
 				var f0f25elem string
 				f0f25elem = *f0f25iter
 				f0f25 = append(f0f25, &f0f25elem)
 			}
-			f0.SetSecurityGroups(f0f25)
+			f0.SetSecurityGroupIds(f0f25)
+		}
+		if cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups != nil {
+			f0f26 := []*string{}
+			for _, f0f26iter := range cr.Spec.ForProvider.LaunchTemplateData.SecurityGroups {
+				var f0f26elem string
+				f0f26elem = *f0f26iter
+				f0f26 = append(f0f26, &f0f26elem)
+			}
+			f0.SetSecurityGroups(f0f26)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications != nil {
-			f0f26 := []*svcsdk.LaunchTemplateTagSpecificationRequest{}
-			for _, f0f26iter := range cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications {
-				f0f26elem := &svcsdk.LaunchTemplateTagSpecificationRequest{}
-				if f0f26iter.ResourceType != nil {
-					f0f26elem.SetResourceType(*f0f26iter.ResourceType)
+			f0f27 := []*svcsdk.LaunchTemplateTagSpecificationRequest{}
+			for _, f0f27iter := range cr.Spec.ForProvider.LaunchTemplateData.TagSpecifications {
+				f0f27elem := &svcsdk.LaunchTemplateTagSpecificationRequest{}
+				if f0f27iter.ResourceType != nil {
+					f0f27elem.SetResourceType(*f0f27iter.ResourceType)
 				}
-				if f0f26iter.Tags != nil {
-					f0f26elemf1 := []*svcsdk.Tag{}
-					for _, f0f26elemf1iter := range f0f26iter.Tags {
-						f0f26elemf1elem := &svcsdk.Tag{}
-						if f0f26elemf1iter.Key != nil {
-							f0f26elemf1elem.SetKey(*f0f26elemf1iter.Key)
+				if f0f27iter.Tags != nil {
+					f0f27elemf1 := []*svcsdk.Tag{}
+					for _, f0f27elemf1iter := range f0f27iter.Tags {
+						f0f27elemf1elem := &svcsdk.Tag{}
+						if f0f27elemf1iter.Key != nil {
+							f0f27elemf1elem.SetKey(*f0f27elemf1iter.Key)
 						}
-						if f0f26elemf1iter.Value != nil {
-							f0f26elemf1elem.SetValue(*f0f26elemf1iter.Value)
+						if f0f27elemf1iter.Value != nil {
+							f0f27elemf1elem.SetValue(*f0f27elemf1iter.Value)
 						}
-						f0f26elemf1 = append(f0f26elemf1, f0f26elemf1elem)
+						f0f27elemf1 = append(f0f27elemf1, f0f27elemf1elem)
 					}
-					f0f26elem.SetTags(f0f26elemf1)
+					f0f27elem.SetTags(f0f27elemf1)
 				}
-				f0f26 = append(f0f26, f0f26elem)
+				f0f27 = append(f0f27, f0f27elem)
 			}
-			f0.SetTagSpecifications(f0f26)
+			f0.SetTagSpecifications(f0f27)
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.UserData != nil {
 			f0.SetUserData(*cr.Spec.ForProvider.LaunchTemplateData.UserData)

@@ -83,6 +83,9 @@ func GenerateEnvironment(resp *svcsdk.GetEnvironmentOutput) *svcapitypes.Environ
 			}
 			f8.Error = f8f0
 		}
+		if resp.Environment.LastUpdate.Source != nil {
+			f8.Source = resp.Environment.LastUpdate.Source
+		}
 		if resp.Environment.LastUpdate.Status != nil {
 			f8.Status = resp.Environment.LastUpdate.Status
 		}

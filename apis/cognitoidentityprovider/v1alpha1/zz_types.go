@@ -374,7 +374,7 @@ type SchemaAttributeType struct {
 	Mutable *bool `json:"mutable,omitempty"`
 
 	Name *string `json:"name,omitempty"`
-	// The minimum and maximum value of an attribute that is of the number data
+	// The minimum and maximum values of an attribute that is of the number data
 	// type.
 	NumberAttributeConstraints *NumberAttributeConstraintsType `json:"numberAttributeConstraints,omitempty"`
 
@@ -393,10 +393,12 @@ type SmsConfigurationType struct {
 // +kubebuilder:skipversion
 type SmsMFAConfigType struct {
 	SmsAuthenticationMessage *string `json:"smsAuthenticationMessage,omitempty"`
-	// The SMS configuration type that includes the settings the Cognito User Pool
-	// needs to call for the Amazon SNS service to send an SMS message from your
-	// account. The Cognito User Pool makes the request to the Amazon SNS Service
-	// by using an IAM role that you provide for your account.
+	// The SMS configuration type that includes the settings the Amazon Cognito
+	// User Pool must call for the Amazon Simple Notification Service service to
+	// send an SMS message from your Amazon Web Services account. The Amazon Cognito
+	// User Pool makes the request to the Amazon SNS Service by using an Identity
+	// and Access Management role that you provide for your Amazon Web Services
+	// account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 }
 
@@ -483,10 +485,10 @@ type UserPoolClientType struct {
 	// The Amazon Pinpoint analytics configuration for collecting metrics for a
 	// user pool.
 	//
-	// In regions where Pinpoint is not available, Cognito User Pools only supports
-	// sending events to Amazon Pinpoint projects in us-east-1. In regions where
-	// Pinpoint is available, Cognito User Pools will support sending events to
-	// Amazon Pinpoint projects within that same region.
+	// In Regions where Pinpoint isn't available, User Pools only supports sending
+	// events to Amazon Pinpoint projects in us-east-1. In Regions where Pinpoint
+	// is available, User Pools will support sending events to Amazon Pinpoint projects
+	// within that same Region.
 	AnalyticsConfiguration *AnalyticsConfigurationType `json:"analyticsConfiguration,omitempty"`
 
 	CallbackURLs []*string `json:"callbackURLs,omitempty"`
@@ -564,15 +566,19 @@ type UserPoolType struct {
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 
 	CustomDomain *string `json:"customDomain,omitempty"`
-	// The configuration for the user pool's device tracking.
+	// The device tracking configuration for a user pool. A user pool with device
+	// tracking deactivated returns a null value.
+	//
+	// When you provide values for any DeviceConfiguration field, you activate device
+	// tracking.
 	DeviceConfiguration *DeviceConfigurationType `json:"deviceConfiguration,omitempty"`
 
 	Domain *string `json:"domain,omitempty"`
 	// The email configuration type.
 	//
-	// Amazon Cognito has specific regions for use with Amazon SES. For more information
-	// on the supported regions, see Email Settings for Amazon Cognito User Pools
-	// (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html).
+	// Amazon Cognito has specific Regions for use with Amazon Simple Email Service.
+	// For more information on the supported Regions, see Email settings for Amazon
+	// Cognito user pools (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html).
 	EmailConfiguration *EmailConfigurationType `json:"emailConfiguration,omitempty"`
 
 	EmailConfigurationFailure *string `json:"emailConfigurationFailure,omitempty"`
@@ -598,10 +604,12 @@ type UserPoolType struct {
 	SchemaAttributes []*SchemaAttributeType `json:"schemaAttributes,omitempty"`
 
 	SmsAuthenticationMessage *string `json:"smsAuthenticationMessage,omitempty"`
-	// The SMS configuration type that includes the settings the Cognito User Pool
-	// needs to call for the Amazon SNS service to send an SMS message from your
-	// account. The Cognito User Pool makes the request to the Amazon SNS Service
-	// by using an IAM role that you provide for your account.
+	// The SMS configuration type that includes the settings the Amazon Cognito
+	// User Pool must call for the Amazon Simple Notification Service service to
+	// send an SMS message from your Amazon Web Services account. The Amazon Cognito
+	// User Pool makes the request to the Amazon SNS Service by using an Identity
+	// and Access Management role that you provide for your Amazon Web Services
+	// account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`

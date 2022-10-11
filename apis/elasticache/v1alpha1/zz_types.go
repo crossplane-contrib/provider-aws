@@ -567,6 +567,8 @@ type User struct {
 
 	AccessString *string `json:"accessString,omitempty"`
 
+	MinimumEngineVersion *string `json:"minimumEngineVersion,omitempty"`
+
 	Status *string `json:"status,omitempty"`
 
 	UserID *string `json:"userID,omitempty"`
@@ -577,6 +579,8 @@ type User struct {
 // +kubebuilder:skipversion
 type UserGroup struct {
 	ARN *string `json:"arn,omitempty"`
+
+	MinimumEngineVersion *string `json:"minimumEngineVersion,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 

@@ -240,8 +240,19 @@ spec:
                         properties:
                           ebsStorageInfo:
                             description: Contains information about the EBS storage
-                              volumes attached to Kafka broker nodes.
+                              volumes attached to Apache Kafka broker nodes.
                             properties:
+                              provisionedThroughput:
+                                description: Contains information about provisioned
+                                  throughput for EBS storage volumes attached to kafka
+                                  broker nodes.
+                                properties:
+                                  enabled:
+                                    type: boolean
+                                  volumeThroughput:
+                                    format: int64
+                                    type: integer
+                                type: object
                               volumeSize:
                                 format: int64
                                 type: integer
@@ -433,8 +444,8 @@ spec:
                         type: object
                     type: object
                   numberOfBrokerNodes:
-                    description: The number of Kafka broker nodes in the Amazon MSK
-                      cluster.
+                    description: The number of Apache Kafka broker nodes in the Amazon
+                      MSK cluster.
                     format: int64
                     type: integer
                   openMonitoring:

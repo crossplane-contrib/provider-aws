@@ -118,6 +118,8 @@ type ResultConfiguration struct {
 	// used (for example, SSE-KMS or CSE-KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
+	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
+
 	OutputLocation *string `json:"outputLocation,omitempty"`
 }
 
@@ -127,9 +129,13 @@ type ResultConfigurationUpdates struct {
 	// used (for example, SSE-KMS or CSE-KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
+	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
+
 	OutputLocation *string `json:"outputLocation,omitempty"`
 
 	RemoveEncryptionConfiguration *bool `json:"removeEncryptionConfiguration,omitempty"`
+
+	RemoveExpectedBucketOwner *bool `json:"removeExpectedBucketOwner,omitempty"`
 
 	RemoveOutputLocation *bool `json:"removeOutputLocation,omitempty"`
 }

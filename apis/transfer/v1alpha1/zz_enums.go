@@ -68,6 +68,7 @@ const (
 	IdentityProviderType_SERVICE_MANAGED       IdentityProviderType = "SERVICE_MANAGED"
 	IdentityProviderType_API_GATEWAY           IdentityProviderType = "API_GATEWAY"
 	IdentityProviderType_AWS_DIRECTORY_SERVICE IdentityProviderType = "AWS_DIRECTORY_SERVICE"
+	IdentityProviderType_AWS_LAMBDA            IdentityProviderType = "AWS_LAMBDA"
 )
 
 type OverwriteExisting string
@@ -94,6 +95,14 @@ const (
 	State_STOPPING     State = "STOPPING"
 	State_START_FAILED State = "START_FAILED"
 	State_STOP_FAILED  State = "STOP_FAILED"
+)
+
+type TLSSessionResumptionMode string
+
+const (
+	TLSSessionResumptionMode_DISABLED TLSSessionResumptionMode = "DISABLED"
+	TLSSessionResumptionMode_ENABLED  TLSSessionResumptionMode = "ENABLED"
+	TLSSessionResumptionMode_ENFORCED TLSSessionResumptionMode = "ENFORCED"
 )
 
 type WorkflowStepType string

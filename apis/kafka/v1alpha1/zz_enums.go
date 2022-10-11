@@ -45,6 +45,13 @@ const (
 	ClusterState_UPDATING         ClusterState = "UPDATING"
 )
 
+type ClusterType string
+
+const (
+	ClusterType_PROVISIONED ClusterType = "PROVISIONED"
+	ClusterType_SERVERLESS  ClusterType = "SERVERLESS"
+)
+
 type ConfigurationState string
 
 const (

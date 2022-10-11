@@ -110,7 +110,8 @@ const (
 type ContainerInstanceField string
 
 const (
-	ContainerInstanceField_TAGS ContainerInstanceField = "TAGS"
+	ContainerInstanceField_TAGS                      ContainerInstanceField = "TAGS"
+	ContainerInstanceField_CONTAINER_INSTANCE_HEALTH ContainerInstanceField = "CONTAINER_INSTANCE_HEALTH"
 )
 
 type ContainerInstanceStatus string
@@ -204,6 +205,21 @@ const (
 	IPcMode_host IPcMode = "host"
 	IPcMode_task IPcMode = "task"
 	IPcMode_none IPcMode = "none"
+)
+
+type InstanceHealthCheckState string
+
+const (
+	InstanceHealthCheckState_OK                InstanceHealthCheckState = "OK"
+	InstanceHealthCheckState_IMPAIRED          InstanceHealthCheckState = "IMPAIRED"
+	InstanceHealthCheckState_INSUFFICIENT_DATA InstanceHealthCheckState = "INSUFFICIENT_DATA"
+	InstanceHealthCheckState_INITIALIZING      InstanceHealthCheckState = "INITIALIZING"
+)
+
+type InstanceHealthCheckType string
+
+const (
+	InstanceHealthCheckType_CONTAINER_RUNTIME InstanceHealthCheckType = "CONTAINER_RUNTIME"
 )
 
 type LaunchType string

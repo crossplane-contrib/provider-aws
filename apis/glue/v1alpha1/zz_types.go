@@ -90,6 +90,8 @@ type CatalogImportStatus struct {
 
 // +kubebuilder:skipversion
 type CatalogTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Tables []*string `json:"tables,omitempty"`
@@ -133,6 +135,11 @@ type ColumnError struct {
 
 // +kubebuilder:skipversion
 type ColumnImportance struct {
+	ColumnName *string `json:"columnName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ColumnRowFilter struct {
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
@@ -222,6 +229,8 @@ type CrawlerMetrics struct {
 type CrawlerTargets struct {
 	CatalogTargets []*CatalogTarget `json:"catalogTargets,omitempty"`
 
+	DeltaTargets []*DeltaTarget `json:"deltaTargets,omitempty"`
+
 	DynamoDBTargets []*DynamoDBTarget `json:"dynamoDBTargets,omitempty"`
 
 	JdbcTargets []*JdbcTarget `json:"jdbcTargets,omitempty"`
@@ -246,6 +255,8 @@ type Crawler_SDK struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+
+	LakeFormationConfiguration *LakeFormationConfiguration `json:"lakeFormationConfiguration,omitempty"`
 	// Status and error information about the most recent crawl.
 	LastCrawl *LastCrawlInfo `json:"lastCrawl,omitempty"`
 
@@ -394,6 +405,15 @@ type DateColumnStatisticsData struct {
 	MaximumValue *metav1.Time `json:"maximumValue,omitempty"`
 
 	MinimumValue *metav1.Time `json:"minimumValue,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeltaTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	DeltaTables []*string `json:"deltaTables,omitempty"`
+
+	WriteManifest *bool `json:"writeManifest,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -710,6 +730,13 @@ type KeySchemaElement struct {
 // +kubebuilder:skipversion
 type LabelingSetGenerationTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LakeFormationConfiguration struct {
+	AccountID *string `json:"accountID,omitempty"`
+
+	UseLakeFormationCredentials *bool `json:"useLakeFormationCredentials,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1086,6 +1113,11 @@ type TriggerUpdate struct {
 	Name *string `json:"name,omitempty"`
 
 	Schedule *string `json:"schedule,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type UnfilteredPartition struct {
+	IsRegisteredWithLakeFormation *bool `json:"isRegisteredWithLakeFormation,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -59,6 +59,9 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 		if resp.Server.IdentityProviderDetails.DirectoryId != nil {
 			f6.DirectoryID = resp.Server.IdentityProviderDetails.DirectoryId
 		}
+		if resp.Server.IdentityProviderDetails.Function != nil {
+			f6.Function = resp.Server.IdentityProviderDetails.Function
+		}
 		if resp.Server.IdentityProviderDetails.InvocationRole != nil {
 			f6.InvocationRole = resp.Server.IdentityProviderDetails.InvocationRole
 		}
@@ -73,6 +76,18 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 		cr.Spec.ForProvider.IdentityProviderType = resp.Server.IdentityProviderType
 	} else {
 		cr.Spec.ForProvider.IdentityProviderType = nil
+	}
+	if resp.Server.ProtocolDetails != nil {
+		f9 := &svcapitypes.ProtocolDetails{}
+		if resp.Server.ProtocolDetails.PassiveIp != nil {
+			f9.PassiveIP = resp.Server.ProtocolDetails.PassiveIp
+		}
+		if resp.Server.ProtocolDetails.TlsSessionResumptionMode != nil {
+			f9.TLSSessionResumptionMode = resp.Server.ProtocolDetails.TlsSessionResumptionMode
+		}
+		cr.Spec.ForProvider.ProtocolDetails = f9
+	} else {
+		cr.Spec.ForProvider.ProtocolDetails = nil
 	}
 	if resp.Server.Protocols != nil {
 		f10 := []*string{}
@@ -153,6 +168,9 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 		if cr.Spec.ForProvider.IdentityProviderDetails.DirectoryID != nil {
 			f3.SetDirectoryId(*cr.Spec.ForProvider.IdentityProviderDetails.DirectoryID)
 		}
+		if cr.Spec.ForProvider.IdentityProviderDetails.Function != nil {
+			f3.SetFunction(*cr.Spec.ForProvider.IdentityProviderDetails.Function)
+		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole != nil {
 			f3.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
 		}
@@ -164,49 +182,59 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 	if cr.Spec.ForProvider.IdentityProviderType != nil {
 		res.SetIdentityProviderType(*cr.Spec.ForProvider.IdentityProviderType)
 	}
-	if cr.Spec.ForProvider.Protocols != nil {
-		f5 := []*string{}
-		for _, f5iter := range cr.Spec.ForProvider.Protocols {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+	if cr.Spec.ForProvider.ProtocolDetails != nil {
+		f5 := &svcsdk.ProtocolDetails{}
+		if cr.Spec.ForProvider.ProtocolDetails.PassiveIP != nil {
+			f5.SetPassiveIp(*cr.Spec.ForProvider.ProtocolDetails.PassiveIP)
 		}
-		res.SetProtocols(f5)
+		if cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode != nil {
+			f5.SetTlsSessionResumptionMode(*cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode)
+		}
+		res.SetProtocolDetails(f5)
+	}
+	if cr.Spec.ForProvider.Protocols != nil {
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.Protocols {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
+		}
+		res.SetProtocols(f6)
 	}
 	if cr.Spec.ForProvider.SecurityPolicyName != nil {
 		res.SetSecurityPolicyName(*cr.Spec.ForProvider.SecurityPolicyName)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f7 := []*svcsdk.Tag{}
-		for _, f7iter := range cr.Spec.ForProvider.Tags {
-			f7elem := &svcsdk.Tag{}
-			if f7iter.Key != nil {
-				f7elem.SetKey(*f7iter.Key)
+		f8 := []*svcsdk.Tag{}
+		for _, f8iter := range cr.Spec.ForProvider.Tags {
+			f8elem := &svcsdk.Tag{}
+			if f8iter.Key != nil {
+				f8elem.SetKey(*f8iter.Key)
 			}
-			if f7iter.Value != nil {
-				f7elem.SetValue(*f7iter.Value)
+			if f8iter.Value != nil {
+				f8elem.SetValue(*f8iter.Value)
 			}
-			f7 = append(f7, f7elem)
+			f8 = append(f8, f8elem)
 		}
-		res.SetTags(f7)
+		res.SetTags(f8)
 	}
 	if cr.Spec.ForProvider.WorkflowDetails != nil {
-		f8 := &svcsdk.WorkflowDetails{}
+		f9 := &svcsdk.WorkflowDetails{}
 		if cr.Spec.ForProvider.WorkflowDetails.OnUpload != nil {
-			f8f0 := []*svcsdk.WorkflowDetail{}
-			for _, f8f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
-				f8f0elem := &svcsdk.WorkflowDetail{}
-				if f8f0iter.ExecutionRole != nil {
-					f8f0elem.SetExecutionRole(*f8f0iter.ExecutionRole)
+			f9f0 := []*svcsdk.WorkflowDetail{}
+			for _, f9f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
+				f9f0elem := &svcsdk.WorkflowDetail{}
+				if f9f0iter.ExecutionRole != nil {
+					f9f0elem.SetExecutionRole(*f9f0iter.ExecutionRole)
 				}
-				if f8f0iter.WorkflowID != nil {
-					f8f0elem.SetWorkflowId(*f8f0iter.WorkflowID)
+				if f9f0iter.WorkflowID != nil {
+					f9f0elem.SetWorkflowId(*f9f0iter.WorkflowID)
 				}
-				f8f0 = append(f8f0, f8f0elem)
+				f9f0 = append(f9f0, f9f0elem)
 			}
-			f8.SetOnUpload(f8f0)
+			f9.SetOnUpload(f9f0)
 		}
-		res.SetWorkflowDetails(f8)
+		res.SetWorkflowDetails(f9)
 	}
 
 	return res
@@ -227,6 +255,9 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 		if cr.Spec.ForProvider.IdentityProviderDetails.DirectoryID != nil {
 			f4.SetDirectoryId(*cr.Spec.ForProvider.IdentityProviderDetails.DirectoryID)
 		}
+		if cr.Spec.ForProvider.IdentityProviderDetails.Function != nil {
+			f4.SetFunction(*cr.Spec.ForProvider.IdentityProviderDetails.Function)
+		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole != nil {
 			f4.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
 		}
@@ -234,6 +265,16 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 			f4.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)
 		}
 		res.SetIdentityProviderDetails(f4)
+	}
+	if cr.Spec.ForProvider.ProtocolDetails != nil {
+		f6 := &svcsdk.ProtocolDetails{}
+		if cr.Spec.ForProvider.ProtocolDetails.PassiveIP != nil {
+			f6.SetPassiveIp(*cr.Spec.ForProvider.ProtocolDetails.PassiveIP)
+		}
+		if cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode != nil {
+			f6.SetTlsSessionResumptionMode(*cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode)
+		}
+		res.SetProtocolDetails(f6)
 	}
 	if cr.Spec.ForProvider.Protocols != nil {
 		f7 := []*string{}

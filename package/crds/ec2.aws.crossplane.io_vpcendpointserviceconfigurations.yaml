@@ -481,6 +481,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      payerResponsibility:
+                        type: string
                       privateDNSName:
                         type: string
                       privateDNSNameConfiguration:

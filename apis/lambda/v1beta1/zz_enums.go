@@ -150,6 +150,8 @@ const (
 	SourceAccessType_SASL_SCRAM_512_AUTH SourceAccessType = "SASL_SCRAM_512_AUTH"
 	SourceAccessType_SASL_SCRAM_256_AUTH SourceAccessType = "SASL_SCRAM_256_AUTH"
 	SourceAccessType_VIRTUAL_HOST SourceAccessType = "VIRTUAL_HOST"
+	SourceAccessType_CLIENT_CERTIFICATE_TLS_AUTH SourceAccessType = "CLIENT_CERTIFICATE_TLS_AUTH"
+	SourceAccessType_SERVER_ROOT_CA_CERTIFICATE SourceAccessType = "SERVER_ROOT_CA_CERTIFICATE"
 )
 
 type State string

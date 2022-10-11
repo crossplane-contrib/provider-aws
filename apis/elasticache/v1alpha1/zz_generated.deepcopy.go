@@ -1930,6 +1930,11 @@ func (in *User) DeepCopyInto(out *User) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MinimumEngineVersion != nil {
+		in, out := &in.MinimumEngineVersion, &out.MinimumEngineVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.Status != nil {
 		in, out := &in.Status, &out.Status
 		*out = new(string)
@@ -1962,6 +1967,11 @@ func (in *UserGroup) DeepCopyInto(out *UserGroup) {
 	*out = *in
 	if in.ARN != nil {
 		in, out := &in.ARN, &out.ARN
+		*out = new(string)
+		**out = **in
+	}
+	if in.MinimumEngineVersion != nil {
+		in, out := &in.MinimumEngineVersion, &out.MinimumEngineVersion
 		*out = new(string)
 		**out = **in
 	}

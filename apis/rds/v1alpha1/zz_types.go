@@ -261,6 +261,8 @@ type DBCluster_SDK struct {
 
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+
 	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
 
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
@@ -288,6 +290,8 @@ type DBCluster_SDK struct {
 	DBClusterARN *string `json:"dbClusterARN,omitempty"`
 
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
+
+	DBClusterInstanceClass *string `json:"dbClusterInstanceClass,omitempty"`
 
 	DBClusterMembers []*DBClusterMember `json:"dbClusterMembers,omitempty"`
 
@@ -330,21 +334,35 @@ type DBCluster_SDK struct {
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 
+	IOPS *int64 `json:"iops,omitempty"`
+
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
+	MonitoringInterval *int64 `json:"monitoringInterval,omitempty"`
+
+	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
+
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
+
+	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
+
+	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
+
+	PerformanceInsightsRetentionPeriod *int64 `json:"performanceInsightsRetentionPeriod,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`
 
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+
+	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
 
 	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`
 
@@ -361,6 +379,8 @@ type DBCluster_SDK struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
 	TagList []*Tag `json:"tagList,omitempty"`
@@ -398,6 +418,8 @@ type DBEngineVersion struct {
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 
+	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
+
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
@@ -417,6 +439,8 @@ type DBInstanceAutomatedBackup struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
+	BackupTarget *string `json:"backupTarget,omitempty"`
 
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
 
@@ -515,6 +539,8 @@ type DBInstance_SDK struct {
 	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
+	BackupTarget *string `json:"backupTarget,omitempty"`
 
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 
@@ -826,6 +852,8 @@ type DBSnapshot struct {
 	ProcessorFeatures []*ProcessorFeature `json:"processorFeatures,omitempty"`
 
 	SnapshotCreateTime *metav1.Time `json:"snapshotCreateTime,omitempty"`
+
+	SnapshotTarget *string `json:"snapshotTarget,omitempty"`
 
 	SnapshotType *string `json:"snapshotType,omitempty"`
 
@@ -1229,6 +1257,8 @@ type OrderableDBInstanceOption struct {
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 
+	SupportsClusters *bool `json:"supportsClusters,omitempty"`
+
 	SupportsEnhancedMonitoring *bool `json:"supportsEnhancedMonitoring,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
@@ -1509,6 +1539,8 @@ type UpgradeTarget struct {
 	IsMajorVersionUpgrade *bool `json:"isMajorVersionUpgrade,omitempty"`
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
+	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 

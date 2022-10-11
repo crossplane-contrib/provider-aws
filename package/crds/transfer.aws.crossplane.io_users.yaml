@@ -310,8 +310,10 @@ spec:
                         type: object
                     type: object
                   sshPublicKeyBody:
-                    description: The public portion of the Secure Shell (SSH) key
-                      used to authenticate the user to the server.
+                    description: "The public portion of the Secure Shell (SSH) key
+                      used to authenticate the user to the server. \n Currently, Transfer
+                      Family does not accept elliptical curve keys (keys beginning
+                      with ecdsa)."
                     type: string
                   tags:
                     description: Key-value pairs that can be used to group and search

@@ -90,6 +90,8 @@ type DomainObservation struct {
 	// The Amazon Resource Name (ARN) of a domain. See IAM identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
 	// in the AWS Identity and Access Management User Guide for more information.
 	ARN *string `json:"arn,omitempty"`
+	// Specifies change details of the domain configuration change.
+	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
 	// The domain creation status. True if the creation of a domain is complete.
 	// False if domain creation is still in progress.
 	Created *bool `json:"created,omitempty"`

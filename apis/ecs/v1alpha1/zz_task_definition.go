@@ -34,19 +34,22 @@ type TaskDefinitionParameters struct {
 	// +kubebuilder:validation:Required
 	ContainerDefinitions []*ContainerDefinition `json:"containerDefinitions"`
 	// The number of CPU units used by the task. It can be expressed as an integer
-	// using CPU units, for example 1024, or as a string using vCPUs, for example
-	// 1 vCPU or 1 vcpu, in a task definition. String values are converted to an
+	// using CPU units (for example, 1024) or as a string using vCPUs (for example,
+	// 1 vCPU or 1 vcpu) in a task definition. String values are converted to an
 	// integer indicating the CPU units when the task definition is registered.
 	//
 	// Task-level CPU and memory parameters are ignored for Windows containers.
 	// We recommend specifying container-level resources for Windows containers.
 	//
-	// If you are using the EC2 launch type, this field is optional. Supported values
+	// If you're using the EC2 launch type, this field is optional. Supported values
 	// are between 128 CPU units (0.125 vCPUs) and 10240 CPU units (10 vCPUs).
 	//
-	// If you are using the Fargate launch type, this field is required and you
-	// must use one of the following values, which determines your range of supported
+	// If you're using the Fargate launch type, this field is required and you must
+	// use one of the following values, which determines your range of supported
 	// values for the memory parameter:
+	//
+	// The CPU units cannot be less than 1 vCPU when you use Windows containers
+	// on Fargate.
 	//
 	//    * 256 (.25 vCPU) - Available memory values: 512 (0.5 GB), 1024 (1 GB),
 	//    2048 (2 GB)
@@ -76,10 +79,10 @@ type TaskDefinitionParameters struct {
 	//
 	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
-	// You must specify a family for a task definition, which allows you to track
-	// multiple versions of the same task definition. The family is used as a name
-	// for your task definition. Up to 255 letters (uppercase and lowercase), numbers,
-	// underscores, and hyphens are allowed.
+	// You must specify a family for a task definition. You can use it track multiple
+	// versions of the same task definition. The family is used as a name for your
+	// task definition. Up to 255 letters (uppercase and lowercase), numbers, underscores,
+	// and hyphens are allowed.
 	// +kubebuilder:validation:Required
 	Family *string `json:"family"`
 	// The Elastic Inference accelerators to use for the containers in the task.
@@ -114,8 +117,8 @@ type TaskDefinitionParameters struct {
 	// This parameter is not supported for Windows containers or tasks run on Fargate.
 	IPcMode *string `json:"ipcMode,omitempty"`
 	// The amount of memory (in MiB) used by the task. It can be expressed as an
-	// integer using MiB, for example 1024, or as a string using GB, for example
-	// 1GB or 1 GB, in a task definition. String values are converted to an integer
+	// integer using MiB (for example ,1024) or as a string using GB (for example,
+	// 1GB or 1 GB) in a task definition. String values are converted to an integer
 	// indicating the MiB when the task definition is registered.
 	//
 	// Task-level CPU and memory parameters are ignored for Windows containers.
@@ -124,8 +127,11 @@ type TaskDefinitionParameters struct {
 	// If using the EC2 launch type, this field is optional.
 	//
 	// If using the Fargate launch type, this field is required and you must use
-	// one of the following values, which determines your range of supported values
-	// for the cpu parameter:
+	// one of the following values. This determines your range of supported values
+	// for the cpu parameter.
+	//
+	// The CPU units cannot be less than 1 vCPU when you use Windows containers
+	// on Fargate.
 	//
 	//    * 512 (0.5 GB), 1024 (1 GB), 2048 (2 GB) - Available cpu values: 256 (.25
 	//    vCPU)
@@ -191,8 +197,8 @@ type TaskDefinitionParameters struct {
 	// This parameter is not supported for Windows containers or tasks run on Fargate.
 	PidMode *string `json:"pidMode,omitempty"`
 	// An array of placement constraint objects to use for the task. You can specify
-	// a maximum of 10 constraints per task (this limit includes constraints in
-	// the task definition and those specified at runtime).
+	// a maximum of 10 constraints for each task. This limit includes constraints
+	// in the task definition and those specified at runtime.
 	PlacementConstraints []*TaskDefinitionPlacementConstraint `json:"placementConstraints,omitempty"`
 	// The configuration details for the App Mesh proxy.
 	//
@@ -205,10 +211,10 @@ type TaskDefinitionParameters struct {
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-ami-versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	ProxyConfiguration *ProxyConfiguration `json:"proxyConfiguration,omitempty"`
-	// The task launch type that Amazon ECS should validate the task definition
-	// against. A client exception is returned if the task definition doesn't validate
-	// against the compatibilities specified. If no value is specified, the parameter
-	// is omitted from the response.
+	// The task launch type that Amazon ECS validates the task definition against.
+	// A client exception is returned if the task definition doesn't validate against
+	// the compatibilities specified. If no value is specified, the parameter is
+	// omitted from the response.
 	RequiresCompatibilities []*string `json:"requiresCompatibilities,omitempty"`
 	// The operating system that your tasks definitions run on. A platform family
 	// is specified only for tasks using the Fargate launch type.
@@ -217,8 +223,8 @@ type TaskDefinitionParameters struct {
 	// runtimePlatform value of the service.
 	RuntimePlatform *RuntimePlatform `json:"runtimePlatform,omitempty"`
 	// The metadata that you apply to the task definition to help you categorize
-	// and organize them. Each tag consists of a key and an optional value, both
-	// of which you define.
+	// and organize them. Each tag consists of a key and an optional value. You
+	// define both of them.
 	//
 	// The following basic restrictions apply to tags:
 	//

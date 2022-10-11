@@ -25,6 +25,21 @@ const (
 	ResourceOwner_OTHER_ACCOUNTS ResourceOwner = "OTHER-ACCOUNTS"
 )
 
+type ResourceRegionScope string
+
+const (
+	ResourceRegionScope_REGIONAL ResourceRegionScope = "REGIONAL"
+	ResourceRegionScope_GLOBAL   ResourceRegionScope = "GLOBAL"
+)
+
+type ResourceRegionScopeFilter string
+
+const (
+	ResourceRegionScopeFilter_ALL      ResourceRegionScopeFilter = "ALL"
+	ResourceRegionScopeFilter_REGIONAL ResourceRegionScopeFilter = "REGIONAL"
+	ResourceRegionScopeFilter_GLOBAL   ResourceRegionScopeFilter = "GLOBAL"
+)
+
 type ResourceShareAssociationStatus string
 
 const (
