@@ -134,6 +134,41 @@ spec:
                     required:
                     - clusterLogging
                     type: object
+                  outpostConfig:
+                    description: An object representing the configuration of your
+                      local Amazon EKS cluster on an Amazon Web Services Outpost.
+                      Before creating a local cluster on an Outpost, review Creating
+                      an Amazon EKS cluster on an Amazon Web Services Outpost (https://docs.aws.amazon.com/eks/latest/userguide/create-cluster-outpost.html)
+                      in the Amazon EKS User Guide. This object isn't available for
+                      creating Amazon EKS clusters on the Amazon Web Services cloud.
+                    properties:
+                      controlPlaneInstanceType:
+                        description: "The Amazon EC2 instance type that you want to
+                          use for your local Amazon EKS cluster on Outposts. The instance
+                          type that you specify is used for all Kubernetes control
+                          plane instances. The instance type can't be changed after
+                          cluster creation. Choose an instance type based on the number
+                          of nodes that your cluster will have. If your cluster will
+                          have: \n * 1–20 nodes, then we recommend specifying a large
+                          instance type. \n * 21–100 nodes, then we recommend specifying
+                          an xlarge instance type. \n * 101–250 nodes, then we recommend
+                          specifying a 2xlarge instance type. \n For a list of the
+                          available Amazon EC2 instance types, see Compute and storage
+                          in Outposts rack features (http://aws.amazon.com/outposts/rack/features/).
+                          The control plane is not automatically scaled by Amazon
+                          EKS. \n This member is required."
+                        type: string
+                      outpostArns:
+                        description: "The ARN of the Outpost that you want to use
+                          for your local Amazon EKS cluster on Outposts. Only a single
+                          Outpost ARN is supported. \n This member is required."
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - controlPlaneInstanceType
+                    - outpostArns
+                    type: object
                   region:
                     description: Region is the region you'd like your Cluster to be
                       created in.
@@ -661,6 +696,28 @@ spec:
                               provider.
                             type: string
                         type: object
+                    type: object
+                  outpostConfig:
+                    description: An object representing the configuration of your
+                      local Amazon EKS cluster on an Amazon Web Services Outpost.
+                      This object isn't available for clusters on the Amazon Web Services
+                      cloud.
+                    properties:
+                      controlPlaneInstanceType:
+                        description: "The Amazon EC2 instance type used for the control
+                          plane. The instance type is the same for all control plane
+                          instances. \n This member is required."
+                        type: string
+                      outpostArns:
+                        description: "The ARN of the Outpost that you specified for
+                          use with your local Amazon EKS cluster on Outposts. \n This
+                          member is required."
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - controlPlaneInstanceType
+                    - outpostArns
                     type: object
                   platformVersion:
                     description: The platform version of your Amazon EKS cluster.
