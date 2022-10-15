@@ -74,6 +74,15 @@ type ClusterParameters struct {
 	// +optional
 	Logging *Logging `json:"logging,omitempty"`
 
+	// An object representing the configuration of your local Amazon EKS cluster on an
+	// Amazon Web Services Outpost. Before creating a local cluster on an Outpost,
+	// review Creating an Amazon EKS cluster on an Amazon Web Services Outpost
+	// (https://docs.aws.amazon.com/eks/latest/userguide/create-cluster-outpost.html)
+	// in the Amazon EKS User Guide. This object isn't available for creating Amazon
+	// EKS clusters on the Amazon Web Services cloud.
+	// +optional
+	OutpostConfig *OutpostConfigRequest `json:"outpostConfig,omitempty"`
+
 	// The VPC configuration used by the cluster control plane. Amazon EKS VPC resources
 	// have specific requirements to work properly with Kubernetes. For more information,
 	// see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
@@ -263,6 +272,11 @@ type ClusterObservation struct {
 	// in the Amazon EKS User Guide .
 	PlatformVersion string `json:"platformVersion,omitempty"`
 
+	// An object representing the configuration of your local Amazon EKS cluster on an
+	// Amazon Web Services Outpost. This object isn't available for clusters on the
+	// Amazon Web Services cloud.
+	OutpostConfig OutpostConfigResponse `json:"outpostConfig,omitempty"`
+
 	// The VPC configuration used by the cluster control plane. Amazon EKS VPC resources
 	// have specific requirements to work properly with Kubernetes. For more information,
 	// see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
@@ -286,6 +300,55 @@ type Identity struct {
 type OIDC struct {
 	// The issuer URL for the OpenID Connect identity provider.
 	Issuer string `json:"issuer,omitempty"`
+}
+
+// OutpostConfigRequest describes the Outposts configuration for eks
+type OutpostConfigRequest struct {
+	// The Amazon EC2 instance type that you want to use for your local Amazon EKS
+	// cluster on Outposts. The instance type that you specify is used for all
+	// Kubernetes control plane instances. The instance type can't be changed after
+	// cluster creation. Choose an instance type based on the number of nodes that your
+	// cluster will have. If your cluster will have:
+	//
+	// * 1–20 nodes, then we recommend
+	// specifying a large instance type.
+	//
+	// * 21–100 nodes, then we recommend specifying
+	// an xlarge instance type.
+	//
+	// * 101–250 nodes, then we recommend specifying a
+	// 2xlarge instance type.
+	//
+	// For a list of the available Amazon EC2 instance types,
+	// see Compute and storage in Outposts rack features
+	// (http://aws.amazon.com/outposts/rack/features/). The control plane is not
+	// automatically scaled by Amazon EKS.
+	//
+	// This member is required.
+	ControlPlaneInstanceType string `json:"controlPlaneInstanceType"`
+
+	// The ARN of the Outpost that you want to use for your local Amazon EKS cluster on
+	// Outposts. Only a single Outpost ARN is supported.
+	//
+	// This member is required.
+	OutpostArns []string `json:"outpostArns"`
+	// contains filtered or unexported fields
+}
+
+// OutpostConfigResponse describse the observed Outposts configuration for a cluster
+type OutpostConfigResponse struct {
+	// The Amazon EC2 instance type used for the control plane. The instance type is
+	// the same for all control plane instances.
+	//
+	// This member is required.
+	ControlPlaneInstanceType string `json:"controlPlaneInstanceType"`
+
+	// The ARN of the Outpost that you specified for use with your local Amazon EKS
+	// cluster on Outposts.
+	//
+	// This member is required.
+	OutpostArns []string `json:"outpostArns"`
+	// contains filtered or unexported fields
 }
 
 // VpcConfigResponse is the observed VPC configuration for a cluster.
