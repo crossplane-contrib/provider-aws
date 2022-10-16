@@ -250,6 +250,13 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 		}
 	}
 
+	if cluster.OutpostConfig != nil {
+		o.OutpostConfig = v1beta1.OutpostConfigResponse{
+			ControlPlaneInstanceType: awsclients.StringValue(cluster.OutpostConfig.ControlPlaneInstanceType),
+			OutpostArns:              cluster.OutpostConfig.OutpostArns,
+		}
+	}
+
 	if cluster.ResourcesVpcConfig != nil {
 		o.ResourcesVpcConfig = v1beta1.VpcConfigResponse{
 			ClusterSecurityGroupID: awsclients.StringValue(cluster.ResourcesVpcConfig.ClusterSecurityGroupId),
@@ -295,6 +302,12 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { 
 				Enabled: cl.Enabled,
 				Types:   types,
 			}
+		}
+	}
+	if cluster.OutpostConfig != nil {
+		in.OutpostConfig.ControlPlaneInstanceType = awsclients.StringValue(cluster.OutpostConfig.ControlPlaneInstanceType)
+		if len(in.OutpostConfig.OutpostArns) == 0 && len(cluster.OutpostConfig.OutpostArns) > 0 {
+			in.OutpostConfig.OutpostArns = cluster.OutpostConfig.OutpostArns
 		}
 	}
 	if cluster.ResourcesVpcConfig != nil {
