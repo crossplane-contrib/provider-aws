@@ -79,9 +79,6 @@ func GenerateUserPool(resp *svcsdk.DescribeUserPoolOutput) *svcapitypes.UserPool
 			}
 			f1.InviteMessageTemplate = f1f1
 		}
-		if resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.UnusedAccountValidityDays = resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays
-		}
 		cr.Spec.ForProvider.AdminCreateUserConfig = f1
 	} else {
 		cr.Spec.ForProvider.AdminCreateUserConfig = nil
@@ -476,9 +473,6 @@ func GenerateCreateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.CreateUserPoo
 			}
 			f1.SetInviteMessageTemplate(f1f1)
 		}
-		if cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.SetUnusedAccountValidityDays(*cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays)
-		}
 		res.SetAdminCreateUserConfig(f1)
 	}
 	if cr.Spec.ForProvider.AliasAttributes != nil {
@@ -782,9 +776,6 @@ func GenerateUpdateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.UpdateUserPoo
 				f1f1.SetSMSMessage(*cr.Spec.ForProvider.AdminCreateUserConfig.InviteMessageTemplate.SMSMessage)
 			}
 			f1.SetInviteMessageTemplate(f1f1)
-		}
-		if cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.SetUnusedAccountValidityDays(*cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays)
 		}
 		res.SetAdminCreateUserConfig(f1)
 	}

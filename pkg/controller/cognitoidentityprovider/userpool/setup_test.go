@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider/fake"
 )
 
 type functionModifier func(*svcapitypes.UserPool)
@@ -48,12 +49,17 @@ var (
 	testNumberChanged int64  = 2
 	testBool1         bool   = true
 	testBool2         bool   = false
+	testTagKey        string = "test-key"
+	testTagValue      string = "test-value"
+	testOtherTagKey   string = "test-other-key"
+	testOtherTagValue string = "test-other-value"
 )
 
 func TestIsUpToDate(t *testing.T) {
 	type args struct {
-		cr   *svcapitypes.UserPool
-		resp *svcsdk.DescribeUserPoolOutput
+		cr    *svcapitypes.UserPool
+		resp  *svcsdk.DescribeUserPoolOutput
+		resp2 *svcsdk.GetUserPoolMfaConfigOutput
 	}
 
 	type want struct {
@@ -67,8 +73,9 @@ func TestIsUpToDate(t *testing.T) {
 	}{
 		"UpToDate": {
 			args: args{
-				cr:   userPool(withSpec(svcapitypes.UserPoolParameters{})),
-				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{}},
+				cr:    userPool(withSpec(svcapitypes.UserPoolParameters{})),
+				resp:  &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: true,
@@ -95,6 +102,7 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -117,20 +125,7 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				}},
-			},
-			want: want{
-				result: false,
-				err:    nil,
-			},
-		},
-		"ChangedAliasAttributes": {
-			args: args{
-				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
-					AliasAttributes: []*string{&testString1},
-				})),
-				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
-					AliasAttributes: []*string{&testString2},
-				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -145,6 +140,7 @@ func TestIsUpToDate(t *testing.T) {
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					AutoVerifiedAttributes: []*string{&testString2},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -163,6 +159,7 @@ func TestIsUpToDate(t *testing.T) {
 						ChallengeRequiredOnNewDevice: &testBool2,
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -181,6 +178,7 @@ func TestIsUpToDate(t *testing.T) {
 						From: &testString2,
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -189,12 +187,17 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"ChangedEmailVerificationMessage": {
 			args: args{
-				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
-					EmailVerificationMessage: &testString1,
-				})),
+				cr: userPool(
+					withSpec(svcapitypes.UserPoolParameters{
+						EmailVerificationMessage: &testString1,
+						VerificationMessageTemplate: &svcapitypes.VerificationMessageTemplateType{
+							DefaultEmailOption: &testString1,
+						},
+					})),
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					EmailVerificationMessage: &testString2,
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -205,10 +208,14 @@ func TestIsUpToDate(t *testing.T) {
 			args: args{
 				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
 					EmailVerificationSubject: &testString1,
+					VerificationMessageTemplate: &svcapitypes.VerificationMessageTemplateType{
+						DefaultEmailOption: &testString1,
+					},
 				})),
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					EmailVerificationSubject: &testString2,
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -231,6 +238,7 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -245,6 +253,32 @@ func TestIsUpToDate(t *testing.T) {
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					MfaConfiguration: &testString2,
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{
+					MfaConfiguration: &testString2,
+				},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
+		"ChangedMFAToken": {
+			args: args{
+				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
+					MFAConfiguration: &testString1,
+					SoftwareTokenMFAConfiguration: &svcapitypes.SoftwareTokenMFAConfigType{
+						Enabled: &testBool1,
+					},
+				})),
+				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
+					MfaConfiguration: &testString1,
+				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{
+					MfaConfiguration: &testString1,
+					SoftwareTokenMfaConfiguration: &svcsdk.SoftwareTokenMfaConfigType{
+						Enabled: &testBool2,
+					},
+				},
 			},
 			want: want{
 				result: false,
@@ -267,6 +301,7 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -293,6 +328,7 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -307,6 +343,7 @@ func TestIsUpToDate(t *testing.T) {
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					SmsAuthenticationMessage: &testString2,
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -325,6 +362,7 @@ func TestIsUpToDate(t *testing.T) {
 						ExternalId: &testString2,
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -335,10 +373,14 @@ func TestIsUpToDate(t *testing.T) {
 			args: args{
 				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
 					SmsVerificationMessage: &testString1,
+					VerificationMessageTemplate: &svcapitypes.VerificationMessageTemplateType{
+						DefaultEmailOption: &testString1,
+					},
 				})),
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					SmsVerificationMessage: &testString2,
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -357,38 +399,22 @@ func TestIsUpToDate(t *testing.T) {
 						AdvancedSecurityMode: &testString2,
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
 				err:    nil,
 			},
 		},
-		"ChangedUsernameAttributes": {
+		"ChangedUserPoolTags": {
 			args: args{
 				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
-					UsernameAttributes: []*string{&testString1},
+					UserPoolTags: map[string]*string{testTagKey: &testTagValue},
 				})),
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
-					UsernameAttributes: []*string{&testString2},
+					UserPoolTags: map[string]*string{testOtherTagKey: &testOtherTagValue},
 				}},
-			},
-			want: want{
-				result: false,
-				err:    nil,
-			},
-		},
-		"ChangedUsernameConfiguration": {
-			args: args{
-				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
-					UsernameConfiguration: &svcapitypes.UsernameConfigurationType{
-						CaseSensitive: &testBool1,
-					},
-				})),
-				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
-					UsernameConfiguration: &svcsdk.UsernameConfigurationType{
-						CaseSensitive: &testBool2,
-					},
-				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -407,6 +433,7 @@ func TestIsUpToDate(t *testing.T) {
 						DefaultEmailOption: &testString2,
 					},
 				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
 			},
 			want: want{
 				result: false,
@@ -417,8 +444,15 @@ func TestIsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
+			h := &hooks{
+				client: &fake.MockCognitoIdentityProviderClient{
+					MockGetUserPoolMfaConfig: func(in *svcsdk.GetUserPoolMfaConfigInput) (*svcsdk.GetUserPoolMfaConfigOutput, error) {
+						return tc.resp2, nil
+					},
+				},
+			}
 			// Act
-			result, err := isUpToDate(tc.args.cr, tc.args.resp)
+			result, err := h.isUpToDate(tc.args.cr, tc.args.resp)
 
 			// Assert
 			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {
