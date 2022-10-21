@@ -289,7 +289,7 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) {
+func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) { // nolint:gocyclo
 	// (PocketMobsters): Creating a context here is a temporary thing until a future
 	// update drops for aws-controllers-k8s/code-generator
 	ctx := context.Background()
