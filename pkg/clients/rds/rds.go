@@ -19,7 +19,6 @@ package rds
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -657,14 +656,14 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, error) {
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, error) {
 	_, pwdChanged, err := GetPassword(ctx, kube, r.Spec.ForProvider.MasterPasswordSecretRef, r.Spec.WriteConnectionSecretToReference)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	diff := cmp.Diff(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
@@ -677,11 +676,8 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 	)
-	if diff != "" {
-		log.Println(r.ObjectMeta.Name, diff)
-	}
 
-	return diff == "" && !pwdChanged, nil
+	return diff == "" && !pwdChanged, diff, nil
 }
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
