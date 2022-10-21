@@ -3,6 +3,7 @@ package dbinstance
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -325,7 +326,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
-	return cmp.Equal(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
+	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Tags"),
@@ -336,7 +337,29 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredMaintenanceWindow"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredBackupWindow"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
-	) && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged, nil
+	)
+
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged {
+		return true, nil
+	}
+
+	diff = "Found observed difference in dbinstance\n" + diff
+	if maintenanceWindowChanged {
+		diff += "\ndesired maintanaceWindow: "
+		diff += *cr.Spec.ForProvider.PreferredMaintenanceWindow
+		diff += "\nobserved maintanaceWindow: "
+		diff += *db.PreferredMaintenanceWindow
+	}
+	if backupWindowChanged {
+		diff += "\ndesired backupWindow: "
+		diff += *cr.Spec.ForProvider.PreferredBackupWindow
+		diff += "\nobserved backupWindow: "
+		diff += *db.PreferredBackupWindow
+	}
+
+	log.Println(diff)
+
+	return false, nil
 }
 
 func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBInstanceParameters) (*svcapitypes.DBInstanceParameters, error) {

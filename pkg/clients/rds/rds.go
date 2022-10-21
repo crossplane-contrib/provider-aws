@@ -677,7 +677,13 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 	)
 
-	return diff == "" && !pwdChanged, diff, nil
+	if diff == "" && !pwdChanged {
+		return true, "", nil
+	}
+
+	diff = "Found observed difference in rds\n" + diff
+
+	return false, diff, nil
 }
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
