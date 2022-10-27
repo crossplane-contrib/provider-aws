@@ -139,6 +139,10 @@ AWS_SDK_GO_VERSION ?= $(shell awk '/github.com\/aws\/aws-sdk-go / { print $$2 }'
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
 services: $(GOIMPORTS)
+	@if [ ! -d "$(WORK_DIR)" ]; then \
+		$(INFO) creating $(WORK_DIR) folder; \
+		mkdir $(WORK_DIR); \
+	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "$(CODE_GENERATOR_REPO)"; \
 	fi
