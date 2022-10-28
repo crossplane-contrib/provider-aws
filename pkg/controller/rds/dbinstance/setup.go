@@ -326,9 +326,25 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
+	wantedVersion := *cr.Spec.ForProvider.EngineVersion
+	currentVersion := *db.EngineVersion
+
+	versionChanged := wantedVersion != currentVersion
+
+	if versionChanged && aws.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) {
+		wantedMaiorList := strings.Split(wantedVersion, ".")
+		wantedMaior := wantedMaiorList[0]
+		currentMaiorList := strings.Split(currentVersion, ".")
+		currentMaior := currentMaiorList[0]
+
+		versionChanged = wantedMaior != currentMaior
+
+	}
+
 	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "SkipFinalSnapshot"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "FinalDBSnapshotIdentifier"),
@@ -339,7 +355,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
 	)
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged {
 		return true, nil
 	}
 
