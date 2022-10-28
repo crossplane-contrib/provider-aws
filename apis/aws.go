@@ -67,7 +67,6 @@ import (
 	mqv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/mq/v1alpha1"
 	mwaav1alpha1 "github.com/crossplane-contrib/provider-aws/apis/mwaa/v1alpha1"
 	neptunev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/neptune/v1alpha1"
-	notificationv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/notification/v1alpha1"
 	opensearchv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/opensearchservice/v1alpha1"
 	prometheusservice "github.com/crossplane-contrib/provider-aws/apis/prometheusservice/v1alpha1"
 	ramv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/ram/v1alpha1"
@@ -86,7 +85,6 @@ import (
 	sqsv1beta1 "github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
 	transferv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
 	awsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsv1alpha3 "github.com/crossplane-contrib/provider-aws/apis/v1alpha3"
 	awsv1beta1 "github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 )
 
@@ -105,10 +103,8 @@ func init() {
 		elbv2manualv1alpha1.SchemeBuilder.AddToScheme,
 		elbv2v1alpha1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
-		notificationv1alpha1.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
 		awsv1alpha1.SchemeBuilder.AddToScheme,
-		awsv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1beta1.SchemeBuilder.AddToScheme,
 		acmv1alpha1.SchemeBuilder.AddToScheme,
 		acmv1beta1.SchemeBuilder.AddToScheme,

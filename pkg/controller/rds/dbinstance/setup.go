@@ -3,6 +3,7 @@ package dbinstance
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -288,7 +289,7 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) {
+func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) { // nolint:gocyclo
 	// (PocketMobsters): Creating a context here is a temporary thing until a future
 	// update drops for aws-controllers-k8s/code-generator
 	ctx := context.Background()
@@ -325,9 +326,25 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
-	return cmp.Equal(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
+	wantedVersion := *cr.Spec.ForProvider.EngineVersion
+	currentVersion := *db.EngineVersion
+
+	versionChanged := wantedVersion != currentVersion
+
+	if versionChanged && aws.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) {
+		wantedMaiorList := strings.Split(wantedVersion, ".")
+		wantedMaior := wantedMaiorList[0]
+		currentMaiorList := strings.Split(currentVersion, ".")
+		currentMaior := currentMaiorList[0]
+
+		versionChanged = wantedMaior != currentMaior
+
+	}
+
+	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "SkipFinalSnapshot"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "FinalDBSnapshotIdentifier"),
@@ -336,7 +353,29 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredMaintenanceWindow"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredBackupWindow"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
-	) && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged, nil
+	)
+
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged {
+		return true, nil
+	}
+
+	diff = "Found observed difference in dbinstance\n" + diff
+	if maintenanceWindowChanged {
+		diff += "\ndesired maintanaceWindow: "
+		diff += *cr.Spec.ForProvider.PreferredMaintenanceWindow
+		diff += "\nobserved maintanaceWindow: "
+		diff += *db.PreferredMaintenanceWindow
+	}
+	if backupWindowChanged {
+		diff += "\ndesired backupWindow: "
+		diff += *cr.Spec.ForProvider.PreferredBackupWindow
+		diff += "\nobserved backupWindow: "
+		diff += *db.PreferredBackupWindow
+	}
+
+	log.Println(diff)
+
+	return false, nil
 }
 
 func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBInstanceParameters) (*svcapitypes.DBInstanceParameters, error) {

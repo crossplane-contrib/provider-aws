@@ -302,9 +302,9 @@ func formatModifyVpcEndpointInput(obj *svcsdk.ModifyVpcEndpointInput) {
 //
 // Example:
 //
-//  "base": ["a", "b", "g", "x"]
-//  "subtract": ["b", "x", "y"]
-//  "result": ["a", "g"]
+//	"base": ["a", "b", "g", "x"]
+//	"subtract": ["b", "x", "y"]
+//	"result": ["a", "g"]
 func listSubtractFromStringPtr(base, subtract []*string) []*string {
 	result := []*string{}
 

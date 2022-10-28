@@ -22,6 +22,7 @@ import (
 	"context"
 	v1beta11 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	v1beta12 "github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	reference "github.com/crossplane/crossplane-runtime/pkg/reference"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -98,6 +99,22 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 	}
 	mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDs = reference.ToPtrValues(mrsp.ResolvedValues)
 	mg.Spec.ForProvider.CustomClusterParameters.SecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARN),
+		Extract:      v1beta12.SNSTopicARN(),
+		Reference:    mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARNRef,
+		Selector:     mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARNSelector,
+		To: reference.To{
+			List:    &v1beta12.TopicList{},
+			Managed: &v1beta12.Topic{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARN")
+	}
+	mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomClusterParameters.NotificationTopicARNRef = rsp.ResolvedReference
 
 	return nil
 }

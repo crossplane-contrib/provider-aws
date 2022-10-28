@@ -84,11 +84,14 @@ spec:
                       be created in.
                     type: string
                   securityGroupId:
+                    description: If using a SecurityGroup managed by crossplane as
+                      reference, enable ignoreIngress or ignoreEgress on the sg to
+                      prevent the rules to be constantly created and deleted
                     type: string
                   securityGroupIdRef:
-                    description: If using a SecurittyGroup managed by crossplane as
+                    description: If using a SecurityGroup managed by crossplane as
                       reference, enable ignoreIngress or ignoreEgress on the sg to
-                      prevent the roules to be constantly created and deleted
+                      prevent the rules to be constantly created and deleted
                     properties:
                       name:
                         description: Name of the referenced object.

@@ -130,13 +130,13 @@ func IsSGUpToDate(sg v1beta1.SecurityGroupParameters, observed ec2types.Security
 		return false
 	}
 
-	if !awsclients.BoolValue(sg.IgnorIngress) {
+	if !awsclients.BoolValue(sg.IgnoreIngress) {
 		add, remove := DiffPermissions(GenerateEC2Permissions(sg.Ingress), observed.IpPermissions)
 		if len(add) > 0 || len(remove) > 0 {
 			return false
 		}
 	}
-	if !awsclients.BoolValue(sg.IgnorEgress) {
+	if !awsclients.BoolValue(sg.IgnoreEgress) {
 		add, remove := DiffPermissions(GenerateEC2Permissions(sg.Egress), observed.IpPermissionsEgress)
 		if len(add) > 0 || len(remove) > 0 {
 			return false

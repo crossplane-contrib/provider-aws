@@ -140,7 +140,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
-	upToDate, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
+	upToDate, diff, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDateFailed)
 	}
@@ -150,6 +150,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
 		ConnectionDetails:       rds.GetConnectionDetails(*cr),
+		Diff:                    diff,
 	}, nil
 }
 
