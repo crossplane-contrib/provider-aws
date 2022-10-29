@@ -185,11 +185,20 @@ type TargetObservation struct {
 	TargetHealth *TargetHealth `json:"targetHealth,omitempty"`
 }
 
-// GetState returns TargetHealth.State if it is not nil, otherwise an empty
+// GetState returns s.TargetHealth.State if it is not nil, otherwise an empty
 // string.
 func (s *TargetObservation) GetState() string {
 	if s.TargetHealth != nil && s.TargetHealth.State != nil {
 		return *s.TargetHealth.State
+	}
+	return ""
+}
+
+// GetReason returns s.TargetHealth.Reason if it is not nil, otherwise an empty
+// string.
+func (s *TargetObservation) GetReason() string {
+	if s.TargetHealth != nil && s.TargetHealth.Reason != nil {
+		return *s.TargetHealth.Reason
 	}
 	return ""
 }
