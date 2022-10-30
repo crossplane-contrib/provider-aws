@@ -20,7 +20,7 @@ spec:
         - name: sample-subnet2
       securityGroupIdRefs:
         - name: sample-cluster-sg
-    version: "1.16"
+    version: "1.25"
   writeConnectionSecretToRef:
     name: cluster-conn
     namespace: default
