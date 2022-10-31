@@ -407,30 +407,24 @@ go run cmd/provider/main.go
 
 ##### In-cluster
 
-You can build the images and deploy it into the cluster using Crossplane Package Manager
-to test the real-world scenario. There are two Docker images to be built; one has
-the controller image, the other one has package metadata and CRDs. We need to choose a
-controller image before building metadata image. Then we'll start the build process.
+You can build the image and deploy it into the cluster using Crossplane Package Manager
+to test the real-world scenario.
 
 Pre-requisites:
-* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.5/reference/install.html).
-* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.5/getting-started/install-configure.html#install-crossplane-cli).
+* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/master/reference/install.html).
+* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/master/getting-started/install-configure.html#install-crossplane-cli).
 * Docker hub account with your own public repository.
 
 Follow the steps below to get set-up for in-cluster testing:
-* Run `make build DOCKER_REGISTRY=<username> VERSION=test-version` in `provider-aws`. This will create two images mentioned above:
-  * `build-<short-sha>/provider-aws-amd64:latest //Controller Image This is the one that will be running in the cluster.`
-  * `build-<short-sha>/provider-aws-controller-amd64:latest //Metadata Image This is the one we'll use when we install the provider.`
+* Run `make build VERSION=test-version` in `provider-aws`. This will create two artifacts
+  * `build-<short-sha>/provider-aws-amd64:latest` Controller image
+  * `_output/xpkg/linux_amd64/provider-aws-foo.xpkg` OCI image bundle with the controller and package.yaml
 
 
-* Tag and push both the images to your personal docker repository.
+* Tag and push both the images to your personal docker repository:
 
 ```console
-docker image tag build-<short-sha>/provider-aws-controller-amd64:latest <username>/provider-aws-controller:test-version
-docker push <username>/provider-aws-controller:test-version
-
-docker image tag build-<short-sha>/provider-aws-amd64:latest <username>/provider-aws:test-version
-docker push <username>/provider-aws:test-version
+make publish.artifacts PLATFORMS=linux_amd64 XPKG_REG_ORGS=index.docker.io/<username> VERSION=test-version
 ```
 
 * Now we got the provider package pushed, and we can install it just like an official provider.
