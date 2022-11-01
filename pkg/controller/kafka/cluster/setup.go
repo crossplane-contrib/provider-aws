@@ -64,7 +64,8 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-			managed.WithConnectionPublishers(cps...)))
+			managed.WithConnectionPublishers(cps...),
+			managed.WithInitializers()))
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
@@ -117,7 +118,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
-	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
+	obj.ClusterName = awsclients.String(cr.GetName())
 	obj.BrokerNodeGroupInfo = &svcsdk.BrokerNodeGroupInfo{
 		ClientSubnets:  cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.ClientSubnets,
 		InstanceType:   cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.InstanceType,
