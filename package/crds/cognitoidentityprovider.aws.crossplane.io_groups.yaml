@@ -65,19 +65,19 @@ spec:
                     description: A string containing the description of the group.
                     type: string
                   precedence:
-                    description: "A nonnegative integer value that specifies the precedence
-                      of this group relative to the other groups that a user can belong
-                      to in the user pool. Zero is the highest precedence value. Groups
-                      with lower Precedence values take precedence over groups with
-                      higher or null Precedence values. If a user belongs to two or
-                      more groups, it is the group with the lowest precedence value
-                      whose role ARN will be used in the cognito:roles and cognito:preferred_role
-                      claims in the user's tokens. \n Two groups can have the same
-                      Precedence value. If this happens, neither group takes precedence
-                      over the other. If two groups with the same Precedence have
-                      the same role ARN, that role is used in the cognito:preferred_role
+                    description: "A non-negative integer value that specifies the
+                      precedence of this group relative to the other groups that a
+                      user can belong to in the user pool. Zero is the highest precedence
+                      value. Groups with lower Precedence values take precedence over
+                      groups with higher ornull Precedence values. If a user belongs
+                      to two or more groups, it is the group with the lowest precedence
+                      value whose role ARN is given in the user's tokens for the cognito:roles
+                      and cognito:preferred_role claims. \n Two groups can have the
+                      same Precedence value. If this happens, neither group takes
+                      precedence over the other. If two groups with the same Precedence
+                      have the same role ARN, that role is used in the cognito:preferred_role
                       claim in tokens for users in each group. If the two groups have
-                      different role ARNs, the cognito:preferred_role claim is not
+                      different role ARNs, the cognito:preferred_role claim isn't
                       set in users' tokens. \n The default Precedence value is null."
                     format: int64
                     type: integer
@@ -430,7 +430,7 @@ spec:
                     format: date-time
                     type: string
                   roleARN:
-                    description: The role ARN for the group.
+                    description: The role Amazon Resource Name (ARN) for the group.
                     type: string
                   userPoolID:
                     description: The user pool ID for the user pool.

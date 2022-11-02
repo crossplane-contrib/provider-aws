@@ -282,6 +282,13 @@ const (
 	StreamViewType_KEYS_ONLY          StreamViewType = "KEYS_ONLY"
 )
 
+type TableClass string
+
+const (
+	TableClass_STANDARD                   TableClass = "STANDARD"
+	TableClass_STANDARD_INFREQUENT_ACCESS TableClass = "STANDARD_INFREQUENT_ACCESS"
+)
+
 type TableStatus_SDK string
 
 const (

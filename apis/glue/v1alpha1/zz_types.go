@@ -43,6 +43,11 @@ type Action struct {
 }
 
 // +kubebuilder:skipversion
+type AuditContext struct {
+	AllColumnsRequested *bool `json:"allColumnsRequested,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BatchStopJobRunError struct {
 	JobName *string `json:"jobName,omitempty"`
 }
@@ -90,6 +95,8 @@ type CatalogImportStatus struct {
 
 // +kubebuilder:skipversion
 type CatalogTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Tables []*string `json:"tables,omitempty"`
@@ -133,6 +140,11 @@ type ColumnError struct {
 
 // +kubebuilder:skipversion
 type ColumnImportance struct {
+	ColumnName *string `json:"columnName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ColumnRowFilter struct {
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
@@ -222,6 +234,8 @@ type CrawlerMetrics struct {
 type CrawlerTargets struct {
 	CatalogTargets []*CatalogTarget `json:"catalogTargets,omitempty"`
 
+	DeltaTargets []*DeltaTarget `json:"deltaTargets,omitempty"`
+
 	DynamoDBTargets []*DynamoDBTarget `json:"dynamoDBTargets,omitempty"`
 
 	JdbcTargets []*JdbcTarget `json:"jdbcTargets,omitempty"`
@@ -246,6 +260,8 @@ type Crawler_SDK struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+
+	LakeFormationConfiguration *LakeFormationConfiguration `json:"lakeFormationConfiguration,omitempty"`
 	// Status and error information about the most recent crawl.
 	LastCrawl *LastCrawlInfo `json:"lastCrawl,omitempty"`
 
@@ -344,6 +360,13 @@ type CsvClassifier struct {
 }
 
 // +kubebuilder:skipversion
+type CustomEntityType struct {
+	Name *string `json:"name,omitempty"`
+
+	RegexString *string `json:"regexString,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DataLakePrincipal struct {
 	DataLakePrincipalIdentifier *string `json:"dataLakePrincipalIdentifier,omitempty"`
 }
@@ -394,6 +417,15 @@ type DateColumnStatisticsData struct {
 	MaximumValue *metav1.Time `json:"maximumValue,omitempty"`
 
 	MinimumValue *metav1.Time `json:"minimumValue,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeltaTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	DeltaTables []*string `json:"deltaTables,omitempty"`
+
+	WriteManifest *bool `json:"writeManifest,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -597,6 +629,8 @@ type JobRun struct {
 
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
 
+	DPUSeconds *float64 `json:"dPUSeconds,omitempty"`
+
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
 	JobName *string `json:"jobName,omitempty"`
@@ -710,6 +744,13 @@ type KeySchemaElement struct {
 // +kubebuilder:skipversion
 type LabelingSetGenerationTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LakeFormationConfiguration struct {
+	AccountID *string `json:"accountID,omitempty"`
+
+	UseLakeFormationCredentials *bool `json:"useLakeFormationCredentials,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -936,6 +977,33 @@ type SerDeInfo struct {
 }
 
 // +kubebuilder:skipversion
+type Session struct {
+	// Specifies the connections used by a job.
+	Connections *ConnectionsList `json:"connections,omitempty"`
+
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+
+	GlueVersion *string `json:"glueVersion,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SessionCommand struct {
+	Name *string `json:"name,omitempty"`
+
+	PythonVersion *string `json:"pythonVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SortCriterion struct {
 	FieldName *string `json:"fieldName,omitempty"`
 }
@@ -945,6 +1013,29 @@ type StartingEventBatchCondition struct {
 	BatchSize *int64 `json:"batchSize,omitempty"`
 
 	BatchWindow *int64 `json:"batchWindow,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Statement struct {
+	Code *string `json:"code,omitempty"`
+
+	ID *int64 `json:"id,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StatementOutput struct {
+	ErrorName *string `json:"errorName,omitempty"`
+
+	ErrorValue *string `json:"errorValue,omitempty"`
+
+	ExecutionCount *int64 `json:"executionCount,omitempty"`
+
+	Traceback []*string `json:"traceback,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StatementOutputData struct {
+	TextPlain *string `json:"textPlain,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1086,6 +1177,11 @@ type TriggerUpdate struct {
 	Name *string `json:"name,omitempty"`
 
 	Schedule *string `json:"schedule,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type UnfilteredPartition struct {
+	IsRegisteredWithLakeFormation *bool `json:"isRegisteredWithLakeFormation,omitempty"`
 }
 
 // +kubebuilder:skipversion

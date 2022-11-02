@@ -95,16 +95,30 @@ spec:
                           settings override client-side settings, then the query uses
                           the workgroup settings.
                         properties:
+                          aclConfiguration:
+                            description: Indicates that an Amazon S3 canned ACL should
+                              be set to control ownership of stored query results.
+                              When Athena stores query results in Amazon S3, the canned
+                              ACL is set with the x-amz-acl request header. For more
+                              information about S3 Object Ownership, see Object Ownership
+                              settings (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html#object-ownership-overview)
+                              in the Amazon S3 User Guide.
+                            properties:
+                              s3ACLOption:
+                                type: string
+                            type: object
                           encryptionConfiguration:
                             description: If query results are encrypted in Amazon
                               S3, indicates the encryption option used (for example,
-                              SSE-KMS or CSE-KMS) and key information.
+                              SSE_KMS or CSE_KMS) and key information.
                             properties:
                               encryptionOption:
                                 type: string
                               kmsKey:
                                 type: string
                             type: object
+                          expectedBucketOwner:
+                            type: string
                           outputLocation:
                             type: string
                         type: object

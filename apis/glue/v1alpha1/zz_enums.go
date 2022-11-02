@@ -178,8 +178,9 @@ const (
 type DataFormat string
 
 const (
-	DataFormat_AVRO DataFormat = "AVRO"
-	DataFormat_JSON DataFormat = "JSON"
+	DataFormat_AVRO     DataFormat = "AVRO"
+	DataFormat_JSON     DataFormat = "JSON"
+	DataFormat_PROTOBUF DataFormat = "PROTOBUF"
 )
 
 type DeleteBehavior string
@@ -290,6 +291,13 @@ const (
 	Permission_DATA_LOCATION_ACCESS Permission = "DATA_LOCATION_ACCESS"
 )
 
+type PermissionType string
+
+const (
+	PermissionType_COLUMN_PERMISSION      PermissionType = "COLUMN_PERMISSION"
+	PermissionType_CELL_FILTER_PERMISSION PermissionType = "CELL_FILTER_PERMISSION"
+)
+
 type PrincipalType string
 
 const (
@@ -367,6 +375,17 @@ const (
 	SchemaVersionStatus_DELETING  SchemaVersionStatus = "DELETING"
 )
 
+type SessionStatus string
+
+const (
+	SessionStatus_PROVISIONING SessionStatus = "PROVISIONING"
+	SessionStatus_READY        SessionStatus = "READY"
+	SessionStatus_FAILED       SessionStatus = "FAILED"
+	SessionStatus_TIMEOUT      SessionStatus = "TIMEOUT"
+	SessionStatus_STOPPING     SessionStatus = "STOPPING"
+	SessionStatus_STOPPED      SessionStatus = "STOPPED"
+)
+
 type Sort string
 
 const (
@@ -379,6 +398,17 @@ type SortDirectionType string
 const (
 	SortDirectionType_DESCENDING SortDirectionType = "DESCENDING"
 	SortDirectionType_ASCENDING  SortDirectionType = "ASCENDING"
+)
+
+type StatementState string
+
+const (
+	StatementState_WAITING    StatementState = "WAITING"
+	StatementState_RUNNING    StatementState = "RUNNING"
+	StatementState_AVAILABLE  StatementState = "AVAILABLE"
+	StatementState_CANCELLING StatementState = "CANCELLING"
+	StatementState_CANCELLED  StatementState = "CANCELLED"
+	StatementState_ERROR      StatementState = "ERROR"
 )
 
 type TaskRunSortColumnType string

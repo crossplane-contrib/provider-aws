@@ -34,6 +34,8 @@ type RouteParameters struct {
 	// You can only use this option when the VPC contains a subnet which is associated
 	// with a Wavelength Zone.
 	CarrierGatewayID *string `json:"carrierGatewayID,omitempty"`
+	// The Amazon Resource Name (ARN) of the core network.
+	CoreNetworkARN *string `json:"coreNetworkARN,omitempty"`
 	// The IPv4 CIDR address block used for the destination match. Routing decisions
 	// are based on the most specific match. We modify the specified CIDR block
 	// to its canonical form; for example, if you specify 100.68.0.18/18, we modify

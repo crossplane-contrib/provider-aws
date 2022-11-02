@@ -61,27 +61,39 @@ func GenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 	} else {
 		cr.Spec.ForProvider.Description = nil
 	}
+	if resp.Crawler.LakeFormationConfiguration != nil {
+		f7 := &svcapitypes.LakeFormationConfiguration{}
+		if resp.Crawler.LakeFormationConfiguration.AccountId != nil {
+			f7.AccountID = resp.Crawler.LakeFormationConfiguration.AccountId
+		}
+		if resp.Crawler.LakeFormationConfiguration.UseLakeFormationCredentials != nil {
+			f7.UseLakeFormationCredentials = resp.Crawler.LakeFormationConfiguration.UseLakeFormationCredentials
+		}
+		cr.Spec.ForProvider.LakeFormationConfiguration = f7
+	} else {
+		cr.Spec.ForProvider.LakeFormationConfiguration = nil
+	}
 	if resp.Crawler.LastCrawl != nil {
-		f7 := &svcapitypes.LastCrawlInfo{}
+		f8 := &svcapitypes.LastCrawlInfo{}
 		if resp.Crawler.LastCrawl.ErrorMessage != nil {
-			f7.ErrorMessage = resp.Crawler.LastCrawl.ErrorMessage
+			f8.ErrorMessage = resp.Crawler.LastCrawl.ErrorMessage
 		}
 		if resp.Crawler.LastCrawl.LogGroup != nil {
-			f7.LogGroup = resp.Crawler.LastCrawl.LogGroup
+			f8.LogGroup = resp.Crawler.LastCrawl.LogGroup
 		}
 		if resp.Crawler.LastCrawl.LogStream != nil {
-			f7.LogStream = resp.Crawler.LastCrawl.LogStream
+			f8.LogStream = resp.Crawler.LastCrawl.LogStream
 		}
 		if resp.Crawler.LastCrawl.MessagePrefix != nil {
-			f7.MessagePrefix = resp.Crawler.LastCrawl.MessagePrefix
+			f8.MessagePrefix = resp.Crawler.LastCrawl.MessagePrefix
 		}
 		if resp.Crawler.LastCrawl.StartTime != nil {
-			f7.StartTime = &metav1.Time{*resp.Crawler.LastCrawl.StartTime}
+			f8.StartTime = &metav1.Time{*resp.Crawler.LastCrawl.StartTime}
 		}
 		if resp.Crawler.LastCrawl.Status != nil {
-			f7.Status = resp.Crawler.LastCrawl.Status
+			f8.Status = resp.Crawler.LastCrawl.Status
 		}
-		cr.Status.AtProvider.LastCrawl = f7
+		cr.Status.AtProvider.LastCrawl = f8
 	} else {
 		cr.Status.AtProvider.LastCrawl = nil
 	}
@@ -91,20 +103,20 @@ func GenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 		cr.Status.AtProvider.LastUpdated = nil
 	}
 	if resp.Crawler.LineageConfiguration != nil {
-		f9 := &svcapitypes.LineageConfiguration{}
+		f10 := &svcapitypes.LineageConfiguration{}
 		if resp.Crawler.LineageConfiguration.CrawlerLineageSettings != nil {
-			f9.CrawlerLineageSettings = resp.Crawler.LineageConfiguration.CrawlerLineageSettings
+			f10.CrawlerLineageSettings = resp.Crawler.LineageConfiguration.CrawlerLineageSettings
 		}
-		cr.Spec.ForProvider.LineageConfiguration = f9
+		cr.Spec.ForProvider.LineageConfiguration = f10
 	} else {
 		cr.Spec.ForProvider.LineageConfiguration = nil
 	}
 	if resp.Crawler.RecrawlPolicy != nil {
-		f11 := &svcapitypes.RecrawlPolicy{}
+		f12 := &svcapitypes.RecrawlPolicy{}
 		if resp.Crawler.RecrawlPolicy.RecrawlBehavior != nil {
-			f11.RecrawlBehavior = resp.Crawler.RecrawlPolicy.RecrawlBehavior
+			f12.RecrawlBehavior = resp.Crawler.RecrawlPolicy.RecrawlBehavior
 		}
-		cr.Spec.ForProvider.RecrawlPolicy = f11
+		cr.Spec.ForProvider.RecrawlPolicy = f12
 	} else {
 		cr.Spec.ForProvider.RecrawlPolicy = nil
 	}
@@ -114,14 +126,14 @@ func GenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 		cr.Spec.ForProvider.Schedule = nil
 	}
 	if resp.Crawler.SchemaChangePolicy != nil {
-		f14 := &svcapitypes.SchemaChangePolicy{}
+		f15 := &svcapitypes.SchemaChangePolicy{}
 		if resp.Crawler.SchemaChangePolicy.DeleteBehavior != nil {
-			f14.DeleteBehavior = resp.Crawler.SchemaChangePolicy.DeleteBehavior
+			f15.DeleteBehavior = resp.Crawler.SchemaChangePolicy.DeleteBehavior
 		}
 		if resp.Crawler.SchemaChangePolicy.UpdateBehavior != nil {
-			f14.UpdateBehavior = resp.Crawler.SchemaChangePolicy.UpdateBehavior
+			f15.UpdateBehavior = resp.Crawler.SchemaChangePolicy.UpdateBehavior
 		}
-		cr.Spec.ForProvider.SchemaChangePolicy = f14
+		cr.Spec.ForProvider.SchemaChangePolicy = f15
 	} else {
 		cr.Spec.ForProvider.SchemaChangePolicy = nil
 	}
@@ -154,44 +166,54 @@ func GenerateCreateCrawlerInput(cr *svcapitypes.Crawler) *svcsdk.CreateCrawlerIn
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
-	if cr.Spec.ForProvider.LineageConfiguration != nil {
-		f2 := &svcsdk.LineageConfiguration{}
-		if cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings != nil {
-			f2.SetCrawlerLineageSettings(*cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings)
+	if cr.Spec.ForProvider.LakeFormationConfiguration != nil {
+		f2 := &svcsdk.LakeFormationConfiguration{}
+		if cr.Spec.ForProvider.LakeFormationConfiguration.AccountID != nil {
+			f2.SetAccountId(*cr.Spec.ForProvider.LakeFormationConfiguration.AccountID)
 		}
-		res.SetLineageConfiguration(f2)
+		if cr.Spec.ForProvider.LakeFormationConfiguration.UseLakeFormationCredentials != nil {
+			f2.SetUseLakeFormationCredentials(*cr.Spec.ForProvider.LakeFormationConfiguration.UseLakeFormationCredentials)
+		}
+		res.SetLakeFormationConfiguration(f2)
+	}
+	if cr.Spec.ForProvider.LineageConfiguration != nil {
+		f3 := &svcsdk.LineageConfiguration{}
+		if cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings != nil {
+			f3.SetCrawlerLineageSettings(*cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings)
+		}
+		res.SetLineageConfiguration(f3)
 	}
 	if cr.Spec.ForProvider.RecrawlPolicy != nil {
-		f3 := &svcsdk.RecrawlPolicy{}
+		f4 := &svcsdk.RecrawlPolicy{}
 		if cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior != nil {
-			f3.SetRecrawlBehavior(*cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior)
+			f4.SetRecrawlBehavior(*cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior)
 		}
-		res.SetRecrawlPolicy(f3)
+		res.SetRecrawlPolicy(f4)
 	}
 	if cr.Spec.ForProvider.Schedule != nil {
 		res.SetSchedule(*cr.Spec.ForProvider.Schedule)
 	}
 	if cr.Spec.ForProvider.SchemaChangePolicy != nil {
-		f5 := &svcsdk.SchemaChangePolicy{}
+		f6 := &svcsdk.SchemaChangePolicy{}
 		if cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior != nil {
-			f5.SetDeleteBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior)
+			f6.SetDeleteBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior)
 		}
 		if cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior != nil {
-			f5.SetUpdateBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior)
+			f6.SetUpdateBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior)
 		}
-		res.SetSchemaChangePolicy(f5)
+		res.SetSchemaChangePolicy(f6)
 	}
 	if cr.Spec.ForProvider.TablePrefix != nil {
 		res.SetTablePrefix(*cr.Spec.ForProvider.TablePrefix)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f7 := map[string]*string{}
-		for f7key, f7valiter := range cr.Spec.ForProvider.Tags {
-			var f7val string
-			f7val = *f7valiter
-			f7[f7key] = &f7val
+		f8 := map[string]*string{}
+		for f8key, f8valiter := range cr.Spec.ForProvider.Tags {
+			var f8val string
+			f8val = *f8valiter
+			f8[f8key] = &f8val
 		}
-		res.SetTags(f7)
+		res.SetTags(f8)
 	}
 
 	return res
@@ -207,32 +229,42 @@ func GenerateUpdateCrawlerInput(cr *svcapitypes.Crawler) *svcsdk.UpdateCrawlerIn
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
-	if cr.Spec.ForProvider.LineageConfiguration != nil {
-		f5 := &svcsdk.LineageConfiguration{}
-		if cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings != nil {
-			f5.SetCrawlerLineageSettings(*cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings)
+	if cr.Spec.ForProvider.LakeFormationConfiguration != nil {
+		f5 := &svcsdk.LakeFormationConfiguration{}
+		if cr.Spec.ForProvider.LakeFormationConfiguration.AccountID != nil {
+			f5.SetAccountId(*cr.Spec.ForProvider.LakeFormationConfiguration.AccountID)
 		}
-		res.SetLineageConfiguration(f5)
+		if cr.Spec.ForProvider.LakeFormationConfiguration.UseLakeFormationCredentials != nil {
+			f5.SetUseLakeFormationCredentials(*cr.Spec.ForProvider.LakeFormationConfiguration.UseLakeFormationCredentials)
+		}
+		res.SetLakeFormationConfiguration(f5)
+	}
+	if cr.Spec.ForProvider.LineageConfiguration != nil {
+		f6 := &svcsdk.LineageConfiguration{}
+		if cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings != nil {
+			f6.SetCrawlerLineageSettings(*cr.Spec.ForProvider.LineageConfiguration.CrawlerLineageSettings)
+		}
+		res.SetLineageConfiguration(f6)
 	}
 	if cr.Spec.ForProvider.RecrawlPolicy != nil {
-		f7 := &svcsdk.RecrawlPolicy{}
+		f8 := &svcsdk.RecrawlPolicy{}
 		if cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior != nil {
-			f7.SetRecrawlBehavior(*cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior)
+			f8.SetRecrawlBehavior(*cr.Spec.ForProvider.RecrawlPolicy.RecrawlBehavior)
 		}
-		res.SetRecrawlPolicy(f7)
+		res.SetRecrawlPolicy(f8)
 	}
 	if cr.Spec.ForProvider.Schedule != nil {
 		res.SetSchedule(*cr.Spec.ForProvider.Schedule)
 	}
 	if cr.Spec.ForProvider.SchemaChangePolicy != nil {
-		f10 := &svcsdk.SchemaChangePolicy{}
+		f11 := &svcsdk.SchemaChangePolicy{}
 		if cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior != nil {
-			f10.SetDeleteBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior)
+			f11.SetDeleteBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.DeleteBehavior)
 		}
 		if cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior != nil {
-			f10.SetUpdateBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior)
+			f11.SetUpdateBehavior(*cr.Spec.ForProvider.SchemaChangePolicy.UpdateBehavior)
 		}
-		res.SetSchemaChangePolicy(f10)
+		res.SetSchemaChangePolicy(f11)
 	}
 	if cr.Spec.ForProvider.TablePrefix != nil {
 		res.SetTablePrefix(*cr.Spec.ForProvider.TablePrefix)

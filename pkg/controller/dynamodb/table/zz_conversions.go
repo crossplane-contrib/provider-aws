@@ -284,6 +284,16 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			if f12iter.ReplicaStatusPercentProgress != nil {
 				f12elem.ReplicaStatusPercentProgress = f12iter.ReplicaStatusPercentProgress
 			}
+			if f12iter.ReplicaTableClassSummary != nil {
+				f12elemf8 := &svcapitypes.TableClassSummary{}
+				if f12iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
+					f12elemf8.LastUpdateDateTime = &metav1.Time{*f12iter.ReplicaTableClassSummary.LastUpdateDateTime}
+				}
+				if f12iter.ReplicaTableClassSummary.TableClass != nil {
+					f12elemf8.TableClass = f12iter.ReplicaTableClassSummary.TableClass
+				}
+				f12elem.ReplicaTableClassSummary = f12elemf8
+			}
 			f12 = append(f12, f12elem)
 		}
 		cr.Status.AtProvider.Replicas = f12
@@ -342,6 +352,18 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.TableARN = resp.Table.TableArn
 	} else {
 		cr.Status.AtProvider.TableARN = nil
+	}
+	if resp.Table.TableClassSummary != nil {
+		f17 := &svcapitypes.TableClassSummary{}
+		if resp.Table.TableClassSummary.LastUpdateDateTime != nil {
+			f17.LastUpdateDateTime = &metav1.Time{*resp.Table.TableClassSummary.LastUpdateDateTime}
+		}
+		if resp.Table.TableClassSummary.TableClass != nil {
+			f17.TableClass = resp.Table.TableClassSummary.TableClass
+		}
+		cr.Status.AtProvider.TableClassSummary = f17
+	} else {
+		cr.Status.AtProvider.TableClassSummary = nil
 	}
 	if resp.Table.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.Table.TableId
@@ -527,19 +549,22 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 		}
 		res.SetStreamSpecification(f7)
 	}
+	if cr.Spec.ForProvider.TableClass != nil {
+		res.SetTableClass(*cr.Spec.ForProvider.TableClass)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f8 := []*svcsdk.Tag{}
-		for _, f8iter := range cr.Spec.ForProvider.Tags {
-			f8elem := &svcsdk.Tag{}
-			if f8iter.Key != nil {
-				f8elem.SetKey(*f8iter.Key)
+		f9 := []*svcsdk.Tag{}
+		for _, f9iter := range cr.Spec.ForProvider.Tags {
+			f9elem := &svcsdk.Tag{}
+			if f9iter.Key != nil {
+				f9elem.SetKey(*f9iter.Key)
 			}
-			if f8iter.Value != nil {
-				f8elem.SetValue(*f8iter.Value)
+			if f9iter.Value != nil {
+				f9elem.SetValue(*f9iter.Value)
 			}
-			f8 = append(f8, f8elem)
+			f9 = append(f9, f9elem)
 		}
-		res.SetTags(f8)
+		res.SetTags(f9)
 	}
 
 	return res
@@ -598,6 +623,9 @@ func GenerateUpdateTableInput(cr *svcapitypes.Table) *svcsdk.UpdateTableInput {
 			f6.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
 		}
 		res.SetStreamSpecification(f6)
+	}
+	if cr.Spec.ForProvider.TableClass != nil {
+		res.SetTableClass(*cr.Spec.ForProvider.TableClass)
 	}
 	if cr.Status.AtProvider.TableName != nil {
 		res.SetTableName(*cr.Status.AtProvider.TableName)

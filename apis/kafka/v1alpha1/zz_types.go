@@ -30,6 +30,9 @@ var (
 // +kubebuilder:skipversion
 type BrokerEBSVolumeInfo struct {
 	KafkaBrokerNodeID *string `json:"kafkaBrokerNodeID,omitempty"`
+	// Contains information about provisioned throughput for EBS storage volumes
+	// attached to kafka broker nodes.
+	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
 
 	VolumeSizeGB *int64 `json:"volumeSizeGB,omitempty"`
 }
@@ -53,6 +56,8 @@ type BrokerNodeGroupInfo struct {
 	BrokerAZDistribution *string `json:"brokerAZDistribution,omitempty"`
 
 	ClientSubnets []*string `json:"clientSubnets,omitempty"`
+	// Information about the broker access configuration.
+	ConnectivityInfo *ConnectivityInfo `json:"connectivityInfo,omitempty"`
 
 	InstanceType *string `json:"instanceType,omitempty"`
 
@@ -102,7 +107,7 @@ type CloudWatchLogs struct {
 // +kubebuilder:skipversion
 type ClusterInfo struct {
 	ActiveOperationARN *string `json:"activeOperationARN,omitempty"`
-	// Describes the setup to be used for Kafka broker nodes in the cluster.
+	// Describes the setup to be used for Apache Kafka broker nodes in the cluster.
 	BrokerNodeGroupInfo *BrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
 	// Includes all client authentication information.
 	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
@@ -133,7 +138,7 @@ type ClusterInfo struct {
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
 	// JMX and Node monitoring for the MSK cluster.
 	OpenMonitoring *OpenMonitoring `json:"openMonitoring,omitempty"`
-	// The state of a Kafka cluster.
+	// The state of an Apache Kafka cluster.
 	State *string `json:"state,omitempty"`
 	// Contains information about the state of the Amazon MSK cluster.
 	StateInfo *StateInfo `json:"stateInfo,omitempty"`
@@ -170,6 +175,25 @@ type ClusterOperationStep struct {
 // +kubebuilder:skipversion
 type ClusterOperationStepInfo struct {
 	StepStatus *string `json:"stepStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Cluster_SDK struct {
+	ActiveOperationARN *string `json:"activeOperationARN,omitempty"`
+
+	ClusterARN *string `json:"clusterARN,omitempty"`
+
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	CurrentVersion *string `json:"currentVersion,omitempty"`
+	// The state of an Apache Kafka cluster.
+	State *string `json:"state,omitempty"`
+	// Contains information about the state of the Amazon MSK cluster.
+	StateInfo *StateInfo `json:"stateInfo,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -213,7 +237,17 @@ type Configuration_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type ConnectivityInfo struct {
+	// Broker public access control.
+	PublicAccess *PublicAccess `json:"publicAccess,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EBSStorageInfo struct {
+	// Contains information about provisioned throughput for EBS storage volumes
+	// attached to kafka broker nodes.
+	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
+
 	VolumeSize *int64 `json:"volumeSize,omitempty"`
 }
 
@@ -282,6 +316,8 @@ type LoggingInfo struct {
 type MutableClusterInfo struct {
 	// Includes all client authentication information.
 	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
+	// Information about the broker access configuration.
+	ConnectivityInfo *ConnectivityInfo `json:"connectivityInfo,omitempty"`
 	// Includes encryption-related information, such as the AWS KMS key used for
 	// encrypting data at rest and whether you want MSK to encrypt your data in
 	// transit.
@@ -353,6 +389,76 @@ type PrometheusInfo struct {
 }
 
 // +kubebuilder:skipversion
+type Provisioned struct {
+	// Describes the setup to be used for Apache Kafka broker nodes in the cluster.
+	BrokerNodeGroupInfo *BrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
+	// Includes all client authentication information.
+	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
+	// Information about the current software installed on the cluster.
+	CurrentBrokerSoftwareInfo *BrokerSoftwareInfo `json:"currentBrokerSoftwareInfo,omitempty"`
+	// Includes encryption-related information, such as the AWS KMS key used for
+	// encrypting data at rest and whether you want MSK to encrypt your data in
+	// transit.
+	EncryptionInfo *EncryptionInfo `json:"encryptionInfo,omitempty"`
+	// Specifies which metrics are gathered for the MSK cluster. This property has
+	// the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
+	// and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
+	// of these levels of monitoring, see Monitoring (https://docs.aws.amazon.com/msk/latest/developerguide/monitoring.html).
+	EnhancedMonitoring *string `json:"enhancedMonitoring,omitempty"`
+	// You can configure your MSK cluster to send broker logs to different destination
+	// types. This is a container for the configuration details related to broker
+	// logs.
+	LoggingInfo *LoggingInfo `json:"loggingInfo,omitempty"`
+
+	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
+	// JMX and Node monitoring for the MSK cluster.
+	OpenMonitoring *OpenMonitoringInfo `json:"openMonitoring,omitempty"`
+
+	ZookeeperConnectString *string `json:"zookeeperConnectString,omitempty"`
+
+	ZookeeperConnectStringTLS *string `json:"zookeeperConnectStringTLS,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ProvisionedRequest struct {
+	// Describes the setup to be used for Apache Kafka broker nodes in the cluster.
+	BrokerNodeGroupInfo *BrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
+	// Includes all client authentication information.
+	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
+	// Includes encryption-related information, such as the AWS KMS key used for
+	// encrypting data at rest and whether you want MSK to encrypt your data in
+	// transit.
+	EncryptionInfo *EncryptionInfo `json:"encryptionInfo,omitempty"`
+	// Specifies which metrics are gathered for the MSK cluster. This property has
+	// the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
+	// and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
+	// of these levels of monitoring, see Monitoring (https://docs.aws.amazon.com/msk/latest/developerguide/monitoring.html).
+	EnhancedMonitoring *string `json:"enhancedMonitoring,omitempty"`
+
+	KafkaVersion *string `json:"kafkaVersion,omitempty"`
+	// You can configure your MSK cluster to send broker logs to different destination
+	// types. This is a container for the configuration details related to broker
+	// logs.
+	LoggingInfo *LoggingInfo `json:"loggingInfo,omitempty"`
+
+	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
+	// JMX and Node monitoring for the MSK cluster.
+	OpenMonitoring *OpenMonitoringInfo `json:"openMonitoring,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ProvisionedThroughput struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	VolumeThroughput *int64 `json:"volumeThroughput,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PublicAccess struct {
+	Type *string `json:"type_,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type S3 struct {
 	Bucket *string `json:"bucket,omitempty"`
 
@@ -374,6 +480,11 @@ type Scram struct {
 }
 
 // +kubebuilder:skipversion
+type ServerlessSasl struct {
+	IAM *IAM `json:"iam,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type StateInfo struct {
 	Code *string `json:"code,omitempty"`
 
@@ -382,8 +493,8 @@ type StateInfo struct {
 
 // +kubebuilder:skipversion
 type StorageInfo struct {
-	// Contains information about the EBS storage volumes attached to Kafka broker
-	// nodes.
+	// Contains information about the EBS storage volumes attached to Apache Kafka
+	// broker nodes.
 	EBSStorageInfo *EBSStorageInfo `json:"ebsStorageInfo,omitempty"`
 }
 
@@ -406,6 +517,13 @@ type UnprocessedScramSecret struct {
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 
 	SecretARN *string `json:"secretARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConfig struct {
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 }
 
 // +kubebuilder:skipversion

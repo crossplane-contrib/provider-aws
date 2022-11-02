@@ -37,8 +37,8 @@ type AccessPointParameters struct {
 	// access point. The clients using the access point can only access the root
 	// directory and below. If the RootDirectory > Path specified does not exist,
 	// EFS creates it and applies the CreationInfo settings when a client connects
-	// to an access point. When specifying a RootDirectory, you need to provide
-	// the Path, and the CreationInfo.
+	// to an access point. When specifying a RootDirectory, you must provide the
+	// Path, and the CreationInfo.
 	//
 	// Amazon EFS creates a root directory only if you have provided the CreationInfo:
 	// OwnUid, OwnGID, and permissions for the directory. If you do not provide

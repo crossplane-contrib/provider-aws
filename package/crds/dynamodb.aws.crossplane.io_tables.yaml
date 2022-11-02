@@ -284,6 +284,10 @@ spec:
                       streamViewType:
                         type: string
                     type: object
+                  tableClass:
+                    description: The table class of the new table. Valid values are
+                      STANDARD and STANDARD_INFREQUENT_ACCESS.
+                    type: string
                   tags:
                     description: A list of key-value pairs to label the table. For
                       more information, see Tagging for DynamoDB (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tagging.html).
@@ -505,7 +509,8 @@ spec:
                     type: string
                   globalTableVersion:
                     description: Represents the version of global tables (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
-                      in use, if the table is replicated across AWS Regions.
+                      in use, if the table is replicated across Amazon Web Services
+                      Regions.
                     type: string
                   itemCount:
                     description: The number of items in the specified table. DynamoDB
@@ -523,7 +528,7 @@ spec:
                       the stream, because it is possible that a stream from another
                       table might have the same timestamp. However, the combination
                       of the following three elements is guaranteed to be unique:
-                      \n * AWS customer ID \n * Table name \n * StreamLabel"
+                      \n * Amazon Web Services customer ID \n * Table name \n * StreamLabel"
                     type: string
                   replicas:
                     description: Represents replicas of the table.
@@ -567,6 +572,15 @@ spec:
                           type: string
                         replicaStatusPercentProgress:
                           type: string
+                        replicaTableClassSummary:
+                          description: Contains details of the table class.
+                          properties:
+                            lastUpdateDateTime:
+                              format: date-time
+                              type: string
+                            tableClass:
+                              type: string
+                          type: object
                       type: object
                     type: array
                   restoreSummary:
@@ -600,6 +614,15 @@ spec:
                     description: The Amazon Resource Name (ARN) that uniquely identifies
                       the table.
                     type: string
+                  tableClassSummary:
+                    description: Contains details of the table class.
+                    properties:
+                      lastUpdateDateTime:
+                        format: date-time
+                        type: string
+                      tableClass:
+                        type: string
+                    type: object
                   tableID:
                     description: Unique identifier for the table for which the backup
                       was created.
@@ -618,14 +641,13 @@ spec:
                       The table is being created. \n * UPDATING - The table is being
                       updated. \n * DELETING - The table is being deleted. \n * ACTIVE
                       - The table is ready for use. \n * INACCESSIBLE_ENCRYPTION_CREDENTIALS
-                      - The AWS KMS key used to encrypt the table in inaccessible.
-                      Table operations may fail due to failure to use the AWS KMS
-                      key. DynamoDB will initiate the table archival process when
-                      a table's AWS KMS key remains inaccessible for more than seven
-                      days. \n * ARCHIVING - The table is being archived. Operations
-                      are not allowed until archival is complete. \n * ARCHIVED -
-                      The table has been archived. See the ArchivalReason for more
-                      information."
+                      - The KMS key used to encrypt the table in inaccessible. Table
+                      operations may fail due to failure to use the KMS key. DynamoDB
+                      will initiate the table archival process when a table's KMS
+                      key remains inaccessible for more than seven days. \n * ARCHIVING
+                      - The table is being archived. Operations are not allowed until
+                      archival is complete. \n * ARCHIVED - The table has been archived.
+                      See the ArchivalReason for more information."
                     type: string
                 type: object
               conditions:

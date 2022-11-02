@@ -52,7 +52,7 @@ type AddonParameters struct {
 	// in the Amazon EKS User Guide.
 	ServiceAccountRoleARN *string `json:"serviceAccountRoleARN,omitempty"`
 	// The metadata to apply to the cluster to assist with categorization and organization.
-	// Each tag consists of a key and an optional value, both of which you define.
+	// Each tag consists of a key and an optional value. You define both.
 	Tags                  map[string]*string `json:"tags,omitempty"`
 	CustomAddonParameters `json:",inline"`
 }

@@ -372,6 +372,12 @@ spec:
                               type: string
                           type: object
                         type: array
+                      maintenanceOptions:
+                        description: The maintenance options of your instance.
+                        properties:
+                          autoRecovery:
+                            type: string
+                        type: object
                       metadataOptions:
                         description: The metadata options for the instance. For more
                           information, see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
@@ -385,6 +391,8 @@ spec:
                             format: int64
                             type: integer
                           httpTokens:
+                            type: string
+                          instanceMetadataTags:
                             type: string
                         type: object
                       monitoring:
@@ -485,6 +493,16 @@ spec:
                           spreadDomain:
                             type: string
                           tenancy:
+                            type: string
+                        type: object
+                      privateDNSNameOptions:
+                        description: Describes the options for instance hostnames.
+                        properties:
+                          enableResourceNameDNSAAAARecord:
+                            type: boolean
+                          enableResourceNameDNSARecord:
+                            type: boolean
+                          hostnameType:
                             type: string
                         type: object
                       ramDiskID:
@@ -1181,6 +1199,12 @@ spec:
                                   type: string
                               type: object
                             type: array
+                          maintenanceOptions:
+                            description: The maintenance options of your instance.
+                            properties:
+                              autoRecovery:
+                                type: string
+                            type: object
                           metadataOptions:
                             description: The metadata options for the instance. For
                               more information, see Instance Metadata and User Data
@@ -1195,6 +1219,8 @@ spec:
                                 format: int64
                                 type: integer
                               httpTokens:
+                                type: string
+                              instanceMetadataTags:
                                 type: string
                               state:
                                 type: string
@@ -1297,6 +1323,16 @@ spec:
                               spreadDomain:
                                 type: string
                               tenancy:
+                                type: string
+                            type: object
+                          privateDNSNameOptions:
+                            description: Describes the options for instance hostnames.
+                            properties:
+                              enableResourceNameDNSAAAARecord:
+                                type: boolean
+                              enableResourceNameDNSARecord:
+                                type: boolean
+                              hostnameType:
                                 type: string
                             type: object
                           ramDiskID:

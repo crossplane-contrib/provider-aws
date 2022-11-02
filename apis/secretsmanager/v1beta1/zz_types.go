@@ -63,6 +63,10 @@ type ReplicationStatusType struct {
 type RotationRulesType struct {
 	
 	AutomaticallyAfterDays *int64 `json:"automaticallyAfterDays,omitempty"`
+	
+	Duration *string `json:"duration,omitempty"`
+	
+	ScheduleExpression *string `json:"scheduleExpression,omitempty"`
 }
 
 // +kubebuilder:skipversion

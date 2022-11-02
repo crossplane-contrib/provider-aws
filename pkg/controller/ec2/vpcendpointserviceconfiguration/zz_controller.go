@@ -167,24 +167,27 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			f1.NetworkLoadBalancerARNs = f1f5
 		}
+		if resp.ServiceConfiguration.PayerResponsibility != nil {
+			f1.PayerResponsibility = resp.ServiceConfiguration.PayerResponsibility
+		}
 		if resp.ServiceConfiguration.PrivateDnsName != nil {
 			f1.PrivateDNSName = resp.ServiceConfiguration.PrivateDnsName
 		}
 		if resp.ServiceConfiguration.PrivateDnsNameConfiguration != nil {
-			f1f7 := &svcapitypes.PrivateDNSNameConfiguration{}
+			f1f8 := &svcapitypes.PrivateDNSNameConfiguration{}
 			if resp.ServiceConfiguration.PrivateDnsNameConfiguration.Name != nil {
-				f1f7.Name = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Name
+				f1f8.Name = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Name
 			}
 			if resp.ServiceConfiguration.PrivateDnsNameConfiguration.State != nil {
-				f1f7.State = resp.ServiceConfiguration.PrivateDnsNameConfiguration.State
+				f1f8.State = resp.ServiceConfiguration.PrivateDnsNameConfiguration.State
 			}
 			if resp.ServiceConfiguration.PrivateDnsNameConfiguration.Type != nil {
-				f1f7.Type = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Type
+				f1f8.Type = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Type
 			}
 			if resp.ServiceConfiguration.PrivateDnsNameConfiguration.Value != nil {
-				f1f7.Value = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Value
+				f1f8.Value = resp.ServiceConfiguration.PrivateDnsNameConfiguration.Value
 			}
-			f1.PrivateDNSNameConfiguration = f1f7
+			f1.PrivateDNSNameConfiguration = f1f8
 		}
 		if resp.ServiceConfiguration.ServiceId != nil {
 			f1.ServiceID = resp.ServiceConfiguration.ServiceId
@@ -196,29 +199,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f1.ServiceState = resp.ServiceConfiguration.ServiceState
 		}
 		if resp.ServiceConfiguration.ServiceType != nil {
-			f1f11 := []*svcapitypes.ServiceTypeDetail{}
-			for _, f1f11iter := range resp.ServiceConfiguration.ServiceType {
-				f1f11elem := &svcapitypes.ServiceTypeDetail{}
-				if f1f11iter.ServiceType != nil {
-					f1f11elem.ServiceType = f1f11iter.ServiceType
-				}
-				f1f11 = append(f1f11, f1f11elem)
-			}
-			f1.ServiceType = f1f11
-		}
-		if resp.ServiceConfiguration.Tags != nil {
-			f1f12 := []*svcapitypes.Tag{}
-			for _, f1f12iter := range resp.ServiceConfiguration.Tags {
-				f1f12elem := &svcapitypes.Tag{}
-				if f1f12iter.Key != nil {
-					f1f12elem.Key = f1f12iter.Key
-				}
-				if f1f12iter.Value != nil {
-					f1f12elem.Value = f1f12iter.Value
+			f1f12 := []*svcapitypes.ServiceTypeDetail{}
+			for _, f1f12iter := range resp.ServiceConfiguration.ServiceType {
+				f1f12elem := &svcapitypes.ServiceTypeDetail{}
+				if f1f12iter.ServiceType != nil {
+					f1f12elem.ServiceType = f1f12iter.ServiceType
 				}
 				f1f12 = append(f1f12, f1f12elem)
 			}
-			f1.Tags = f1f12
+			f1.ServiceType = f1f12
+		}
+		if resp.ServiceConfiguration.Tags != nil {
+			f1f13 := []*svcapitypes.Tag{}
+			for _, f1f13iter := range resp.ServiceConfiguration.Tags {
+				f1f13elem := &svcapitypes.Tag{}
+				if f1f13iter.Key != nil {
+					f1f13elem.Key = f1f13iter.Key
+				}
+				if f1f13iter.Value != nil {
+					f1f13elem.Value = f1f13iter.Value
+				}
+				f1f13 = append(f1f13, f1f13elem)
+			}
+			f1.Tags = f1f13
 		}
 		cr.Status.AtProvider.ServiceConfiguration = f1
 	} else {

@@ -1543,8 +1543,18 @@ func (in *DBInstanceParameters) DeepCopyInto(out *DBInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EnablePerformanceInsights != nil {
+		in, out := &in.EnablePerformanceInsights, &out.EnablePerformanceInsights
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Engine != nil {
 		in, out := &in.Engine, &out.Engine
+		*out = new(string)
+		**out = **in
+	}
+	if in.PerformanceInsightsKMSKeyID != nil {
+		in, out := &in.PerformanceInsightsKMSKeyID, &out.PerformanceInsightsKMSKeyID
 		*out = new(string)
 		**out = **in
 	}

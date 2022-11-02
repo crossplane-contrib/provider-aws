@@ -18,3 +18,4 @@ ignore:
     - Alias
     - CodeSigningConfig
     - EventSourceMapping
+    - FunctionUrlConfig

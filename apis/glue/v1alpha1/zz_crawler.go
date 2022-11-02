@@ -35,6 +35,8 @@ type CrawlerParameters struct {
 	Configuration *string `json:"configuration,omitempty"`
 	// A description of the new crawler.
 	Description *string `json:"description,omitempty"`
+
+	LakeFormationConfiguration *LakeFormationConfiguration `json:"lakeFormationConfiguration,omitempty"`
 	// Specifies data lineage configuration settings for the crawler.
 	LineageConfiguration *LineageConfiguration `json:"lineageConfiguration,omitempty"`
 	// A policy that specifies whether to crawl the entire dataset again, or to

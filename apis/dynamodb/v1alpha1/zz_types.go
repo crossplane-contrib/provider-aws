@@ -177,6 +177,8 @@ type CreateReplicationGroupMemberAction struct {
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
 
 	RegionName *string `json:"regionName,omitempty"`
+
+	TableClassOverride *string `json:"tableClassOverride,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -455,6 +457,8 @@ type ReplicaDescription struct {
 	ReplicaStatusDescription *string `json:"replicaStatusDescription,omitempty"`
 
 	ReplicaStatusPercentProgress *string `json:"replicaStatusPercentProgress,omitempty"`
+	// Contains details of the table class.
+	ReplicaTableClassSummary *TableClassSummary `json:"replicaTableClassSummary,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -514,6 +518,8 @@ type ReplicaSettingsDescription struct {
 	ReplicaProvisionedWriteCapacityUnits *int64 `json:"replicaProvisionedWriteCapacityUnits,omitempty"`
 
 	ReplicaStatus *string `json:"replicaStatus,omitempty"`
+	// Contains details of the table class.
+	ReplicaTableClassSummary *TableClassSummary `json:"replicaTableClassSummary,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -521,6 +527,8 @@ type ReplicaSettingsUpdate struct {
 	RegionName *string `json:"regionName,omitempty"`
 
 	ReplicaProvisionedReadCapacityUnits *int64 `json:"replicaProvisionedReadCapacityUnits,omitempty"`
+
+	ReplicaTableClass *string `json:"replicaTableClass,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -626,6 +634,13 @@ type TableAutoScalingDescription struct {
 }
 
 // +kubebuilder:skipversion
+type TableClassSummary struct {
+	LastUpdateDateTime *metav1.Time `json:"lastUpdateDateTime,omitempty"`
+
+	TableClass *string `json:"tableClass,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type TableDescription struct {
 	// Contains details of a table archival operation.
 	ArchivalSummary *ArchivalSummary `json:"archivalSummary,omitempty"`
@@ -662,6 +677,8 @@ type TableDescription struct {
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
 
 	TableARN *string `json:"tableARN,omitempty"`
+	// Contains details of the table class.
+	TableClassSummary *TableClassSummary `json:"tableClassSummary,omitempty"`
 
 	TableID *string `json:"tableID,omitempty"`
 
@@ -718,4 +735,6 @@ type UpdateReplicationGroupMemberAction struct {
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
 
 	RegionName *string `json:"regionName,omitempty"`
+
+	TableClassOverride *string `json:"tableClassOverride,omitempty"`
 }

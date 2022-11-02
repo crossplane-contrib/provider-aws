@@ -313,6 +313,13 @@ spec:
                   description:
                     description: A description of the new crawler.
                     type: string
+                  lakeFormationConfiguration:
+                    properties:
+                      accountID:
+                        type: string
+                      useLakeFormationCredentials:
+                        type: boolean
+                    type: object
                   lineageConfiguration:
                     description: Specifies data lineage configuration settings for
                       the crawler.

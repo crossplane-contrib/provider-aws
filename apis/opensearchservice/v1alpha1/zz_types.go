@@ -61,6 +61,10 @@ type AdvancedOptionsStatus struct {
 
 // +kubebuilder:skipversion
 type AdvancedSecurityOptions struct {
+	AnonymousAuthDisableDate *metav1.Time `json:"anonymousAuthDisableDate,omitempty"`
+
+	AnonymousAuthEnabled *bool `json:"anonymousAuthEnabled,omitempty"`
+
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
@@ -70,6 +74,8 @@ type AdvancedSecurityOptions struct {
 
 // +kubebuilder:skipversion
 type AdvancedSecurityOptionsInput struct {
+	AnonymousAuthEnabled *bool `json:"anonymousAuthEnabled,omitempty"`
+
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
@@ -129,6 +135,22 @@ type AutoTuneStatus struct {
 	// The Auto-Tune state for the domain. For valid states see Auto-Tune for Amazon
 	// OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
 	State *string `json:"state,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ChangeProgressDetails struct {
+	ChangeID *string `json:"changeID,omitempty"`
+
+	Message *string `json:"message,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ChangeProgressStatusDetails struct {
+	ChangeID *string `json:"changeID,omitempty"`
+
+	CompletedProperties []*string `json:"completedProperties,omitempty"`
+
+	PendingProperties []*string `json:"pendingProperties,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -192,6 +214,12 @@ type ColdStorageOptions struct {
 // +kubebuilder:skipversion
 type CompatibleVersionsMap struct {
 	SourceVersion *string `json:"sourceVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DomainConfig struct {
+	// Specifies change details of the domain configuration change.
+	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -259,6 +287,8 @@ type DomainStatus_SDK struct {
 	// The Auto-Tune options: the Auto-Tune desired state for the domain and list
 	// of maintenance schedules.
 	AutoTuneOptions *AutoTuneOptionsOutput `json:"autoTuneOptions,omitempty"`
+	// Specifies change details of the domain configuration change.
+	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
 	// The configuration for the domain cluster, such as the type and number of
 	// instances.
 	ClusterConfig *ClusterConfig `json:"clusterConfig,omitempty"`
@@ -306,6 +336,11 @@ type DomainStatus_SDK struct {
 	// For more information, see Launching your Amazon OpenSearch Service domains
 	// using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
 	VPCOptions *VPCDerivedInfo `json:"vpcOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DryRunResults struct {
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -419,6 +454,8 @@ type ReservedInstance struct {
 
 	InstanceType *string `json:"instanceType,omitempty"`
 
+	ReservedInstanceID *string `json:"reservedInstanceID,omitempty"`
+
 	ReservedInstanceOfferingID *string `json:"reservedInstanceOfferingID,omitempty"`
 
 	State *string `json:"state,omitempty"`
@@ -429,6 +466,8 @@ type ReservedInstanceOffering struct {
 	CurrencyCode *string `json:"currencyCode,omitempty"`
 
 	InstanceType *string `json:"instanceType,omitempty"`
+
+	ReservedInstanceOfferingID *string `json:"reservedInstanceOfferingID,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -29,64 +29,54 @@ type SecretParameters struct {
 	// Region is which region the Secret will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// (Optional) Add a list of regions to replicate secrets. Secrets Manager replicates
-// the KMSKeyID objects to the list of regions specified in the parameter.
+	// A list of Regions and KMS keys to replicate secrets.
 	 AddReplicaRegions []*ReplicaRegionType `json:"addReplicaRegions,omitempty"` 
-	// (Optional) Specifies a user-provided description of the secret.
+	// The description of the secret.
 	 Description *string `json:"description,omitempty"` 
-	// (Optional) If set, the replication overwrites a secret with the same name
-// in the destination region.
+	// Specifies whether to overwrite a secret with the same name in the destination
+// Region.
 	 ForceOverwriteReplicaSecret *bool `json:"forceOverwriteReplicaSecret,omitempty"` 
-	// (Optional) Specifies the ARN, Key ID, or alias of the Amazon Web Services
-// KMS customer master key (CMK) to be used to encrypt the SecretString or SecretBinary
-// values in the versions stored in this secret.
+	// The ARN, key ID, or alias of the KMS key that Secrets Manager uses to encrypt
+// the secret value in the secret.
 // 
-// You can specify any of the supported ways to identify a Amazon Web Services
-// KMS key ID. If you need to reference a CMK in a different account, you can
-// use only the key ARN or the alias ARN.
+// To use a KMS key in a different account, use the key ARN or the alias ARN.
 // 
-// If you don't specify this value, then Secrets Manager defaults to using the
-// Amazon Web Services account's default CMK (the one named aws/secretsmanager).
-// If a Amazon Web Services KMS CMK with that name doesn't yet exist, then Secrets
-// Manager creates it for you automatically the first time it needs to encrypt
-// a version's SecretString or SecretBinary fields.
+// If you don't specify this value, then Secrets Manager uses the key aws/secretsmanager.
+// If that key doesn't yet exist, then Secrets Manager creates it for you automatically
+// the first time it encrypts the secret value.
 // 
-// You can use the account default CMK to encrypt and decrypt only if you call
-// this operation using credentials from the same account that owns the secret.
-// If the secret resides in a different account, then you must create a custom
-// CMK and specify the ARN in this field.
+// If the secret is in a different Amazon Web Services account from the credentials
+// calling the API, then you can't use aws/secretsmanager to encrypt the secret,
+// and you must create and use a customer managed KMS key.
 	 KMSKeyID *string `json:"kmsKeyID,omitempty"` 
-	// (Optional) Specifies a list of user-defined tags that are attached to the
-// secret. Each tag is a "Key" and "Value" pair of strings. This operation only
-// appends tags to the existing list of tags. To remove tags, you must use UntagResource.
-// 
-//    * Secrets Manager tag key names are case sensitive. A tag with the key
-//    "ABC" is a different tag from one with key "abc".
-// 
-//    * If you check tags in IAM policy Condition elements as part of your security
-//    strategy, then adding or removing a tag can change permissions. If the
-//    successful completion of this operation would result in you losing your
-//    permissions for this secret, then this operation is blocked and returns
-//    an Access Denied error.
-// 
-// This parameter requires a JSON text string argument. For information on how
-// to format a JSON parameter for the various command line tool environments,
-// see Using JSON for Parameters (https://docs.aws.amazon.com/cli/latest/userguide/cli-using-param.html#cli-using-param-json)
-// in the CLI User Guide. For example:
+	// A list of tags to attach to the secret. Each tag is a key and value pair
+// of strings in a JSON text string, for example:
 // 
 // [{"Key":"CostCenter","Value":"12345"},{"Key":"environment","Value":"production"}]
 // 
+// Secrets Manager tag key names are case sensitive. A tag with the key "ABC"
+// is a different tag from one with key "abc".
+// 
+// If you check tags in permissions policies as part of your security strategy,
+// then adding or removing a tag can change permissions. If the completion of
+// this operation would result in you losing your permissions for this secret,
+// then Secrets Manager blocks the operation and returns an Access Denied error.
+// For more information, see Control access to secrets using tags (https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#tag-secrets-abac)
+// and Limit access to identities with tags that match secrets' tags (https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#auth-and-access_tags2).
+// 
+// For information about how to format a JSON parameter for the various command
+// line tool environments, see Using JSON for Parameters (https://docs.aws.amazon.com/cli/latest/userguide/cli-using-param.html#cli-using-param-json).
 // If your command-line tool or SDK requires quotation marks around the parameter,
 // you should use single quotes to avoid confusion with the double quotes required
 // in the JSON text.
 // 
-// The following basic restrictions apply to tags:
+// The following restrictions apply to tags:
 // 
-//    * Maximum number of tags per secret—50
+//    * Maximum number of tags per secret: 50
 // 
-//    * Maximum key length—127 Unicode characters in UTF-8
+//    * Maximum key length: 127 Unicode characters in UTF-8
 // 
-//    * Maximum value length—255 Unicode characters in UTF-8
+//    * Maximum value length: 255 Unicode characters in UTF-8
 // 
 //    * Tag keys and values are case sensitive.
 // 
@@ -96,9 +86,9 @@ type SecretParameters struct {
 //    not count against your tags per secret limit.
 // 
 //    * If you use your tagging schema across multiple services and resources,
-//    remember other services might have restrictions on allowed characters.
-//    Generally allowed characters: letters, spaces, and numbers representable
-//    in UTF-8, plus the following special characters: + - = . _ : / @.
+//    other services might have restrictions on allowed characters. Generally
+//    allowed characters: letters, spaces, and numbers representable in UTF-8,
+//    plus the following special characters: + - = . _ : / @.
 	 Tags []*Tag `json:"tags,omitempty"` 
 	CustomSecretParameters `json:",inline"`
 }
@@ -111,16 +101,19 @@ type SecretSpec struct {
 
 // SecretObservation defines the observed state of Secret
 type SecretObservation struct {
-	// The Amazon Resource Name (ARN) of the secret that you just created.
-// 
-// Secrets Manager automatically adds several random characters to the name
-// at the end of the ARN when you initially create a secret. This affects only
-// the ARN and not the actual friendly name. This ensures that if you create
-// a new secret with the same name as an old secret that you previously deleted,
-// then users with access to the old secret don't automatically get access to
-// the new secret because the ARNs are different.
+	// The ARN of the new secret. The ARN includes the name of the secret followed
+// by six random characters. This ensures that if you create a new secret with
+// the same name as a deleted secret, then users with access to the old secret
+// don't get access to the new secret because the ARNs are different.
 	ARN *string `json:"arn,omitempty"`
-	// Describes a list of replication status objects as InProgress, Failed or InSync.
+	// A list of the replicas of this secret and their status:
+// 
+//    * Failed, which indicates that the replica was not created.
+// 
+//    * InProgress, which indicates that Secrets Manager is in the process of
+//    creating the replica.
+// 
+//    * InSync, which indicates that the replica was created.
 	ReplicationStatus []*ReplicationStatusType `json:"replicationStatus,omitempty"`
 }
 

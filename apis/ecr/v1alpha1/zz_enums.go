@@ -98,12 +98,44 @@ const (
 	RepositoryFilterType_PREFIX_MATCH RepositoryFilterType = "PREFIX_MATCH"
 )
 
+type ScanFrequency string
+
+const (
+	ScanFrequency_SCAN_ON_PUSH    ScanFrequency = "SCAN_ON_PUSH"
+	ScanFrequency_CONTINUOUS_SCAN ScanFrequency = "CONTINUOUS_SCAN"
+	ScanFrequency_MANUAL          ScanFrequency = "MANUAL"
+)
+
 type ScanStatus string
 
 const (
-	ScanStatus_IN_PROGRESS ScanStatus = "IN_PROGRESS"
-	ScanStatus_COMPLETE    ScanStatus = "COMPLETE"
-	ScanStatus_FAILED      ScanStatus = "FAILED"
+	ScanStatus_IN_PROGRESS              ScanStatus = "IN_PROGRESS"
+	ScanStatus_COMPLETE                 ScanStatus = "COMPLETE"
+	ScanStatus_FAILED                   ScanStatus = "FAILED"
+	ScanStatus_UNSUPPORTED_IMAGE        ScanStatus = "UNSUPPORTED_IMAGE"
+	ScanStatus_ACTIVE                   ScanStatus = "ACTIVE"
+	ScanStatus_PENDING                  ScanStatus = "PENDING"
+	ScanStatus_SCAN_ELIGIBILITY_EXPIRED ScanStatus = "SCAN_ELIGIBILITY_EXPIRED"
+	ScanStatus_FINDINGS_UNAVAILABLE     ScanStatus = "FINDINGS_UNAVAILABLE"
+)
+
+type ScanType string
+
+const (
+	ScanType_BASIC    ScanType = "BASIC"
+	ScanType_ENHANCED ScanType = "ENHANCED"
+)
+
+type ScanningConfigurationFailureCode string
+
+const (
+	ScanningConfigurationFailureCode_REPOSITORY_NOT_FOUND ScanningConfigurationFailureCode = "REPOSITORY_NOT_FOUND"
+)
+
+type ScanningRepositoryFilterType string
+
+const (
+	ScanningRepositoryFilterType_WILDCARD ScanningRepositoryFilterType = "WILDCARD"
 )
 
 type TagStatus string

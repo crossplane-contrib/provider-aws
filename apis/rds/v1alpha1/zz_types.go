@@ -120,15 +120,6 @@ type ConnectionPoolConfigurationInfo struct {
 }
 
 // +kubebuilder:skipversion
-type CustomAvailabilityZone struct {
-	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
-
-	CustomAvailabilityZoneName *string `json:"customAvailabilityZoneName,omitempty"`
-
-	CustomAvailabilityZoneStatus *string `json:"customAvailabilityZoneStatus,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type DBClusterEndpoint struct {
 	CustomEndpointType *string `json:"customEndpointType,omitempty"`
 
@@ -261,6 +252,8 @@ type DBCluster_SDK struct {
 
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+
 	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
 
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
@@ -289,6 +282,8 @@ type DBCluster_SDK struct {
 
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
+	DBClusterInstanceClass *string `json:"dbClusterInstanceClass,omitempty"`
+
 	DBClusterMembers []*DBClusterMember `json:"dbClusterMembers,omitempty"`
 
 	DBClusterOptionGroupMemberships []*DBClusterOptionGroupStatus `json:"dbClusterOptionGroupMemberships,omitempty"`
@@ -302,8 +297,7 @@ type DBCluster_SDK struct {
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-	// List of Active Directory Domain membership records associated with a DB instance
-	// or cluster.
+
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
 
 	EarliestBacktrackTime *metav1.Time `json:"earliestBacktrackTime,omitempty"`
@@ -330,21 +324,35 @@ type DBCluster_SDK struct {
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 
+	IOPS *int64 `json:"iops,omitempty"`
+
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
+	MonitoringInterval *int64 `json:"monitoringInterval,omitempty"`
+
+	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
+
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
+
+	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
+
+	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
+
+	PerformanceInsightsRetentionPeriod *int64 `json:"performanceInsightsRetentionPeriod,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`
 
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+
+	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
 
 	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`
 
@@ -354,13 +362,20 @@ type DBCluster_SDK struct {
 	// Shows the scaling configuration for an Aurora DB cluster in serverless DB
 	// engine mode.
 	//
-	// For more information, see Using Amazon Aurora Serverless (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
+	// For more information, see Using Amazon Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 	// in the Amazon Aurora User Guide.
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
+	// Shows the scaling configuration for an Aurora Serverless v2 DB cluster.
+	//
+	// For more information, see Using Amazon Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html)
+	// in the Amazon Aurora User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `json:"serverlessV2ScalingConfiguration,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
 	TagList []*Tag `json:"tagList,omitempty"`
@@ -398,6 +413,8 @@ type DBEngineVersion struct {
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 
+	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
+
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
@@ -417,6 +434,8 @@ type DBInstanceAutomatedBackup struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
+	BackupTarget *string `json:"backupTarget,omitempty"`
 
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
 
@@ -516,6 +535,8 @@ type DBInstance_SDK struct {
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
+	BackupTarget *string `json:"backupTarget,omitempty"`
+
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 
 	CharacterSetName *string `json:"characterSetName,omitempty"`
@@ -554,8 +575,7 @@ type DBInstance_SDK struct {
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-	// List of Active Directory Domain membership records associated with a DB instance
-	// or cluster.
+
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
 
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
@@ -827,6 +847,8 @@ type DBSnapshot struct {
 
 	SnapshotCreateTime *metav1.Time `json:"snapshotCreateTime,omitempty"`
 
+	SnapshotTarget *string `json:"snapshotTarget,omitempty"`
+
 	SnapshotType *string `json:"snapshotType,omitempty"`
 
 	SourceDBSnapshotIdentifier *string `json:"sourceDBSnapshotIdentifier,omitempty"`
@@ -1047,28 +1069,6 @@ type IPRange struct {
 }
 
 // +kubebuilder:skipversion
-type InstallationMedia struct {
-	CustomAvailabilityZoneID *string `json:"customAvailabilityZoneID,omitempty"`
-
-	Engine *string `json:"engine,omitempty"`
-
-	EngineInstallationMediaPath *string `json:"engineInstallationMediaPath,omitempty"`
-
-	EngineVersion *string `json:"engineVersion,omitempty"`
-
-	InstallationMediaID *string `json:"installationMediaID,omitempty"`
-
-	OSInstallationMediaPath *string `json:"oSInstallationMediaPath,omitempty"`
-
-	Status *string `json:"status,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type InstallationMediaFailureCause struct {
-	Message *string `json:"message,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type MinimumEngineVersionPerAllowedValue struct {
 	AllowedValue *string `json:"allowedValue,omitempty"`
 
@@ -1213,9 +1213,13 @@ type OrderableDBInstanceOption struct {
 
 	MaxIOPSPerDBInstance *int64 `json:"maxIOPSPerDBInstance,omitempty"`
 
+	MaxIOPSPerGib *float64 `json:"maxIOPSPerGib,omitempty"`
+
 	MaxStorageSize *int64 `json:"maxStorageSize,omitempty"`
 
 	MinIOPSPerDBInstance *int64 `json:"minIOPSPerDBInstance,omitempty"`
+
+	MinIOPSPerGib *float64 `json:"minIOPSPerGib,omitempty"`
 
 	MinStorageSize *int64 `json:"minStorageSize,omitempty"`
 
@@ -1228,6 +1232,8 @@ type OrderableDBInstanceOption struct {
 	StorageType *string `json:"storageType,omitempty"`
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
+	SupportsClusters *bool `json:"supportsClusters,omitempty"`
 
 	SupportsEnhancedMonitoring *bool `json:"supportsEnhancedMonitoring,omitempty"`
 
@@ -1450,6 +1456,20 @@ type ScalingConfigurationInfo struct {
 }
 
 // +kubebuilder:skipversion
+type ServerlessV2ScalingConfiguration struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessV2ScalingConfigurationInfo struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SourceRegion struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 
@@ -1510,6 +1530,8 @@ type UpgradeTarget struct {
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 
+	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
+
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsParallelQuery *bool `json:"supportsParallelQuery,omitempty"`
@@ -1538,19 +1560,6 @@ type VPCSecurityGroupMembership struct {
 	Status *string `json:"status,omitempty"`
 
 	VPCSecurityGroupID *string `json:"vpcSecurityGroupID,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type VPNDetails struct {
-	VPNGatewayIP *string `json:"vpnGatewayIP,omitempty"`
-
-	VPNID *string `json:"vpnID,omitempty"`
-
-	VPNName *string `json:"vpnName,omitempty"`
-
-	VPNState *string `json:"vpnState,omitempty"`
-
-	VPNTunnelOriginatorIP *string `json:"vpnTunnelOriginatorIP,omitempty"`
 }
 
 // +kubebuilder:skipversion

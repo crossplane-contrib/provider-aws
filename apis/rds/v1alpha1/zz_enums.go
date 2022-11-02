@@ -133,6 +133,7 @@ const (
 	SourceType_db_cluster            SourceType = "db-cluster"
 	SourceType_db_cluster_snapshot   SourceType = "db-cluster-snapshot"
 	SourceType_custom_engine_version SourceType = "custom-engine-version"
+	SourceType_db_proxy              SourceType = "db-proxy"
 )
 
 type TargetHealthReason string

@@ -126,6 +126,13 @@ const (
 	FargateProfileStatus_DELETE_FAILED FargateProfileStatus = "DELETE_FAILED"
 )
 
+type IPFamily string
+
+const (
+	IPFamily_ipv4 IPFamily = "ipv4"
+	IPFamily_ipv6 IPFamily = "ipv6"
+)
+
 type LogType string
 
 const (
@@ -157,6 +164,7 @@ const (
 	NodegroupIssueCode_AccessDenied                         NodegroupIssueCode = "AccessDenied"
 	NodegroupIssueCode_InternalFailure                      NodegroupIssueCode = "InternalFailure"
 	NodegroupIssueCode_ClusterUnreachable                   NodegroupIssueCode = "ClusterUnreachable"
+	NodegroupIssueCode_Ec2SubnetMissingIpv6Assignment       NodegroupIssueCode = "Ec2SubnetMissingIpv6Assignment"
 )
 
 type NodegroupStatus string

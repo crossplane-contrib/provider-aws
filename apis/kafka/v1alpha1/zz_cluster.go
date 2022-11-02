@@ -41,7 +41,7 @@ type ClusterParameters struct {
 	KafkaVersion *string `json:"kafkaVersion"`
 	// LoggingInfo details.
 	LoggingInfo *LoggingInfo `json:"loggingInfo,omitempty"`
-	// The number of Kafka broker nodes in the Amazon MSK cluster.
+	// The number of Apache Kafka broker nodes in the Amazon MSK cluster.
 	// +kubebuilder:validation:Required
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes"`
 	// The settings for open monitoring.
