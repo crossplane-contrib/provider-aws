@@ -25,6 +25,10 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+const (
+	isLastUpdateStatusSuccessfulCheckInterval = 30 * time.Second
+)
+
 // SetupFunction adds a controller that reconciles Function.
 func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.FunctionGroupKind)
@@ -272,9 +276,13 @@ type updater struct {
 	client svcsdkapi.LambdaAPI
 }
 
-func (u *updater) isLastUpdateStatusSuccessful(cr *svcapitypes.Function) error {
+func (u *updater) isLastUpdateStatusSuccessful(ctx context.Context, cr *svcapitypes.Function) error {
+	// LastUpdateStatus must be Successful before running UpdateFunction*
+	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
+	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
+
 	for {
-		out, err := u.client.GetFunction(&svcsdk.GetFunctionInput{
+		out, err := u.client.GetFunctionWithContext(ctx, &svcsdk.GetFunctionInput{
 			FunctionName: aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {
@@ -283,7 +291,7 @@ func (u *updater) isLastUpdateStatusSuccessful(cr *svcapitypes.Function) error {
 		if aws.StringValue(out.Configuration.LastUpdateStatus) == svcsdk.LastUpdateStatusSuccessful {
 			return nil
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(isLastUpdateStatusSuccessfulCheckInterval)
 	}
 }
 
@@ -295,9 +303,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionCode
-	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
-	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
-	if err := u.isLastUpdateStatusSuccessful(cr); err != nil {
+	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
@@ -308,9 +314,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionConfiguration
-	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
-	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
-	if err := u.isLastUpdateStatusSuccessful(cr); err != nil {
+	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
