@@ -29,12 +29,12 @@ const (
 	isLastUpdateStatusSuccessfulCheckInterval = 30 * time.Second
 
 	// used in creation
-	packageTypeZip   = "Zip"
-	packageTypeImage = "Image"
+	packageTypeImage = string(svcapitypes.PackageType_Image)
+	// packageTypeZip   = string(svcapitypes.PackageType_Zip)
 
 	// used in observation
 	repositoryTypeECR = "ECR"
-	repositoryTypeS3  = "S3"
+	// repositoryTypeS3  = "S3"
 )
 
 // SetupFunction adds a controller that reconciles Function.
@@ -224,37 +224,79 @@ func isUpToDateEnvironment(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutp
 	return cmp.Equal(envVars, awsVars, sortCmp, cmpopts.EquateEmpty())
 }
 
+func actualRepositoryType(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Code == nil {
+		return nil
+	}
+	return obj.Code.RepositoryType
+}
+
+func actualPackageType(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Configuration == nil {
+		return nil
+	}
+	return obj.Configuration.PackageType
+}
+
+func desiredPackageType(cr *svcapitypes.Function) *string {
+	return cr.Spec.ForProvider.PackageType
+}
+
+func desiredImageURI(cr *svcapitypes.Function) *string {
+	return cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI
+}
+
+func actualImageURI(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Code == nil {
+		return nil
+	}
+	return obj.Code.ImageUri
+}
+
+func bothPackageTypesNil(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	return desiredPackageType(cr) == nil && actualPackageType(obj) == nil
+}
+
+func bothImageURI(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	return desiredImageURI(cr) == nil && actualImageURI(obj) == nil
+}
+
 // isUpToDateCodeImage checks if FunctionConfiguration FunctionCodeLocation (Image) is up-to-date
 // Returns true when function code is supplied via Zip file
 func isUpToDateCodeImage(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
 	desired := cr
 	actual := obj
 
-	if desired.Spec.ForProvider.PackageType == nil && (actual.Configuration == nil || actual.Configuration.PackageType == nil) {
-		return true
-	}
-	if actual.Configuration == nil || actual.Configuration.PackageType == nil {
-		return false
-	}
-	if *desired.Spec.ForProvider.PackageType != *actual.Configuration.PackageType {
-		return false
-	}
-	if actual.Code == nil || actual.Code.RepositoryType == nil {
-		return false
-	}
-	if actual.Code.ImageUri == nil {
-		return false
-	}
-	// the code above would be reusable for checking if Zip/S3 is up-to-date
-
-	if *actual.Code.RepositoryType != repositoryTypeECR {
-		return false
-	}
-	if *desired.Spec.ForProvider.PackageType != packageTypeImage {
+	if *desiredPackageType(desired) != packageTypeImage {
 		// code is not supplied via container image
 		return true
 	}
-	return *desired.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI != *actual.Code.ImageUri
+
+	if bothPackageTypesNil(desired, actual) {
+		return true
+	}
+
+	if actualPackageType(actual) == nil {
+		return false
+	}
+	if *desiredPackageType(desired) != *actualPackageType(actual) {
+		return false
+	}
+
+	if actualRepositoryType(actual) == nil {
+		return false
+	}
+	if *actualRepositoryType(actual) != repositoryTypeECR {
+		return false
+	}
+
+	if bothImageURI(desired, actual) {
+		return true
+	}
+	if actualImageURI(actual) == nil {
+		return false
+	}
+	return *desiredImageURI(desired) != *actualImageURI(actual)
 }
 
 func isUpToDateFileSystemConfigs(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
