@@ -27,6 +27,14 @@ import (
 
 const (
 	isLastUpdateStatusSuccessfulCheckInterval = 30 * time.Second
+
+	// used in creation
+	packageTypeZip   = "Zip"
+	packageTypeImage = "Image"
+
+	// used in observation
+	repositoryTypeECR = "ECR"
+	repositoryTypeS3  = "S3"
 )
 
 // SetupFunction adds a controller that reconciles Function.
@@ -128,7 +136,12 @@ func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, 
 	// which does not map to
 	// Code *FunctionCode `type:"structure" required:"true"`
 	// which is used when creating the function.
-	// We can't currently properly implement a comparison
+	// As of 2022-11-04 we can't currently properly implement a full comparison.
+	// It is partially possible for code supplied via FunctionCode.ImageUri
+
+	if !isUpToDateCodeImage(cr, obj) {
+		return false, nil
+	}
 
 	// Compare CONFIGURATION
 	if aws.StringValue(cr.Spec.ForProvider.Description) != aws.StringValue(obj.Configuration.Description) {
@@ -209,6 +222,39 @@ func isUpToDateEnvironment(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutp
 	})
 
 	return cmp.Equal(envVars, awsVars, sortCmp, cmpopts.EquateEmpty())
+}
+
+// isUpToDateCodeImage checks if FunctionConfiguration FunctionCodeLocation (Image) is up-to-date
+// Returns true when function code is supplied via Zip file
+func isUpToDateCodeImage(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	desired := cr
+	actual := obj
+
+	if desired.Spec.ForProvider.PackageType == nil && (actual.Configuration == nil || actual.Configuration.PackageType == nil) {
+		return true
+	}
+	if actual.Configuration == nil || actual.Configuration.PackageType == nil {
+		return false
+	}
+	if *desired.Spec.ForProvider.PackageType != *actual.Configuration.PackageType {
+		return false
+	}
+	if actual.Code == nil || actual.Code.RepositoryType == nil {
+		return false
+	}
+	if actual.Code.ImageUri == nil {
+		return false
+	}
+	// the code above would be reusable for checking if Zip/S3 is up-to-date
+
+	if *actual.Code.RepositoryType != repositoryTypeECR {
+		return false
+	}
+	if *desired.Spec.ForProvider.PackageType != packageTypeImage {
+		// code is not supplied via container image
+		return true
+	}
+	return *desired.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI != *actual.Code.ImageUri
 }
 
 func isUpToDateFileSystemConfigs(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
