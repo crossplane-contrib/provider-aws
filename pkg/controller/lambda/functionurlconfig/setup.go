@@ -1,0 +1,124 @@
+package functionurlconfig
+
+import (
+	"context"
+
+	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
+
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+)
+
+// SetupFunctionURL adds a controller that reconciles FunctionURLConfig.
+func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
+	name := managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.preCreate = preCreate
+			e.preUpdate = preUpdate
+			e.preDelete = preDelete
+			e.postObserve = postObserve
+			e.isUpToDate = isUpToDate
+		},
+	}
+
+	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
+	}
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		WithOptions(o.ForControllerRuntime()).
+		For(&svcapitypes.FunctionURLConfig{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(svcapitypes.FunctionURLConfigGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(o.PollInterval),
+			managed.WithLogger(o.Logger.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+			managed.WithConnectionPublishers(cps...)))
+}
+
+func preObserve(_ context.Context, cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigInput) error {
+	obj.FunctionName = cr.Spec.ForProvider.FunctionName
+
+	return nil
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.FunctionURLConfig, obj *svcsdk.CreateFunctionUrlConfigInput) error {
+	obj.FunctionName = cr.Spec.ForProvider.FunctionName
+
+	return nil
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.FunctionURLConfig, obj *svcsdk.UpdateFunctionUrlConfigInput) error {
+	obj.FunctionName = cr.Spec.ForProvider.FunctionName
+
+	return nil
+}
+
+func preDelete(_ context.Context, cr *svcapitypes.FunctionURLConfig, obj *svcsdk.DeleteFunctionUrlConfigInput) (bool, error) {
+	obj.FunctionName = cr.Spec.ForProvider.FunctionName
+
+	return false, nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.FunctionURLConfig, _ *svcsdk.GetFunctionUrlConfigOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(xpv1.Available())
+
+	return obs, nil
+}
+
+func isUpToDate(cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigOutput) (bool, error) {
+	if aws.StringValue(cr.Spec.ForProvider.AuthType) != aws.StringValue(obj.AuthType) {
+		return false, nil
+	}
+
+	return isUpToDateCors(cr, obj), nil
+}
+
+func isUpToDateCors(cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigOutput) bool {
+	sortCmp := cmpopts.SortSlices(func(x, y *string) bool {
+		return *x < *y
+	})
+
+	switch {
+	case cr.Spec.ForProvider.CORS == nil && obj.Cors == nil, cr.Spec.ForProvider.CORS == nil:
+		return true
+	case obj.Cors == nil:
+		return false
+	case aws.BoolValue(cr.Spec.ForProvider.CORS.AllowCredentials) != aws.BoolValue(obj.Cors.AllowCredentials):
+		return false
+	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowHeaders, &obj.Cors.AllowHeaders, sortCmp):
+		return false
+	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowMethods, &obj.Cors.AllowMethods, sortCmp):
+		return false
+	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowOrigins, &obj.Cors.AllowOrigins, sortCmp):
+		return false
+	case !cmp.Equal(&cr.Spec.ForProvider.CORS.ExposeHeaders, &obj.Cors.ExposeHeaders, sortCmp):
+		return false
+	case aws.Int64Value(cr.Spec.ForProvider.CORS.MaxAge) != aws.Int64Value(obj.Cors.MaxAge):
+		return false
+	}
+
+	return true
+}
