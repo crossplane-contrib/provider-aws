@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -22,6 +23,18 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+)
+
+const (
+	isLastUpdateStatusSuccessfulCheckInterval = 30 * time.Second
+
+	// used in creation
+	packageTypeImage = string(svcapitypes.PackageType_Image)
+	// packageTypeZip   = string(svcapitypes.PackageType_Zip)
+
+	// used in observation
+	repositoryTypeECR = "ECR"
+	// repositoryTypeS3  = "S3"
 )
 
 // SetupFunction adds a controller that reconciles Function.
@@ -123,7 +136,12 @@ func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, 
 	// which does not map to
 	// Code *FunctionCode `type:"structure" required:"true"`
 	// which is used when creating the function.
-	// We can't currently properly implement a comparison
+	// As of 2022-11-04 we can't currently properly implement a full comparison.
+	// It is partially possible for code supplied via FunctionCode.ImageUri
+
+	if !isUpToDateCodeImage(cr, obj) {
+		return false, nil
+	}
 
 	// Compare CONFIGURATION
 	if aws.StringValue(cr.Spec.ForProvider.Description) != aws.StringValue(obj.Configuration.Description) {
@@ -206,6 +224,81 @@ func isUpToDateEnvironment(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutp
 	return cmp.Equal(envVars, awsVars, sortCmp, cmpopts.EquateEmpty())
 }
 
+func actualRepositoryType(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Code == nil {
+		return nil
+	}
+	return obj.Code.RepositoryType
+}
+
+func actualPackageType(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Configuration == nil {
+		return nil
+	}
+	return obj.Configuration.PackageType
+}
+
+func desiredPackageType(cr *svcapitypes.Function) *string {
+	return cr.Spec.ForProvider.PackageType
+}
+
+func desiredImageURI(cr *svcapitypes.Function) *string {
+	return cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI
+}
+
+func actualImageURI(obj *svcsdk.GetFunctionOutput) *string {
+	if obj.Code == nil {
+		return nil
+	}
+	return obj.Code.ImageUri
+}
+
+func bothPackageTypesNil(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	return desiredPackageType(cr) == nil && actualPackageType(obj) == nil
+}
+
+func bothImageURI(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	return desiredImageURI(cr) == nil && actualImageURI(obj) == nil
+}
+
+// isUpToDateCodeImage checks if FunctionConfiguration FunctionCodeLocation (Image) is up-to-date
+// Returns true when function code is supplied via Zip file
+func isUpToDateCodeImage(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	desired := cr
+	actual := obj
+
+	if *desiredPackageType(desired) != packageTypeImage {
+		// code is not supplied via container image
+		return true
+	}
+
+	if bothPackageTypesNil(desired, actual) {
+		return true
+	}
+
+	if actualPackageType(actual) == nil {
+		return false
+	}
+	if *desiredPackageType(desired) != *actualPackageType(actual) {
+		return false
+	}
+
+	if actualRepositoryType(actual) == nil {
+		return false
+	}
+	if *actualRepositoryType(actual) != repositoryTypeECR {
+		return false
+	}
+
+	if bothImageURI(desired, actual) {
+		return true
+	}
+	if actualImageURI(actual) == nil {
+		return false
+	}
+	return *desiredImageURI(desired) != *actualImageURI(actual)
+}
+
 func isUpToDateFileSystemConfigs(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
 	// Handle nil pointer refs
 	fileSystemConfigs := make([]*svcsdk.FileSystemConfig, 0)
@@ -271,15 +364,45 @@ type updater struct {
 	client svcsdkapi.LambdaAPI
 }
 
+func (u *updater) isLastUpdateStatusSuccessful(ctx context.Context, cr *svcapitypes.Function) error {
+	// LastUpdateStatus must be Successful before running UpdateFunction*
+	// https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html
+	// https://aws.amazon.com/blogs/compute/coming-soon-expansion-of-aws-lambda-states-to-all-functions/
+
+	for {
+		out, err := u.client.GetFunctionWithContext(ctx, &svcsdk.GetFunctionInput{
+			FunctionName: aws.String(meta.GetExternalName(cr)),
+		})
+		if err != nil {
+			return err
+		}
+		if aws.StringValue(out.Configuration.LastUpdateStatus) == svcsdk.LastUpdateStatusSuccessful {
+			return nil
+		}
+		time.Sleep(isLastUpdateStatusSuccessfulCheckInterval)
+	}
+}
+
+// nolint:gocyclo
 func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*svcapitypes.Function)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
+	// LastUpdateStatus must be Successful before running UpdateFunctionCode
+	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
+		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+	}
+
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.UpdateFunctionCode
 	updateFunctionCodeInput := GenerateUpdateFunctionCodeInput(cr)
 	if _, err := u.client.UpdateFunctionCodeWithContext(ctx, updateFunctionCodeInput); err != nil {
+		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+	}
+
+	// LastUpdateStatus must be Successful before running UpdateFunctionConfiguration
+	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
@@ -314,6 +437,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 		}
 	}
+
 	if len(addTags) > 0 {
 		if _, err := u.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
 			Resource: functionConfiguration.FunctionArn,
