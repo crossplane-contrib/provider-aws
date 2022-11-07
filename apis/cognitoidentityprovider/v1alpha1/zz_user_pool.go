@@ -90,6 +90,8 @@ type UserPoolParameters struct {
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
 	// A string representing the SMS verification message.
 	SmsVerificationMessage *string `json:"smsVerificationMessage,omitempty"`
+	// The software token MFA configuration.
+	SoftwareTokenMFAConfiguration *SoftwareTokenMFAConfigType `json:"softwareTokenMFAConfiguration,omitempty"`
 	// Enables advanced security risk detection. Set the key AdvancedSecurityMode
 	// to the value "AUDIT".
 	UserPoolAddOns *UserPoolAddOnsType `json:"userPoolAddOns,omitempty"`

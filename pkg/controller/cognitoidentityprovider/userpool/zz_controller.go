@@ -153,9 +153,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			f1.InviteMessageTemplate = f1f1
 		}
-		if resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.UnusedAccountValidityDays = resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays
-		}
 		cr.Spec.ForProvider.AdminCreateUserConfig = f1
 	} else {
 		cr.Spec.ForProvider.AdminCreateUserConfig = nil

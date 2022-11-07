@@ -37,8 +37,6 @@ type AdminCreateUserConfigType struct {
 	AllowAdminCreateUserOnly *bool `json:"allowAdminCreateUserOnly,omitempty"`
 	// The message template structure.
 	InviteMessageTemplate *MessageTemplateType `json:"inviteMessageTemplate,omitempty"`
-
-	UnusedAccountValidityDays *int64 `json:"unusedAccountValidityDays,omitempty"`
 }
 
 // +kubebuilder:skipversion

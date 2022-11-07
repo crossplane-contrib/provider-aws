@@ -98,9 +98,6 @@ spec:
                           sMSMessage:
                             type: string
                         type: object
-                      unusedAccountValidityDays:
-                        format: int64
-                        type: integer
                     type: object
                   aliasAttributes:
                     description: 'Attributes supported as an alias for this user pool.
@@ -287,6 +284,12 @@ spec:
                   smsVerificationMessage:
                     description: A string representing the SMS verification message.
                     type: string
+                  softwareTokenMFAConfiguration:
+                    description: The software token MFA configuration.
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
                   userPoolAddOns:
                     description: Enables advanced security risk detection. Set the
                       key AdvancedSecurityMode to the value "AUDIT".
