@@ -1,0 +1,18 @@
+---
+# metadata.name is not used in aws and only identifies the object on crossplane
+apiVersion: lambda.aws.crossplane.io/v1alpha1
+kind: FunctionURLConfig
+metadata:
+  name: functionurl-example 
+spec:
+  forProvider:
+	  cors:
+	    allowCredentials: true
+      allowHeaders:
+      - "X-Header-1"
+    authType: AWS_IAM
+    functionNameRef:
+      name: function-example
+    region: eu-west-1
+  providerConfigRef:
+    name: example
