@@ -106,6 +106,24 @@ type ScalingConfiguration struct {
 	SecondsUntilAutoPause *int `json:"secondsUntilAutoPause,omitempty"`
 }
 
+// ServerlessV2ScalingConfiguration Contains the scaling configuration of an Aurora Serverless v2 DB cluster.
+// For more information, see Using Amazon Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html)
+// in the Amazon Aurora User Guide.
+// Please also see https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_ServerlessV2ScalingConfiguration.html
+type ServerlessV2ScalingConfiguration struct {
+	// MaxCapacity is the maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2
+	// cluster. You can specify ACU values in half-step increments, such as 40, 40.5, 41, and so on. The largest value
+	// that you can use is 128.
+	// +optional
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	// MinCapacity is the minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2
+	// cluster. You can specify ACU values in half-step increments, such as 8, 8.5, 9, and so on. The smallest value
+	// that you can use is 0.5.
+	// +optional
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
 // S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
 type S3RestoreBackupConfiguration struct {
 	// BucketName is the name of the S3 bucket containing the backup to restore.
@@ -721,6 +739,11 @@ type RDSInstanceParameters struct {
 	// +immutable
 	// +optional
 	ScalingConfiguration *ScalingConfiguration `json:"scalingConfiguration,omitempty"`
+
+	// ScalingConfigurationV2 is the scaling configuration of an Aurora Serverless v2 DB cluster.
+	// +immutable
+	// +optional
+	ScalingConfigurationV2 *ServerlessV2ScalingConfiguration `json:"scalingConfigurationV2,omitempty"`
 
 	// StorageEncrypted specifies whether the DB instance is encrypted.
 	// Amazon Aurora
