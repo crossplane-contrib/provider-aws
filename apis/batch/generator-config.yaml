@@ -1,0 +1,70 @@
+ignore:
+  resource_names:
+    - SchedulingPolicy #comes in sdk v2
+  shape_names:
+    - JobDefinition #TODO check if CRD gets generated without this
+  field_paths:
+    - CreateComputeEnvironmentInput.ServiceRole
+    - CreateComputeEnvironmentInput.ComputeEnvironmentName
+    - CreateComputeEnvironmentInput.State
+    - UpdateComputeEnvironmentInput.State
+    - CreateComputeEnvironmentInput.ComputeResources.Subnets
+    - UpdateComputeEnvironmentInput.ComputeResources.Subnets
+    - CreateComputeEnvironmentInput.ComputeResources.SecurityGroupIds
+    - UpdateComputeEnvironmentInput.ComputeResources.SecurityGroupIds
+    - CreateComputeEnvironmentInput.ComputeResources.DesiredvCpus
+    - UpdateComputeEnvironmentInput.ComputeResources.DesiredvCpus
+    - CreateComputeEnvironmentInput.ComputeResources.InstanceRole
+    - CreateComputeEnvironmentInput.ComputeResources.SpotIamFleetRole
+    - CreateJobQueueInput.JobQueueName
+    - CreateJobQueueInput.State
+    - UpdateJobQueueInput.State
+    - CreateJobQueueInput.ComputeEnvironmentOrder
+resources:
+  ComputeEnvironment:
+    fields:
+      EcsClusterARN:
+        is_read_only: true
+        from:
+          operation: DescribeComputeEnvironments
+          path: ComputeEnvironments.EcsClusterArn
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeComputeEnvironments
+          path: ComputeEnvironments.Status
+      State:
+        is_read_only: true
+        from:
+          operation: DescribeComputeEnvironments
+          path: ComputeEnvironments.State
+    exceptions:
+      errors:
+        404:
+          code: ComputeEnvironmentNotFoundException
+  JobQueue:
+    fields:
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeJobQueues
+          path: JobQueues.Status
+      State:
+        is_read_only: true
+        from:
+          operation: DescribeJobQueues
+          path: JobQueues.State
+    exceptions:
+      errors:
+        404:
+          code: JobQueueNotFoundException
+  JobDefinition:
+    exceptions:
+      errors:
+        404:
+          code: JobDefinitionNotFoundException
+  Job:
+    exceptions:
+      errors:
+        404:
+          code: JobNotFoundException

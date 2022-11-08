@@ -1,0 +1,31 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: ComputeEnvironment
+metadata:
+  name: example-managed-ec2-computeenvironment
+spec:
+  forProvider:
+    region: us-east-1
+    type_: MANAGED
+    ## Defined in examples/ec2
+    subnetIdRefs: # apply internetgateway + routetable too (=>public subnet)
+      - name: sample-subnet1
+    ## Defined in examples/batch
+    securityGroupIdRefs:
+      - name: batch-ce-sg
+    ## Defined in examples/batch
+    instanceRoleRef:
+      name: ecsinstance-role-profile
+    tags: 
+      ce: "my-ec2-ce"
+      other: "blaa"
+    computeResources:
+      type_: EC2
+      minvCPUs: 1
+      maxvCPUs: 32
+      instanceTypes:
+        - "optimal"
+      tags:
+        cr: "cr-for-ec2-ce"
+        other: "non-updatable-tag"
+  providerConfigRef:
+    name: example

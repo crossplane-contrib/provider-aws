@@ -40,6 +40,10 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigatewayv2/stage"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigatewayv2/vpclink"
 	athenaworkgroup "github.com/crossplane-contrib/provider-aws/pkg/controller/athena/workgroup"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/computeenvironment"
+	batchjob "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/job"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/jobdefinition"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/jobqueue"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cluster"
@@ -332,6 +336,10 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cognitoidentitypool.SetupIdentityPool,
 		flowlog.SetupFlowLog,
 		opensearchdomain.SetupDomain,
+		computeenvironment.SetupComputeEnvironment,
+		jobqueue.SetupJobQueue,
+		jobdefinition.SetupJobDefinition,
+		batchjob.SetupJob,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

@@ -1,0 +1,15 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: ComputeEnvironment
+metadata:
+  name: example-unmanaged-computeenvironment
+spec:
+  forProvider:
+    region: us-east-1
+    type_: UNMANAGED
+    ## Defined in examples/batch/
+    serviceRoleARNRef:
+      name: batch-role
+    tags: 
+      ce: "my-unmanaged-ce"
+  providerConfigRef:
+    name: example
