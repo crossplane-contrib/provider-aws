@@ -6,8 +6,8 @@ metadata:
   name: functionurl-example 
 spec:
   forProvider:
-	  cors:
-	    allowCredentials: true
+    cors:
+      allowCredentials: true
       allowHeaders:
       - "X-Header-1"
     authType: AWS_IAM
