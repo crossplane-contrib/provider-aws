@@ -47,7 +47,7 @@ func NewRoleClient(conf aws.Config) RoleClient {
 func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.CreateRoleInput {
 	m := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
-		AssumeRolePolicyDocument: aws.String(p.AssumeRolePolicyDocument),
+		AssumeRolePolicyDocument: awsclients.GetRawJSONFromBlob(p.AssumeRolePolicyDocument),
 		Description:              p.Description,
 		MaxSessionDuration:       p.MaxSessionDuration,
 		Path:                     p.Path,
@@ -78,8 +78,8 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 // GenerateRole assigns the in RoleParamters to role.
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 
-	if in.AssumeRolePolicyDocument != "" {
-		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
+	if in.AssumeRolePolicyDocument.Size() > 0 {
+		s, err := awsclients.CompactAndEscapeJSON(*awsclients.GetRawJSONFromBlob(in.AssumeRolePolicyDocument))
 		if err != nil {
 			return errors.Wrap(err, errPolicyJSONEscape)
 		}
@@ -108,7 +108,7 @@ func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
-	in.AssumeRolePolicyDocument = awsclients.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
+	in.AssumeRolePolicyDocument = awsclients.LateInitializeJSONFromStringPtr(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
 	in.Description = awsclients.LateInitializeStringPtr(in.Description, role.Description)
 	in.MaxSessionDuration = awsclients.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
 	in.Path = awsclients.LateInitializeStringPtr(in.Path, role.Path)

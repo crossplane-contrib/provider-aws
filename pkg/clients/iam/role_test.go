@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -55,7 +56,7 @@ var (
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
 	o := &v1beta1.RoleParameters{
 		Description:              &description,
-		AssumeRolePolicyDocument: assumeRolePolicyDocument,
+		AssumeRolePolicyDocument: aws.NewJSONFromRaw(assumeRolePolicyDocument),
 		MaxSessionDuration:       aws.Int32(1),
 	}
 
@@ -72,6 +73,14 @@ func escapedPolicyJSON() *string {
 		return &p
 	}
 	return nil
+}
+
+func rawPolicyJSON() string {
+	raw, err := json.Marshal(assumeRolePolicyDocument)
+	if err != nil {
+		return "null"
+	}
+	return string(raw)
 }
 
 func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
@@ -259,7 +268,33 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
-					AssumeRolePolicyDocument: assumeRolePolicyDocument,
+					AssumeRolePolicyDocument: aws.NewJSONFromRaw(assumeRolePolicyDocument),
+					MaxSessionDuration:       aws.Int32(1),
+					Path:                     aws.String("/"),
+					Tags: []v1beta1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+			},
+			want:     true,
+			wantDiff: "",
+		},
+		"SameFieldsWithRawPolicy": {
+			args: args{
+				role: iamtypes.Role{
+					AssumeRolePolicyDocument: escapedPolicyJSON(),
+					Description:              &description,
+					MaxSessionDuration:       aws.Int32(1),
+					Path:                     aws.String("/"),
+					Tags: []iamtypes.Tag{{
+						Key:   aws.String("key1"),
+						Value: aws.String("value1"),
+					}},
+				},
+				p: v1beta1.RoleParameters{
+					Description:              &description,
+					AssumeRolePolicyDocument: aws.NewJSONFromRaw(rawPolicyJSON()),
 					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 					Tags: []v1beta1.Tag{{
@@ -281,7 +316,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
-					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
+					AssumeRolePolicyDocument: aws.NewJSONFromRaw(assumeRolePolicyDocument2),
 					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 				},
@@ -306,7 +341,7 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
-					AssumeRolePolicyDocument: assumeRolePolicyDocument,
+					AssumeRolePolicyDocument: aws.NewJSONFromRaw(assumeRolePolicyDocument),
 					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 					Tags: []v1beta1.Tag{{

@@ -48,6 +48,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -893,6 +894,15 @@ func LateInitializeString(in string, from *string) string {
 	return in
 }
 
+// LateInitializeJSONFromStringPtr returns `from` if `in` is empty and `from` is non-nil,
+// in other cases it returns `in`.
+func LateInitializeJSONFromStringPtr(in extv1.JSON, from *string) extv1.JSON {
+	if in.Size() == 0 && from != nil {
+		return extv1.JSON{Raw: []byte(*from)}
+	}
+	return in
+}
+
 // LateInitializeTimePtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeTimePtr(in *metav1.Time, from *time.Time) *metav1.Time {
@@ -1265,4 +1275,32 @@ func CIDRBlocksEqual(cidr1, cidr2 string) bool {
 	}
 
 	return ip2.String() == ip1.String() && ipnet2.String() == ipnet1.String()
+}
+
+// GetRawJSON returns the raw JSON string represents by j.Raw.
+// If j.Raw represents a JSON formatted string, it returns the value of that
+// string, otherwise the content of j.Raw converted to a string.
+// If j.Raw is empty, nil will be returned.
+// If j.Raw is not valid JSON, its string value is returned nevertheless.
+func GetRawJSONFromBlob(j extv1.JSON) *string {
+	if len(j.Raw) == 0 {
+		return nil
+	}
+	var parsed any
+	if err := json.Unmarshal(j.Raw, &parsed); err != nil {
+		policy := string(j.Raw)
+		return &policy
+	}
+	// For the sake of backward compatibility, we still support passing the
+	// policy as a raw string.
+	if val, isString := parsed.(string); isString {
+		return &val
+	}
+	policy := string(j.Raw)
+	return &policy
+}
+
+// NewJSONFromRaw returns a new JSON struct with raw as its content.
+func NewJSONFromRaw(raw string) extv1.JSON {
+	return extv1.JSON{Raw: []byte(raw)}
 }

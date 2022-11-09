@@ -5,7 +5,7 @@ metadata:
   name: somerole
 spec:
   forProvider:
-    assumeRolePolicyDocument: |
+    assumeRolePolicyDocument:
       {
         "Version": "2012-10-17",
         "Statement": [

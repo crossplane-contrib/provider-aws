@@ -65,10 +65,11 @@ spec:
                   Role.
                 properties:
                   assumeRolePolicyDocument:
-                    description: AssumeRolePolicyDocument is the the trust relationship
+                    description: "AssumeRolePolicyDocument is the the trust relationship
                       policy document that grants an entity permission to assume the
-                      role.
-                    type: string
+                      role. \n This field accepts a policy as a JSON / YAML object
+                      or as a raw string."
+                    x-kubernetes-preserve-unknown-fields: true
                   description:
                     description: Description is a description of the role.
                     type: string

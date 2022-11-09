@@ -18,6 +18,7 @@ package aws
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -34,6 +35,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -1268,5 +1270,72 @@ func TestUsePodServiceAccountAssumeRole(t *testing.T) {
 	err = os.Unsetenv("AWS_REGION")
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetRawJSONFromBlob(t *testing.T) {
+	type args struct {
+		json extv1.JSON
+	}
+	type want struct {
+		raw *string
+	}
+
+	valid := "{\"foo\": \"bar\"}"
+	invalid := "{\"foo\": \"bar}"
+	validRawBytes, _ := json.Marshal(valid)
+	validRaw := string(validRawBytes)
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"ValidObject": {
+			args: args{
+				json: NewJSONFromRaw(valid),
+			},
+			want: want{
+				raw: &valid,
+			},
+		},
+		"ValidObjectRaw": {
+			args: args{
+				json: NewJSONFromRaw(validRaw),
+			},
+			want: want{
+				raw: &valid,
+			},
+		},
+		"InvalidOnInvalid": {
+			args: args{
+				json: NewJSONFromRaw(invalid),
+			},
+			want: want{
+				raw: &invalid,
+			},
+		},
+		"NilOnNil": {
+			args: args{
+				json: extv1.JSON{},
+			},
+			want: want{},
+		},
+		"NilOnEmpty": {
+			args: args{
+				json: extv1.JSON{
+					Raw: []byte{},
+				},
+			},
+			want: want{},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GetRawJSONFromBlob(tc.args.json)
+			if diff := cmp.Diff(tc.want.raw, got); diff != "" {
+				t.Errorf("\nGetRawJSONFromBlob(...): -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
