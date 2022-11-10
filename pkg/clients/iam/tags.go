@@ -15,7 +15,6 @@ func DiffIAMTags(local map[string]string, remote []iamtypes.Tag) (add []iamtypes
 	for k, v := range addMap {
 		add = append(add, iamtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
-
 	return add, remove, areTagsUpToDate
 }
 
