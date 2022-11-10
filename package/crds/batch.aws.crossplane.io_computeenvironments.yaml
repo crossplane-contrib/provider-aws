@@ -86,8 +86,6 @@ spec:
                         type: array
                       ec2KeyPair:
                         type: string
-                      imageID:
-                        type: string
                       instanceTypes:
                         items:
                           type: string
@@ -612,6 +610,32 @@ spec:
                       UNMANAGED. For more information, see Compute Environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
                       in the Batch User Guide.'
                     type: string
+                  unmanagedvCPUs:
+                    description: "The maximum number of vCPUs for an unmanaged compute
+                      environment. This parameter is only used for fair share scheduling
+                      to reserve vCPU capacity for new share identifiers. If this
+                      parameter isn't provided for a fair share job queue, no vCPU
+                      capacity is reserved. \n This parameter is only supported when
+                      the type parameter is set to UNMANAGED."
+                    format: int64
+                    type: integer
+                  updateToLatestImageVersion:
+                    description: "Specifies whether the AMI ID is updated to the latest
+                      one that's supported by Batch when the compute environment has
+                      an infrastructure update. The default value is false. This field
+                      requires an update request to be changed and it can be updated
+                      for CE only with Allocation Strategy BEST_FIT_PROGRESSIVE and
+                      SPOT_CAPACITY_OPTIMIZED. \n If an AMI ID is specified in the
+                      imageIdOverride parameters or by the launch template specified
+                      in the launchTemplate parameter, this parameter is ignored.
+                      For more information on updating AMI IDs during an infrastructure
+                      update, see Updating the AMI ID (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html#updating-compute-environments-ami)
+                      in the Batch User Guide. \n When updating a compute environment,
+                      changing this setting requires an infrastructure update of the
+                      compute environment. For more information, see Updating compute
+                      environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
+                      in the Batch User Guide."
+                    type: boolean
                 required:
                 - region
                 - type_
@@ -798,9 +822,9 @@ spec:
                     description: The Amazon Resource Name (ARN) of the compute environment.
                     type: string
                   computeEnvironmentName:
-                    description: The name of the compute environment. Up to 128 letters
-                      (uppercase and lowercase), numbers, hyphens, and underscores
-                      are allowed.
+                    description: The name of the compute environment. It can be up
+                      to 128 letters long. It can contain uppercase and lowercase
+                      letters, numbers, hyphens (-), and underscores (_).
                     type: string
                   ecsClusterARN:
                     description: The Amazon Resource Name (ARN) of the underlying

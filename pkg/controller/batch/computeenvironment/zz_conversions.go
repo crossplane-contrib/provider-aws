@@ -77,30 +77,27 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 			if elem.ComputeResources.Ec2KeyPair != nil {
 				f2.EC2KeyPair = elem.ComputeResources.Ec2KeyPair
 			}
-			if elem.ComputeResources.ImageId != nil {
-				f2.ImageID = elem.ComputeResources.ImageId
-			}
 			if elem.ComputeResources.InstanceTypes != nil {
-				f2f5 := []*string{}
-				for _, f2f5iter := range elem.ComputeResources.InstanceTypes {
-					var f2f5elem string
-					f2f5elem = *f2f5iter
-					f2f5 = append(f2f5, &f2f5elem)
+				f2f4 := []*string{}
+				for _, f2f4iter := range elem.ComputeResources.InstanceTypes {
+					var f2f4elem string
+					f2f4elem = *f2f4iter
+					f2f4 = append(f2f4, &f2f4elem)
 				}
-				f2.InstanceTypes = f2f5
+				f2.InstanceTypes = f2f4
 			}
 			if elem.ComputeResources.LaunchTemplate != nil {
-				f2f6 := &svcapitypes.LaunchTemplateSpecification{}
+				f2f5 := &svcapitypes.LaunchTemplateSpecification{}
 				if elem.ComputeResources.LaunchTemplate.LaunchTemplateId != nil {
-					f2f6.LaunchTemplateID = elem.ComputeResources.LaunchTemplate.LaunchTemplateId
+					f2f5.LaunchTemplateID = elem.ComputeResources.LaunchTemplate.LaunchTemplateId
 				}
 				if elem.ComputeResources.LaunchTemplate.LaunchTemplateName != nil {
-					f2f6.LaunchTemplateName = elem.ComputeResources.LaunchTemplate.LaunchTemplateName
+					f2f5.LaunchTemplateName = elem.ComputeResources.LaunchTemplate.LaunchTemplateName
 				}
 				if elem.ComputeResources.LaunchTemplate.Version != nil {
-					f2f6.Version = elem.ComputeResources.LaunchTemplate.Version
+					f2f5.Version = elem.ComputeResources.LaunchTemplate.Version
 				}
-				f2.LaunchTemplate = f2f6
+				f2.LaunchTemplate = f2f5
 			}
 			if elem.ComputeResources.MaxvCpus != nil {
 				f2.MaxvCPUs = elem.ComputeResources.MaxvCpus
@@ -112,13 +109,13 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 				f2.PlacementGroup = elem.ComputeResources.PlacementGroup
 			}
 			if elem.ComputeResources.Tags != nil {
-				f2f10 := map[string]*string{}
-				for f2f10key, f2f10valiter := range elem.ComputeResources.Tags {
-					var f2f10val string
-					f2f10val = *f2f10valiter
-					f2f10[f2f10key] = &f2f10val
+				f2f9 := map[string]*string{}
+				for f2f9key, f2f9valiter := range elem.ComputeResources.Tags {
+					var f2f9val string
+					f2f9val = *f2f9valiter
+					f2f9[f2f9key] = &f2f9val
 				}
-				f2.Tags = f2f10
+				f2.Tags = f2f9
 			}
 			if elem.ComputeResources.Type != nil {
 				f2.Type = elem.ComputeResources.Type
@@ -152,6 +149,11 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 			cr.Spec.ForProvider.Type = elem.Type
 		} else {
 			cr.Spec.ForProvider.Type = nil
+		}
+		if elem.UnmanagedvCpus != nil {
+			cr.Spec.ForProvider.UnmanagedvCPUs = elem.UnmanagedvCpus
+		} else {
+			cr.Spec.ForProvider.UnmanagedvCPUs = nil
 		}
 		found = true
 		break
@@ -192,30 +194,27 @@ func GenerateCreateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 		if cr.Spec.ForProvider.ComputeResources.EC2KeyPair != nil {
 			f0.SetEc2KeyPair(*cr.Spec.ForProvider.ComputeResources.EC2KeyPair)
 		}
-		if cr.Spec.ForProvider.ComputeResources.ImageID != nil {
-			f0.SetImageId(*cr.Spec.ForProvider.ComputeResources.ImageID)
-		}
 		if cr.Spec.ForProvider.ComputeResources.InstanceTypes != nil {
-			f0f5 := []*string{}
-			for _, f0f5iter := range cr.Spec.ForProvider.ComputeResources.InstanceTypes {
-				var f0f5elem string
-				f0f5elem = *f0f5iter
-				f0f5 = append(f0f5, &f0f5elem)
+			f0f4 := []*string{}
+			for _, f0f4iter := range cr.Spec.ForProvider.ComputeResources.InstanceTypes {
+				var f0f4elem string
+				f0f4elem = *f0f4iter
+				f0f4 = append(f0f4, &f0f4elem)
 			}
-			f0.SetInstanceTypes(f0f5)
+			f0.SetInstanceTypes(f0f4)
 		}
 		if cr.Spec.ForProvider.ComputeResources.LaunchTemplate != nil {
-			f0f6 := &svcsdk.LaunchTemplateSpecification{}
+			f0f5 := &svcsdk.LaunchTemplateSpecification{}
 			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID != nil {
-				f0f6.SetLaunchTemplateId(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID)
+				f0f5.SetLaunchTemplateId(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID)
 			}
 			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName != nil {
-				f0f6.SetLaunchTemplateName(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName)
+				f0f5.SetLaunchTemplateName(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName)
 			}
 			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version != nil {
-				f0f6.SetVersion(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version)
+				f0f5.SetVersion(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version)
 			}
-			f0.SetLaunchTemplate(f0f6)
+			f0.SetLaunchTemplate(f0f5)
 		}
 		if cr.Spec.ForProvider.ComputeResources.MaxvCPUs != nil {
 			f0.SetMaxvCpus(*cr.Spec.ForProvider.ComputeResources.MaxvCPUs)
@@ -227,13 +226,13 @@ func GenerateCreateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 			f0.SetPlacementGroup(*cr.Spec.ForProvider.ComputeResources.PlacementGroup)
 		}
 		if cr.Spec.ForProvider.ComputeResources.Tags != nil {
-			f0f10 := map[string]*string{}
-			for f0f10key, f0f10valiter := range cr.Spec.ForProvider.ComputeResources.Tags {
-				var f0f10val string
-				f0f10val = *f0f10valiter
-				f0f10[f0f10key] = &f0f10val
+			f0f9 := map[string]*string{}
+			for f0f9key, f0f9valiter := range cr.Spec.ForProvider.ComputeResources.Tags {
+				var f0f9val string
+				f0f9val = *f0f9valiter
+				f0f9[f0f9key] = &f0f9val
 			}
-			f0.SetTags(f0f10)
+			f0.SetTags(f0f9)
 		}
 		if cr.Spec.ForProvider.ComputeResources.Type != nil {
 			f0.SetType(*cr.Spec.ForProvider.ComputeResources.Type)
@@ -252,6 +251,9 @@ func GenerateCreateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 	if cr.Spec.ForProvider.Type != nil {
 		res.SetType(*cr.Spec.ForProvider.Type)
 	}
+	if cr.Spec.ForProvider.UnmanagedvCPUs != nil {
+		res.SetUnmanagedvCpus(*cr.Spec.ForProvider.UnmanagedvCPUs)
+	}
 
 	return res
 }
@@ -262,13 +264,76 @@ func GenerateUpdateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 
 	if cr.Spec.ForProvider.ComputeResources != nil {
 		f1 := &svcsdk.ComputeResourceUpdate{}
+		if cr.Spec.ForProvider.ComputeResources.AllocationStrategy != nil {
+			f1.SetAllocationStrategy(*cr.Spec.ForProvider.ComputeResources.AllocationStrategy)
+		}
+		if cr.Spec.ForProvider.ComputeResources.BidPercentage != nil {
+			f1.SetBidPercentage(*cr.Spec.ForProvider.ComputeResources.BidPercentage)
+		}
+		if cr.Spec.ForProvider.ComputeResources.EC2Configuration != nil {
+			f1f2 := []*svcsdk.Ec2Configuration{}
+			for _, f1f2iter := range cr.Spec.ForProvider.ComputeResources.EC2Configuration {
+				f1f2elem := &svcsdk.Ec2Configuration{}
+				if f1f2iter.ImageIDOverride != nil {
+					f1f2elem.SetImageIdOverride(*f1f2iter.ImageIDOverride)
+				}
+				if f1f2iter.ImageType != nil {
+					f1f2elem.SetImageType(*f1f2iter.ImageType)
+				}
+				f1f2 = append(f1f2, f1f2elem)
+			}
+			f1.SetEc2Configuration(f1f2)
+		}
+		if cr.Spec.ForProvider.ComputeResources.EC2KeyPair != nil {
+			f1.SetEc2KeyPair(*cr.Spec.ForProvider.ComputeResources.EC2KeyPair)
+		}
+		if cr.Spec.ForProvider.ComputeResources.InstanceTypes != nil {
+			f1f4 := []*string{}
+			for _, f1f4iter := range cr.Spec.ForProvider.ComputeResources.InstanceTypes {
+				var f1f4elem string
+				f1f4elem = *f1f4iter
+				f1f4 = append(f1f4, &f1f4elem)
+			}
+			f1.SetInstanceTypes(f1f4)
+		}
+		if cr.Spec.ForProvider.ComputeResources.LaunchTemplate != nil {
+			f1f5 := &svcsdk.LaunchTemplateSpecification{}
+			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID != nil {
+				f1f5.SetLaunchTemplateId(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID)
+			}
+			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName != nil {
+				f1f5.SetLaunchTemplateName(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName)
+			}
+			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version != nil {
+				f1f5.SetVersion(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version)
+			}
+			f1.SetLaunchTemplate(f1f5)
+		}
 		if cr.Spec.ForProvider.ComputeResources.MaxvCPUs != nil {
 			f1.SetMaxvCpus(*cr.Spec.ForProvider.ComputeResources.MaxvCPUs)
 		}
 		if cr.Spec.ForProvider.ComputeResources.MinvCPUs != nil {
 			f1.SetMinvCpus(*cr.Spec.ForProvider.ComputeResources.MinvCPUs)
 		}
+		if cr.Spec.ForProvider.ComputeResources.PlacementGroup != nil {
+			f1.SetPlacementGroup(*cr.Spec.ForProvider.ComputeResources.PlacementGroup)
+		}
+		if cr.Spec.ForProvider.ComputeResources.Tags != nil {
+			f1f9 := map[string]*string{}
+			for f1f9key, f1f9valiter := range cr.Spec.ForProvider.ComputeResources.Tags {
+				var f1f9val string
+				f1f9val = *f1f9valiter
+				f1f9[f1f9key] = &f1f9val
+			}
+			f1.SetTags(f1f9)
+		}
+		if cr.Spec.ForProvider.ComputeResources.Type != nil {
+			f1.SetType(*cr.Spec.ForProvider.ComputeResources.Type)
+		}
 		res.SetComputeResources(f1)
+	}
+	if cr.Spec.ForProvider.UnmanagedvCPUs != nil {
+		res.SetUnmanagedvCpus(*cr.Spec.ForProvider.UnmanagedvCPUs)
 	}
 
 	return res

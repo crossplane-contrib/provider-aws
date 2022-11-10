@@ -74,6 +74,13 @@ const (
 	CRType_FARGATE_SPOT CRType = "FARGATE_SPOT"
 )
 
+type CRUpdateAllocationStrategy string
+
+const (
+	CRUpdateAllocationStrategy_BEST_FIT_PROGRESSIVE    CRUpdateAllocationStrategy = "BEST_FIT_PROGRESSIVE"
+	CRUpdateAllocationStrategy_SPOT_CAPACITY_OPTIMIZED CRUpdateAllocationStrategy = "SPOT_CAPACITY_OPTIMIZED"
+)
+
 type DeviceCgroupPermission string
 
 const (

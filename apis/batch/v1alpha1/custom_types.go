@@ -149,6 +149,24 @@ type CustomComputeEnvironmentParameters struct {
 	// to set the SpotIAMFleetRole.
 	// +optional
 	SpotIAMFleetRoleSelector *xpv1.Selector `json:"spotIamFleetRoleSelector,omitempty"`
+
+	// Specifies whether the AMI ID is updated to the latest one that's supported
+	// by Batch when the compute environment has an infrastructure update.
+	// The default value is false.
+	// This field requires an update request to be changed and it can be updated for CE only
+	// with Allocation Strategy BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED.
+	//
+	// If an AMI ID is specified in the imageIdOverride parameters or
+	// by the launch template specified in the launchTemplate parameter, this parameter
+	// is ignored. For more information on updating AMI IDs during an infrastructure
+	// update, see Updating the AMI ID (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html#updating-compute-environments-ami)
+	// in the Batch User Guide.
+	//
+	// When updating a compute environment, changing this setting requires an infrastructure
+	// update of the compute environment. For more information, see Updating compute
+	// environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
+	// in the Batch User Guide.
+	UpdateToLatestImageVersion *bool `json:"updateToLatestImageVersion,omitempty"`
 }
 
 // CustomJobQueueParameters includes custom additional fields for JobQueue
