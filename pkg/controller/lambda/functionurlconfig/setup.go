@@ -104,19 +104,15 @@ func isUpToDateCors(cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUr
 	switch {
 	case cr.Spec.ForProvider.CORS == nil && obj.Cors == nil, cr.Spec.ForProvider.CORS == nil:
 		return true
-	case obj.Cors == nil:
-		return false
-	case aws.BoolValue(cr.Spec.ForProvider.CORS.AllowCredentials) != aws.BoolValue(obj.Cors.AllowCredentials):
-		return false
-	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowHeaders, &obj.Cors.AllowHeaders, sortCmp):
-		return false
-	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowMethods, &obj.Cors.AllowMethods, sortCmp):
-		return false
-	case !cmp.Equal(&cr.Spec.ForProvider.CORS.AllowOrigins, &obj.Cors.AllowOrigins, sortCmp):
-		return false
-	case !cmp.Equal(&cr.Spec.ForProvider.CORS.ExposeHeaders, &obj.Cors.ExposeHeaders, sortCmp):
-		return false
-	case aws.Int64Value(cr.Spec.ForProvider.CORS.MaxAge) != aws.Int64Value(obj.Cors.MaxAge):
+
+	case obj.Cors == nil,
+		aws.BoolValue(cr.Spec.ForProvider.CORS.AllowCredentials) != aws.BoolValue(obj.Cors.AllowCredentials),
+		!cmp.Equal(&cr.Spec.ForProvider.CORS.AllowHeaders, &obj.Cors.AllowHeaders, sortCmp),
+		!cmp.Equal(&cr.Spec.ForProvider.CORS.AllowMethods, &obj.Cors.AllowMethods, sortCmp),
+		!cmp.Equal(&cr.Spec.ForProvider.CORS.AllowOrigins, &obj.Cors.AllowOrigins, sortCmp),
+		!cmp.Equal(&cr.Spec.ForProvider.CORS.ExposeHeaders, &obj.Cors.ExposeHeaders, sortCmp),
+		aws.Int64Value(cr.Spec.ForProvider.CORS.MaxAge) != aws.Int64Value(obj.Cors.MaxAge):
+
 		return false
 	}
 
