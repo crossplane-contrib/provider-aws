@@ -181,13 +181,6 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	/*
-		_, _, areTagsUpToDate := DiffIAMTagsReturnStringList(desired.Tags, observed.Tags)
-		if areTagsUpToDate {
-			ignoreFields = append(ignoreFields, "Tags")
-		}
-	*/
-
 	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, ignoreFields...), cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
