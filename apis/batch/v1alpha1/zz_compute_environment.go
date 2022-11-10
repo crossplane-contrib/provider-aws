@@ -47,7 +47,14 @@ type ComputeEnvironmentParameters struct {
 	// see Compute Environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 	// in the Batch User Guide.
 	// +kubebuilder:validation:Required
-	Type                               *string `json:"type_"`
+	Type *string `json:"type_"`
+	// The maximum number of vCPUs for an unmanaged compute environment. This parameter
+	// is only used for fair share scheduling to reserve vCPU capacity for new share
+	// identifiers. If this parameter isn't provided for a fair share job queue,
+	// no vCPU capacity is reserved.
+	//
+	// This parameter is only supported when the type parameter is set to UNMANAGED.
+	UnmanagedvCPUs                     *int64 `json:"unmanagedvCPUs,omitempty"`
 	CustomComputeEnvironmentParameters `json:",inline"`
 }
 
@@ -61,8 +68,9 @@ type ComputeEnvironmentSpec struct {
 type ComputeEnvironmentObservation struct {
 	// The Amazon Resource Name (ARN) of the compute environment.
 	ComputeEnvironmentARN *string `json:"computeEnvironmentARN,omitempty"`
-	// The name of the compute environment. Up to 128 letters (uppercase and lowercase),
-	// numbers, hyphens, and underscores are allowed.
+	// The name of the compute environment. It can be up to 128 letters long. It
+	// can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores
+	// (_).
 	ComputeEnvironmentName *string `json:"computeEnvironmentName,omitempty"`
 	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster used
 	// by the compute environment.

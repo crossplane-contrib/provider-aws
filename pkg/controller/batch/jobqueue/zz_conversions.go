@@ -57,6 +57,11 @@ func GenerateJobQueue(resp *svcsdk.DescribeJobQueuesOutput) *svcapitypes.JobQueu
 		} else {
 			cr.Spec.ForProvider.Priority = nil
 		}
+		if elem.SchedulingPolicyArn != nil {
+			cr.Spec.ForProvider.SchedulingPolicyARN = elem.SchedulingPolicyArn
+		} else {
+			cr.Spec.ForProvider.SchedulingPolicyARN = nil
+		}
 		if elem.State != nil {
 			cr.Status.AtProvider.State = elem.State
 		} else {
@@ -68,13 +73,13 @@ func GenerateJobQueue(resp *svcsdk.DescribeJobQueuesOutput) *svcapitypes.JobQueu
 			cr.Status.AtProvider.Status = nil
 		}
 		if elem.Tags != nil {
-			f7 := map[string]*string{}
-			for f7key, f7valiter := range elem.Tags {
-				var f7val string
-				f7val = *f7valiter
-				f7[f7key] = &f7val
+			f8 := map[string]*string{}
+			for f8key, f8valiter := range elem.Tags {
+				var f8val string
+				f8val = *f8valiter
+				f8[f8key] = &f8val
 			}
-			cr.Spec.ForProvider.Tags = f7
+			cr.Spec.ForProvider.Tags = f8
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}
@@ -95,14 +100,17 @@ func GenerateCreateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.CreateJobQueu
 	if cr.Spec.ForProvider.Priority != nil {
 		res.SetPriority(*cr.Spec.ForProvider.Priority)
 	}
+	if cr.Spec.ForProvider.SchedulingPolicyARN != nil {
+		res.SetSchedulingPolicyArn(*cr.Spec.ForProvider.SchedulingPolicyARN)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f1 := map[string]*string{}
-		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
-			var f1val string
-			f1val = *f1valiter
-			f1[f1key] = &f1val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetTags(f1)
+		res.SetTags(f2)
 	}
 
 	return res
@@ -114,6 +122,9 @@ func GenerateUpdateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.UpdateJobQueu
 
 	if cr.Spec.ForProvider.Priority != nil {
 		res.SetPriority(*cr.Spec.ForProvider.Priority)
+	}
+	if cr.Spec.ForProvider.SchedulingPolicyARN != nil {
+		res.SetSchedulingPolicyArn(*cr.Spec.ForProvider.SchedulingPolicyARN)
 	}
 
 	return res

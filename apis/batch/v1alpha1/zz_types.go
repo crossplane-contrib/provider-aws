@@ -70,7 +70,7 @@ type ComputeEnvironmentDetail struct {
 
 	ComputeEnvironmentName *string `json:"computeEnvironmentName,omitempty"`
 	// An object representing an Batch compute resource. For more information, see
-	// Compute Environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
+	// Compute environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 	// in the Batch User Guide.
 	ComputeResources *ComputeResource `json:"computeResources,omitempty"`
 
@@ -87,6 +87,13 @@ type ComputeEnvironmentDetail struct {
 	Tags map[string]*string `json:"tags,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
+
+	UnmanagedvCPUs *int64 `json:"unmanagedvCPUs,omitempty"`
+	// Specifies the infrastructure update policy for the compute environment. For
+	// more information about infrastructure updates, see Infrastructure updates
+	// (https://docs.aws.amazon.com/batch/latest/userguide/infrastructure-updates.html)
+	// in the Batch User Guide.
+	UpdatePolicy *UpdatePolicy `json:"updatePolicy,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -105,8 +112,6 @@ type ComputeResource struct {
 	EC2Configuration []*EC2Configuration `json:"ec2Configuration,omitempty"`
 
 	EC2KeyPair *string `json:"ec2KeyPair,omitempty"`
-
-	ImageID *string `json:"imageID,omitempty"`
 
 	InstanceTypes []*string `json:"instanceTypes,omitempty"`
 	// An object representing a launch template associated with a compute resource.
@@ -133,9 +138,35 @@ type ComputeResource struct {
 
 // +kubebuilder:skipversion
 type ComputeResourceUpdate struct {
+	AllocationStrategy *string `json:"allocationStrategy,omitempty"`
+
+	BidPercentage *int64 `json:"bidPercentage,omitempty"`
+
+	EC2Configuration []*EC2Configuration `json:"ec2Configuration,omitempty"`
+
+	EC2KeyPair *string `json:"ec2KeyPair,omitempty"`
+
+	InstanceTypes []*string `json:"instanceTypes,omitempty"`
+	// An object representing a launch template associated with a compute resource.
+	// You must specify either the launch template ID or launch template name in
+	// the request, but not both.
+	//
+	// If security groups are specified using both the securityGroupIds parameter
+	// of CreateComputeEnvironment and the launch template, the values in the securityGroupIds
+	// parameter of CreateComputeEnvironment will be used.
+	//
+	// This object isn't applicable to jobs that are running on Fargate resources.
+	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
+
 	MaxvCPUs *int64 `json:"maxvCPUs,omitempty"`
 
 	MinvCPUs *int64 `json:"minvCPUs,omitempty"`
+
+	PlacementGroup *string `json:"placementGroup,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -157,6 +188,10 @@ type ContainerDetail struct {
 	LogStreamName *string `json:"logStreamName,omitempty"`
 
 	Memory *int64 `json:"memory,omitempty"`
+
+	Privileged *bool `json:"privileged,omitempty"`
+
+	ReadonlyRootFilesystem *bool `json:"readonlyRootFilesystem,omitempty"`
 
 	Reason *string `json:"reason,omitempty"`
 
@@ -191,6 +226,10 @@ type ContainerProperties struct {
 	JobRoleARN *string `json:"jobRoleARN,omitempty"`
 
 	Memory *int64 `json:"memory,omitempty"`
+
+	Privileged *bool `json:"privileged,omitempty"`
+
+	ReadonlyRootFilesystem *bool `json:"readonlyRootFilesystem,omitempty"`
 
 	User *string `json:"user,omitempty"`
 
@@ -242,6 +281,13 @@ type EvaluateOnExit struct {
 }
 
 // +kubebuilder:skipversion
+type FairsharePolicy struct {
+	ComputeReservation *int64 `json:"computeReservation,omitempty"`
+
+	ShareDecaySeconds *int64 `json:"shareDecaySeconds,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FargatePlatformConfiguration struct {
 	PlatformVersion *string `json:"platformVersion,omitempty"`
 }
@@ -268,6 +314,12 @@ type JobDetail struct {
 
 	JobQueue *string `json:"jobQueue,omitempty"`
 
+	PropagateTags *bool `json:"propagateTags,omitempty"`
+
+	SchedulingPriority *int64 `json:"schedulingPriority,omitempty"`
+
+	ShareIdentifier *string `json:"shareIdentifier,omitempty"`
+
 	StatusReason *string `json:"statusReason,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
@@ -282,6 +334,8 @@ type JobQueueDetail struct {
 	JobQueueName *string `json:"jobQueueName,omitempty"`
 
 	Priority *int64 `json:"priority,omitempty"`
+
+	SchedulingPolicyARN *string `json:"schedulingPolicyARN,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
@@ -335,6 +389,8 @@ type LaunchTemplateSpecification struct {
 
 // +kubebuilder:skipversion
 type LinuxParameters struct {
+	InitProcessEnabled *bool `json:"initProcessEnabled,omitempty"`
+
 	MaxSwap *int64 `json:"maxSwap,omitempty"`
 
 	SharedMemorySize *int64 `json:"sharedMemorySize,omitempty"`
@@ -345,6 +401,8 @@ type LinuxParameters struct {
 // +kubebuilder:skipversion
 type MountPoint struct {
 	ContainerPath *string `json:"containerPath,omitempty"`
+
+	ReadOnly *bool `json:"readOnly,omitempty"`
 
 	SourceVolume *string `json:"sourceVolume,omitempty"`
 }
@@ -360,6 +418,8 @@ type NetworkInterface struct {
 
 // +kubebuilder:skipversion
 type NodeDetails struct {
+	IsMainNode *bool `json:"isMainNode,omitempty"`
+
 	NodeIndex *int64 `json:"nodeIndex,omitempty"`
 }
 
@@ -377,6 +437,8 @@ type NodeProperties struct {
 
 // +kubebuilder:skipversion
 type NodePropertiesSummary struct {
+	IsMainNode *bool `json:"isMainNode,omitempty"`
+
 	NodeIndex *int64 `json:"nodeIndex,omitempty"`
 
 	NumNodes *int64 `json:"numNodes,omitempty"`
@@ -403,10 +465,29 @@ type RetryStrategy struct {
 }
 
 // +kubebuilder:skipversion
+type SchedulingPolicyDetail struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SchedulingPolicyListingDetail struct {
+	ARN *string `json:"arn,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Secret struct {
 	Name *string `json:"name,omitempty"`
 
 	ValueFrom *string `json:"valueFrom,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ShareAttributes struct {
+	ShareIdentifier *string `json:"shareIdentifier,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -425,6 +506,13 @@ type Ulimit struct {
 	Name *string `json:"name,omitempty"`
 
 	SoftLimit *int64 `json:"softLimit,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type UpdatePolicy struct {
+	JobExecutionTimeoutMinutes *int64 `json:"jobExecutionTimeoutMinutes,omitempty"`
+
+	TerminateJobsOnUpdate *bool `json:"terminateJobsOnUpdate,omitempty"`
 }
 
 // +kubebuilder:skipversion

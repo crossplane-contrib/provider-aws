@@ -15,7 +15,11 @@ ignore:
     - CreateComputeEnvironmentInput.ComputeResources.DesiredvCpus
     - UpdateComputeEnvironmentInput.ComputeResources.DesiredvCpus
     - CreateComputeEnvironmentInput.ComputeResources.InstanceRole
+    - UpdateComputeEnvironmentInput.ComputeResources.InstanceRole
     - CreateComputeEnvironmentInput.ComputeResources.SpotIamFleetRole
+    - UpdateComputeEnvironmentInput.ComputeResources.UpdateToLatestImageVersion
+    - CreateComputeEnvironmentInput.ComputeResources.ImageId # deprecated, use ec2Configuration[].imageIdOverride instead
+    - UpdateComputeEnvironmentInput.ComputeResources.ImageId
     - CreateJobQueueInput.JobQueueName
     - CreateJobQueueInput.State
     - UpdateJobQueueInput.State

@@ -200,6 +200,15 @@ spec:
                   region:
                     description: Region is which region the JobQueue will be created.
                     type: string
+                  schedulingPolicyARN:
+                    description: The Amazon Resource Name (ARN) of the fair share
+                      scheduling policy. If this parameter is specified, the job queue
+                      uses a fair share scheduling policy. If this parameter isn't
+                      specified, the job queue uses a first in, first out (FIFO) scheduling
+                      policy. After a job queue is created, you can replace but can't
+                      remove the fair share scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
+                      . An example is aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+                    type: string
                   tags:
                     additionalProperties:
                       type: string

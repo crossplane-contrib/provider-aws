@@ -38,6 +38,13 @@ type JobQueueParameters struct {
 	// EC2 and Fargate compute environments can't be mixed.
 	// +kubebuilder:validation:Required
 	Priority *int64 `json:"priority"`
+	// The Amazon Resource Name (ARN) of the fair share scheduling policy. If this
+	// parameter is specified, the job queue uses a fair share scheduling policy.
+	// If this parameter isn't specified, the job queue uses a first in, first out
+	// (FIFO) scheduling policy. After a job queue is created, you can replace but
+	// can't remove the fair share scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
+	// . An example is aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	SchedulingPolicyARN *string `json:"schedulingPolicyARN,omitempty"`
 	// The tags that you apply to the job queue to help you categorize and organize
 	// your resources. Each tag consists of a key and an optional value. For more
 	// information, see Tagging your Batch resources (https://docs.aws.amazon.com/batch/latest/userguide/using-tags.html)
