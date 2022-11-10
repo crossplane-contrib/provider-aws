@@ -181,13 +181,15 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	_, _, areTagsUpToDate := DiffIAMTagsReturnStringList(desired.Tags, observed.Tags)
-	if areTagsUpToDate {
-		ignoreFields = append(ignoreFields, "Tags")
-	}
+	/*
+		_, _, areTagsUpToDate := DiffIAMTagsReturnStringList(desired.Tags, observed.Tags)
+		if areTagsUpToDate {
+			ignoreFields = append(ignoreFields, "Tags")
+		}
+	*/
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, ignoreFields...), cmpopts.IgnoreTypes(document.NoSerde{}))
-	if diff == "" && policyUpToDate && areTagsUpToDate {
+	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, ignoreFields...), cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
+	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}
 
@@ -201,4 +203,14 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		diff += *observed.AssumeRolePolicyDocument
 	}
 	return false, diff, nil
+}
+
+func lessTag(a, b iamtypes.Tag) bool {
+	if a.Key == nil {
+		return b.Key != nil
+	}
+	if b.Key == nil {
+		return false
+	}
+	return *a.Key <= *b.Key
 }

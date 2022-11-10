@@ -19,19 +19,6 @@ func DiffIAMTags(local map[string]string, remote []iamtypes.Tag) (add []iamtypes
 	return add, remove, areTagsUpToDate
 }
 
-// DiffIAMTagsReturnStringList takes list of iamtypes.Tag as input and returns list of tags that need to be removed and added according
-// to current and desired states, also returns if desired state needs to be updated
-func DiffIAMTagsReturnStringList(local []iamtypes.Tag, remote []iamtypes.Tag) (add map[string]string, remove []string, areTagsUpToDate bool) {
-	crTagMap := make(map[string]string, len(local))
-	for _, s := range local {
-		crTagMap[aws.ToString(s.Key)] = aws.ToString(s.Value)
-	}
-
-	addMap, remove, areTagsUpToDate := diffTags(crTagMap, remote)
-
-	return addMap, remove, areTagsUpToDate
-}
-
 // DiffIAMTagsWithUpdates returns the lists of tags that need to be removed and added according
 // to current and desired states;
 // tags that have changed will be returned in the addOrUpdate return parameter, but not included in the `remove` return parameters
