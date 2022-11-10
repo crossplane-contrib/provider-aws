@@ -334,9 +334,6 @@ type ReplicationGroupParameters struct {
 	// +optional
 	CacheSecurityGroupNameSelector *xpv1.Selector `json:"cacheSecurityGroupNameSelector,omitempty"`
 
-	// TODO(muvaf): Implement SubnetGroup as managed resource so that we can
-	// refer to it here.
-
 	// CacheSubnetGroupName specifies the name of the cache subnet group to be
 	// used for the replication group. If you're going to launch your cluster in
 	// an Amazon VPC, you need to create a subnet group before you start
@@ -411,6 +408,14 @@ type ReplicationGroupParameters struct {
 	// sent. The Amazon SNS topic owner must be the same as the cluster owner.
 	// +optional
 	NotificationTopicARN *string `json:"notificationTopicArn,omitempty"`
+
+	// NotificationTopicARNRef references an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNRef *xpv1.Reference `json:"notificationTopicArnRef,omitempty"`
+
+	// NotificationTopicARNSelector selects a reference to an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNSelector *xpv1.Selector `json:"notificationTopicArnSelector,omitempty"`
 
 	// NotificationTopicStatus is the status of the Amazon SNS notification
 	// topic for the replication group. Notifications are sent only if the status

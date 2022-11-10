@@ -1086,13 +1086,13 @@ func (in *SecurityGroupParameters) DeepCopyInto(out *SecurityGroupParameters) {
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.IgnorIngress != nil {
-		in, out := &in.IgnorIngress, &out.IgnorIngress
+	if in.IgnoreIngress != nil {
+		in, out := &in.IgnoreIngress, &out.IgnoreIngress
 		*out = new(bool)
 		**out = **in
 	}
-	if in.IgnorEgress != nil {
-		in, out := &in.IgnorEgress, &out.IgnorEgress
+	if in.IgnoreEgress != nil {
+		in, out := &in.IgnoreEgress, &out.IgnoreEgress
 		*out = new(bool)
 		**out = **in
 	}

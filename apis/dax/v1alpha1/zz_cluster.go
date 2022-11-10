@@ -45,11 +45,6 @@ type ClusterParameters struct {
 	// The compute and memory capacity of the nodes in the cluster.
 	// +kubebuilder:validation:Required
 	NodeType *string `json:"nodeType"`
-	// The Amazon Resource Name (ARN) of the Amazon SNS topic to which notifications
-	// will be sent.
-	//
-	// The Amazon SNS topic owner must be same as the DAX cluster owner.
-	NotificationTopicARN *string `json:"notificationTopicARN,omitempty"`
 	// Specifies the weekly time range during which maintenance on the DAX cluster
 	// is performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi
 	// (24H Clock UTC). The minimum maintenance window is a 60 minute period. Valid

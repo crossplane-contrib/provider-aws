@@ -66,6 +66,23 @@ type CustomClusterParameters struct {
 	// to set the SecurityGroupIDs.
 	// +optional
 	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
+
+	// The Amazon Resource Name (ARN) of the Amazon SNS topic to which notifications
+	// will be sent.
+	//
+	// The Amazon SNS topic owner must be same as the DAX cluster owner.
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.Topic
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.SNSTopicARN()
+	NotificationTopicARN *string `json:"notificationTopicARN,omitempty"`
+
+	// NotificationTopicARNRef references an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNRef *xpv1.Reference `json:"notificationTopicArnRef,omitempty"`
+
+	// NotificationTopicARNSelector selects a reference to an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNSelector *xpv1.Selector `json:"notificationTopicArnSelector,omitempty"`
 }
 
 // CustomParameterGroupParameters includes the custom fields of ParameterGroup

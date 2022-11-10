@@ -213,6 +213,7 @@ type CacheClusterParameters struct {
 
 	// The name of the subnet group to be used for the cluster.
 	// +optional
+	// +crossplane:generate:reference:type=CacheSubnetGroup
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
 	// A referencer to retrieve the name of a CacheSubnetGroup
@@ -236,7 +237,17 @@ type CacheClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
 	// (SNS) topic to which notifications are sent.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.Topic
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1.SNSTopicARN()
 	NotificationTopicARN *string `json:"notificationTopicArn,omitempty"`
+
+	// NotificationTopicARNRef references an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNRef *xpv1.Reference `json:"notificationTopicArnRef,omitempty"`
+
+	// NotificationTopicARNSelector selects a reference to an SNS Topic to retrieve its NotificationTopicARN
+	// +optional
+	NotificationTopicARNSelector *xpv1.Selector `json:"notificationTopicArnSelector,omitempty"`
 
 	// The initial number of cache nodes that the cluster has.
 	NumCacheNodes int32 `json:"numCacheNodes"`
@@ -267,6 +278,9 @@ type CacheClusterParameters struct {
 
 	// One or more VPC security groups associated with the cluster.
 	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
+	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
+	// +crossplane:generate:reference:selectorFieldName=SecurityGroupIDSelector
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// A referencer to retrieve the ID of a Security group

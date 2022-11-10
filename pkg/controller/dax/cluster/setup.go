@@ -72,11 +72,13 @@ func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClu
 	obj.ParameterGroupName = cr.Spec.ForProvider.ParameterGroupName
 	obj.SubnetGroupName = cr.Spec.ForProvider.SubnetGroupName
 	obj.SecurityGroupIds = append(obj.SecurityGroupIds, cr.Spec.ForProvider.SecurityGroupIDs...)
+	obj.NotificationTopicArn = cr.Spec.ForProvider.NotificationTopicARN
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.UpdateClusterInput) error {
 	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
+	obj.NotificationTopicArn = cr.Spec.ForProvider.NotificationTopicARN
 	if cr.Spec.ForProvider.ParameterGroupName != nil {
 		obj.ParameterGroupName = awsclients.String(*cr.Spec.ForProvider.ParameterGroupName)
 	}
