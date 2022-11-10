@@ -12,7 +12,7 @@ spec:
       - "X-Header-1"
     authType: AWS_IAM
     functionNameRef:
-      name: function-example
-    region: eu-west-1
+      name: test-function
+    region: us-east-1
   providerConfigRef:
     name: example
