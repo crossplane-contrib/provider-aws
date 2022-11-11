@@ -20,11 +20,15 @@ spec:
       name: spot-fleet-tagging-role
     tags:
       ce: "my-spotec2-ce"
+    # for EC2 and EC2Spot: If the original allocation strategy is BEST_FIT,
+    # infrastructure updates aren't supported.
+    # In that case the only fields in computeResources that can be updated are:
+    # minvCPUs and maxvCPUs
     computeResources:
       type_: SPOT
-      allocationStrategy: BEST_FIT
-      maxvCPUs: 24
+      allocationStrategy: SPOT_CAPACITY_OPTIMIZED # optional, AWS default is BEST_FIT
       minvCPUs: 1
+      maxvCPUs: 24
       instanceTypes:
         - "optimal"
   providerConfigRef:

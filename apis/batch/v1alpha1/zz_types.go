@@ -138,35 +138,9 @@ type ComputeResource struct {
 
 // +kubebuilder:skipversion
 type ComputeResourceUpdate struct {
-	AllocationStrategy *string `json:"allocationStrategy,omitempty"`
-
-	BidPercentage *int64 `json:"bidPercentage,omitempty"`
-
-	EC2Configuration []*EC2Configuration `json:"ec2Configuration,omitempty"`
-
-	EC2KeyPair *string `json:"ec2KeyPair,omitempty"`
-
-	InstanceTypes []*string `json:"instanceTypes,omitempty"`
-	// An object representing a launch template associated with a compute resource.
-	// You must specify either the launch template ID or launch template name in
-	// the request, but not both.
-	//
-	// If security groups are specified using both the securityGroupIds parameter
-	// of CreateComputeEnvironment and the launch template, the values in the securityGroupIds
-	// parameter of CreateComputeEnvironment will be used.
-	//
-	// This object isn't applicable to jobs that are running on Fargate resources.
-	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
-
 	MaxvCPUs *int64 `json:"maxvCPUs,omitempty"`
 
 	MinvCPUs *int64 `json:"minvCPUs,omitempty"`
-
-	PlacementGroup *string `json:"placementGroup,omitempty"`
-
-	Tags map[string]*string `json:"tags,omitempty"`
-
-	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion
