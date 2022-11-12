@@ -54,7 +54,9 @@ type CustomComputeEnvironmentParameters struct {
 	// For more information, see VPCs and Subnets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html)
 	// in the Amazon VPC User Guide.
 	// (Subnets is originally a field of ComputeResources)
-	// Subnets is a required field for CE type MANAGED
+	// Subnets is a required field for CE type MANAGED.
+	// For a MANGED CE of type EC2 or SPOT to be able to update this field
+	// Allocation Strategy BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED is required.
 	// +optional
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.Subnet
 	// +crossplane:generate:reference:refFieldName=SubnetIDRefs
@@ -78,6 +80,8 @@ type CustomComputeEnvironmentParameters struct {
 	// and must contain at least one security group. Fargate doesn't support launch
 	// templates. If security groups are specified using both securityGroupIds and
 	// launchTemplate, the values in securityGroupIds are used.
+	// For a MANGED CE of type EC2 or SPOT to be able to update this field
+	// Allocation Strategy BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED is required.
 	// +optional
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.SecurityGroup
 	// +crossplane:generate:reference:refFieldName=SecurityGroupIDRefs
@@ -99,6 +103,9 @@ type CustomComputeEnvironmentParameters struct {
 	// (ARN) of an instance profile. For example, ecsInstanceRole or arn:aws:iam::<aws_account_id>:instance-profile/ecsInstanceRole
 	// . For more information, see Amazon ECS Instance Role (https://docs.aws.amazon.com/batch/latest/userguide/instance_IAM_role.html)
 	// in the Batch User Guide.
+	// Only applicable to MANGED CE of type EC2 or SPOT.
+	// This field can be updated for CE only
+	// with Allocation Strategy BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED.
 	//
 	// This parameter isn't applicable to jobs that are running on Fargate resources,
 	// and shouldn't be specified.
@@ -150,11 +157,28 @@ type CustomComputeEnvironmentParameters struct {
 	// +optional
 	SpotIAMFleetRoleSelector *xpv1.Selector `json:"spotIamFleetRoleSelector,omitempty"`
 
+	// Specifies the infrastructure update policy for the compute environment. For
+	// more information about infrastructure updates, see Updating compute environments
+	// (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
+	// in the Batch User Guide.
+	// Only applicable to MANGED CE of type EC2 or SPOT.
+	// This field requires an update request to be set and it can be updated for CE only
+	// with Allocation Strategy BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED.
+	//
+	// JobExecutionTimeoutMinutes specifies the job timeout (in minutes) when the compute environment
+	// infrastructure is updated. The default value is 30.
+	//
+	// TerminateJobsOnUpdate specifies whether jobs are automatically terminated when the computer
+	// environment infrastructure is updated. The default value is false.
+	UpdatePolicy *UpdatePolicy `json:"updatePolicy,omitempty"`
+
 	// Specifies whether the AMI ID is updated to the latest one that's supported
 	// by Batch when the compute environment has an infrastructure update.
 	// The default value is false.
-	// This field requires an update request to be changed and it can be updated for CE only
-	// with Allocation Strategy BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED.
+	// Only applicable to MANGED CE of type EC2 or SPOT.
+	// This field requires an update request to be set and it can be updated for CE only
+	// with Allocation Strategy BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED.
+	// Also to get this field changed, you need to include another change to trigger an update.
 	//
 	// If an AMI ID is specified in the imageIdOverride parameters or
 	// by the launch template specified in the launchTemplate parameter, this parameter

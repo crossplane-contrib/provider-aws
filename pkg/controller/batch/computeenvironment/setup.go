@@ -15,6 +15,7 @@ package computeenvironment
 
 import (
 	"context"
+	"fmt"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/batch"
 	"github.com/aws/aws-sdk-go/service/batch/batchiface"
@@ -34,10 +35,6 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch"
 )
 
-const (
-	errLateInit = "cannot late-init Batch ComputeEnvironment"
-)
-
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
 func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
@@ -47,10 +44,10 @@ func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.lateInitialize = lateInitialize
-			e.isUpToDate = h.isUpToDate
+			e.isUpToDate = isUpToDate
 			e.preUpdate = preUpdate
 			e.postUpdate = h.postUpdate
-			e.preCreate = h.preCreate
+			e.preCreate = preCreate
 			e.preDelete = h.preDelete
 		},
 	}
@@ -102,9 +99,11 @@ func postObserve(_ context.Context, cr *svcapitypes.ComputeEnvironment, resp *sv
 		obs.ResourceUpToDate = true
 	}
 
+	fmt.Printf("cr.Status.ConditionedStatus: %v\n", cr.Status.ConditionedStatus)
 	return obs, nil
 }
 
+// nolint:gocyclo
 func preUpdate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.UpdateComputeEnvironmentInput) error {
 	obj.ComputeEnvironment = awsclients.String(meta.GetExternalName(cr))
 	obj.ServiceRole = cr.Spec.ForProvider.ServiceRoleARN
@@ -115,11 +114,60 @@ func preUpdate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsd
 		obj.ComputeResources.SecurityGroupIds = cr.Spec.ForProvider.SecurityGroupIDs
 
 		// MANAGED EC2 or SPOT CEs: ComputeResources-update-call does not accept SecurityGroupIds and Subnets
+		// when Allocation Strategy is nil or BEST_FIT
 		if awsclients.StringValue(cr.Spec.ForProvider.ComputeResources.Type) == string(svcapitypes.CRType_EC2) ||
 			awsclients.StringValue(cr.Spec.ForProvider.ComputeResources.Type) == string(svcapitypes.CRType_SPOT) {
 			obj.ComputeResources.SecurityGroupIds = nil
 			obj.ComputeResources.Subnets = nil
 		}
+
+		// fields that can be updated for CE only with Allocation
+		// Strategy BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED
+		if awsclients.StringValue(cr.Spec.ForProvider.ComputeResources.AllocationStrategy) == string(svcapitypes.CRUpdateAllocationStrategy_BEST_FIT_PROGRESSIVE) ||
+			awsclients.StringValue(cr.Spec.ForProvider.ComputeResources.AllocationStrategy) == string(svcapitypes.CRUpdateAllocationStrategy_SPOT_CAPACITY_OPTIMIZED) {
+
+			obj.ComputeResources.AllocationStrategy = cr.Spec.ForProvider.ComputeResources.AllocationStrategy
+			obj.ComputeResources.BidPercentage = cr.Spec.ForProvider.ComputeResources.BidPercentage
+			if cr.Spec.ForProvider.ComputeResources.EC2Configuration != nil {
+				updateConfig := []*svcsdk.Ec2Configuration{}
+				for _, iter := range cr.Spec.ForProvider.ComputeResources.EC2Configuration {
+					ceConfig := &svcsdk.Ec2Configuration{}
+					if iter.ImageIDOverride != nil {
+						ceConfig.ImageIdOverride = iter.ImageIDOverride
+					}
+					if iter.ImageType != nil {
+						ceConfig.ImageType = iter.ImageType
+					}
+					updateConfig = append(updateConfig, ceConfig)
+				}
+				obj.ComputeResources.Ec2Configuration = updateConfig
+			}
+			obj.ComputeResources.Ec2KeyPair = cr.Spec.ForProvider.ComputeResources.EC2KeyPair
+			obj.ComputeResources.InstanceTypes = cr.Spec.ForProvider.ComputeResources.InstanceTypes
+			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate != nil {
+				updateLaunchTemplate := &svcsdk.LaunchTemplateSpecification{
+					LaunchTemplateId:   cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID,
+					LaunchTemplateName: cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName,
+					Version:            cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version,
+				}
+				obj.ComputeResources.LaunchTemplate = updateLaunchTemplate
+			}
+			obj.ComputeResources.PlacementGroup = cr.Spec.ForProvider.ComputeResources.PlacementGroup
+			obj.ComputeResources.Subnets = cr.Spec.ForProvider.SubnetIDs
+			obj.ComputeResources.SecurityGroupIds = cr.Spec.ForProvider.SecurityGroupIDs
+			obj.ComputeResources.Tags = cr.Spec.ForProvider.ComputeResources.Tags
+			obj.ComputeResources.Type = cr.Spec.ForProvider.ComputeResources.Type
+			obj.ComputeResources.UpdateToLatestImageVersion = cr.Spec.ForProvider.UpdateToLatestImageVersion
+			if cr.Spec.ForProvider.UpdatePolicy != nil {
+				updatePolicy := &svcsdk.UpdatePolicy{
+					JobExecutionTimeoutMinutes: cr.Spec.ForProvider.UpdatePolicy.JobExecutionTimeoutMinutes,
+					TerminateJobsOnUpdate:      cr.Spec.ForProvider.UpdatePolicy.TerminateJobsOnUpdate,
+				}
+
+				obj.UpdatePolicy = updatePolicy
+			}
+		}
+
 	}
 
 	return nil
@@ -133,7 +181,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.ComputeEnvironme
 	return upd, svcutils.UpdateTagsForResource(ctx, e.client, cr.Spec.ForProvider.Tags, obj.ComputeEnvironmentArn)
 }
 
-func (e *hooks) preCreate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.CreateComputeEnvironmentInput) error {
+func preCreate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.CreateComputeEnvironmentInput) error {
 	obj.ComputeEnvironmentName = awsclients.String(cr.Name)
 	obj.ServiceRole = cr.Spec.ForProvider.ServiceRoleARN
 
@@ -157,7 +205,8 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironmen
 	}
 
 	// CE state needs to be DISABLED to be able to be deleted
-	// If the CE is already or finally DISABLED, we are done here and the controller can request the deletion of the CE
+	// If the CE is already or finally DISABLED, we are done here and
+	// the controller can request the deletion of the CE
 	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.CEStateDisabled {
 		return false, nil
 	}
@@ -169,9 +218,11 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironmen
 
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeEnvironmentsOutput) (bool, error) {
+func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeEnvironmentsOutput) (bool, error) {
 
 	status := awsclients.StringValue(cr.Status.AtProvider.Status)
+	ce := obj.ComputeEnvironments[0]
+	spec := cr.Spec.ForProvider
 
 	// Skip when updating, deleting or creating
 	if status == svcsdk.CEStatusUpdating || status == svcsdk.CEStatusDeleting || status == svcsdk.CEStatusCreating {
@@ -180,19 +231,59 @@ func (e *hooks) isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.Descr
 
 	currentParams := GenerateComputeEnvironment(obj).Spec.ForProvider
 
-	if err := lateInitialize(&currentParams, obj); err != nil {
-		return true, awsclients.Wrap(err, errLateInit)
+	if awsclients.StringValue(cr.Spec.ForProvider.Type) == string(svcapitypes.CEType_MANAGED) {
+
+		switch {
+		case !cmp.Equal(spec.SubnetIDs, ce.ComputeResources.Subnets),
+			!cmp.Equal(spec.SecurityGroupIDs, ce.ComputeResources.SecurityGroupIds):
+			return false, nil
+		}
+
+		// fields that can be updated for CE only with Allocation
+		// Strategy BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED
+		if awsclients.StringValue(ce.ComputeResources.AllocationStrategy) == string(svcapitypes.CRUpdateAllocationStrategy_BEST_FIT_PROGRESSIVE) ||
+			awsclients.StringValue(ce.ComputeResources.AllocationStrategy) == string(svcapitypes.CRUpdateAllocationStrategy_SPOT_CAPACITY_OPTIMIZED) {
+
+			// for instance role profile ARN and name is possible,
+			// however AWS seems to always give userinput back, so simple check is fine
+			switch {
+			case !cmp.Equal(spec.ComputeResources, currentParams.ComputeResources, cmpopts.EquateEmpty()),
+				awsclients.StringValue(spec.InstanceRole) != awsclients.StringValue(ce.ComputeResources.InstanceRole),
+				!areUpdatePolicyEqual(spec.UpdatePolicy, ce.UpdatePolicy):
+				return false, nil
+			}
+
+		}
 	}
 
-	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.ComputeEnvironmentParameters{}, "Region", "Type", "InstanceRole", "SpotIAMFleetRole"),
-		cmpopts.IgnoreFields(svcapitypes.ComputeResource{}, "AllocationStrategy", "BidPercentage", "EC2Configuration", "EC2KeyPair", "ImageID",
-			"InstanceTypes", "LaunchTemplate", "PlacementGroup", "Tags", "Type")) {
+	switch {
+	case awsclients.StringValue(spec.DesiredState) != awsclients.StringValue(ce.State),
+		awsclients.StringValue(spec.ServiceRoleARN) != awsclients.StringValue(ce.ServiceRole),
+		!cmp.Equal(spec, currentParams, cmpopts.EquateEmpty(),
+			cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
+			cmpopts.IgnoreFields(svcapitypes.ComputeEnvironmentParameters{}, "Region", "Type", "InstanceRole", "SpotIAMFleetRole",
+				"UpdatePolicy", "UpdateToLatestImageVersion", "SubnetIDs", "SecurityGroupIDs", "ServiceRoleARN", "DesiredState"),
+			cmpopts.IgnoreFields(svcapitypes.ComputeResource{}, "AllocationStrategy", "BidPercentage", "EC2Configuration", "EC2KeyPair",
+				"InstanceTypes", "LaunchTemplate", "PlacementGroup", "Tags", "Type")):
 		return false, nil
 	}
 
 	return true, nil
+}
+
+func areUpdatePolicyEqual(spec *svcapitypes.UpdatePolicy, current *svcsdk.UpdatePolicy) bool {
+
+	if spec != nil {
+		if current == nil {
+			return false
+		}
+		switch {
+		case awsclients.Int64Value(spec.JobExecutionTimeoutMinutes) != awsclients.Int64Value(current.JobExecutionTimeoutMinutes),
+			awsclients.BoolValue(spec.TerminateJobsOnUpdate) != awsclients.BoolValue(current.TerminateJobsOnUpdate):
+			return false
+		}
+	}
+	return true
 }
 
 func lateInitialize(spec *svcapitypes.ComputeEnvironmentParameters, resp *svcsdk.DescribeComputeEnvironmentsOutput) error {
@@ -205,8 +296,26 @@ func lateInitialize(spec *svcapitypes.ComputeEnvironmentParameters, resp *svcsdk
 	if ce.ComputeResources != nil {
 		spec.ComputeResources.MinvCPUs = awsclients.LateInitializeInt64Ptr(spec.ComputeResources.MinvCPUs, ce.ComputeResources.MinvCpus)
 		spec.ComputeResources.MaxvCPUs = awsclients.LateInitializeInt64Ptr(spec.ComputeResources.MaxvCPUs, ce.ComputeResources.MaxvCpus)
-		spec.SubnetIDs = awsclients.LateInitializeStringPtrSlice(spec.SubnetIDs, ce.ComputeResources.Subnets)
-		spec.SecurityGroupIDs = awsclients.LateInitializeStringPtrSlice(spec.SecurityGroupIDs, ce.ComputeResources.SecurityGroupIds)
+
+		if awsclients.StringValue(ce.ComputeResources.Type) == string(svcsdk.CRTypeEc2) ||
+			awsclients.StringValue(ce.ComputeResources.Type) == string(svcsdk.CRTypeSpot) {
+
+			if ce.ComputeResources.Ec2Configuration != nil && spec.ComputeResources.EC2Configuration == nil {
+
+				specConfig := []*svcapitypes.EC2Configuration{}
+				for _, iter := range ce.ComputeResources.Ec2Configuration {
+					ceConfig := &svcapitypes.EC2Configuration{}
+					if iter.ImageIdOverride != nil {
+						ceConfig.ImageIDOverride = iter.ImageIdOverride
+					}
+					if iter.ImageType != nil {
+						ceConfig.ImageType = iter.ImageType
+					}
+					specConfig = append(specConfig, ceConfig)
+				}
+				spec.ComputeResources.EC2Configuration = specConfig
+			}
+		}
 	}
 
 	return nil

@@ -264,71 +264,11 @@ func GenerateUpdateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 
 	if cr.Spec.ForProvider.ComputeResources != nil {
 		f1 := &svcsdk.ComputeResourceUpdate{}
-		if cr.Spec.ForProvider.ComputeResources.AllocationStrategy != nil {
-			f1.SetAllocationStrategy(*cr.Spec.ForProvider.ComputeResources.AllocationStrategy)
-		}
-		if cr.Spec.ForProvider.ComputeResources.BidPercentage != nil {
-			f1.SetBidPercentage(*cr.Spec.ForProvider.ComputeResources.BidPercentage)
-		}
-		if cr.Spec.ForProvider.ComputeResources.EC2Configuration != nil {
-			f1f2 := []*svcsdk.Ec2Configuration{}
-			for _, f1f2iter := range cr.Spec.ForProvider.ComputeResources.EC2Configuration {
-				f1f2elem := &svcsdk.Ec2Configuration{}
-				if f1f2iter.ImageIDOverride != nil {
-					f1f2elem.SetImageIdOverride(*f1f2iter.ImageIDOverride)
-				}
-				if f1f2iter.ImageType != nil {
-					f1f2elem.SetImageType(*f1f2iter.ImageType)
-				}
-				f1f2 = append(f1f2, f1f2elem)
-			}
-			f1.SetEc2Configuration(f1f2)
-		}
-		if cr.Spec.ForProvider.ComputeResources.EC2KeyPair != nil {
-			f1.SetEc2KeyPair(*cr.Spec.ForProvider.ComputeResources.EC2KeyPair)
-		}
-		if cr.Spec.ForProvider.ComputeResources.InstanceTypes != nil {
-			f1f4 := []*string{}
-			for _, f1f4iter := range cr.Spec.ForProvider.ComputeResources.InstanceTypes {
-				var f1f4elem string
-				f1f4elem = *f1f4iter
-				f1f4 = append(f1f4, &f1f4elem)
-			}
-			f1.SetInstanceTypes(f1f4)
-		}
-		if cr.Spec.ForProvider.ComputeResources.LaunchTemplate != nil {
-			f1f5 := &svcsdk.LaunchTemplateSpecification{}
-			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID != nil {
-				f1f5.SetLaunchTemplateId(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateID)
-			}
-			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName != nil {
-				f1f5.SetLaunchTemplateName(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.LaunchTemplateName)
-			}
-			if cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version != nil {
-				f1f5.SetVersion(*cr.Spec.ForProvider.ComputeResources.LaunchTemplate.Version)
-			}
-			f1.SetLaunchTemplate(f1f5)
-		}
 		if cr.Spec.ForProvider.ComputeResources.MaxvCPUs != nil {
 			f1.SetMaxvCpus(*cr.Spec.ForProvider.ComputeResources.MaxvCPUs)
 		}
 		if cr.Spec.ForProvider.ComputeResources.MinvCPUs != nil {
 			f1.SetMinvCpus(*cr.Spec.ForProvider.ComputeResources.MinvCPUs)
-		}
-		if cr.Spec.ForProvider.ComputeResources.PlacementGroup != nil {
-			f1.SetPlacementGroup(*cr.Spec.ForProvider.ComputeResources.PlacementGroup)
-		}
-		if cr.Spec.ForProvider.ComputeResources.Tags != nil {
-			f1f9 := map[string]*string{}
-			for f1f9key, f1f9valiter := range cr.Spec.ForProvider.ComputeResources.Tags {
-				var f1f9val string
-				f1f9val = *f1f9valiter
-				f1f9[f1f9key] = &f1f9val
-			}
-			f1.SetTags(f1f9)
-		}
-		if cr.Spec.ForProvider.ComputeResources.Type != nil {
-			f1.SetType(*cr.Spec.ForProvider.ComputeResources.Type)
 		}
 		res.SetComputeResources(f1)
 	}

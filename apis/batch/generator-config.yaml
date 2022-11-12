@@ -17,7 +17,17 @@ ignore:
     - CreateComputeEnvironmentInput.ComputeResources.InstanceRole
     - UpdateComputeEnvironmentInput.ComputeResources.InstanceRole
     - CreateComputeEnvironmentInput.ComputeResources.SpotIamFleetRole
+    - UpdateComputeEnvironmentInput.ComputeResources.AllocationStrategy
+    - UpdateComputeEnvironmentInput.ComputeResources.BidPercentage
+    - UpdateComputeEnvironmentInput.ComputeResources.Ec2Configuration
+    - UpdateComputeEnvironmentInput.ComputeResources.Ec2KeyPair
+    - UpdateComputeEnvironmentInput.ComputeResources.InstanceTypes
+    - UpdateComputeEnvironmentInput.ComputeResources.LaunchTemplate
+    - UpdateComputeEnvironmentInput.ComputeResources.PlacementGroup
+    - UpdateComputeEnvironmentInput.ComputeResources.Tags
+    - UpdateComputeEnvironmentInput.ComputeResources.Type
     - UpdateComputeEnvironmentInput.ComputeResources.UpdateToLatestImageVersion
+    - UpdateComputeEnvironmentInput.UpdatePolicy
     - CreateComputeEnvironmentInput.ComputeResources.ImageId # deprecated, use ec2Configuration[].imageIdOverride instead
     - UpdateComputeEnvironmentInput.ComputeResources.ImageId
     - CreateJobQueueInput.JobQueueName

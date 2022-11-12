@@ -38,7 +38,6 @@ import (
 )
 
 const (
-	errLateInit              = "cannot late-init Batch JobQueue"
 	errComputeEnvironmentARN = "missing or incorrect ARN for ComputeEnvironment"
 )
 
@@ -51,7 +50,7 @@ func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.lateInitialize = lateInitialize
-			e.isUpToDate = h.isUpToDate
+			e.isUpToDate = isUpToDate
 			e.preUpdate = preUpdate
 			e.postUpdate = h.postUpdate
 			e.preCreate = h.preCreate
@@ -170,7 +169,7 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *sv
 	return true, awsclients.Wrap(err, errUpdate)
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, error) {
+func isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, error) {
 	status := awsclients.StringValue(cr.Status.AtProvider.Status)
 
 	// Skip when updating, deleting or creating
@@ -178,11 +177,11 @@ func (e *hooks) isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueu
 		return true, nil
 	}
 
-	currentParams := GenerateJobQueue(obj).Spec.ForProvider
-
-	if err := lateInitialize(&currentParams, obj); err != nil {
-		return true, awsclients.Wrap(err, errLateInit)
+	if awsclients.StringValue(cr.Spec.ForProvider.DesiredState) != awsclients.StringValue(obj.JobQueues[0].State) {
+		return false, nil
 	}
+
+	currentParams := GenerateJobQueue(obj).Spec.ForProvider
 
 	// Need to set the CustomComputeEnvironmentOrder by translating from the ComputeEnvironmentOrder to be able to compare with specs
 	for i := range obj.JobQueues[0].ComputeEnvironmentOrder {
@@ -196,7 +195,7 @@ func (e *hooks) isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueu
 
 	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.JobQueueParameters{}, "Region")) {
+		cmpopts.IgnoreFields(svcapitypes.JobQueueParameters{}, "Region", "DesiredState")) {
 		return false, nil
 	}
 
