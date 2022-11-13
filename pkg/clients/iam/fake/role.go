@@ -32,6 +32,8 @@ type MockRoleClient struct {
 	MockGetRole                func(ctx context.Context, input *iam.GetRoleInput, opts []func(*iam.Options)) (*iam.GetRoleOutput, error)
 	MockCreateRole             func(ctx context.Context, input *iam.CreateRoleInput, opts []func(*iam.Options)) (*iam.CreateRoleOutput, error)
 	MockDeleteRole             func(ctx context.Context, input *iam.DeleteRoleInput, opts []func(*iam.Options)) (*iam.DeleteRoleOutput, error)
+	// TODO: write tests
+	MockPutRolePolicy          func(ctx context.Context, input *iam.PutRolePolicyInput, opts ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error)
 	MockUpdateRole             func(ctx context.Context, input *iam.UpdateRoleInput, opts []func(*iam.Options)) (*iam.UpdateRoleOutput, error)
 	MockUpdateAssumeRolePolicy func(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts []func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
 	MockTagRole                func(ctx context.Context, input *iam.TagRoleInput, opts []func(*iam.Options)) (*iam.TagRoleOutput, error)
