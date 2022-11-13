@@ -53,7 +53,10 @@ type RoleParameters struct {
 	// +immutable
 	AssumeRolePolicyDocument string `json:"assumeRolePolicyDocument"`
 
-	// InlinePolicyDocument the inline policy document
+	// TODO: revisit where it should be
+	// InlinePolicyDocument the inline policy document.
+	// For more information,
+	// see Inline policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html)
 	// +optional
 	InlinePolicyDocument string `json:"inlinePolicyDocument,omitempty"`
 
