@@ -53,6 +53,10 @@ type RoleParameters struct {
 	// +immutable
 	AssumeRolePolicyDocument string `json:"assumeRolePolicyDocument"`
 
+	// InlinePolicyDocument the inline policy document
+	// +optional
+	InlinePolicyDocument string `json:"inlinePolicyDocument,omitempty"`
+
 	// Description is a description of the role.
 	// +optional
 	Description *string `json:"description,omitempty"`

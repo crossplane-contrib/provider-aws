@@ -118,7 +118,7 @@ spec:
 apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Role
 metadata:
-  name: somerole-with-inline-policy
+  name: role-with-inline-policy
 spec:
   forProvider:
     assumeRolePolicyDocument: |
