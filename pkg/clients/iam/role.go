@@ -32,7 +32,7 @@ type RoleClient interface {
 	GetRole(ctx context.Context, input *iam.GetRoleInput, opts ...func(*iam.Options)) (*iam.GetRoleOutput, error)
 	CreateRole(ctx context.Context, input *iam.CreateRoleInput, opts ...func(*iam.Options)) (*iam.CreateRoleOutput, error)
 	DeleteRole(ctx context.Context, input *iam.DeleteRoleInput, opts ...func(*iam.Options)) (*iam.DeleteRoleOutput, error)
-    // TODO: write tests
+	// TODO: write tests
 	PutRolePolicy(ctx context.Context, input *iam.PutRolePolicyInput, opts ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error)
 	UpdateRole(ctx context.Context, input *iam.UpdateRoleInput, opts ...func(*iam.Options)) (*iam.UpdateRoleOutput, error)
 	UpdateAssumeRolePolicy(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts ...func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
@@ -67,6 +67,18 @@ func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.Create
 	}
 
 	return m
+}
+
+// GenerateInlineRolePolicyInput is used to produce PutRolePolicyInput from iamtypes.Role
+func GenerateInlineRolePolicyInput(name string, p *v1beta1.RoleParameters) *iam.PutRolePolicyInput {
+	// TODO: accept an array of policies???
+    // TODO validate InlinePolicyDocument if possible
+    m := &iam.PutRolePolicyInput{
+        RoleName:       aws.String(name),
+        PolicyName:     aws.String("todo-change-inline-policy-name"),
+        PolicyDocument: aws.String(p.InlinePolicyDocument),
+    }
+    return m
 }
 
 // GenerateRoleObservation is used to produce RoleExternalStatus from iamtypes.Role

@@ -149,8 +149,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateRole(ctx, iam.GenerateCreateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	// TODO: put role policy
-	
+	// TODO: put role policy and test it, error handling
+	_, err = e.client.PutRolePolicy(ctx, iam.GenerateInlineRolePolicyInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
