@@ -103,3 +103,23 @@ type CustomFunctionVPCConfigParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
 }
+
+// CustomFunctionURLConfigParameters includes custom fields for FunctionURLConfigParameters.
+type CustomFunctionURLConfigParameters struct {
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1.Function
+	// +crossplane:generate:reference:extractor=github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1.FunctionARN()
+	// +crossplane:generate:reference:refFieldName=FunctionNameRef
+	// +crossplane:generate:reference:selectorFieldName=FunctionNameSelector
+	FunctionName *string `json:"functionName,omitempty"`
+
+	// FunctionNameRef is a reference to a function used to set
+	// the FunctionName.
+	// +optional
+	FunctionNameRef *xpv1.Reference `json:"functionNameRef,omitempty"`
+
+	// FunctionNameSelector selects references to function used
+	// to set the FunctionName.
+	// +optional
+	FunctionNameSelector *xpv1.Selector `json:"functionNameSelector,omitempty"`
+}
