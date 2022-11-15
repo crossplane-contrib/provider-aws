@@ -72,13 +72,13 @@ func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.Create
 // GenerateInlineRolePolicyInput is used to produce PutRolePolicyInput from iamtypes.Role
 func GenerateInlineRolePolicyInput(name string, p *v1beta1.RoleParameters) *iam.PutRolePolicyInput {
 	// TODO: accept an array of policies???
-    // TODO validate InlinePolicyDocument if possible
-    m := &iam.PutRolePolicyInput{
-        RoleName:       aws.String(name),
-        PolicyName:     aws.String("todo-change-inline-policy-name"),
-        PolicyDocument: aws.String(p.InlinePolicyDocument),
-    }
-    return m
+	// TODO validate InlinePolicyDocument if possible
+	m := &iam.PutRolePolicyInput{
+		RoleName:       aws.String(name),
+		PolicyName:     aws.String("todo-change-inline-policy-name"),
+		PolicyDocument: aws.String(p.InlinePolicyDocument),
+	}
+	return m
 }
 
 // GenerateRoleObservation is used to produce RoleExternalStatus from iamtypes.Role

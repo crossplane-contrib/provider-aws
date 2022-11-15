@@ -389,7 +389,7 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
 					MockDeleteRole: func(ctx context.Context, input *awsiam.DeleteRoleInput, opts []func(*awsiam.Options)) (*awsiam.DeleteRoleOutput, error) {
