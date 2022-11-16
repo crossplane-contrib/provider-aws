@@ -413,7 +413,11 @@ spec:
                     type: object
                   locationConstraint:
                     description: LocationConstraint specifies the Region where the
-                      bucket will be created. It is a required field.
+                      bucket will be created. It is a required field. Due to AWS API
+                      limitations lacking on a proper response, when this field is
+                      set to a wrong value, or to non-existent region on bucket creation,
+                      it's impossible forwarding a meaning status message to the user
+                      about the problem, producing some errors related to dial
                     type: string
                   loggingConfiguration:
                     description: Specifies logging parameters for an Amazon S3 bucket.

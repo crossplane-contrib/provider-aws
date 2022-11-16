@@ -35,6 +35,9 @@ type BucketParameters struct {
 
 	// LocationConstraint specifies the Region where the bucket will be created.
 	// It is a required field.
+	// Due to AWS API limitations lacking on a proper response, when this field is set to a wrong value,
+	// or to non-existent region on bucket creation, it's impossible forwarding a meaning status message to the user
+	// about the problem, producing some errors related to dial
 	LocationConstraint string `json:"locationConstraint"`
 
 	// Allows grantee the read, write, read ACP, and write ACP permissions on the
