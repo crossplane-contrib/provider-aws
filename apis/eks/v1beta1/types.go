@@ -341,13 +341,13 @@ type OutpostConfigResponse struct {
 	// the same for all control plane instances.
 	//
 	// This member is required.
-	ControlPlaneInstanceType string `json:"controlPlaneInstanceType"`
+	ControlPlaneInstanceType string `json:"controlPlaneInstanceType,omitempty"`
 
 	// The ARN of the Outpost that you specified for use with your local Amazon EKS
 	// cluster on Outposts.
 	//
 	// This member is required.
-	OutpostArns []string `json:"outpostArns"`
+	OutpostArns []string `json:"outpostArns,omitempty"`
 	// contains filtered or unexported fields
 }
 

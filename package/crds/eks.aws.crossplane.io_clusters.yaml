@@ -715,9 +715,6 @@ spec:
                         items:
                           type: string
                         type: array
-                    required:
-                    - controlPlaneInstanceType
-                    - outpostArns
                     type: object
                   platformVersion:
                     description: The platform version of your Amazon EKS cluster.
