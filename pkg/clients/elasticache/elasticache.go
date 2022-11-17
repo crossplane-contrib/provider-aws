@@ -503,7 +503,7 @@ func GenerateObservation(rg elasticachetypes.ReplicationGroup) v1beta1.Replicati
 	o := v1beta1.ReplicationGroupObservation{
 		AutomaticFailover:     string(rg.AutomaticFailover),
 		ClusterEnabled:        aws.ToBool(rg.ClusterEnabled),
-		ConfigurationEndpoint: newEndpoint(rg.ConfigurationEndpoint),
+		ConfigurationEndpoint: newEndpoint(rg),
 		MemberClusters:        rg.MemberClusters,
 		Status:                clients.StringValue(rg.Status),
 	}
@@ -540,6 +540,7 @@ func generateNodeGroup(ng elasticachetypes.NodeGroup) v1beta1.NodeGroup {
 					Port:    int(m.ReadEndpoint.Port),
 				}
 			}
+
 		}
 	}
 	return r
@@ -560,11 +561,18 @@ func generateReplicationGroupPendingModifiedValues(in elasticachetypes.Replicati
 	return r
 }
 
-func newEndpoint(e *elasticachetypes.Endpoint) v1beta1.Endpoint {
-	if e == nil {
+// newEndpoint returns the endpoint end users should use to connect to this cluster.
+// https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
+func newEndpoint(rg elasticachetypes.ReplicationGroup) v1beta1.Endpoint {
+	var e *elasticachetypes.Endpoint
+	switch {
+	case !aws.ToBool(rg.ClusterEnabled) && len(rg.NodeGroups) > 0:
+		e = rg.NodeGroups[0].PrimaryEndpoint
+	case aws.ToBool(rg.ClusterEnabled) && rg.ConfigurationEndpoint != nil:
+		e = rg.ConfigurationEndpoint
+	default:
 		return v1beta1.Endpoint{}
 	}
-
 	return v1beta1.Endpoint{Address: clients.StringValue(e.Address), Port: int(e.Port)}
 }
 
