@@ -640,6 +640,75 @@ func TestGenerateObservation(t *testing.T) {
 				Status:                status,
 			},
 		},
+		{
+			name: "cluster-mode-no-endpoint",
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:     automaticFailover,
+				ClusterEnabled:        &clusterEnabled,
+				ConfigurationEndpoint: nil,
+				MemberClusters:        memberClusters,
+				Status:                &status,
+				NodeGroups:            nodeGroups,
+				PendingModifiedValues: &rgpmdv,
+			},
+			want: v1beta1.ReplicationGroupObservation{
+				AutomaticFailover:     string(automaticFailover),
+				ClusterEnabled:        clusterEnabled,
+				ConfigurationEndpoint: v1beta1.Endpoint{},
+				MemberClusters:        memberClusters,
+				NodeGroups: []v1beta1.NodeGroup{
+					generateNodeGroup(nodeGroups[0]),
+				},
+				PendingModifiedValues: generateReplicationGroupPendingModifiedValues(rgpmdv),
+				Status:                status,
+			},
+		},
+		{
+			name: "non-cluster-mode",
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:     automaticFailover,
+				ClusterEnabled:        aws.Bool(false),
+				ConfigurationEndpoint: configurationEndpoint,
+				MemberClusters:        memberClusters,
+				Status:                &status,
+				NodeGroups:            nodeGroups,
+				PendingModifiedValues: &rgpmdv,
+			},
+			want: v1beta1.ReplicationGroupObservation{
+				AutomaticFailover: string(automaticFailover),
+				ClusterEnabled:    false,
+				ConfigurationEndpoint: v1beta1.Endpoint{
+					Address: *nodeGroups[0].PrimaryEndpoint.Address,
+					Port:    int(nodeGroups[0].PrimaryEndpoint.Port),
+				},
+				MemberClusters: memberClusters,
+				NodeGroups: []v1beta1.NodeGroup{
+					generateNodeGroup(nodeGroups[0]),
+				},
+				PendingModifiedValues: generateReplicationGroupPendingModifiedValues(rgpmdv),
+				Status:                status,
+			},
+		},
+		{
+			name: "non-cluster-mode-no-nodes",
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:     automaticFailover,
+				ClusterEnabled:        aws.Bool(false),
+				ConfigurationEndpoint: configurationEndpoint,
+				MemberClusters:        memberClusters,
+				Status:                &status,
+				PendingModifiedValues: &rgpmdv,
+			},
+			want: v1beta1.ReplicationGroupObservation{
+				AutomaticFailover:     string(automaticFailover),
+				ClusterEnabled:        false,
+				ConfigurationEndpoint: v1beta1.Endpoint{},
+				MemberClusters:        memberClusters,
+				NodeGroups:            nil,
+				PendingModifiedValues: generateReplicationGroupPendingModifiedValues(rgpmdv),
+				Status:                status,
+			},
+		},
 	}
 
 	for _, tc := range cases {
