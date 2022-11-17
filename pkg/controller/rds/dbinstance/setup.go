@@ -326,10 +326,10 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
-	wantedVersion := *cr.Spec.ForProvider.EngineVersion
-	currentVersion := *db.EngineVersion
+	wantedVersion := aws.StringValue(cr.Spec.ForProvider.EngineVersion)
+	currentVersion := aws.StringValue(db.EngineVersion)
 
-	versionChanged := wantedVersion != currentVersion
+	versionChanged := wantedVersion != "" && wantedVersion != currentVersion
 
 	if versionChanged && aws.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) {
 		wantedMaiorList := strings.Split(wantedVersion, ".")
