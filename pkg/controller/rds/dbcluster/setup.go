@@ -2,8 +2,11 @@ package dbcluster
 
 import (
 	"context"
+	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/google/go-cmp/cmp"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -480,6 +483,10 @@ func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput)
 		return false, nil
 	}
 
+	if !isVPCSecurityGroupIDsUpToDate(cr, out) {
+		return false, nil
+	}
+
 	isScalingConfigurationUpToDate, err := isScalingConfigurationUpToDate(cr.Spec.ForProvider.ScalingConfiguration, out.DBClusters[0].ScalingConfigurationInfo)
 	if !isScalingConfigurationUpToDate {
 		return false, err
@@ -560,6 +567,29 @@ func isPortUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOut
 		}
 	}
 	return true
+}
+
+func isVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	// AWS uses "sg-563ab33d" which ich really restrictive as the default, and it seems to use it even when it is
+	// patched (with "required") - might be race condition. Anyway with checking if there is a diff we can rectify and
+	// even make it configurable after creation.
+
+	actualGroups := out.DBClusters[0].VpcSecurityGroups
+	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
+
+	if len(desiredIDs) != len(actualGroups) {
+		return false
+	}
+
+	actualIDs := make([]string, 0, len(actualGroups))
+	for _, grp := range actualGroups {
+		actualIDs = append(actualIDs, *grp.VpcSecurityGroupId)
+	}
+
+	sort.Strings(desiredIDs)
+	sort.Strings(actualIDs)
+
+	return cmp.Equal(desiredIDs, actualIDs)
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
