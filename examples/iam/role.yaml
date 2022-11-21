@@ -125,30 +125,48 @@ spec:
       {
         "Version": "2012-10-17",
         "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": [
-                        "ec2.amazonaws.com"
-                    ]
-                },
-                "Action": [
-                    "sts:AssumeRole"
+          {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
                 ]
-            }
-        ]
-      }
-    inlinePolicyDocument: |
-      {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-              Action   = ["s3:*"]
-              Effect   = "Allow"
-              Resource = "*"
             },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }
         ]
       }
+    inlinePolicies:
+      - name: s3-inline-example
+        policy: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                Action   = ["s3:*"],
+                Effect   = "Allow",
+                Resource = "*"
+              },
+            ]
+          }
+      - name: ses-inline-example
+        policy: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                Action   = [
+                  "ses:SendEmail",
+                  "ses:SendRawEmail"
+                ],
+                Effect   = "Allow",
+                Resource = "*",
+                "Sid": "SesAllow"
+              },
+            ]
+          }
     tags:
       - key: k1
         value: v1

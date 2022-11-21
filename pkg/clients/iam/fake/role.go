@@ -34,15 +34,13 @@ type MockRoleClient struct {
 	MockDeleteRole func(ctx context.Context, input *iam.DeleteRoleInput, opts []func(*iam.Options)) (*iam.DeleteRoleOutput, error)
 	// TODO: write tests
 	MockPutRolePolicy          func(ctx context.Context, input *iam.PutRolePolicyInput, opts ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error)
+	MockDeleteRolePolicy       func(ctx context.Context, input *iam.DeleteRolePolicyInput, opts ...func(*iam.Options)) (*iam.DeleteRolePolicyOutput, error)
+	MockListRolePolicies       func(ctx context.Context, input *iam.ListRolePoliciesInput, opts ...func(*iam.Options)) (*iam.ListRolePoliciesOutput, error)
+	// todo-end:[iam.inline]
 	MockUpdateRole             func(ctx context.Context, input *iam.UpdateRoleInput, opts []func(*iam.Options)) (*iam.UpdateRoleOutput, error)
 	MockUpdateAssumeRolePolicy func(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts []func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
 	MockTagRole                func(ctx context.Context, input *iam.TagRoleInput, opts []func(*iam.Options)) (*iam.TagRoleOutput, error)
 	MockUntagRole              func(ctx context.Context, input *iam.UntagRoleInput, opts []func(*iam.Options)) (*iam.UntagRoleOutput, error)
-}
-
-func (m *MockRoleClient) PutRolePolicy(ctx context.Context, input *iam.PutRolePolicyInput, opts ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error) {
-	// TODO implement me
-	panic("implement me")
 }
 
 // GetRole mocks GetRole method
@@ -78,4 +76,19 @@ func (m *MockRoleClient) TagRole(ctx context.Context, input *iam.TagRoleInput, o
 // UntagRole mocks UntagRole method
 func (m *MockRoleClient) UntagRole(ctx context.Context, input *iam.UntagRoleInput, opts ...func(*iam.Options)) (*iam.UntagRoleOutput, error) {
 	return m.MockUntagRole(ctx, input, opts)
+}
+
+func (m *MockRoleClient) PutRolePolicy(ctx context.Context, input *iam.PutRolePolicyInput, opts ...func(*iam.Options)) (*iam.PutRolePolicyOutput, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m *MockRoleClient) DeleteRolePolicy(ctx context.Context, input *iam.DeleteRolePolicyInput, opts ...func(*iam.Options)) (*iam.DeleteRolePolicyOutput, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m *MockRoleClient) ListRolePolicies(ctx context.Context, input *iam.ListRolePoliciesInput, opts ...func(*iam.Options)) (*iam.ListRolePoliciesOutput, error) {
+	// TODO implement me
+	panic("implement me")
 }
