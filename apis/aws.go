@@ -56,6 +56,7 @@ import (
 	elasticloadbalancingv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	elbv2manualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elbv2/manualv1alpha1"
 	elbv2v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
+	emrcontainersv1alpah1 "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 	gluev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	iamv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1alpha1"
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
@@ -161,6 +162,7 @@ func init() {
 		opensearchv1alpha1.AddToScheme,
 		batchv1alpha1.AddToScheme,
 		batchmanualv1alpha1.SchemeBuilder.AddToScheme,
+		emrcontainersv1alpah1.SchemeBuilder.AddToScheme,
 	)
 }
 

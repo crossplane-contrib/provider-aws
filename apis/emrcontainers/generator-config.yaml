@@ -1,0 +1,79 @@
+ignore:
+  field_paths:
+    - CreateVirtualClusterInput.ClientToken
+    - CreateVirtualClusterInput.Name
+    - StartJobRunInput.ClientToken
+    - StartJobRunInput.Name
+    - JobRun.ConfigurationOverrides
+    - StartJobRunInput.VirtualClusterId
+    - StartJobRunInput.ConfigurationOverrides
+  resource_names:
+    - ManagedEndpoint
+  shape_names: null
+model_name: emr-containers
+operations:
+  DescribeVirtualCluster:
+    output_wrapper_field_path: VirtualCluster
+  StartJobRun:
+    operation_type: Create
+    resource_name: JobRun
+  CancelJobRun:
+    operation_type: Delete
+    resource_name: JobRun
+  DescribeJobRun:
+    output_wrapper_field_path: JobRun
+prefix_config: {}
+resources:
+  VirtualCluster:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+      - ValidationException
+      - InternalServerException
+  JobRun:
+    fields:
+      Name:
+        is_immutable: true
+      VirtualClusterId:
+        is_immutable: true
+        references:
+          resource: VirtualCluster
+          path: Status.ID
+      ExecutionRoleARN:
+        is_immutable: true
+      ReleaseLabel:
+        is_immutable: true
+      Id:
+        is_read_only: true
+      JobDriver:
+        is_immutable: true
+      State:
+        is_read_only: true
+        from:
+          operation: DescribeJobRun
+          path: JobRun.State
+      StateDetails:
+        is_read_only: true
+        from:
+          operation: DescribeJobRun
+          path: JobRun.StateDetails
+      FailureReason:
+        is_read_only: true
+        from:
+          operation: DescribeJobRun
+          path: JobRun.FailureReason
+      # The default ConfigurationOverrides that is part of JobRun API's does not work well with ACK. By design a CRD must be describable using an OpenAPIv3 schema. ConfigurationOverrides has a property within ApplicationConfiguration called 'configurations' which is recursive and is the root of the issue. Hence, we are creating custom JSON blob to accomodate ConfigurationOverrides and we have to manually handle how to unmarshall this field so that customers can define all/any properties available
+      ConfigurationOverrides:
+        type: "string"
+        is_immutable: true
+        is_required: False
+        compare:
+          is_ignored: true
+    exceptions:
+      errors:
+          404:
+            code: ResourceNotFoundException
+      terminal_codes:
+      - ValidationException
