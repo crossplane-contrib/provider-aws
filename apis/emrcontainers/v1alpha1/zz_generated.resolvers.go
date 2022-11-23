@@ -33,20 +33,20 @@ func (mg *JobRun) ResolveReferences(ctx context.Context, c client.Reader) error 
 	var err error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterId),
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterID),
 		Extract:      reference.ExternalName(),
-		Reference:    mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIdRef,
-		Selector:     mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIdSelector,
+		Reference:    mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIDRef,
+		Selector:     mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIDSelector,
 		To: reference.To{
 			List:    &VirtualClusterList{},
 			Managed: &VirtualCluster{},
 		},
 	})
 	if err != nil {
-		return errors.Wrap(err, "mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterId")
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterID")
 	}
-	mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterId = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIdRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomJobRunParameters.VirtualClusterIDRef = rsp.ResolvedReference
 
 	return nil
 }

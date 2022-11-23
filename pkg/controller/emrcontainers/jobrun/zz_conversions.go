@@ -185,9 +185,6 @@ func GenerateCancelJobRunInput(cr *svcapitypes.JobRun) *svcsdk.CancelJobRunInput
 	if cr.Status.AtProvider.ID != nil {
 		res.SetId(*cr.Status.AtProvider.ID)
 	}
-	if cr.Status.AtProvider.VirtualClusterID != nil {
-		res.SetVirtualClusterId(*cr.Status.AtProvider.VirtualClusterID)
-	}
 
 	return res
 }

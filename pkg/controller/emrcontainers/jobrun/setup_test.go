@@ -7,12 +7,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/emrcontainers"
-	"github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 )
 
 func newMockExternal(output output) external {
@@ -52,7 +53,7 @@ func TestPreObserve(t *testing.T) {
 			},
 			want: want{
 				result: &svcsdk.DescribeJobRunInput{
-					Id: aws.String(firstObserveJobRunId),
+					Id: aws.String(firstObserveJobRunID),
 				},
 			},
 		},

@@ -6,9 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/emrcontainers"
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -18,12 +15,17 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
-	firstObserveJobRunId = "0000000000000000000"
+	firstObserveJobRunID = "0000000000000000000"
 )
 
+// SetupJobRun adds a controller that reconciles JobRun.
 func SetupJobRun(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.JobRunKind)
 	opts := []option{
@@ -58,11 +60,11 @@ func preObserve(ctx context.Context, cr *svcapitypes.JobRun, input *svcsdk.Descr
 	externalName := meta.GetExternalName(cr)
 	if externalName == cr.Name {
 		// ensure 404 is returned on first pass.
-		input.Id = aws.String(firstObserveJobRunId)
+		input.Id = aws.String(firstObserveJobRunID)
 	} else {
 		input.Id = aws.String(externalName)
 	}
-	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterId
+	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterID
 	return nil
 }
 func postObserve(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.DescribeJobRunOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -71,17 +73,14 @@ func postObserve(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.Descr
 	}
 	state := *resp.JobRun.State
 	// job runs cannot be deleted explicitly. they will be GCed after some time within AWS
-	if meta.WasDeleted(cr) {
-		switch state {
-		case svcsdk.JobRunStateCancelled:
-			obs.ResourceExists = false
-		case svcsdk.JobRunStateCompleted:
-			obs.ResourceExists = false
-		case svcsdk.JobRunStateFailed:
-			obs.ResourceExists = false
-		}
+	if meta.WasDeleted(cr) && (state == svcsdk.JobRunStateCancelled || state == svcsdk.JobRunStateCompleted || state == svcsdk.JobRunStateFailed) {
+		obs.ResourceExists = false
 	}
+	setResourceCondition(state, cr)
+	return obs, nil
+}
 
+func setResourceCondition(state string, cr *svcapitypes.JobRun) {
 	switch state {
 	case svcsdk.JobRunStateCancelled:
 		cr.SetConditions(xpv1.Unavailable())
@@ -98,12 +97,10 @@ func postObserve(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.Descr
 	case svcsdk.JobRunStateSubmitted:
 		cr.SetConditions(xpv1.Creating())
 	}
-
-	return obs, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.JobRun, input *svcsdk.StartJobRunInput) error {
-	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterId
+	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterID
 	input.Name = &cr.Name
 	return nil
 }
@@ -117,7 +114,7 @@ func postCreate(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.StartJ
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.JobRun, input *svcsdk.CancelJobRunInput) (bool, error) {
-	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterId
+	input.VirtualClusterId = cr.Spec.ForProvider.VirtualClusterID
 	return input.VirtualClusterId == nil, nil
 }
 

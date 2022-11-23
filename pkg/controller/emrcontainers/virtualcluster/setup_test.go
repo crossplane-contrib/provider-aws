@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/emrcontainers"
-	"github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -14,6 +13,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 )
 
 var (
@@ -62,7 +63,7 @@ func TestPostObserve(t *testing.T) {
 				cr: &v1alpha1.VirtualCluster{
 					Status: v1alpha1.VirtualClusterStatus{
 						ResourceStatus: v1.ResourceStatus{
-							v1.ConditionedStatus{Conditions: []v1.Condition{
+							ConditionedStatus: v1.ConditionedStatus{Conditions: []v1.Condition{
 								{
 									Type:   "Ready",
 									Status: "False",
@@ -158,7 +159,7 @@ func TestPreObserve(t *testing.T) {
 			want: want{
 				err: nil,
 				result: &svcsdk.DescribeVirtualClusterInput{
-					Id: aws.String(firstObserveId),
+					Id: aws.String(firstObserveID),
 				},
 			},
 		},

@@ -6,10 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/emrcontainers"
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -20,16 +16,22 @@ import (
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
-	firstObserveId    = "invalid"
+	firstObserveID    = "invalid"
 	terminatedMessage = "VirtualCluster is already terminated"
 	errListTag        = "cannot list tags"
 	errUntag          = "cannot remove tags"
 	errTag            = "cannot add tags"
 )
 
+// SetupVirtualCluster adds a controller that reconciles VirtualCluster.
 func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
 	opts := []option{
@@ -64,7 +66,7 @@ func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
 func preObserve(ctx context.Context, cr *svcapitypes.VirtualCluster, input *svcsdk.DescribeVirtualClusterInput) error {
 	externalName := meta.GetExternalName(cr)
 	if externalName == cr.Name {
-		input.Id = aws.String(firstObserveId)
+		input.Id = aws.String(firstObserveID)
 	} else {
 		input.Id = aws.String(externalName)
 	}
