@@ -21,6 +21,8 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -56,7 +58,12 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
-		For(&svcapitypes.PrivateDNSNamespace{}).
+		For(&svcapitypes.PrivateDNSNamespace{},
+			builder.WithPredicates(predicate.Or(
+				predicate.GenerationChangedPredicate{},
+				predicate.LabelChangedPredicate{},
+				predicate.AnnotationChangedPredicate{},
+			))).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PrivateDNSNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

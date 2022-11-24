@@ -19,6 +19,8 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -59,7 +61,12 @@ func SetupUserPoolClient(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
-		For(&svcapitypes.UserPoolClient{}).
+		For(&svcapitypes.UserPoolClient{},
+			builder.WithPredicates(predicate.Or(
+				predicate.GenerationChangedPredicate{},
+				predicate.LabelChangedPredicate{},
+				predicate.AnnotationChangedPredicate{},
+			))).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.UserPoolClientGroupVersionKind),
 			managed.WithInitializers(),

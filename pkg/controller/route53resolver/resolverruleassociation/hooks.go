@@ -22,7 +22,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -58,7 +60,12 @@ func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
-		For(&manualv1alpha1.ResolverRuleAssociation{}).
+		For(&manualv1alpha1.ResolverRuleAssociation{},
+			builder.WithPredicates(predicate.Or(
+				predicate.GenerationChangedPredicate{},
+				predicate.LabelChangedPredicate{},
+				predicate.AnnotationChangedPredicate{},
+			))).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(manualv1alpha1.ResolverRuleAssociationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newRoute53ResolverClientFn: resolverruleassociation.NewRoute53ResolverClient}),
