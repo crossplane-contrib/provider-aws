@@ -19,6 +19,7 @@ package groupusermembership
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/manualv1alpha1"
@@ -111,14 +112,17 @@ func TestObserve(t *testing.T) {
 			args: args{
 				cognitoidentityprovider: &fake.MockGroupUserMembershipClient{
 					MockAdminListGroupsForUser: func(ctx context.Context, input *awscognitoidentityprovider.AdminListGroupsForUserInput, opts []func(*awscognitoidentityprovider.Options)) (*awscognitoidentityprovider.AdminListGroupsForUserOutput, error) {
-						return &awscognitoidentityprovider.AdminListGroupsForUserOutput{
-							Groups: []awscognitoidentityprovidertypes.GroupType{
-								{
-									GroupName:  &groupName,
-									UserPoolId: &userPoolID,
+						if strings.Compare(*input.UserPoolId, userPoolID) == 0 && strings.Compare(*input.Username, Username) == 0 {
+							return &awscognitoidentityprovider.AdminListGroupsForUserOutput{
+								Groups: []awscognitoidentityprovidertypes.GroupType{
+									{
+										GroupName:  &groupName,
+										UserPoolId: &userPoolID,
+									},
 								},
-							},
-						}, nil
+							}, nil
+						}
+						return nil, &awscognitoidentityprovidertypes.ResourceNotFoundException{}
 					},
 				},
 				cr: userGroup(withExternalName(groupName, Username, userPoolID)),
