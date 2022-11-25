@@ -151,7 +151,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(err, errUnmarshal)
 	}
 
-	attachedGroupObject, err := FindAttachedGroupObject(ctx, e, externalAnnotation.Username, externalAnnotation.UserPoolID, externalAnnotation.Groupname)
+	attachedGroupObject, err := FindAttachedGroupObject(ctx, e, externalAnnotation.UserPoolID, externalAnnotation.Username, externalAnnotation.Groupname)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errGet)
 	}
