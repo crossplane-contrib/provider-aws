@@ -53,15 +53,7 @@ type UserParameters struct {
 	//
 	// The following is an Entry and Target pair example for chroot.
 	//
-	// [ { "Entry:": "/", "Target": "/bucket_name/home/mydirectory" } ]
-	//
-	// If the target of a logical directory entry does not exist in Amazon S3 or
-	// EFS, the entry is ignored. As a workaround, you can use the Amazon S3 API
-	// or EFS API to create 0 byte objects as place holders for your directory.
-	// If using the CLI, use the s3api or efsapi call instead of s3 or efs so you
-	// can use the put-object operation. For example, you use the following: aws
-	// s3api put-object --bucket bucketname --key path/to/folder/. Make sure that
-	// the end of the key name ends in a / for it to be considered a folder.
+	// [ { "Entry": "/", "Target": "/bucket_name/home/mydirectory" } ]
 	HomeDirectoryMappings []*HomeDirectoryMapEntry `json:"homeDirectoryMappings,omitempty"`
 	// The type of landing directory (folder) you want your users' home directory
 	// to be when they log into the server. If you set it to PATH, the user will
@@ -95,6 +87,9 @@ type UserParameters struct {
 	PosixProfile *PosixProfile `json:"posixProfile,omitempty"`
 	// The public portion of the Secure Shell (SSH) key used to authenticate the
 	// user to the server.
+	//
+	// Currently, Transfer Family does not accept elliptical curve keys (keys beginning
+	// with ecdsa).
 	SshPublicKeyBody *string `json:"sshPublicKeyBody,omitempty"`
 	// Key-value pairs that can be used to group and search for users. Tags are
 	// metadata attached to users for any purpose.

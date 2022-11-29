@@ -201,41 +201,52 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.KeyUsage = nil
 	}
+	if resp.KeyMetadata.MacAlgorithms != nil {
+		f16 := []*string{}
+		for _, f16iter := range resp.KeyMetadata.MacAlgorithms {
+			var f16elem string
+			f16elem = *f16iter
+			f16 = append(f16, &f16elem)
+		}
+		cr.Status.AtProvider.MacAlgorithms = f16
+	} else {
+		cr.Status.AtProvider.MacAlgorithms = nil
+	}
 	if resp.KeyMetadata.MultiRegion != nil {
 		cr.Spec.ForProvider.MultiRegion = resp.KeyMetadata.MultiRegion
 	} else {
 		cr.Spec.ForProvider.MultiRegion = nil
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
-		f17 := &svcapitypes.MultiRegionConfiguration{}
+		f18 := &svcapitypes.MultiRegionConfiguration{}
 		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f17.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+			f18.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
-			f17f1 := &svcapitypes.MultiRegionKey{}
+			f18f1 := &svcapitypes.MultiRegionKey{}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
-				f17f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+				f18f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
 			}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
-				f17f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+				f18f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
 			}
-			f17.PrimaryKey = f17f1
+			f18.PrimaryKey = f18f1
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
-			f17f2 := []*svcapitypes.MultiRegionKey{}
-			for _, f17f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
-				f17f2elem := &svcapitypes.MultiRegionKey{}
-				if f17f2iter.Arn != nil {
-					f17f2elem.ARN = f17f2iter.Arn
+			f18f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f18f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f18f2elem := &svcapitypes.MultiRegionKey{}
+				if f18f2iter.Arn != nil {
+					f18f2elem.ARN = f18f2iter.Arn
 				}
-				if f17f2iter.Region != nil {
-					f17f2elem.Region = f17f2iter.Region
+				if f18f2iter.Region != nil {
+					f18f2elem.Region = f18f2iter.Region
 				}
-				f17f2 = append(f17f2, f17f2elem)
+				f18f2 = append(f18f2, f18f2elem)
 			}
-			f17.ReplicaKeys = f17f2
+			f18.ReplicaKeys = f18f2
 		}
-		cr.Status.AtProvider.MultiRegionConfiguration = f17
+		cr.Status.AtProvider.MultiRegionConfiguration = f18
 	} else {
 		cr.Status.AtProvider.MultiRegionConfiguration = nil
 	}
@@ -250,13 +261,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f20 := []*string{}
-		for _, f20iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f20elem string
-			f20elem = *f20iter
-			f20 = append(f20, &f20elem)
+		f21 := []*string{}
+		for _, f21iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f21elem string
+			f21elem = *f21iter
+			f21 = append(f21, &f21elem)
 		}
-		cr.Status.AtProvider.SigningAlgorithms = f20
+		cr.Status.AtProvider.SigningAlgorithms = f21
 	} else {
 		cr.Status.AtProvider.SigningAlgorithms = nil
 	}

@@ -66,6 +66,9 @@ spec:
                       this option when the VPC contains a subnet which is associated
                       with a Wavelength Zone."
                     type: string
+                  coreNetworkARN:
+                    description: The Amazon Resource Name (ARN) of the core network.
+                    type: string
                   destinationCIDRBlock:
                     description: The IPv4 CIDR address block used for the destination
                       match. Routing decisions are based on the most specific match.

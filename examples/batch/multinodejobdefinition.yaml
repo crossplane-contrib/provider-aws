@@ -1,0 +1,65 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: JobDefinition
+metadata:
+  name: example-multinode-jobdefinition
+spec:
+  forProvider:
+    region: us-east-1
+    jobDefinitionType: multinode
+    nodeProperties:
+      mainNode: 0 
+      numNodes: 1
+      nodeRangeProperties:
+        - targetNodes: "0:"
+          container:
+            command: ["echo","hello world"]
+            ## Defined in examples/batch
+            executionRoleARNRef: 
+              name: ecs-task-execution-role
+            image: "public.ecr.aws/amazonlinux/amazonlinux:latest"
+            instanceType: "m4.large"
+            ## Defined in examples/batch
+            jobRoleARNRef:
+              name: ecs-task-execution-role
+            linuxParameters:
+              initProcessEnabled: true
+              maxSwap: 50
+              sharedMemorySize: 123
+              swappiness: 42
+              tmpfs:
+                - containerPath: "/home/tmpfs/cpath"
+                  mountOptions:
+                    - "defaults"
+                    - "async"
+                  size: 111
+            mountPoints:
+              - containerPath: "/home/cpath" 
+                readOnly: true
+                sourceVolume: "hostvolumeName"
+            privileged: true
+            resourceRequirements:
+              - resourceType: VCPU
+                value: "1"
+              - resourceType: MEMORY
+                value: "1024"
+            ulimits:
+              - name: "nice"
+                softLimit: 42
+                hardLimit: 69
+            volumes:
+              - host:
+                  sourcePath: "/home/hPath"
+                name: "hostvolumeName"
+    propagateTags: true
+    retryStrategy:
+      attempts: 3
+      evaluateOnExit:
+        - "action": "exit"
+          "onExitCode": "3242"
+          "onReason": "didnotWork"
+          "onStatusReason": "invalidSTHorso"
+    tags: 
+      jd : "my-jobdefinition-ec2-multinode"
+      other: "bla"
+  providerConfigRef:
+    name: example

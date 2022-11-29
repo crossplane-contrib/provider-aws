@@ -86,7 +86,35 @@ type ServerParameters struct {
 	// choosing. The API_GATEWAY setting requires you to provide an API Gateway
 	// endpoint URL to call for authentication using the IdentityProviderDetails
 	// parameter.
+	//
+	// Use the AWS_LAMBDA value to directly use a Lambda function as your identity
+	// provider. If you choose this value, you must specify the ARN for the lambda
+	// function in the Function parameter for the IdentityProviderDetails data type.
 	IdentityProviderType *string `json:"identityProviderType,omitempty"`
+	// Specify a string to display when users connect to a server. This string is
+	// displayed after the user authenticates.
+	//
+	// The SFTP protocol does not support post-authentication display banners.
+	PostAuthenticationLoginBanner *string `json:"postAuthenticationLoginBanner,omitempty"`
+	// Specify a string to display when users connect to a server. This string is
+	// displayed before the user authenticates. For example, the following banner
+	// displays details about using the system.
+	//
+	// This system is for the use of authorized users only. Individuals using this
+	// computer system without authority, or in excess of their authority, are subject
+	// to having all of their activities on this system monitored and recorded by
+	// system personnel.
+	PreAuthenticationLoginBanner *string `json:"preAuthenticationLoginBanner,omitempty"`
+	// The protocol settings that are configured for your server.
+	//
+	// Use the PassiveIp parameter to indicate passive mode (for FTP and FTPS protocols).
+	// Enter a single dotted-quad IPv4 address, such as the external IP address
+	// of a firewall, router, or load balancer.
+	//
+	// Use the TlsSessionResumptionMode parameter to determine whether or not your
+	// Transfer server resumes recent, negotiated sessions through a unique session
+	// ID.
+	ProtocolDetails *ProtocolDetails `json:"protocolDetails,omitempty"`
 	// Specifies the file transfer protocol or protocols over which your file transfer
 	// protocol client can connect to your server's endpoint. The available protocols
 	// are:

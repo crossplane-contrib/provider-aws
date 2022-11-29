@@ -73,6 +73,13 @@ const (
 	ShardIteratorType_AT_TIMESTAMP          ShardIteratorType = "AT_TIMESTAMP"
 )
 
+type StreamMode string
+
+const (
+	StreamMode_PROVISIONED StreamMode = "PROVISIONED"
+	StreamMode_ON_DEMAND   StreamMode = "ON_DEMAND"
+)
+
 type StreamStatus_SDK string
 
 const (

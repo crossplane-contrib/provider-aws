@@ -28,6 +28,33 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AWSECRContainerImageDetails struct {
+	Registry *string `json:"registry,omitempty"`
+
+	RepositoryName *string `json:"repositoryName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EnhancedImageScanFinding struct {
+	AWSAccountID *string `json:"awsAccountID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ImageReplicationStatus struct {
 	RegistryID *string `json:"registryID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PullThroughCacheRule struct {
+	RegistryID *string `json:"registryID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RepositoryScanningConfiguration struct {
+	RepositoryName *string `json:"repositoryName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RepositoryScanningConfigurationFailure struct {
+	RepositoryName *string `json:"repositoryName,omitempty"`
 }

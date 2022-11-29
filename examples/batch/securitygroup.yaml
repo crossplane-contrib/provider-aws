@@ -1,0 +1,29 @@
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: batch-ce-sg
+spec:
+  forProvider:
+    region: us-east-1
+    vpcIdRef:
+      name: sample-vpc  
+    groupName: my-batch-ce-sg
+    description: "for fargate ComputeEnvironment with public subnet, able to pull the public container image"
+    egress: # 5. https://aws.amazon.com/premiumsupport/knowledge-center/ecs-pull-container-api-error-ecr/
+      - fromPort: 443
+        toPort: 443
+        ipProtocol: tcp
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+      - fromPort: 53
+        toPort: 53
+        ipProtocol: tcp
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+      - fromPort: 53
+        toPort: 53
+        ipProtocol: udp
+        ipRanges:
+          - cidrIp: 0.0.0.0/0
+  providerConfigRef:
+    name: example

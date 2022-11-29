@@ -63,34 +63,49 @@ spec:
                   ResourceShare
                 properties:
                   allowExternalPrincipals:
-                    description: Indicates whether principals outside your organization
-                      in Organizations can be associated with a resource share.
+                    description: Specifies whether principals outside your organization
+                      in Organizations can be associated with a resource share. A
+                      value of true lets you share with individual Amazon Web Services
+                      accounts that are not in your organization. A value of false
+                      only has meaning if your account is a member of an Amazon Web
+                      Services Organization. The default value is true.
                     type: boolean
                   clientToken:
-                    description: A unique, case-sensitive identifier that you provide
-                      to ensure the idempotency of the request.
+                    description: "Specifies a unique, case-sensitive identifier that
+                      you provide to ensure the idempotency of the request. This lets
+                      you safely retry the request without accidentally performing
+                      the same operation a second time. Passing the same value to
+                      a later call to an operation requires that you also pass the
+                      same value for all other parameters. We recommend that you use
+                      a UUID type of value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+                      \n If you don't provide this value, then Amazon Web Services
+                      generates a random one for you."
                     type: string
                   name:
-                    description: The name of the resource share.
+                    description: Specifies the name of the resource share.
                     type: string
                   permissionARNs:
-                    description: The Amazon Resource Names (ARNs) of the permissions
-                      to associate with the resource share. If you do not specify
-                      an ARN for the permission, RAM automatically attaches the default
-                      version of the permission for each resource type. Only one permission
-                      can be associated with each resource type in a resource share.
+                    description: Specifies the Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                      of the RAM permission to associate with the resource share.
+                      If you do not specify an ARN for the permission, RAM automatically
+                      attaches the default version of the permission for each resource
+                      type. You can associate only one permission with each resource
+                      type included in the resource share.
                     items:
                       type: string
                     type: array
                   principals:
-                    description: "The principals to associate with the resource share.
-                      The possible values are: \n * An Amazon Web Services account
-                      ID \n * An Amazon Resource Name (ARN) of an organization in
-                      Organizations \n * An ARN of an organizational unit (OU) in
-                      Organizations \n * An ARN of an IAM role \n * An ARN of an IAM
-                      user \n Not all resource types can be shared with IAM roles
-                      and IAM users. For more information, see Sharing with IAM roles
-                      and IAM users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)
+                    description: "Specifies a list of one or more principals to associate
+                      with the resource share. \n You can include the following values:
+                      \n * An Amazon Web Services account ID, for example: 123456789012
+                      \n * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                      of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
+                      \n * An ARN of an organizational unit (OU) in Organizations,
+                      for example: organizations::123456789012:ou/o-exampleorgid/ou-examplerootid-exampleouid123
+                      \n * An ARN of an IAM role, for example: iam::123456789012:role/rolename
+                      \n * An ARN of an IAM user, for example: iam::123456789012user/username
+                      \n Not all resource types can be shared with IAM roles and users.
+                      For more information, see Sharing with IAM roles and users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)
                       in the Resource Access Manager User Guide."
                     items:
                       type: string
@@ -100,13 +115,15 @@ spec:
                       created.
                     type: string
                   resourceARNs:
-                    description: The ARNs of the resources to associate with the resource
-                      share.
+                    description: Specifies a list of one or more ARNs of the resources
+                      to associate with the resource share.
                     items:
                       type: string
                     type: array
                   tags:
-                    description: One or more tags.
+                    description: Specifies one or more tags to attach to the resource
+                      share itself. It doesn't attach the tags to the resources associated
+                      with the resource share.
                     items:
                       properties:
                         key:
@@ -298,7 +315,8 @@ spec:
                   ResourceShare
                 properties:
                   resourceShare:
-                    description: Information about the resource share.
+                    description: An object with information about the new resource
+                      share.
                     properties:
                       allowExternalPrincipals:
                         type: boolean

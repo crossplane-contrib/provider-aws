@@ -44,6 +44,21 @@ type AccountUsage struct {
 }
 
 // +kubebuilder:skipversion
+type CORS struct {
+	AllowCredentials *bool `json:"allowCredentials,omitempty"`
+
+	AllowHeaders []*string `json:"allowHeaders,omitempty"`
+
+	AllowMethods []*string `json:"allowMethods,omitempty"`
+
+	AllowOrigins []*string `json:"allowOrigins,omitempty"`
+
+	ExposeHeaders []*string `json:"exposeHeaders,omitempty"`
+
+	MaxAge *int64 `json:"maxAge,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CodeSigningConfig struct {
 	CodeSigningConfigARN *string `json:"codeSigningConfigARN,omitempty"`
 
@@ -78,6 +93,11 @@ type EnvironmentResponse struct {
 }
 
 // +kubebuilder:skipversion
+type EphemeralStorage struct {
+	Size *int64 `json:"size,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemConfig struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -102,6 +122,8 @@ type FunctionCodeLocation struct {
 
 // +kubebuilder:skipversion
 type FunctionConfiguration struct {
+	Architectures []*string `json:"architectures,omitempty"`
+
 	CodeSHA256 *string `json:"codeSHA256,omitempty"`
 
 	CodeSize *int64 `json:"codeSize,omitempty"`
@@ -114,6 +136,9 @@ type FunctionConfiguration struct {
 	// operation is successful, the response contains the environment variables.
 	// If it failed, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
+	// The size of the function’s /tmp directory in MB. The default value is 512,
+	// but can be any whole number between 512 and 10240 MB.
+	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
 
@@ -158,7 +183,7 @@ type FunctionConfiguration struct {
 	StateReasonCode *string `json:"stateReasonCode,omitempty"`
 
 	Timeout *int64 `json:"timeout,omitempty"`
-	// The function's AWS X-Ray tracing configuration.
+	// The function's X-Ray tracing configuration.
 	TracingConfig *TracingConfigResponse `json:"tracingConfig,omitempty"`
 
 	Version *string `json:"version,omitempty"`
@@ -169,6 +194,24 @@ type FunctionConfiguration struct {
 // +kubebuilder:skipversion
 type FunctionEventInvokeConfig struct {
 	FunctionARN *string `json:"functionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FunctionURLConfig_SDK struct {
+	AuthType *string `json:"authType,omitempty"`
+	// The cross-origin resource sharing (CORS) (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+	// settings for your Lambda function URL. Use CORS to grant access to your function
+	// URL from any origin. You can also use CORS to control access for specific
+	// HTTP headers and methods in requests to your function URL.
+	CORS *CORS `json:"cors,omitempty"`
+
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	FunctionARN *string `json:"functionARN,omitempty"`
+
+	FunctionURL *string `json:"functionURL,omitempty"`
+
+	LastModifiedTime *string `json:"lastModifiedTime,omitempty"`
 }
 
 // +kubebuilder:skipversion

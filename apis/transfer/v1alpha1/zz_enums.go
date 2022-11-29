@@ -43,7 +43,14 @@ const (
 type ExecutionErrorType string
 
 const (
-	ExecutionErrorType_PERMISSION_DENIED ExecutionErrorType = "PERMISSION_DENIED"
+	ExecutionErrorType_PERMISSION_DENIED     ExecutionErrorType = "PERMISSION_DENIED"
+	ExecutionErrorType_CUSTOM_STEP_FAILED    ExecutionErrorType = "CUSTOM_STEP_FAILED"
+	ExecutionErrorType_THROTTLED             ExecutionErrorType = "THROTTLED"
+	ExecutionErrorType_ALREADY_EXISTS        ExecutionErrorType = "ALREADY_EXISTS"
+	ExecutionErrorType_NOT_FOUND             ExecutionErrorType = "NOT_FOUND"
+	ExecutionErrorType_BAD_REQUEST           ExecutionErrorType = "BAD_REQUEST"
+	ExecutionErrorType_TIMEOUT               ExecutionErrorType = "TIMEOUT"
+	ExecutionErrorType_INTERNAL_SERVER_ERROR ExecutionErrorType = "INTERNAL_SERVER_ERROR"
 )
 
 type ExecutionStatus string
@@ -68,6 +75,7 @@ const (
 	IdentityProviderType_SERVICE_MANAGED       IdentityProviderType = "SERVICE_MANAGED"
 	IdentityProviderType_API_GATEWAY           IdentityProviderType = "API_GATEWAY"
 	IdentityProviderType_AWS_DIRECTORY_SERVICE IdentityProviderType = "AWS_DIRECTORY_SERVICE"
+	IdentityProviderType_AWS_LAMBDA            IdentityProviderType = "AWS_LAMBDA"
 )
 
 type OverwriteExisting string
@@ -94,6 +102,14 @@ const (
 	State_STOPPING     State = "STOPPING"
 	State_START_FAILED State = "START_FAILED"
 	State_STOP_FAILED  State = "STOP_FAILED"
+)
+
+type TLSSessionResumptionMode string
+
+const (
+	TLSSessionResumptionMode_DISABLED TLSSessionResumptionMode = "DISABLED"
+	TLSSessionResumptionMode_ENABLED  TLSSessionResumptionMode = "ENABLED"
+	TLSSessionResumptionMode_ENFORCED TLSSessionResumptionMode = "ENFORCED"
 )
 
 type WorkflowStepType string

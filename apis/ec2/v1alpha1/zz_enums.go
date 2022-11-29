@@ -69,6 +69,13 @@ const (
 	AddressAttributeName_domain_name AddressAttributeName = "domain-name"
 )
 
+type AddressFamily string
+
+const (
+	AddressFamily_ipv4 AddressFamily = "ipv4"
+	AddressFamily_ipv6 AddressFamily = "ipv6"
+)
+
 type Affinity string
 
 const (
@@ -317,17 +324,23 @@ const (
 type CapacityReservationInstancePlatform string
 
 const (
-	CapacityReservationInstancePlatform_Linux_UNIX                         CapacityReservationInstancePlatform = "Linux/UNIX"
-	CapacityReservationInstancePlatform_Red_Hat_Enterprise_Linux           CapacityReservationInstancePlatform = "Red Hat Enterprise Linux"
-	CapacityReservationInstancePlatform_SUSE_Linux                         CapacityReservationInstancePlatform = "SUSE Linux"
-	CapacityReservationInstancePlatform_Windows                            CapacityReservationInstancePlatform = "Windows"
-	CapacityReservationInstancePlatform_Windows_with_SQL_Server            CapacityReservationInstancePlatform = "Windows with SQL Server"
-	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Enterprise CapacityReservationInstancePlatform = "Windows with SQL Server Enterprise"
-	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Standard   CapacityReservationInstancePlatform = "Windows with SQL Server Standard"
-	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Web        CapacityReservationInstancePlatform = "Windows with SQL Server Web"
-	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Standard     CapacityReservationInstancePlatform = "Linux with SQL Server Standard"
-	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Web          CapacityReservationInstancePlatform = "Linux with SQL Server Web"
-	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Enterprise   CapacityReservationInstancePlatform = "Linux with SQL Server Enterprise"
+	CapacityReservationInstancePlatform_Linux_UNIX                             CapacityReservationInstancePlatform = "Linux/UNIX"
+	CapacityReservationInstancePlatform_Red_Hat_Enterprise_Linux               CapacityReservationInstancePlatform = "Red Hat Enterprise Linux"
+	CapacityReservationInstancePlatform_SUSE_Linux                             CapacityReservationInstancePlatform = "SUSE Linux"
+	CapacityReservationInstancePlatform_Windows                                CapacityReservationInstancePlatform = "Windows"
+	CapacityReservationInstancePlatform_Windows_with_SQL_Server                CapacityReservationInstancePlatform = "Windows with SQL Server"
+	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Enterprise     CapacityReservationInstancePlatform = "Windows with SQL Server Enterprise"
+	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Standard       CapacityReservationInstancePlatform = "Windows with SQL Server Standard"
+	CapacityReservationInstancePlatform_Windows_with_SQL_Server_Web            CapacityReservationInstancePlatform = "Windows with SQL Server Web"
+	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Standard         CapacityReservationInstancePlatform = "Linux with SQL Server Standard"
+	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Web              CapacityReservationInstancePlatform = "Linux with SQL Server Web"
+	CapacityReservationInstancePlatform_Linux_with_SQL_Server_Enterprise       CapacityReservationInstancePlatform = "Linux with SQL Server Enterprise"
+	CapacityReservationInstancePlatform_RHEL_with_SQL_Server_Standard          CapacityReservationInstancePlatform = "RHEL with SQL Server Standard"
+	CapacityReservationInstancePlatform_RHEL_with_SQL_Server_Enterprise        CapacityReservationInstancePlatform = "RHEL with SQL Server Enterprise"
+	CapacityReservationInstancePlatform_RHEL_with_SQL_Server_Web               CapacityReservationInstancePlatform = "RHEL with SQL Server Web"
+	CapacityReservationInstancePlatform_RHEL_with_HA                           CapacityReservationInstancePlatform = "RHEL with HA"
+	CapacityReservationInstancePlatform_RHEL_with_HA_and_SQL_Server_Standard   CapacityReservationInstancePlatform = "RHEL with HA and SQL Server Standard"
+	CapacityReservationInstancePlatform_RHEL_with_HA_and_SQL_Server_Enterprise CapacityReservationInstancePlatform = "RHEL with HA and SQL Server Enterprise"
 )
 
 type CapacityReservationPreference string
@@ -684,6 +697,23 @@ const (
 	FPGAImageStateCode_unavailable FPGAImageStateCode = "unavailable"
 )
 
+type FastLaunchResourceType string
+
+const (
+	FastLaunchResourceType_snapshot FastLaunchResourceType = "snapshot"
+)
+
+type FastLaunchStateCode string
+
+const (
+	FastLaunchStateCode_enabling         FastLaunchStateCode = "enabling"
+	FastLaunchStateCode_enabling_failed  FastLaunchStateCode = "enabling-failed"
+	FastLaunchStateCode_enabled          FastLaunchStateCode = "enabled"
+	FastLaunchStateCode_enabled_failed   FastLaunchStateCode = "enabled-failed"
+	FastLaunchStateCode_disabling        FastLaunchStateCode = "disabling"
+	FastLaunchStateCode_disabling_failed FastLaunchStateCode = "disabling-failed"
+)
+
 type FastSnapshotRestoreStateCode string
 
 const (
@@ -692,6 +722,14 @@ const (
 	FastSnapshotRestoreStateCode_enabled    FastSnapshotRestoreStateCode = "enabled"
 	FastSnapshotRestoreStateCode_disabling  FastSnapshotRestoreStateCode = "disabling"
 	FastSnapshotRestoreStateCode_disabled   FastSnapshotRestoreStateCode = "disabled"
+)
+
+type FindingsFound string
+
+const (
+	FindingsFound_true    FindingsFound = "true"
+	FindingsFound_false   FindingsFound = "false"
+	FindingsFound_unknown FindingsFound = "unknown"
 )
 
 type FleetActivityStatus string
@@ -814,6 +852,13 @@ const (
 	HostTenancy_host      HostTenancy = "host"
 )
 
+type HostnameType string
+
+const (
+	HostnameType_ip_name       HostnameType = "ip-name"
+	HostnameType_resource_name HostnameType = "resource-name"
+)
+
 type HypervisorType string
 
 const (
@@ -828,6 +873,134 @@ const (
 	IAMInstanceProfileAssociationState_associated     IAMInstanceProfileAssociationState = "associated"
 	IAMInstanceProfileAssociationState_disassociating IAMInstanceProfileAssociationState = "disassociating"
 	IAMInstanceProfileAssociationState_disassociated  IAMInstanceProfileAssociationState = "disassociated"
+)
+
+type IPamAddressHistoryResourceType string
+
+const (
+	IPamAddressHistoryResourceType_eip               IPamAddressHistoryResourceType = "eip"
+	IPamAddressHistoryResourceType_vpc               IPamAddressHistoryResourceType = "vpc"
+	IPamAddressHistoryResourceType_subnet            IPamAddressHistoryResourceType = "subnet"
+	IPamAddressHistoryResourceType_network_interface IPamAddressHistoryResourceType = "network-interface"
+	IPamAddressHistoryResourceType_instance          IPamAddressHistoryResourceType = "instance"
+)
+
+type IPamComplianceStatus string
+
+const (
+	IPamComplianceStatus_compliant    IPamComplianceStatus = "compliant"
+	IPamComplianceStatus_noncompliant IPamComplianceStatus = "noncompliant"
+	IPamComplianceStatus_unmanaged    IPamComplianceStatus = "unmanaged"
+	IPamComplianceStatus_ignored      IPamComplianceStatus = "ignored"
+)
+
+type IPamManagementState string
+
+const (
+	IPamManagementState_managed   IPamManagementState = "managed"
+	IPamManagementState_unmanaged IPamManagementState = "unmanaged"
+	IPamManagementState_ignored   IPamManagementState = "ignored"
+)
+
+type IPamOverlapStatus string
+
+const (
+	IPamOverlapStatus_overlapping    IPamOverlapStatus = "overlapping"
+	IPamOverlapStatus_nonoverlapping IPamOverlapStatus = "nonoverlapping"
+	IPamOverlapStatus_ignored        IPamOverlapStatus = "ignored"
+)
+
+type IPamPoolAWSService string
+
+const (
+	IPamPoolAWSService_ec2 IPamPoolAWSService = "ec2"
+)
+
+type IPamPoolAllocationResourceType string
+
+const (
+	IPamPoolAllocationResourceType_ipam_pool            IPamPoolAllocationResourceType = "ipam-pool"
+	IPamPoolAllocationResourceType_vpc                  IPamPoolAllocationResourceType = "vpc"
+	IPamPoolAllocationResourceType_ec2_public_ipv4_pool IPamPoolAllocationResourceType = "ec2-public-ipv4-pool"
+	IPamPoolAllocationResourceType_custom               IPamPoolAllocationResourceType = "custom"
+)
+
+type IPamPoolCIDRFailureCode string
+
+const (
+	IPamPoolCIDRFailureCode_cidr_not_available IPamPoolCIDRFailureCode = "cidr-not-available"
+)
+
+type IPamPoolCIDRState string
+
+const (
+	IPamPoolCIDRState_pending_provision   IPamPoolCIDRState = "pending-provision"
+	IPamPoolCIDRState_provisioned         IPamPoolCIDRState = "provisioned"
+	IPamPoolCIDRState_failed_provision    IPamPoolCIDRState = "failed-provision"
+	IPamPoolCIDRState_pending_deprovision IPamPoolCIDRState = "pending-deprovision"
+	IPamPoolCIDRState_deprovisioned       IPamPoolCIDRState = "deprovisioned"
+	IPamPoolCIDRState_failed_deprovision  IPamPoolCIDRState = "failed-deprovision"
+	IPamPoolCIDRState_pending_import      IPamPoolCIDRState = "pending-import"
+	IPamPoolCIDRState_failed_import       IPamPoolCIDRState = "failed-import"
+)
+
+type IPamPoolState string
+
+const (
+	IPamPoolState_create_in_progress IPamPoolState = "create-in-progress"
+	IPamPoolState_create_complete    IPamPoolState = "create-complete"
+	IPamPoolState_create_failed      IPamPoolState = "create-failed"
+	IPamPoolState_modify_in_progress IPamPoolState = "modify-in-progress"
+	IPamPoolState_modify_complete    IPamPoolState = "modify-complete"
+	IPamPoolState_modify_failed      IPamPoolState = "modify-failed"
+	IPamPoolState_delete_in_progress IPamPoolState = "delete-in-progress"
+	IPamPoolState_delete_complete    IPamPoolState = "delete-complete"
+	IPamPoolState_delete_failed      IPamPoolState = "delete-failed"
+)
+
+type IPamResourceType string
+
+const (
+	IPamResourceType_vpc              IPamResourceType = "vpc"
+	IPamResourceType_subnet           IPamResourceType = "subnet"
+	IPamResourceType_eip              IPamResourceType = "eip"
+	IPamResourceType_public_ipv4_pool IPamResourceType = "public-ipv4-pool"
+	IPamResourceType_ipv6_pool        IPamResourceType = "ipv6-pool"
+)
+
+type IPamScopeState string
+
+const (
+	IPamScopeState_create_in_progress IPamScopeState = "create-in-progress"
+	IPamScopeState_create_complete    IPamScopeState = "create-complete"
+	IPamScopeState_create_failed      IPamScopeState = "create-failed"
+	IPamScopeState_modify_in_progress IPamScopeState = "modify-in-progress"
+	IPamScopeState_modify_complete    IPamScopeState = "modify-complete"
+	IPamScopeState_modify_failed      IPamScopeState = "modify-failed"
+	IPamScopeState_delete_in_progress IPamScopeState = "delete-in-progress"
+	IPamScopeState_delete_complete    IPamScopeState = "delete-complete"
+	IPamScopeState_delete_failed      IPamScopeState = "delete-failed"
+)
+
+type IPamScopeType string
+
+const (
+	IPamScopeType_public  IPamScopeType = "public"
+	IPamScopeType_private IPamScopeType = "private"
+)
+
+type IPamState string
+
+const (
+	IPamState_create_in_progress IPamState = "create-in-progress"
+	IPamState_create_complete    IPamState = "create-complete"
+	IPamState_create_failed      IPamState = "create-failed"
+	IPamState_modify_in_progress IPamState = "modify-in-progress"
+	IPamState_modify_complete    IPamState = "modify-complete"
+	IPamState_modify_failed      IPamState = "modify-failed"
+	IPamState_delete_in_progress IPamState = "delete-in-progress"
+	IPamState_delete_complete    IPamState = "delete-complete"
+	IPamState_delete_failed      IPamState = "delete-failed"
 )
 
 type IPv6SupportValue string
@@ -855,6 +1028,7 @@ const (
 	ImageAttributeName_blockDeviceMapping ImageAttributeName = "blockDeviceMapping"
 	ImageAttributeName_sriovNetSupport    ImageAttributeName = "sriovNetSupport"
 	ImageAttributeName_bootMode           ImageAttributeName = "bootMode"
+	ImageAttributeName_lastLaunchedTime   ImageAttributeName = "lastLaunchedTime"
 )
 
 type ImageState string
@@ -895,6 +1069,13 @@ const (
 	InstanceAttributeName_sriovNetSupport                   InstanceAttributeName = "sriovNetSupport"
 	InstanceAttributeName_enaSupport                        InstanceAttributeName = "enaSupport"
 	InstanceAttributeName_enclaveOptions                    InstanceAttributeName = "enclaveOptions"
+)
+
+type InstanceAutoRecoveryState string
+
+const (
+	InstanceAutoRecoveryState_disabled InstanceAutoRecoveryState = "disabled"
+	InstanceAutoRecoveryState_default  InstanceAutoRecoveryState = "default"
 )
 
 type InstanceEventWindowState string
@@ -970,6 +1151,13 @@ const (
 	InstanceMetadataProtocolState_enabled  InstanceMetadataProtocolState = "enabled"
 )
 
+type InstanceMetadataTagsState string
+
+const (
+	InstanceMetadataTagsState_disabled InstanceMetadataTagsState = "disabled"
+	InstanceMetadataTagsState_enabled  InstanceMetadataTagsState = "enabled"
+)
+
 type InstanceStateName string
 
 const (
@@ -991,154 +1179,12 @@ const (
 type InstanceType string
 
 const (
-	InstanceType_t1_micro          InstanceType = "t1.micro"
-	InstanceType_t2_nano           InstanceType = "t2.nano"
-	InstanceType_t2_micro          InstanceType = "t2.micro"
-	InstanceType_t2_small          InstanceType = "t2.small"
-	InstanceType_t2_medium         InstanceType = "t2.medium"
-	InstanceType_t2_large          InstanceType = "t2.large"
-	InstanceType_t2_xlarge         InstanceType = "t2.xlarge"
-	InstanceType_t2_2xlarge        InstanceType = "t2.2xlarge"
-	InstanceType_t3_nano           InstanceType = "t3.nano"
-	InstanceType_t3_micro          InstanceType = "t3.micro"
-	InstanceType_t3_small          InstanceType = "t3.small"
-	InstanceType_t3_medium         InstanceType = "t3.medium"
-	InstanceType_t3_large          InstanceType = "t3.large"
-	InstanceType_t3_xlarge         InstanceType = "t3.xlarge"
-	InstanceType_t3_2xlarge        InstanceType = "t3.2xlarge"
-	InstanceType_t3a_nano          InstanceType = "t3a.nano"
-	InstanceType_t3a_micro         InstanceType = "t3a.micro"
-	InstanceType_t3a_small         InstanceType = "t3a.small"
-	InstanceType_t3a_medium        InstanceType = "t3a.medium"
-	InstanceType_t3a_large         InstanceType = "t3a.large"
-	InstanceType_t3a_xlarge        InstanceType = "t3a.xlarge"
-	InstanceType_t3a_2xlarge       InstanceType = "t3a.2xlarge"
-	InstanceType_t4g_nano          InstanceType = "t4g.nano"
-	InstanceType_t4g_micro         InstanceType = "t4g.micro"
-	InstanceType_t4g_small         InstanceType = "t4g.small"
-	InstanceType_t4g_medium        InstanceType = "t4g.medium"
-	InstanceType_t4g_large         InstanceType = "t4g.large"
-	InstanceType_t4g_xlarge        InstanceType = "t4g.xlarge"
-	InstanceType_t4g_2xlarge       InstanceType = "t4g.2xlarge"
-	InstanceType_m1_small          InstanceType = "m1.small"
-	InstanceType_m1_medium         InstanceType = "m1.medium"
-	InstanceType_m1_large          InstanceType = "m1.large"
-	InstanceType_m1_xlarge         InstanceType = "m1.xlarge"
-	InstanceType_m3_medium         InstanceType = "m3.medium"
-	InstanceType_m3_large          InstanceType = "m3.large"
-	InstanceType_m3_xlarge         InstanceType = "m3.xlarge"
-	InstanceType_m3_2xlarge        InstanceType = "m3.2xlarge"
-	InstanceType_m4_large          InstanceType = "m4.large"
-	InstanceType_m4_xlarge         InstanceType = "m4.xlarge"
-	InstanceType_m4_2xlarge        InstanceType = "m4.2xlarge"
-	InstanceType_m4_4xlarge        InstanceType = "m4.4xlarge"
-	InstanceType_m4_10xlarge       InstanceType = "m4.10xlarge"
-	InstanceType_m4_16xlarge       InstanceType = "m4.16xlarge"
-	InstanceType_m2_xlarge         InstanceType = "m2.xlarge"
-	InstanceType_m2_2xlarge        InstanceType = "m2.2xlarge"
-	InstanceType_m2_4xlarge        InstanceType = "m2.4xlarge"
-	InstanceType_cr1_8xlarge       InstanceType = "cr1.8xlarge"
-	InstanceType_r3_large          InstanceType = "r3.large"
-	InstanceType_r3_xlarge         InstanceType = "r3.xlarge"
-	InstanceType_r3_2xlarge        InstanceType = "r3.2xlarge"
-	InstanceType_r3_4xlarge        InstanceType = "r3.4xlarge"
-	InstanceType_r3_8xlarge        InstanceType = "r3.8xlarge"
-	InstanceType_r4_large          InstanceType = "r4.large"
-	InstanceType_r4_xlarge         InstanceType = "r4.xlarge"
-	InstanceType_r4_2xlarge        InstanceType = "r4.2xlarge"
-	InstanceType_r4_4xlarge        InstanceType = "r4.4xlarge"
-	InstanceType_r4_8xlarge        InstanceType = "r4.8xlarge"
-	InstanceType_r4_16xlarge       InstanceType = "r4.16xlarge"
-	InstanceType_r5_large          InstanceType = "r5.large"
-	InstanceType_r5_xlarge         InstanceType = "r5.xlarge"
-	InstanceType_r5_2xlarge        InstanceType = "r5.2xlarge"
-	InstanceType_r5_4xlarge        InstanceType = "r5.4xlarge"
-	InstanceType_r5_8xlarge        InstanceType = "r5.8xlarge"
-	InstanceType_r5_12xlarge       InstanceType = "r5.12xlarge"
-	InstanceType_r5_16xlarge       InstanceType = "r5.16xlarge"
-	InstanceType_r5_24xlarge       InstanceType = "r5.24xlarge"
-	InstanceType_r5_metal          InstanceType = "r5.metal"
-	InstanceType_r5a_large         InstanceType = "r5a.large"
-	InstanceType_r5a_xlarge        InstanceType = "r5a.xlarge"
-	InstanceType_r5a_2xlarge       InstanceType = "r5a.2xlarge"
-	InstanceType_r5a_4xlarge       InstanceType = "r5a.4xlarge"
-	InstanceType_r5a_8xlarge       InstanceType = "r5a.8xlarge"
-	InstanceType_r5a_12xlarge      InstanceType = "r5a.12xlarge"
-	InstanceType_r5a_16xlarge      InstanceType = "r5a.16xlarge"
-	InstanceType_r5a_24xlarge      InstanceType = "r5a.24xlarge"
-	InstanceType_r5b_large         InstanceType = "r5b.large"
-	InstanceType_r5b_xlarge        InstanceType = "r5b.xlarge"
-	InstanceType_r5b_2xlarge       InstanceType = "r5b.2xlarge"
-	InstanceType_r5b_4xlarge       InstanceType = "r5b.4xlarge"
-	InstanceType_r5b_8xlarge       InstanceType = "r5b.8xlarge"
-	InstanceType_r5b_12xlarge      InstanceType = "r5b.12xlarge"
-	InstanceType_r5b_16xlarge      InstanceType = "r5b.16xlarge"
-	InstanceType_r5b_24xlarge      InstanceType = "r5b.24xlarge"
-	InstanceType_r5b_metal         InstanceType = "r5b.metal"
-	InstanceType_r5d_large         InstanceType = "r5d.large"
-	InstanceType_r5d_xlarge        InstanceType = "r5d.xlarge"
-	InstanceType_r5d_2xlarge       InstanceType = "r5d.2xlarge"
-	InstanceType_r5d_4xlarge       InstanceType = "r5d.4xlarge"
-	InstanceType_r5d_8xlarge       InstanceType = "r5d.8xlarge"
-	InstanceType_r5d_12xlarge      InstanceType = "r5d.12xlarge"
-	InstanceType_r5d_16xlarge      InstanceType = "r5d.16xlarge"
-	InstanceType_r5d_24xlarge      InstanceType = "r5d.24xlarge"
-	InstanceType_r5d_metal         InstanceType = "r5d.metal"
-	InstanceType_r5ad_large        InstanceType = "r5ad.large"
-	InstanceType_r5ad_xlarge       InstanceType = "r5ad.xlarge"
-	InstanceType_r5ad_2xlarge      InstanceType = "r5ad.2xlarge"
-	InstanceType_r5ad_4xlarge      InstanceType = "r5ad.4xlarge"
-	InstanceType_r5ad_8xlarge      InstanceType = "r5ad.8xlarge"
-	InstanceType_r5ad_12xlarge     InstanceType = "r5ad.12xlarge"
-	InstanceType_r5ad_16xlarge     InstanceType = "r5ad.16xlarge"
-	InstanceType_r5ad_24xlarge     InstanceType = "r5ad.24xlarge"
-	InstanceType_r6g_metal         InstanceType = "r6g.metal"
-	InstanceType_r6g_medium        InstanceType = "r6g.medium"
-	InstanceType_r6g_large         InstanceType = "r6g.large"
-	InstanceType_r6g_xlarge        InstanceType = "r6g.xlarge"
-	InstanceType_r6g_2xlarge       InstanceType = "r6g.2xlarge"
-	InstanceType_r6g_4xlarge       InstanceType = "r6g.4xlarge"
-	InstanceType_r6g_8xlarge       InstanceType = "r6g.8xlarge"
-	InstanceType_r6g_12xlarge      InstanceType = "r6g.12xlarge"
-	InstanceType_r6g_16xlarge      InstanceType = "r6g.16xlarge"
-	InstanceType_r6gd_metal        InstanceType = "r6gd.metal"
-	InstanceType_r6gd_medium       InstanceType = "r6gd.medium"
-	InstanceType_r6gd_large        InstanceType = "r6gd.large"
-	InstanceType_r6gd_xlarge       InstanceType = "r6gd.xlarge"
-	InstanceType_r6gd_2xlarge      InstanceType = "r6gd.2xlarge"
-	InstanceType_r6gd_4xlarge      InstanceType = "r6gd.4xlarge"
-	InstanceType_r6gd_8xlarge      InstanceType = "r6gd.8xlarge"
-	InstanceType_r6gd_12xlarge     InstanceType = "r6gd.12xlarge"
-	InstanceType_r6gd_16xlarge     InstanceType = "r6gd.16xlarge"
-	InstanceType_x1_16xlarge       InstanceType = "x1.16xlarge"
-	InstanceType_x1_32xlarge       InstanceType = "x1.32xlarge"
-	InstanceType_x1e_xlarge        InstanceType = "x1e.xlarge"
-	InstanceType_x1e_2xlarge       InstanceType = "x1e.2xlarge"
-	InstanceType_x1e_4xlarge       InstanceType = "x1e.4xlarge"
-	InstanceType_x1e_8xlarge       InstanceType = "x1e.8xlarge"
-	InstanceType_x1e_16xlarge      InstanceType = "x1e.16xlarge"
-	InstanceType_x1e_32xlarge      InstanceType = "x1e.32xlarge"
-	InstanceType_i2_xlarge         InstanceType = "i2.xlarge"
-	InstanceType_i2_2xlarge        InstanceType = "i2.2xlarge"
-	InstanceType_i2_4xlarge        InstanceType = "i2.4xlarge"
-	InstanceType_i2_8xlarge        InstanceType = "i2.8xlarge"
-	InstanceType_i3_large          InstanceType = "i3.large"
-	InstanceType_i3_xlarge         InstanceType = "i3.xlarge"
-	InstanceType_i3_2xlarge        InstanceType = "i3.2xlarge"
-	InstanceType_i3_4xlarge        InstanceType = "i3.4xlarge"
-	InstanceType_i3_8xlarge        InstanceType = "i3.8xlarge"
-	InstanceType_i3_16xlarge       InstanceType = "i3.16xlarge"
-	InstanceType_i3_metal          InstanceType = "i3.metal"
-	InstanceType_i3en_large        InstanceType = "i3en.large"
-	InstanceType_i3en_xlarge       InstanceType = "i3en.xlarge"
-	InstanceType_i3en_2xlarge      InstanceType = "i3en.2xlarge"
-	InstanceType_i3en_3xlarge      InstanceType = "i3en.3xlarge"
-	InstanceType_i3en_6xlarge      InstanceType = "i3en.6xlarge"
-	InstanceType_i3en_12xlarge     InstanceType = "i3en.12xlarge"
-	InstanceType_i3en_24xlarge     InstanceType = "i3en.24xlarge"
-	InstanceType_i3en_metal        InstanceType = "i3en.metal"
-	InstanceType_hi1_4xlarge       InstanceType = "hi1.4xlarge"
-	InstanceType_hs1_8xlarge       InstanceType = "hs1.8xlarge"
+	InstanceType_a1_medium         InstanceType = "a1.medium"
+	InstanceType_a1_large          InstanceType = "a1.large"
+	InstanceType_a1_xlarge         InstanceType = "a1.xlarge"
+	InstanceType_a1_2xlarge        InstanceType = "a1.2xlarge"
+	InstanceType_a1_4xlarge        InstanceType = "a1.4xlarge"
+	InstanceType_a1_metal          InstanceType = "a1.metal"
 	InstanceType_c1_medium         InstanceType = "c1.medium"
 	InstanceType_c1_xlarge         InstanceType = "c1.xlarge"
 	InstanceType_c3_large          InstanceType = "c3.large"
@@ -1192,7 +1238,6 @@ const (
 	InstanceType_c5n_9xlarge       InstanceType = "c5n.9xlarge"
 	InstanceType_c5n_18xlarge      InstanceType = "c5n.18xlarge"
 	InstanceType_c5n_metal         InstanceType = "c5n.metal"
-	InstanceType_c6g_metal         InstanceType = "c6g.metal"
 	InstanceType_c6g_medium        InstanceType = "c6g.medium"
 	InstanceType_c6g_large         InstanceType = "c6g.large"
 	InstanceType_c6g_xlarge        InstanceType = "c6g.xlarge"
@@ -1201,7 +1246,7 @@ const (
 	InstanceType_c6g_8xlarge       InstanceType = "c6g.8xlarge"
 	InstanceType_c6g_12xlarge      InstanceType = "c6g.12xlarge"
 	InstanceType_c6g_16xlarge      InstanceType = "c6g.16xlarge"
-	InstanceType_c6gd_metal        InstanceType = "c6gd.metal"
+	InstanceType_c6g_metal         InstanceType = "c6g.metal"
 	InstanceType_c6gd_medium       InstanceType = "c6gd.medium"
 	InstanceType_c6gd_large        InstanceType = "c6gd.large"
 	InstanceType_c6gd_xlarge       InstanceType = "c6gd.xlarge"
@@ -1210,6 +1255,7 @@ const (
 	InstanceType_c6gd_8xlarge      InstanceType = "c6gd.8xlarge"
 	InstanceType_c6gd_12xlarge     InstanceType = "c6gd.12xlarge"
 	InstanceType_c6gd_16xlarge     InstanceType = "c6gd.16xlarge"
+	InstanceType_c6gd_metal        InstanceType = "c6gd.metal"
 	InstanceType_c6gn_medium       InstanceType = "c6gn.medium"
 	InstanceType_c6gn_large        InstanceType = "c6gn.large"
 	InstanceType_c6gn_xlarge       InstanceType = "c6gn.xlarge"
@@ -1218,35 +1264,20 @@ const (
 	InstanceType_c6gn_8xlarge      InstanceType = "c6gn.8xlarge"
 	InstanceType_c6gn_12xlarge     InstanceType = "c6gn.12xlarge"
 	InstanceType_c6gn_16xlarge     InstanceType = "c6gn.16xlarge"
+	InstanceType_c6i_large         InstanceType = "c6i.large"
+	InstanceType_c6i_xlarge        InstanceType = "c6i.xlarge"
+	InstanceType_c6i_2xlarge       InstanceType = "c6i.2xlarge"
+	InstanceType_c6i_4xlarge       InstanceType = "c6i.4xlarge"
+	InstanceType_c6i_8xlarge       InstanceType = "c6i.8xlarge"
+	InstanceType_c6i_12xlarge      InstanceType = "c6i.12xlarge"
+	InstanceType_c6i_16xlarge      InstanceType = "c6i.16xlarge"
+	InstanceType_c6i_24xlarge      InstanceType = "c6i.24xlarge"
+	InstanceType_c6i_32xlarge      InstanceType = "c6i.32xlarge"
+	InstanceType_c6i_metal         InstanceType = "c6i.metal"
 	InstanceType_cc1_4xlarge       InstanceType = "cc1.4xlarge"
 	InstanceType_cc2_8xlarge       InstanceType = "cc2.8xlarge"
-	InstanceType_g2_2xlarge        InstanceType = "g2.2xlarge"
-	InstanceType_g2_8xlarge        InstanceType = "g2.8xlarge"
-	InstanceType_g3_4xlarge        InstanceType = "g3.4xlarge"
-	InstanceType_g3_8xlarge        InstanceType = "g3.8xlarge"
-	InstanceType_g3_16xlarge       InstanceType = "g3.16xlarge"
-	InstanceType_g3s_xlarge        InstanceType = "g3s.xlarge"
-	InstanceType_g4ad_xlarge       InstanceType = "g4ad.xlarge"
-	InstanceType_g4ad_2xlarge      InstanceType = "g4ad.2xlarge"
-	InstanceType_g4ad_4xlarge      InstanceType = "g4ad.4xlarge"
-	InstanceType_g4ad_8xlarge      InstanceType = "g4ad.8xlarge"
-	InstanceType_g4ad_16xlarge     InstanceType = "g4ad.16xlarge"
-	InstanceType_g4dn_xlarge       InstanceType = "g4dn.xlarge"
-	InstanceType_g4dn_2xlarge      InstanceType = "g4dn.2xlarge"
-	InstanceType_g4dn_4xlarge      InstanceType = "g4dn.4xlarge"
-	InstanceType_g4dn_8xlarge      InstanceType = "g4dn.8xlarge"
-	InstanceType_g4dn_12xlarge     InstanceType = "g4dn.12xlarge"
-	InstanceType_g4dn_16xlarge     InstanceType = "g4dn.16xlarge"
-	InstanceType_g4dn_metal        InstanceType = "g4dn.metal"
 	InstanceType_cg1_4xlarge       InstanceType = "cg1.4xlarge"
-	InstanceType_p2_xlarge         InstanceType = "p2.xlarge"
-	InstanceType_p2_8xlarge        InstanceType = "p2.8xlarge"
-	InstanceType_p2_16xlarge       InstanceType = "p2.16xlarge"
-	InstanceType_p3_2xlarge        InstanceType = "p3.2xlarge"
-	InstanceType_p3_8xlarge        InstanceType = "p3.8xlarge"
-	InstanceType_p3_16xlarge       InstanceType = "p3.16xlarge"
-	InstanceType_p3dn_24xlarge     InstanceType = "p3dn.24xlarge"
-	InstanceType_p4d_24xlarge      InstanceType = "p4d.24xlarge"
+	InstanceType_cr1_8xlarge       InstanceType = "cr1.8xlarge"
 	InstanceType_d2_xlarge         InstanceType = "d2.xlarge"
 	InstanceType_d2_2xlarge        InstanceType = "d2.2xlarge"
 	InstanceType_d2_4xlarge        InstanceType = "d2.4xlarge"
@@ -1265,6 +1296,97 @@ const (
 	InstanceType_f1_2xlarge        InstanceType = "f1.2xlarge"
 	InstanceType_f1_4xlarge        InstanceType = "f1.4xlarge"
 	InstanceType_f1_16xlarge       InstanceType = "f1.16xlarge"
+	InstanceType_g2_2xlarge        InstanceType = "g2.2xlarge"
+	InstanceType_g2_8xlarge        InstanceType = "g2.8xlarge"
+	InstanceType_g3_4xlarge        InstanceType = "g3.4xlarge"
+	InstanceType_g3_8xlarge        InstanceType = "g3.8xlarge"
+	InstanceType_g3_16xlarge       InstanceType = "g3.16xlarge"
+	InstanceType_g3s_xlarge        InstanceType = "g3s.xlarge"
+	InstanceType_g4ad_xlarge       InstanceType = "g4ad.xlarge"
+	InstanceType_g4ad_2xlarge      InstanceType = "g4ad.2xlarge"
+	InstanceType_g4ad_4xlarge      InstanceType = "g4ad.4xlarge"
+	InstanceType_g4ad_8xlarge      InstanceType = "g4ad.8xlarge"
+	InstanceType_g4ad_16xlarge     InstanceType = "g4ad.16xlarge"
+	InstanceType_g4dn_xlarge       InstanceType = "g4dn.xlarge"
+	InstanceType_g4dn_2xlarge      InstanceType = "g4dn.2xlarge"
+	InstanceType_g4dn_4xlarge      InstanceType = "g4dn.4xlarge"
+	InstanceType_g4dn_8xlarge      InstanceType = "g4dn.8xlarge"
+	InstanceType_g4dn_12xlarge     InstanceType = "g4dn.12xlarge"
+	InstanceType_g4dn_16xlarge     InstanceType = "g4dn.16xlarge"
+	InstanceType_g4dn_metal        InstanceType = "g4dn.metal"
+	InstanceType_g5_xlarge         InstanceType = "g5.xlarge"
+	InstanceType_g5_2xlarge        InstanceType = "g5.2xlarge"
+	InstanceType_g5_4xlarge        InstanceType = "g5.4xlarge"
+	InstanceType_g5_8xlarge        InstanceType = "g5.8xlarge"
+	InstanceType_g5_12xlarge       InstanceType = "g5.12xlarge"
+	InstanceType_g5_16xlarge       InstanceType = "g5.16xlarge"
+	InstanceType_g5_24xlarge       InstanceType = "g5.24xlarge"
+	InstanceType_g5_48xlarge       InstanceType = "g5.48xlarge"
+	InstanceType_g5g_xlarge        InstanceType = "g5g.xlarge"
+	InstanceType_g5g_2xlarge       InstanceType = "g5g.2xlarge"
+	InstanceType_g5g_4xlarge       InstanceType = "g5g.4xlarge"
+	InstanceType_g5g_8xlarge       InstanceType = "g5g.8xlarge"
+	InstanceType_g5g_16xlarge      InstanceType = "g5g.16xlarge"
+	InstanceType_g5g_metal         InstanceType = "g5g.metal"
+	InstanceType_hi1_4xlarge       InstanceType = "hi1.4xlarge"
+	InstanceType_hpc6a_48xlarge    InstanceType = "hpc6a.48xlarge"
+	InstanceType_hs1_8xlarge       InstanceType = "hs1.8xlarge"
+	InstanceType_h1_2xlarge        InstanceType = "h1.2xlarge"
+	InstanceType_h1_4xlarge        InstanceType = "h1.4xlarge"
+	InstanceType_h1_8xlarge        InstanceType = "h1.8xlarge"
+	InstanceType_h1_16xlarge       InstanceType = "h1.16xlarge"
+	InstanceType_i2_xlarge         InstanceType = "i2.xlarge"
+	InstanceType_i2_2xlarge        InstanceType = "i2.2xlarge"
+	InstanceType_i2_4xlarge        InstanceType = "i2.4xlarge"
+	InstanceType_i2_8xlarge        InstanceType = "i2.8xlarge"
+	InstanceType_i3_large          InstanceType = "i3.large"
+	InstanceType_i3_xlarge         InstanceType = "i3.xlarge"
+	InstanceType_i3_2xlarge        InstanceType = "i3.2xlarge"
+	InstanceType_i3_4xlarge        InstanceType = "i3.4xlarge"
+	InstanceType_i3_8xlarge        InstanceType = "i3.8xlarge"
+	InstanceType_i3_16xlarge       InstanceType = "i3.16xlarge"
+	InstanceType_i3_metal          InstanceType = "i3.metal"
+	InstanceType_i3en_large        InstanceType = "i3en.large"
+	InstanceType_i3en_xlarge       InstanceType = "i3en.xlarge"
+	InstanceType_i3en_2xlarge      InstanceType = "i3en.2xlarge"
+	InstanceType_i3en_3xlarge      InstanceType = "i3en.3xlarge"
+	InstanceType_i3en_6xlarge      InstanceType = "i3en.6xlarge"
+	InstanceType_i3en_12xlarge     InstanceType = "i3en.12xlarge"
+	InstanceType_i3en_24xlarge     InstanceType = "i3en.24xlarge"
+	InstanceType_i3en_metal        InstanceType = "i3en.metal"
+	InstanceType_im4gn_large       InstanceType = "im4gn.large"
+	InstanceType_im4gn_xlarge      InstanceType = "im4gn.xlarge"
+	InstanceType_im4gn_2xlarge     InstanceType = "im4gn.2xlarge"
+	InstanceType_im4gn_4xlarge     InstanceType = "im4gn.4xlarge"
+	InstanceType_im4gn_8xlarge     InstanceType = "im4gn.8xlarge"
+	InstanceType_im4gn_16xlarge    InstanceType = "im4gn.16xlarge"
+	InstanceType_inf1_xlarge       InstanceType = "inf1.xlarge"
+	InstanceType_inf1_2xlarge      InstanceType = "inf1.2xlarge"
+	InstanceType_inf1_6xlarge      InstanceType = "inf1.6xlarge"
+	InstanceType_inf1_24xlarge     InstanceType = "inf1.24xlarge"
+	InstanceType_is4gen_medium     InstanceType = "is4gen.medium"
+	InstanceType_is4gen_large      InstanceType = "is4gen.large"
+	InstanceType_is4gen_xlarge     InstanceType = "is4gen.xlarge"
+	InstanceType_is4gen_2xlarge    InstanceType = "is4gen.2xlarge"
+	InstanceType_is4gen_4xlarge    InstanceType = "is4gen.4xlarge"
+	InstanceType_is4gen_8xlarge    InstanceType = "is4gen.8xlarge"
+	InstanceType_m1_small          InstanceType = "m1.small"
+	InstanceType_m1_medium         InstanceType = "m1.medium"
+	InstanceType_m1_large          InstanceType = "m1.large"
+	InstanceType_m1_xlarge         InstanceType = "m1.xlarge"
+	InstanceType_m2_xlarge         InstanceType = "m2.xlarge"
+	InstanceType_m2_2xlarge        InstanceType = "m2.2xlarge"
+	InstanceType_m2_4xlarge        InstanceType = "m2.4xlarge"
+	InstanceType_m3_medium         InstanceType = "m3.medium"
+	InstanceType_m3_large          InstanceType = "m3.large"
+	InstanceType_m3_xlarge         InstanceType = "m3.xlarge"
+	InstanceType_m3_2xlarge        InstanceType = "m3.2xlarge"
+	InstanceType_m4_large          InstanceType = "m4.large"
+	InstanceType_m4_xlarge         InstanceType = "m4.xlarge"
+	InstanceType_m4_2xlarge        InstanceType = "m4.2xlarge"
+	InstanceType_m4_4xlarge        InstanceType = "m4.4xlarge"
+	InstanceType_m4_10xlarge       InstanceType = "m4.10xlarge"
+	InstanceType_m4_16xlarge       InstanceType = "m4.16xlarge"
 	InstanceType_m5_large          InstanceType = "m5.large"
 	InstanceType_m5_xlarge         InstanceType = "m5.xlarge"
 	InstanceType_m5_2xlarge        InstanceType = "m5.2xlarge"
@@ -1282,6 +1404,14 @@ const (
 	InstanceType_m5a_12xlarge      InstanceType = "m5a.12xlarge"
 	InstanceType_m5a_16xlarge      InstanceType = "m5a.16xlarge"
 	InstanceType_m5a_24xlarge      InstanceType = "m5a.24xlarge"
+	InstanceType_m5ad_large        InstanceType = "m5ad.large"
+	InstanceType_m5ad_xlarge       InstanceType = "m5ad.xlarge"
+	InstanceType_m5ad_2xlarge      InstanceType = "m5ad.2xlarge"
+	InstanceType_m5ad_4xlarge      InstanceType = "m5ad.4xlarge"
+	InstanceType_m5ad_8xlarge      InstanceType = "m5ad.8xlarge"
+	InstanceType_m5ad_12xlarge     InstanceType = "m5ad.12xlarge"
+	InstanceType_m5ad_16xlarge     InstanceType = "m5ad.16xlarge"
+	InstanceType_m5ad_24xlarge     InstanceType = "m5ad.24xlarge"
 	InstanceType_m5d_large         InstanceType = "m5d.large"
 	InstanceType_m5d_xlarge        InstanceType = "m5d.xlarge"
 	InstanceType_m5d_2xlarge       InstanceType = "m5d.2xlarge"
@@ -1291,47 +1421,6 @@ const (
 	InstanceType_m5d_16xlarge      InstanceType = "m5d.16xlarge"
 	InstanceType_m5d_24xlarge      InstanceType = "m5d.24xlarge"
 	InstanceType_m5d_metal         InstanceType = "m5d.metal"
-	InstanceType_m5ad_large        InstanceType = "m5ad.large"
-	InstanceType_m5ad_xlarge       InstanceType = "m5ad.xlarge"
-	InstanceType_m5ad_2xlarge      InstanceType = "m5ad.2xlarge"
-	InstanceType_m5ad_4xlarge      InstanceType = "m5ad.4xlarge"
-	InstanceType_m5ad_8xlarge      InstanceType = "m5ad.8xlarge"
-	InstanceType_m5ad_12xlarge     InstanceType = "m5ad.12xlarge"
-	InstanceType_m5ad_16xlarge     InstanceType = "m5ad.16xlarge"
-	InstanceType_m5ad_24xlarge     InstanceType = "m5ad.24xlarge"
-	InstanceType_m5zn_large        InstanceType = "m5zn.large"
-	InstanceType_m5zn_xlarge       InstanceType = "m5zn.xlarge"
-	InstanceType_m5zn_2xlarge      InstanceType = "m5zn.2xlarge"
-	InstanceType_m5zn_3xlarge      InstanceType = "m5zn.3xlarge"
-	InstanceType_m5zn_6xlarge      InstanceType = "m5zn.6xlarge"
-	InstanceType_m5zn_12xlarge     InstanceType = "m5zn.12xlarge"
-	InstanceType_m5zn_metal        InstanceType = "m5zn.metal"
-	InstanceType_h1_2xlarge        InstanceType = "h1.2xlarge"
-	InstanceType_h1_4xlarge        InstanceType = "h1.4xlarge"
-	InstanceType_h1_8xlarge        InstanceType = "h1.8xlarge"
-	InstanceType_h1_16xlarge       InstanceType = "h1.16xlarge"
-	InstanceType_z1d_large         InstanceType = "z1d.large"
-	InstanceType_z1d_xlarge        InstanceType = "z1d.xlarge"
-	InstanceType_z1d_2xlarge       InstanceType = "z1d.2xlarge"
-	InstanceType_z1d_3xlarge       InstanceType = "z1d.3xlarge"
-	InstanceType_z1d_6xlarge       InstanceType = "z1d.6xlarge"
-	InstanceType_z1d_12xlarge      InstanceType = "z1d.12xlarge"
-	InstanceType_z1d_metal         InstanceType = "z1d.metal"
-	InstanceType_u_6tb1_56xlarge   InstanceType = "u-6tb1.56xlarge"
-	InstanceType_u_6tb1_112xlarge  InstanceType = "u-6tb1.112xlarge"
-	InstanceType_u_9tb1_112xlarge  InstanceType = "u-9tb1.112xlarge"
-	InstanceType_u_12tb1_112xlarge InstanceType = "u-12tb1.112xlarge"
-	InstanceType_u_6tb1_metal      InstanceType = "u-6tb1.metal"
-	InstanceType_u_9tb1_metal      InstanceType = "u-9tb1.metal"
-	InstanceType_u_12tb1_metal     InstanceType = "u-12tb1.metal"
-	InstanceType_u_18tb1_metal     InstanceType = "u-18tb1.metal"
-	InstanceType_u_24tb1_metal     InstanceType = "u-24tb1.metal"
-	InstanceType_a1_medium         InstanceType = "a1.medium"
-	InstanceType_a1_large          InstanceType = "a1.large"
-	InstanceType_a1_xlarge         InstanceType = "a1.xlarge"
-	InstanceType_a1_2xlarge        InstanceType = "a1.2xlarge"
-	InstanceType_a1_4xlarge        InstanceType = "a1.4xlarge"
-	InstanceType_a1_metal          InstanceType = "a1.metal"
 	InstanceType_m5dn_large        InstanceType = "m5dn.large"
 	InstanceType_m5dn_xlarge       InstanceType = "m5dn.xlarge"
 	InstanceType_m5dn_2xlarge      InstanceType = "m5dn.2xlarge"
@@ -1350,28 +1439,23 @@ const (
 	InstanceType_m5n_16xlarge      InstanceType = "m5n.16xlarge"
 	InstanceType_m5n_24xlarge      InstanceType = "m5n.24xlarge"
 	InstanceType_m5n_metal         InstanceType = "m5n.metal"
-	InstanceType_r5dn_large        InstanceType = "r5dn.large"
-	InstanceType_r5dn_xlarge       InstanceType = "r5dn.xlarge"
-	InstanceType_r5dn_2xlarge      InstanceType = "r5dn.2xlarge"
-	InstanceType_r5dn_4xlarge      InstanceType = "r5dn.4xlarge"
-	InstanceType_r5dn_8xlarge      InstanceType = "r5dn.8xlarge"
-	InstanceType_r5dn_12xlarge     InstanceType = "r5dn.12xlarge"
-	InstanceType_r5dn_16xlarge     InstanceType = "r5dn.16xlarge"
-	InstanceType_r5dn_24xlarge     InstanceType = "r5dn.24xlarge"
-	InstanceType_r5dn_metal        InstanceType = "r5dn.metal"
-	InstanceType_r5n_large         InstanceType = "r5n.large"
-	InstanceType_r5n_xlarge        InstanceType = "r5n.xlarge"
-	InstanceType_r5n_2xlarge       InstanceType = "r5n.2xlarge"
-	InstanceType_r5n_4xlarge       InstanceType = "r5n.4xlarge"
-	InstanceType_r5n_8xlarge       InstanceType = "r5n.8xlarge"
-	InstanceType_r5n_12xlarge      InstanceType = "r5n.12xlarge"
-	InstanceType_r5n_16xlarge      InstanceType = "r5n.16xlarge"
-	InstanceType_r5n_24xlarge      InstanceType = "r5n.24xlarge"
-	InstanceType_r5n_metal         InstanceType = "r5n.metal"
-	InstanceType_inf1_xlarge       InstanceType = "inf1.xlarge"
-	InstanceType_inf1_2xlarge      InstanceType = "inf1.2xlarge"
-	InstanceType_inf1_6xlarge      InstanceType = "inf1.6xlarge"
-	InstanceType_inf1_24xlarge     InstanceType = "inf1.24xlarge"
+	InstanceType_m5zn_large        InstanceType = "m5zn.large"
+	InstanceType_m5zn_xlarge       InstanceType = "m5zn.xlarge"
+	InstanceType_m5zn_2xlarge      InstanceType = "m5zn.2xlarge"
+	InstanceType_m5zn_3xlarge      InstanceType = "m5zn.3xlarge"
+	InstanceType_m5zn_6xlarge      InstanceType = "m5zn.6xlarge"
+	InstanceType_m5zn_12xlarge     InstanceType = "m5zn.12xlarge"
+	InstanceType_m5zn_metal        InstanceType = "m5zn.metal"
+	InstanceType_m6a_large         InstanceType = "m6a.large"
+	InstanceType_m6a_xlarge        InstanceType = "m6a.xlarge"
+	InstanceType_m6a_2xlarge       InstanceType = "m6a.2xlarge"
+	InstanceType_m6a_4xlarge       InstanceType = "m6a.4xlarge"
+	InstanceType_m6a_8xlarge       InstanceType = "m6a.8xlarge"
+	InstanceType_m6a_12xlarge      InstanceType = "m6a.12xlarge"
+	InstanceType_m6a_16xlarge      InstanceType = "m6a.16xlarge"
+	InstanceType_m6a_24xlarge      InstanceType = "m6a.24xlarge"
+	InstanceType_m6a_32xlarge      InstanceType = "m6a.32xlarge"
+	InstanceType_m6a_48xlarge      InstanceType = "m6a.48xlarge"
 	InstanceType_m6g_metal         InstanceType = "m6g.metal"
 	InstanceType_m6g_medium        InstanceType = "m6g.medium"
 	InstanceType_m6g_large         InstanceType = "m6g.large"
@@ -1399,7 +1483,171 @@ const (
 	InstanceType_m6i_16xlarge      InstanceType = "m6i.16xlarge"
 	InstanceType_m6i_24xlarge      InstanceType = "m6i.24xlarge"
 	InstanceType_m6i_32xlarge      InstanceType = "m6i.32xlarge"
+	InstanceType_m6i_metal         InstanceType = "m6i.metal"
 	InstanceType_mac1_metal        InstanceType = "mac1.metal"
+	InstanceType_p2_xlarge         InstanceType = "p2.xlarge"
+	InstanceType_p2_8xlarge        InstanceType = "p2.8xlarge"
+	InstanceType_p2_16xlarge       InstanceType = "p2.16xlarge"
+	InstanceType_p3_2xlarge        InstanceType = "p3.2xlarge"
+	InstanceType_p3_8xlarge        InstanceType = "p3.8xlarge"
+	InstanceType_p3_16xlarge       InstanceType = "p3.16xlarge"
+	InstanceType_p3dn_24xlarge     InstanceType = "p3dn.24xlarge"
+	InstanceType_p4d_24xlarge      InstanceType = "p4d.24xlarge"
+	InstanceType_r3_large          InstanceType = "r3.large"
+	InstanceType_r3_xlarge         InstanceType = "r3.xlarge"
+	InstanceType_r3_2xlarge        InstanceType = "r3.2xlarge"
+	InstanceType_r3_4xlarge        InstanceType = "r3.4xlarge"
+	InstanceType_r3_8xlarge        InstanceType = "r3.8xlarge"
+	InstanceType_r4_large          InstanceType = "r4.large"
+	InstanceType_r4_xlarge         InstanceType = "r4.xlarge"
+	InstanceType_r4_2xlarge        InstanceType = "r4.2xlarge"
+	InstanceType_r4_4xlarge        InstanceType = "r4.4xlarge"
+	InstanceType_r4_8xlarge        InstanceType = "r4.8xlarge"
+	InstanceType_r4_16xlarge       InstanceType = "r4.16xlarge"
+	InstanceType_r5_large          InstanceType = "r5.large"
+	InstanceType_r5_xlarge         InstanceType = "r5.xlarge"
+	InstanceType_r5_2xlarge        InstanceType = "r5.2xlarge"
+	InstanceType_r5_4xlarge        InstanceType = "r5.4xlarge"
+	InstanceType_r5_8xlarge        InstanceType = "r5.8xlarge"
+	InstanceType_r5_12xlarge       InstanceType = "r5.12xlarge"
+	InstanceType_r5_16xlarge       InstanceType = "r5.16xlarge"
+	InstanceType_r5_24xlarge       InstanceType = "r5.24xlarge"
+	InstanceType_r5_metal          InstanceType = "r5.metal"
+	InstanceType_r5a_large         InstanceType = "r5a.large"
+	InstanceType_r5a_xlarge        InstanceType = "r5a.xlarge"
+	InstanceType_r5a_2xlarge       InstanceType = "r5a.2xlarge"
+	InstanceType_r5a_4xlarge       InstanceType = "r5a.4xlarge"
+	InstanceType_r5a_8xlarge       InstanceType = "r5a.8xlarge"
+	InstanceType_r5a_12xlarge      InstanceType = "r5a.12xlarge"
+	InstanceType_r5a_16xlarge      InstanceType = "r5a.16xlarge"
+	InstanceType_r5a_24xlarge      InstanceType = "r5a.24xlarge"
+	InstanceType_r5ad_large        InstanceType = "r5ad.large"
+	InstanceType_r5ad_xlarge       InstanceType = "r5ad.xlarge"
+	InstanceType_r5ad_2xlarge      InstanceType = "r5ad.2xlarge"
+	InstanceType_r5ad_4xlarge      InstanceType = "r5ad.4xlarge"
+	InstanceType_r5ad_8xlarge      InstanceType = "r5ad.8xlarge"
+	InstanceType_r5ad_12xlarge     InstanceType = "r5ad.12xlarge"
+	InstanceType_r5ad_16xlarge     InstanceType = "r5ad.16xlarge"
+	InstanceType_r5ad_24xlarge     InstanceType = "r5ad.24xlarge"
+	InstanceType_r5b_large         InstanceType = "r5b.large"
+	InstanceType_r5b_xlarge        InstanceType = "r5b.xlarge"
+	InstanceType_r5b_2xlarge       InstanceType = "r5b.2xlarge"
+	InstanceType_r5b_4xlarge       InstanceType = "r5b.4xlarge"
+	InstanceType_r5b_8xlarge       InstanceType = "r5b.8xlarge"
+	InstanceType_r5b_12xlarge      InstanceType = "r5b.12xlarge"
+	InstanceType_r5b_16xlarge      InstanceType = "r5b.16xlarge"
+	InstanceType_r5b_24xlarge      InstanceType = "r5b.24xlarge"
+	InstanceType_r5b_metal         InstanceType = "r5b.metal"
+	InstanceType_r5d_large         InstanceType = "r5d.large"
+	InstanceType_r5d_xlarge        InstanceType = "r5d.xlarge"
+	InstanceType_r5d_2xlarge       InstanceType = "r5d.2xlarge"
+	InstanceType_r5d_4xlarge       InstanceType = "r5d.4xlarge"
+	InstanceType_r5d_8xlarge       InstanceType = "r5d.8xlarge"
+	InstanceType_r5d_12xlarge      InstanceType = "r5d.12xlarge"
+	InstanceType_r5d_16xlarge      InstanceType = "r5d.16xlarge"
+	InstanceType_r5d_24xlarge      InstanceType = "r5d.24xlarge"
+	InstanceType_r5d_metal         InstanceType = "r5d.metal"
+	InstanceType_r5dn_large        InstanceType = "r5dn.large"
+	InstanceType_r5dn_xlarge       InstanceType = "r5dn.xlarge"
+	InstanceType_r5dn_2xlarge      InstanceType = "r5dn.2xlarge"
+	InstanceType_r5dn_4xlarge      InstanceType = "r5dn.4xlarge"
+	InstanceType_r5dn_8xlarge      InstanceType = "r5dn.8xlarge"
+	InstanceType_r5dn_12xlarge     InstanceType = "r5dn.12xlarge"
+	InstanceType_r5dn_16xlarge     InstanceType = "r5dn.16xlarge"
+	InstanceType_r5dn_24xlarge     InstanceType = "r5dn.24xlarge"
+	InstanceType_r5dn_metal        InstanceType = "r5dn.metal"
+	InstanceType_r5n_large         InstanceType = "r5n.large"
+	InstanceType_r5n_xlarge        InstanceType = "r5n.xlarge"
+	InstanceType_r5n_2xlarge       InstanceType = "r5n.2xlarge"
+	InstanceType_r5n_4xlarge       InstanceType = "r5n.4xlarge"
+	InstanceType_r5n_8xlarge       InstanceType = "r5n.8xlarge"
+	InstanceType_r5n_12xlarge      InstanceType = "r5n.12xlarge"
+	InstanceType_r5n_16xlarge      InstanceType = "r5n.16xlarge"
+	InstanceType_r5n_24xlarge      InstanceType = "r5n.24xlarge"
+	InstanceType_r5n_metal         InstanceType = "r5n.metal"
+	InstanceType_r6g_medium        InstanceType = "r6g.medium"
+	InstanceType_r6g_large         InstanceType = "r6g.large"
+	InstanceType_r6g_xlarge        InstanceType = "r6g.xlarge"
+	InstanceType_r6g_2xlarge       InstanceType = "r6g.2xlarge"
+	InstanceType_r6g_4xlarge       InstanceType = "r6g.4xlarge"
+	InstanceType_r6g_8xlarge       InstanceType = "r6g.8xlarge"
+	InstanceType_r6g_12xlarge      InstanceType = "r6g.12xlarge"
+	InstanceType_r6g_16xlarge      InstanceType = "r6g.16xlarge"
+	InstanceType_r6g_metal         InstanceType = "r6g.metal"
+	InstanceType_r6gd_medium       InstanceType = "r6gd.medium"
+	InstanceType_r6gd_large        InstanceType = "r6gd.large"
+	InstanceType_r6gd_xlarge       InstanceType = "r6gd.xlarge"
+	InstanceType_r6gd_2xlarge      InstanceType = "r6gd.2xlarge"
+	InstanceType_r6gd_4xlarge      InstanceType = "r6gd.4xlarge"
+	InstanceType_r6gd_8xlarge      InstanceType = "r6gd.8xlarge"
+	InstanceType_r6gd_12xlarge     InstanceType = "r6gd.12xlarge"
+	InstanceType_r6gd_16xlarge     InstanceType = "r6gd.16xlarge"
+	InstanceType_r6gd_metal        InstanceType = "r6gd.metal"
+	InstanceType_r6i_large         InstanceType = "r6i.large"
+	InstanceType_r6i_xlarge        InstanceType = "r6i.xlarge"
+	InstanceType_r6i_2xlarge       InstanceType = "r6i.2xlarge"
+	InstanceType_r6i_4xlarge       InstanceType = "r6i.4xlarge"
+	InstanceType_r6i_8xlarge       InstanceType = "r6i.8xlarge"
+	InstanceType_r6i_12xlarge      InstanceType = "r6i.12xlarge"
+	InstanceType_r6i_16xlarge      InstanceType = "r6i.16xlarge"
+	InstanceType_r6i_24xlarge      InstanceType = "r6i.24xlarge"
+	InstanceType_r6i_32xlarge      InstanceType = "r6i.32xlarge"
+	InstanceType_r6i_metal         InstanceType = "r6i.metal"
+	InstanceType_t1_micro          InstanceType = "t1.micro"
+	InstanceType_t2_nano           InstanceType = "t2.nano"
+	InstanceType_t2_micro          InstanceType = "t2.micro"
+	InstanceType_t2_small          InstanceType = "t2.small"
+	InstanceType_t2_medium         InstanceType = "t2.medium"
+	InstanceType_t2_large          InstanceType = "t2.large"
+	InstanceType_t2_xlarge         InstanceType = "t2.xlarge"
+	InstanceType_t2_2xlarge        InstanceType = "t2.2xlarge"
+	InstanceType_t3_nano           InstanceType = "t3.nano"
+	InstanceType_t3_micro          InstanceType = "t3.micro"
+	InstanceType_t3_small          InstanceType = "t3.small"
+	InstanceType_t3_medium         InstanceType = "t3.medium"
+	InstanceType_t3_large          InstanceType = "t3.large"
+	InstanceType_t3_xlarge         InstanceType = "t3.xlarge"
+	InstanceType_t3_2xlarge        InstanceType = "t3.2xlarge"
+	InstanceType_t3a_nano          InstanceType = "t3a.nano"
+	InstanceType_t3a_micro         InstanceType = "t3a.micro"
+	InstanceType_t3a_small         InstanceType = "t3a.small"
+	InstanceType_t3a_medium        InstanceType = "t3a.medium"
+	InstanceType_t3a_large         InstanceType = "t3a.large"
+	InstanceType_t3a_xlarge        InstanceType = "t3a.xlarge"
+	InstanceType_t3a_2xlarge       InstanceType = "t3a.2xlarge"
+	InstanceType_t4g_nano          InstanceType = "t4g.nano"
+	InstanceType_t4g_micro         InstanceType = "t4g.micro"
+	InstanceType_t4g_small         InstanceType = "t4g.small"
+	InstanceType_t4g_medium        InstanceType = "t4g.medium"
+	InstanceType_t4g_large         InstanceType = "t4g.large"
+	InstanceType_t4g_xlarge        InstanceType = "t4g.xlarge"
+	InstanceType_t4g_2xlarge       InstanceType = "t4g.2xlarge"
+	InstanceType_u_6tb1_56xlarge   InstanceType = "u-6tb1.56xlarge"
+	InstanceType_u_6tb1_112xlarge  InstanceType = "u-6tb1.112xlarge"
+	InstanceType_u_9tb1_112xlarge  InstanceType = "u-9tb1.112xlarge"
+	InstanceType_u_12tb1_112xlarge InstanceType = "u-12tb1.112xlarge"
+	InstanceType_u_6tb1_metal      InstanceType = "u-6tb1.metal"
+	InstanceType_u_9tb1_metal      InstanceType = "u-9tb1.metal"
+	InstanceType_u_12tb1_metal     InstanceType = "u-12tb1.metal"
+	InstanceType_u_18tb1_metal     InstanceType = "u-18tb1.metal"
+	InstanceType_u_24tb1_metal     InstanceType = "u-24tb1.metal"
+	InstanceType_vt1_3xlarge       InstanceType = "vt1.3xlarge"
+	InstanceType_vt1_6xlarge       InstanceType = "vt1.6xlarge"
+	InstanceType_vt1_24xlarge      InstanceType = "vt1.24xlarge"
+	InstanceType_x1_16xlarge       InstanceType = "x1.16xlarge"
+	InstanceType_x1_32xlarge       InstanceType = "x1.32xlarge"
+	InstanceType_x1e_xlarge        InstanceType = "x1e.xlarge"
+	InstanceType_x1e_2xlarge       InstanceType = "x1e.2xlarge"
+	InstanceType_x1e_4xlarge       InstanceType = "x1e.4xlarge"
+	InstanceType_x1e_8xlarge       InstanceType = "x1e.8xlarge"
+	InstanceType_x1e_16xlarge      InstanceType = "x1e.16xlarge"
+	InstanceType_x1e_32xlarge      InstanceType = "x1e.32xlarge"
+	InstanceType_x2iezn_2xlarge    InstanceType = "x2iezn.2xlarge"
+	InstanceType_x2iezn_4xlarge    InstanceType = "x2iezn.4xlarge"
+	InstanceType_x2iezn_6xlarge    InstanceType = "x2iezn.6xlarge"
+	InstanceType_x2iezn_8xlarge    InstanceType = "x2iezn.8xlarge"
+	InstanceType_x2iezn_12xlarge   InstanceType = "x2iezn.12xlarge"
+	InstanceType_x2iezn_metal      InstanceType = "x2iezn.metal"
 	InstanceType_x2gd_medium       InstanceType = "x2gd.medium"
 	InstanceType_x2gd_large        InstanceType = "x2gd.large"
 	InstanceType_x2gd_xlarge       InstanceType = "x2gd.xlarge"
@@ -1409,9 +1657,35 @@ const (
 	InstanceType_x2gd_12xlarge     InstanceType = "x2gd.12xlarge"
 	InstanceType_x2gd_16xlarge     InstanceType = "x2gd.16xlarge"
 	InstanceType_x2gd_metal        InstanceType = "x2gd.metal"
-	InstanceType_vt1_3xlarge       InstanceType = "vt1.3xlarge"
-	InstanceType_vt1_6xlarge       InstanceType = "vt1.6xlarge"
-	InstanceType_vt1_24xlarge      InstanceType = "vt1.24xlarge"
+	InstanceType_z1d_large         InstanceType = "z1d.large"
+	InstanceType_z1d_xlarge        InstanceType = "z1d.xlarge"
+	InstanceType_z1d_2xlarge       InstanceType = "z1d.2xlarge"
+	InstanceType_z1d_3xlarge       InstanceType = "z1d.3xlarge"
+	InstanceType_z1d_6xlarge       InstanceType = "z1d.6xlarge"
+	InstanceType_z1d_12xlarge      InstanceType = "z1d.12xlarge"
+	InstanceType_z1d_metal         InstanceType = "z1d.metal"
+	InstanceType_x2idn_16xlarge    InstanceType = "x2idn.16xlarge"
+	InstanceType_x2idn_24xlarge    InstanceType = "x2idn.24xlarge"
+	InstanceType_x2idn_32xlarge    InstanceType = "x2idn.32xlarge"
+	InstanceType_x2iedn_xlarge     InstanceType = "x2iedn.xlarge"
+	InstanceType_x2iedn_2xlarge    InstanceType = "x2iedn.2xlarge"
+	InstanceType_x2iedn_4xlarge    InstanceType = "x2iedn.4xlarge"
+	InstanceType_x2iedn_8xlarge    InstanceType = "x2iedn.8xlarge"
+	InstanceType_x2iedn_16xlarge   InstanceType = "x2iedn.16xlarge"
+	InstanceType_x2iedn_24xlarge   InstanceType = "x2iedn.24xlarge"
+	InstanceType_x2iedn_32xlarge   InstanceType = "x2iedn.32xlarge"
+	InstanceType_c6a_large         InstanceType = "c6a.large"
+	InstanceType_c6a_xlarge        InstanceType = "c6a.xlarge"
+	InstanceType_c6a_2xlarge       InstanceType = "c6a.2xlarge"
+	InstanceType_c6a_4xlarge       InstanceType = "c6a.4xlarge"
+	InstanceType_c6a_8xlarge       InstanceType = "c6a.8xlarge"
+	InstanceType_c6a_12xlarge      InstanceType = "c6a.12xlarge"
+	InstanceType_c6a_16xlarge      InstanceType = "c6a.16xlarge"
+	InstanceType_c6a_24xlarge      InstanceType = "c6a.24xlarge"
+	InstanceType_c6a_32xlarge      InstanceType = "c6a.32xlarge"
+	InstanceType_c6a_48xlarge      InstanceType = "c6a.48xlarge"
+	InstanceType_c6a_metal         InstanceType = "c6a.metal"
+	InstanceType_m6a_metal         InstanceType = "m6a.metal"
 )
 
 type InstanceTypeHypervisor string
@@ -1440,6 +1714,13 @@ type KeyType string
 const (
 	KeyType_rsa     KeyType = "rsa"
 	KeyType_ed25519 KeyType = "ed25519"
+)
+
+type LaunchTemplateAutoRecoveryState string
+
+const (
+	LaunchTemplateAutoRecoveryState_default  LaunchTemplateAutoRecoveryState = "default"
+	LaunchTemplateAutoRecoveryState_disabled LaunchTemplateAutoRecoveryState = "disabled"
 )
 
 type LaunchTemplateErrorCode string
@@ -1479,6 +1760,13 @@ type LaunchTemplateInstanceMetadataProtocolIPv6 string
 const (
 	LaunchTemplateInstanceMetadataProtocolIPv6_disabled LaunchTemplateInstanceMetadataProtocolIPv6 = "disabled"
 	LaunchTemplateInstanceMetadataProtocolIPv6_enabled  LaunchTemplateInstanceMetadataProtocolIPv6 = "enabled"
+)
+
+type LaunchTemplateInstanceMetadataTagsState string
+
+const (
+	LaunchTemplateInstanceMetadataTagsState_disabled LaunchTemplateInstanceMetadataTagsState = "disabled"
+	LaunchTemplateInstanceMetadataTagsState_enabled  LaunchTemplateInstanceMetadataTagsState = "enabled"
 )
 
 type ListingState string
@@ -1638,10 +1926,23 @@ const (
 type NetworkInterfaceType string
 
 const (
-	NetworkInterfaceType_interface  NetworkInterfaceType = "interface"
-	NetworkInterfaceType_natGateway NetworkInterfaceType = "natGateway"
-	NetworkInterfaceType_efa        NetworkInterfaceType = "efa"
-	NetworkInterfaceType_trunk      NetworkInterfaceType = "trunk"
+	NetworkInterfaceType_interface                        NetworkInterfaceType = "interface"
+	NetworkInterfaceType_natGateway                       NetworkInterfaceType = "natGateway"
+	NetworkInterfaceType_efa                              NetworkInterfaceType = "efa"
+	NetworkInterfaceType_trunk                            NetworkInterfaceType = "trunk"
+	NetworkInterfaceType_load_balancer                    NetworkInterfaceType = "load_balancer"
+	NetworkInterfaceType_network_load_balancer            NetworkInterfaceType = "network_load_balancer"
+	NetworkInterfaceType_vpc_endpoint                     NetworkInterfaceType = "vpc_endpoint"
+	NetworkInterfaceType_branch                           NetworkInterfaceType = "branch"
+	NetworkInterfaceType_transit_gateway                  NetworkInterfaceType = "transit_gateway"
+	NetworkInterfaceType_lambda                           NetworkInterfaceType = "lambda"
+	NetworkInterfaceType_quicksight                       NetworkInterfaceType = "quicksight"
+	NetworkInterfaceType_global_accelerator_managed       NetworkInterfaceType = "global_accelerator_managed"
+	NetworkInterfaceType_api_gateway_managed              NetworkInterfaceType = "api_gateway_managed"
+	NetworkInterfaceType_gateway_load_balancer            NetworkInterfaceType = "gateway_load_balancer"
+	NetworkInterfaceType_gateway_load_balancer_endpoint   NetworkInterfaceType = "gateway_load_balancer_endpoint"
+	NetworkInterfaceType_iot_rules_managed                NetworkInterfaceType = "iot_rules_managed"
+	NetworkInterfaceType_aws_codestar_connections_managed NetworkInterfaceType = "aws_codestar_connections_managed"
 )
 
 type OfferingClassType string
@@ -1683,6 +1984,12 @@ const (
 	PartitionLoadFrequency_daily   PartitionLoadFrequency = "daily"
 	PartitionLoadFrequency_weekly  PartitionLoadFrequency = "weekly"
 	PartitionLoadFrequency_monthly PartitionLoadFrequency = "monthly"
+)
+
+type PayerResponsibility string
+
+const (
+	PayerResponsibility_ServiceOwner PayerResponsibility = "ServiceOwner"
 )
 
 type PaymentOption string
@@ -1887,6 +2194,9 @@ const (
 	ResourceType_instance                                                      ResourceType = "instance"
 	ResourceType_instance_event_window                                         ResourceType = "instance-event-window"
 	ResourceType_internet_gateway                                              ResourceType = "internet-gateway"
+	ResourceType_ipam                                                          ResourceType = "ipam"
+	ResourceType_ipam_pool                                                     ResourceType = "ipam-pool"
+	ResourceType_ipam_scope                                                    ResourceType = "ipam-scope"
 	ResourceType_ipv4pool_ec2                                                  ResourceType = "ipv4pool-ec2"
 	ResourceType_ipv6pool_ec2                                                  ResourceType = "ipv6pool-ec2"
 	ResourceType_key_pair                                                      ResourceType = "key-pair"
@@ -1902,6 +2212,8 @@ const (
 	ResourceType_network_interface                                             ResourceType = "network-interface"
 	ResourceType_network_insights_analysis                                     ResourceType = "network-insights-analysis"
 	ResourceType_network_insights_path                                         ResourceType = "network-insights-path"
+	ResourceType_network_insights_access_scope                                 ResourceType = "network-insights-access-scope"
+	ResourceType_network_insights_access_scope_analysis                        ResourceType = "network-insights-access-scope-analysis"
 	ResourceType_placement_group                                               ResourceType = "placement-group"
 	ResourceType_prefix_list                                                   ResourceType = "prefix-list"
 	ResourceType_replace_root_volume_task                                      ResourceType = "replace-root-volume-task"
@@ -1913,6 +2225,7 @@ const (
 	ResourceType_spot_fleet_request                                            ResourceType = "spot-fleet-request"
 	ResourceType_spot_instances_request                                        ResourceType = "spot-instances-request"
 	ResourceType_subnet                                                        ResourceType = "subnet"
+	ResourceType_subnet_cidr_reservation                                       ResourceType = "subnet-cidr-reservation"
 	ResourceType_traffic_mirror_filter                                         ResourceType = "traffic-mirror-filter"
 	ResourceType_traffic_mirror_session                                        ResourceType = "traffic-mirror-session"
 	ResourceType_traffic_mirror_target                                         ResourceType = "traffic-mirror-target"
@@ -2019,9 +2332,11 @@ const (
 type SnapshotState string
 
 const (
-	SnapshotState_pending   SnapshotState = "pending"
-	SnapshotState_completed SnapshotState = "completed"
-	SnapshotState_error     SnapshotState = "error"
+	SnapshotState_pending     SnapshotState = "pending"
+	SnapshotState_completed   SnapshotState = "completed"
+	SnapshotState_error       SnapshotState = "error"
+	SnapshotState_recoverable SnapshotState = "recoverable"
+	SnapshotState_recovering  SnapshotState = "recovering"
 )
 
 type SpotAllocationStrategy string
@@ -2101,6 +2416,13 @@ const (
 	StatusType_initializing      StatusType = "initializing"
 )
 
+type StorageTier string
+
+const (
+	StorageTier_archive  StorageTier = "archive"
+	StorageTier_standard StorageTier = "standard"
+)
+
 type SubnetCIDRBlockStateCode string
 
 const (
@@ -2144,6 +2466,12 @@ const (
 	TargetCapacityUnitType_units      TargetCapacityUnitType = "units"
 )
 
+type TargetStorageTier string
+
+const (
+	TargetStorageTier_archive TargetStorageTier = "archive"
+)
+
 type TelemetryStatus string
 
 const (
@@ -2157,6 +2485,20 @@ const (
 	Tenancy_default   Tenancy = "default"
 	Tenancy_dedicated Tenancy = "dedicated"
 	Tenancy_host      Tenancy = "host"
+)
+
+type TieringOperationStatus string
+
+const (
+	TieringOperationStatus_archival_in_progress          TieringOperationStatus = "archival-in-progress"
+	TieringOperationStatus_archival_completed            TieringOperationStatus = "archival-completed"
+	TieringOperationStatus_archival_failed               TieringOperationStatus = "archival-failed"
+	TieringOperationStatus_temporary_restore_in_progress TieringOperationStatus = "temporary-restore-in-progress"
+	TieringOperationStatus_temporary_restore_completed   TieringOperationStatus = "temporary-restore-completed"
+	TieringOperationStatus_temporary_restore_failed      TieringOperationStatus = "temporary-restore-failed"
+	TieringOperationStatus_permanent_restore_in_progress TieringOperationStatus = "permanent-restore-in-progress"
+	TieringOperationStatus_permanent_restore_completed   TieringOperationStatus = "permanent-restore-completed"
+	TieringOperationStatus_permanent_restore_failed      TieringOperationStatus = "permanent-restore-failed"
 )
 
 type TrafficDirection string

@@ -275,6 +275,13 @@ const (
 	DeviceCertificateUpdateAction_DEACTIVATE DeviceCertificateUpdateAction = "DEACTIVATE"
 )
 
+type DeviceDefenderIndexingMode string
+
+const (
+	DeviceDefenderIndexingMode_OFF        DeviceDefenderIndexingMode = "OFF"
+	DeviceDefenderIndexingMode_VIOLATIONS DeviceDefenderIndexingMode = "VIOLATIONS"
+)
+
 type DimensionType string
 
 const (
@@ -426,8 +433,11 @@ const (
 type LogTargetType string
 
 const (
-	LogTargetType_DEFAULT     LogTargetType = "DEFAULT"
-	LogTargetType_THING_GROUP LogTargetType = "THING_GROUP"
+	LogTargetType_DEFAULT      LogTargetType = "DEFAULT"
+	LogTargetType_THING_GROUP  LogTargetType = "THING_GROUP"
+	LogTargetType_CLIENT_ID    LogTargetType = "CLIENT_ID"
+	LogTargetType_SOURCE_IP    LogTargetType = "SOURCE_IP"
+	LogTargetType_PRINCIPAL_ID LogTargetType = "PRINCIPAL_ID"
 )
 
 type MessageFormat string
@@ -454,6 +464,13 @@ const (
 	ModelStatus_PENDING_BUILD ModelStatus = "PENDING_BUILD"
 	ModelStatus_ACTIVE        ModelStatus = "ACTIVE"
 	ModelStatus_EXPIRED       ModelStatus = "EXPIRED"
+)
+
+type NamedShadowIndexingMode string
+
+const (
+	NamedShadowIndexingMode_OFF NamedShadowIndexingMode = "OFF"
+	NamedShadowIndexingMode_ON  NamedShadowIndexingMode = "ON"
 )
 
 type OTAUpdateStatus string
@@ -496,6 +513,14 @@ const (
 	ResourceType_ACCOUNT_SETTINGS      ResourceType = "ACCOUNT_SETTINGS"
 	ResourceType_ROLE_ALIAS            ResourceType = "ROLE_ALIAS"
 	ResourceType_IAM_ROLE              ResourceType = "IAM_ROLE"
+)
+
+type RetryableFailureType string
+
+const (
+	RetryableFailureType_FAILED    RetryableFailureType = "FAILED"
+	RetryableFailureType_TIMED_OUT RetryableFailureType = "TIMED_OUT"
+	RetryableFailureType_ALL       RetryableFailureType = "ALL"
 )
 
 type ServerCertificateStatus string

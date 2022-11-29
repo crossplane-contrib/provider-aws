@@ -12,6 +12,8 @@ ignore:
     - UserDefinedFunction
     - Workflow
     - Partition
+    - Session
+    - CustomEntityType
   field_paths:
     - CreateJobInput.Name
     - CreateJobInput.Role

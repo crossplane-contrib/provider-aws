@@ -40,6 +40,10 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigatewayv2/stage"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/apigatewayv2/vpclink"
 	athenaworkgroup "github.com/crossplane-contrib/provider-aws/pkg/controller/athena/workgroup"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/computeenvironment"
+	batchjob "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/job"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/jobdefinition"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/batch/jobqueue"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cache/cluster"
@@ -138,6 +142,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kms/alias"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kms/key"
 	lambdafunction "github.com/crossplane-contrib/provider-aws/pkg/controller/lambda/function"
+	lambdaurlconfig "github.com/crossplane-contrib/provider-aws/pkg/controller/lambda/functionurlconfig"
 	lambdapermission "github.com/crossplane-contrib/provider-aws/pkg/controller/lambda/permission"
 	mqbroker "github.com/crossplane-contrib/provider-aws/pkg/controller/mq/broker"
 	mquser "github.com/crossplane-contrib/provider-aws/pkg/controller/mq/user"
@@ -271,6 +276,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		httpnamespace.SetupHTTPNamespace,
 		lambdafunction.SetupFunction,
 		lambdapermission.SetupPermission,
+		lambdaurlconfig.SetupFunctionURL,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
 		cachepolicy.SetupCachePolicy,
@@ -332,6 +338,10 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cognitoidentitypool.SetupIdentityPool,
 		flowlog.SetupFlowLog,
 		opensearchdomain.SetupDomain,
+		computeenvironment.SetupComputeEnvironment,
+		jobqueue.SetupJobQueue,
+		jobdefinition.SetupJobDefinition,
+		batchjob.SetupJob,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

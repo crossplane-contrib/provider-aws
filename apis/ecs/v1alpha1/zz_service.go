@@ -46,32 +46,36 @@ type ServiceParameters struct {
 	// The number of instantiations of the specified task definition to place and
 	// keep running on your cluster.
 	//
-	// This is required if schedulingStrategy is REPLICA or is not specified. If
-	// schedulingStrategy is DAEMON then this is not required.
+	// This is required if schedulingStrategy is REPLICA or isn't specified. If
+	// schedulingStrategy is DAEMON then this isn't required.
 	DesiredCount *int64 `json:"desiredCount,omitempty"`
-	// Specifies whether to enable Amazon ECS managed tags for the tasks within
+	// Specifies whether to turn on Amazon ECS managed tags for the tasks within
 	// the service. For more information, see Tagging Your Amazon ECS Resources
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	EnableECSManagedTags *bool `json:"enableECSManagedTags,omitempty"`
-	// Whether or not the execute command functionality is enabled for the service.
+	// Determines whether the execute command functionality is enabled for the service.
 	// If true, this enables execute command functionality on all containers in
 	// the service tasks.
 	EnableExecuteCommand *bool `json:"enableExecuteCommand,omitempty"`
-	// The period of time, in seconds, that the Amazon ECS service scheduler should
-	// ignore unhealthy Elastic Load Balancing target health checks after a task
-	// has first started. This is only used when your service is configured to use
-	// a load balancer. If your service has a load balancer defined and you don't
-	// specify a health check grace period value, the default value of 0 is used.
+	// The period of time, in seconds, that the Amazon ECS service scheduler ignores
+	// unhealthy Elastic Load Balancing target health checks after a task has first
+	// started. This is only used when your service is configured to use a load
+	// balancer. If your service has a load balancer defined and you don't specify
+	// a health check grace period value, the default value of 0 is used.
+	//
+	// If you do not use an Elastic Load Balancing, we recomend that you use the
+	// startPeriod in the task definition healtch check parameters. For more information,
+	// see Health check (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html).
 	//
 	// If your service's tasks take a while to start and respond to Elastic Load
 	// Balancing health checks, you can specify a health check grace period of up
-	// to 2,147,483,647 seconds. During that time, the Amazon ECS service scheduler
-	// ignores health check status. This grace period can prevent the service scheduler
-	// from marking tasks as unhealthy and stopping them before they have time to
-	// come up.
+	// to 2,147,483,647 seconds (about 69 years). During that time, the Amazon ECS
+	// service scheduler ignores health check status. This grace period can prevent
+	// the service scheduler from marking tasks as unhealthy and stopping them before
+	// they have time to come up.
 	HealthCheckGracePeriodSeconds *int64 `json:"healthCheckGracePeriodSeconds,omitempty"`
-	// The infrastructure on which to run your service. For more information, see
+	// The infrastructure that you run your service on. For more information, see
 	// Amazon ECS launch types (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	//
@@ -85,7 +89,7 @@ type ServiceParameters struct {
 	// The EC2 launch type runs your tasks on Amazon EC2 instances registered to
 	// your cluster.
 	//
-	// The EXTERNAL launch type runs your tasks on your on-premise server or virtual
+	// The EXTERNAL launch type runs your tasks on your on-premises server or virtual
 	// machine (VM) capacity registered to your cluster.
 	//
 	// A service can use either a launch type or a capacity provider strategy. If
@@ -93,38 +97,37 @@ type ServiceParameters struct {
 	// omitted.
 	LaunchType *string `json:"launchType,omitempty"`
 	// An array of placement constraint objects to use for tasks in your service.
-	// You can specify a maximum of 10 constraints per task (this limit includes
-	// constraints in the task definition and those specified at runtime).
+	// You can specify a maximum of 10 constraints for each task. This limit includes
+	// constraints in the task definition and those specified at runtime.
 	PlacementConstraints []*PlacementConstraint `json:"placementConstraints,omitempty"`
 	// The placement strategy objects to use for tasks in your service. You can
-	// specify a maximum of 5 strategy rules per service.
+	// specify a maximum of 5 strategy rules for each service.
 	PlacementStrategy []*PlacementStrategy `json:"placementStrategy,omitempty"`
 	// The platform version that your tasks in the service are running on. A platform
 	// version is specified only for tasks using the Fargate launch type. If one
-	// isn't specified, the LATEST platform version is used by default. For more
-	// information, see Fargate platform versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
+	// isn't specified, the LATEST platform version is used. For more information,
+	// see Fargate platform versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	PlatformVersion *string `json:"platformVersion,omitempty"`
-	// Specifies whether to propagate the tags from the task definition or the service
-	// to the tasks in the service. If no value is specified, the tags are not propagated.
-	// Tags can only be propagated to the tasks within the service during service
-	// creation. To add tags to a task after service creation or task creation,
+	// Specifies whether to propagate the tags from the task definition to the task.
+	// If no value is specified, the tags aren't propagated. Tags can only be propagated
+	// to the task during task creation. To add tags to a task after task creation,
 	// use the TagResource API action.
 	PropagateTags *string `json:"propagateTags,omitempty"`
 	// The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon
 	// ECS to make calls to your load balancer on your behalf. This parameter is
 	// only permitted if you are using a load balancer with your service and your
-	// task definition does not use the awsvpc network mode. If you specify the
-	// role parameter, you must also specify a load balancer object with the loadBalancers
+	// task definition doesn't use the awsvpc network mode. If you specify the role
+	// parameter, you must also specify a load balancer object with the loadBalancers
 	// parameter.
 	//
 	// If your account has already created the Amazon ECS service-linked role, that
-	// role is used by default for your service unless you specify a role here.
-	// The service-linked role is required if your task definition uses the awsvpc
-	// network mode or if the service is configured to use service discovery, an
-	// external deployment controller, multiple target groups, or Elastic Inference
-	// accelerators in which case you should not specify a role here. For more information,
-	// see Using service-linked roles for Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html)
+	// role is used for your service unless you specify a role here. The service-linked
+	// role is required if your task definition uses the awsvpc network mode or
+	// if the service is configured to use service discovery, an external deployment
+	// controller, multiple target groups, or Elastic Inference accelerators in
+	// which case you don't specify a role here. For more information, see Using
+	// service-linked roles for Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	//
 	// If your specified role has a path other than /, then you must either specify
@@ -143,14 +146,14 @@ type ServiceParameters struct {
 	//    number of tasks across your cluster. By default, the service scheduler
 	//    spreads tasks across Availability Zones. You can use task placement strategies
 	//    and constraints to customize task placement decisions. This scheduler
-	//    strategy is required if the service is using the CODE_DEPLOY or EXTERNAL
-	//    deployment controller types.
+	//    strategy is required if the service uses the CODE_DEPLOY or EXTERNAL deployment
+	//    controller types.
 	//
 	//    * DAEMON-The daemon scheduling strategy deploys exactly one task on each
 	//    active container instance that meets all of the task placement constraints
 	//    that you specify in your cluster. The service scheduler also evaluates
 	//    the task placement constraints for running tasks and will stop tasks that
-	//    do not meet the placement constraints. When you're using this strategy,
+	//    don't meet the placement constraints. When you're using this strategy,
 	//    you don't need to specify a desired number of tasks, a task placement
 	//    strategy, or use Service Auto Scaling policies. Tasks using the Fargate
 	//    launch type or the CODE_DEPLOY or EXTERNAL deployment controller types
@@ -160,7 +163,7 @@ type ServiceParameters struct {
 	// For more information, see Service discovery (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html).
 	//
 	// Each service may be associated with one service registry. Multiple service
-	// registries per service isn't supported.
+	// registries for each service isn't supported.
 	ServiceRegistries []*ServiceRegistry `json:"serviceRegistries,omitempty"`
 	// The metadata that you apply to the service to help you categorize and organize
 	// them. Each tag consists of a key and an optional value, both of which you
@@ -202,7 +205,7 @@ type ServiceSpec struct {
 type ServiceObservation struct {
 	// The Amazon Resource Name (ARN) of the cluster that hosts the service.
 	ClusterARN *string `json:"clusterARN,omitempty"`
-	// The Unix timestamp for when the service was created.
+	// The Unix timestamp for the time when the service was created.
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 	// The principal that created the service.
 	CreatedBy *string `json:"createdBy,omitempty"`
@@ -211,24 +214,24 @@ type ServiceObservation struct {
 	// The event stream for your service. A maximum of 100 of the latest events
 	// are displayed.
 	Events []*ServiceEvent `json:"events,omitempty"`
-	// A list of Elastic Load Balancing load balancer objects, containing the load
-	// balancer name, the container name (as it appears in a container definition),
-	// and the container port to access from the load balancer.
+	// A list of Elastic Load Balancing load balancer objects. It contains the load
+	// balancer name, the container name, and the container port to access from
+	// the load balancer. The container name is as it appears in a container definition.
 	LoadBalancers []*LoadBalancer `json:"loadBalancers,omitempty"`
 	// The VPC subnet and security group configuration for tasks that receive their
 	// own elastic network interface by using the awsvpc networking mode.
 	NetworkConfiguration *NetworkConfiguration `json:"networkConfiguration,omitempty"`
 	// The number of tasks in the cluster that are in the PENDING state.
 	PendingCount *int64 `json:"pendingCount,omitempty"`
-	// The operating system that your tasks in the service are running on. A platform
-	// family is specified only for tasks using the Fargate launch type.
+	// The operating system that your tasks in the service run on. A platform family
+	// is specified only for tasks using the Fargate launch type.
 	//
 	// All tasks that run as part of this service must use the same platformFamily
-	// value as the service, for example, LINUX.
+	// value as the service (for example, LINUX).
 	PlatformFamily *string `json:"platformFamily,omitempty"`
-	// The ARN of the IAM role associated with the service that allows the Amazon
-	// ECS container agent to register container instances with an Elastic Load
-	// Balancing load balancer.
+	// The ARN of the IAM role that's associated with the service. It allows the
+	// Amazon ECS container agent to register container instances with an Elastic
+	// Load Balancing load balancer.
 	RoleARN *string `json:"roleARN,omitempty"`
 	// The number of tasks in the cluster that are in the RUNNING state.
 	RunningCount *int64 `json:"runningCount,omitempty"`
@@ -239,7 +242,7 @@ type ServiceObservation struct {
 	ServiceARN *string `json:"serviceARN,omitempty"`
 	// The name of your service. Up to 255 letters (uppercase and lowercase), numbers,
 	// underscores, and hyphens are allowed. Service names must be unique within
-	// a cluster, but you can have similarly named services in multiple clusters
+	// a cluster. However, you can have similarly named services in multiple clusters
 	// within a Region or across multiple Regions.
 	ServiceName *string `json:"serviceName,omitempty"`
 	// The status of the service. The valid values are ACTIVE, DRAINING, or INACTIVE.

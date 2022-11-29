@@ -70,8 +70,9 @@ spec:
                     type: object
                   airflowVersion:
                     description: 'The Apache Airflow version for your environment.
-                      For example, v1.10.12. If no value is specified, defaults to
-                      the latest version. Valid values: v1.10.12.'
+                      If no value is specified, defaults to the latest version. Valid
+                      values: 1.10.12, 2.0.2. To learn more, see Apache Airflow versions
+                      on Amazon Managed Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).'
                     type: string
                   dagS3Path:
                     description: The relative path to the DAGs folder on your Amazon
@@ -250,14 +251,13 @@ spec:
                         type: object
                     type: object
                   loggingConfiguration:
-                    description: 'Defines the Apache Airflow logs to send to CloudWatch
-                      Logs: DagProcessingLogs, SchedulerLogs, TaskLogs, WebserverLogs,
-                      WorkerLogs.'
+                    description: Defines the Apache Airflow logs to send to CloudWatch
+                      Logs.
                     properties:
                       dagProcessingLogs:
-                        description: 'Defines the type of logs to send for the Apache
-                          Airflow log type (e.g. DagProcessingLogs). Valid values:
-                          CloudWatchLogGroupArn, Enabled, LogLevel.'
+                        description: Enables the Apache Airflow log type (e.g. DagProcessingLogs)
+                          and defines the log level to send to CloudWatch Logs (e.g.
+                          INFO).
                         properties:
                           enabled:
                             type: boolean
@@ -265,9 +265,9 @@ spec:
                             type: string
                         type: object
                       schedulerLogs:
-                        description: 'Defines the type of logs to send for the Apache
-                          Airflow log type (e.g. DagProcessingLogs). Valid values:
-                          CloudWatchLogGroupArn, Enabled, LogLevel.'
+                        description: Enables the Apache Airflow log type (e.g. DagProcessingLogs)
+                          and defines the log level to send to CloudWatch Logs (e.g.
+                          INFO).
                         properties:
                           enabled:
                             type: boolean
@@ -275,9 +275,9 @@ spec:
                             type: string
                         type: object
                       taskLogs:
-                        description: 'Defines the type of logs to send for the Apache
-                          Airflow log type (e.g. DagProcessingLogs). Valid values:
-                          CloudWatchLogGroupArn, Enabled, LogLevel.'
+                        description: Enables the Apache Airflow log type (e.g. DagProcessingLogs)
+                          and defines the log level to send to CloudWatch Logs (e.g.
+                          INFO).
                         properties:
                           enabled:
                             type: boolean
@@ -285,9 +285,9 @@ spec:
                             type: string
                         type: object
                       webserverLogs:
-                        description: 'Defines the type of logs to send for the Apache
-                          Airflow log type (e.g. DagProcessingLogs). Valid values:
-                          CloudWatchLogGroupArn, Enabled, LogLevel.'
+                        description: Enables the Apache Airflow log type (e.g. DagProcessingLogs)
+                          and defines the log level to send to CloudWatch Logs (e.g.
+                          INFO).
                         properties:
                           enabled:
                             type: boolean
@@ -295,9 +295,9 @@ spec:
                             type: string
                         type: object
                       workerLogs:
-                        description: 'Defines the type of logs to send for the Apache
-                          Airflow log type (e.g. DagProcessingLogs). Valid values:
-                          CloudWatchLogGroupArn, Enabled, LogLevel.'
+                        description: Enables the Apache Airflow log type (e.g. DagProcessingLogs)
+                          and defines the log level to send to CloudWatch Logs (e.g.
+                          INFO).
                         properties:
                           enabled:
                             type: boolean
@@ -528,8 +528,9 @@ spec:
                       Python dependencies (https://docs.aws.amazon.com/mwaa/latest/userguide/working-dags-dependencies.html).
                     type: string
                   schedulers:
-                    description: The number of Apache Airflow schedulers to run in
-                      your environment.
+                    description: "The number of Apache Airflow schedulers to run in
+                      your environment. Valid values: \n * v2.0.2 - Accepts between
+                      2 to 5. Defaults to 2. \n * v1.10.12 - Accepts 1."
                     format: int64
                     type: integer
                   sourceBucketARN:
@@ -620,18 +621,18 @@ spec:
                       type: string
                     description: 'The key-value tag pairs you want to associate to
                       your environment. For example, "Environment": "Staging". To
-                      learn more, see Tagging AWS resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).'
+                      learn more, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).'
                     type: object
                   webserverAccessMode:
                     description: The Apache Airflow Web server access mode. To learn
                       more, see Apache Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
                     type: string
                   weeklyMaintenanceWindowStart:
-                    description: "The day and time of the week to start weekly maintenance
+                    description: 'The day and time of the week in Coordinated Universal
+                      Time (UTC) 24-hour standard time to start weekly maintenance
                       updates of your environment in the following format: DAY:HH:MM.
                       For example: TUE:03:30. You can specify a start time in 30 minute
-                      increments only. Supported input includes the following: \n
-                      * MON|TUE|WED|THU|FRI|SAT|SUN:([01]\\\\d|2[0-3]):(00|30)"
+                      increments only.'
                     type: string
                 required:
                 - dagS3Path
@@ -821,16 +822,19 @@ spec:
                       for the environment.
                     type: string
                   lastUpdate:
+                    description: The status of the last update on the environment.
                     properties:
                       error:
-                        description: 'An object containing the error encountered with
-                          the last update: ErrorCode, ErrorMessage.'
+                        description: Describes the error(s) encountered with the last
+                          update of the environment.
                         properties:
                           errorCode:
                             type: string
                           errorMessage:
                             type: string
                         type: object
+                      source:
+                        type: string
                       status:
                         type: string
                     type: object

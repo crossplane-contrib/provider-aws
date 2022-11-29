@@ -28,11 +28,12 @@ const (
 type BrokerState string
 
 const (
-	BrokerState_CREATION_IN_PROGRESS BrokerState = "CREATION_IN_PROGRESS"
-	BrokerState_CREATION_FAILED      BrokerState = "CREATION_FAILED"
-	BrokerState_DELETION_IN_PROGRESS BrokerState = "DELETION_IN_PROGRESS"
-	BrokerState_RUNNING              BrokerState = "RUNNING"
-	BrokerState_REBOOT_IN_PROGRESS   BrokerState = "REBOOT_IN_PROGRESS"
+	BrokerState_CREATION_IN_PROGRESS     BrokerState = "CREATION_IN_PROGRESS"
+	BrokerState_CREATION_FAILED          BrokerState = "CREATION_FAILED"
+	BrokerState_DELETION_IN_PROGRESS     BrokerState = "DELETION_IN_PROGRESS"
+	BrokerState_RUNNING                  BrokerState = "RUNNING"
+	BrokerState_REBOOT_IN_PROGRESS       BrokerState = "REBOOT_IN_PROGRESS"
+	BrokerState_CRITICAL_ACTION_REQUIRED BrokerState = "CRITICAL_ACTION_REQUIRED"
 )
 
 type BrokerStorageType string

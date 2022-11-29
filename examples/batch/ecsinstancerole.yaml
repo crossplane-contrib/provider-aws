@@ -1,0 +1,48 @@
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: ecsinstance-role
+  labels:
+    addToInstanceProfile: "true"
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+        ]
+      }
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: ecsinstance-role-policyattachment
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+    roleNameRef:
+      name: ecsinstance-role
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1alpha1
+kind: InstanceProfile
+metadata:
+  name: ecsinstance-role-profile
+spec:
+  forProvider:
+    roleSelector:
+      matchLabels:
+        addToInstanceProfile: "true"
+  providerConfigRef:
+    name: example

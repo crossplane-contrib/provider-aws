@@ -1,0 +1,29 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: Job
+metadata:
+  name: example-multinode-job
+spec:
+  forProvider:
+    region: us-east-1
+    ## Defined in examples/batch
+    jobDefinitionRef:
+      name: example-multinode-jobdefinition
+    ## Defined in examples/batch
+    jobQueueRef:
+      name: example-ec2-jobqueue
+    nodeOverrides:
+      nodePropertyOverrides:
+        - containerOverrides: 
+            command: ["echo","Thanks world"]
+          targetNodes: "0:"
+    parameters:
+        para1: "valUe1"
+        para2: "value2"
+    propagateTags: true
+    retryStrategy:
+      attempts: 2
+    tags: 
+      job : "my-job"
+      other: "bla"
+  providerConfigRef:
+    name: example

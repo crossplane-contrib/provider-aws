@@ -1,0 +1,18 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: JobQueue
+metadata:
+  name: example-ec2-jobqueue
+spec:
+  forProvider:
+    region: us-east-1
+    computeEnvironmentOrder:
+    ## Defined in examples/batch
+      - computeEnvironmentRef: 
+          name: example-managed-ec2-computeenvironment
+        order: 1
+    priority: 1
+    tags: 
+      jq : "my-jobqueue"
+      other: "bla"
+  providerConfigRef:
+    name: example

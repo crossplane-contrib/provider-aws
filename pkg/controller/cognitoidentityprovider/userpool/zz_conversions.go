@@ -79,9 +79,6 @@ func GenerateUserPool(resp *svcsdk.DescribeUserPoolOutput) *svcapitypes.UserPool
 			}
 			f1.InviteMessageTemplate = f1f1
 		}
-		if resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.UnusedAccountValidityDays = resp.UserPool.AdminCreateUserConfig.UnusedAccountValidityDays
-		}
 		cr.Spec.ForProvider.AdminCreateUserConfig = f1
 	} else {
 		cr.Spec.ForProvider.AdminCreateUserConfig = nil
@@ -346,6 +343,9 @@ func GenerateUserPool(resp *svcsdk.DescribeUserPoolOutput) *svcapitypes.UserPool
 		if resp.UserPool.SmsConfiguration.SnsCallerArn != nil {
 			f22.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
 		}
+		if resp.UserPool.SmsConfiguration.SnsRegion != nil {
+			f22.SNSRegion = resp.UserPool.SmsConfiguration.SnsRegion
+		}
 		cr.Spec.ForProvider.SmsConfiguration = f22
 	} else {
 		cr.Spec.ForProvider.SmsConfiguration = nil
@@ -472,9 +472,6 @@ func GenerateCreateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.CreateUserPoo
 				f1f1.SetSMSMessage(*cr.Spec.ForProvider.AdminCreateUserConfig.InviteMessageTemplate.SMSMessage)
 			}
 			f1.SetInviteMessageTemplate(f1f1)
-		}
-		if cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.SetUnusedAccountValidityDays(*cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays)
 		}
 		res.SetAdminCreateUserConfig(f1)
 	}
@@ -674,6 +671,9 @@ func GenerateCreateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.CreateUserPoo
 		if cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN != nil {
 			f14.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN)
 		}
+		if cr.Spec.ForProvider.SmsConfiguration.SNSRegion != nil {
+			f14.SetSnsRegion(*cr.Spec.ForProvider.SmsConfiguration.SNSRegion)
+		}
 		res.SetSmsConfiguration(f14)
 	}
 	if cr.Spec.ForProvider.SmsVerificationMessage != nil {
@@ -776,9 +776,6 @@ func GenerateUpdateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.UpdateUserPoo
 				f1f1.SetSMSMessage(*cr.Spec.ForProvider.AdminCreateUserConfig.InviteMessageTemplate.SMSMessage)
 			}
 			f1.SetInviteMessageTemplate(f1f1)
-		}
-		if cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays != nil {
-			f1.SetUnusedAccountValidityDays(*cr.Spec.ForProvider.AdminCreateUserConfig.UnusedAccountValidityDays)
 		}
 		res.SetAdminCreateUserConfig(f1)
 	}
@@ -922,6 +919,9 @@ func GenerateUpdateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.UpdateUserPoo
 		}
 		if cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN != nil {
 			f11.SetSnsCallerArn(*cr.Spec.ForProvider.SmsConfiguration.SNSCallerARN)
+		}
+		if cr.Spec.ForProvider.SmsConfiguration.SNSRegion != nil {
+			f11.SetSnsRegion(*cr.Spec.ForProvider.SmsConfiguration.SNSRegion)
 		}
 		res.SetSmsConfiguration(f11)
 	}

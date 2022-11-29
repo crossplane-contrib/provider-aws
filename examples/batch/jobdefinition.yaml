@@ -1,0 +1,58 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: JobDefinition
+metadata:
+  name: example-jobdefinition
+spec:
+  forProvider:
+    region: us-east-1
+    jobDefinitionType: container
+    containerProperties:
+      command: ["echo","hello world"]
+      ## Defined in examples/batch
+      executionRoleARNRef: 
+        name: ecs-task-execution-role
+      fargatePlatformConfiguration: 
+        platformVersion: "1.4.0"
+      image: "public.ecr.aws/amazonlinux/amazonlinux:latest"
+      ## Defined in examples/batch
+      jobRoleARNRef:
+        name: ecs-task-execution-role
+      logConfiguration:
+        logDriver: awslogs
+      networkConfiguration:
+        assignPublicIp: "ENABLED" # needed when the fargate-CE works in public subnets 
+      readonlyRootFilesystem: true
+      resourceRequirements:
+        - resourceType: VCPU
+          value: "1"
+        - resourceType: MEMORY
+          value: "4096"
+      volumes:
+        - efsVolumeConfiguration: 
+            authorizationConfig:
+              ## Defined in examples/efs
+              accessPointIdRef:
+                name: "example"
+            ## Defined in examples/efs
+            fileSystemIdRef:
+              name: "example"
+            rootDirectory: "/"
+            transitEncryption: ENABLED
+          name: "efsvolumeName"
+    platformCapabilities: 
+     - "FARGATE"
+    propagateTags: true
+    retryStrategy:
+      attempts: 3
+      evaluateOnExit:
+        - "action": "exit"
+          "onExitCode": "3242"
+          "onReason": "didnotWork"
+          "onStatusReason": "invalidSTHorso"
+    timeout:
+      attemptDurationSeconds: 70
+    tags: 
+      jd : "my-jobdefinition-fargate"
+      other: "bla"
+  providerConfigRef:
+    name: example

@@ -30,7 +30,7 @@ type VPCEndpointServiceConfigurationParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// Indicates whether requests from service consumers to create an endpoint to
-	// your service must be accepted. To accept a request, use AcceptVpcEndpointConnections.
+	// your service must be accepted manually.
 	AcceptanceRequired *bool `json:"acceptanceRequired,omitempty"`
 	// (Interface endpoint configuration) The private DNS name to assign to the
 	// VPC endpoint service.

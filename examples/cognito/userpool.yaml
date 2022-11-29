@@ -6,5 +6,34 @@ spec:
   forProvider:
     region: us-east-1
     poolName: examplePool
+    # "After you create a user pool, you can't change or remove sign-in options.":
+    # concerns aliasAttributes, usernameAttributes, UsernameConfiguration
+    # "Only one of the aliasAttributes or usernameAttributes can be set in a User pool."
+    # if aliasAttributes used, seems to add these additionally to username as sign-in options.
+    # In contrast using usernameAttributes seems to replace username as sign-in option!
+    aliasAttributes: 
+      - email
+      - phone_number
+      - preferred_username
+    usernameConfiguration: # default is true
+      caseSensitive: false
+    adminCreateUserConfig:
+      allowAdminCreateUserOnly: true
+      inviteMessageTemplate:
+        emailMessage: |
+          Your username is:
+          <br>{username}<br>
+          <br>and your temporary password is:
+          <br>{####}<br>
+        # ensure that for email subject line a single-line string is provided
+        emailSubject: "Your temporary password"
+    mfaConfiguration: 'ON'
+    # to make MFA usable, either softwareTokenMFAConfiguration
+    # and/or smsConfiguration (with externalID) needs to be provided
+    softwareTokenMFAConfiguration:
+      enabled: true
+    userPoolTags:
+      pool: big
+      users: best
   providerConfigRef:
     name: example

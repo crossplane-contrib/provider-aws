@@ -44,11 +44,10 @@ type Environment_SDK struct {
 	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
 
 	KMSKey *string `json:"kmsKey,omitempty"`
-	// The status of the last update on the environment, and any errors that were
-	// encountered.
+	// Describes the status of the last update on the environment, and any errors
+	// that were encountered.
 	LastUpdate *LastUpdate `json:"lastUpdate,omitempty"`
-	// Defines the Apache Airflow logs to send to CloudWatch Logs: DagProcessingLogs,
-	// SchedulerLogs, TaskLogs, WebserverLogs, WorkerLogs.
+	// Describes the Apache Airflow log types that are published to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfiguration `json:"loggingConfiguration,omitempty"`
 
 	MaxWorkers *int64 `json:"maxWorkers,omitempty"`
@@ -84,48 +83,44 @@ type Environment_SDK struct {
 
 // +kubebuilder:skipversion
 type LastUpdate struct {
-	// An object containing the error encountered with the last update: ErrorCode,
-	// ErrorMessage.
+	// Describes the error(s) encountered with the last update of the environment.
 	Error *UpdateError `json:"error,omitempty"`
+
+	Source *string `json:"source,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LoggingConfiguration struct {
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Describes the Apache Airflow log details for the log type (e.g. DagProcessingLogs).
 	DagProcessingLogs *ModuleLoggingConfiguration `json:"dagProcessingLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Describes the Apache Airflow log details for the log type (e.g. DagProcessingLogs).
 	SchedulerLogs *ModuleLoggingConfiguration `json:"schedulerLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Describes the Apache Airflow log details for the log type (e.g. DagProcessingLogs).
 	TaskLogs *ModuleLoggingConfiguration `json:"taskLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Describes the Apache Airflow log details for the log type (e.g. DagProcessingLogs).
 	WebserverLogs *ModuleLoggingConfiguration `json:"webserverLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Describes the Apache Airflow log details for the log type (e.g. DagProcessingLogs).
 	WorkerLogs *ModuleLoggingConfiguration `json:"workerLogs,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LoggingConfigurationInput struct {
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
+	// the log level to send to CloudWatch Logs (e.g. INFO).
 	DagProcessingLogs *ModuleLoggingConfigurationInput `json:"dagProcessingLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
+	// the log level to send to CloudWatch Logs (e.g. INFO).
 	SchedulerLogs *ModuleLoggingConfigurationInput `json:"schedulerLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
+	// the log level to send to CloudWatch Logs (e.g. INFO).
 	TaskLogs *ModuleLoggingConfigurationInput `json:"taskLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
+	// the log level to send to CloudWatch Logs (e.g. INFO).
 	WebserverLogs *ModuleLoggingConfigurationInput `json:"webserverLogs,omitempty"`
-	// Defines the type of logs to send for the Apache Airflow log type (e.g. DagProcessingLogs).
-	// Valid values: CloudWatchLogGroupArn, Enabled, LogLevel.
+	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
+	// the log level to send to CloudWatch Logs (e.g. INFO).
 	WorkerLogs *ModuleLoggingConfigurationInput `json:"workerLogs,omitempty"`
 }
 

@@ -180,7 +180,7 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"), cmpopts.IgnoreTypes(document.NoSerde{}))
+	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"), cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}
@@ -195,4 +195,14 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		diff += *observed.AssumeRolePolicyDocument
 	}
 	return false, diff, nil
+}
+
+func lessTag(a, b iamtypes.Tag) bool {
+	if a.Key == nil {
+		return b.Key != nil
+	}
+	if b.Key == nil {
+		return false
+	}
+	return *a.Key <= *b.Key
 }

@@ -172,7 +172,7 @@ spec:
                       type: string
                     description: The metadata to apply to the cluster to assist with
                       categorization and organization. Each tag consists of a key
-                      and an optional value, both of which you define.
+                      and an optional value. You define both.
                     type: object
                 required:
                 - addonName

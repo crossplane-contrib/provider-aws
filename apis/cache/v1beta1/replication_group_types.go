@@ -84,7 +84,7 @@ type NodeGroup struct {
 	// (cluster mode disabled) replication group contains only 1 node group;
 	// therefore, the node group ID is 0001. A Redis (cluster mode enabled)
 	// replication group contains 1 to 15 node groups numbered 0001 to 0015.
-	NodeGroupID string `json:"port,omitempty"`
+	NodeGroupID string `json:"nodeGroupID,omitempty"`
 
 	// NodeGroupMembers is a list containing information about individual nodes
 	// within the node group (shard).

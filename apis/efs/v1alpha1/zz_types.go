@@ -66,6 +66,20 @@ type CreationInfo struct {
 }
 
 // +kubebuilder:skipversion
+type Destination struct {
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
+	LastReplicatedTimestamp *metav1.Time `json:"lastReplicatedTimestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DestinationToCreate struct {
+	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemDescription struct {
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
 
@@ -148,6 +162,17 @@ type PosixUser struct {
 	SecondaryGids []*int64 `json:"secondaryGids,omitempty"`
 
 	Uid *int64 `json:"uid,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationConfigurationDescription struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	OriginalSourceFileSystemARN *string `json:"originalSourceFileSystemARN,omitempty"`
+
+	SourceFileSystemARN *string `json:"sourceFileSystemARN,omitempty"`
+
+	SourceFileSystemID *string `json:"sourceFileSystemID,omitempty"`
 }
 
 // +kubebuilder:skipversion

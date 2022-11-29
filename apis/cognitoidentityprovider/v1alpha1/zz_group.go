@@ -31,19 +31,19 @@ type GroupParameters struct {
 	Region string `json:"region"`
 	// A string containing the description of the group.
 	Description *string `json:"description,omitempty"`
-	// A nonnegative integer value that specifies the precedence of this group relative
-	// to the other groups that a user can belong to in the user pool. Zero is the
-	// highest precedence value. Groups with lower Precedence values take precedence
-	// over groups with higher or null Precedence values. If a user belongs to two
-	// or more groups, it is the group with the lowest precedence value whose role
-	// ARN will be used in the cognito:roles and cognito:preferred_role claims in
-	// the user's tokens.
+	// A non-negative integer value that specifies the precedence of this group
+	// relative to the other groups that a user can belong to in the user pool.
+	// Zero is the highest precedence value. Groups with lower Precedence values
+	// take precedence over groups with higher ornull Precedence values. If a user
+	// belongs to two or more groups, it is the group with the lowest precedence
+	// value whose role ARN is given in the user's tokens for the cognito:roles
+	// and cognito:preferred_role claims.
 	//
 	// Two groups can have the same Precedence value. If this happens, neither group
 	// takes precedence over the other. If two groups with the same Precedence have
 	// the same role ARN, that role is used in the cognito:preferred_role claim
 	// in tokens for users in each group. If the two groups have different role
-	// ARNs, the cognito:preferred_role claim is not set in users' tokens.
+	// ARNs, the cognito:preferred_role claim isn't set in users' tokens.
 	//
 	// The default Precedence value is null.
 	Precedence            *int64 `json:"precedence,omitempty"`
@@ -64,7 +64,7 @@ type GroupObservation struct {
 	GroupName *string `json:"groupName,omitempty"`
 	// The date the group was last modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
-	// The role ARN for the group.
+	// The role Amazon Resource Name (ARN) for the group.
 	RoleARN *string `json:"roleARN,omitempty"`
 	// The user pool ID for the user pool.
 	UserPoolID *string `json:"userPoolID,omitempty"`

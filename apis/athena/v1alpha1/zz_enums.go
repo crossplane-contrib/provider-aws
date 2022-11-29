@@ -52,6 +52,12 @@ const (
 	QueryExecutionState_CANCELLED QueryExecutionState = "CANCELLED"
 )
 
+type S3ACLOption string
+
+const (
+	S3ACLOption_BUCKET_OWNER_FULL_CONTROL S3ACLOption = "BUCKET_OWNER_FULL_CONTROL"
+)
+
 type StatementType string
 
 const (

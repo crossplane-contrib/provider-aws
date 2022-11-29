@@ -76,6 +76,8 @@ spec:
                   advancedSecurityOptions:
                     description: Specifies advanced security options.
                     properties:
+                      anonymousAuthEnabled:
+                        type: boolean
                       enabled:
                         type: boolean
                       internalUserDatabaseEnabled:
@@ -512,6 +514,15 @@ spec:
                       in the AWS Identity and Access Management User Guide for more
                       information.
                     type: string
+                  changeProgressDetails:
+                    description: Specifies change details of the domain configuration
+                      change.
+                    properties:
+                      changeID:
+                        type: string
+                      message:
+                        type: string
+                    type: object
                   created:
                     description: The domain creation status. True if the creation
                       of a domain is complete. False if domain creation is still in

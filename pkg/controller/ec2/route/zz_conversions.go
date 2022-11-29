@@ -35,6 +35,9 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 	if cr.Spec.ForProvider.CarrierGatewayID != nil {
 		res.SetCarrierGatewayId(*cr.Spec.ForProvider.CarrierGatewayID)
 	}
+	if cr.Spec.ForProvider.CoreNetworkARN != nil {
+		res.SetCoreNetworkArn(*cr.Spec.ForProvider.CoreNetworkARN)
+	}
 	if cr.Spec.ForProvider.DestinationCIDRBlock != nil {
 		res.SetDestinationCidrBlock(*cr.Spec.ForProvider.DestinationCIDRBlock)
 	}

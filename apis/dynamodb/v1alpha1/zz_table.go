@@ -151,6 +151,8 @@ type TableParameters struct {
 	//    NEW_AND_OLD_IMAGES - Both the new and the old item images of the item
 	//    are written to the stream.
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
+	// The table class of the new table. Valid values are STANDARD and STANDARD_INFREQUENT_ACCESS.
+	TableClass *string `json:"tableClass,omitempty"`
 	// A list of key-value pairs to label the table. For more information, see Tagging
 	// for DynamoDB (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tagging.html).
 	Tags                  []*Tag `json:"tags,omitempty"`
@@ -173,7 +175,7 @@ type TableObservation struct {
 	// format.
 	CreationDateTime *metav1.Time `json:"creationDateTime,omitempty"`
 	// Represents the version of global tables (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
-	// in use, if the table is replicated across AWS Regions.
+	// in use, if the table is replicated across Amazon Web Services Regions.
 	GlobalTableVersion *string `json:"globalTableVersion,omitempty"`
 	// The number of items in the specified table. DynamoDB updates this value approximately
 	// every six hours. Recent changes might not be reflected in this value.
@@ -188,7 +190,7 @@ type TableObservation struct {
 	// However, the combination of the following three elements is guaranteed to
 	// be unique:
 	//
-	//    * AWS customer ID
+	//    * Amazon Web Services customer ID
 	//
 	//    * Table name
 	//
@@ -202,6 +204,8 @@ type TableObservation struct {
 	SSEDescription *SSEDescription `json:"sseDescription,omitempty"`
 	// The Amazon Resource Name (ARN) that uniquely identifies the table.
 	TableARN *string `json:"tableARN,omitempty"`
+	// Contains details of the table class.
+	TableClassSummary *TableClassSummary `json:"tableClassSummary,omitempty"`
 	// Unique identifier for the table for which the backup was created.
 	TableID *string `json:"tableID,omitempty"`
 	// The name of the table.
@@ -220,10 +224,10 @@ type TableObservation struct {
 	//
 	//    * ACTIVE - The table is ready for use.
 	//
-	//    * INACCESSIBLE_ENCRYPTION_CREDENTIALS - The AWS KMS key used to encrypt
-	//    the table in inaccessible. Table operations may fail due to failure to
-	//    use the AWS KMS key. DynamoDB will initiate the table archival process
-	//    when a table's AWS KMS key remains inaccessible for more than seven days.
+	//    * INACCESSIBLE_ENCRYPTION_CREDENTIALS - The KMS key used to encrypt the
+	//    table in inaccessible. Table operations may fail due to failure to use
+	//    the KMS key. DynamoDB will initiate the table archival process when a
+	//    table's KMS key remains inaccessible for more than seven days.
 	//
 	//    * ARCHIVING - The table is being archived. Operations are not allowed
 	//    until archival is complete.

@@ -172,6 +172,15 @@ spec:
                       more shards are required for greater provisioned throughput.
                     format: int64
                     type: integer
+                  streamModeDetails:
+                    description: Indicates the capacity mode of the data stream. Currently,
+                      in Kinesis Data Streams, you can choose between an on-demand
+                      capacity mode and a provisioned capacity mode for your data
+                      streams.
+                    properties:
+                      streamMode:
+                        type: string
+                    type: object
                   tags:
                     items:
                       description: CustomTag contains the additional fields for Tag.
@@ -189,7 +198,6 @@ spec:
                     type: array
                 required:
                 - region
-                - shardCount
                 type: object
               providerConfigRef:
                 default:
@@ -373,7 +381,7 @@ spec:
                       This parameter can be one of the following values: \n * NONE:
                       Do not encrypt the records in the stream. \n * KMS: Use server-side
                       encryption on the records in the stream using a customer-managed
-                      AWS KMS key."
+                      Amazon Web Services KMS key."
                     type: string
                   enhancedMonitoring:
                     description: Represents the current enhanced monitoring settings
@@ -391,12 +399,12 @@ spec:
                       to describe.
                     type: boolean
                   keyID:
-                    description: "The GUID for the customer-managed AWS KMS key to
-                      use for encryption. This value can be a globally unique identifier,
-                      a fully specified ARN to either an alias or a key, or an alias
-                      name prefixed by \"alias/\".You can also use a master key owned
-                      by Kinesis Data Streams by specifying the alias aws/kinesis.
-                      \n * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+                    description: "The GUID for the customer-managed Amazon Web Services
+                      KMS key to use for encryption. This value can be a globally
+                      unique identifier, a fully specified ARN to either an alias
+                      or a key, or an alias name prefixed by \"alias/\".You can also
+                      use a master key owned by Kinesis Data Streams by specifying
+                      the alias aws/kinesis. \n * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
                       \n * Alias ARN example: arn:aws:kms:us-east-1:123456789012:alias/MyAliasName
                       \n * Globally unique key ID example: 12345678-1234-1234-1234-123456789012
                       \n * Alias name example: alias/MyAliasName \n * Master key owned

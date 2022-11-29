@@ -68,11 +68,11 @@ spec:
                       capacity provider strategy of the cluster or used in a capacity
                       provider strategy when calling the CreateService or RunTask
                       actions. \n If specifying a capacity provider that uses an Auto
-                      Scaling group, the capacity provider must already be created
-                      and not already associated with another cluster. New Auto Scaling
-                      group capacity providers can be created with the CreateCapacityProvider
-                      API operation. \n To use a Fargate capacity provider, specify
-                      either the FARGATE or FARGATE_SPOT capacity providers. The Fargate
+                      Scaling group, the capacity provider must be created but not
+                      associated with another cluster. New Auto Scaling group capacity
+                      providers can be created with the CreateCapacityProvider API
+                      operation. \n To use a Fargate capacity provider, specify either
+                      the FARGATE or FARGATE_SPOT capacity providers. The Fargate
                       capacity providers are available to all accounts and only need
                       to be associated with a cluster to be used. \n The PutClusterCapacityProviders
                       API operation is used to update the list of available capacity
@@ -81,9 +81,9 @@ spec:
                       type: string
                     type: array
                   clusterName:
-                    description: The name of your cluster. If you do not specify a
-                      name for your cluster, you create a cluster named default. Up
-                      to 255 letters (uppercase and lowercase), numbers, underscores,
+                    description: The name of your cluster. If you don't specify a
+                      name for your cluster, you create a cluster that's named default.
+                      Up to 255 letters (uppercase and lowercase), numbers, underscores,
                       and hyphens are allowed.
                     type: string
                   configuration:
@@ -116,13 +116,13 @@ spec:
                     type: object
                   defaultCapacityProviderStrategy:
                     description: "The capacity provider strategy to set as the default
-                      for the cluster. When a default capacity provider strategy is
-                      set for a cluster, when calling the RunTask or CreateService
+                      for the cluster. After a default capacity provider strategy
+                      is set for a cluster, when you call the RunTask or CreateService
                       APIs with no capacity provider strategy or launch type specified,
                       the default capacity provider strategy for the cluster is used.
-                      \n If a default capacity provider strategy is not defined for
-                      a cluster during creation, it can be defined later with the
-                      PutClusterCapacityProviders API operation."
+                      \n If a default capacity provider strategy isn't defined for
+                      a cluster when it was created, it can be defined later with
+                      the PutClusterCapacityProviders API operation."
                     items:
                       properties:
                         base:
@@ -140,9 +140,9 @@ spec:
                     type: string
                   settings:
                     description: The setting to use when creating a cluster. This
-                      parameter is used to enable CloudWatch Container Insights for
-                      a cluster. If this value is specified, it will override the
-                      containerInsights value set with PutAccountSetting or PutAccountSettingDefault.
+                      parameter is used to turn on CloudWatch Container Insights for
+                      a cluster. If this value is specified, it overrides the containerInsights
+                      value set with PutAccountSetting or PutAccountSettingDefault.
                     items:
                       properties:
                         name:
@@ -154,14 +154,14 @@ spec:
                   tags:
                     description: "The metadata that you apply to the cluster to help
                       you categorize and organize them. Each tag consists of a key
-                      and an optional value, both of which you define. \n The following
-                      basic restrictions apply to tags: \n * Maximum number of tags
-                      per resource - 50 \n * For each resource, each tag key must
-                      be unique, and each tag key can have only one value. \n * Maximum
-                      key length - 128 Unicode characters in UTF-8 \n * Maximum value
-                      length - 256 Unicode characters in UTF-8 \n * If your tagging
-                      schema is used across multiple services and resources, remember
-                      that other services may have restrictions on allowed characters.
+                      and an optional value. You define both. \n The following basic
+                      restrictions apply to tags: \n * Maximum number of tags per
+                      resource - 50 \n * For each resource, each tag key must be unique,
+                      and each tag key can have only one value. \n * Maximum key length
+                      - 128 Unicode characters in UTF-8 \n * Maximum value length
+                      - 256 Unicode characters in UTF-8 \n * If your tagging schema
+                      is used across multiple services and resources, remember that
+                      other services may have restrictions on allowed characters.
                       Generally allowed characters are: letters, numbers, and spaces
                       representable in UTF-8, and the following characters: + - =
                       . _ : / @. \n * Tag keys and values are case-sensitive. \n *
@@ -365,8 +365,8 @@ spec:
                     type: integer
                   attachments:
                     description: The resources attached to a cluster. When using a
-                      capacity provider with a cluster, the Auto Scaling plan that
-                      is created will be returned as a cluster attachment.
+                      capacity provider with a cluster, the Auto Scaling plan that's
+                      created is returned as a cluster attachment.
                     items:
                       properties:
                         details:
@@ -388,9 +388,9 @@ spec:
                     type: array
                   attachmentsStatus:
                     description: "The status of the capacity providers associated
-                      with the cluster. The following are the states that will be
-                      returned: \n UPDATE_IN_PROGRESS \n The available capacity providers
-                      for the cluster are updating. This occurs when the Auto Scaling
+                      with the cluster. The following are the states that are returned.
+                      \n UPDATE_IN_PROGRESS \n The available capacity providers for
+                      the cluster are updating. This occurs when the Auto Scaling
                       plan is provisioning or deprovisioning. \n UPDATE_COMPLETE \n
                       The capacity providers have successfully updated. \n UPDATE_FAILED
                       \n The capacity provider updates failed."
@@ -420,10 +420,11 @@ spec:
                     type: integer
                   statistics:
                     description: "Additional information about your clusters that
-                      are separated by launch type, including: \n * runningEC2TasksCount
-                      \n * RunningFargateTasksCount \n * pendingEC2TasksCount \n *
-                      pendingFargateTasksCount \n * activeEC2ServiceCount \n * activeFargateServiceCount
-                      \n * drainingEC2ServiceCount \n * drainingFargateServiceCount"
+                      are separated by launch type. They include the following: \n
+                      * runningEC2TasksCount \n * RunningFargateTasksCount \n * pendingEC2TasksCount
+                      \n * pendingFargateTasksCount \n * activeEC2ServiceCount \n
+                      * activeFargateServiceCount \n * drainingEC2ServiceCount \n
+                      * drainingFargateServiceCount"
                     items:
                       properties:
                         name:
@@ -434,19 +435,20 @@ spec:
                     type: array
                   status:
                     description: "The status of the cluster. The following are the
-                      possible states that will be returned. \n ACTIVE \n The cluster
+                      possible states that are returned. \n ACTIVE \n The cluster
                       is ready to accept tasks and if applicable you can register
                       container instances with the cluster. \n PROVISIONING \n The
-                      cluster has capacity providers associated with it and the resources
-                      needed for the capacity provider are being created. \n DEPROVISIONING
-                      \n The cluster has capacity providers associated with it and
-                      the resources needed for the capacity provider are being deleted.
-                      \n FAILED \n The cluster has capacity providers associated with
-                      it and the resources needed for the capacity provider have failed
-                      to create. \n INACTIVE \n The cluster has been deleted. Clusters
-                      with an INACTIVE status may remain discoverable in your account
-                      for a period of time. However, this behavior is subject to change
-                      in the future, so you should not rely on INACTIVE clusters persisting."
+                      cluster has capacity providers that are associated with it and
+                      the resources needed for the capacity provider are being created.
+                      \n DEPROVISIONING \n The cluster has capacity providers that
+                      are associated with it and the resources needed for the capacity
+                      provider are being deleted. \n FAILED \n The cluster has capacity
+                      providers that are associated with it and the resources needed
+                      for the capacity provider have failed to create. \n INACTIVE
+                      \n The cluster has been deleted. Clusters with an INACTIVE status
+                      may remain discoverable in your account for a period of time.
+                      However, this behavior is subject to change in the future. We
+                      don't recommend that you rely on INACTIVE clusters persisting."
                     type: string
                 type: object
               conditions:

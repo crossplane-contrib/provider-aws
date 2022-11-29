@@ -1,0 +1,35 @@
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: Role
+metadata:
+  name: spot-fleet-tagging-role
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "spotfleet.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+            }
+          ]
+      }
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: spot-fleet-tagging-rolepolicyattachment
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+    roleNameRef:
+      name: spot-fleet-tagging-role
+  providerConfigRef:
+    name: example

@@ -1,0 +1,36 @@
+apiVersion: batch.aws.crossplane.io/v1alpha1
+kind: ComputeEnvironment
+metadata:
+  name: example-managed-ec2-computeenvironment
+spec:
+  forProvider:
+    region: us-east-1
+    type_: MANAGED
+    ## Defined in examples/ec2
+    subnetIdRefs: # apply internetgateway + routetable too (=>public subnet)
+      - name: sample-subnet1
+    ## Defined in examples/batch
+    securityGroupIdRefs:
+      - name: batch-ce-sg
+    ## Defined in examples/batch
+    instanceRoleRef:
+      name: ecsinstance-role-profile
+    tags: 
+      ce: "my-ec2-ce"
+      other: "blaa"
+    # for EC2 and EC2Spot: If the original allocation strategy is BEST_FIT,
+    # infrastructure updates aren't supported.
+    # In that case the only fields in computeResources that can be updated are:
+    # minvCPUs and maxvCPUs
+    computeResources:
+      type_: EC2
+      allocationStrategy: BEST_FIT_PROGRESSIVE # optional, AWS default is BEST_FIT
+      minvCPUs: 1
+      maxvCPUs: 32
+      instanceTypes:
+        - "optimal"
+      tags:
+        cr: "cr-for-ec2-ce"
+        other: "updatable-tag"
+  providerConfigRef:
+    name: example

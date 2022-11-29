@@ -61,6 +61,10 @@ const (
 	CustomerMasterKeySpec_ECC_NIST_P521     CustomerMasterKeySpec = "ECC_NIST_P521"
 	CustomerMasterKeySpec_ECC_SECG_P256K1   CustomerMasterKeySpec = "ECC_SECG_P256K1"
 	CustomerMasterKeySpec_SYMMETRIC_DEFAULT CustomerMasterKeySpec = "SYMMETRIC_DEFAULT"
+	CustomerMasterKeySpec_HMAC_224          CustomerMasterKeySpec = "HMAC_224"
+	CustomerMasterKeySpec_HMAC_256          CustomerMasterKeySpec = "HMAC_256"
+	CustomerMasterKeySpec_HMAC_384          CustomerMasterKeySpec = "HMAC_384"
+	CustomerMasterKeySpec_HMAC_512          CustomerMasterKeySpec = "HMAC_512"
 )
 
 type DataKeyPairSpec string
@@ -114,6 +118,8 @@ const (
 	GrantOperation_DescribeKey                         GrantOperation = "DescribeKey"
 	GrantOperation_GenerateDataKeyPair                 GrantOperation = "GenerateDataKeyPair"
 	GrantOperation_GenerateDataKeyPairWithoutPlaintext GrantOperation = "GenerateDataKeyPairWithoutPlaintext"
+	GrantOperation_GenerateMac                         GrantOperation = "GenerateMac"
+	GrantOperation_VerifyMac                           GrantOperation = "VerifyMac"
 )
 
 type KeyManagerType string
@@ -134,6 +140,10 @@ const (
 	KeySpec_SDK_ECC_NIST_P521     KeySpec_SDK = "ECC_NIST_P521"
 	KeySpec_SDK_ECC_SECG_P256K1   KeySpec_SDK = "ECC_SECG_P256K1"
 	KeySpec_SDK_SYMMETRIC_DEFAULT KeySpec_SDK = "SYMMETRIC_DEFAULT"
+	KeySpec_SDK_HMAC_224          KeySpec_SDK = "HMAC_224"
+	KeySpec_SDK_HMAC_256          KeySpec_SDK = "HMAC_256"
+	KeySpec_SDK_HMAC_384          KeySpec_SDK = "HMAC_384"
+	KeySpec_SDK_HMAC_512          KeySpec_SDK = "HMAC_512"
 )
 
 type KeyState string
@@ -152,8 +162,18 @@ const (
 type KeyUsageType string
 
 const (
-	KeyUsageType_SIGN_VERIFY     KeyUsageType = "SIGN_VERIFY"
-	KeyUsageType_ENCRYPT_DECRYPT KeyUsageType = "ENCRYPT_DECRYPT"
+	KeyUsageType_SIGN_VERIFY         KeyUsageType = "SIGN_VERIFY"
+	KeyUsageType_ENCRYPT_DECRYPT     KeyUsageType = "ENCRYPT_DECRYPT"
+	KeyUsageType_GENERATE_VERIFY_MAC KeyUsageType = "GENERATE_VERIFY_MAC"
+)
+
+type MacAlgorithmSpec string
+
+const (
+	MacAlgorithmSpec_HMAC_SHA_224 MacAlgorithmSpec = "HMAC_SHA_224"
+	MacAlgorithmSpec_HMAC_SHA_256 MacAlgorithmSpec = "HMAC_SHA_256"
+	MacAlgorithmSpec_HMAC_SHA_384 MacAlgorithmSpec = "HMAC_SHA_384"
+	MacAlgorithmSpec_HMAC_SHA_512 MacAlgorithmSpec = "HMAC_SHA_512"
 )
 
 type MessageType string

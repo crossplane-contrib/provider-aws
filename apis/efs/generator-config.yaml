@@ -1,4 +1,6 @@
 ignore:
+  resource_names:
+    - ReplicationConfiguration
   field_paths:
     - CreateAccessPointInput.ClientToken
     - CreateAccessPointInput.FileSystemId

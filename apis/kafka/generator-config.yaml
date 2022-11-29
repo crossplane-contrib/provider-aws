@@ -1,4 +1,6 @@
 ignore:
+  resource_names:
+    - ClusterV2
   field_paths:
     - CreateClusterInput.BrokerNodeGroupInfo
     - CreateClusterInput.ClusterName

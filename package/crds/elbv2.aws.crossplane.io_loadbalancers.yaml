@@ -68,8 +68,7 @@ spec:
                   ipAddressType:
                     description: The type of IP addresses used by the subnets for
                       your load balancer. The possible values are ipv4 (for IPv4 addresses)
-                      and dualstack (for IPv4 and IPv6 addresses). Internal load balancers
-                      must use ipv4.
+                      and dualstack (for IPv4 and IPv6 addresses).
                     type: string
                   loadBalancerType:
                     description: The type of load balancer. The default is application.

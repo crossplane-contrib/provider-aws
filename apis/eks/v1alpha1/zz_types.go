@@ -149,6 +149,8 @@ type KubernetesNetworkConfigRequest struct {
 // +kubebuilder:skipversion
 type KubernetesNetworkConfigResponse struct {
 	ServiceIPv4CIDR *string `json:"serviceIPv4CIDR,omitempty"`
+
+	ServiceIPv6CIDR *string `json:"serviceIPv6CIDR,omitempty"`
 }
 
 // +kubebuilder:skipversion

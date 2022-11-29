@@ -32,8 +32,11 @@ type StreamParameters struct {
 	// The number of shards that the stream will use. The throughput of the stream
 	// is a function of the number of shards; more shards are required for greater
 	// provisioned throughput.
-	// +kubebuilder:validation:Required
-	ShardCount             *int64 `json:"shardCount"`
+	ShardCount *int64 `json:"shardCount,omitempty"`
+	// Indicates the capacity mode of the data stream. Currently, in Kinesis Data
+	// Streams, you can choose between an on-demand capacity mode and a provisioned
+	// capacity mode for your data streams.
+	StreamModeDetails      *StreamModeDetails `json:"streamModeDetails,omitempty"`
 	CustomStreamParameters `json:",inline"`
 }
 
@@ -51,16 +54,17 @@ type StreamObservation struct {
 	//    * NONE: Do not encrypt the records in the stream.
 	//
 	//    * KMS: Use server-side encryption on the records in the stream using a
-	//    customer-managed AWS KMS key.
+	//    customer-managed Amazon Web Services KMS key.
 	EncryptionType *string `json:"encryptionType,omitempty"`
 	// Represents the current enhanced monitoring settings of the stream.
 	EnhancedMonitoring []*EnhancedMetrics `json:"enhancedMonitoring,omitempty"`
 	// If set to true, more shards in the stream are available to describe.
 	HasMoreShards *bool `json:"hasMoreShards,omitempty"`
-	// The GUID for the customer-managed AWS KMS key to use for encryption. This
-	// value can be a globally unique identifier, a fully specified ARN to either
-	// an alias or a key, or an alias name prefixed by "alias/".You can also use
-	// a master key owned by Kinesis Data Streams by specifying the alias aws/kinesis.
+	// The GUID for the customer-managed Amazon Web Services KMS key to use for
+	// encryption. This value can be a globally unique identifier, a fully specified
+	// ARN to either an alias or a key, or an alias name prefixed by "alias/".You
+	// can also use a master key owned by Kinesis Data Streams by specifying the
+	// alias aws/kinesis.
 	//
 	//    * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
 	//

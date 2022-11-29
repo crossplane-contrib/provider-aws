@@ -233,6 +233,15 @@ const (
 	OutboundConnectionStatusCode_DELETED            OutboundConnectionStatusCode = "DELETED"
 )
 
+type OverallChangeStatus string
+
+const (
+	OverallChangeStatus_PENDING    OverallChangeStatus = "PENDING"
+	OverallChangeStatus_PROCESSING OverallChangeStatus = "PROCESSING"
+	OverallChangeStatus_COMPLETED  OverallChangeStatus = "COMPLETED"
+	OverallChangeStatus_FAILED     OverallChangeStatus = "FAILED"
+)
+
 type PackageStatus string
 
 const (

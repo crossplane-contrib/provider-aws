@@ -2,8 +2,11 @@ package dbcluster
 
 import (
 	"context"
+	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/google/go-cmp/cmp"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -153,6 +156,14 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			if _, err = e.client.RestoreDBClusterFromS3WithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
+		case "Snapshot":
+			input := generateRestoreDBClusterFromSnapshotInput(cr)
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
 		default:
 			return errors.New(errUnknownRestoreFromSource)
 		}
@@ -274,6 +285,150 @@ func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.Rest
 		}
 	}
 
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		serverlessScalingConfiguration := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			serverlessScalingConfiguration.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			serverlessScalingConfiguration.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(serverlessScalingConfiguration)
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
+}
+
+func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { // nolint:gocyclo
+	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
+
+	if cr.Spec.ForProvider.AvailabilityZones != nil {
+		res.SetAvailabilityZones(cr.Spec.ForProvider.AvailabilityZones)
+	}
+
+	if cr.Spec.ForProvider.BacktrackWindow != nil {
+		res.SetBacktrackWindow(*cr.Spec.ForProvider.BacktrackWindow)
+	}
+
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+
+	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil {
+		res.SetDBClusterParameterGroupName(*cr.Spec.ForProvider.DBClusterParameterGroupName)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DatabaseName != nil {
+		res.SetDatabaseName(*cr.Spec.ForProvider.DatabaseName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.Domain != nil {
+		res.SetDomain(*cr.Spec.ForProvider.Domain)
+	}
+
+	if cr.Spec.ForProvider.DomainIAMRoleName != nil {
+		res.SetDomainIAMRoleName(*cr.Spec.ForProvider.DomainIAMRoleName)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.EngineMode != nil {
+		res.SetEngineMode(*cr.Spec.ForProvider.EngineMode)
+	}
+
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+
+	if cr.Spec.ForProvider.IOPS != nil {
+		res.SetIops(*cr.Spec.ForProvider.IOPS)
+	}
+
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.PubliclyAccessible != nil {
+		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
+	}
+
+	if cr.Spec.ForProvider.ScalingConfiguration != nil {
+		scalingConfiguration := &svcsdk.ScalingConfiguration{}
+		if cr.Spec.ForProvider.ScalingConfiguration.AutoPause != nil {
+			scalingConfiguration.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity != nil {
+			scalingConfiguration.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.MinCapacity != nil {
+			scalingConfiguration.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.SecondsBeforeTimeout != nil {
+			scalingConfiguration.SetSecondsBeforeTimeout(*cr.Spec.ForProvider.ScalingConfiguration.SecondsBeforeTimeout)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause != nil {
+			scalingConfiguration.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction != nil {
+			scalingConfiguration.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
+		}
+		res.SetScalingConfiguration(scalingConfiguration)
+	}
+
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		serverlessScalingConfiguration := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			serverlessScalingConfiguration.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			serverlessScalingConfiguration.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(serverlessScalingConfiguration)
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.Snapshot != nil {
+		res.SetSnapshotIdentifier(*cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
+	}
+
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
+
 	if cr.Spec.ForProvider.Tags != nil {
 		var tags []*svcsdk.Tag
 		for _, tag := range cr.Spec.ForProvider.Tags {
@@ -325,6 +480,10 @@ func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput)
 	}
 
 	if !isPortUpToDate(cr, out) {
+		return false, nil
+	}
+
+	if !isVPCSecurityGroupIDsUpToDate(cr, out) {
 		return false, nil
 	}
 
@@ -408,6 +567,29 @@ func isPortUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOut
 		}
 	}
 	return true
+}
+
+func isVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	// AWS uses "sg-563ab33d" which ich really restrictive as the default, and it seems to use it even when it is
+	// patched (with "required") - might be race condition. Anyway with checking if there is a diff we can rectify and
+	// even make it configurable after creation.
+
+	actualGroups := out.DBClusters[0].VpcSecurityGroups
+	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
+
+	if len(desiredIDs) != len(actualGroups) {
+		return false
+	}
+
+	actualIDs := make([]string, 0, len(actualGroups))
+	for _, grp := range actualGroups {
+		actualIDs = append(actualIDs, *grp.VpcSecurityGroupId)
+	}
+
+	sort.Strings(desiredIDs)
+	sort.Strings(actualIDs)
+
+	return cmp.Equal(desiredIDs, actualIDs)
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
