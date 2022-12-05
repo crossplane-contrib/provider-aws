@@ -1,0 +1,22 @@
+
+# See https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/getting-started.html
+apiVersion: emrcontainers.aws.crossplane.io/v1alpha1
+kind: JobRun
+metadata:
+  name: test-job-run
+spec:
+  forProvider:
+    region: us-west-2
+    executionRoleARN: arn:aws:iam::123456:role/emr-on-eks
+    jobDriver:
+      sparkSubmitJobDriver:
+        entryPoint: s3://us-west-2.elasticmapreduce/emr-containers/samples/wordcount/scripts/wordcount.py
+        entryPointArguments:
+          - s3://my-example-bucket/wordcount_output
+        sparkSubmitParameters: "--conf spark.executor.instances=2 --conf spark.executor.memory=2G --conf spark.executor.cores=2 --conf spark.driver.cores=1"
+    releaseLabel: emr-6.4.0-latest
+    virtualClusterId: 94815abcdefgtih2k1k
+    tags:
+      key1: value1
+  providerConfigRef:
+    name: aws-provider-config

@@ -1,0 +1,20 @@
+# See https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up.html
+# https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-registration.html
+apiVersion: emrcontainers.aws.crossplane.io/v1alpha1
+kind: VirtualCluster
+metadata:
+  name: test-cluster
+spec:
+  forProvider:
+    region: us-west-2
+    tags:
+      key: value
+      key2: value2
+    containerProvider:
+      id: my-eks-name
+      type_: EKS
+      info:
+        eksInfo:
+          namespace: emr-on-eks
+  providerConfigRef:
+    name: aws-provider-config
