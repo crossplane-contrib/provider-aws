@@ -69,8 +69,8 @@ func IsErrorNotFound(err error) bool {
 	return errors.As(err, &nff)
 }
 
-// GenerateCreateDBInstanceInput from RDSInstanceSpec
-func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
+// GenerateCreateRDSInstanceInput from RDSInstanceSpec
+func GenerateCreateRDSInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
 	// Partially duplicates GenerateRestoreDBInstanceFromS3Input and GenerateRestoreDBInstanceFromSnapshotInput:
 	// Make sure any relevant changes are applied there too.
 	c := &rds.CreateDBInstanceInput{
@@ -138,8 +138,8 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 	return c
 }
 
-// GenerateRestoreDBInstanceFromS3Input from RDSInstanceSpec
-func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
+// GenerateRestoreRDSInstanceFromS3Input from RDSInstanceSpec
+func GenerateRestoreRDSInstanceFromS3Input(name, password string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromS3Input {
 	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.RestoreDBInstanceFromS3Input{
 		DBInstanceIdentifier:               aws.String(name),
@@ -204,8 +204,8 @@ func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1beta1.RDSI
 	return c
 }
 
-// GenerateRestoreDBInstanceFromSnapshotInput from RDSInstanceSpec
-func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
+// GenerateRestoreRDSInstanceFromSnapshotInput from RDSInstanceSpec
+func GenerateRestoreRDSInstanceFromSnapshotInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceFromDBSnapshotInput {
 	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	c := &rds.RestoreDBInstanceFromDBSnapshotInput{
 		DBInstanceIdentifier:            aws.String(name),
@@ -253,8 +253,8 @@ func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1beta1.RDSInsta
 	return c
 }
 
-// GenerateRestoreDBInstanceToPointInTimeInput from RDSInstanceSpec
-func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceToPointInTimeInput {
+// GenerateRestoreRDSInstanceToPointInTimeInput from RDSInstanceSpec
+func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSInstanceParameters) *rds.RestoreDBInstanceToPointInTimeInput {
 	// Partially duplicates GenerateCreateDBInstanceInput - make sure any relevant changes are applied there too.
 	// Need to convert restoreTime from *metav1.Time to *time.Time
 	var restoreTime *time.Time

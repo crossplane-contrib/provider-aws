@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,8 +41,8 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds/fake"
+	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/database/fake"
 )
 
 const (

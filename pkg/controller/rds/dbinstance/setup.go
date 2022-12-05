@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+
 	"strconv"
 	"strings"
 	"time"
@@ -30,7 +31,8 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -41,8 +43,13 @@ const (
 
 // time formats
 const (
-	maintenanceWindowFormat = "Mon:15:04"
-	backupWindowFormat      = "15:04"
+	maintenanceWindowFormat     = "Mon:15:04"
+	backupWindowFormat          = "15:04"
+	errS3RestoreFailed          = "cannot restore DB instance from S3 backup"
+	errSnapshotRestoreFailed    = "cannot restore DB instance from snapshot"
+	errPointInTimeRestoreFailed = "cannot restore DB instance from point in time"
+	errUnknownRestoreSource     = "unknown DB Instance restore source"
+	statusDeleting              = "deleting"
 )
 
 // SetupDBInstance adds a controller that reconciles DBInstance
@@ -92,8 +99,8 @@ func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.Descr
 	return nil
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error {
-	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error { // nolint:gocyclo
+	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
@@ -120,6 +127,29 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 			obj.DBSecurityGroups[i] = aws.String(v)
 		}
 	}
+	if cr.Spec.ForProvider.RestoreFrom != nil {
+		switch *cr.Spec.ForProvider.RestoreFrom.Source {
+		case "S3":
+			_, err := e.client.RestoreDBInstanceFromS3WithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+			if err != nil {
+				return awsclient.Wrap(err, errS3RestoreFailed)
+			}
+
+		case "Snapshot":
+			_, err := e.client.RestoreDBInstanceFromDBSnapshotWithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+			if err != nil {
+				return awsclient.Wrap(err, errSnapshotRestoreFailed)
+			}
+		case "PointInTime":
+			_, err := e.client.RestoreDBInstanceToPointInTimeWithContext(ctx, dbinstance.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+			if err != nil {
+				return awsclient.Wrap(err, errPointInTimeRestoreFailed)
+			}
+		default:
+			return errors.New(errUnknownRestoreSource)
+
+		}
+	}
 	return nil
 }
 
@@ -127,7 +157,7 @@ func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretUserKey: []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 	}
-	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ConnectionDetails{}, errors.Wrap(err, "cannot get password from the given secret")
 	}
@@ -148,7 +178,7 @@ func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
-	pw, pwchanged, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	pw, pwchanged, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return err
 	}
@@ -178,6 +208,9 @@ func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	obj.SkipFinalSnapshot = aws.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
 
 	_, _ = e.external.Update(ctx, cr)
+	if *cr.Status.AtProvider.DBInstanceStatus == statusDeleting {
+		return true, nil
+	}
 	return false, nil
 }
 
@@ -310,7 +343,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return true, nil
 	}
 
-	_, pwChanged, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	_, pwChanged, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return false, err
 	}
@@ -353,6 +386,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredMaintenanceWindow"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredBackupWindow"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "RestoreFrom"),
 	)
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged {

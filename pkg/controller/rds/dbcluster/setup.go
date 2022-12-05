@@ -17,11 +17,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
-
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -110,7 +108,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(aws.Int64Value(cr.Spec.ForProvider.Port), 10)),
 	}
-	pw, _, _ := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	pw, _, _ := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if pw != "" {
 		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 	}
@@ -124,7 +122,7 @@ type custom struct {
 }
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { // nolint:gocyclo
-	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
@@ -162,6 +160,14 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
 
 			if _, err = e.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		case "PointInTime":
+			input := generateRestoreDBClusterToPointInTimeInput(cr)
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterToPointInTimeWithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
 		default:
@@ -436,6 +442,84 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 		}
 
 		res.SetTags(tags)
+	}
+
+	return res
+}
+
+func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput { // nolint:gocyclo
+
+	p := cr.Spec.ForProvider
+	res := &svcsdk.RestoreDBClusterToPointInTimeInput{
+		BacktrackWindow:                 p.BacktrackWindow,
+		CopyTagsToSnapshot:              p.CopyTagsToSnapshot,
+		DBClusterInstanceClass:          p.DBClusterInstanceClass,
+		DBClusterParameterGroupName:     p.DBClusterParameterGroupName,
+		DBSubnetGroupName:               p.DBSubnetGroupName,
+		DeletionProtection:              p.DeletionProtection,
+		Domain:                          p.Domain,
+		DomainIAMRoleName:               p.DomainIAMRoleName,
+		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
+		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		EngineMode:                      p.EngineMode,
+		Iops:                            p.IOPS,
+		KmsKeyId:                        p.KMSKeyID,
+		OptionGroupName:                 p.OptionGroupName,
+		Port:                            p.Port,
+		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageType:                     p.StorageType,
+		UseLatestRestorableTime:         &p.RestoreFrom.PointInTime.UseLatestRestorableTime,
+	}
+	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.RestoreTime != nil {
+		res.RestoreToTime = &p.RestoreFrom.PointInTime.RestoreTime.Time
+	}
+	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.RestoreTime != nil {
+		res.RestoreType = p.RestoreFrom.PointInTime.RestoreType
+	}
+	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.SourceDBClusterIdentifier != nil {
+		res.SourceDBClusterIdentifier = p.RestoreFrom.PointInTime.SourceDBClusterIdentifier
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	if cr.Spec.ForProvider.ScalingConfiguration != nil {
+		scalingConfiguration := &svcsdk.ScalingConfiguration{}
+		if cr.Spec.ForProvider.ScalingConfiguration.AutoPause != nil {
+			scalingConfiguration.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity != nil {
+			scalingConfiguration.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.MinCapacity != nil {
+			scalingConfiguration.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.SecondsBeforeTimeout != nil {
+			scalingConfiguration.SetSecondsBeforeTimeout(*cr.Spec.ForProvider.ScalingConfiguration.SecondsBeforeTimeout)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause != nil {
+			scalingConfiguration.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
+		}
+		if cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction != nil {
+			scalingConfiguration.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
+		}
+		res.SetScalingConfiguration(scalingConfiguration)
+	}
+
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		serverlessScalingConfiguration := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			serverlessScalingConfiguration.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			serverlessScalingConfiguration.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(serverlessScalingConfiguration)
 	}
 
 	return res
