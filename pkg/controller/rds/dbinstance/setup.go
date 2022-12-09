@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -31,7 +31,6 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
@@ -132,18 +131,18 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		case "S3":
 			_, err := e.client.RestoreDBInstanceFromS3WithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 			if err != nil {
-				return awsclient.Wrap(err, errS3RestoreFailed)
+				return aws.Wrap(err, errS3RestoreFailed)
 			}
 
 		case "Snapshot":
 			_, err := e.client.RestoreDBInstanceFromDBSnapshotWithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 			if err != nil {
-				return awsclient.Wrap(err, errSnapshotRestoreFailed)
+				return aws.Wrap(err, errSnapshotRestoreFailed)
 			}
 		case "PointInTime":
 			_, err := e.client.RestoreDBInstanceToPointInTimeWithContext(ctx, dbinstance.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 			if err != nil {
-				return awsclient.Wrap(err, errPointInTimeRestoreFailed)
+				return aws.Wrap(err, errPointInTimeRestoreFailed)
 			}
 		default:
 			return errors.New(errUnknownRestoreSource)
@@ -186,6 +185,13 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		obj.MasterUserPassword = aws.String(pw)
 	}
 
+	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
+		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
+		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			obj.VpcSecurityGroupIds[i] = aws.String(v)
+		}
+	}
+
 	return nil
 }
 
@@ -218,13 +224,18 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+
 	switch aws.StringValue(resp.DBInstances[0].DBInstanceStatus) {
-	case "available", "modifying":
+	case "available", "configuring-enhanced-monitoring", "storage-optimization", "backing-up":
 		cr.SetConditions(xpv1.Available())
-	case "deleting", "stopped", "stopping":
-		cr.SetConditions(xpv1.Unavailable())
+	case "modifying":
+		cr.SetConditions(xpv1.Available().WithMessage("DB Instance is " + aws.StringValue(resp.DBInstances[0].DBInstanceStatus) + ", availability may vary"))
+	case "deleting":
+		cr.SetConditions(xpv1.Deleting())
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
+	default:
+		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Instance is " + aws.StringValue(resp.DBInstances[0].DBInstanceStatus)))
 	}
 
 	obs.ConnectionDetails, _ = e.assembleConnectionDetails(ctx, cr)
@@ -238,6 +249,8 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.Engine = aws.LateInitializeStringPtr(in.Engine, db.Engine)
 
 	in.DBClusterIdentifier = aws.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
+	// if the instance belongs to a cluster, these fields should not be lateinit,
+	// to allow the user to manage these via the cluster
 	if in.DBClusterIdentifier == nil {
 		in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
 		in.BackupRetentionPeriod = aws.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
@@ -253,6 +266,20 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 		// the actual full version to our spec to avoid unnecessary update signals.
 		if strings.HasPrefix(aws.StringValue(db.EngineVersion), aws.StringValue(in.EngineVersion)) {
 			in.EngineVersion = db.EngineVersion
+		}
+		if in.DBParameterGroupName == nil {
+			for i := range db.DBParameterGroups {
+				if db.DBParameterGroups[i].DBParameterGroupName != nil {
+					in.DBParameterGroupName = db.DBParameterGroups[i].DBParameterGroupName
+					break
+				}
+			}
+		}
+		if len(in.VPCSecurityGroupIDs) == 0 && len(db.VpcSecurityGroups) != 0 {
+			in.VPCSecurityGroupIDs = make([]string, len(db.VpcSecurityGroups))
+			for i, val := range db.VpcSecurityGroups {
+				in.VPCSecurityGroupIDs[i] = aws.StringValue(val.VpcSecurityGroupId)
+			}
 		}
 	}
 	in.AutoMinorVersionUpgrade = aws.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
@@ -304,20 +331,6 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 			}
 		}
 	}
-	if len(in.VPCSecurityGroupIDs) == 0 && len(db.VpcSecurityGroups) != 0 {
-		in.VPCSecurityGroupIDs = make([]string, len(db.VpcSecurityGroups))
-		for i, val := range db.VpcSecurityGroups {
-			in.VPCSecurityGroupIDs[i] = aws.StringValue(val.VpcSecurityGroupId)
-		}
-	}
-	if in.DBParameterGroupName == nil {
-		for i := range db.DBParameterGroups {
-			if db.DBParameterGroups[i].DBParameterGroupName != nil {
-				in.DBParameterGroupName = db.DBParameterGroups[i].DBParameterGroupName
-				break
-			}
-		}
-	}
 
 	return nil
 }
@@ -339,7 +352,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	// This could be matured a bit more for specific statuses, such as not allowing storage changes
 	// when the status is "storage-optimization"
 	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
-	if status == "modifying" || status == "upgrading" {
+	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" {
 		return true, nil
 	}
 
@@ -374,9 +387,15 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 
 	}
 
+	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
+
+	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
+
 	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AllowMajorVersionUpgrade"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "DBParameterGroupName"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "SkipFinalSnapshot"),
@@ -387,9 +406,10 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredBackupWindow"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "RestoreFrom"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "VPCSecurityGroupIDs"),
 	)
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged {
 		return true, nil
 	}
 
@@ -456,6 +476,53 @@ func compareTimeRanges(format string, expectedWindow *string, actualWindow *stri
 		}
 	}
 	return false, nil
+}
+
+func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) bool {
+	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
+
+	// if user is fine with default SG or lets DBCluster manage it
+	// (removing all SGs is not possible, AWS will keep last set SGs)
+	if len(desiredIDs) == 0 {
+		return false
+	}
+
+	actualGroups := out.VpcSecurityGroups
+
+	if len(desiredIDs) != len(actualGroups) {
+		return true
+	}
+
+	actualIDs := make([]string, 0, len(actualGroups))
+	for _, grp := range actualGroups {
+		actualIDs = append(actualIDs, *grp.VpcSecurityGroupId)
+	}
+
+	sort.Strings(desiredIDs)
+	sort.Strings(actualIDs)
+
+	return cmp.Equal(desiredIDs, actualIDs)
+}
+
+func isDBParameterGroupNameUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) bool {
+	desiredGroup := cr.Spec.ForProvider.DBParameterGroupName
+
+	// if user is fine with default DBParameterGroup or lets DBCluster manage it
+	if desiredGroup == nil {
+		return true
+	}
+
+	actualGroups := out.DBParameterGroups
+
+	for _, grp := range actualGroups {
+
+		if aws.StringValue(grp.DBParameterGroupName) == aws.StringValue(desiredGroup) {
+			return true
+		}
+
+	}
+
+	return false
 }
 
 func filterList(cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesOutput) *svcsdk.DescribeDBInstancesOutput {

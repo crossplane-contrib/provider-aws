@@ -105,6 +105,16 @@ type DBInstanceParameters struct {
 	//    be an integer from 20 to 1024. Web and Express editions: Must be an integer
 	//    from 20 to 1024.
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
+	// A value that indicates whether major version upgrades are allowed. Changing
+	// this parameter doesn't result in an outage and the change is asynchronously
+	// applied as soon as possible.
+	//
+	// This setting doesn't apply to RDS Custom.
+	//
+	// Constraints: Major version upgrades must be allowed when specifying a value
+	// for the EngineVersion parameter that is a different major version than the
+	// DB instance's current version.
+	AllowMajorVersionUpgrade *bool `json:"allowMajorVersionUpgrade,omitempty"`
 	// A value that indicates whether minor engine upgrades are applied automatically
 	// to the DB instance during the maintenance window. By default, minor engine
 	// upgrades are applied automatically.

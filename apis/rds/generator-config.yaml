@@ -7,6 +7,18 @@ operations:
     operation_type: Delete
 
 resources:
+  DBInstance:
+    fields:
+      AllowMajorVersionUpgrade:
+        from:
+          operation: ModifyDBInstance
+          path: AllowMajorVersionUpgrade
+  DBCluster:
+    fields:
+      AllowMajorVersionUpgrade:
+        from:
+          operation: ModifyDBCluster
+          path: AllowMajorVersionUpgrade
   DBInstanceRoleAssociation:
     exceptions:
       errors:

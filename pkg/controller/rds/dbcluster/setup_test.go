@@ -61,7 +61,7 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 				isUpToDate: false,
 			},
 		},
-		"DesiredEmpty": {
+		"DesiredBeingManged": { // AWS default or managed by DBCluster
 			args: args{
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
@@ -88,7 +88,7 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 				},
 			},
 			want: want{
-				isUpToDate: false,
+				isUpToDate: true,
 			},
 		},
 		"ActualEmpty": {
@@ -178,7 +178,7 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			isUpToDate := isVPCSecurityGroupIDsUpToDate(tc.args.cr, tc.args.out)
+			isUpToDate := areVPCSecurityGroupIDsUpToDate(tc.args.cr, tc.args.out)
 
 			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)

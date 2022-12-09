@@ -36,6 +36,14 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Multi-AZ DB clusters only
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
+	// A value that indicates whether major version upgrades are allowed.
+	//
+	// Constraints: You must allow major version upgrades when specifying a value
+	// for the EngineVersion parameter that is a different major version than the
+	// DB cluster's current version.
+	//
+	// Valid for: Aurora DB clusters only
+	AllowMajorVersionUpgrade *bool `json:"allowMajorVersionUpgrade,omitempty"`
 	// A value that indicates whether minor engine upgrades are applied automatically
 	// to the DB cluster during the maintenance window. By default, minor engine
 	// upgrades are applied automatically.

@@ -1328,6 +1328,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.AllowMajorVersionUpgrade != nil {
+		in, out := &in.AllowMajorVersionUpgrade, &out.AllowMajorVersionUpgrade
+		*out = new(bool)
+		**out = **in
+	}
 	if in.AutoMinorVersionUpgrade != nil {
 		in, out := &in.AutoMinorVersionUpgrade, &out.AutoMinorVersionUpgrade
 		*out = new(bool)
@@ -2868,6 +2873,11 @@ func (in *DBInstanceParameters) DeepCopyInto(out *DBInstanceParameters) {
 	if in.AllocatedStorage != nil {
 		in, out := &in.AllocatedStorage, &out.AllocatedStorage
 		*out = new(int64)
+		**out = **in
+	}
+	if in.AllowMajorVersionUpgrade != nil {
+		in, out := &in.AllowMajorVersionUpgrade, &out.AllowMajorVersionUpgrade
+		*out = new(bool)
 		**out = **in
 	}
 	if in.AutoMinorVersionUpgrade != nil {

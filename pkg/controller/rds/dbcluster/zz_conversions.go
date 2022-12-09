@@ -715,6 +715,9 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 	if cr.Spec.ForProvider.AllocatedStorage != nil {
 		res.SetAllocatedStorage(*cr.Spec.ForProvider.AllocatedStorage)
 	}
+	if cr.Spec.ForProvider.AllowMajorVersionUpgrade != nil {
+		res.SetAllowMajorVersionUpgrade(*cr.Spec.ForProvider.AllowMajorVersionUpgrade)
+	}
 	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
 		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
 	}
