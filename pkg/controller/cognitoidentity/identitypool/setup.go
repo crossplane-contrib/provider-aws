@@ -19,6 +19,8 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentity"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
