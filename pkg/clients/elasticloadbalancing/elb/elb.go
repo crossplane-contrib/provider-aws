@@ -170,7 +170,7 @@ func CreatePatch(in elbtypes.LoadBalancerDescription, target v1alpha1.ELBParamet
 		targetCopy.Listeners[i].Protocol = strings.ToUpper(v.Protocol)
 		targetCopy.Listeners[i].InstanceProtocol = aws.String(strings.ToUpper(aws.ToString(v.InstanceProtocol)))
 	}
-	
+
 	// Make sure the listeners are sorted by port number for both currentParams and target.
 	sort.Slice(currentParams.Listeners, func(i, j int) bool {
 		return currentParams.Listeners[i].LoadBalancerPort < currentParams.Listeners[j].LoadBalancerPort
