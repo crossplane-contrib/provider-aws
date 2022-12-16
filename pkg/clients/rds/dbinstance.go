@@ -246,14 +246,3 @@ func GetPassword(ctx context.Context, kube client.Client, in *xpv1.SecretKeySele
 
 	return newPwd, changed, nil
 }
-
-// // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.
-// func GetConnectionDetails(in v1beta1.RDSInstance) managed.ConnectionDetails {
-// 	if in.Status.AtProvider.Endpoint.Address == "" {
-// 		return nil
-// 	}
-// 	return managed.ConnectionDetails{
-// 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.Endpoint.Address),
-// 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(in.Status.AtProvider.Endpoint.Port)),
-// 	}
-// }
