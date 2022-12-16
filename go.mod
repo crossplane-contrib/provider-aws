@@ -31,7 +31,7 @@ require (
 	github.com/crossplane/crossplane-runtime v0.19.0-rc.0.0.20220930073209-84e629b95898
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
 	github.com/evanphx/json-patch v4.12.0+incompatible
-	github.com/go-ini/ini v1.46.0
+	github.com/go-ini/ini v1.67.0
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.8
 	github.com/mattbaird/jsonpatch v0.0.0-20200820163806-098863c1fc24
