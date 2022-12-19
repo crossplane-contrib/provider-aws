@@ -40,7 +40,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -190,7 +190,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error { // nolint:gocyclo
 	if cr.Spec.ForProvider.RestoreFrom == nil {
-		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateRDSInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errCreateFailed)
 		}
@@ -199,12 +199,12 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 
 	switch *cr.Spec.ForProvider.RestoreFrom.Source {
 	case "S3":
-		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
+		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreRDSInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errS3RestoreFailed)
 		}
 	case "Snapshot":
-		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreRDSInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errSnapshotRestoreFailed)
 		}
@@ -212,7 +212,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceID == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
 			return errors.New(errPointInTimeRestoreSourceNotDefined)
 		}
-		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreRDSInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
 			return awsclient.Wrap(err, errPointInTimeRestoreFailed)
 		}
