@@ -60,7 +60,7 @@ import (
 )
 
 // DefaultSection for INI files.
-const DefaultSection = ini.DefaultSection
+const DefaultSection = "DEFAULT"
 
 // GlobalRegion is the region name used for AWS services that do not have a notion
 // of region.
