@@ -484,13 +484,13 @@ func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBIn
 	// if user is fine with default SG or lets DBCluster manage it
 	// (removing all SGs is not possible, AWS will keep last set SGs)
 	if len(desiredIDs) == 0 {
-		return false
+		return true
 	}
 
 	actualGroups := out.VpcSecurityGroups
 
 	if len(desiredIDs) != len(actualGroups) {
-		return true
+		return false
 	}
 
 	actualIDs := make([]string, 0, len(actualGroups))
