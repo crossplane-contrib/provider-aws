@@ -6,7 +6,9 @@ spec:
   forProvider:
     region: us-east-1
     engine: aurora-mysql
-    masterUsername: admin
+    allowMajorVersionUpgrade: true # unset per default (Note: dbClusterParameterGroup with correct dbParameterClusterGroupFamily may needed, before majorVersion upgrade possible)
+    # for majorVersion upgrade via Cluster - depending on the setup - instances may need adjustments: before (e.g. supported instanceClass) or after (e.g. matching dbParameterGroup) the upgrade
+    masterUsername: adminuser
     masterUserPasswordSecretRef:
       name: example-aurora-mysql-cluster
       namespace: crossplane-system

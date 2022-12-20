@@ -68,6 +68,13 @@ spec:
                       DB clusters only"
                     format: int64
                     type: integer
+                  allowMajorVersionUpgrade:
+                    description: "A value that indicates whether major version upgrades
+                      are allowed. \n Constraints: You must allow major version upgrades
+                      when specifying a value for the EngineVersion parameter that
+                      is a different major version than the DB cluster's current version.
+                      \n Valid for: Aurora DB clusters only"
+                    type: boolean
                   applyImmediately:
                     description: "A value that indicates whether the modifications
                       in this request and any pending modifications are asynchronously
@@ -1075,8 +1082,9 @@ spec:
                         type: object
                     type: object
                   vpcSecurityGroupIDs:
-                    description: A list of EC2 VPC security groups to associate with
-                      this DB cluster.
+                    description: "A list of VPC security groups that the DB cluster
+                      will belong to. \n Valid for: Aurora DB clusters and Multi-AZ
+                      DB clusters"
                     items:
                       type: string
                     type: array

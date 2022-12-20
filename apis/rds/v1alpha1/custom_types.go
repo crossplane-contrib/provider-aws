@@ -196,7 +196,9 @@ type CustomDBClusterParameters struct {
 	// Constraints: Must contain from 8 to 41 characters. Required.
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
 
-	// A list of EC2 VPC security groups to associate with this DB cluster.
+	// A list of VPC security groups that the DB cluster will belong to.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIDs,omitempty"`
 
 	// VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set
@@ -539,7 +541,17 @@ type CustomDBInstanceParameters struct {
 	// +optional
 	SkipFinalSnapshot bool `json:"skipFinalSnapshot,omitempty"`
 
-	// A list of EC2 VPC security groups to associate with this DB instance.
+	// A list of Amazon EC2 VPC security groups to authorize on this DB instance.
+	// This change is asynchronously applied as soon as possible.
+	//
+	// This setting doesn't apply to RDS Custom.
+	//
+	// Amazon Aurora
+	// Not applicable. The associated list of EC2 VPC security groups is managed
+	// by the DB cluster. For more information, see ModifyDBCluster.
+	//
+	// Constraints:
+	//    * If supplied, must match existing VpcSecurityGroupIds.
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIDs,omitempty"`
 
 	// VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set

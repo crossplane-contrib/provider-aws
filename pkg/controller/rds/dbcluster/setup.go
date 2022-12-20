@@ -95,12 +95,16 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 		return managed.ExternalObservation{}, err
 	}
 	switch aws.StringValue(resp.DBClusters[0].Status) {
-	case "available", "modifying":
+	case "available", "storage-optimization", "backing-up":
 		cr.SetConditions(xpv1.Available())
-	case "deleting", "stopped", "stopping":
-		cr.SetConditions(xpv1.Unavailable())
+	case "modifying":
+		cr.SetConditions(xpv1.Available().WithMessage("DB Cluster is " + aws.StringValue(resp.DBClusters[0].Status) + ", availability may vary"))
+	case "deleting":
+		cr.SetConditions(xpv1.Deleting())
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
+	default:
+		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Cluster is " + aws.StringValue(resp.DBClusters[0].Status)))
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
@@ -527,7 +531,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 
 func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
 	status := aws.StringValue(out.DBClusters[0].Status)
-	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" {
+	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
 		return true, nil
 	}
 
@@ -567,7 +571,12 @@ func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput)
 		return false, nil
 	}
 
-	if !isVPCSecurityGroupIDsUpToDate(cr, out) {
+	if !areVPCSecurityGroupIDsUpToDate(cr, out) {
+		return false, nil
+	}
+
+	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil &&
+		aws.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != aws.StringValue(out.DBClusters[0].DBClusterParameterGroup) {
 		return false, nil
 	}
 
@@ -653,13 +662,19 @@ func isPortUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOut
 	return true
 }
 
-func isVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
-	// AWS uses "sg-563ab33d" which ich really restrictive as the default, and it seems to use it even when it is
-	// patched (with "required") - might be race condition. Anyway with checking if there is a diff we can rectify and
-	// even make it configurable after creation.
+func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	// AWS uses the default SG which is really restrictive, and it seems to use it even when it is
+	// patched (with "required") - might be race condition. Anyway with checking if there is a diff
+	// we can rectify and even make it configurable after creation.
+
+	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
+
+	// if user is fine with default SG (removing all SGs is not possible, AWS will keep last set SGs)
+	if len(desiredIDs) == 0 {
+		return true
+	}
 
 	actualGroups := out.DBClusters[0].VpcSecurityGroups
-	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
 
 	if len(desiredIDs) != len(actualGroups) {
 		return false
@@ -680,6 +695,20 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyD
 	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 
+	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
+		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
+		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			obj.VpcSecurityGroupIds[i] = aws.String(v)
+		}
+	}
+
+	// ModifyDBCluster() returns error, when trying to upgrade major (minor is fine) EngineVersion:
+	// "Cannot change VPC security group while doing a major version upgrade."
+	// even when the provided VPCSecurityGroupIDs are upToDate...
+	// therefore EngineVersion update is entirely done separately in postUpdate
+	// Note: strangely ModifyDBInstance does not seem to behave this way
+	obj.EngineVersion = nil
+
 	return nil
 }
 
@@ -688,6 +717,24 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 
 		input := GenerateDescribeDBClustersInput(cr)
 		resp, err := u.client.DescribeDBClustersWithContext(ctx, input)
+		if err != nil {
+			return managed.ExternalUpdate{}, aws.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		}
+
+		if !isEngineVersionUpToDate(cr, resp) {
+			// AWS does not want major EngineVersion upgrades in a ModifyDBCluster()-request
+			// that contains any value in VPCSecurityGroupIDs.
+			// Therefore doing here a separate call for EngineVersion changes only
+			_, err := u.client.ModifyDBClusterWithContext(ctx, &svcsdk.ModifyDBClusterInput{
+				DBClusterIdentifier:      aws.String(meta.GetExternalName(cr)),
+				EngineVersion:            cr.Spec.ForProvider.EngineVersion,
+				AllowMajorVersionUpgrade: cr.Spec.ForProvider.AllowMajorVersionUpgrade,
+				ApplyImmediately:         cr.Spec.ForProvider.ApplyImmediately,
+			})
+			if err != nil {
+				return managed.ExternalUpdate{}, err
+			}
+		}
 
 		tags := resp.DBClusters[0].TagList
 
@@ -699,11 +746,7 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 				return managed.ExternalUpdate{}, err
 			}
 		}
-		if err != nil {
-			if err != nil {
-				return managed.ExternalUpdate{}, aws.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
-			}
-		}
+
 		if !isPreferredMaintenanceWindowUpToDate(cr, resp) {
 			return upd, errors.New("PreferredMaintenanceWindow not matching aws data")
 		}
