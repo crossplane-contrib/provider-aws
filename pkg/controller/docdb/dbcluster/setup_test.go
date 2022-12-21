@@ -51,7 +51,6 @@ var (
 	testDBClusterParameterGroupName      = "some-db-cluster-parameter-group"
 	testOtherDBClusterParameterGroupName = "some-other-db-cluster-parameter-group"
 	testDBSubnetGroupName                = "some-db-subnet-group"
-	testOtherDBSubnetGroupName           = "some-other-db-subnet-group"
 	testCloudWatchLog                    = "some-log"
 	testOtherCloudWatchLog               = "some-other-log"
 	testEngine                           = "some-engine"
@@ -171,12 +170,6 @@ func withStatusDBClusterArn(value string) docDBModifier {
 func withDBSubnetGroup(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		o.Spec.ForProvider.DBSubnetGroupName = awsclient.String(value)
-	}
-}
-
-func withStatusDBSubnetGroup(value string) docDBModifier {
-	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.DBSubnetGroup = awsclient.String(value)
 	}
 }
 
@@ -693,172 +686,6 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Available()),
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withStatusDBClusterParameterGroupName(testDBClusterParameterGroupName),
-					withVpcSecurityGroupIds(),
-				),
-				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceUpToDate:        true,
-					ResourceLateInitialized: true,
-					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
-				},
-				docdb: fake.MockDocDBClientCall{
-					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
-						{
-							Ctx: context.Background(),
-							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-							},
-						},
-					},
-					ListTagsForResource: []*fake.CallListTagsForResource{
-						{
-							I: &docdb.ListTagsForResourceInput{},
-						},
-					},
-				},
-			},
-		},
-		"AvailableState_and_changed_DBSubnetGroupName_should_not_be_UpToDate": {
-			args: args{
-				docdb: &fake.MockDocDBClient{
-					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
-						return &docdb.DescribeDBClustersOutput{
-							DBClusters: []*docdb.DBCluster{
-								{
-									DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-									Status:              awsclient.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBSubnetGroup:       awsclient.String(testDBSubnetGroupName),
-								},
-							},
-						}, nil
-					},
-				},
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withExternalName(testDBClusterIdentifier),
-					withDBSubnetGroup(testOtherDBSubnetGroupName),
-				),
-			},
-			want: want{
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withExternalName(testDBClusterIdentifier),
-					withConditions(xpv1.Available()),
-					withStatus(svcapitypes.DocDBInstanceStateAvailable),
-					withDBSubnetGroup(testOtherDBSubnetGroupName),
-					withStatusDBSubnetGroup(testDBSubnetGroupName),
-					withVpcSecurityGroupIds(),
-				),
-				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceUpToDate:        false,
-					ResourceLateInitialized: true,
-					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
-				},
-				docdb: fake.MockDocDBClientCall{
-					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
-						{
-							Ctx: context.Background(),
-							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-							},
-						},
-					},
-				},
-			},
-		},
-		"AvailableState_and_same_DBSubnetGroupName_should_be_UpToDate": {
-			args: args{
-				docdb: &fake.MockDocDBClient{
-					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
-						return &docdb.DescribeDBClustersOutput{
-							DBClusters: []*docdb.DBCluster{
-								{
-									DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-									Status:              awsclient.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBSubnetGroup:       awsclient.String(testDBSubnetGroupName),
-								},
-							},
-						}, nil
-					},
-					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
-						return &docdb.ListTagsForResourceOutput{
-							TagList: []*docdb.Tag{},
-						}, nil
-					},
-				},
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withExternalName(testDBClusterIdentifier),
-					withDBSubnetGroup(testDBSubnetGroupName),
-				),
-			},
-			want: want{
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withExternalName(testDBClusterIdentifier),
-					withConditions(xpv1.Available()),
-					withStatus(svcapitypes.DocDBInstanceStateAvailable),
-					withDBSubnetGroup(testDBSubnetGroupName),
-					withStatusDBSubnetGroup(testDBSubnetGroupName),
-					withVpcSecurityGroupIds(),
-				),
-				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceUpToDate:        true,
-					ResourceLateInitialized: true,
-					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
-				},
-				docdb: fake.MockDocDBClientCall{
-					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
-						{
-							Ctx: context.Background(),
-							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-							},
-						},
-					},
-					ListTagsForResource: []*fake.CallListTagsForResource{
-						{
-							I: &docdb.ListTagsForResourceInput{},
-						},
-					},
-				},
-			},
-		},
-		"AvailableState_and_no_spec_DBSubnetGroupName_should_be_UpToDate": {
-			args: args{
-				docdb: &fake.MockDocDBClient{
-					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
-						return &docdb.DescribeDBClustersOutput{
-							DBClusters: []*docdb.DBCluster{
-								{
-									DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
-									Status:              awsclient.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBSubnetGroup:       awsclient.String(testDBSubnetGroupName),
-								},
-							},
-						}, nil
-					},
-					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
-						return &docdb.ListTagsForResourceOutput{
-							TagList: []*docdb.Tag{},
-						}, nil
-					},
-				},
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withExternalName(testDBClusterIdentifier),
-				),
-			},
-			want: want{
-				cr: instance(
-					withDBClusterIdentifier(testDBClusterIdentifier),
-					withDBSubnetGroup(testDBSubnetGroupName),
-					withExternalName(testDBClusterIdentifier),
-					withConditions(xpv1.Available()),
-					withStatus(svcapitypes.DocDBInstanceStateAvailable),
-					withStatusDBSubnetGroup(testDBSubnetGroupName),
 					withVpcSecurityGroupIds(),
 				),
 				result: managed.ExternalObservation{

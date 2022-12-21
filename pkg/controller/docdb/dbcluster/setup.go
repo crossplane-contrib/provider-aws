@@ -162,7 +162,6 @@ func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClu
 	switch {
 	case awsclient.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != awsclient.Int64Value(cluster.BackupRetentionPeriod),
 		awsclient.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != awsclient.StringValue(cluster.DBClusterParameterGroup),
-		awsclient.StringValue(cr.Spec.ForProvider.DBSubnetGroupName) != awsclient.StringValue(cluster.DBSubnetGroup),
 		awsclient.BoolValue(cr.Spec.ForProvider.DeletionProtection) != awsclient.BoolValue(cluster.DeletionProtection),
 		!areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, cluster.EnabledCloudwatchLogsExports),
 		awsclient.Int64Value(cr.Spec.ForProvider.Port) != awsclient.Int64Value(cluster.Port),
