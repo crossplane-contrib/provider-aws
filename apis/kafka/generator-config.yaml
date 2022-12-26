@@ -17,4 +17,4 @@ resources:
     exceptions:
       errors:
         404:
-          code: BadRequestException
+          code: NotFoundException
