@@ -390,5 +390,5 @@ func GenerateDeleteClusterInput(cr *svcapitypes.Cluster) *svcsdk.DeleteClusterIn
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "BadRequestException"
+	return ok && awsErr.Code() == "NotFoundException"
 }
