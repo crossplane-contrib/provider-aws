@@ -62,6 +62,7 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(svcapitypes.ClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
+			managed.WithInitializers(),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 			managed.WithConnectionPublishers(cps...)))
