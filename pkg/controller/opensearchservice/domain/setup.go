@@ -56,6 +56,27 @@ func preObserve(_ context.Context, cr *svcapitypes.Domain, obj *svcsdk.DescribeD
 
 func preCreate(_ context.Context, cr *svcapitypes.Domain, obj *svcsdk.CreateDomainInput) error {
 	obj.DomainName = aws.String(meta.GetExternalName(cr))
+
+	if cr.Spec.ForProvider.VPCOptions != nil {
+		obj.VPCOptions = &svcsdk.VPCOptions{}
+		if len(cr.Spec.ForProvider.VPCOptions.SubnetIDs) > 0 {
+			obj.VPCOptions.SubnetIds = make([]*string, len(cr.Spec.ForProvider.VPCOptions.SubnetIDs))
+			copy(obj.VPCOptions.SubnetIds, cr.Spec.ForProvider.VPCOptions.SubnetIDs)
+		}
+
+		if len(cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs) > 0 {
+			obj.VPCOptions.SecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs))
+			copy(obj.VPCOptions.SecurityGroupIds, cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs)
+		}
+	}
+
+	if cr.Spec.ForProvider.EncryptionAtRestOptions != nil {
+		obj.EncryptionAtRestOptions = &svcsdk.EncryptionAtRestOptions{
+			Enabled:  cr.Spec.ForProvider.EncryptionAtRestOptions.Enabled,
+			KmsKeyId: cr.Spec.ForProvider.EncryptionAtRestOptions.KMSKeyID,
+		}
+	}
+
 	return nil
 }
 

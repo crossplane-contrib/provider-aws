@@ -258,8 +258,84 @@ spec:
                     properties:
                       enabled:
                         type: boolean
-                      kmsKeyID:
+                      kmsKeyId:
                         type: string
+                      kmsKeyIdRef:
+                        description: KMSKeyIDRef is a reference to a KMS Key used
+                          to set KMSKeyID.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                          policy:
+                            description: Policies for referencing.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        required:
+                        - name
+                        type: object
+                      kmsKeyIdSelector:
+                        description: KMSKeyIDSelector selects a reference to a KMS
+                          Key used to set KMSKeyID.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
                     type: object
                   engineVersion:
                     description: String of format Elasticsearch_X.Y or OpenSearch_X.Y
@@ -315,14 +391,175 @@ spec:
                     type: array
                   vpcOptions:
                     description: Options to specify the subnets and security groups
-                      for a VPC endpoint. For more information, see Launching your
+                      for the VPC endpoint. For more information, see Launching your
                       Amazon OpenSearch Service domains using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
                     properties:
-                      securityGroupIDs:
+                      securityGroupIdRefs:
+                        description: SecurityGroupIDRefs is a list of references to
+                          SecurityGroups used to set the SecurityGroupIDs.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupIdSelector:
+                        description: SecurityGroupIDsSelector selects references to
+                          SecurityGroupID used to set the SecurityGroupIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
+                      securityGroupIds:
                         items:
                           type: string
                         type: array
-                      subnetIDs:
+                      subnetIdRefs:
+                        description: SubnetIDRefs is a list of references to Subnets
+                          used to set the SubnetIDs.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      subnetIdSelector:
+                        description: SubnetIDsSelector selects references to Subnets
+                          used to set the SubnetIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
+                      subnetIds:
+                        description: SecurityGroupIDs is the list of IDs for the SecurityGroups.
                         items:
                           type: string
                         type: array
@@ -538,6 +775,14 @@ spec:
                   domainID:
                     description: The unique identifier for the specified domain.
                     type: string
+                  encryptionAtRestOptions:
+                    description: The status of the EncryptionAtRestOptions.
+                    properties:
+                      enabled:
+                        type: boolean
+                      kmsKeyID:
+                        type: string
+                    type: object
                   endpoint:
                     description: The domain endpoint that you use to submit index
                       and search requests.
@@ -586,6 +831,26 @@ spec:
                       OpenSearch Service is undergoing a version upgrade. False if
                       the configuration is active.
                     type: boolean
+                  vpcOptions:
+                    description: The VPCOptions for the specified domain. For more
+                      information, see Launching your Amazon OpenSearch Service domains
+                      using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
+                    properties:
+                      availabilityZones:
+                        items:
+                          type: string
+                        type: array
+                      securityGroupIDs:
+                        items:
+                          type: string
+                        type: array
+                      subnetIDs:
+                        items:
+                          type: string
+                        type: array
+                      vpcID:
+                        type: string
+                    type: object
                 type: object
               conditions:
                 description: Conditions of the resource.

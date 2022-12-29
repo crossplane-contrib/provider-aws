@@ -327,9 +327,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.DomainStatus.EncryptionAtRestOptions.KmsKeyId != nil {
 			f14.KMSKeyID = resp.DomainStatus.EncryptionAtRestOptions.KmsKeyId
 		}
-		cr.Spec.ForProvider.EncryptionAtRestOptions = f14
+		cr.Status.AtProvider.EncryptionAtRestOptions = f14
 	} else {
-		cr.Spec.ForProvider.EncryptionAtRestOptions = nil
+		cr.Status.AtProvider.EncryptionAtRestOptions = nil
 	}
 	if resp.DomainStatus.Endpoint != nil {
 		cr.Status.AtProvider.Endpoint = resp.DomainStatus.Endpoint
@@ -427,7 +427,16 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.UpgradeProcessing = nil
 	}
 	if resp.DomainStatus.VPCOptions != nil {
-		f24 := &svcapitypes.VPCOptions{}
+		f24 := &svcapitypes.VPCDerivedInfo{}
+		if resp.DomainStatus.VPCOptions.AvailabilityZones != nil {
+			f24f0 := []*string{}
+			for _, f24f0iter := range resp.DomainStatus.VPCOptions.AvailabilityZones {
+				var f24f0elem string
+				f24f0elem = *f24f0iter
+				f24f0 = append(f24f0, &f24f0elem)
+			}
+			f24.AvailabilityZones = f24f0
+		}
 		if resp.DomainStatus.VPCOptions.SecurityGroupIds != nil {
 			f24f1 := []*string{}
 			for _, f24f1iter := range resp.DomainStatus.VPCOptions.SecurityGroupIds {
@@ -446,9 +455,12 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			f24.SubnetIDs = f24f2
 		}
-		cr.Spec.ForProvider.VPCOptions = f24
+		if resp.DomainStatus.VPCOptions.VPCId != nil {
+			f24.VPCID = resp.DomainStatus.VPCOptions.VPCId
+		}
+		cr.Status.AtProvider.VPCOptions = f24
 	} else {
-		cr.Spec.ForProvider.VPCOptions = nil
+		cr.Status.AtProvider.VPCOptions = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

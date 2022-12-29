@@ -52,8 +52,6 @@ type DomainParameters struct {
 	// Options to enable, disable, and specify the type and size of EBS storage
 	// volumes.
 	EBSOptions *EBSOptions `json:"ebsOptions,omitempty"`
-	// Options for encryption of data at rest.
-	EncryptionAtRestOptions *EncryptionAtRestOptions `json:"encryptionAtRestOptions,omitempty"`
 	// String of format Elasticsearch_X.Y or OpenSearch_X.Y to specify the engine
 	// version for the Amazon OpenSearch Service domain. For example, "OpenSearch_1.0"
 	// or "Elasticsearch_7.9". For more information, see Creating and managing Amazon
@@ -71,11 +69,7 @@ type DomainParameters struct {
 	// Node-to-node encryption options.
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
 	// A list of Tag added during domain creation.
-	Tags []*Tag `json:"tags,omitempty"`
-	// Options to specify the subnets and security groups for a VPC endpoint. For
-	// more information, see Launching your Amazon OpenSearch Service domains using
-	// a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
-	VPCOptions             *VPCOptions `json:"vpcOptions,omitempty"`
+	Tags                   []*Tag `json:"tags,omitempty"`
 	CustomDomainParameters `json:",inline"`
 }
 
@@ -102,6 +96,8 @@ type DomainObservation struct {
 	Deleted *bool `json:"deleted,omitempty"`
 	// The unique identifier for the specified domain.
 	DomainID *string `json:"domainID,omitempty"`
+	// The status of the EncryptionAtRestOptions.
+	EncryptionAtRestOptions *EncryptionAtRestOptions `json:"encryptionAtRestOptions,omitempty"`
 	// The domain endpoint that you use to submit index and search requests.
 	Endpoint *string `json:"endpoint,omitempty"`
 	// Map containing the domain endpoints used to submit index and search requests.
@@ -117,6 +113,9 @@ type DomainObservation struct {
 	// The status of a domain version upgrade. True if Amazon OpenSearch Service
 	// is undergoing a version upgrade. False if the configuration is active.
 	UpgradeProcessing *bool `json:"upgradeProcessing,omitempty"`
+	// The VPCOptions for the specified domain. For more information, see Launching
+	// your Amazon OpenSearch Service domains using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
+	VPCOptions *VPCDerivedInfo `json:"vpcOptions,omitempty"`
 }
 
 // DomainStatus defines the observed state of Domain.

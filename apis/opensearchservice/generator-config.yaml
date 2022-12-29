@@ -8,6 +8,8 @@ ignore:
     # SnapshotOptions is irrelevant for OpenSearch 5.3+
     - CreateDomainInput.SnapshotOptions
     - CreateDomainInput.Name
+    - CreateDomainInput.EncryptionAtRestOptions
+    - CreateDomainInput.VPCOptions
     - DeleteDomainInput.Name
 resources:
   Domain:
