@@ -14,3 +14,22 @@ spec:
     - name: sample-cluster-sg
   providerConfigRef:
     name: example
+---
+apiVersion: cache.aws.crossplane.io/v1alpha1
+kind: CacheCluster
+metadata:
+  name: redis-cache-cluster
+spec:
+  forProvider:
+    region: us-east-1
+    engine: redis
+    engineVersion: "6.2.6"
+    port: 6379
+    cacheNodeType: cache.t2.micro
+    securityGroupIDRefs:
+    - name: sample-cluster-sg
+    cacheSubnetGroupNameRef:
+      name: sample-cache-subnet-group
+    numCacheNodes: 1
+  providerConfigRef:
+    name: example
