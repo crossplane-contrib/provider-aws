@@ -25,6 +25,52 @@ resources:
         DescribeDomain:
           input_fields:
             DomainName: Name
+    fields:
+      ClusterConfig:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.ClusterConfig
+      EngineVersion:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.EngineVersion
+      NodeToNodeEncryptionOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.NodeToNodeEncryptionOptions
+      AdvancedOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.AdvancedOptions
+      DomainEndpointOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.DomainEndpointOptions
+      AdvancedSecurityOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.AdvancedSecurityOptions
+      AutoTuneOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.AutoTuneOptions
+      CognitoOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.CognitoOptions
+      AccessPolicies:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.AccessPolicies
     exceptions:
       errors:
         404:

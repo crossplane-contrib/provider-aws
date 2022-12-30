@@ -881,9 +881,49 @@ func (in *DomainObservation) DeepCopyInto(out *DomainObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AccessPolicies != nil {
+		in, out := &in.AccessPolicies, &out.AccessPolicies
+		*out = new(string)
+		**out = **in
+	}
+	if in.AdvancedOptions != nil {
+		in, out := &in.AdvancedOptions, &out.AdvancedOptions
+		*out = make(map[string]*string, len(*in))
+		for key, val := range *in {
+			var outVal *string
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(string)
+				**out = **in
+			}
+			(*out)[key] = outVal
+		}
+	}
+	if in.AdvancedSecurityOptions != nil {
+		in, out := &in.AdvancedSecurityOptions, &out.AdvancedSecurityOptions
+		*out = new(AdvancedSecurityOptions)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.AutoTuneOptions != nil {
+		in, out := &in.AutoTuneOptions, &out.AutoTuneOptions
+		*out = new(AutoTuneOptionsOutput)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ChangeProgressDetails != nil {
 		in, out := &in.ChangeProgressDetails, &out.ChangeProgressDetails
 		*out = new(ChangeProgressDetails)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ClusterConfig != nil {
+		in, out := &in.ClusterConfig, &out.ClusterConfig
+		*out = new(ClusterConfig)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.CognitoOptions != nil {
+		in, out := &in.CognitoOptions, &out.CognitoOptions
+		*out = new(CognitoOptions)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Created != nil {
@@ -895,6 +935,11 @@ func (in *DomainObservation) DeepCopyInto(out *DomainObservation) {
 		in, out := &in.Deleted, &out.Deleted
 		*out = new(bool)
 		**out = **in
+	}
+	if in.DomainEndpointOptions != nil {
+		in, out := &in.DomainEndpointOptions, &out.DomainEndpointOptions
+		*out = new(DomainEndpointOptions)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainID != nil {
 		in, out := &in.DomainID, &out.DomainID
@@ -925,6 +970,16 @@ func (in *DomainObservation) DeepCopyInto(out *DomainObservation) {
 			}
 			(*out)[key] = outVal
 		}
+	}
+	if in.EngineVersion != nil {
+		in, out := &in.EngineVersion, &out.EngineVersion
+		*out = new(string)
+		**out = **in
+	}
+	if in.NodeToNodeEncryptionOptions != nil {
+		in, out := &in.NodeToNodeEncryptionOptions, &out.NodeToNodeEncryptionOptions
+		*out = new(NodeToNodeEncryptionOptions)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Processing != nil {
 		in, out := &in.Processing, &out.Processing

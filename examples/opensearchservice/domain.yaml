@@ -40,5 +40,8 @@ spec:
       subnetIdRefs:
         - name: sample-subnet1
         - name: sample-subnet2
+  writeConnectionSecretToRef:
+    name: sample2-domain
+    namespace: crossplane-system
   providerConfigRef:
     name: example

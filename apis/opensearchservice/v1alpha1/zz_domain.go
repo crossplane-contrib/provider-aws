@@ -84,8 +84,21 @@ type DomainObservation struct {
 	// The Amazon Resource Name (ARN) of a domain. See IAM identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
 	// in the AWS Identity and Access Management User Guide for more information.
 	ARN *string `json:"arn,omitempty"`
+	// IAM access policy as a JSON-formatted string.
+	AccessPolicies *string `json:"accessPolicies,omitempty"`
+	// The status of the AdvancedOptions.
+	AdvancedOptions map[string]*string `json:"advancedOptions,omitempty"`
+	// The current status of the domain's advanced security options.
+	AdvancedSecurityOptions *AdvancedSecurityOptions `json:"advancedSecurityOptions,omitempty"`
+	// The current status of the domain's Auto-Tune options.
+	AutoTuneOptions *AutoTuneOptionsOutput `json:"autoTuneOptions,omitempty"`
 	// Specifies change details of the domain configuration change.
 	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
+	// The type and number of instances in the domain.
+	ClusterConfig *ClusterConfig `json:"clusterConfig,omitempty"`
+	// The CognitoOptions for the specified domain. For more information, see Configuring
+	// Amazon Cognito authentication for OpenSearch Dashboards (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
+	CognitoOptions *CognitoOptions `json:"cognitoOptions,omitempty"`
 	// The domain creation status. True if the creation of a domain is complete.
 	// False if domain creation is still in progress.
 	Created *bool `json:"created,omitempty"`
@@ -94,6 +107,8 @@ type DomainObservation struct {
 	// has not been deleted. Once domain deletion is complete, the status of the
 	// domain is no longer returned.
 	Deleted *bool `json:"deleted,omitempty"`
+	// The current status of the domain's endpoint options.
+	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
 	// The unique identifier for the specified domain.
 	DomainID *string `json:"domainID,omitempty"`
 	// The status of the EncryptionAtRestOptions.
@@ -103,6 +118,10 @@ type DomainObservation struct {
 	// Map containing the domain endpoints used to submit index and search requests.
 	// Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
 	Endpoints map[string]*string `json:"endpoints,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+	// The status of the NodeToNodeEncryptionOptions.
+	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
 	// The status of the domain configuration. True if Amazon OpenSearch Service
 	// is processing configuration changes. False if the configuration is active.
 	Processing *bool `json:"processing,omitempty"`
