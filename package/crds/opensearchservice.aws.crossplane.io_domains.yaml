@@ -258,8 +258,84 @@ spec:
                     properties:
                       enabled:
                         type: boolean
-                      kmsKeyID:
+                      kmsKeyId:
                         type: string
+                      kmsKeyIdRef:
+                        description: KMSKeyIDRef is a reference to a KMS Key used
+                          to set KMSKeyID.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                          policy:
+                            description: Policies for referencing.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        required:
+                        - name
+                        type: object
+                      kmsKeyIdSelector:
+                        description: KMSKeyIDSelector selects a reference to a KMS
+                          Key used to set KMSKeyID.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
                     type: object
                   engineVersion:
                     description: String of format Elasticsearch_X.Y or OpenSearch_X.Y
@@ -315,14 +391,175 @@ spec:
                     type: array
                   vpcOptions:
                     description: Options to specify the subnets and security groups
-                      for a VPC endpoint. For more information, see Launching your
+                      for the VPC endpoint. For more information, see Launching your
                       Amazon OpenSearch Service domains using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
                     properties:
-                      securityGroupIDs:
+                      securityGroupIdRefs:
+                        description: SecurityGroupIDRefs is a list of references to
+                          SecurityGroups used to set the SecurityGroupIDs.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupIdSelector:
+                        description: SecurityGroupIDsSelector selects references to
+                          SecurityGroupID used to set the SecurityGroupIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
+                      securityGroupIds:
                         items:
                           type: string
                         type: array
-                      subnetIDs:
+                      subnetIdRefs:
+                        description: SubnetIDRefs is a list of references to Subnets
+                          used to set the SubnetIDs.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                            policy:
+                              description: Policies for referencing.
+                              properties:
+                                resolution:
+                                  default: Required
+                                  description: Resolution specifies whether resolution
+                                    of this reference is required. The default is
+                                    'Required', which means the reconcile will fail
+                                    if the reference cannot be resolved. 'Optional'
+                                    means this reference will be a no-op if it cannot
+                                    be resolved.
+                                  enum:
+                                  - Required
+                                  - Optional
+                                  type: string
+                                resolve:
+                                  description: Resolve specifies when this reference
+                                    should be resolved. The default is 'IfNotPresent',
+                                    which will attempt to resolve the reference only
+                                    when the corresponding field is not present. Use
+                                    'Always' to resolve the reference on every reconcile.
+                                  enum:
+                                  - Always
+                                  - IfNotPresent
+                                  type: string
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      subnetIdSelector:
+                        description: SubnetIDsSelector selects references to Subnets
+                          used to set the SubnetIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                          policy:
+                            description: Policies for selection.
+                            properties:
+                              resolution:
+                                default: Required
+                                description: Resolution specifies whether resolution
+                                  of this reference is required. The default is 'Required',
+                                  which means the reconcile will fail if the reference
+                                  cannot be resolved. 'Optional' means this reference
+                                  will be a no-op if it cannot be resolved.
+                                enum:
+                                - Required
+                                - Optional
+                                type: string
+                              resolve:
+                                description: Resolve specifies when this reference
+                                  should be resolved. The default is 'IfNotPresent',
+                                  which will attempt to resolve the reference only
+                                  when the corresponding field is not present. Use
+                                  'Always' to resolve the reference on every reconcile.
+                                enum:
+                                - Always
+                                - IfNotPresent
+                                type: string
+                            type: object
+                        type: object
+                      subnetIds:
+                        description: SecurityGroupIDs is the list of IDs for the SecurityGroups.
                         items:
                           type: string
                         type: array
@@ -508,12 +745,66 @@ spec:
               atProvider:
                 description: DomainObservation defines the observed state of Domain
                 properties:
+                  accessPolicies:
+                    description: IAM access policy as a JSON-formatted string.
+                    type: string
+                  advancedOptions:
+                    additionalProperties:
+                      type: string
+                    description: The status of the AdvancedOptions.
+                    type: object
+                  advancedSecurityOptions:
+                    description: The current status of the domain's advanced security
+                      options.
+                    properties:
+                      anonymousAuthDisableDate:
+                        format: date-time
+                        type: string
+                      anonymousAuthEnabled:
+                        type: boolean
+                      enabled:
+                        type: boolean
+                      internalUserDatabaseEnabled:
+                        type: boolean
+                      sAMLOptions:
+                        description: Describes the SAML application configured for
+                          the domain.
+                        properties:
+                          enabled:
+                            type: boolean
+                          idp:
+                            description: The SAML identity povider's information.
+                            properties:
+                              entityID:
+                                type: string
+                              metadataContent:
+                                type: string
+                            type: object
+                          rolesKey:
+                            type: string
+                          sessionTimeoutMinutes:
+                            format: int64
+                            type: integer
+                          subjectKey:
+                            type: string
+                        type: object
+                    type: object
                   arn:
                     description: The Amazon Resource Name (ARN) of a domain. See IAM
                       identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
                       in the AWS Identity and Access Management User Guide for more
                       information.
                     type: string
+                  autoTuneOptions:
+                    description: The current status of the domain's Auto-Tune options.
+                    properties:
+                      errorMessage:
+                        type: string
+                      state:
+                        description: The Auto-Tune state for the domain. For valid
+                          states see Auto-Tune for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
+                        type: string
+                    type: object
                   changeProgressDetails:
                     description: Specifies change details of the domain configuration
                       change.
@@ -521,6 +812,60 @@ spec:
                       changeID:
                         type: string
                       message:
+                        type: string
+                    type: object
+                  clusterConfig:
+                    description: The type and number of instances in the domain.
+                    properties:
+                      coldStorageOptions:
+                        description: Specifies the configuration for cold storage
+                          options such as enabled
+                        properties:
+                          enabled:
+                            type: boolean
+                        type: object
+                      dedicatedMasterCount:
+                        format: int64
+                        type: integer
+                      dedicatedMasterEnabled:
+                        type: boolean
+                      dedicatedMasterType:
+                        type: string
+                      instanceCount:
+                        format: int64
+                        type: integer
+                      instanceType:
+                        type: string
+                      warmCount:
+                        format: int64
+                        type: integer
+                      warmEnabled:
+                        type: boolean
+                      warmType:
+                        type: string
+                      zoneAwarenessConfig:
+                        description: The zone awareness configuration for the domain
+                          cluster, such as the number of availability zones.
+                        properties:
+                          availabilityZoneCount:
+                            format: int64
+                            type: integer
+                        type: object
+                      zoneAwarenessEnabled:
+                        type: boolean
+                    type: object
+                  cognitoOptions:
+                    description: The CognitoOptions for the specified domain. For
+                      more information, see Configuring Amazon Cognito authentication
+                      for OpenSearch Dashboards (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
+                    properties:
+                      enabled:
+                        type: boolean
+                      identityPoolID:
+                        type: string
+                      roleARN:
+                        type: string
+                      userPoolID:
                         type: string
                     type: object
                   created:
@@ -535,9 +880,34 @@ spec:
                       domain deletion is complete, the status of the domain is no
                       longer returned.
                     type: boolean
+                  domainEndpointOptions:
+                    description: The current status of the domain's endpoint options.
+                    properties:
+                      customEndpoint:
+                        type: string
+                      customEndpointCertificateARN:
+                        description: The Amazon Resource Name (ARN) of the domain.
+                          See Identifiers for IAM Entities (http://docs.aws.amazon.com/IAM/latest/UserGuide/index.html)
+                          in Using AWS Identity and Access Management for more information.
+                        type: string
+                      customEndpointEnabled:
+                        type: boolean
+                      enforceHTTPS:
+                        type: boolean
+                      tlsSecurityPolicy:
+                        type: string
+                    type: object
                   domainID:
                     description: The unique identifier for the specified domain.
                     type: string
+                  encryptionAtRestOptions:
+                    description: The status of the EncryptionAtRestOptions.
+                    properties:
+                      enabled:
+                        type: boolean
+                      kmsKeyID:
+                        type: string
+                    type: object
                   endpoint:
                     description: The domain endpoint that you use to submit index
                       and search requests.
@@ -547,6 +917,14 @@ spec:
                       type: string
                     description: 'Map containing the domain endpoints used to submit
                       index and search requests. Example key, value: ''vpc'',''vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com''.'
+                    type: object
+                  engineVersion:
+                    type: string
+                  nodeToNodeEncryptionOptions:
+                    description: The status of the NodeToNodeEncryptionOptions.
+                    properties:
+                      enabled:
+                        type: boolean
                     type: object
                   processing:
                     description: The status of the domain configuration. True if Amazon
@@ -586,6 +964,26 @@ spec:
                       OpenSearch Service is undergoing a version upgrade. False if
                       the configuration is active.
                     type: boolean
+                  vpcOptions:
+                    description: The VPCOptions for the specified domain. For more
+                      information, see Launching your Amazon OpenSearch Service domains
+                      using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
+                    properties:
+                      availabilityZones:
+                        items:
+                          type: string
+                        type: array
+                      securityGroupIDs:
+                        items:
+                          type: string
+                        type: array
+                      subnetIDs:
+                        items:
+                          type: string
+                        type: array
+                      vpcID:
+                        type: string
+                    type: object
                 type: object
               conditions:
                 description: Conditions of the resource.

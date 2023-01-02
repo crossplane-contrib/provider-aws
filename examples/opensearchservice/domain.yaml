@@ -5,11 +5,43 @@ metadata:
 spec:
   forProvider:
     name: sample-domain
-    region: us-west-2
+    region: us-east-1
     ebsOptions:
       ebsEnabled: true
       volumeType: gp2
       volumeSize: 10
-
+  providerConfigRef:
+    name: example
+---
+apiVersion: opensearchservice.aws.crossplane.io/v1alpha1
+kind: Domain
+metadata:
+  name: sample2-domain
+spec:
+  forProvider:
+    name: sample2-domain
+    region: us-east-1
+    ebsOptions:
+      ebsEnabled: true
+      volumeType: gp2
+      volumeSize: 10
+    clusterConfig:
+      zoneAwarenessEnabled: true
+      zoneAwarenessConfig:
+        availabilityZoneCount: 2
+      instanceCount: 2
+    encryptionAtRestOptions:
+      enabled: true
+      kmsKeyIdRef:
+        name: dev-key
+    vpcOptions:
+      securityGroupIdRefs:
+        - name: sample-cluster-sg-2
+      subnetIdRefs:
+        - name: sample-subnet1
+        - name: sample-subnet2
+  writeConnectionSecretToRef:
+    name: sample2-domain
+    namespace: crossplane-system
   providerConfigRef:
     name: example

@@ -257,9 +257,9 @@ func GenerateDomain(resp *svcsdk.DescribeDomainOutput) *svcapitypes.Domain {
 		if resp.DomainStatus.EncryptionAtRestOptions.KmsKeyId != nil {
 			f14.KMSKeyID = resp.DomainStatus.EncryptionAtRestOptions.KmsKeyId
 		}
-		cr.Spec.ForProvider.EncryptionAtRestOptions = f14
+		cr.Status.AtProvider.EncryptionAtRestOptions = f14
 	} else {
-		cr.Spec.ForProvider.EncryptionAtRestOptions = nil
+		cr.Status.AtProvider.EncryptionAtRestOptions = nil
 	}
 	if resp.DomainStatus.Endpoint != nil {
 		cr.Status.AtProvider.Endpoint = resp.DomainStatus.Endpoint
@@ -357,7 +357,16 @@ func GenerateDomain(resp *svcsdk.DescribeDomainOutput) *svcapitypes.Domain {
 		cr.Status.AtProvider.UpgradeProcessing = nil
 	}
 	if resp.DomainStatus.VPCOptions != nil {
-		f24 := &svcapitypes.VPCOptions{}
+		f24 := &svcapitypes.VPCDerivedInfo{}
+		if resp.DomainStatus.VPCOptions.AvailabilityZones != nil {
+			f24f0 := []*string{}
+			for _, f24f0iter := range resp.DomainStatus.VPCOptions.AvailabilityZones {
+				var f24f0elem string
+				f24f0elem = *f24f0iter
+				f24f0 = append(f24f0, &f24f0elem)
+			}
+			f24.AvailabilityZones = f24f0
+		}
 		if resp.DomainStatus.VPCOptions.SecurityGroupIds != nil {
 			f24f1 := []*string{}
 			for _, f24f1iter := range resp.DomainStatus.VPCOptions.SecurityGroupIds {
@@ -376,9 +385,12 @@ func GenerateDomain(resp *svcsdk.DescribeDomainOutput) *svcapitypes.Domain {
 			}
 			f24.SubnetIDs = f24f2
 		}
-		cr.Spec.ForProvider.VPCOptions = f24
+		if resp.DomainStatus.VPCOptions.VPCId != nil {
+			f24.VPCID = resp.DomainStatus.VPCOptions.VPCId
+		}
+		cr.Status.AtProvider.VPCOptions = f24
 	} else {
-		cr.Spec.ForProvider.VPCOptions = nil
+		cr.Status.AtProvider.VPCOptions = nil
 	}
 
 	return cr
@@ -588,75 +600,43 @@ func GenerateCreateDomainInput(cr *svcapitypes.Domain) *svcsdk.CreateDomainInput
 		}
 		res.SetEBSOptions(f8)
 	}
-	if cr.Spec.ForProvider.EncryptionAtRestOptions != nil {
-		f9 := &svcsdk.EncryptionAtRestOptions{}
-		if cr.Spec.ForProvider.EncryptionAtRestOptions.Enabled != nil {
-			f9.SetEnabled(*cr.Spec.ForProvider.EncryptionAtRestOptions.Enabled)
-		}
-		if cr.Spec.ForProvider.EncryptionAtRestOptions.KMSKeyID != nil {
-			f9.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionAtRestOptions.KMSKeyID)
-		}
-		res.SetEncryptionAtRestOptions(f9)
-	}
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
 	if cr.Spec.ForProvider.LogPublishingOptions != nil {
-		f11 := map[string]*svcsdk.LogPublishingOption{}
-		for f11key, f11valiter := range cr.Spec.ForProvider.LogPublishingOptions {
-			f11val := &svcsdk.LogPublishingOption{}
-			if f11valiter.CloudWatchLogsLogGroupARN != nil {
-				f11val.SetCloudWatchLogsLogGroupArn(*f11valiter.CloudWatchLogsLogGroupARN)
+		f10 := map[string]*svcsdk.LogPublishingOption{}
+		for f10key, f10valiter := range cr.Spec.ForProvider.LogPublishingOptions {
+			f10val := &svcsdk.LogPublishingOption{}
+			if f10valiter.CloudWatchLogsLogGroupARN != nil {
+				f10val.SetCloudWatchLogsLogGroupArn(*f10valiter.CloudWatchLogsLogGroupARN)
 			}
-			if f11valiter.Enabled != nil {
-				f11val.SetEnabled(*f11valiter.Enabled)
+			if f10valiter.Enabled != nil {
+				f10val.SetEnabled(*f10valiter.Enabled)
 			}
-			f11[f11key] = f11val
+			f10[f10key] = f10val
 		}
-		res.SetLogPublishingOptions(f11)
+		res.SetLogPublishingOptions(f10)
 	}
 	if cr.Spec.ForProvider.NodeToNodeEncryptionOptions != nil {
-		f12 := &svcsdk.NodeToNodeEncryptionOptions{}
+		f11 := &svcsdk.NodeToNodeEncryptionOptions{}
 		if cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled != nil {
-			f12.SetEnabled(*cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled)
+			f11.SetEnabled(*cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled)
 		}
-		res.SetNodeToNodeEncryptionOptions(f12)
+		res.SetNodeToNodeEncryptionOptions(f11)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f13 := []*svcsdk.Tag{}
-		for _, f13iter := range cr.Spec.ForProvider.Tags {
-			f13elem := &svcsdk.Tag{}
-			if f13iter.Key != nil {
-				f13elem.SetKey(*f13iter.Key)
+		f12 := []*svcsdk.Tag{}
+		for _, f12iter := range cr.Spec.ForProvider.Tags {
+			f12elem := &svcsdk.Tag{}
+			if f12iter.Key != nil {
+				f12elem.SetKey(*f12iter.Key)
 			}
-			if f13iter.Value != nil {
-				f13elem.SetValue(*f13iter.Value)
+			if f12iter.Value != nil {
+				f12elem.SetValue(*f12iter.Value)
 			}
-			f13 = append(f13, f13elem)
+			f12 = append(f12, f12elem)
 		}
-		res.SetTagList(f13)
-	}
-	if cr.Spec.ForProvider.VPCOptions != nil {
-		f14 := &svcsdk.VPCOptions{}
-		if cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs != nil {
-			f14f0 := []*string{}
-			for _, f14f0iter := range cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs {
-				var f14f0elem string
-				f14f0elem = *f14f0iter
-				f14f0 = append(f14f0, &f14f0elem)
-			}
-			f14.SetSecurityGroupIds(f14f0)
-		}
-		if cr.Spec.ForProvider.VPCOptions.SubnetIDs != nil {
-			f14f1 := []*string{}
-			for _, f14f1iter := range cr.Spec.ForProvider.VPCOptions.SubnetIDs {
-				var f14f1elem string
-				f14f1elem = *f14f1iter
-				f14f1 = append(f14f1, &f14f1elem)
-			}
-			f14.SetSubnetIds(f14f1)
-		}
-		res.SetVPCOptions(f14)
+		res.SetTagList(f12)
 	}
 
 	return res
