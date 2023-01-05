@@ -165,6 +165,12 @@ func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53type
 	if rrSet == nil || in == nil {
 		return
 	}
+	if rrSet.AliasTarget != nil {
+		in.AliasTarget = &v1alpha1.AliasTarget{}
+		in.AliasTarget.HostedZoneID = awsclients.LateInitializeString(in.AliasTarget.HostedZoneID, rrSet.AliasTarget.HostedZoneId)
+		in.AliasTarget.DNSName = awsclients.LateInitializeString(in.AliasTarget.DNSName, rrSet.AliasTarget.DNSName)
+		in.AliasTarget.EvaluateTargetHealth = rrSet.AliasTarget.EvaluateTargetHealth
+	}
 	rrType := string(rrSet.Type)
 	in.Type = awsclients.LateInitializeString(in.Type, &rrType)
 	in.TTL = awsclients.LateInitializeInt64Ptr(in.TTL, rrSet.TTL)
@@ -193,6 +199,7 @@ func CreatePatch(in *route53types.ResourceRecordSet, target *v1alpha1.ResourceRe
 	if err != nil {
 		return nil, err
 	}
+
 	patch := &v1alpha1.ResourceRecordSetParameters{}
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
