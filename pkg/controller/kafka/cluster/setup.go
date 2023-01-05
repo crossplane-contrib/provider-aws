@@ -118,7 +118,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
-	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
+	obj.ClusterName = awsclients.String(cr.GetName())
 	obj.BrokerNodeGroupInfo = &svcsdk.BrokerNodeGroupInfo{
 		ClientSubnets:  cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.ClientSubnets,
 		InstanceType:   cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.InstanceType,
