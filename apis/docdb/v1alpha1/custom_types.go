@@ -92,6 +92,15 @@ type CustomDBClusterParameters struct {
 	// +optional
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 
+	// AutogeneratePassword indicates whether the controller should generate
+	// a random password for the master user if one is not provided via
+	// MasterUserPasswordSecretRef.
+	//
+	// If a password is generated, it will
+	// be stored as a secret at the location specified by MasterUserPasswordSecretRef.
+	// +optional
+	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
+
 	// Determines whether a final cluster snapshot is created before the cluster
 	// is deleted. If true is specified, no cluster snapshot is created. If false
 	// is specified, a cluster snapshot is created before the DB cluster is deleted.

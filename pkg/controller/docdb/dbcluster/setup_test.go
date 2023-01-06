@@ -306,13 +306,17 @@ func mergeTags(lists ...[]*svcapitypes.Tag) []*svcapitypes.Tag {
 }
 
 func generateConnectionDetails(username, password, readerEndpoint, endpoint string, port int) managed.ConnectionDetails {
-	return managed.ConnectionDetails{
+
+	mcd := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(endpoint),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 		xpv1.ResourceCredentialsSecretUserKey:     []byte(username),
-		xpv1.ResourceCredentialsSecretPasswordKey: []byte(password),
 		"readerEndpoint":                          []byte(readerEndpoint),
 	}
+	if password != "" {
+		mcd[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(password)
+	}
+	return mcd
 }
 
 func TestObserve(t *testing.T) {

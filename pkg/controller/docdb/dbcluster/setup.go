@@ -21,10 +21,12 @@ import (
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
 	"github.com/pkg/errors"
@@ -34,6 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,6 +51,7 @@ const (
 	errNotDBCluster            = "managed resource is not a DB Cluster custom resource"
 	errKubeUpdateFailed        = "cannot update DBCluster instance custom resource"
 	errGetPasswordSecretFailed = "cannot get password secret"
+	errSaveSecretFailed        = "failed to save generated password to Kubernetes secret"
 )
 
 // SetupDBCluster adds a controller that reconciles a DBCluster.
@@ -80,7 +84,7 @@ func setupExternal(e *external) {
 	e.preObserve = preObserve
 	e.postObserve = h.postObserve
 	e.isUpToDate = h.isUpToDate
-	e.preUpdate = preUpdate
+	e.preUpdate = h.preUpdate
 	e.postUpdate = h.postUpdate
 	e.preCreate = h.preCreate
 	e.postCreate = h.postCreate
@@ -104,13 +108,13 @@ func (e *hooks) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp
 		return managed.ExternalObservation{}, err
 	}
 
-	pw, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef)
-	if err != nil {
-		return managed.ExternalObservation{}, err
-	}
-
 	obs.ConnectionDetails = getConnectionDetails(cr)
-	obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+
+	pw, _, _ := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+
+	if pw != "" {
+		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	}
 
 	switch awsclient.StringValue(cr.Status.AtProvider.Status) {
 	case svcapitypes.DocDBInstanceStateAvailable:
@@ -159,6 +163,12 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
 	cluster := resp.DBClusters[0]
 
+	ctx := context.Background()
+	_, pwChanged, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if err != nil || pwChanged {
+		return false, err
+	}
+
 	switch {
 	case awsclient.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != awsclient.Int64Value(cluster.BackupRetentionPeriod),
 		awsclient.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != awsclient.StringValue(cluster.DBClusterParameterGroup),
@@ -173,12 +183,20 @@ func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClu
 	return svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cluster.DBClusterArn)
 }
 
-func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
+func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
 	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
 	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
 		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
+
+	pw, pwchanged, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if err != nil {
+		return err
+	}
+	if pwchanged {
+		obj.MasterUserPassword = aws.String(pw)
+	}
 	return nil
 }
 
@@ -193,10 +211,20 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBCluster, resp *s
 func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error {
 	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
 
-	pw, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef)
-	if err != nil {
+	pw, _, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if resource.IgnoreNotFound(err) != nil {
 		return err
 	}
+	if pw == "" && aws.BoolValue(&cr.Spec.ForProvider.AutogeneratePassword) {
+		pw, err = password.Generate()
+		if err != nil {
+			return errors.Wrap(err, "unable to generate a password")
+		}
+		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
+			return errors.Wrap(err, errSaveSecretFailed)
+		}
+	}
+
 	obj.MasterUserPassword = awsclient.String(pw)
 	return nil
 }
@@ -207,7 +235,7 @@ func (e *hooks) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 	}
 
 	cre.ConnectionDetails = getConnectionDetails(cr)
-	pw, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef)
+	pw, _, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -295,9 +323,9 @@ func areSameElements(a1, a2 []*string) bool {
 	return true
 }
 
-func (e *hooks) getPasswordFromRef(ctx context.Context, in *xpv1.SecretKeySelector) (newPwd string, err error) {
+func (e *hooks) getPasswordFromRef(ctx context.Context, in *xpv1.SecretKeySelector, out *xpv1.SecretReference) (newPwd string, changed bool, err error) {
 	if in == nil {
-		return "", nil
+		return "", false, nil
 	}
 	nn := types.NamespacedName{
 		Name:      in.Name,
@@ -305,10 +333,26 @@ func (e *hooks) getPasswordFromRef(ctx context.Context, in *xpv1.SecretKeySelect
 	}
 	s := &corev1.Secret{}
 	if err := e.kube.Get(ctx, nn, s); err != nil {
-		return "", errors.Wrap(err, errGetPasswordSecretFailed)
+		return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
 	}
 	newPwd = string(s.Data[in.Key])
-	return newPwd, nil
+
+	if out != nil {
+		nn = types.NamespacedName{
+			Name:      out.Name,
+			Namespace: out.Namespace,
+		}
+		s = &corev1.Secret{}
+		// the output secret may not exist yet, so we can skip returning an
+		// error if the error is NotFound
+		if err := e.kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
+			return "", false, err
+		}
+		// if newPwd was set to some value, compare value in output secret with
+		// newPwd
+		changed = newPwd != "" && newPwd != string(s.Data[xpv1.ResourceCredentialsSecretPasswordKey])
+	}
+	return newPwd, changed, nil
 }
 
 func getConnectionDetails(cr *svcapitypes.DBCluster) managed.ConnectionDetails {
@@ -332,4 +376,22 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 
 	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
+}
+
+func (e *hooks) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBCluster, pw string) error {
+	if cr.Spec.ForProvider.MasterUserPasswordSecretRef == nil {
+		return errors.New("no MasterUserPasswordSecretRef given, unable to store password")
+	}
+	patcher := resource.NewAPIPatchingApplicator(e.kube)
+	ref := cr.Spec.ForProvider.MasterUserPasswordSecretRef
+	sc := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ref.Name,
+			Namespace: ref.Namespace,
+		},
+		Data: map[string][]byte{
+			ref.Key: []byte(pw),
+		},
+	}
+	return patcher.Apply(ctx, sc)
 }
