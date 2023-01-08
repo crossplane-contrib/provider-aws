@@ -293,6 +293,9 @@ spec:
                             type: boolean
                         type: object
                     type: object
+                  clusterName:
+                    description: The name of the cluster.
+                    type: string
                   configurationInfo:
                     description: Represents the configuration that you want MSK to
                       use for the cluster.
@@ -479,6 +482,7 @@ spec:
                     description: Create tags when creating the cluster.
                     type: object
                 required:
+                - clusterName
                 - kafkaVersion
                 - numberOfBrokerNodes
                 - region
@@ -662,9 +666,6 @@ spec:
                 properties:
                   clusterARN:
                     description: The Amazon Resource Name (ARN) of the cluster.
-                    type: string
-                  clusterName:
-                    description: The name of the MSK cluster.
                     type: string
                   state:
                     description: The state of the cluster. The possible states are

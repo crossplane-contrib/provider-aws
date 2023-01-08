@@ -97,9 +97,9 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Status.AtProvider.ClusterARN = nil
 	}
 	if resp.ClusterInfo.ClusterName != nil {
-		cr.Status.AtProvider.ClusterName = resp.ClusterInfo.ClusterName
+		cr.Spec.ForProvider.ClusterName = resp.ClusterInfo.ClusterName
 	} else {
-		cr.Status.AtProvider.ClusterName = nil
+		cr.Spec.ForProvider.ClusterName = nil
 	}
 	if resp.ClusterInfo.EncryptionInfo != nil {
 		f8 := &svcapitypes.EncryptionInfo{}
@@ -270,26 +270,29 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		}
 		res.SetClientAuthentication(f0)
 	}
+	if cr.Spec.ForProvider.ClusterName != nil {
+		res.SetClusterName(*cr.Spec.ForProvider.ClusterName)
+	}
 	if cr.Spec.ForProvider.EncryptionInfo != nil {
-		f1 := &svcsdk.EncryptionInfo{}
+		f2 := &svcsdk.EncryptionInfo{}
 		if cr.Spec.ForProvider.EncryptionInfo.EncryptionAtRest != nil {
-			f1f0 := &svcsdk.EncryptionAtRest{}
+			f2f0 := &svcsdk.EncryptionAtRest{}
 			if cr.Spec.ForProvider.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID != nil {
-				f1f0.SetDataVolumeKMSKeyId(*cr.Spec.ForProvider.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID)
+				f2f0.SetDataVolumeKMSKeyId(*cr.Spec.ForProvider.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID)
 			}
-			f1.SetEncryptionAtRest(f1f0)
+			f2.SetEncryptionAtRest(f2f0)
 		}
 		if cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit != nil {
-			f1f1 := &svcsdk.EncryptionInTransit{}
+			f2f1 := &svcsdk.EncryptionInTransit{}
 			if cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.ClientBroker != nil {
-				f1f1.SetClientBroker(*cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.ClientBroker)
+				f2f1.SetClientBroker(*cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.ClientBroker)
 			}
 			if cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.InCluster != nil {
-				f1f1.SetInCluster(*cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.InCluster)
+				f2f1.SetInCluster(*cr.Spec.ForProvider.EncryptionInfo.EncryptionInTransit.InCluster)
 			}
-			f1.SetEncryptionInTransit(f1f1)
+			f2.SetEncryptionInTransit(f2f1)
 		}
-		res.SetEncryptionInfo(f1)
+		res.SetEncryptionInfo(f2)
 	}
 	if cr.Spec.ForProvider.EnhancedMonitoring != nil {
 		res.SetEnhancedMonitoring(*cr.Spec.ForProvider.EnhancedMonitoring)
@@ -298,79 +301,79 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		res.SetKafkaVersion(*cr.Spec.ForProvider.KafkaVersion)
 	}
 	if cr.Spec.ForProvider.LoggingInfo != nil {
-		f4 := &svcsdk.LoggingInfo{}
+		f5 := &svcsdk.LoggingInfo{}
 		if cr.Spec.ForProvider.LoggingInfo.BrokerLogs != nil {
-			f4f0 := &svcsdk.BrokerLogs{}
+			f5f0 := &svcsdk.BrokerLogs{}
 			if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs != nil {
-				f4f0f0 := &svcsdk.CloudWatchLogs{}
+				f5f0f0 := &svcsdk.CloudWatchLogs{}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled != nil {
-					f4f0f0.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled)
+					f5f0f0.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled)
 				}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup != nil {
-					f4f0f0.SetLogGroup(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup)
+					f5f0f0.SetLogGroup(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup)
 				}
-				f4f0.SetCloudWatchLogs(f4f0f0)
+				f5f0.SetCloudWatchLogs(f5f0f0)
 			}
 			if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose != nil {
-				f4f0f1 := &svcsdk.Firehose{}
+				f5f0f1 := &svcsdk.Firehose{}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.DeliveryStream != nil {
-					f4f0f1.SetDeliveryStream(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.DeliveryStream)
+					f5f0f1.SetDeliveryStream(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.DeliveryStream)
 				}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.Enabled != nil {
-					f4f0f1.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.Enabled)
+					f5f0f1.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.Firehose.Enabled)
 				}
-				f4f0.SetFirehose(f4f0f1)
+				f5f0.SetFirehose(f5f0f1)
 			}
 			if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3 != nil {
-				f4f0f2 := &svcsdk.S3{}
+				f5f0f2 := &svcsdk.S3{}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Bucket != nil {
-					f4f0f2.SetBucket(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Bucket)
+					f5f0f2.SetBucket(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Bucket)
 				}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Enabled != nil {
-					f4f0f2.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Enabled)
+					f5f0f2.SetEnabled(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Enabled)
 				}
 				if cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Prefix != nil {
-					f4f0f2.SetPrefix(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Prefix)
+					f5f0f2.SetPrefix(*cr.Spec.ForProvider.LoggingInfo.BrokerLogs.S3.Prefix)
 				}
-				f4f0.SetS3(f4f0f2)
+				f5f0.SetS3(f5f0f2)
 			}
-			f4.SetBrokerLogs(f4f0)
+			f5.SetBrokerLogs(f5f0)
 		}
-		res.SetLoggingInfo(f4)
+		res.SetLoggingInfo(f5)
 	}
 	if cr.Spec.ForProvider.NumberOfBrokerNodes != nil {
 		res.SetNumberOfBrokerNodes(*cr.Spec.ForProvider.NumberOfBrokerNodes)
 	}
 	if cr.Spec.ForProvider.OpenMonitoring != nil {
-		f6 := &svcsdk.OpenMonitoringInfo{}
+		f7 := &svcsdk.OpenMonitoringInfo{}
 		if cr.Spec.ForProvider.OpenMonitoring.Prometheus != nil {
-			f6f0 := &svcsdk.PrometheusInfo{}
+			f7f0 := &svcsdk.PrometheusInfo{}
 			if cr.Spec.ForProvider.OpenMonitoring.Prometheus.JmxExporter != nil {
-				f6f0f0 := &svcsdk.JmxExporterInfo{}
+				f7f0f0 := &svcsdk.JmxExporterInfo{}
 				if cr.Spec.ForProvider.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker != nil {
-					f6f0f0.SetEnabledInBroker(*cr.Spec.ForProvider.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker)
+					f7f0f0.SetEnabledInBroker(*cr.Spec.ForProvider.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker)
 				}
-				f6f0.SetJmxExporter(f6f0f0)
+				f7f0.SetJmxExporter(f7f0f0)
 			}
 			if cr.Spec.ForProvider.OpenMonitoring.Prometheus.NodeExporter != nil {
-				f6f0f1 := &svcsdk.NodeExporterInfo{}
+				f7f0f1 := &svcsdk.NodeExporterInfo{}
 				if cr.Spec.ForProvider.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker != nil {
-					f6f0f1.SetEnabledInBroker(*cr.Spec.ForProvider.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker)
+					f7f0f1.SetEnabledInBroker(*cr.Spec.ForProvider.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker)
 				}
-				f6f0.SetNodeExporter(f6f0f1)
+				f7f0.SetNodeExporter(f7f0f1)
 			}
-			f6.SetPrometheus(f6f0)
+			f7.SetPrometheus(f7f0)
 		}
-		res.SetOpenMonitoring(f6)
+		res.SetOpenMonitoring(f7)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f7 := map[string]*string{}
-		for f7key, f7valiter := range cr.Spec.ForProvider.Tags {
-			var f7val string
-			f7val = *f7valiter
-			f7[f7key] = &f7val
+		f8 := map[string]*string{}
+		for f8key, f8valiter := range cr.Spec.ForProvider.Tags {
+			var f8val string
+			f8val = *f8valiter
+			f8[f8key] = &f8val
 		}
-		res.SetTags(f7)
+		res.SetTags(f8)
 	}
 
 	return res
