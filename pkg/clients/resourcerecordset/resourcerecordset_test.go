@@ -19,6 +19,7 @@ package resourcerecordset
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 
@@ -83,6 +84,45 @@ func TestCreatePatch(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestIsUpToDateAliasTarget(t *testing.T) {
+	rrSet := route53types.ResourceRecordSet{
+		Name: aws.String("test.com."),
+		Type: route53types.RRTypeA,
+		AliasTarget: &route53types.AliasTarget{
+			HostedZoneId:         aws.String("Z18D5FSROUN6"),
+			DNSName:              aws.String("dualstack.test.elb.us-west-2.amazonaws.com."),
+			EvaluateTargetHealth: false,
+		},
+	}
+
+	p := v1alpha1.ResourceRecordSetParameters{
+		AliasTarget: &v1alpha1.AliasTarget{
+			HostedZoneID:         "Z18D5FSROUN6",
+			DNSName:              "dualstack.test.elb.us-west-2.amazonaws.com.",
+			EvaluateTargetHealth: false,
+		},
+		Type:   "A",
+		ZoneID: aws.String("01609810TV4E"),
+	}
+
+	got, err := IsUpToDate(p, rrSet)
+	if err != nil {
+		t.FailNow()
+	}
+	if diff := cmp.Diff(true, got); diff != "" {
+		t.Errorf("r: -want, +got:\n%s", diff)
+	}
+
+	rrSet.AliasTarget.DNSName = aws.String("someotherdnsname.com.")
+	got, err = IsUpToDate(p, rrSet)
+	if err != nil {
+		t.FailNow()
+	}
+	if diff := cmp.Diff(false, got); diff != "" {
+		t.Errorf("r: -want, +got:\n%s", diff)
 	}
 }
 
