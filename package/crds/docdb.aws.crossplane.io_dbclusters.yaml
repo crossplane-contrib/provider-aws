@@ -74,6 +74,13 @@ spec:
                       changes are applied immediately, regardless of the value of
                       the ApplyImmediately parameter. \n Default: false"
                     type: boolean
+                  autogeneratePassword:
+                    description: "AutogeneratePassword indicates whether the controller
+                      should generate a random password for the master user if one
+                      is not provided via MasterUserPasswordSecretRef. \n If a password
+                      is generated, it will be stored as a secret at the location
+                      specified by MasterUserPasswordSecretRef."
+                    type: boolean
                   availabilityZones:
                     description: A list of Amazon EC2 Availability Zones that instances
                       in the cluster can be created in.
