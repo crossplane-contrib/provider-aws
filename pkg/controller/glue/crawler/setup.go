@@ -51,9 +51,12 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-crawler-arn"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.CrawlerGroupKind)
+
 // SetupCrawler adds a controller that reconciles Crawler.
 func SetupCrawler(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.CrawlerGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := &hooks{kube: e.kube, client: e.client}

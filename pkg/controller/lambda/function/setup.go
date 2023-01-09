@@ -37,9 +37,12 @@ const (
 	repositoryTypeS3  = "S3"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.FunctionGroupKind)
+
 // SetupFunction adds a controller that reconciles Function.
 func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.FunctionGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

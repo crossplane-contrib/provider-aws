@@ -61,9 +61,12 @@ const (
 	errDeleteTags         = "failed to delete tags for the RouteTable resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RouteTableGroupKind)
+
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RouteTableGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

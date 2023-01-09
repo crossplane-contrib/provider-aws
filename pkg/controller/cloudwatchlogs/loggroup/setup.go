@@ -41,9 +41,12 @@ const (
 	errUntagResource = "cannot untag resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.LogGroupGroupKind)
+
 // SetupLogGroup adds a controller that reconciles LogGroup.
 func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.LogGroupGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

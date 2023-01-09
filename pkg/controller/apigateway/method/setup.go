@@ -20,9 +20,12 @@ import (
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.MethodGroupKind)
+
 // SetupMethod adds a controller that reconciles Method.
 func SetupMethod(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.MethodGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{

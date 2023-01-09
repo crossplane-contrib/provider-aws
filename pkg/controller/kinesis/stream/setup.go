@@ -35,9 +35,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.StreamGroupKind)
+
 // SetupStream adds a controller that reconciles Stream.
 func SetupStream(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.StreamGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

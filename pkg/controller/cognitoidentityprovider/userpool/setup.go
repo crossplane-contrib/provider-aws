@@ -43,9 +43,12 @@ const (
 	errConflictingFields   = "fields conflicting! Please only use one of them or both with the same value"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.UserPoolGroupKind)
+
 // SetupUserPool adds a controller that reconciles UserPool.
 func SetupUserPool(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.UserPoolGroupKind)
+	name := ControllerName
 
 	opts := []option{
 		func(e *external) {

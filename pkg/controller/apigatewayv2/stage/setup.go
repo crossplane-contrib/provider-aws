@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.StageGroupKind)
+
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.StageGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

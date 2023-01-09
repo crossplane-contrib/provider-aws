@@ -31,9 +31,12 @@ const (
 	errTag            = "cannot add tags"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
+
 // SetupVirtualCluster adds a controller that reconciles VirtualCluster.
 func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.isUpToDate = isUpToDate

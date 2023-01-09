@@ -34,9 +34,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
+
 // SetupIdentityPool adds a controller that reconciles IdentityPool.
 func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
+	name := ControllerName
 
 	opts := []option{
 		func(e *external) {

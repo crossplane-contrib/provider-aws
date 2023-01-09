@@ -52,9 +52,12 @@ const (
 	errGet    = "failed to get the Hosted Zone resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
+
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
 func SetupHostedZone(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

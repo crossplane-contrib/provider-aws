@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.VPCLinkGroupKind)
+
 // SetupVPCLink adds a controller that reconciles VPCLink.
 func SetupVPCLink(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.VPCLinkGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

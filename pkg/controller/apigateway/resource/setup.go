@@ -37,9 +37,12 @@ import (
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.ResourceGroupKind)
+
 // SetupResource adds a controller that reconciles Resource.
 func SetupResource(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.ResourceGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.lateInitialize = lateInitialize

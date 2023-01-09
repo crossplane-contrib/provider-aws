@@ -45,9 +45,12 @@ const (
 	statusUpdating  dbClusterStatus = "updating"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DBClusterKind)
+
 // SetupDBCluster adds a controller that reconciles DB Cluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBClusterKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.lateInitialize = lateInitialize

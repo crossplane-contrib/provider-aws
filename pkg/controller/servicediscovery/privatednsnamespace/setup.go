@@ -35,9 +35,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
+
 // SetupPrivateDNSNamespace adds a controller that reconciles PrivateDNSNamespaces.
 func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)

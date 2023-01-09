@@ -28,9 +28,12 @@ const (
 	errKubeUpdateFailed = "cannot update TransitGateway"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
+
 // SetupTransitGateway adds a controller that reconciles TransitGateway.
 func SetupTransitGateway(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

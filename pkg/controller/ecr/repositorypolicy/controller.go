@@ -48,9 +48,12 @@ const (
 	errDelete = "failed to delete the repository resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)
+
 // SetupRepositoryPolicy adds a controller that reconciles ECR.
 func SetupRepositoryPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

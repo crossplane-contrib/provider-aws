@@ -35,9 +35,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
+
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
 func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)

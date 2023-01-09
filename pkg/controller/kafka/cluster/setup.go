@@ -34,9 +34,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
+
 // SetupCluster adds a controller that reconciles Cluster.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

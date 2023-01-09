@@ -32,9 +32,12 @@ const (
 	errUntagResource    = "cannot untag resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.EnvironmentGroupKind)
+
 // SetupEnvironment adds a controller that reconciles Environment.
 func SetupEnvironment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.EnvironmentGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube, external: e}

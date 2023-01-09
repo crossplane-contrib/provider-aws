@@ -50,9 +50,12 @@ const (
 	errDelete        = "failed to deregister instance from the ELB"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)
+
 // SetupELBAttachment adds a controller that reconciles ELBAttachmets.
 func SetupELBAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

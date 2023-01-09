@@ -37,9 +37,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.IdentityProviderGroupKind)
+
 // SetupIdentityProvider adds a controller that reconciles IdentityProvider.
 func SetupIdentityProvider(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.IdentityProviderGroupKind)
+	name := ControllerName
 
 	opts := []option{
 		func(e *external) {

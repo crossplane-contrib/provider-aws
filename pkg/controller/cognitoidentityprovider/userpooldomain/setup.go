@@ -33,9 +33,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
+
 // SetupUserPoolDomain adds a controller that reconciles User.
 func SetupUserPoolDomain(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
+	name := ControllerName
 
 	opts := []option{
 		func(e *external) {

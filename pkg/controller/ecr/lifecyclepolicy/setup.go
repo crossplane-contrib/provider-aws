@@ -19,9 +19,12 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)
+
 // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
 func SetupLifecyclePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

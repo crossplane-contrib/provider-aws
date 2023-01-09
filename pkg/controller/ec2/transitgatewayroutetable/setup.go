@@ -29,9 +29,12 @@ const (
 	errKubeUpdateFailed = "cannot update TransitGateway"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
+
 // SetupTransitGatewayRouteTable adds a controller that reconciles TransitGatewayRouteTable.
 func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

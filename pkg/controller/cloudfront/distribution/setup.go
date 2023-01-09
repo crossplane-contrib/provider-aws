@@ -46,9 +46,12 @@ const (
 	stateDeployed = "Deployed"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DistributionGroupKind)
+
 // SetupDistribution adds a controller that reconciles Distribution.
 func SetupDistribution(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DistributionGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

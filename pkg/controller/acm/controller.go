@@ -57,9 +57,12 @@ const (
 	errRemoveTagsFailed = "failed to remove tags for Certificate"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.CertificateGroupKind)
+
 // SetupCertificate adds a controller that reconciles Certificates.
 func SetupCertificate(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.CertificateGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

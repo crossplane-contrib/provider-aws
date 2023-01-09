@@ -50,9 +50,12 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-connection-arn"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.ConnectionGroupKind)
+
 // SetupConnection adds a controller that reconciles Connection.
 func SetupConnection(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.ConnectionGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := &hooks{kube: e.kube, client: e.client}

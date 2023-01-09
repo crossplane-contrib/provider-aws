@@ -21,9 +21,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.FileSystemGroupKind)
+
 // SetupFileSystem adds a controller that reconciles FileSystem.
 func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.FileSystemGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.isUpToDate = isUpToDate

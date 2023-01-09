@@ -29,9 +29,12 @@ const (
 	errKubeUpdateFailed = "cannot update Workspace custom resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.WorkspaceGroupKind)
+
 // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
 func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.WorkspaceGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

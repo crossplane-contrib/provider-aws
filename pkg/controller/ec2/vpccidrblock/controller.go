@@ -51,9 +51,12 @@ const (
 	errDisassociate     = "failed to disassociate the VPCCIDRBlock resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.VPCCIDRBlockGroupKind)
+
 // SetupVPCCIDRBlock adds a controller that reconciles VPCCIDRBlocks.
 func SetupVPCCIDRBlock(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.VPCCIDRBlockGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

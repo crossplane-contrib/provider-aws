@@ -52,9 +52,12 @@ const (
 	errParsePolicy           = "cannot parse policy"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.PermissionKind)
+
 // SetupPermission adds a controller that reconciles Permissions.
 func SetupPermission(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.PermissionKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -47,10 +47,13 @@ const (
 	errDetach           = "failed to detach the policy to role"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
+
 // SetupRolePolicyAttachment adds a controller that reconciles
 // RolePolicyAttachments.
 func SetupRolePolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

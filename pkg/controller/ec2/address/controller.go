@@ -56,9 +56,12 @@ const (
 	errStatusUpdate  = "cannot update status of Address custom resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.AddressGroupKind)
+
 // SetupAddress adds a controller that reconciles Address.
 func SetupAddress(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.AddressGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

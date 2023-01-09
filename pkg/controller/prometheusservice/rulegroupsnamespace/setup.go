@@ -31,9 +31,12 @@ const (
 	errKubeUpdateFailed       = "cannot update RuleGroupsNamespace custom resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)
+
 // SetupRuleGroupsNamespace adds a controller that reconciles RuleGroupsNamespace.
 func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

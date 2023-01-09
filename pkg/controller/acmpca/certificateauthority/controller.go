@@ -57,9 +57,12 @@ const (
 	errCertificateAuthority = "failed to update the ACMPCA resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
+
 // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthority(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

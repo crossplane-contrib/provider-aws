@@ -50,10 +50,13 @@ const (
 	errDetach = "failed to detach the policy to group"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKind)
+
 // SetupGroupPolicyAttachment adds a controller that reconciles
 // GroupPolicyAttachments.
 func SetupGroupPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

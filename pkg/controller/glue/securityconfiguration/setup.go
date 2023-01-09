@@ -35,9 +35,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.SecurityConfigurationGroupKind)
+
 // SetupSecurityConfiguration adds a controller that reconciles SecurityConfiguration.
 func SetupSecurityConfiguration(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.SecurityConfigurationGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.postCreate = postCreate

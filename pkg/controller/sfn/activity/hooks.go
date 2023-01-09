@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.ActivityGroupKind)
+
 // SetupActivity adds a controller that reconciles Activity.
 func SetupActivity(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

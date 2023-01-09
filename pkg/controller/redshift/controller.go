@@ -53,9 +53,12 @@ const (
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
+
 // SetupCluster adds a controller that reconciles Redshift clusters.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

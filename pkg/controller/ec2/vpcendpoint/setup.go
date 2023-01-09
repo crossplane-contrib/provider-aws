@@ -27,9 +27,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
+
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
 func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
+	name := ControllerName
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

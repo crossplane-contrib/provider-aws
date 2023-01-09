@@ -47,9 +47,12 @@ const (
 	infoConditionProcessing = "currently processing"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DomainGroupKind)
+
 // SetupDomain adds a controller that reconciles CloudSearch domains.
 func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DomainGroupKind)
+	name := ControllerName
 	opts := []option{setupHooks}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

@@ -50,9 +50,12 @@ const (
 	errUpdate           = "failed to update the SNS Topic"
 )
 
+// ControllerName of this controllevar ControllerName.
+var ControllerName = managed.ControllerName(v1beta1.TopicGroupKind)
+
 // SetupSNSTopic adds a controller that reconciles Topic.
 func SetupSNSTopic(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.TopicGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

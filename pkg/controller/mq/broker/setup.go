@@ -26,9 +26,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.BrokerGroupKind)
+
 // SetupBroker adds a controller that reconciles Broker.
 func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.BrokerGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube, external: e}

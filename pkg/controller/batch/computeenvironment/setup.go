@@ -35,9 +35,12 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
+
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
 func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := &hooks{client: e.client}

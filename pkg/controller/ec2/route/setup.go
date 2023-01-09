@@ -26,9 +26,12 @@ const (
 	errMultipleItems = "retrieved multiple RouteTables for the given routeTableId"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
+
 // SetupRoute adds a controller that reconciles Route.
 func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

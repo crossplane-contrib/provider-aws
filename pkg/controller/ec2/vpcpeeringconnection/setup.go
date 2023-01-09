@@ -31,9 +31,12 @@ const (
 	errKubeUpdateFailed = "cannot update VPCPeeringConnection"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
+
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
 func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

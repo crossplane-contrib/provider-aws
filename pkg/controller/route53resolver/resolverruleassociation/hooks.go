@@ -46,9 +46,12 @@ const (
 	errGet              = "failed to get the AssociatedResolverRule"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
+
 // SetupResolverRuleAssociation adds a controller that reconciles ResolverRuleAssociation
 func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

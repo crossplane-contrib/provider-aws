@@ -45,9 +45,12 @@ type updater struct {
 	client svcsdkapi.RDSAPI
 }
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DBClusterGroupKind)
+
 // SetupDBCluster adds a controller that reconciles DbCluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

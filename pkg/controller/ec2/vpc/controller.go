@@ -58,9 +58,12 @@ const (
 	errDelete              = "failed to delete the VPC resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.VPCGroupKind)
+
 // SetupVPC adds a controller that reconciles VPCs.
 func SetupVPC(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.VPCGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

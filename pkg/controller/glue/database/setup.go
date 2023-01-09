@@ -44,9 +44,12 @@ const (
 	errCreateSameIdentifier = "cannot create Glue Database. Combine permissions for same principals under one createTableDefaultPermissions entry"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DatabaseGroupKind)
+
 // SetupDatabase adds a controller that reconciles Database.
 func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DatabaseGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

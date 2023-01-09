@@ -41,9 +41,12 @@ const (
 	errComputeEnvironmentARN = "missing or incorrect ARN for ComputeEnvironment"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.JobQueueGroupKind)
+
 // SetupJobQueue adds a controller that reconciles a JobQueue.
 func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobQueueGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := &hooks{client: e.client}

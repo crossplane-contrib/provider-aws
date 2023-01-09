@@ -30,9 +30,12 @@ const (
 	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
+
 // SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
 func SetupDBParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

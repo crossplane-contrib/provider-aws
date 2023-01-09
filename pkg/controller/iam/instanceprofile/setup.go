@@ -37,9 +37,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
+
 // SetupInstanceProfile adds a controller that reconciles InstanceProfile.
 func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			u := &updater{client: e.client}

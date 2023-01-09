@@ -47,9 +47,12 @@ const (
 	errDescribeTargetHealthFailed      = "failed to describe target health"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(manualv1alpha1.TargetKind)
+
 // SetupTarget adds a controller that reconciles Targets.
 func SetupTarget(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.TargetKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

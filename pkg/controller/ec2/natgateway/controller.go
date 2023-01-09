@@ -36,9 +36,12 @@ const (
 	errDeleteTags       = "failed to delete tags for NATGateway resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.NATGatewayGroupKind)
+
 // SetupNatGateway adds a controller that reconciles NatGateways.
 func SetupNatGateway(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.NATGatewayGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

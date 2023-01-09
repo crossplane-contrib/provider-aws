@@ -60,9 +60,12 @@ const (
 	errPatchCreationFailed = "cannot create a patch object"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RepositoryGroupKind)
+
 // SetupRepository adds a controller that reconciles ECR.
 func SetupRepository(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RepositoryGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

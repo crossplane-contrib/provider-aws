@@ -59,9 +59,12 @@ const (
 	errUntag            = "cannot untag policy"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.PolicyGroupKind)
+
 // SetupPolicy adds a controller that reconciles IAM Policy.
 func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.PolicyGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

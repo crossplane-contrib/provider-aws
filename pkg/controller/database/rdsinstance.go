@@ -62,9 +62,12 @@ const (
 	errGetPasswordSecretFailed            = "cannot get password secret"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RDSInstanceGroupKind)
+
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
 func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -33,9 +33,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.GroupGroupKind)
+
 // SetupGroup adds a controller that reconciles Group.
 func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.GroupGroupKind)
+	name := ControllerName
 
 	opts := []option{
 		func(e *external) {

@@ -52,9 +52,12 @@ const (
 	errAddTagsFailed  = "cannot add tags to EKS identity provider config"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
+
 // SetupIdentityProviderConfig adds a controller that reconciles IdentityProviderConfigs.
 func SetupIdentityProviderConfig(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

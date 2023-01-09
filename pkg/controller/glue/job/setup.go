@@ -50,9 +50,12 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-job-arn"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.JobGroupKind)
+
 // SetupJob adds a controller that reconciles Job.
 func SetupJob(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			h := &hooks{kube: e.kube, client: e.client}

@@ -49,9 +49,12 @@ const (
 	errUpdate           = "failed to update the AccessKey resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.AccessKeyGroupKind)
+
 // SetupAccessKey adds a controller that reconciles AccessKeys.
 func SetupAccessKey(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.AccessKeyGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

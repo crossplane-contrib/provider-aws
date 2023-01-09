@@ -51,9 +51,12 @@ const (
 	errState            = "failed to determine resource state"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(route53v1alpha1.ResourceRecordSetGroupKind)
+
 // SetupResourceRecordSet adds a controller that reconciles ResourceRecordSets.
 func SetupResourceRecordSet(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(route53v1alpha1.ResourceRecordSetGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

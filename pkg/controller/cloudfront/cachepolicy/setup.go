@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.CachePolicyGroupKind)
+
 // SetupCachePolicy adds a controller that reconciles CachePolicy.
 func SetupCachePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.CachePolicyGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

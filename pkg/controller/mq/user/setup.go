@@ -25,9 +25,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.UserGroupKind)
+
 // SetupUser adds a controller that reconciles User.
 func SetupUser(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.UserGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube, external: e}

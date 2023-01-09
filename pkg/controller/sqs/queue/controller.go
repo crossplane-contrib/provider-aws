@@ -54,9 +54,12 @@ const (
 	errUpdateFailed             = "failed to update the Queue resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.QueueGroupKind)
+
 // SetupQueue adds a controller that reconciles Queue.
 func SetupQueue(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.QueueGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

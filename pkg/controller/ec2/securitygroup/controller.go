@@ -63,9 +63,12 @@ const (
 	errDeleteTags       = "failed to delete tags for the Security Group resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.SecurityGroupGroupKind)
+
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
 func SetupSecurityGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.SecurityGroupGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

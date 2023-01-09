@@ -25,9 +25,12 @@ const (
 	firstObserveJobRunID = "0000000000000000000"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.JobRunKind)
+
 // SetupJobRun adds a controller that reconciles JobRun.
 func SetupJobRun(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobRunKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

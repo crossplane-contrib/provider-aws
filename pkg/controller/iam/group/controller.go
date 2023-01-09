@@ -51,9 +51,12 @@ const (
 	errKubeUpdateFailed = "cannot late initialize IAM Group"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.GroupGroupKind)
+
 // SetupGroup adds a controller that reconciles Groups.
 func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.GroupGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

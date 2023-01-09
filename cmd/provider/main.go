@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -44,12 +45,13 @@ import (
 
 func main() {
 	var (
-		app              = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
-		debug            = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncInterval     = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
-		pollInterval     = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
-		leaderElection   = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
-		maxReconcileRate = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
+		app                    = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
+		debug                  = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncInterval           = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
+		pollInterval           = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
+		controllerPollInterval = app.Flag("controller-poll", "like poll flag but can set specific controller, etc: --controller-poll managed/resourcerecordset.route53.aws.crossplane.io=1h").StringMap()
+		leaderElection         = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		maxReconcileRate       = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
 
 		namespace                  = app.Flag("namespace", "Namespace used to set as default scope in default secret store config.").Default("crossplane-system").Envar("POD_NAMESPACE").String()
 		enableExternalSecretStores = app.Flag("enable-external-secret-stores", "Enable support for ExternalSecretStores.").Default("false").Envar("ENABLE_EXTERNAL_SECRET_STORES").Bool()
@@ -65,10 +67,17 @@ func main() {
 		ctrl.SetLogger(zl)
 	}
 
-	log.Debug("Starting", "sync-period", syncInterval.String())
+	log.Debug("Starting", "sync-period", syncInterval.String(), "poll-interval", pollInterval.String())
 
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
+
+	controllerPollIntervalDuration, err := convertControllerPollInterval(*controllerPollInterval)
+	kingpin.FatalIfError(err, "Failed to convert controller poll interval")
+
+	for k, v := range controllerPollIntervalDuration {
+		log.Debug("Controller poll interval", "controller", k, "interval", v.String())
+	}
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		SyncPeriod: syncInterval,
@@ -116,7 +125,20 @@ func main() {
 		})), "cannot create default store config")
 	}
 
-	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
+	kingpin.FatalIfError(controller.Setup(mgr, o, controllerPollIntervalDuration), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
+}
 
+func convertControllerPollInterval(poll map[string]string) (pollDuration map[string]time.Duration, err error) {
+	pollDuration = make(map[string]time.Duration)
+	for k, v := range poll {
+		duration, err := time.ParseDuration(v)
+		if err != nil {
+			return nil, fmt.Errorf("duration %q is not valid: %w", v, err)
+		}
+
+		pollDuration[k] = duration
+	}
+
+	return pollDuration, nil
 }

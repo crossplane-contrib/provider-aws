@@ -21,9 +21,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
+
 // SetupTaskDefinition adds a controller that reconciles TaskDefinition.
 func SetupTaskDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.StateMachineGroupKind)
+
 // SetupStateMachine adds a controller that reconciles StateMachine.
 func SetupStateMachine(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

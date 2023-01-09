@@ -23,9 +23,12 @@ import (
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
+
 // SetupFunctionURL adds a controller that reconciles FunctionURLConfig.
 func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

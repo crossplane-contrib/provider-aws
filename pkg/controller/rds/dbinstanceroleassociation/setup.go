@@ -25,9 +25,12 @@ const (
 	errDescribeAssoc = "failed to describe DBInstance for DBInstanceRoleAssociation"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)
+
 // SetupDBInstanceRoleAssociation adds a controller that reconciles DBInstanceRoleAssociation.
 func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

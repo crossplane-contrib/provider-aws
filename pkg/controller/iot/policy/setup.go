@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.PolicyGroupKind)
+
 // SetupPolicy adds a controller that reconciles Policy.
 func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.PolicyGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

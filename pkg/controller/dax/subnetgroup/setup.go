@@ -17,9 +17,12 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.SubnetGroupGroupKind)
+
 // SetupSubnetGroup adds a controller that reconciles SubnetGroup.
 func SetupSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.SubnetGroupGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

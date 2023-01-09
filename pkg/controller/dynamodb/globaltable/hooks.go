@@ -40,9 +40,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.GlobalTableGroupKind)
+
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
 func SetupGlobalTable(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

@@ -46,9 +46,12 @@ const (
 	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DBInstanceGroupKind)
+
 // SetupDBInstance adds a controller that reconciles a DBInstance.
 func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
+	name := ControllerName
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

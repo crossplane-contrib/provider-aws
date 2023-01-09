@@ -30,9 +30,12 @@ const (
 	errKubeUpdateFailed = "cannot update VPCEndpointServiceConfiguration"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
+
 // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
 func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

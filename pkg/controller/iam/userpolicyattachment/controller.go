@@ -48,10 +48,13 @@ const (
 	errDetach = "failed to detach the policy to user"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.UserPolicyAttachmentGroupKind)
+
 // SetupUserPolicyAttachment adds a controller that reconciles
 // UserPolicyAttachments.
 func SetupUserPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.UserPolicyAttachmentGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

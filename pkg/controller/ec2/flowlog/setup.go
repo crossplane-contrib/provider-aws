@@ -46,9 +46,12 @@ type deleter struct {
 	client ec2iface.EC2API
 }
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.FlowLogGroupKind)
+
 // SetupFlowLog adds a controller that reconciles FlowLog
 func SetupFlowLog(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.FlowLogGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

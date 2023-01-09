@@ -50,10 +50,13 @@ const (
 	errRemove = "failed to remove the user to group"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.GroupUserMembershipGroupKind)
+
 // SetupGroupUserMembership adds a controller that reconciles
 // GroupUserMemberships.
 func SetupGroupUserMembership(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.GroupUserMembershipGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

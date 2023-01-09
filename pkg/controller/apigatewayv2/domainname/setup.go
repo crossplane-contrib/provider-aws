@@ -36,9 +36,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.DomainNameGroupKind)
+
 // SetupDomainName adds a controller that reconciles DomainName.
 func SetupDomainName(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DomainNameGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

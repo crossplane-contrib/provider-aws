@@ -54,9 +54,12 @@ const (
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.RoleGroupKind)
+
 // SetupRole adds a controller that reconciles Roles.
 func SetupRole(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RoleGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

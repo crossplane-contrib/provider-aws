@@ -49,9 +49,12 @@ const (
 	errDelete           = "failed to delete the ACMPCA resource"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)
+
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthorityPermission(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

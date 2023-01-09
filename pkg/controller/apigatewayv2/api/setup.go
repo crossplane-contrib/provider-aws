@@ -37,9 +37,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.APIGroupKind)
+
 // SetupAPI adds a controller that reconciles API.
 func SetupAPI(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.APIGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

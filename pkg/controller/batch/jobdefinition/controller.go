@@ -53,9 +53,12 @@ const (
 	errDescribeJobDefinition   = "cannot describe Batch JobDefinition"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.JobDefinitionKind)
+
 // SetupJobDefinition adds a controller that reconciles JobDefinitions.
 func SetupJobDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobDefinitionKind)
+	name := ControllerName
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

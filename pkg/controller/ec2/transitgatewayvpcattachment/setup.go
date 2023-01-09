@@ -29,9 +29,12 @@ const (
 	errKubeUpdateFailed = "cannot update TransitGatewayAttachment"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
+
 // SetupTransitGatewayVPCAttachment adds a controller that reconciles TransitGatewayVPCAttachment.
 func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

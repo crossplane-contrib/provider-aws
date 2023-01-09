@@ -17,9 +17,12 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.AccessPointGroupKind)
+
 // SetupAccessPoint adds a controller that reconciles AccessPoint.
 func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.AccessPointGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

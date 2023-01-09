@@ -24,9 +24,12 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ControllerName of this controller.
+var ControllerName = managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)
+
 // SetupAlertManagerDefinition adds a controller that reconciles AlertManagerDefinition.
 func SetupAlertManagerDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)
+	name := ControllerName
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate
