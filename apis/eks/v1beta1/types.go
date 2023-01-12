@@ -62,6 +62,11 @@ type ClusterParameters struct {
 	// +optional
 	EncryptionConfig []EncryptionConfig `json:"encryptionConfig,omitempty"`
 
+	// The Kubernetes network configuration for the cluster.
+	// +immutable
+	// +optional
+	KubernetesNetworkConfig *KubernetesNetworkConfigRequest `json:"kubernetesNetworkConfig,omitempty"`
+
 	// Enable or disable exporting the Kubernetes control plane logs for your cluster
 	// to CloudWatch Logs. By default, cluster control plane logs aren't exported
 	// to CloudWatch Logs. For more information, see Amazon EKS Cluster Control
@@ -149,6 +154,55 @@ type Provider struct {
 	// a CMK (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html)
 	// in the AWS Key Management Service Developer Guide.
 	KeyArn string `json:"keyArn"`
+}
+
+// IPFamily specifies the ip family
+type IPFamily string
+
+const (
+	// IPFamilyIpv4 means ipv4
+	IPFamilyIpv4 IPFamily = "ipv4"
+	// IPFamilyIpv6 means ipv6
+	IPFamilyIpv6 IPFamily = "ipv6"
+)
+
+// KubernetesNetworkConfigRequest specifies the Kubernetes network configuration for the cluster.
+type KubernetesNetworkConfigRequest struct {
+	// Specify which IP family is used to assign Kubernetes pod and service IP
+	// addresses. If you don't specify a value, ipv4 is used by default. You can only
+	// specify an IP family when you create a cluster and can't change this value once
+	// the cluster is created. If you specify ipv6, the VPC and subnets that you
+	// specify for cluster creation must have both IPv4 and IPv6 CIDR blocks assigned
+	// to them. You can't specify ipv6 for clusters in China Regions. You can only
+	// specify ipv6 for 1.21 and later clusters that use version 1.10.1 or later of the
+	// Amazon VPC CNI add-on. If you specify ipv6, then ensure that your VPC meets the
+	// requirements listed in the considerations listed in Assigning IPv6 addresses to
+	// pods and services
+	// (https://docs.aws.amazon.com/eks/latest/userguide/cni-ipv6.html) in the Amazon
+	// EKS User Guide. Kubernetes assigns services IPv6 addresses from the unique local
+	// address range (fc00::/7). You can't specify a custom IPv6 CIDR block. Pod
+	// addresses are assigned from the subnet's IPv6 CIDR.
+	IPFamily IPFamily `json:"ipFamily"`
+
+	// Don't specify a value if you select ipv6 for ipFamily. The CIDR block to assign
+	// Kubernetes service IP addresses from. If you don't specify a block, Kubernetes
+	// assigns addresses from either the 10.100.0.0/16 or 172.20.0.0/16 CIDR blocks. We
+	// recommend that you specify a block that does not overlap with resources in other
+	// networks that are peered or connected to your VPC. The block must meet the
+	// following requirements:
+	//
+	// * Within one of the following private IP address
+	// blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
+	//
+	// * Doesn't overlap with
+	// any CIDR block assigned to the VPC that you selected for VPC.
+	//
+	// * Between /24 and
+	// /12.
+	//
+	// You can only specify a custom CIDR block when you create a cluster and
+	// can't change this value once the cluster is created.
+	ServiceIpv4Cidr string `json:"serviceIpv4Cidr,omitempty"`
 }
 
 // Logging in the logging configuration for a cluster.
@@ -277,6 +331,9 @@ type ClusterObservation struct {
 	// Amazon Web Services cloud.
 	OutpostConfig OutpostConfigResponse `json:"outpostConfig,omitempty"`
 
+	// The Kubernetes network configuration for the cluster.
+	KubernetesNetworkConfig KubernetesNetworkConfigResponse `json:"kubernetesNetworkConfig,omitempty"`
+
 	// The VPC configuration used by the cluster control plane. Amazon EKS VPC resources
 	// have specific requirements to work properly with Kubernetes. For more information,
 	// see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
@@ -349,6 +406,32 @@ type OutpostConfigResponse struct {
 	// This member is required.
 	OutpostArns []string `json:"outpostArns,omitempty"`
 	// contains filtered or unexported fields
+}
+
+// KubernetesNetworkConfigResponse specifies the Kubernetes network configuration for the cluster.
+// The response contains a value for serviceIpv6Cidr or serviceIpv4Cidr, but not both.
+type KubernetesNetworkConfigResponse struct {
+	// The IP family used to assign Kubernetes pod and service IP addresses. The IP
+	// family is always ipv4, unless you have a 1.21 or later cluster running version
+	// 1.10.1 or later of the Amazon VPC CNI add-on and specified ipv6 when you created
+	// the cluster.
+	IPFamily IPFamily `json:"ipFamily,omitempty"`
+
+	// The CIDR block that Kubernetes pod and service IP addresses are assigned from.
+	// Kubernetes assigns addresses from an IPv4 CIDR block assigned to a subnet that
+	// the node is in. If you didn't specify a CIDR block when you created the cluster,
+	// then Kubernetes assigns addresses from either the 10.100.0.0/16 or 172.20.0.0/16
+	// CIDR blocks. If this was specified, then it was specified when the cluster was
+	// created and it can't be changed.
+	ServiceIpv4Cidr string `json:"serviceIpv4Cidr,omitempty"`
+
+	// The CIDR block that Kubernetes pod and service IP addresses are assigned from if
+	// you created a 1.21 or later cluster with version 1.10.1 or later of the Amazon
+	// VPC CNI add-on and specified ipv6 for ipFamily when you created the cluster.
+	// Kubernetes assigns service addresses from the unique local address range
+	// (fc00::/7) because you can't specify a custom IPv6 CIDR block when you create
+	// the cluster.
+	ServiceIpv6Cidr string `json:"serviceIpv6Cidr,omitempty"`
 }
 
 // VpcConfigResponse is the observed VPC configuration for a cluster.
