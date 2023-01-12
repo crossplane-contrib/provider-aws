@@ -122,6 +122,15 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 		c.EncryptionConfig = GenerateEncryptionConfig(p)
 	}
 
+	if p.KubernetesNetworkConfig != nil {
+		c.KubernetesNetworkConfig = &ekstypes.KubernetesNetworkConfigRequest{
+			IpFamily: ekstypes.IpFamily(p.KubernetesNetworkConfig.IPFamily),
+		}
+		if p.KubernetesNetworkConfig.ServiceIpv4Cidr != "" {
+			c.KubernetesNetworkConfig.ServiceIpv4Cidr = awsclients.String(p.KubernetesNetworkConfig.ServiceIpv4Cidr)
+		}
+	}
+
 	c.ResourcesVpcConfig = &ekstypes.VpcConfigRequest{
 		EndpointPrivateAccess: p.ResourcesVpcConfig.EndpointPrivateAccess,
 		EndpointPublicAccess:  p.ResourcesVpcConfig.EndpointPublicAccess,
@@ -254,6 +263,14 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 		o.OutpostConfig = v1beta1.OutpostConfigResponse{
 			ControlPlaneInstanceType: awsclients.StringValue(cluster.OutpostConfig.ControlPlaneInstanceType),
 			OutpostArns:              cluster.OutpostConfig.OutpostArns,
+		}
+	}
+
+	if cluster.KubernetesNetworkConfig != nil {
+		o.KubernetesNetworkConfig = v1beta1.KubernetesNetworkConfigResponse{
+			IPFamily:        v1beta1.IPFamily(cluster.KubernetesNetworkConfig.IpFamily),
+			ServiceIpv4Cidr: awsclients.StringValue(cluster.KubernetesNetworkConfig.ServiceIpv4Cidr),
+			ServiceIpv6Cidr: awsclients.StringValue(cluster.KubernetesNetworkConfig.ServiceIpv6Cidr),
 		}
 	}
 
