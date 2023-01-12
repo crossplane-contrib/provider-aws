@@ -5,6 +5,7 @@ metadata:
   name: example
 spec:
   forProvider:
+    clusterName: example
     region: us-east-1
     brokerNodeGroupInfo:
       clientSubnetRefs:

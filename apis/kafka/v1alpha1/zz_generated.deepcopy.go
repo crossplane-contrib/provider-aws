@@ -455,11 +455,6 @@ func (in *ClusterObservation) DeepCopyInto(out *ClusterObservation) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.ClusterName != nil {
-		in, out := &in.ClusterName, &out.ClusterName
-		*out = new(string)
-		**out = **in
-	}
 	if in.State != nil {
 		in, out := &in.State, &out.State
 		*out = new(string)
@@ -572,6 +567,11 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 		in, out := &in.ClientAuthentication, &out.ClientAuthentication
 		*out = new(ClientAuthentication)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.ClusterName != nil {
+		in, out := &in.ClusterName, &out.ClusterName
+		*out = new(string)
+		**out = **in
 	}
 	if in.EncryptionInfo != nil {
 		in, out := &in.EncryptionInfo, &out.EncryptionInfo

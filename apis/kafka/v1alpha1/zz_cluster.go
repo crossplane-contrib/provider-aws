@@ -31,6 +31,9 @@ type ClusterParameters struct {
 	Region string `json:"region"`
 	// Includes all client authentication related information.
 	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
+	// The name of the cluster.
+	// +kubebuilder:validation:Required
+	ClusterName *string `json:"clusterName"`
 	// Includes all encryption-related information.
 	EncryptionInfo *EncryptionInfo `json:"encryptionInfo,omitempty"`
 	// Specifies the level of monitoring for the MSK cluster. The possible values
@@ -61,8 +64,6 @@ type ClusterSpec struct {
 type ClusterObservation struct {
 	// The Amazon Resource Name (ARN) of the cluster.
 	ClusterARN *string `json:"clusterARN,omitempty"`
-	// The name of the MSK cluster.
-	ClusterName *string `json:"clusterName,omitempty"`
 	// The state of the cluster. The possible states are ACTIVE, CREATING, DELETING,
 	// FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.
 	State *string `json:"state,omitempty"`

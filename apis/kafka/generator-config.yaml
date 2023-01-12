@@ -3,7 +3,6 @@ ignore:
     - ClusterV2
   field_paths:
     - CreateClusterInput.BrokerNodeGroupInfo
-    - CreateClusterInput.ClusterName
     - CreateClusterInput.ConfigurationInfo
     - CreateConfigurationInput.Name
     - CreateConfigurationInput.ServerProperties

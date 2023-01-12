@@ -39,7 +39,6 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preDelete = preDelete
 			e.postDelete = postDelete
@@ -84,11 +83,6 @@ func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteCl
 	return err
 }
 
-func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
-	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
-	return nil
-}
-
 func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
@@ -118,7 +112,6 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
-	obj.ClusterName = awsclients.String(meta.GetExternalName(cr))
 	obj.BrokerNodeGroupInfo = &svcsdk.BrokerNodeGroupInfo{
 		ClientSubnets:  cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.ClientSubnets,
 		InstanceType:   cr.Spec.ForProvider.CustomBrokerNodeGroupInfo.InstanceType,
