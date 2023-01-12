@@ -55,7 +55,7 @@ var ControllerName = managed.ControllerName(svcapitypes.JobGroupKind)
 
 // SetupJob adds a controller that reconciles Job.
 func SetupJob(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.JobGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := &hooks{kube: e.kube, client: e.client}

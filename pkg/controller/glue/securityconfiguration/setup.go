@@ -40,7 +40,7 @@ var ControllerName = managed.ControllerName(svcapitypes.SecurityConfigurationGro
 
 // SetupSecurityConfiguration adds a controller that reconciles SecurityConfiguration.
 func SetupSecurityConfiguration(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.SecurityConfigurationGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postCreate = postCreate

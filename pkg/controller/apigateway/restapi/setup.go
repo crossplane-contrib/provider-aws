@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.RestAPIGroupKind)
 
 // SetupRestAPI adds a controller that reconciles RestAPI.
 func SetupRestAPI(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.RestAPIGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

@@ -67,7 +67,7 @@ var ControllerName = managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
 func SetupReplicationGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

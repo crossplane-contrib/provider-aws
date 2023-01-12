@@ -62,7 +62,7 @@ var ControllerName = managed.ControllerName(v1beta1.CertificateAuthorityGroupKin
 
 // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthority(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

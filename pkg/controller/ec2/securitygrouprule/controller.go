@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind
 
 // SetupSecurityGroupRule adds a controller that reconciles SecurityGroupRules.
 func SetupSecurityGroupRule(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

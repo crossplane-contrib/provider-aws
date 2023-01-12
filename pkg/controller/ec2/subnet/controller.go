@@ -62,7 +62,7 @@ var ControllerName = managed.ControllerName(v1beta1.SubnetGroupKind)
 
 // SetupSubnet adds a controller that reconciles Subnets.
 func SetupSubnet(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.SubnetGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

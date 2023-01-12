@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.GlobalClusterGroupKind)
 
 // SetupGlobalCluster adds a controller that reconciles GlobalCluster.
 func SetupGlobalCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.GlobalClusterGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

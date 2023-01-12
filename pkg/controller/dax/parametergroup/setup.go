@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ParameterGroupGroupKind)
 
 // SetupParameterGroup adds a controller that reconciles ParameterGroup.
 func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

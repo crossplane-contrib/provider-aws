@@ -56,7 +56,7 @@ var ControllerName = managed.ControllerName(v1alpha3.BucketPolicyGroupKind)
 // SetupBucketPolicy adds a controller that reconciles
 // BucketPolicies.
 func SetupBucketPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1alpha3.BucketPolicyGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

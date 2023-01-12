@@ -30,7 +30,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBInstanceRoleAssociatio
 
 // SetupDBInstanceRoleAssociation adds a controller that reconciles DBInstanceRoleAssociation.
 func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

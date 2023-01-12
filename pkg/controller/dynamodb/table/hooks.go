@@ -48,7 +48,7 @@ var ControllerName = managed.ControllerName(svcapitypes.TableGroupKind)
 
 // SetupTable adds a controller that reconciles Table.
 func SetupTable(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.TableGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

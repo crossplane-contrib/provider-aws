@@ -55,7 +55,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ConnectionGroupKind)
 
 // SetupConnection adds a controller that reconciles Connection.
 func SetupConnection(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ConnectionGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := &hooks{kube: e.kube, client: e.client}

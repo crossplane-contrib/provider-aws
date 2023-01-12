@@ -56,7 +56,7 @@ var ControllerName = managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKi
 // SetupGroupPolicyAttachment adds a controller that reconciles
 // GroupPolicyAttachments.
 func SetupGroupPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

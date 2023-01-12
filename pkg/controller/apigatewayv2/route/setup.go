@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
 
 // SetupRoute adds a controller that reconciles Route.
 func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.RouteGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

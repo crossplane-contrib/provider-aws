@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
 
 // SetupTaskDefinition adds a controller that reconciles TaskDefinition.
 func SetupTaskDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -36,7 +36,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBClusterParameterGroupG
 
 // SetupDBClusterParameterGroup adds a controller that reconciles DBClusterParameterGroup.
 func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

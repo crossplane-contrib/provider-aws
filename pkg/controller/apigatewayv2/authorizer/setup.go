@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.AuthorizerGroupKind)
 
 // SetupAuthorizer adds a controller that reconciles Authorizer.
 func SetupAuthorizer(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.AuthorizerGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

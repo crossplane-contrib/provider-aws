@@ -57,7 +57,7 @@ var ControllerName = managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
 
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
 func SetupHostedZone(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

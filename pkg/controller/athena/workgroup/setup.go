@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.WorkGroupGroupKind)
 
 // SetupWorkGroup adds a controller that reconciles WorkGroup.
 func SetupWorkGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.WorkGroupGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

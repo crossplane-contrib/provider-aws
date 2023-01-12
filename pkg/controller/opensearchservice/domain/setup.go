@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DomainGroupKind)
 
 // SetupDomain adds a controller that reconciles Domain.
 func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DomainGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

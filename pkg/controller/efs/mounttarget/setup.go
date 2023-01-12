@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.MountTargetGroupKind)
 
 // SetupMountTarget adds a controller that reconciles MountTarget.
 func SetupMountTarget(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.MountTargetGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postCreate = postCreate

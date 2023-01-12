@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DeploymentGroupKind)
 
 // SetupDeployment adds a controller that reconciles Deployment.
 func SetupDeployment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

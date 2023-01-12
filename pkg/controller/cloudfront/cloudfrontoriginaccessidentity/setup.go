@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.CloudFrontOriginAccessId
 
 // SetupCloudFrontOriginAccessIdentity adds a controller that reconciles CloudFrontOriginAccessIdentity .
 func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIdentityGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

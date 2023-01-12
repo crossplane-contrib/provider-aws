@@ -55,7 +55,7 @@ var ControllerName = managed.ControllerName(v1beta1.FargateProfileKind)
 
 // SetupFargateProfile adds a controller that reconciles FargateProfiles.
 func SetupFargateProfile(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.FargateProfileKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

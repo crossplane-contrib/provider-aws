@@ -39,7 +39,7 @@ var ControllerName = managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
 
 // SetupIdentityPool adds a controller that reconciles IdentityPool.
 func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
 
 	opts := []option{
 		func(e *external) {

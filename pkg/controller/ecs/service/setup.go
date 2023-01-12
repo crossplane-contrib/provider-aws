@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ServiceGroupKind)
 
 // SetupService adds a controller that reconciles Service.
 func SetupService(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ServiceGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

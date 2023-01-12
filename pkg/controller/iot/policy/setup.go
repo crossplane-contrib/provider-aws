@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.PolicyGroupKind)
 
 // SetupPolicy adds a controller that reconciles Policy.
 func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.PolicyGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

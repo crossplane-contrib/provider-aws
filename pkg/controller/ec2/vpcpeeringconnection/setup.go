@@ -36,7 +36,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VPCPeeringConnectionGrou
 
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
 func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

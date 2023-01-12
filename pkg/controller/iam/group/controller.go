@@ -56,7 +56,7 @@ var ControllerName = managed.ControllerName(v1beta1.GroupGroupKind)
 
 // SetupGroup adds a controller that reconciles Groups.
 func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.GroupGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

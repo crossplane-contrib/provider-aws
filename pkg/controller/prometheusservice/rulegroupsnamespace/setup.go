@@ -36,7 +36,7 @@ var ControllerName = managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroup
 
 // SetupRuleGroupsNamespace adds a controller that reconciles RuleGroupsNamespace.
 func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

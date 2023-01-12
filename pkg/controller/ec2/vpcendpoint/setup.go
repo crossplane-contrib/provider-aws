@@ -32,7 +32,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
 
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
 func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

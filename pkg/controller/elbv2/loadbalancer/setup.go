@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.LoadBalancerGroupKind)
 
 // SetupLoadBalancer adds a controller that reconciles LoadBalancer.
 func SetupLoadBalancer(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.LoadBalancerGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

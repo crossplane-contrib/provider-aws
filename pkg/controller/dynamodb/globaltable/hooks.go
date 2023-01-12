@@ -45,7 +45,7 @@ var ControllerName = managed.ControllerName(svcapitypes.GlobalTableGroupKind)
 
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
 func SetupGlobalTable(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

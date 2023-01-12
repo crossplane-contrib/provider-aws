@@ -31,7 +31,7 @@ var ControllerName = managed.ControllerName(svcapitypes.BrokerGroupKind)
 
 // SetupBroker adds a controller that reconciles Broker.
 func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.BrokerGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube, external: e}

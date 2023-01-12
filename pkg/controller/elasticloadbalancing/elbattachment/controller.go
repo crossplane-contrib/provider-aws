@@ -55,7 +55,7 @@ var ControllerName = managed.ControllerName(elasticloadbalancingv1alpha1.ELBAtta
 
 // SetupELBAttachment adds a controller that reconciles ELBAttachmets.
 func SetupELBAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

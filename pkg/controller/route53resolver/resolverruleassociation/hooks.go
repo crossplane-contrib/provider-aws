@@ -51,7 +51,7 @@ var ControllerName = managed.ControllerName(manualv1alpha1.ResolverRuleAssociati
 
 // SetupResolverRuleAssociation adds a controller that reconciles ResolverRuleAssociation
 func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

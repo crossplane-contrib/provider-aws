@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ClassifierGroupKind)
 
 // SetupClassifier adds a controller that reconciles Classifier.
 func SetupClassifier(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ClassifierGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

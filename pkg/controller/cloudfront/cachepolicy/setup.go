@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.CachePolicyGroupKind)
 
 // SetupCachePolicy adds a controller that reconciles CachePolicy.
 func SetupCachePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.CachePolicyGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

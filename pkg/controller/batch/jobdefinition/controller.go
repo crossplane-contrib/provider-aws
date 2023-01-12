@@ -58,7 +58,7 @@ var ControllerName = managed.ControllerName(svcapitypes.JobDefinitionKind)
 
 // SetupJobDefinition adds a controller that reconciles JobDefinitions.
 func SetupJobDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.JobDefinitionKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

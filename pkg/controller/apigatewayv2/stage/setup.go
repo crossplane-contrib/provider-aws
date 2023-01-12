@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.StageGroupKind)
 
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

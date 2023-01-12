@@ -34,7 +34,7 @@ var ControllerName = managed.ControllerName(svcapitypes.WorkspaceGroupKind)
 
 // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
 func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.WorkspaceGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

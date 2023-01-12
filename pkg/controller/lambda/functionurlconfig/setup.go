@@ -28,7 +28,7 @@ var ControllerName = managed.ControllerName(svcapitypes.FunctionURLConfigGroupKi
 
 // SetupFunctionURL adds a controller that reconciles FunctionURLConfig.
 func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

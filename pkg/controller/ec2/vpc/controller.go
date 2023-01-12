@@ -63,7 +63,7 @@ var ControllerName = managed.ControllerName(v1beta1.VPCGroupKind)
 
 // SetupVPC adds a controller that reconciles VPCs.
 func SetupVPC(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.VPCGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

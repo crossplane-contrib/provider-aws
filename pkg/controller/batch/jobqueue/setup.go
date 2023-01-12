@@ -46,7 +46,7 @@ var ControllerName = managed.ControllerName(svcapitypes.JobQueueGroupKind)
 
 // SetupJobQueue adds a controller that reconciles a JobQueue.
 func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.JobQueueGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := &hooks{client: e.client}

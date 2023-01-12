@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.StateMachineGroupKind)
 
 // SetupStateMachine adds a controller that reconciles StateMachine.
 func SetupStateMachine(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

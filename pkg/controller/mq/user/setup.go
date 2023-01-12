@@ -30,7 +30,7 @@ var ControllerName = managed.ControllerName(svcapitypes.UserGroupKind)
 
 // SetupUser adds a controller that reconciles User.
 func SetupUser(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.UserGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube, external: e}

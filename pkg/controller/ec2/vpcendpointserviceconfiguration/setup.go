@@ -35,7 +35,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointServiceConfig
 
 // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
 func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

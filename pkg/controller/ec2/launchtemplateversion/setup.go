@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(svcapitypes.LaunchTemplateVersionGro
 
 // SetupLaunchTemplateVersion adds a controller that reconciles LaunchTemplateVersion.
 func SetupLaunchTemplateVersion(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.LaunchTemplateVersionGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

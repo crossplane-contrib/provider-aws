@@ -58,7 +58,7 @@ var ControllerName = managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
 
 // SetupCluster adds a controller that reconciles Redshift clusters.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

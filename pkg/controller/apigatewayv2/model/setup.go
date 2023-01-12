@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ModelGroupKind)
 
 // SetupModel adds a controller that reconciles Model.
 func SetupModel(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ModelGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

@@ -45,7 +45,7 @@ var ControllerName = managed.ControllerName(svcapitypes.CacheParameterGroupKind)
 
 // SetupCacheParameterGroup adds a controller that reconciles a CacheParameterGroup.
 func SetupCacheParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.CacheParameterGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

@@ -49,7 +49,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DatabaseGroupKind)
 
 // SetupDatabase adds a controller that reconciles Database.
 func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DatabaseGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

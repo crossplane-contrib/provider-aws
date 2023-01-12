@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.BackupGroupKind)
 
 // SetupBackup adds a controller that reconciles Backup.
 func SetupBackup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.BackupGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

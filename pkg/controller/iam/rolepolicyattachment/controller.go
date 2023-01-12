@@ -53,7 +53,7 @@ var ControllerName = managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKin
 // SetupRolePolicyAttachment adds a controller that reconciles
 // RolePolicyAttachments.
 func SetupRolePolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -1,0 +1,3114 @@
+diff --git a/cmd/provider/main.go b/cmd/provider/main.go
+index 505cf21e..244c9f69 100644
+--- a/cmd/provider/main.go
++++ b/cmd/provider/main.go
+@@ -18,6 +18,7 @@ package main
+ 
+ import (
+ 	"context"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"time"
+@@ -44,12 +45,13 @@ import (
+ 
+ func main() {
+ 	var (
+-		app              = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
+-		debug            = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+-		syncInterval     = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
+-		pollInterval     = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
+-		leaderElection   = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+-		maxReconcileRate = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
++		app                    = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
++		debug                  = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
++		syncInterval           = app.Flag("sync", "Sync interval controls how often all resources will be double checked for drift.").Short('s').Default("1h").Duration()
++		pollInterval           = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
++		controllerPollInterval = app.Flag("controller-poll", "like poll flag but can set specific controller, etc: --controller-poll managed/resourcerecordset.route53.aws.crossplane.io=1h").StringMap()
++		leaderElection         = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
++		maxReconcileRate       = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
+ 
+ 		namespace                  = app.Flag("namespace", "Namespace used to set as default scope in default secret store config.").Default("crossplane-system").Envar("POD_NAMESPACE").String()
+ 		enableExternalSecretStores = app.Flag("enable-external-secret-stores", "Enable support for ExternalSecretStores.").Default("false").Envar("ENABLE_EXTERNAL_SECRET_STORES").Bool()
+@@ -65,11 +67,18 @@ func main() {
+ 		ctrl.SetLogger(zl)
+ 	}
+ 
+-	log.Debug("Starting", "sync-period", syncInterval.String())
++	log.Debug("Starting", "sync-period", syncInterval.String(), "poll-interval", pollInterval.String())
+ 
+ 	cfg, err := ctrl.GetConfig()
+ 	kingpin.FatalIfError(err, "Cannot get API server rest config")
+ 
++	controllerPollIntervalDuration, err := convertControllerPollInterval(*controllerPollInterval)
++	kingpin.FatalIfError(err, "Failed to convert controller poll interval")
++
++	for k, v := range controllerPollIntervalDuration {
++		log.Debug("Controller poll interval", "controller", k, "interval", v.String())
++	}
++
+ 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+ 		SyncPeriod: syncInterval,
+ 
+@@ -116,7 +125,20 @@ func main() {
+ 		})), "cannot create default store config")
+ 	}
+ 
+-	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
++	kingpin.FatalIfError(controller.Setup(mgr, o, controllerPollIntervalDuration), "Cannot setup AWS controllers")
+ 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
++}
++
++func convertControllerPollInterval(poll map[string]string) (pollDuration map[string]time.Duration, err error) {
++	pollDuration = make(map[string]time.Duration)
++	for k, v := range poll {
++		duration, err := time.ParseDuration(v)
++		if err != nil {
++			return nil, fmt.Errorf("duration %q is not valid: %w", v, err)
++		}
++
++		pollDuration[k] = duration
++	}
+ 
++	return pollDuration, nil
+ }
+diff --git a/pkg/controller/acm/controller.go b/pkg/controller/acm/controller.go
+index 41bfcea8..a89ebeac 100644
+--- a/pkg/controller/acm/controller.go
++++ b/pkg/controller/acm/controller.go
+@@ -57,9 +57,12 @@ const (
+ 	errRemoveTagsFailed = "failed to remove tags for Certificate"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.CertificateGroupKind)
++
+ // SetupCertificate adds a controller that reconciles Certificates.
+ func SetupCertificate(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.CertificateGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/acmpca/certificateauthority/controller.go b/pkg/controller/acmpca/certificateauthority/controller.go
+index b918cfe4..db9f2e3c 100644
+--- a/pkg/controller/acmpca/certificateauthority/controller.go
++++ b/pkg/controller/acmpca/certificateauthority/controller.go
+@@ -57,9 +57,12 @@ const (
+ 	errCertificateAuthority = "failed to update the ACMPCA resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
++
+ // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
+ func SetupCertificateAuthority(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.CertificateAuthorityGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/acmpca/certificateauthoritypermission/controller.go b/pkg/controller/acmpca/certificateauthoritypermission/controller.go
+index d4a7eae0..039f15bb 100644
+--- a/pkg/controller/acmpca/certificateauthoritypermission/controller.go
++++ b/pkg/controller/acmpca/certificateauthoritypermission/controller.go
+@@ -49,9 +49,12 @@ const (
+ 	errDelete           = "failed to delete the ACMPCA resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)
++
+ // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
+ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/apigateway/method/setup.go b/pkg/controller/apigateway/method/setup.go
+index f65e0dc0..b3a578a1 100644
+--- a/pkg/controller/apigateway/method/setup.go
++++ b/pkg/controller/apigateway/method/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.MethodGroupKind)
++
+ // SetupMethod adds a controller that reconciles Method.
+ func SetupMethod(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.MethodGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{
+diff --git a/pkg/controller/apigateway/resource/setup.go b/pkg/controller/apigateway/resource/setup.go
+index 3ec7dd59..d23e4225 100644
+--- a/pkg/controller/apigateway/resource/setup.go
++++ b/pkg/controller/apigateway/resource/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ResourceGroupKind)
++
+ // SetupResource adds a controller that reconciles Resource.
+ func SetupResource(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ResourceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.lateInitialize = lateInitialize
+diff --git a/pkg/controller/apigateway/restapi/setup.go b/pkg/controller/apigateway/restapi/setup.go
+index cfaabf60..b5985994 100644
+--- a/pkg/controller/apigateway/restapi/setup.go
++++ b/pkg/controller/apigateway/restapi/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RestAPIGroupKind)
++
+ // SetupRestAPI adds a controller that reconciles RestAPI.
+ func SetupRestAPI(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RestAPIGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/api/setup.go b/pkg/controller/apigatewayv2/api/setup.go
+index 86062673..753b08fe 100644
+--- a/pkg/controller/apigatewayv2/api/setup.go
++++ b/pkg/controller/apigatewayv2/api/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.APIGroupKind)
++
+ // SetupAPI adds a controller that reconciles API.
+ func SetupAPI(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.APIGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/apimapping/setup.go b/pkg/controller/apigatewayv2/apimapping/setup.go
+index 19273dd9..db1cfb08 100644
+--- a/pkg/controller/apigatewayv2/apimapping/setup.go
++++ b/pkg/controller/apigatewayv2/apimapping/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.APIMappingGroupKind)
++
+ // SetupAPIMapping adds a controller that reconciles APIMapping.
+ func SetupAPIMapping(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.APIMappingGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/authorizer/setup.go b/pkg/controller/apigatewayv2/authorizer/setup.go
+index 9506d331..647cf43a 100644
+--- a/pkg/controller/apigatewayv2/authorizer/setup.go
++++ b/pkg/controller/apigatewayv2/authorizer/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.AuthorizerGroupKind)
++
+ // SetupAuthorizer adds a controller that reconciles Authorizer.
+ func SetupAuthorizer(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.AuthorizerGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/deployment/setup.go b/pkg/controller/apigatewayv2/deployment/setup.go
+index 9a2b30ac..452b66c0 100644
+--- a/pkg/controller/apigatewayv2/deployment/setup.go
++++ b/pkg/controller/apigatewayv2/deployment/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DeploymentGroupKind)
++
+ // SetupDeployment adds a controller that reconciles Deployment.
+ func SetupDeployment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/domainname/setup.go b/pkg/controller/apigatewayv2/domainname/setup.go
+index 95d1e753..ec0bc6a0 100644
+--- a/pkg/controller/apigatewayv2/domainname/setup.go
++++ b/pkg/controller/apigatewayv2/domainname/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DomainNameGroupKind)
++
+ // SetupDomainName adds a controller that reconciles DomainName.
+ func SetupDomainName(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DomainNameGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/integration/setup.go b/pkg/controller/apigatewayv2/integration/setup.go
+index 0b766007..a56b77b2 100644
+--- a/pkg/controller/apigatewayv2/integration/setup.go
++++ b/pkg/controller/apigatewayv2/integration/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.IntegrationGroupKind)
++
+ // SetupIntegration adds a controller that reconciles Integration.
+ func SetupIntegration(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/integrationresponse/setup.go b/pkg/controller/apigatewayv2/integrationresponse/setup.go
+index 553cf3e4..6f77327d 100644
+--- a/pkg/controller/apigatewayv2/integrationresponse/setup.go
++++ b/pkg/controller/apigatewayv2/integrationresponse/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.IntegrationResponseGroupKind)
++
+ // SetupIntegrationResponse adds a controller that reconciles IntegrationResponse.
+ func SetupIntegrationResponse(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.IntegrationResponseGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/model/setup.go b/pkg/controller/apigatewayv2/model/setup.go
+index cfb92270..38e63c74 100644
+--- a/pkg/controller/apigatewayv2/model/setup.go
++++ b/pkg/controller/apigatewayv2/model/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ModelGroupKind)
++
+ // SetupModel adds a controller that reconciles Model.
+ func SetupModel(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ModelGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/route/setup.go b/pkg/controller/apigatewayv2/route/setup.go
+index 50517cb1..06df7e02 100644
+--- a/pkg/controller/apigatewayv2/route/setup.go
++++ b/pkg/controller/apigatewayv2/route/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
++
+ // SetupRoute adds a controller that reconciles Route.
+ func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/routeresponse/setup.go b/pkg/controller/apigatewayv2/routeresponse/setup.go
+index d38ec2d6..5db6de0c 100644
+--- a/pkg/controller/apigatewayv2/routeresponse/setup.go
++++ b/pkg/controller/apigatewayv2/routeresponse/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RouteResponseGroupKind)
++
+ // SetupRouteResponse adds a controller that reconciles RouteResponse.
+ func SetupRouteResponse(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RouteResponseGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/stage/setup.go b/pkg/controller/apigatewayv2/stage/setup.go
+index 88ba72f8..f65da265 100644
+--- a/pkg/controller/apigatewayv2/stage/setup.go
++++ b/pkg/controller/apigatewayv2/stage/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.StageGroupKind)
++
+ // SetupStage adds a controller that reconciles Stage.
+ func SetupStage(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.StageGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/apigatewayv2/vpclink/setup.go b/pkg/controller/apigatewayv2/vpclink/setup.go
+index 67ef74b4..442fe44d 100644
+--- a/pkg/controller/apigatewayv2/vpclink/setup.go
++++ b/pkg/controller/apigatewayv2/vpclink/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VPCLinkGroupKind)
++
+ // SetupVPCLink adds a controller that reconciles VPCLink.
+ func SetupVPCLink(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VPCLinkGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/athena/workgroup/setup.go b/pkg/controller/athena/workgroup/setup.go
+index 2e46e5bf..47bcd5b8 100644
+--- a/pkg/controller/athena/workgroup/setup.go
++++ b/pkg/controller/athena/workgroup/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.WorkGroupGroupKind)
++
+ // SetupWorkGroup adds a controller that reconciles WorkGroup.
+ func SetupWorkGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.WorkGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/aws.go b/pkg/controller/aws.go
+index 176e8dae..623c81f7 100644
+--- a/pkg/controller/aws.go
++++ b/pkg/controller/aws.go
+@@ -17,6 +17,8 @@ limitations under the License.
+ package controller
+ 
+ import (
++	"time"
++
+ 	ctrl "sigs.k8s.io/controller-runtime"
+ 
+ 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+@@ -184,169 +186,172 @@ import (
+ 
+ // Setup creates all AWS controllers with the supplied logger and adds them to
+ // the supplied manager.
+-func Setup(mgr ctrl.Manager, o controller.Options) error {
+-	for _, setup := range []func(ctrl.Manager, controller.Options) error{
+-		cache.SetupReplicationGroup,
+-		cachesubnetgroup.SetupCacheSubnetGroup,
+-		cacheparametergroup.SetupCacheParameterGroup,
+-		cluster.SetupCacheCluster,
+-		database.SetupRDSInstance,
+-		daxcluster.SetupCluster,
+-		daxparametergroup.SetupParameterGroup,
+-		daxsubnetgroup.SetupSubnetGroup,
+-		domain.SetupDomain,
+-		docdbinstance.SetupDBInstance,
+-		docdbcluster.SetupDBCluster,
+-		docdbclusterparametergroup.SetupDBClusterParameterGroup,
+-		docdbsubnetgroup.SetupDBSubnetGroup,
+-		ecscluster.SetupCluster,
+-		ecsservice.SetupService,
+-		ecstask.SetupTaskDefinition,
+-		eks.SetupCluster,
+-		eksaddon.SetupAddon,
+-		identityproviderconfig.SetupIdentityProviderConfig,
+-		instanceprofile.SetupInstanceProfile,
+-		elb.SetupELB,
+-		elbattachment.SetupELBAttachment,
+-		nodegroup.SetupNodeGroup,
+-		s3.SetupBucket,
+-		bucketpolicy.SetupBucketPolicy,
+-		accesskey.SetupAccessKey,
+-		user.SetupUser,
+-		group.SetupGroup,
+-		policy.SetupPolicy,
+-		role.SetupRole,
+-		groupusermembership.SetupGroupUserMembership,
+-		userpolicyattachment.SetupUserPolicyAttachment,
+-		grouppolicyattachment.SetupGroupPolicyAttachment,
+-		rolepolicyattachment.SetupRolePolicyAttachment,
+-		vpc.SetupVPC,
+-		subnet.SetupSubnet,
+-		securitygroup.SetupSecurityGroup,
+-		securitygrouprule.SetupSecurityGroupRule,
+-		internetgateway.SetupInternetGateway,
+-		launchtemplate.SetupLaunchTemplate,
+-		launchtemplateversion.SetupLaunchTemplateVersion,
+-		natgateway.SetupNatGateway,
+-		routetable.SetupRouteTable,
+-		dbsubnetgroup.SetupDBSubnetGroup,
+-		certificateauthority.SetupCertificateAuthority,
+-		certificateauthoritypermission.SetupCertificateAuthorityPermission,
+-		acm.SetupCertificate,
+-		resourcerecordset.SetupResourceRecordSet,
+-		hostedzone.SetupHostedZone,
+-		secret.SetupSecret,
+-		topic.SetupSNSTopic,
+-		subscription.SetupSubscription,
+-		queue.SetupQueue,
+-		redshift.SetupCluster,
+-		address.SetupAddress,
+-		repository.SetupRepository,
+-		repositorypolicy.SetupRepositoryPolicy,
+-		lifecyclepolicy.SetupLifecyclePolicy,
+-		api.SetupAPI,
+-		stage.SetupStage,
+-		route.SetupRoute,
+-		authorizer.SetupAuthorizer,
+-		integration.SetupIntegration,
+-		deployment.SetupDeployment,
+-		domainname.SetupDomainName,
+-		integrationresponse.SetupIntegrationResponse,
+-		model.SetupModel,
+-		apimapping.SetupAPIMapping,
+-		routeresponse.SetupRouteResponse,
+-		vpclink.SetupVPCLink,
+-		fargateprofile.SetupFargateProfile,
+-		activity.SetupActivity,
+-		statemachine.SetupStateMachine,
+-		table.SetupTable,
+-		backup.SetupBackup,
+-		globaltable.SetupGlobalTable,
+-		key.SetupKey,
+-		alias.SetupAlias,
+-		accesspoint.SetupAccessPoint,
+-		filesystem.SetupFileSystem,
+-		dbcluster.SetupDBCluster,
+-		dbclusterparametergroup.SetupDBClusterParameterGroup,
+-		dbinstance.SetupDBInstance,
+-		dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
+-		dbparametergroup.SetupDBParameterGroup,
+-		globalcluster.SetupGlobalCluster,
+-		vpccidrblock.SetupVPCCIDRBlock,
+-		privatednsnamespace.SetupPrivateDNSNamespace,
+-		publicdnsnamespace.SetupPublicDNSNamespace,
+-		httpnamespace.SetupHTTPNamespace,
+-		lambdafunction.SetupFunction,
+-		lambdapermission.SetupPermission,
+-		lambdaurlconfig.SetupFunctionURL,
+-		openidconnectprovider.SetupOpenIDConnectProvider,
+-		distribution.SetupDistribution,
+-		cachepolicy.SetupCachePolicy,
+-		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
+-		cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
+-		resolverendpoint.SetupResolverEndpoint,
+-		resolverrule.SetupResolverRule,
+-		vpcpeeringconnection.SetupVPCPeeringConnection,
+-		vpcendpoint.SetupVPCEndpoint,
+-		kafkacluster.SetupCluster,
+-		efsmounttarget.SetupMountTarget,
+-		transferserver.SetupServer,
+-		transferuser.SetupUser,
+-		instance.SetupInstance,
+-		gluejob.SetupJob,
+-		gluesecurityconfiguration.SetupSecurityConfiguration,
+-		glueconnection.SetupConnection,
+-		glueDatabase.SetupDatabase,
+-		gluecrawler.SetupCrawler,
+-		glueclassifier.SetupClassifier,
+-		mqbroker.SetupBroker,
+-		mquser.SetupUser,
+-		mwaaenvironment.SetupEnvironment,
+-		cwloggroup.SetupLogGroup,
+-		volume.SetupVolume,
+-		transitgateway.SetupTransitGateway,
+-		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
+-		thing.SetupThing,
+-		iotpolicy.SetupPolicy,
+-		ec2route.SetupRoute,
+-		athenaworkgroup.SetupWorkGroup,
+-		resourceshare.SetupResourceShare,
+-		kafkaconfiguration.SetupConfiguration,
+-		listener.SetupListener,
+-		loadbalancer.SetupLoadBalancer,
+-		targetgroup.SetupTargetGroup,
+-		target.SetupTarget,
+-		transitgatewayroute.SetupTransitGatewayRoute,
+-		transitgatewayroutetable.SetupTransitGatewayRouteTable,
+-		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
+-		kinesisstream.SetupStream,
+-		resolverruleassociation.SetupResolverRuleAssociation,
+-		cognitouserpool.SetupUserPool,
+-		cognitouserpooldomain.SetupUserPoolDomain,
+-		cognitogroup.SetupGroup,
+-		cognitouserpoolclient.SetupUserPoolClient,
+-		cognitoidentityprovider.SetupIdentityProvider,
+-		cognitoresourceserver.SetupResourceServer,
+-		cognitogroupusermembership.SetupGroupUserMembership,
+-		neptunecluster.SetupDBCluster,
+-		topic.SetupSNSTopic,
+-		subscription.SetupSubscription,
+-		prometheusserviceworkspace.SetupWorkspace,
+-		prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
+-		prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,
+-		resource.SetupResource,
+-		restapi.SetupRestAPI,
+-		method.SetupMethod,
+-		cognitoidentitypool.SetupIdentityPool,
+-		flowlog.SetupFlowLog,
+-		opensearchdomain.SetupDomain,
+-		computeenvironment.SetupComputeEnvironment,
+-		jobqueue.SetupJobQueue,
+-		jobdefinition.SetupJobDefinition,
+-		batchjob.SetupJob,
+-		emrcontainersjobrun.SetupJobRun,
+-		emrcontainersvirtualcluster.SetupVirtualCluster,
++func Setup(mgr ctrl.Manager, o controller.Options, controllerPollInterval map[string]time.Duration) error {
++	for name, setup := range map[string]func(ctrl.Manager, controller.Options) error{
++		cache.ControllerName:                                   cache.SetupReplicationGroup,
++		cachesubnetgroup.ControllerName:                        cachesubnetgroup.SetupCacheSubnetGroup,
++		cacheparametergroup.ControllerName:                     cacheparametergroup.SetupCacheParameterGroup,
++		cluster.ControllerName:                                 cluster.SetupCacheCluster,
++		database.ControllerName:                                database.SetupRDSInstance,
++		daxcluster.ControllerName:                              daxcluster.SetupCluster,
++		daxparametergroup.ControllerName:                       daxparametergroup.SetupParameterGroup,
++		daxsubnetgroup.ControllerName:                          daxsubnetgroup.SetupSubnetGroup,
++		domain.ControllerName:                                  domain.SetupDomain,
++		docdbinstance.ControllerName:                           docdbinstance.SetupDBInstance,
++		docdbcluster.ControllerName:                            docdbcluster.SetupDBCluster,
++		docdbclusterparametergroup.ControllerName:              docdbclusterparametergroup.SetupDBClusterParameterGroup,
++		docdbsubnetgroup.ControllerName:                        docdbsubnetgroup.SetupDBSubnetGroup,
++		ecscluster.ControllerName:                              ecscluster.SetupCluster,
++		ecsservice.ControllerName:                              ecsservice.SetupService,
++		ecstask.ControllerName:                                 ecstask.SetupTaskDefinition,
++		eks.ControllerName:                                     eks.SetupCluster,
++		eksaddon.ControllerName:                                eksaddon.SetupAddon,
++		identityproviderconfig.ControllerName:                  identityproviderconfig.SetupIdentityProviderConfig,
++		instanceprofile.ControllerName:                         instanceprofile.SetupInstanceProfile,
++		elb.ControllerName:                                     elb.SetupELB,
++		elbattachment.ControllerName:                           elbattachment.SetupELBAttachment,
++		nodegroup.ControllerName:                               nodegroup.SetupNodeGroup,
++		s3.ControllerName:                                      s3.SetupBucket,
++		bucketpolicy.ControllerName:                            bucketpolicy.SetupBucketPolicy,
++		accesskey.ControllerName:                               accesskey.SetupAccessKey,
++		user.ControllerName:                                    user.SetupUser,
++		group.ControllerName:                                   group.SetupGroup,
++		policy.ControllerName:                                  policy.SetupPolicy,
++		role.ControllerName:                                    role.SetupRole,
++		groupusermembership.ControllerName:                     groupusermembership.SetupGroupUserMembership,
++		userpolicyattachment.ControllerName:                    userpolicyattachment.SetupUserPolicyAttachment,
++		grouppolicyattachment.ControllerName:                   grouppolicyattachment.SetupGroupPolicyAttachment,
++		rolepolicyattachment.ControllerName:                    rolepolicyattachment.SetupRolePolicyAttachment,
++		vpc.ControllerName:                                     vpc.SetupVPC,
++		subnet.ControllerName:                                  subnet.SetupSubnet,
++		securitygroup.ControllerName:                           securitygroup.SetupSecurityGroup,
++		securitygrouprule.ControllerName:                       securitygrouprule.SetupSecurityGroupRule,
++		internetgateway.ControllerName:                         internetgateway.SetupInternetGateway,
++		launchtemplate.ControllerName:                          launchtemplate.SetupLaunchTemplate,
++		launchtemplateversion.ControllerName:                   launchtemplateversion.SetupLaunchTemplateVersion,
++		natgateway.ControllerName:                              natgateway.SetupNatGateway,
++		routetable.ControllerName:                              routetable.SetupRouteTable,
++		dbsubnetgroup.ControllerName:                           dbsubnetgroup.SetupDBSubnetGroup,
++		certificateauthority.ControllerName:                    certificateauthority.SetupCertificateAuthority,
++		certificateauthoritypermission.ControllerName:          certificateauthoritypermission.SetupCertificateAuthorityPermission,
++		acm.ControllerName:                                     acm.SetupCertificate,
++		resourcerecordset.ControllerName:                       resourcerecordset.SetupResourceRecordSet,
++		hostedzone.ControllerName:                              hostedzone.SetupHostedZone,
++		secret.ControllerName:                                  secret.SetupSecret,
++		topic.ControllerName:                                   topic.SetupSNSTopic,
++		subscription.ControllerName:                            subscription.SetupSubscription,
++		queue.ControllerName:                                   queue.SetupQueue,
++		redshift.ControllerName:                                redshift.SetupCluster,
++		address.ControllerName:                                 address.SetupAddress,
++		repository.ControllerName:                              repository.SetupRepository,
++		repositorypolicy.ControllerName:                        repositorypolicy.SetupRepositoryPolicy,
++		lifecyclepolicy.ControllerName:                         lifecyclepolicy.SetupLifecyclePolicy,
++		api.ControllerName:                                     api.SetupAPI,
++		stage.ControllerName:                                   stage.SetupStage,
++		route.ControllerName:                                   route.SetupRoute,
++		authorizer.ControllerName:                              authorizer.SetupAuthorizer,
++		integration.ControllerName:                             integration.SetupIntegration,
++		deployment.ControllerName:                              deployment.SetupDeployment,
++		domainname.ControllerName:                              domainname.SetupDomainName,
++		integrationresponse.ControllerName:                     integrationresponse.SetupIntegrationResponse,
++		model.ControllerName:                                   model.SetupModel,
++		apimapping.ControllerName:                              apimapping.SetupAPIMapping,
++		routeresponse.ControllerName:                           routeresponse.SetupRouteResponse,
++		vpclink.ControllerName:                                 vpclink.SetupVPCLink,
++		fargateprofile.ControllerName:                          fargateprofile.SetupFargateProfile,
++		activity.ControllerName:                                activity.SetupActivity,
++		statemachine.ControllerName:                            statemachine.SetupStateMachine,
++		table.ControllerName:                                   table.SetupTable,
++		backup.ControllerName:                                  backup.SetupBackup,
++		globaltable.ControllerName:                             globaltable.SetupGlobalTable,
++		key.ControllerName:                                     key.SetupKey,
++		alias.ControllerName:                                   alias.SetupAlias,
++		accesspoint.ControllerName:                             accesspoint.SetupAccessPoint,
++		filesystem.ControllerName:                              filesystem.SetupFileSystem,
++		dbcluster.ControllerName:                               dbcluster.SetupDBCluster,
++		dbclusterparametergroup.ControllerName:                 dbclusterparametergroup.SetupDBClusterParameterGroup,
++		dbinstance.ControllerName:                              dbinstance.SetupDBInstance,
++		dbinstanceroleassociation.ControllerName:               dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
++		dbparametergroup.ControllerName:                        dbparametergroup.SetupDBParameterGroup,
++		globalcluster.ControllerName:                           globalcluster.SetupGlobalCluster,
++		vpccidrblock.ControllerName:                            vpccidrblock.SetupVPCCIDRBlock,
++		privatednsnamespace.ControllerName:                     privatednsnamespace.SetupPrivateDNSNamespace,
++		publicdnsnamespace.ControllerName:                      publicdnsnamespace.SetupPublicDNSNamespace,
++		httpnamespace.ControllerName:                           httpnamespace.SetupHTTPNamespace,
++		lambdafunction.ControllerName:                          lambdafunction.SetupFunction,
++		lambdapermission.ControllerName:                        lambdapermission.SetupPermission,
++		lambdaurlconfig.ControllerName:                         lambdaurlconfig.SetupFunctionURL,
++		openidconnectprovider.ControllerName:                   openidconnectprovider.SetupOpenIDConnectProvider,
++		distribution.ControllerName:                            distribution.SetupDistribution,
++		cachepolicy.ControllerName:                             cachepolicy.SetupCachePolicy,
++		cloudfrontorginaccessidentity.ControllerName:           cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
++		cloudfrontresponseheaderspolicy.ControllerName:         cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
++		resolverendpoint.ControllerName:                        resolverendpoint.SetupResolverEndpoint,
++		resolverrule.ControllerName:                            resolverrule.SetupResolverRule,
++		vpcpeeringconnection.ControllerName:                    vpcpeeringconnection.SetupVPCPeeringConnection,
++		vpcendpoint.ControllerName:                             vpcendpoint.SetupVPCEndpoint,
++		kafkacluster.ControllerName:                            kafkacluster.SetupCluster,
++		efsmounttarget.ControllerName:                          efsmounttarget.SetupMountTarget,
++		transferserver.ControllerName:                          transferserver.SetupServer,
++		transferuser.ControllerName:                            transferuser.SetupUser,
++		instance.ControllerName:                                instance.SetupInstance,
++		gluejob.ControllerName:                                 gluejob.SetupJob,
++		gluesecurityconfiguration.ControllerName:               gluesecurityconfiguration.SetupSecurityConfiguration,
++		glueconnection.ControllerName:                          glueconnection.SetupConnection,
++		glueDatabase.ControllerName:                            glueDatabase.SetupDatabase,
++		gluecrawler.ControllerName:                             gluecrawler.SetupCrawler,
++		glueclassifier.ControllerName:                          glueclassifier.SetupClassifier,
++		mqbroker.ControllerName:                                mqbroker.SetupBroker,
++		mquser.ControllerName:                                  mquser.SetupUser,
++		mwaaenvironment.ControllerName:                         mwaaenvironment.SetupEnvironment,
++		cwloggroup.ControllerName:                              cwloggroup.SetupLogGroup,
++		volume.ControllerName:                                  volume.SetupVolume,
++		transitgateway.ControllerName:                          transitgateway.SetupTransitGateway,
++		transitgatewayvpcattachment.ControllerName:             transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
++		thing.ControllerName:                                   thing.SetupThing,
++		iotpolicy.ControllerName:                               iotpolicy.SetupPolicy,
++		ec2route.ControllerName:                                ec2route.SetupRoute,
++		athenaworkgroup.ControllerName:                         athenaworkgroup.SetupWorkGroup,
++		resourceshare.ControllerName:                           resourceshare.SetupResourceShare,
++		kafkaconfiguration.ControllerName:                      kafkaconfiguration.SetupConfiguration,
++		listener.ControllerName:                                listener.SetupListener,
++		loadbalancer.ControllerName:                            loadbalancer.SetupLoadBalancer,
++		targetgroup.ControllerName:                             targetgroup.SetupTargetGroup,
++		target.ControllerName:                                  target.SetupTarget,
++		transitgatewayroute.ControllerName:                     transitgatewayroute.SetupTransitGatewayRoute,
++		transitgatewayroutetable.ControllerName:                transitgatewayroutetable.SetupTransitGatewayRouteTable,
++		vpcendpointserviceconfiguration.ControllerName:         vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
++		kinesisstream.ControllerName:                           kinesisstream.SetupStream,
++		resolverruleassociation.ControllerName:                 resolverruleassociation.SetupResolverRuleAssociation,
++		cognitouserpool.ControllerName:                         cognitouserpool.SetupUserPool,
++		cognitouserpooldomain.ControllerName:                   cognitouserpooldomain.SetupUserPoolDomain,
++		cognitogroup.ControllerName:                            cognitogroup.SetupGroup,
++		cognitouserpoolclient.ControllerName:                   cognitouserpoolclient.SetupUserPoolClient,
++		cognitoidentityprovider.ControllerName:                 cognitoidentityprovider.SetupIdentityProvider,
++		cognitoresourceserver.ControllerName:                   cognitoresourceserver.SetupResourceServer,
++		cognitogroupusermembership.ControllerName:              cognitogroupusermembership.SetupGroupUserMembership,
++		neptunecluster.ControllerName:                          neptunecluster.SetupDBCluster,
++		prometheusserviceworkspace.ControllerName:              prometheusserviceworkspace.SetupWorkspace,
++		prometheusservicerulegroupnamespace.ControllerName:     prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
++		prometheusservicealertmanagerdefinition.ControllerName: prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,
++		resource.ControllerName:                                resource.SetupResource,
++		restapi.ControllerName:                                 restapi.SetupRestAPI,
++		method.ControllerName:                                  method.SetupMethod,
++		cognitoidentitypool.ControllerName:                     cognitoidentitypool.SetupIdentityPool,
++		flowlog.ControllerName:                                 flowlog.SetupFlowLog,
++		opensearchdomain.ControllerName:                        opensearchdomain.SetupDomain,
++		computeenvironment.ControllerName:                      computeenvironment.SetupComputeEnvironment,
++		jobqueue.ControllerName:                                jobqueue.SetupJobQueue,
++		jobdefinition.ControllerName:                           jobdefinition.SetupJobDefinition,
++		batchjob.ControllerName:                                batchjob.SetupJob,
++		emrcontainersjobrun.ControllerName:                     emrcontainersjobrun.SetupJobRun,
++		emrcontainersvirtualcluster.ControllerName:             emrcontainersvirtualcluster.SetupVirtualCluster,
+ 	} {
++		if poll, ok := controllerPollInterval[name]; ok {
++			o.Logger.Info("Setting controller poll interval", "controller", name, "interval", poll)
++			o.PollInterval = poll
++		}
++
+ 		if err := setup(mgr, o); err != nil {
+ 			return err
+ 		}
+diff --git a/pkg/controller/batch/computeenvironment/setup.go b/pkg/controller/batch/computeenvironment/setup.go
+index 6e1386dc..58cf5199 100644
+--- a/pkg/controller/batch/computeenvironment/setup.go
++++ b/pkg/controller/batch/computeenvironment/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
++
+ // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
+ func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := &hooks{client: e.client}
+diff --git a/pkg/controller/batch/job/controller.go b/pkg/controller/batch/job/controller.go
+index 08119684..f160afbc 100644
+--- a/pkg/controller/batch/job/controller.go
++++ b/pkg/controller/batch/job/controller.go
+@@ -52,9 +52,12 @@ const (
+ 	errDescribeJob   = "cannot describe Batch Job"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.JobKind)
++
+ // SetupJob adds a controller that reconciles Jobs.
+ func SetupJob(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.JobKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/batch/jobdefinition/controller.go b/pkg/controller/batch/jobdefinition/controller.go
+index 47764b5e..bf3cb099 100644
+--- a/pkg/controller/batch/jobdefinition/controller.go
++++ b/pkg/controller/batch/jobdefinition/controller.go
+@@ -53,9 +53,12 @@ const (
+ 	errDescribeJobDefinition   = "cannot describe Batch JobDefinition"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.JobDefinitionKind)
++
+ // SetupJobDefinition adds a controller that reconciles JobDefinitions.
+ func SetupJobDefinition(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.JobDefinitionKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/batch/jobqueue/setup.go b/pkg/controller/batch/jobqueue/setup.go
+index 45be8e43..6413455e 100644
+--- a/pkg/controller/batch/jobqueue/setup.go
++++ b/pkg/controller/batch/jobqueue/setup.go
+@@ -41,9 +41,12 @@ const (
+ 	errComputeEnvironmentARN = "missing or incorrect ARN for ComputeEnvironment"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.JobQueueGroupKind)
++
+ // SetupJobQueue adds a controller that reconciles a JobQueue.
+ func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.JobQueueGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := &hooks{client: e.client}
+diff --git a/pkg/controller/cache/cachesubnetgroup/controller.go b/pkg/controller/cache/cachesubnetgroup/controller.go
+index 3c83e4e8..e1a975ae 100644
+--- a/pkg/controller/cache/cachesubnetgroup/controller.go
++++ b/pkg/controller/cache/cachesubnetgroup/controller.go
+@@ -49,9 +49,12 @@ const (
+ 	errDeleteSubnetGroup   = "cannot delete Subnet Group"
+ )
+ 
++// ControllerName of this controller
++var ControllerName = managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupKind)
++
+ // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
+ func SetupCacheSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cache/cluster/controller.go b/pkg/controller/cache/cluster/controller.go
+index a1b95682..1d84ce17 100644
+--- a/pkg/controller/cache/cluster/controller.go
++++ b/pkg/controller/cache/cluster/controller.go
+@@ -51,9 +51,12 @@ const (
+ 	errDeleteCacheCluster   = "cannot delete Cache Cluster"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)
++
+ // SetupCacheCluster adds a controller that reconciles CacheCluster.
+ func SetupCacheCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cache/managed.go b/pkg/controller/cache/managed.go
+index 9f056820..c6c8f525 100644
+--- a/pkg/controller/cache/managed.go
++++ b/pkg/controller/cache/managed.go
+@@ -62,9 +62,12 @@ const (
+ 	errReplicationGroupCacheClusterMaximum = "maximum of 5 replicas are allowed"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
++
+ // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
+ func SetupReplicationGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cloudfront/cachepolicy/setup.go b/pkg/controller/cloudfront/cachepolicy/setup.go
+index 1ee8e948..92bfe903 100644
+--- a/pkg/controller/cloudfront/cachepolicy/setup.go
++++ b/pkg/controller/cloudfront/cachepolicy/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.CachePolicyGroupKind)
++
+ // SetupCachePolicy adds a controller that reconciles CachePolicy.
+ func SetupCachePolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.CachePolicyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cloudfront/cloudfrontoriginaccessidentity/setup.go b/pkg/controller/cloudfront/cloudfrontoriginaccessidentity/setup.go
+index e663de77..23d1df96 100644
+--- a/pkg/controller/cloudfront/cloudfrontoriginaccessidentity/setup.go
++++ b/pkg/controller/cloudfront/cloudfrontoriginaccessidentity/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.CloudFrontOriginAccessIdentityGroupKind)
++
+ // SetupCloudFrontOriginAccessIdentity adds a controller that reconciles CloudFrontOriginAccessIdentity .
+ func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIdentityGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cloudfront/distribution/setup.go b/pkg/controller/cloudfront/distribution/setup.go
+index e7c08deb..1b8f4ad3 100644
+--- a/pkg/controller/cloudfront/distribution/setup.go
++++ b/pkg/controller/cloudfront/distribution/setup.go
+@@ -46,9 +46,12 @@ const (
+ 	stateDeployed = "Deployed"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DistributionGroupKind)
++
+ // SetupDistribution adds a controller that reconciles Distribution.
+ func SetupDistribution(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DistributionGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cloudfront/responseheaderspolicy/setup.go b/pkg/controller/cloudfront/responseheaderspolicy/setup.go
+index eefdca15..481d9c93 100644
+--- a/pkg/controller/cloudfront/responseheaderspolicy/setup.go
++++ b/pkg/controller/cloudfront/responseheaderspolicy/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ResponseHeadersPolicyGroupKind)
++
+ // SetupResponseHeadersPolicy adds a controller that reconciles ResponseHeadersPolicy.
+ func SetupResponseHeadersPolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ResponseHeadersPolicyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cloudsearch/domain/setup.go b/pkg/controller/cloudsearch/domain/setup.go
+index 43194f01..518305ae 100644
+--- a/pkg/controller/cloudsearch/domain/setup.go
++++ b/pkg/controller/cloudsearch/domain/setup.go
+@@ -47,9 +47,12 @@ const (
+ 	infoConditionProcessing = "currently processing"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DomainGroupKind)
++
+ // SetupDomain adds a controller that reconciles CloudSearch domains.
+ func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DomainGroupKind)
+ 	opts := []option{setupHooks}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/cloudwatchlogs/loggroup/setup.go b/pkg/controller/cloudwatchlogs/loggroup/setup.go
+index 60ff5c9a..4f1b6d2f 100644
+--- a/pkg/controller/cloudwatchlogs/loggroup/setup.go
++++ b/pkg/controller/cloudwatchlogs/loggroup/setup.go
+@@ -41,9 +41,12 @@ const (
+ 	errUntagResource = "cannot untag resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.LogGroupGroupKind)
++
+ // SetupLogGroup adds a controller that reconciles LogGroup.
+ func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.LogGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/cognitoidentity/identitypool/setup.go b/pkg/controller/cognitoidentity/identitypool/setup.go
+index a1623e9f..990ee93f 100644
+--- a/pkg/controller/cognitoidentity/identitypool/setup.go
++++ b/pkg/controller/cognitoidentity/identitypool/setup.go
+@@ -34,9 +34,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
++
+ // SetupIdentityPool adds a controller that reconciles IdentityPool.
+ func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.IdentityPoolGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/group/setup.go b/pkg/controller/cognitoidentityprovider/group/setup.go
+index 42399461..969e8e90 100644
+--- a/pkg/controller/cognitoidentityprovider/group/setup.go
++++ b/pkg/controller/cognitoidentityprovider/group/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.GroupGroupKind)
++
+ // SetupGroup adds a controller that reconciles Group.
+ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.GroupGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/groupusermembership/controller.go b/pkg/controller/cognitoidentityprovider/groupusermembership/controller.go
+index c73e7bac..b15bc7cf 100644
+--- a/pkg/controller/cognitoidentityprovider/groupusermembership/controller.go
++++ b/pkg/controller/cognitoidentityprovider/groupusermembership/controller.go
+@@ -52,10 +52,13 @@ const (
+ 	errRemove    = "failed to remove the user to group"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.GroupUserMembershipGroupKind)
++
+ // SetupGroupUserMembership adds a controller that reconciles
+ // GroupUserMemberships.
+ func SetupGroupUserMembership(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.GroupUserMembershipGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/cognitoidentityprovider/identityprovider/setup.go b/pkg/controller/cognitoidentityprovider/identityprovider/setup.go
+index de6d510e..5f8d5eae 100644
+--- a/pkg/controller/cognitoidentityprovider/identityprovider/setup.go
++++ b/pkg/controller/cognitoidentityprovider/identityprovider/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.IdentityProviderGroupKind)
++
+ // SetupIdentityProvider adds a controller that reconciles IdentityProvider.
+ func SetupIdentityProvider(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.IdentityProviderGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/resourceserver/setup.go b/pkg/controller/cognitoidentityprovider/resourceserver/setup.go
+index 809def52..383d317f 100644
+--- a/pkg/controller/cognitoidentityprovider/resourceserver/setup.go
++++ b/pkg/controller/cognitoidentityprovider/resourceserver/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ResourceServerGroupKind)
++
+ // SetupResourceServer adds a controller that reconciles Stage.
+ func SetupResourceServer(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ResourceServerGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/userpool/setup.go b/pkg/controller/cognitoidentityprovider/userpool/setup.go
+index a315a095..cff33d88 100644
+--- a/pkg/controller/cognitoidentityprovider/userpool/setup.go
++++ b/pkg/controller/cognitoidentityprovider/userpool/setup.go
+@@ -43,9 +43,12 @@ const (
+ 	errConflictingFields   = "fields conflicting! Please only use one of them or both with the same value"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.UserPoolGroupKind)
++
+ // SetupUserPool adds a controller that reconciles UserPool.
+ func SetupUserPool(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.UserPoolGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/userpoolclient/setup.go b/pkg/controller/cognitoidentityprovider/userpoolclient/setup.go
+index efeb1457..7b7478fd 100644
+--- a/pkg/controller/cognitoidentityprovider/userpoolclient/setup.go
++++ b/pkg/controller/cognitoidentityprovider/userpoolclient/setup.go
+@@ -34,9 +34,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.UserPoolClientGroupKind)
++
+ // SetupUserPoolClient adds a controller that reconciles UserPoolClient.
+ func SetupUserPoolClient(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.UserPoolClientGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/cognitoidentityprovider/userpooldomain/setup.go b/pkg/controller/cognitoidentityprovider/userpooldomain/setup.go
+index 541eaada..9e5664a6 100644
+--- a/pkg/controller/cognitoidentityprovider/userpooldomain/setup.go
++++ b/pkg/controller/cognitoidentityprovider/userpooldomain/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
++
+ // SetupUserPoolDomain adds a controller that reconciles User.
+ func SetupUserPoolDomain(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/database/dbsubnetgroup/controller.go b/pkg/controller/database/dbsubnetgroup/controller.go
+index e5fd8924..e8f6e57f 100644
+--- a/pkg/controller/database/dbsubnetgroup/controller.go
++++ b/pkg/controller/database/dbsubnetgroup/controller.go
+@@ -56,9 +56,12 @@ const (
+ 	errNotOne           = "expected exactly one DBSubnetGroup"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
++
+ // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
+ func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/database/rdsinstance.go b/pkg/controller/database/rdsinstance.go
+index 264e9bac..53d68c8c 100644
+--- a/pkg/controller/database/rdsinstance.go
++++ b/pkg/controller/database/rdsinstance.go
+@@ -62,9 +62,12 @@ const (
+ 	errGetPasswordSecretFailed            = "cannot get password secret"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RDSInstanceGroupKind)
++
+ // SetupRDSInstance adds a controller that reconciles RDSInstances.
+ func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/dax/cluster/setup.go b/pkg/controller/dax/cluster/setup.go
+index 756292ac..4fd4484a 100644
+--- a/pkg/controller/dax/cluster/setup.go
++++ b/pkg/controller/dax/cluster/setup.go
+@@ -18,9 +18,12 @@ import (
+ 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
++
+ // SetupCluster adds a controller that reconciles Cluster.
+ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/dax/parametergroup/setup.go b/pkg/controller/dax/parametergroup/setup.go
+index 991359d0..d6cbb23c 100644
+--- a/pkg/controller/dax/parametergroup/setup.go
++++ b/pkg/controller/dax/parametergroup/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ParameterGroupGroupKind)
++
+ // SetupParameterGroup adds a controller that reconciles ParameterGroup.
+ func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ParameterGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/dax/subnetgroup/setup.go b/pkg/controller/dax/subnetgroup/setup.go
+index 6b929543..fe715f26 100644
+--- a/pkg/controller/dax/subnetgroup/setup.go
++++ b/pkg/controller/dax/subnetgroup/setup.go
+@@ -17,9 +17,12 @@ import (
+ 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.SubnetGroupGroupKind)
++
+ // SetupSubnetGroup adds a controller that reconciles SubnetGroup.
+ func SetupSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.SubnetGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/docdb/dbcluster/setup.go b/pkg/controller/docdb/dbcluster/setup.go
+index dda6cd5b..e8063a14 100644
+--- a/pkg/controller/docdb/dbcluster/setup.go
++++ b/pkg/controller/docdb/dbcluster/setup.go
+@@ -54,9 +54,12 @@ const (
+ 	errSaveSecretFailed        = "failed to save generated password to Kubernetes secret"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBClusterKind)
++
+ // SetupDBCluster adds a controller that reconciles a DBCluster.
+ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBClusterKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/docdb/dbclusterparametergroup/setup.go b/pkg/controller/docdb/dbclusterparametergroup/setup.go
+index 4ee283ec..f29c823f 100644
+--- a/pkg/controller/docdb/dbclusterparametergroup/setup.go
++++ b/pkg/controller/docdb/dbclusterparametergroup/setup.go
+@@ -50,9 +50,12 @@ const (
+ 	errDescribeParameters         = "cannot describe parameters for DBClusterParameterGroup"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBClusterParameterGroupKind)
++
+ // SetupDBClusterParameterGroup adds a controller that reconciles a DBClusterParameterGroup.
+ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/docdb/dbinstance/setup.go b/pkg/controller/docdb/dbinstance/setup.go
+index 0ecc6528..60584f5d 100644
+--- a/pkg/controller/docdb/dbinstance/setup.go
++++ b/pkg/controller/docdb/dbinstance/setup.go
+@@ -46,9 +46,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBInstanceGroupKind)
++
+ // SetupDBInstance adds a controller that reconciles a DBInstance.
+ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/docdb/dbsubnetgroup/setup.go b/pkg/controller/docdb/dbsubnetgroup/setup.go
+index ae5be98b..52e34262 100644
+--- a/pkg/controller/docdb/dbsubnetgroup/setup.go
++++ b/pkg/controller/docdb/dbsubnetgroup/setup.go
+@@ -45,9 +45,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update DocDBSubnetGroup custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBSubnetGroupKind)
++
+ // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
+ func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBSubnetGroupKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/dynamodb/backup/hooks.go b/pkg/controller/dynamodb/backup/hooks.go
+index 5382afad..8d5bf00d 100644
+--- a/pkg/controller/dynamodb/backup/hooks.go
++++ b/pkg/controller/dynamodb/backup/hooks.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.BackupGroupKind)
++
+ // SetupBackup adds a controller that reconciles Backup.
+ func SetupBackup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.BackupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/dynamodb/globaltable/hooks.go b/pkg/controller/dynamodb/globaltable/hooks.go
+index 35ddecdb..8881fd61 100644
+--- a/pkg/controller/dynamodb/globaltable/hooks.go
++++ b/pkg/controller/dynamodb/globaltable/hooks.go
+@@ -40,9 +40,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.GlobalTableGroupKind)
++
+ // SetupGlobalTable adds a controller that reconciles GlobalTable.
+ func SetupGlobalTable(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/dynamodb/table/hooks.go b/pkg/controller/dynamodb/table/hooks.go
+index 0a93e8af..54877a09 100644
+--- a/pkg/controller/dynamodb/table/hooks.go
++++ b/pkg/controller/dynamodb/table/hooks.go
+@@ -43,9 +43,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.TableGroupKind)
++
+ // SetupTable adds a controller that reconciles Table.
+ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.TableGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/ec2/address/controller.go b/pkg/controller/ec2/address/controller.go
+index 3908f80f..338596f3 100644
+--- a/pkg/controller/ec2/address/controller.go
++++ b/pkg/controller/ec2/address/controller.go
+@@ -56,9 +56,12 @@ const (
+ 	errStatusUpdate  = "cannot update status of Address custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.AddressGroupKind)
++
+ // SetupAddress adds a controller that reconciles Address.
+ func SetupAddress(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.AddressGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/flowlog/setup.go b/pkg/controller/ec2/flowlog/setup.go
+index 44497299..12f3e469 100644
+--- a/pkg/controller/ec2/flowlog/setup.go
++++ b/pkg/controller/ec2/flowlog/setup.go
+@@ -46,9 +46,12 @@ type deleter struct {
+ 	client ec2iface.EC2API
+ }
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.FlowLogGroupKind)
++
+ // SetupFlowLog adds a controller that reconciles FlowLog
+ func SetupFlowLog(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.FlowLogGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/ec2/instance/controller.go b/pkg/controller/ec2/instance/controller.go
+index 7ba26fcc..ccab4b98 100644
+--- a/pkg/controller/ec2/instance/controller.go
++++ b/pkg/controller/ec2/instance/controller.go
+@@ -56,9 +56,12 @@ const (
+ 	errDelete                   = "failed to delete the Instance resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.InstanceGroupKind)
++
+ // SetupInstance adds a controller that reconciles Instances.
+ func SetupInstance(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.InstanceGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/internetgateway/controller.go b/pkg/controller/ec2/internetgateway/controller.go
+index 45f512f5..21eac47f 100644
+--- a/pkg/controller/ec2/internetgateway/controller.go
++++ b/pkg/controller/ec2/internetgateway/controller.go
+@@ -55,9 +55,12 @@ const (
+ 	errCreateTags          = "failed to create tags for the InternetGateway resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.InternetGatewayGroupKind)
++
+ // SetupInternetGateway adds a controller that reconciles InternetGateways.
+ func SetupInternetGateway(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.InternetGatewayGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/launchtemplate/setup.go b/pkg/controller/ec2/launchtemplate/setup.go
+index 8f171992..d2cc336d 100644
+--- a/pkg/controller/ec2/launchtemplate/setup.go
++++ b/pkg/controller/ec2/launchtemplate/setup.go
+@@ -23,9 +23,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.LaunchTemplateGroupKind)
++
+ // SetupLaunchTemplate adds a controller that reconciles LaunchTemplate.
+ func SetupLaunchTemplate(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.LaunchTemplateGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/ec2/launchtemplateversion/setup.go b/pkg/controller/ec2/launchtemplateversion/setup.go
+index 32d6e5ba..9060b764 100644
+--- a/pkg/controller/ec2/launchtemplateversion/setup.go
++++ b/pkg/controller/ec2/launchtemplateversion/setup.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.LaunchTemplateVersionGroupKind)
++
+ // SetupLaunchTemplateVersion adds a controller that reconciles LaunchTemplateVersion.
+ func SetupLaunchTemplateVersion(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.LaunchTemplateVersionGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/ec2/natgateway/controller.go b/pkg/controller/ec2/natgateway/controller.go
+index 81ed6288..3066977c 100644
+--- a/pkg/controller/ec2/natgateway/controller.go
++++ b/pkg/controller/ec2/natgateway/controller.go
+@@ -36,9 +36,12 @@ const (
+ 	errDeleteTags       = "failed to delete tags for NATGateway resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.NATGatewayGroupKind)
++
+ // SetupNatGateway adds a controller that reconciles NatGateways.
+ func SetupNatGateway(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.NATGatewayGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/route/setup.go b/pkg/controller/ec2/route/setup.go
+index d4137376..ef05acda 100644
+--- a/pkg/controller/ec2/route/setup.go
++++ b/pkg/controller/ec2/route/setup.go
+@@ -26,9 +26,12 @@ const (
+ 	errMultipleItems = "retrieved multiple RouteTables for the given routeTableId"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
++
+ // SetupRoute adds a controller that reconciles Route.
+ func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/ec2/routetable/controller.go b/pkg/controller/ec2/routetable/controller.go
+index b5208e84..6e91fa65 100644
+--- a/pkg/controller/ec2/routetable/controller.go
++++ b/pkg/controller/ec2/routetable/controller.go
+@@ -61,9 +61,12 @@ const (
+ 	errDeleteTags         = "failed to delete tags for the RouteTable resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RouteTableGroupKind)
++
+ // SetupRouteTable adds a controller that reconciles RouteTables.
+ func SetupRouteTable(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RouteTableGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/securitygroup/controller.go b/pkg/controller/ec2/securitygroup/controller.go
+index 399e8b16..d0d116ec 100644
+--- a/pkg/controller/ec2/securitygroup/controller.go
++++ b/pkg/controller/ec2/securitygroup/controller.go
+@@ -63,9 +63,12 @@ const (
+ 	errDeleteTags       = "failed to delete tags for the Security Group resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.SecurityGroupGroupKind)
++
+ // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
+ func SetupSecurityGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.SecurityGroupGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/securitygrouprule/controller.go b/pkg/controller/ec2/securitygrouprule/controller.go
+index c4752f82..e0c4e246 100644
+--- a/pkg/controller/ec2/securitygrouprule/controller.go
++++ b/pkg/controller/ec2/securitygrouprule/controller.go
+@@ -33,9 +33,12 @@ const (
+ 	egressType          = "egress"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind)
++
+ // SetupSecurityGroupRule adds a controller that reconciles SecurityGroupRules.
+ func SetupSecurityGroupRule(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/subnet/controller.go b/pkg/controller/ec2/subnet/controller.go
+index d51b3ba4..08d16eeb 100644
+--- a/pkg/controller/ec2/subnet/controller.go
++++ b/pkg/controller/ec2/subnet/controller.go
+@@ -57,9 +57,12 @@ const (
+ 	errDeleteTags    = "failed to delete tags for the Subnet resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.SubnetGroupKind)
++
+ // SetupSubnet adds a controller that reconciles Subnets.
+ func SetupSubnet(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.SubnetGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/transitgateway/setup.go b/pkg/controller/ec2/transitgateway/setup.go
+index 5ab492b3..9761630d 100644
+--- a/pkg/controller/ec2/transitgateway/setup.go
++++ b/pkg/controller/ec2/transitgateway/setup.go
+@@ -28,9 +28,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update TransitGateway"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
++
+ // SetupTransitGateway adds a controller that reconciles TransitGateway.
+ func SetupTransitGateway(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/ec2/transitgatewayroute/setup.go b/pkg/controller/ec2/transitgatewayroute/setup.go
+index 46030668..bb0e318a 100644
+--- a/pkg/controller/ec2/transitgatewayroute/setup.go
++++ b/pkg/controller/ec2/transitgatewayroute/setup.go
+@@ -25,9 +25,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
++
+ // SetupTransitGatewayRoute adds a controller that reconciles TransitGatewayRoutes.
+ func SetupTransitGatewayRoute(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/ec2/transitgatewayroutetable/setup.go b/pkg/controller/ec2/transitgatewayroutetable/setup.go
+index 3b90eeae..ac7ae1ea 100644
+--- a/pkg/controller/ec2/transitgatewayroutetable/setup.go
++++ b/pkg/controller/ec2/transitgatewayroutetable/setup.go
+@@ -29,9 +29,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update TransitGateway"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
++
+ // SetupTransitGatewayRouteTable adds a controller that reconciles TransitGatewayRouteTable.
+ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/ec2/transitgatewayvpcattachment/setup.go b/pkg/controller/ec2/transitgatewayvpcattachment/setup.go
+index 3374d4f9..87e181ad 100644
+--- a/pkg/controller/ec2/transitgatewayvpcattachment/setup.go
++++ b/pkg/controller/ec2/transitgatewayvpcattachment/setup.go
+@@ -29,9 +29,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update TransitGatewayAttachment"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
++
+ // SetupTransitGatewayVPCAttachment adds a controller that reconciles TransitGatewayVPCAttachment.
+ func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/ec2/volume/setup.go b/pkg/controller/ec2/volume/setup.go
+index c9c61e30..b06c5a94 100644
+--- a/pkg/controller/ec2/volume/setup.go
++++ b/pkg/controller/ec2/volume/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VolumeGroupKind)
++
+ // SetupVolume adds a controller that reconciles Volume.
+ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VolumeGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/ec2/vpc/controller.go b/pkg/controller/ec2/vpc/controller.go
+index 402b67d4..d5717ad0 100644
+--- a/pkg/controller/ec2/vpc/controller.go
++++ b/pkg/controller/ec2/vpc/controller.go
+@@ -58,9 +58,12 @@ const (
+ 	errDelete              = "failed to delete the VPC resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.VPCGroupKind)
++
+ // SetupVPC adds a controller that reconciles VPCs.
+ func SetupVPC(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.VPCGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/vpccidrblock/controller.go b/pkg/controller/ec2/vpccidrblock/controller.go
+index 695ae950..3248c94c 100644
+--- a/pkg/controller/ec2/vpccidrblock/controller.go
++++ b/pkg/controller/ec2/vpccidrblock/controller.go
+@@ -51,9 +51,12 @@ const (
+ 	errDisassociate     = "failed to disassociate the VPCCIDRBlock resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.VPCCIDRBlockGroupKind)
++
+ // SetupVPCCIDRBlock adds a controller that reconciles VPCCIDRBlocks.
+ func SetupVPCCIDRBlock(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.VPCCIDRBlockGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ec2/vpcendpoint/setup.go b/pkg/controller/ec2/vpcendpoint/setup.go
+index 3f42afc6..015d895f 100644
+--- a/pkg/controller/ec2/vpcendpoint/setup.go
++++ b/pkg/controller/ec2/vpcendpoint/setup.go
+@@ -27,9 +27,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
++
+ // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
+ func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/ec2/vpcendpointserviceconfiguration/setup.go b/pkg/controller/ec2/vpcendpointserviceconfiguration/setup.go
+index a6617105..740ccb67 100644
+--- a/pkg/controller/ec2/vpcendpointserviceconfiguration/setup.go
++++ b/pkg/controller/ec2/vpcendpointserviceconfiguration/setup.go
+@@ -30,9 +30,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update VPCEndpointServiceConfiguration"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
++
+ // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
+ func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/ec2/vpcpeeringconnection/setup.go b/pkg/controller/ec2/vpcpeeringconnection/setup.go
+index 08a1a2ec..71b0ab8d 100644
+--- a/pkg/controller/ec2/vpcpeeringconnection/setup.go
++++ b/pkg/controller/ec2/vpcpeeringconnection/setup.go
+@@ -31,9 +31,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update VPCPeeringConnection"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
++
+ // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
+ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/ecr/lifecyclepolicy/setup.go b/pkg/controller/ecr/lifecyclepolicy/setup.go
+index 7996e344..dc927e72 100644
+--- a/pkg/controller/ecr/lifecyclepolicy/setup.go
++++ b/pkg/controller/ecr/lifecyclepolicy/setup.go
+@@ -19,9 +19,12 @@ import (
+ 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)
++
+ // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
+ func SetupLifecyclePolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/ecr/repository/controller.go b/pkg/controller/ecr/repository/controller.go
+index a5db45b7..d00f5230 100644
+--- a/pkg/controller/ecr/repository/controller.go
++++ b/pkg/controller/ecr/repository/controller.go
+@@ -60,9 +60,12 @@ const (
+ 	errPatchCreationFailed = "cannot create a patch object"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RepositoryGroupKind)
++
+ // SetupRepository adds a controller that reconciles ECR.
+ func SetupRepository(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RepositoryGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ecr/repositorypolicy/controller.go b/pkg/controller/ecr/repositorypolicy/controller.go
+index e15c9d8f..8c133441 100644
+--- a/pkg/controller/ecr/repositorypolicy/controller.go
++++ b/pkg/controller/ecr/repositorypolicy/controller.go
+@@ -48,9 +48,12 @@ const (
+ 	errDelete = "failed to delete the repository resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)
++
+ // SetupRepositoryPolicy adds a controller that reconciles ECR.
+ func SetupRepositoryPolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ecs/cluster/setup.go b/pkg/controller/ecs/cluster/setup.go
+index 28870a6a..cdeabe50 100644
+--- a/pkg/controller/ecs/cluster/setup.go
++++ b/pkg/controller/ecs/cluster/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
++
+ // SetupCluster adds a controller that reconciles Cluster.
+ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/ecs/service/setup.go b/pkg/controller/ecs/service/setup.go
+index 7a56c6f7..12044cd2 100644
+--- a/pkg/controller/ecs/service/setup.go
++++ b/pkg/controller/ecs/service/setup.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ServiceGroupKind)
++
+ // SetupService adds a controller that reconciles Service.
+ func SetupService(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ServiceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/ecs/taskdefinition/setup.go b/pkg/controller/ecs/taskdefinition/setup.go
+index c97c9adb..e339e689 100644
+--- a/pkg/controller/ecs/taskdefinition/setup.go
++++ b/pkg/controller/ecs/taskdefinition/setup.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
++
+ // SetupTaskDefinition adds a controller that reconciles TaskDefinition.
+ func SetupTaskDefinition(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.TaskDefinitionGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/efs/accesspoint/setup.go b/pkg/controller/efs/accesspoint/setup.go
+index b264c2ba..30a81fc8 100644
+--- a/pkg/controller/efs/accesspoint/setup.go
++++ b/pkg/controller/efs/accesspoint/setup.go
+@@ -17,9 +17,12 @@ import (
+ 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.AccessPointGroupKind)
++
+ // SetupAccessPoint adds a controller that reconciles AccessPoint.
+ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.AccessPointGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/efs/filesystem/setup.go b/pkg/controller/efs/filesystem/setup.go
+index 6b364c81..eab7f068 100644
+--- a/pkg/controller/efs/filesystem/setup.go
++++ b/pkg/controller/efs/filesystem/setup.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.FileSystemGroupKind)
++
+ // SetupFileSystem adds a controller that reconciles FileSystem.
+ func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.FileSystemGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.isUpToDate = isUpToDate
+diff --git a/pkg/controller/efs/mounttarget/setup.go b/pkg/controller/efs/mounttarget/setup.go
+index c70d9e6c..7000c09b 100644
+--- a/pkg/controller/efs/mounttarget/setup.go
++++ b/pkg/controller/efs/mounttarget/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.MountTargetGroupKind)
++
+ // SetupMountTarget adds a controller that reconciles MountTarget.
+ func SetupMountTarget(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.MountTargetGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postCreate = postCreate
+diff --git a/pkg/controller/eks/addon/setup.go b/pkg/controller/eks/addon/setup.go
+index a0a13ee7..f9af96d9 100644
+--- a/pkg/controller/eks/addon/setup.go
++++ b/pkg/controller/eks/addon/setup.go
+@@ -46,9 +46,12 @@ const (
+ 	errUntagResource    = "cannot untag resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(eksv1alpha1.AddonGroupKind)
++
+ // SetupAddon adds a controller that reconciles Clusters.
+ func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(eksv1alpha1.AddonGroupKind)
+ 	opts := []option{
+ 		setupHooks,
+ 	}
+diff --git a/pkg/controller/eks/cluster.go b/pkg/controller/eks/cluster.go
+index 9bdd254c..73783627 100644
+--- a/pkg/controller/eks/cluster.go
++++ b/pkg/controller/eks/cluster.go
+@@ -55,9 +55,12 @@ const (
+ 	errUpToDateFailed      = "cannot check whether object is up-to-date"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.ClusterGroupKind)
++
+ // SetupCluster adds a controller that reconciles Clusters.
+ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.ClusterGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/eks/fargateprofile/controller.go b/pkg/controller/eks/fargateprofile/controller.go
+index 486313d3..7ded8e83 100644
+--- a/pkg/controller/eks/fargateprofile/controller.go
++++ b/pkg/controller/eks/fargateprofile/controller.go
+@@ -50,9 +50,12 @@ const (
+ 	errDescribeFailed       = "cannot describe EKS fargate profile"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.FargateProfileKind)
++
+ // SetupFargateProfile adds a controller that reconciles FargateProfiles.
+ func SetupFargateProfile(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.FargateProfileKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/eks/identityproviderconfig/controller.go b/pkg/controller/eks/identityproviderconfig/controller.go
+index e4976f9b..a38aa56a 100644
+--- a/pkg/controller/eks/identityproviderconfig/controller.go
++++ b/pkg/controller/eks/identityproviderconfig/controller.go
+@@ -52,9 +52,12 @@ const (
+ 	errAddTagsFailed  = "cannot add tags to EKS identity provider config"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
++
+ // SetupIdentityProviderConfig adds a controller that reconciles IdentityProviderConfigs.
+ func SetupIdentityProviderConfig(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/eks/nodegroup/controller.go b/pkg/controller/eks/nodegroup/controller.go
+index a5703b6e..7300b89f 100644
+--- a/pkg/controller/eks/nodegroup/controller.go
++++ b/pkg/controller/eks/nodegroup/controller.go
+@@ -53,9 +53,12 @@ const (
+ 	errDescribeFailed      = "cannot describe EKS node group"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(manualv1alpha1.NodeGroupKind)
++
+ // SetupNodeGroup adds a controller that reconciles NodeGroups.
+ func SetupNodeGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(manualv1alpha1.NodeGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/elasticache/cacheparametergroup/setup.go b/pkg/controller/elasticache/cacheparametergroup/setup.go
+index 74767730..5d37dd75 100644
+--- a/pkg/controller/elasticache/cacheparametergroup/setup.go
++++ b/pkg/controller/elasticache/cacheparametergroup/setup.go
+@@ -40,9 +40,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.CacheParameterGroupKind)
++
+ // SetupCacheParameterGroup adds a controller that reconciles a CacheParameterGroup.
+ func SetupCacheParameterGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.CacheParameterGroupKind)
+ 	opts := []option{setupExternal}
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+diff --git a/pkg/controller/elasticloadbalancing/elb/controller.go b/pkg/controller/elasticloadbalancing/elb/controller.go
+index af6aa153..cce3f81f 100644
+--- a/pkg/controller/elasticloadbalancing/elb/controller.go
++++ b/pkg/controller/elasticloadbalancing/elb/controller.go
+@@ -55,9 +55,12 @@ const (
+ 	errUpToDate      = "cannot check if the resource is up to date"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(elasticloadbalancingv1alpha1.ELBGroupKind)
++
+ // SetupELB adds a controller that reconciles ELBs.
+ func SetupELB(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/elasticloadbalancing/elbattachment/controller.go b/pkg/controller/elasticloadbalancing/elbattachment/controller.go
+index 0d97963f..959f3cbd 100644
+--- a/pkg/controller/elasticloadbalancing/elbattachment/controller.go
++++ b/pkg/controller/elasticloadbalancing/elbattachment/controller.go
+@@ -50,9 +50,12 @@ const (
+ 	errDelete        = "failed to deregister instance from the ELB"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)
++
+ // SetupELBAttachment adds a controller that reconciles ELBAttachmets.
+ func SetupELBAttachment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/elbv2/listener/setup.go b/pkg/controller/elbv2/listener/setup.go
+index d4acfdf9..a4652bd5 100644
+--- a/pkg/controller/elbv2/listener/setup.go
++++ b/pkg/controller/elbv2/listener/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ListenerGroupKind)
++
+ // SetupListener adds a controller that reconciles Listener.
+ func SetupListener(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ListenerGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/elbv2/loadbalancer/setup.go b/pkg/controller/elbv2/loadbalancer/setup.go
+index 681875e0..048eeeb1 100644
+--- a/pkg/controller/elbv2/loadbalancer/setup.go
++++ b/pkg/controller/elbv2/loadbalancer/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.LoadBalancerGroupKind)
++
+ // SetupLoadBalancer adds a controller that reconciles LoadBalancer.
+ func SetupLoadBalancer(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.LoadBalancerGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/elbv2/target/controller.go b/pkg/controller/elbv2/target/controller.go
+index 01694acb..0f54dceb 100644
+--- a/pkg/controller/elbv2/target/controller.go
++++ b/pkg/controller/elbv2/target/controller.go
+@@ -47,9 +47,12 @@ const (
+ 	errDescribeTargetHealthFailed      = "failed to describe target health"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(manualv1alpha1.TargetKind)
++
+ // SetupTarget adds a controller that reconciles Targets.
+ func SetupTarget(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(manualv1alpha1.TargetKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/elbv2/targetgroup/setup.go b/pkg/controller/elbv2/targetgroup/setup.go
+index ef6024bb..58904e28 100644
+--- a/pkg/controller/elbv2/targetgroup/setup.go
++++ b/pkg/controller/elbv2/targetgroup/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.TargetGroupGroupKind)
++
+ // SetupTargetGroup adds a controller that reconciles TargetGroup.
+ func SetupTargetGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.TargetGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/emrcontainers/jobrun/setup.go b/pkg/controller/emrcontainers/jobrun/setup.go
+index ffb59c99..de66cae7 100644
+--- a/pkg/controller/emrcontainers/jobrun/setup.go
++++ b/pkg/controller/emrcontainers/jobrun/setup.go
+@@ -25,9 +25,12 @@ const (
+ 	firstObserveJobRunID = "0000000000000000000"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.JobRunKind)
++
+ // SetupJobRun adds a controller that reconciles JobRun.
+ func SetupJobRun(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.JobRunKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/emrcontainers/virtualcluster/setup.go b/pkg/controller/emrcontainers/virtualcluster/setup.go
+index ca39d184..e4bc2683 100644
+--- a/pkg/controller/emrcontainers/virtualcluster/setup.go
++++ b/pkg/controller/emrcontainers/virtualcluster/setup.go
+@@ -31,9 +31,12 @@ const (
+ 	errTag            = "cannot add tags"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
++
+ // SetupVirtualCluster adds a controller that reconciles VirtualCluster.
+ func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.isUpToDate = isUpToDate
+diff --git a/pkg/controller/glue/classifier/setup.go b/pkg/controller/glue/classifier/setup.go
+index 8a965404..840c6685 100644
+--- a/pkg/controller/glue/classifier/setup.go
++++ b/pkg/controller/glue/classifier/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ClassifierGroupKind)
++
+ // SetupClassifier adds a controller that reconciles Classifier.
+ func SetupClassifier(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ClassifierGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/glue/connection/setup.go b/pkg/controller/glue/connection/setup.go
+index a650d1a0..bcad95f0 100644
+--- a/pkg/controller/glue/connection/setup.go
++++ b/pkg/controller/glue/connection/setup.go
+@@ -50,9 +50,12 @@ const (
+ 	annotationARN     = "crossplane.io/external-aws-glue-connection-arn"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ConnectionGroupKind)
++
+ // SetupConnection adds a controller that reconciles Connection.
+ func SetupConnection(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ConnectionGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := &hooks{kube: e.kube, client: e.client}
+diff --git a/pkg/controller/glue/crawler/setup.go b/pkg/controller/glue/crawler/setup.go
+index 67823634..34270231 100644
+--- a/pkg/controller/glue/crawler/setup.go
++++ b/pkg/controller/glue/crawler/setup.go
+@@ -51,9 +51,12 @@ const (
+ 	annotationARN     = "crossplane.io/external-aws-glue-crawler-arn"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.CrawlerGroupKind)
++
+ // SetupCrawler adds a controller that reconciles Crawler.
+ func SetupCrawler(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.CrawlerGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := &hooks{kube: e.kube, client: e.client}
+diff --git a/pkg/controller/glue/database/setup.go b/pkg/controller/glue/database/setup.go
+index 44b25b0a..37b1acc7 100644
+--- a/pkg/controller/glue/database/setup.go
++++ b/pkg/controller/glue/database/setup.go
+@@ -44,9 +44,12 @@ const (
+ 	errCreateSameIdentifier = "cannot create Glue Database. Combine permissions for same principals under one createTableDefaultPermissions entry"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DatabaseGroupKind)
++
+ // SetupDatabase adds a controller that reconciles Database.
+ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DatabaseGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/glue/job/setup.go b/pkg/controller/glue/job/setup.go
+index 05f4758d..5a919e21 100644
+--- a/pkg/controller/glue/job/setup.go
++++ b/pkg/controller/glue/job/setup.go
+@@ -50,9 +50,12 @@ const (
+ 	annotationARN     = "crossplane.io/external-aws-glue-job-arn"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.JobGroupKind)
++
+ // SetupJob adds a controller that reconciles Job.
+ func SetupJob(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.JobGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := &hooks{kube: e.kube, client: e.client}
+diff --git a/pkg/controller/glue/securityconfiguration/setup.go b/pkg/controller/glue/securityconfiguration/setup.go
+index 8fae873c..5917c591 100644
+--- a/pkg/controller/glue/securityconfiguration/setup.go
++++ b/pkg/controller/glue/securityconfiguration/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.SecurityConfigurationGroupKind)
++
+ // SetupSecurityConfiguration adds a controller that reconciles SecurityConfiguration.
+ func SetupSecurityConfiguration(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.SecurityConfigurationGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postCreate = postCreate
+diff --git a/pkg/controller/iam/accesskey/controller.go b/pkg/controller/iam/accesskey/controller.go
+index de17d761..b81db918 100644
+--- a/pkg/controller/iam/accesskey/controller.go
++++ b/pkg/controller/iam/accesskey/controller.go
+@@ -49,9 +49,12 @@ const (
+ 	errUpdate           = "failed to update the AccessKey resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.AccessKeyGroupKind)
++
+ // SetupAccessKey adds a controller that reconciles AccessKeys.
+ func SetupAccessKey(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.AccessKeyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/group/controller.go b/pkg/controller/iam/group/controller.go
+index 401e795a..48948491 100644
+--- a/pkg/controller/iam/group/controller.go
++++ b/pkg/controller/iam/group/controller.go
+@@ -51,9 +51,12 @@ const (
+ 	errKubeUpdateFailed = "cannot late initialize IAM Group"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.GroupGroupKind)
++
+ // SetupGroup adds a controller that reconciles Groups.
+ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.GroupGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/grouppolicyattachment/controller.go b/pkg/controller/iam/grouppolicyattachment/controller.go
+index 15bf89a8..9346a62c 100644
+--- a/pkg/controller/iam/grouppolicyattachment/controller.go
++++ b/pkg/controller/iam/grouppolicyattachment/controller.go
+@@ -50,10 +50,13 @@ const (
+ 	errDetach = "failed to detach the policy to group"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKind)
++
+ // SetupGroupPolicyAttachment adds a controller that reconciles
+ // GroupPolicyAttachments.
+ func SetupGroupPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.GroupPolicyAttachmentGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/groupusermembership/controller.go b/pkg/controller/iam/groupusermembership/controller.go
+index 76a9c17b..62ab4f6c 100644
+--- a/pkg/controller/iam/groupusermembership/controller.go
++++ b/pkg/controller/iam/groupusermembership/controller.go
+@@ -50,10 +50,13 @@ const (
+ 	errRemove = "failed to remove the user to group"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.GroupUserMembershipGroupKind)
++
+ // SetupGroupUserMembership adds a controller that reconciles
+ // GroupUserMemberships.
+ func SetupGroupUserMembership(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.GroupUserMembershipGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/instanceprofile/setup.go b/pkg/controller/iam/instanceprofile/setup.go
+index 6fd6706a..01c3cfdd 100644
+--- a/pkg/controller/iam/instanceprofile/setup.go
++++ b/pkg/controller/iam/instanceprofile/setup.go
+@@ -37,9 +37,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
++
+ // SetupInstanceProfile adds a controller that reconciles InstanceProfile.
+ func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			u := &updater{client: e.client}
+diff --git a/pkg/controller/iam/openidconnectprovider/controller.go b/pkg/controller/iam/openidconnectprovider/controller.go
+index a7ad69c6..74693ac1 100644
+--- a/pkg/controller/iam/openidconnectprovider/controller.go
++++ b/pkg/controller/iam/openidconnectprovider/controller.go
+@@ -61,9 +61,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update OpenIDConnectProvider instance custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.OpenIDConnectProviderGroupKind)
++
+ // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
+ func SetupOpenIDConnectProvider(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.OpenIDConnectProviderGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/policy/controller.go b/pkg/controller/iam/policy/controller.go
+index 51059ae0..7a1c9bdd 100644
+--- a/pkg/controller/iam/policy/controller.go
++++ b/pkg/controller/iam/policy/controller.go
+@@ -59,9 +59,12 @@ const (
+ 	errUntag            = "cannot untag policy"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.PolicyGroupKind)
++
+ // SetupPolicy adds a controller that reconciles IAM Policy.
+ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.PolicyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/role/controller.go b/pkg/controller/iam/role/controller.go
+index 5beaf442..438e1923 100644
+--- a/pkg/controller/iam/role/controller.go
++++ b/pkg/controller/iam/role/controller.go
+@@ -54,9 +54,12 @@ const (
+ 	errUpToDateFailed   = "cannot check whether object is up-to-date"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RoleGroupKind)
++
+ // SetupRole adds a controller that reconciles Roles.
+ func SetupRole(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RoleGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/rolepolicyattachment/controller.go b/pkg/controller/iam/rolepolicyattachment/controller.go
+index 2e991baf..d9fd6ec4 100644
+--- a/pkg/controller/iam/rolepolicyattachment/controller.go
++++ b/pkg/controller/iam/rolepolicyattachment/controller.go
+@@ -47,10 +47,13 @@ const (
+ 	errDetach           = "failed to detach the policy to role"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
++
+ // SetupRolePolicyAttachment adds a controller that reconciles
+ // RolePolicyAttachments.
+ func SetupRolePolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.RolePolicyAttachmentGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/user/controller.go b/pkg/controller/iam/user/controller.go
+index 3fa64b56..24454cc2 100644
+--- a/pkg/controller/iam/user/controller.go
++++ b/pkg/controller/iam/user/controller.go
+@@ -56,9 +56,12 @@ const (
+ 	errKubeUpdateFailed = "cannot late initialize IAM User"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.UserGroupKind)
++
+ // SetupUser adds a controller that reconciles Users.
+ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.UserGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iam/userpolicyattachment/controller.go b/pkg/controller/iam/userpolicyattachment/controller.go
+index 5f8bbb85..26a56896 100644
+--- a/pkg/controller/iam/userpolicyattachment/controller.go
++++ b/pkg/controller/iam/userpolicyattachment/controller.go
+@@ -48,10 +48,13 @@ const (
+ 	errDetach = "failed to detach the policy to user"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.UserPolicyAttachmentGroupKind)
++
+ // SetupUserPolicyAttachment adds a controller that reconciles
+ // UserPolicyAttachments.
+ func SetupUserPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.UserPolicyAttachmentGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/iot/policy/setup.go b/pkg/controller/iot/policy/setup.go
+index f84c7af5..5637f979 100644
+--- a/pkg/controller/iot/policy/setup.go
++++ b/pkg/controller/iot/policy/setup.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.PolicyGroupKind)
++
+ // SetupPolicy adds a controller that reconciles Policy.
+ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.PolicyGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/iot/thing/setup.go b/pkg/controller/iot/thing/setup.go
+index 19f88e70..daca5005 100644
+--- a/pkg/controller/iot/thing/setup.go
++++ b/pkg/controller/iot/thing/setup.go
+@@ -40,9 +40,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(iottypes.ThingGroupKind)
++
+ // SetupThing adds a controller that reconciles Thing.
+ func SetupThing(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(iottypes.ThingGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/kafka/cluster/setup.go b/pkg/controller/kafka/cluster/setup.go
+index 631dab69..cc6803f7 100644
+--- a/pkg/controller/kafka/cluster/setup.go
++++ b/pkg/controller/kafka/cluster/setup.go
+@@ -34,9 +34,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
++
+ // SetupCluster adds a controller that reconciles Cluster.
+ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/kafka/configuration/setup.go b/pkg/controller/kafka/configuration/setup.go
+index 7c2cd0b9..c74e1b34 100644
+--- a/pkg/controller/kafka/configuration/setup.go
++++ b/pkg/controller/kafka/configuration/setup.go
+@@ -34,9 +34,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ConfigurationGroupKind)
++
+ // SetupConfiguration adds a controller that reconciles Configuration.
+ func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ConfigurationGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/kinesis/stream/setup.go b/pkg/controller/kinesis/stream/setup.go
+index 27f77f1e..a51c253d 100644
+--- a/pkg/controller/kinesis/stream/setup.go
++++ b/pkg/controller/kinesis/stream/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.StreamGroupKind)
++
+ // SetupStream adds a controller that reconciles Stream.
+ func SetupStream(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.StreamGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/kms/alias/setup.go b/pkg/controller/kms/alias/setup.go
+index 23ad2296..04b6b3d5 100644
+--- a/pkg/controller/kms/alias/setup.go
++++ b/pkg/controller/kms/alias/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.AliasGroupKind)
++
+ // SetupAlias adds a controller that reconciles Alias.
+ func SetupAlias(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.AliasGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/kms/key/setup.go b/pkg/controller/kms/key/setup.go
+index 29c3239f..768a744f 100644
+--- a/pkg/controller/kms/key/setup.go
++++ b/pkg/controller/kms/key/setup.go
+@@ -22,9 +22,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.KeyGroupKind)
++
+ // SetupKey adds a controller that reconciles Key.
+ func SetupKey(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.KeyGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/lambda/function/setup.go b/pkg/controller/lambda/function/setup.go
+index f3bd5229..68b5eeab 100644
+--- a/pkg/controller/lambda/function/setup.go
++++ b/pkg/controller/lambda/function/setup.go
+@@ -37,9 +37,12 @@ const (
+ 	repositoryTypeS3  = "S3"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.FunctionGroupKind)
++
+ // SetupFunction adds a controller that reconciles Function.
+ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.FunctionGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/lambda/functionurlconfig/setup.go b/pkg/controller/lambda/functionurlconfig/setup.go
+index 6c8bb5be..8f44211e 100644
+--- a/pkg/controller/lambda/functionurlconfig/setup.go
++++ b/pkg/controller/lambda/functionurlconfig/setup.go
+@@ -23,9 +23,12 @@ import (
+ 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
++
+ // SetupFunctionURL adds a controller that reconciles FunctionURLConfig.
+ func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/lambda/permission/controller.go b/pkg/controller/lambda/permission/controller.go
+index 927b7e2c..5a5138eb 100644
+--- a/pkg/controller/lambda/permission/controller.go
++++ b/pkg/controller/lambda/permission/controller.go
+@@ -52,9 +52,12 @@ const (
+ 	errParsePolicy           = "cannot parse policy"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.PermissionKind)
++
+ // SetupPermission adds a controller that reconciles Permissions.
+ func SetupPermission(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.PermissionKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/mq/broker/setup.go b/pkg/controller/mq/broker/setup.go
+index 46c088d8..4133a582 100644
+--- a/pkg/controller/mq/broker/setup.go
++++ b/pkg/controller/mq/broker/setup.go
+@@ -26,9 +26,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.BrokerGroupKind)
++
+ // SetupBroker adds a controller that reconciles Broker.
+ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.BrokerGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube, external: e}
+diff --git a/pkg/controller/mq/user/setup.go b/pkg/controller/mq/user/setup.go
+index 2c8f2811..d171287e 100644
+--- a/pkg/controller/mq/user/setup.go
++++ b/pkg/controller/mq/user/setup.go
+@@ -25,9 +25,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.UserGroupKind)
++
+ // SetupUser adds a controller that reconciles User.
+ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.UserGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube, external: e}
+diff --git a/pkg/controller/mwaa/environment/setup.go b/pkg/controller/mwaa/environment/setup.go
+index 071194cf..4e8d3684 100644
+--- a/pkg/controller/mwaa/environment/setup.go
++++ b/pkg/controller/mwaa/environment/setup.go
+@@ -32,9 +32,12 @@ const (
+ 	errUntagResource    = "cannot untag resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.EnvironmentGroupKind)
++
+ // SetupEnvironment adds a controller that reconciles Environment.
+ func SetupEnvironment(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.EnvironmentGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube, external: e}
+diff --git a/pkg/controller/neptune/dbcluster/setup.go b/pkg/controller/neptune/dbcluster/setup.go
+index 3d25db32..dacc37ec 100644
+--- a/pkg/controller/neptune/dbcluster/setup.go
++++ b/pkg/controller/neptune/dbcluster/setup.go
+@@ -45,9 +45,12 @@ const (
+ 	statusUpdating  dbClusterStatus = "updating"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBClusterKind)
++
+ // SetupDBCluster adds a controller that reconciles DB Cluster.
+ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBClusterKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.lateInitialize = lateInitialize
+diff --git a/pkg/controller/opensearchservice/domain/setup.go b/pkg/controller/opensearchservice/domain/setup.go
+index 78b6f123..50afb930 100644
+--- a/pkg/controller/opensearchservice/domain/setup.go
++++ b/pkg/controller/opensearchservice/domain/setup.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DomainGroupKind)
++
+ // SetupDomain adds a controller that reconciles Domain.
+ func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DomainGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/prometheusservice/alertmanagerdefinition/setup.go b/pkg/controller/prometheusservice/alertmanagerdefinition/setup.go
+index b9463f29..2545b047 100644
+--- a/pkg/controller/prometheusservice/alertmanagerdefinition/setup.go
++++ b/pkg/controller/prometheusservice/alertmanagerdefinition/setup.go
+@@ -24,9 +24,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)
++
+ // SetupAlertManagerDefinition adds a controller that reconciles AlertManagerDefinition.
+ func SetupAlertManagerDefinition(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/prometheusservice/rulegroupsnamespace/setup.go b/pkg/controller/prometheusservice/rulegroupsnamespace/setup.go
+index 60049148..f2d86c90 100644
+--- a/pkg/controller/prometheusservice/rulegroupsnamespace/setup.go
++++ b/pkg/controller/prometheusservice/rulegroupsnamespace/setup.go
+@@ -31,9 +31,12 @@ const (
+ 	errKubeUpdateFailed       = "cannot update RuleGroupsNamespace custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)
++
+ // SetupRuleGroupsNamespace adds a controller that reconciles RuleGroupsNamespace.
+ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/prometheusservice/workspace/setup.go b/pkg/controller/prometheusservice/workspace/setup.go
+index ee42994a..5605e19f 100644
+--- a/pkg/controller/prometheusservice/workspace/setup.go
++++ b/pkg/controller/prometheusservice/workspace/setup.go
+@@ -29,9 +29,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update Workspace custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.WorkspaceGroupKind)
++
+ // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
+ func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.WorkspaceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.postObserve = postObserve
+diff --git a/pkg/controller/ram/resourceshare/setup.go b/pkg/controller/ram/resourceshare/setup.go
+index 1c68c0dd..e0198148 100644
+--- a/pkg/controller/ram/resourceshare/setup.go
++++ b/pkg/controller/ram/resourceshare/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ResourceShareGroupKind)
++
+ // SetupResourceShare adds a controller that reconciles ResourceShare.
+ func SetupResourceShare(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ResourceShareGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/rds/dbcluster/setup.go b/pkg/controller/rds/dbcluster/setup.go
+index 8aea868a..7489704f 100644
+--- a/pkg/controller/rds/dbcluster/setup.go
++++ b/pkg/controller/rds/dbcluster/setup.go
+@@ -45,9 +45,12 @@ type updater struct {
+ 	client svcsdkapi.RDSAPI
+ }
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBClusterGroupKind)
++
+ // SetupDBCluster adds a controller that reconciles DbCluster.
+ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/rds/dbclusterparametergroup/setup.go b/pkg/controller/rds/dbclusterparametergroup/setup.go
+index 8d9d7630..2d93533c 100644
+--- a/pkg/controller/rds/dbclusterparametergroup/setup.go
++++ b/pkg/controller/rds/dbclusterparametergroup/setup.go
+@@ -31,9 +31,12 @@ const (
+ 	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBClusterParameterGroupGroupKind)
++
+ // SetupDBClusterParameterGroup adds a controller that reconciles DBClusterParameterGroup.
+ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/rds/dbinstance/setup.go b/pkg/controller/rds/dbinstance/setup.go
+index 7e2a098f..a0bbb34d 100644
+--- a/pkg/controller/rds/dbinstance/setup.go
++++ b/pkg/controller/rds/dbinstance/setup.go
+@@ -51,9 +51,12 @@ const (
+ 	statusDeleting              = "deleting"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBInstanceGroupKind)
++
+ // SetupDBInstance adds a controller that reconciles DBInstance
+ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube, external: e}
+diff --git a/pkg/controller/rds/dbinstanceroleassociation/setup.go b/pkg/controller/rds/dbinstanceroleassociation/setup.go
+index 8ed1163a..30a38844 100644
+--- a/pkg/controller/rds/dbinstanceroleassociation/setup.go
++++ b/pkg/controller/rds/dbinstanceroleassociation/setup.go
+@@ -25,9 +25,12 @@ const (
+ 	errDescribeAssoc = "failed to describe DBInstance for DBInstanceRoleAssociation"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)
++
+ // SetupDBInstanceRoleAssociation adds a controller that reconciles DBInstanceRoleAssociation.
+ func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preCreate = preCreate
+diff --git a/pkg/controller/rds/dbparametergroup/setup.go b/pkg/controller/rds/dbparametergroup/setup.go
+index c6d450c2..f3e4b3eb 100644
+--- a/pkg/controller/rds/dbparametergroup/setup.go
++++ b/pkg/controller/rds/dbparametergroup/setup.go
+@@ -30,9 +30,12 @@ const (
+ 	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
++
+ // SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
+ func SetupDBParameterGroup(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			c := &custom{client: e.client, kube: e.kube}
+diff --git a/pkg/controller/rds/globalcluster/setup.go b/pkg/controller/rds/globalcluster/setup.go
+index adfc80b5..9f8e17fd 100644
+--- a/pkg/controller/rds/globalcluster/setup.go
++++ b/pkg/controller/rds/globalcluster/setup.go
+@@ -20,9 +20,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.GlobalClusterGroupKind)
++
+ // SetupGlobalCluster adds a controller that reconciles GlobalCluster.
+ func SetupGlobalCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.GlobalClusterGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/redshift/controller.go b/pkg/controller/redshift/controller.go
+index 9b6d2eca..662bdf14 100644
+--- a/pkg/controller/redshift/controller.go
++++ b/pkg/controller/redshift/controller.go
+@@ -53,9 +53,12 @@ const (
+ 	errUpToDateFailed   = "cannot check whether object is up-to-date"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
++
+ // SetupCluster adds a controller that reconciles Redshift clusters.
+ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(redshiftv1alpha1.ClusterGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/route53/hostedzone/controller.go b/pkg/controller/route53/hostedzone/controller.go
+index 031a344a..23519107 100644
+--- a/pkg/controller/route53/hostedzone/controller.go
++++ b/pkg/controller/route53/hostedzone/controller.go
+@@ -52,9 +52,12 @@ const (
+ 	errGet    = "failed to get the Hosted Zone resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
++
+ // SetupHostedZone adds a controller that reconciles Hosted Zones.
+ func SetupHostedZone(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/route53/resourcerecordset/controller.go b/pkg/controller/route53/resourcerecordset/controller.go
+index 2f4c37c8..2855c90c 100644
+--- a/pkg/controller/route53/resourcerecordset/controller.go
++++ b/pkg/controller/route53/resourcerecordset/controller.go
+@@ -51,9 +51,12 @@ const (
+ 	errState            = "failed to determine resource state"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(route53v1alpha1.ResourceRecordSetGroupKind)
++
+ // SetupResourceRecordSet adds a controller that reconciles ResourceRecordSets.
+ func SetupResourceRecordSet(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(route53v1alpha1.ResourceRecordSetGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/route53resolver/resolverendpoint/hooks.go b/pkg/controller/route53resolver/resolverendpoint/hooks.go
+index d0197e06..b1d31d56 100644
+--- a/pkg/controller/route53resolver/resolverendpoint/hooks.go
++++ b/pkg/controller/route53resolver/resolverendpoint/hooks.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(route53resolverv1alpha1.ResolverEndpointGroupKind)
++
+ // SetupResolverEndpoint adds a controller that reconciles ResolverEndpoints
+ func SetupResolverEndpoint(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(route53resolverv1alpha1.ResolverEndpointGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/route53resolver/resolverrule/hooks.go b/pkg/controller/route53resolver/resolverrule/hooks.go
+index 103d7115..e08cfe00 100644
+--- a/pkg/controller/route53resolver/resolverrule/hooks.go
++++ b/pkg/controller/route53resolver/resolverrule/hooks.go
+@@ -21,9 +21,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(route53resolverv1alpha1.ResolverRuleGroupKind)
++
+ // SetupResolverRule adds a controller that reconciles ResolverRule
+ func SetupResolverRule(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(route53resolverv1alpha1.ResolverRuleGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/route53resolver/resolverruleassociation/hooks.go b/pkg/controller/route53resolver/resolverruleassociation/hooks.go
+index cf7defac..329f5e08 100644
+--- a/pkg/controller/route53resolver/resolverruleassociation/hooks.go
++++ b/pkg/controller/route53resolver/resolverruleassociation/hooks.go
+@@ -46,9 +46,12 @@ const (
+ 	errGet              = "failed to get the AssociatedResolverRule"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
++
+ // SetupResolverRuleAssociation adds a controller that reconciles ResolverRuleAssociation
+ func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/s3/bucket.go b/pkg/controller/s3/bucket.go
+index 7dff4146..873d9869 100644
+--- a/pkg/controller/s3/bucket.go
++++ b/pkg/controller/s3/bucket.go
+@@ -53,9 +53,12 @@ const (
+ 	errKubeUpdateFailed = "cannot update S3 custom resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.BucketGroupKind)
++
+ // SetupBucket adds a controller that reconciles Buckets.
+ func SetupBucket(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.BucketGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/s3/bucketpolicy/bucketpolicy.go b/pkg/controller/s3/bucketpolicy/bucketpolicy.go
+index 825afb69..3d635f1b 100644
+--- a/pkg/controller/s3/bucketpolicy/bucketpolicy.go
++++ b/pkg/controller/s3/bucketpolicy/bucketpolicy.go
+@@ -50,10 +50,13 @@ const (
+ 	errNotSpecified     = "failed to format bucketPolicy, no rawPolicy or policy specified"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1alpha3.BucketPolicyGroupKind)
++
+ // SetupBucketPolicy adds a controller that reconciles
+ // BucketPolicies.
+ func SetupBucketPolicy(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1alpha3.BucketPolicyGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/secretsmanager/secret/setup.go b/pkg/controller/secretsmanager/secret/setup.go
+index e2085b25..9ceaeb1e 100644
+--- a/pkg/controller/secretsmanager/secret/setup.go
++++ b/pkg/controller/secretsmanager/secret/setup.go
+@@ -64,9 +64,12 @@ const (
+ 	errOnlyOneSecretRef     = "only one of binarySecretRef or stringSecretRef must be set"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.SecretGroupKind)
++
+ // SetupSecret adds a controller that reconciles a Secret.
+ func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.SecretGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/servicediscovery/httpnamespace/setup.go b/pkg/controller/servicediscovery/httpnamespace/setup.go
+index 12cbdce5..ea827711 100644
+--- a/pkg/controller/servicediscovery/httpnamespace/setup.go
++++ b/pkg/controller/servicediscovery/httpnamespace/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
++
+ // SetupHTTPNamespace adds a controller that reconciles HTTPNamespace.
+ func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := commonnamespace.NewHooks(e.kube, e.client)
+diff --git a/pkg/controller/servicediscovery/privatednsnamespace/setup.go b/pkg/controller/servicediscovery/privatednsnamespace/setup.go
+index 0864c041..53dcf5f4 100644
+--- a/pkg/controller/servicediscovery/privatednsnamespace/setup.go
++++ b/pkg/controller/servicediscovery/privatednsnamespace/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
++
+ // SetupPrivateDNSNamespace adds a controller that reconciles PrivateDNSNamespaces.
+ func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := commonnamespace.NewHooks(e.kube, e.client)
+diff --git a/pkg/controller/servicediscovery/publicdnsnamespace/setup.go b/pkg/controller/servicediscovery/publicdnsnamespace/setup.go
+index da195e24..08c67733 100644
+--- a/pkg/controller/servicediscovery/publicdnsnamespace/setup.go
++++ b/pkg/controller/servicediscovery/publicdnsnamespace/setup.go
+@@ -35,9 +35,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
++
+ // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
+ func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			h := commonnamespace.NewHooks(e.kube, e.client)
+diff --git a/pkg/controller/sfn/activity/hooks.go b/pkg/controller/sfn/activity/hooks.go
+index 4dae91d9..06ade3ce 100644
+--- a/pkg/controller/sfn/activity/hooks.go
++++ b/pkg/controller/sfn/activity/hooks.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ActivityGroupKind)
++
+ // SetupActivity adds a controller that reconciles Activity.
+ func SetupActivity(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/sfn/statemachine/hooks.go b/pkg/controller/sfn/statemachine/hooks.go
+index adc1561e..bc03e6fc 100644
+--- a/pkg/controller/sfn/statemachine/hooks.go
++++ b/pkg/controller/sfn/statemachine/hooks.go
+@@ -36,9 +36,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.StateMachineGroupKind)
++
+ // SetupStateMachine adds a controller that reconciles StateMachine.
+ func SetupStateMachine(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)
+ 	opts := []option{
+ 		func(e *external) {
+ 			e.preObserve = preObserve
+diff --git a/pkg/controller/sns/subscription/controller.go b/pkg/controller/sns/subscription/controller.go
+index 2ebb915d..320ee9db 100644
+--- a/pkg/controller/sns/subscription/controller.go
++++ b/pkg/controller/sns/subscription/controller.go
+@@ -50,9 +50,12 @@ const (
+ 	errUpdate              = "failed to update the SNS Subscription"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.SubscriptionGroupKind)
++
+ // SetupSubscription adds a controller than reconciles Subscription
+ func SetupSubscription(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.SubscriptionGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/sns/topic/controller.go b/pkg/controller/sns/topic/controller.go
+index 594e609d..c3bd8589 100644
+--- a/pkg/controller/sns/topic/controller.go
++++ b/pkg/controller/sns/topic/controller.go
+@@ -50,9 +50,12 @@ const (
+ 	errUpdate           = "failed to update the SNS Topic"
+ )
+ 
++// ControllerName of this controllevar ControllerName.
++var ControllerName = managed.ControllerName(v1beta1.TopicGroupKind)
++
+ // SetupSNSTopic adds a controller that reconciles Topic.
+ func SetupSNSTopic(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.TopicGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/sqs/queue/controller.go b/pkg/controller/sqs/queue/controller.go
+index cca74e95..95a7999f 100644
+--- a/pkg/controller/sqs/queue/controller.go
++++ b/pkg/controller/sqs/queue/controller.go
+@@ -54,9 +54,12 @@ const (
+ 	errUpdateFailed             = "failed to update the Queue resource"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(v1beta1.QueueGroupKind)
++
+ // SetupQueue adds a controller that reconciles Queue.
+ func SetupQueue(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(v1beta1.QueueGroupKind)
+ 
+ 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
+ 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
+diff --git a/pkg/controller/transfer/server/setup.go b/pkg/controller/transfer/server/setup.go
+index 0994b0af..65120fa2 100644
+--- a/pkg/controller/transfer/server/setup.go
++++ b/pkg/controller/transfer/server/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.ServerGroupKind)
++
+ // SetupServer adds a controller that reconciles Server.
+ func SetupServer(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.ServerGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {
+diff --git a/pkg/controller/transfer/user/setup.go b/pkg/controller/transfer/user/setup.go
+index 3a62715d..4dc0545a 100644
+--- a/pkg/controller/transfer/user/setup.go
++++ b/pkg/controller/transfer/user/setup.go
+@@ -33,9 +33,12 @@ import (
+ 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+ )
+ 
++// ControllerName of this controller.
++var ControllerName = managed.ControllerName(svcapitypes.UserGroupKind)
++
+ // SetupUser adds a controller that reconciles User.
+ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
+ 	name := managed.ControllerName(svcapitypes.UserGroupKind)
+ 
+ 	opts := []option{
+ 		func(e *external) {

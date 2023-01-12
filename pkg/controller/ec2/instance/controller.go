@@ -61,7 +61,7 @@ var ControllerName = managed.ControllerName(svcapitypes.InstanceGroupKind)
 
 // SetupInstance adds a controller that reconciles Instances.
 func SetupInstance(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.InstanceGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

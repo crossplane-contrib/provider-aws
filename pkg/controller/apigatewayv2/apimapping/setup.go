@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.APIMappingGroupKind)
 
 // SetupAPIMapping adds a controller that reconciles APIMapping.
 func SetupAPIMapping(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.APIMappingGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

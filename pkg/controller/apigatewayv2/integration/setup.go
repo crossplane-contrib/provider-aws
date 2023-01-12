@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.IntegrationGroupKind)
 
 // SetupIntegration adds a controller that reconciles Integration.
 func SetupIntegration(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(route53resolverv1alpha1.ResolverRule
 
 // SetupResolverRule adds a controller that reconciles ResolverRule
 func SetupResolverRule(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(route53resolverv1alpha1.ResolverRuleGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

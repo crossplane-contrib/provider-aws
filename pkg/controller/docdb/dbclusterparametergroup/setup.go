@@ -55,7 +55,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBClusterParameterGroupK
 
 // SetupDBClusterParameterGroup adds a controller that reconciles a DBClusterParameterGroup.
 func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

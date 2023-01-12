@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
 
 // SetupCluster adds a controller that reconciles Cluster.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -51,7 +51,7 @@ var ControllerName = managed.ControllerName(eksv1alpha1.AddonGroupKind)
 
 // SetupAddon adds a controller that reconciles Clusters.
 func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(eksv1alpha1.AddonGroupKind)
 	opts := []option{
 		setupHooks,
 	}

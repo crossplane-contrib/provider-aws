@@ -40,7 +40,7 @@ var ControllerName = managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroup
 
 // SetupPrivateDNSNamespace adds a controller that reconciles PrivateDNSNamespaces.
 func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)

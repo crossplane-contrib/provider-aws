@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.APIGroupKind)
 
 // SetupAPI adds a controller that reconciles API.
 func SetupAPI(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.APIGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

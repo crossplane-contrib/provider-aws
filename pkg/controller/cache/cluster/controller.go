@@ -56,7 +56,7 @@ var ControllerName = managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)
 
 // SetupCacheCluster adds a controller that reconciles CacheCluster.
 func SetupCacheCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

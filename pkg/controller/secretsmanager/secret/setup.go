@@ -69,7 +69,7 @@ var ControllerName = managed.ControllerName(svcapitypes.SecretGroupKind)
 
 // SetupSecret adds a controller that reconciles a Secret.
 func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.SecretGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

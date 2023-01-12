@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.FunctionGroupKind)
 
 // SetupFunction adds a controller that reconciles Function.
 func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.FunctionGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

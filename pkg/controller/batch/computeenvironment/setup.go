@@ -40,7 +40,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ComputeEnvironmentGroupK
 
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
 func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := &hooks{client: e.client}

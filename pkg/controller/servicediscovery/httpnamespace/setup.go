@@ -40,7 +40,7 @@ var ControllerName = managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
 
 // SetupHTTPNamespace adds a controller that reconciles HTTPNamespace.
 func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)

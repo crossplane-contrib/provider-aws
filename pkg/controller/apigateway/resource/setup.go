@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ResourceGroupKind)
 
 // SetupResource adds a controller that reconciles Resource.
 func SetupResource(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ResourceGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.lateInitialize = lateInitialize

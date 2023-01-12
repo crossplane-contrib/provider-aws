@@ -24,7 +24,7 @@ var ControllerName = managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind
 
 // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
 func SetupLifecyclePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

@@ -51,7 +51,7 @@ var ControllerName = managed.ControllerName(svcapitypes.FlowLogGroupKind)
 
 // SetupFlowLog adds a controller that reconciles FlowLog
 func SetupFlowLog(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.FlowLogGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

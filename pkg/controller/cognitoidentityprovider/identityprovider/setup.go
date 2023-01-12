@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.IdentityProviderGroupKin
 
 // SetupIdentityProvider adds a controller that reconciles IdentityProvider.
 func SetupIdentityProvider(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.IdentityProviderGroupKind)
 
 	opts := []option{
 		func(e *external) {

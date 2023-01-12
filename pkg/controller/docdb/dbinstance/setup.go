@@ -51,7 +51,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBInstanceGroupKind)
 
 // SetupDBInstance adds a controller that reconciles a DBInstance.
 func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

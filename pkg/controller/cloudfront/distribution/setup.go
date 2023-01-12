@@ -51,7 +51,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DistributionGroupKind)
 
 // SetupDistribution adds a controller that reconciles Distribution.
 func SetupDistribution(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DistributionGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ListenerGroupKind)
 
 // SetupListener adds a controller that reconciles Listener.
 func SetupListener(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ListenerGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

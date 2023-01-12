@@ -54,7 +54,7 @@ var ControllerName = managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupK
 
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
 func SetupCacheSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

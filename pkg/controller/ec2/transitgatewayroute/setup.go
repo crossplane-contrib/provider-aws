@@ -30,7 +30,7 @@ var ControllerName = managed.ControllerName(svcapitypes.RouteGroupKind)
 
 // SetupTransitGatewayRoute adds a controller that reconciles TransitGatewayRoutes.
 func SetupTransitGatewayRoute(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.RouteGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.IntegrationResponseGroup
 
 // SetupIntegrationResponse adds a controller that reconciles IntegrationResponse.
 func SetupIntegrationResponse(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.IntegrationResponseGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

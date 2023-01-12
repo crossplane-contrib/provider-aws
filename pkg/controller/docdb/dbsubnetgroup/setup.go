@@ -50,7 +50,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBSubnetGroupKind)
 
 // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
 func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBSubnetGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

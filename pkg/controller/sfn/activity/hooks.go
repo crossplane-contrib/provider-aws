@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ActivityGroupKind)
 
 // SetupActivity adds a controller that reconciles Activity.
 func SetupActivity(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

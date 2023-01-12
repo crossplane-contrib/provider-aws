@@ -45,7 +45,7 @@ var ControllerName = managed.ControllerName(iottypes.ThingGroupKind)
 
 // SetupThing adds a controller that reconciles Thing.
 func SetupThing(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(iottypes.ThingGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

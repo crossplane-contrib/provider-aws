@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VolumeGroupKind)
 
 // SetupVolume adds a controller that reconciles Volume.
 func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VolumeGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
 
 // SetupUserPoolDomain adds a controller that reconciles User.
 func SetupUserPoolDomain(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.UserPoolDomainGroupKind)
 
 	opts := []option{
 		func(e *external) {

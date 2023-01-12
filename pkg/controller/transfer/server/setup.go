@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ServerGroupKind)
 
 // SetupServer adds a controller that reconciles Server.
 func SetupServer(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ServerGroupKind)
 
 	opts := []option{
 		func(e *external) {

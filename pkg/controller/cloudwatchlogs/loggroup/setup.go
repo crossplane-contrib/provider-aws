@@ -46,7 +46,7 @@ var ControllerName = managed.ControllerName(svcapitypes.LogGroupGroupKind)
 
 // SetupLogGroup adds a controller that reconciles LogGroup.
 func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.LogGroupGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

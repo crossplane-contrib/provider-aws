@@ -36,7 +36,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
 
 // SetupVirtualCluster adds a controller that reconciles VirtualCluster.
 func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VirtualClusterGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.isUpToDate = isUpToDate

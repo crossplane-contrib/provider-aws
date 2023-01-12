@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.MethodGroupKind)
 
 // SetupMethod adds a controller that reconciles Method.
 func SetupMethod(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.MethodGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{

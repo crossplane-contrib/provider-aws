@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.InstanceProfileGroupKind
 
 // SetupInstanceProfile adds a controller that reconciles InstanceProfile.
 func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)
 	opts := []option{
 		func(e *external) {
 			u := &updater{client: e.client}

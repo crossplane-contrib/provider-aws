@@ -61,7 +61,7 @@ var ControllerName = managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
 func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

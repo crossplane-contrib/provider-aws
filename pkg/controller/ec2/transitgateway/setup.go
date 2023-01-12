@@ -33,7 +33,7 @@ var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
 
 // SetupTransitGateway adds a controller that reconciles TransitGateway.
 func SetupTransitGateway(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.TransitGatewayGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

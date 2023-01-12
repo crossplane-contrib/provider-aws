@@ -50,7 +50,7 @@ var ControllerName = managed.ControllerName(svcapitypes.DBClusterGroupKind)
 
 // SetupDBCluster adds a controller that reconciles DbCluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

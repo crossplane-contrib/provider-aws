@@ -22,7 +22,7 @@ var ControllerName = managed.ControllerName(svcapitypes.AccessPointGroupKind)
 
 // SetupAccessPoint adds a controller that reconciles AccessPoint.
 func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.AccessPointGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

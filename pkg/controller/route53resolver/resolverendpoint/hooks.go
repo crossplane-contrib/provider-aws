@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(route53resolverv1alpha1.ResolverEndp
 
 // SetupResolverEndpoint adds a controller that reconciles ResolverEndpoints
 func SetupResolverEndpoint(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(route53resolverv1alpha1.ResolverEndpointGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

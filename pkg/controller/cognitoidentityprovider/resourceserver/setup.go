@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ResourceServerGroupKind)
 
 // SetupResourceServer adds a controller that reconciles Stage.
 func SetupResourceServer(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ResourceServerGroupKind)
 
 	opts := []option{
 		func(e *external) {

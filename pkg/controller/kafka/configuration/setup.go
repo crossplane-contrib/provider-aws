@@ -39,7 +39,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ConfigurationGroupKind)
 
 // SetupConfiguration adds a controller that reconciles Configuration.
 func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ConfigurationGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

@@ -57,7 +57,7 @@ var ControllerName = managed.ControllerName(manualv1alpha1.IdentityProviderConfi
 
 // SetupIdentityProviderConfig adds a controller that reconciles IdentityProviderConfigs.
 func SetupIdentityProviderConfig(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

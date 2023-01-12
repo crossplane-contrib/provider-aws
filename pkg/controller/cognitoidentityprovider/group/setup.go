@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.GroupGroupKind)
 
 // SetupGroup adds a controller that reconciles Group.
 func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.GroupGroupKind)
 
 	opts := []option{
 		func(e *external) {

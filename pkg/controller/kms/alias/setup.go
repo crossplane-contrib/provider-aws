@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.AliasGroupKind)
 
 // SetupAlias adds a controller that reconciles Alias.
 func SetupAlias(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.AliasGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

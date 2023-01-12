@@ -38,7 +38,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ResourceShareGroupKind)
 
 // SetupResourceShare adds a controller that reconciles ResourceShare.
 func SetupResourceShare(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ResourceShareGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

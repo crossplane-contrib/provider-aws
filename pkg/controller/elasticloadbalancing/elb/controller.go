@@ -60,7 +60,7 @@ var ControllerName = managed.ControllerName(elasticloadbalancingv1alpha1.ELBGrou
 
 // SetupELB adds a controller that reconciles ELBs.
 func SetupELB(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

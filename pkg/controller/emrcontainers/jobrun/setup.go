@@ -30,7 +30,7 @@ var ControllerName = managed.ControllerName(svcapitypes.JobRunKind)
 
 // SetupJobRun adds a controller that reconciles JobRun.
 func SetupJobRun(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.JobRunKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

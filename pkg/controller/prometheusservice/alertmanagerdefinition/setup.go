@@ -29,7 +29,7 @@ var ControllerName = managed.ControllerName(svcapitypes.AlertManagerDefinitionGr
 
 // SetupAlertManagerDefinition adds a controller that reconciles AlertManagerDefinition.
 func SetupAlertManagerDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate

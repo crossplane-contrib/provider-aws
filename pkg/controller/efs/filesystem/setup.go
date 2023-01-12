@@ -26,7 +26,7 @@ var ControllerName = managed.ControllerName(svcapitypes.FileSystemGroupKind)
 
 // SetupFileSystem adds a controller that reconciles FileSystem.
 func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.FileSystemGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.isUpToDate = isUpToDate

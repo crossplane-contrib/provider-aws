@@ -39,7 +39,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ClusterGroupKind)
 
 // SetupCluster adds a controller that reconciles Cluster.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

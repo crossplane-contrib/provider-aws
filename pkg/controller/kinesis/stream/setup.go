@@ -40,7 +40,7 @@ var ControllerName = managed.ControllerName(svcapitypes.StreamGroupKind)
 
 // SetupStream adds a controller that reconciles Stream.
 func SetupStream(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.StreamGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

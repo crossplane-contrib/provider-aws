@@ -41,7 +41,7 @@ var ControllerName = managed.ControllerName(svcapitypes.VPCLinkGroupKind)
 
 // SetupVPCLink adds a controller that reconciles VPCLink.
 func SetupVPCLink(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.VPCLinkGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

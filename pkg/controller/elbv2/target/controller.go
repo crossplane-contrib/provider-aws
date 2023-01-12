@@ -52,7 +52,7 @@ var ControllerName = managed.ControllerName(manualv1alpha1.TargetKind)
 
 // SetupTarget adds a controller that reconciles Targets.
 func SetupTarget(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(manualv1alpha1.TargetKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

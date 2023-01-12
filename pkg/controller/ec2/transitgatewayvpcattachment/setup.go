@@ -34,7 +34,7 @@ var ControllerName = managed.ControllerName(svcapitypes.TransitGatewayVPCAttachm
 
 // SetupTransitGatewayVPCAttachment adds a controller that reconciles TransitGatewayVPCAttachment.
 func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}

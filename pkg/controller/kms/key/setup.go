@@ -27,7 +27,7 @@ var ControllerName = managed.ControllerName(svcapitypes.KeyGroupKind)
 
 // SetupKey adds a controller that reconciles Key.
 func SetupKey(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.KeyGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve

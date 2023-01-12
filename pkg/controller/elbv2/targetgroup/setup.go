@@ -25,7 +25,7 @@ var ControllerName = managed.ControllerName(svcapitypes.TargetGroupGroupKind)
 
 // SetupTargetGroup adds a controller that reconciles TargetGroup.
 func SetupTargetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.TargetGroupGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postObserve = postObserve

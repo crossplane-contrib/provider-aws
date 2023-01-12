@@ -42,7 +42,7 @@ var ControllerName = managed.ControllerName(svcapitypes.ResponseHeadersPolicyGro
 
 // SetupResponseHeadersPolicy adds a controller that reconciles ResponseHeadersPolicy.
 func SetupResponseHeadersPolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := ControllerName
+	name := managed.ControllerName(svcapitypes.ResponseHeadersPolicyGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
