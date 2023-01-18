@@ -85,8 +85,8 @@ func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteCl
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
-    obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
-    return nil
+	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
+	return nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
