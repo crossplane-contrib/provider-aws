@@ -19,7 +19,11 @@ package privatednsnamespace
 import (
 	"context"
 
+	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -31,6 +35,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	clientsvcdk "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
@@ -41,8 +46,11 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 	opts := []option{
 		func(e *external) {
 			h := commonnamespace.NewHooks(e.kube, e.client)
+			hL := &hooks{client: e.client}
 			e.preCreate = preCreate
 			e.postCreate = postCreate
+			e.preUpdate = preUpdate
+			e.postUpdate = hL.postUpdate
 			e.delete = h.Delete
 			e.observe = h.Observe
 		},
@@ -67,6 +75,10 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithConnectionPublishers(cps...)))
 }
 
+type hooks struct {
+	client clientsvcdk.Client
+}
+
 func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.CreatePrivateDnsNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	obj.Vpc = cr.Spec.ForProvider.VPC
@@ -76,4 +88,43 @@ func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcs
 func postCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, resp *svcsdk.CreatePrivateDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	cr.SetOperationID(resp.OperationId)
 	return cre, err
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.UpdatePrivateDnsNamespaceInput) error {
+	obj.UpdaterRequestId = awsclient.String(string(cr.UID))
+	obj.Id = awsclient.String(meta.GetExternalName(cr))
+
+	// Description and TTL are required
+	obj.Namespace = &svcsdk.PrivateDnsNamespaceChange{
+		Description: cr.GetDescription(),
+	}
+
+	// Namespace.Description are required for update privatednsnamespace
+	// Set an empty string if Description are nil
+	if cr.GetDescription() == nil {
+		var tmpEmpty = ""
+		obj.Namespace.Description = &tmpEmpty
+	}
+
+	if cr.GetTTL() != nil {
+		obj.Namespace.Properties = &svcsdk.PrivateDnsNamespacePropertiesChange{
+			DnsProperties: &svcsdk.PrivateDnsPropertiesMutableChange{
+				SOA: &svcsdk.SOAChange{
+					TTL: cr.GetTTL(),
+				},
+			},
+		}
+	}
+
+	return nil
+}
+
+func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, resp *svcsdk.UpdatePrivateDnsNamespaceOutput, cre managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return cre, err
+	}
+	cr.Status.SetConditions(v1.Available())
+
+	// Update Tags
+	return cre, commonnamespace.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr)
 }
