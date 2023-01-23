@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
+
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/google/go-cmp/cmp"
@@ -31,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
+	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcclient "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
@@ -42,6 +45,12 @@ const (
 	validNSID        string = "ns-id"
 	validDescription string = "valid description"
 	validArn         string = "arn:string"
+	validTagKey1     string = "key1"
+	validTagValue1   string = "value1"
+	validTagKey2     string = "key2"
+	validTagValue2   string = "value2"
+	validTagKey3     string = "key3"
+	validTagValue3   string = "value3"
 )
 
 type args struct {
@@ -134,7 +143,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists: false,
 				},
 			},
 		},
@@ -182,9 +191,7 @@ func TestObserve(t *testing.T) {
 						},
 					},
 				},
-				result: managed.ExternalObservation{
-					ResourceExists: true,
-				},
+				result: managed.ExternalObservation{},
 			},
 		},
 		"NewOperationFailed": {
@@ -309,6 +316,11 @@ func TestObserve(t *testing.T) {
 		"NewExternalNameNotSet": {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
+					MockListTagsForResource: func(*svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: nil,
+						}, nil
+					},
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
 						if awsclient.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
@@ -419,8 +431,9 @@ func TestObserve(t *testing.T) {
 					},
 					Spec: svcapitypes.HTTPNamespaceSpec{
 						ForProvider: svcapitypes.HTTPNamespaceParameters{
-							Region: "eu-central-1",
-							Name:   aws.String("test"),
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
 						},
 					},
 				},
@@ -450,8 +463,538 @@ func TestObserve(t *testing.T) {
 				},
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
-					ResourceLateInitialized: true,
+					ResourceLateInitialized: false,
 					ResourceUpToDate:        true,
+				},
+			},
+		},
+		"DescriptionChange": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
+						if awsclient.StringValue(input.OperationId) != validOpID {
+							return &svcsdk.GetOperationOutput{}, nil
+						}
+						return &svcsdk.GetOperationOutput{
+							Operation: &svcsdk.Operation{
+								Status:  aws.String("SUCCESS"),
+								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
+							},
+						}, nil
+					},
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						if awsclient.StringValue(input.Id) != validNSID {
+							return &svcsdk.GetNamespaceOutput{}, nil
+						}
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
+							},
+						}, nil
+					},
+				},
+				kube: nil,
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String("change Description"),
+						},
+					},
+				},
+			},
+			want: want{
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String("change Description"),
+						},
+					},
+					Status: svcapitypes.HTTPNamespaceStatus{
+						ResourceStatus: xpv1.ResourceStatus{
+							ConditionedStatus: xpv1.ConditionedStatus{
+								Conditions: []xpv1.Condition{xpv1.Available()},
+							},
+						},
+					},
+				},
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceLateInitialized: false,
+					ResourceUpToDate:        false,
+				},
+			},
+		},
+		"NoChangeTag": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
+						if awsclient.StringValue(input.OperationId) != validOpID {
+							return &svcsdk.GetOperationOutput{}, nil
+						}
+						return &svcsdk.GetOperationOutput{
+							Operation: &svcsdk.Operation{
+								Status:  aws.String("SUCCESS"),
+								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
+							},
+						}, nil
+					},
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						if awsclient.StringValue(input.Id) != validNSID {
+							return &svcsdk.GetNamespaceOutput{}, nil
+						}
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						}, nil
+					},
+				},
+				kube: nil,
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+					Status: svcapitypes.HTTPNamespaceStatus{
+						ResourceStatus: xpv1.ResourceStatus{
+							ConditionedStatus: xpv1.ConditionedStatus{
+								Conditions: []xpv1.Condition{xpv1.Available()},
+							},
+						},
+					},
+				},
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceLateInitialized: false,
+					ResourceUpToDate:        true,
+				},
+			},
+		},
+		"NewTag": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
+						if awsclient.StringValue(input.OperationId) != validOpID {
+							return &svcsdk.GetOperationOutput{}, nil
+						}
+						return &svcsdk.GetOperationOutput{
+							Operation: &svcsdk.Operation{
+								Status:  aws.String("SUCCESS"),
+								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
+							},
+						}, nil
+					},
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						if awsclient.StringValue(input.Id) != validNSID {
+							return &svcsdk.GetNamespaceOutput{}, nil
+						}
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						}, nil
+					},
+				},
+				kube: nil,
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+							},
+						},
+					},
+					Status: svcapitypes.HTTPNamespaceStatus{
+						ResourceStatus: xpv1.ResourceStatus{
+							ConditionedStatus: xpv1.ConditionedStatus{
+								Conditions: []xpv1.Condition{xpv1.Available()},
+							},
+						},
+					},
+				},
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceLateInitialized: false,
+					ResourceUpToDate:        false,
+				},
+			},
+		},
+		"DeleteTag": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
+						if awsclient.StringValue(input.OperationId) != validOpID {
+							return &svcsdk.GetOperationOutput{}, nil
+						}
+						return &svcsdk.GetOperationOutput{
+							Operation: &svcsdk.Operation{
+								Status:  aws.String("SUCCESS"),
+								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
+							},
+						}, nil
+					},
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						if awsclient.StringValue(input.Id) != validNSID {
+							return &svcsdk.GetNamespaceOutput{}, nil
+						}
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+							},
+						}, nil
+					},
+				},
+				kube: nil,
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+					Status: svcapitypes.HTTPNamespaceStatus{
+						ResourceStatus: xpv1.ResourceStatus{
+							ConditionedStatus: xpv1.ConditionedStatus{
+								Conditions: []xpv1.Condition{xpv1.Available()},
+							},
+						},
+					},
+				},
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceLateInitialized: false,
+					ResourceUpToDate:        false,
+				},
+			},
+		},
+		"ChangeTag": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
+						if awsclient.StringValue(input.OperationId) != validOpID {
+							return &svcsdk.GetOperationOutput{}, nil
+						}
+						return &svcsdk.GetOperationOutput{
+							Operation: &svcsdk.Operation{
+								Status:  aws.String("SUCCESS"),
+								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
+							},
+						}, nil
+					},
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						if awsclient.StringValue(input.Id) != validNSID {
+							return &svcsdk.GetNamespaceOutput{}, nil
+						}
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String("changeValue"),
+								},
+							},
+						}, nil
+					},
+				},
+				kube: nil,
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name":                     validNSID,
+							"servicediscovery.aws.crossplane.io/operation-id": validOpID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+					Status: svcapitypes.HTTPNamespaceStatus{
+						ResourceStatus: xpv1.ResourceStatus{
+							ConditionedStatus: xpv1.ConditionedStatus{
+								Conditions: []xpv1.Condition{xpv1.Available()},
+							},
+						},
+					},
+				},
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceLateInitialized: false,
+					ResourceUpToDate:        false,
 				},
 			},
 		},
@@ -543,6 +1086,216 @@ func TestDelete(t *testing.T) {
 				cmpopts.IgnoreFields(v1.Condition{}, "LastTransitionTime"),
 			); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdateTagsForResource(t *testing.T) {
+
+	var actualTag []*svcsdk.Tag
+
+	type args struct {
+		client servicediscoveryiface.ServiceDiscoveryAPI
+		tag    []*v1alpha1.Tag
+		cr     v1.Object
+	}
+	tests := map[string]struct {
+		args     args
+		wantErr  bool
+		wantTags []*svcapitypes.Tag
+	}{
+		"NoTagUpdate": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						actualTag = []*svcsdk.Tag{
+							{
+								Key:   aws.String(validTagKey1),
+								Value: aws.String(validTagValue1),
+							},
+							{
+								Key:   aws.String(validTagKey2),
+								Value: aws.String(validTagValue2),
+							},
+							{
+								Key:   aws.String(validTagKey3),
+								Value: aws.String(validTagValue3),
+							},
+						}
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						}, nil
+					},
+					MockUntagResource: func(input *svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error) {
+						t.Error("no untag are necessary")
+						return &svcsdk.UntagResourceOutput{}, nil
+					},
+					MockTagResource: func(input *svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error) {
+						t.Error("no untag are necessary")
+						return &svcsdk.TagResourceOutput{}, nil
+					},
+				},
+				tag: []*svcapitypes.Tag{
+					{
+						Key:   aws.String(validTagKey1),
+						Value: aws.String(validTagValue1),
+					},
+					{
+						Key:   aws.String(validTagKey2),
+						Value: aws.String(validTagValue2),
+					},
+					{
+						Key:   aws.String(validTagKey3),
+						Value: aws.String(validTagValue3),
+					},
+				},
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name": validNSID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		"AddDeleteTagUpdate": {
+			args: args{
+				client: &fake.MockServicediscoveryClient{
+					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
+						return &svcsdk.GetNamespaceOutput{
+							Namespace: &svcsdk.Namespace{},
+						}, nil
+					},
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						actualTag = []*svcsdk.Tag{
+							{
+								Key:   aws.String(validTagKey2),
+								Value: aws.String(validTagValue2),
+							},
+							{
+								Key:   aws.String(validTagKey3),
+								Value: aws.String(validTagValue3),
+							},
+						}
+						return &svcsdk.ListTagsForResourceOutput{
+							Tags: []*svcsdk.Tag{
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+								{
+									Key:   aws.String(validTagKey3),
+									Value: aws.String(validTagValue3),
+								},
+							},
+						}, nil
+					},
+					MockUntagResource: func(input *svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error) {
+						var tmpTag []*svcsdk.Tag
+
+						for _, el := range actualTag {
+							var rm = false
+							for _, rmK := range input.TagKeys {
+								if aws.StringValue(el.Key) == aws.StringValue(rmK) {
+									rm = true
+									break
+								}
+							}
+							if !rm {
+								tmpTag = append(tmpTag, el)
+							}
+						}
+						actualTag = tmpTag
+						return &svcsdk.UntagResourceOutput{}, nil
+					},
+					MockTagResource: func(input *svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error) {
+						actualTag = append(actualTag, input.Tags...)
+						return &svcsdk.TagResourceOutput{}, nil
+					},
+				},
+				tag: []*svcapitypes.Tag{
+					{
+						Key:   aws.String(validTagKey1),
+						Value: aws.String(validTagValue1),
+					},
+					{
+						Key:   aws.String(validTagKey2),
+						Value: aws.String(validTagValue2),
+					},
+				},
+				cr: &svcapitypes.HTTPNamespace{
+					ObjectMeta: v1.ObjectMeta{
+						Annotations: map[string]string{
+							"crossplane.io/external-name": validNSID,
+						},
+					},
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
+							Tags: []*svcapitypes.Tag{
+								{
+									Key:   aws.String(validTagKey1),
+									Value: aws.String(validTagValue1),
+								},
+								{
+									Key:   aws.String(validTagKey2),
+									Value: aws.String(validTagValue2),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if err := UpdateTagsForResource(tt.args.client, tt.args.tag, tt.args.cr); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTagsForResource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			add, remove := DiffTags(tt.args.tag, actualTag)
+			if len(add) > 0 || len(remove) > 0 {
+				t.Errorf("UpdateTagsForResource() diffAdd = %v, diffRemove %v", add, remove)
 			}
 		})
 	}
