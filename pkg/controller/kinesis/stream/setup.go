@@ -143,6 +143,12 @@ func (u *updater) isUpToDate(cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamO
 			return false, nil
 		}
 
+		// Prevent an out of range panic when enhanced metrics
+		// arent defined in the spec
+		if len(cr.Spec.ForProvider.EnhancedMetrics) == 0 {
+			cr.Spec.ForProvider.EnhancedMetrics = append(cr.Spec.ForProvider.EnhancedMetrics, &svcapitypes.EnhancedMetrics{})
+		}
+
 		createKey, deleteKey := DifferenceShardLevelMetrics(cr.Spec.ForProvider.EnhancedMetrics[0].ShardLevelMetrics, obj.StreamDescription.EnhancedMonitoring[0].ShardLevelMetrics)
 		if len(createKey) != 0 || len(deleteKey) != 0 {
 			return false, nil
@@ -256,6 +262,12 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
+	}
+
+	// Prevent an out of range panic when enhanced metrics
+	// arent defined in the spec
+	if len(cr.Spec.ForProvider.EnhancedMetrics) == 0 {
+		cr.Spec.ForProvider.EnhancedMetrics = append(cr.Spec.ForProvider.EnhancedMetrics, &svcapitypes.EnhancedMetrics{})
 	}
 
 	enableMetrics, disableMetrics := DifferenceShardLevelMetrics(cr.Spec.ForProvider.EnhancedMetrics[0].ShardLevelMetrics, obj.StreamDescription.EnhancedMonitoring[0].ShardLevelMetrics)
