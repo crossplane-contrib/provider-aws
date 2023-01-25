@@ -34,12 +34,14 @@ type CustomSecretParameters struct {
 	// as string to AWS. If key parameter is given, only the value of that key
 	// will be used. Otherwise, all data in the Secret will be marshalled into
 	// JSON and sent to AWS.
+	// Either StringSecretRef or BinarySecretRef must be set, but not both.
 	StringSecretRef *SecretReference `json:"stringSecretRef,omitempty"`
 
 	// BinarySecretRef points to the Kubernetes Secret whose data will be encoded
 	// as binary data to AWS. If key parameter is given, only the value of that
 	// key will be used. Otherwise, all data in the Secret will be marshalled
 	// into JSON and sent to AWS.
+	// Either StringSecretRef or BinarySecretRef must be set, but not both.
 	BinarySecretRef *SecretReference `json:"binarySecretRef,omitempty"`
 
 	// (Optional) Specifies that the secret is to be deleted without any recovery
@@ -88,4 +90,8 @@ type SecretReference struct {
 	// Key whose value will be used. If not given, the whole map in the Secret
 	// data will be used.
 	Key *string `json:"key,omitempty"`
+
+	// Type of the secret. Used to (re)create k8s secret in case of loss.
+	// If not given, the controller will try to fetch the type from the referenced secret.
+	Type *string `json:"type,omitempty"`
 }

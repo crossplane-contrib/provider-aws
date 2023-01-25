@@ -132,6 +132,24 @@ func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.
 	// Proceed only if the secret does not exist because empty value might be
 	// valid content.
 	if !kerrors.IsNotFound(err) {
+		// Set secretref.Type with referenced k8s SecretType, if not provided by user
+		// or not lateInitialized yet
+		ref, err := getSecretRef(spec)
+		if err != nil {
+			return err
+		}
+		if ref.Type == nil {
+			nn := types.NamespacedName{
+				Name:      ref.Name,
+				Namespace: ref.Namespace,
+			}
+			sc := &corev1.Secret{}
+			if err := e.kube.Get(context.TODO(), nn, sc); err != nil {
+				return err
+			}
+			ref.Type = awsclients.String(string(sc.Type))
+		}
+
 		return nil
 	}
 
@@ -158,6 +176,9 @@ func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.
 			Namespace: ref.Namespace,
 		},
 		Data: data,
+	}
+	if ref.Type != nil {
+		sc.Type = corev1.SecretType(awsclients.StringValue(ref.Type))
 	}
 	return errors.Wrap(e.kube.Create(context.TODO(), sc), errCreateK8sSecret)
 }
