@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -127,7 +127,7 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				route53: &fake.MockResourceRecordSetClient{
 					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
@@ -185,7 +185,7 @@ func TestObserve(t *testing.T) {
 		"WildcardRecord": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				route53: &fake.MockResourceRecordSetClient{
 					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
@@ -221,7 +221,7 @@ func TestObserve(t *testing.T) {
 		"RecordWithTwoWildCards": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				route53: &fake.MockResourceRecordSetClient{
 					MockListResourceRecordSets: func(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts []func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {

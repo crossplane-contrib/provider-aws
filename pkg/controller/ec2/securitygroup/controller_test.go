@@ -295,7 +295,7 @@ func TestCreate(t *testing.T) {
 				kube: &test.MockClient{
 					MockGet:          test.NewMockGetFn(nil),
 					MockUpdate:       test.NewMockUpdateFn(nil),
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
@@ -318,7 +318,7 @@ func TestCreate(t *testing.T) {
 			args: args{
 				kube: &test.MockClient{
 					MockUpdate:       test.NewMockUpdateFn(nil),
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
@@ -337,7 +337,7 @@ func TestCreate(t *testing.T) {
 				kube: &test.MockClient{
 					MockGet:          test.NewMockGetFn(nil),
 					MockUpdate:       test.NewMockUpdateFn(nil),
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(ctx context.Context, input *awsec2.CreateSecurityGroupInput, opts []func(*awsec2.Options)) (*awsec2.CreateSecurityGroupOutput, error) {
