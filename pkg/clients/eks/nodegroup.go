@@ -284,7 +284,7 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 	if ng.UpdateConfig != nil {
 		in.UpdateConfig.MaxUnavailable = awsclient.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
 	}
-	if in.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
+	if in.LaunchTemplate != nil && ng.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
 		in.LaunchTemplate.Version = awsclient.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
 	}
 	in.ReleaseVersion = awsclient.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
