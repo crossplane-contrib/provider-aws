@@ -124,7 +124,7 @@ func TestObserve(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				route53: &fake.MockHostedZoneClient{
 					MockGetHostedZone: func(ctx context.Context, input *awsroute53.GetHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.GetHostedZoneOutput, error) {
@@ -223,7 +223,7 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				route53: &fake.MockHostedZoneClient{
 					MockCreateHostedZone: func(ctx context.Context, input *awsroute53.CreateHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.CreateHostedZoneOutput, error) {

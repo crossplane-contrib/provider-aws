@@ -428,7 +428,7 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				kube: &test.MockClient{
-					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
 				},
 				iam: &fake.MockPolicyClient{
 					MockCreatePolicy: func(ctx context.Context, input *awsiam.CreatePolicyInput, opts []func(*awsiam.Options)) (*awsiam.CreatePolicyOutput, error) {
