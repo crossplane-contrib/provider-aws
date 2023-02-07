@@ -104,13 +104,15 @@ func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGrou
 		NodegroupName: &name,
 		ClusterName:   &p.ClusterName,
 	}
-	if !reflect.DeepEqual(p.Version, ng.Version) {
-		u = true
-		i.Version = p.Version
-	}
-	if !reflect.DeepEqual(p.ReleaseVersion, ng.ReleaseVersion) {
-		u = true
-		i.ReleaseVersion = p.ReleaseVersion
+	if !notNilAndEquals(p.AMIType, "CUSTOM") {
+		if !reflect.DeepEqual(p.Version, ng.Version) {
+			u = true
+			i.Version = p.Version
+		}
+		if !reflect.DeepEqual(p.ReleaseVersion, ng.ReleaseVersion) {
+			u = true
+			i.ReleaseVersion = p.ReleaseVersion
+		}
 	}
 	if p.LaunchTemplate != nil && ng.LaunchTemplate != nil {
 		// Since we late initialize the LaunchTemplate Version we can be sure that
@@ -131,11 +133,7 @@ func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGrou
 		i.Force = true
 	}
 
-	if !u {
-		return false, nil
-	}
-
-	return true, i
+	return u, i
 }
 
 // GenerateUpdateNodeGroupConfigInput from NodeGroupParameters.
@@ -312,11 +310,13 @@ func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nod
 	if !cmp.Equal(p.Tags, ng.Tags, cmpopts.EquateEmpty()) {
 		return false
 	}
-	if !cmp.Equal(p.Version, ng.Version) {
-		return false
-	}
-	if !cmp.Equal(p.ReleaseVersion, ng.ReleaseVersion) {
-		return false
+	if !notNilAndEquals(p.AMIType, "CUSTOM") {
+		if !cmp.Equal(p.Version, ng.Version) {
+			return false
+		}
+		if !cmp.Equal(p.ReleaseVersion, ng.ReleaseVersion) {
+			return false
+		}
 	}
 	if !cmp.Equal(p.Labels, ng.Labels, cmpopts.EquateEmpty()) {
 		return false
@@ -351,4 +351,8 @@ func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nod
 		return true
 	}
 	return false
+}
+
+func notNilAndEquals(p *string, s string) bool {
+	return p != nil && *p == s
 }

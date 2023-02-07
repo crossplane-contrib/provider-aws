@@ -234,8 +234,10 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 				},
 			},
 			wantUpdate: false,
-			wantInput:  nil,
-		},
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+			}},
 		"VersionChanged": {
 			args: args{
 				name: ngName,
