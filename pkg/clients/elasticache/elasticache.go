@@ -594,12 +594,24 @@ func ConnectionEndpoint(rg elasticachetypes.ReplicationGroup) managed.Connection
 	// primary endpoint that should be used for write. Any node's endpoint can
 	// be used for read, but we support only a single endpoint so we return the
 	// primary's.
-	if len(rg.NodeGroups) > 0 &&
-		rg.NodeGroups[0].PrimaryEndpoint != nil &&
-		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
-		return managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.ToString(rg.NodeGroups[0].PrimaryEndpoint.Address)),
-			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(rg.NodeGroups[0].PrimaryEndpoint.Port))),
+	if len(rg.NodeGroups) > 0 {
+		hasData := false
+		cd := managed.ConnectionDetails{}
+
+		if rg.NodeGroups[0].PrimaryEndpoint != nil &&
+			rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
+			hasData = true
+			cd[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.ToString(rg.NodeGroups[0].PrimaryEndpoint.Address))
+			cd[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.Itoa(int(rg.NodeGroups[0].PrimaryEndpoint.Port)))
+		}
+		if rg.NodeGroups[0].ReaderEndpoint != nil &&
+			rg.NodeGroups[0].ReaderEndpoint.Address != nil {
+			hasData = true
+			cd["readerEndpoint"] = []byte(aws.ToString(rg.NodeGroups[0].ReaderEndpoint.Address))
+			cd["readerPort"] = []byte(strconv.Itoa(int(rg.NodeGroups[0].ReaderEndpoint.Port)))
+		}
+		if hasData {
+			return cd
 		}
 	}
 
