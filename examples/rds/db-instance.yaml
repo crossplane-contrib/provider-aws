@@ -27,6 +27,7 @@ spec:
     storageType: gp2
     dbParameterGroupName: example-dbparametergroup
     applyImmediately: true
+    deleteAutomatedBackups: false # default is true
   writeConnectionSecretToRef:
     name: example-dbinstance-out
     namespace: default
