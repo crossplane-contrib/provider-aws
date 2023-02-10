@@ -9,10 +9,10 @@ spec:
     autoMinorVersionUpgrade: true
     autogeneratePassword: true
     backupRetentionPeriod: 14
-    dbInstanceClass: db.t3.micro # needs to support engine and -version (see AWS Docs: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#Concepts.DBInstanceClass.Support)
+    dbInstanceClass: db.t3.medium # needs to support engine and -version (see AWS Docs: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#Concepts.DBInstanceClass.Support)
     dbName: example
     engine: postgres
-    engineVersion: "12.9"
+    engineVersion: "14"
     allowMajorVersionUpgrade: true # unset per default (Note: supported dbInstanceClass and dbParameterGroup with correct dbParameterGroupFamily needed, before majorVersion upgrade possible; applyImmediately matters)
     masterUsername: adminuser
     masterUserPasswordSecretRef:
