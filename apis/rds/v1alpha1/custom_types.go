@@ -599,6 +599,13 @@ type CustomDBInstanceParameters struct {
 	// RestoreFrom specifies the details of the backup to restore when creating a new DBInstance.
 	// +optional
 	RestoreFrom *RestoreDBInstanceBackupConfiguration `json:"restoreFrom,omitempty"`
+
+	// DeleteAutomatedBackups indicates whether to remove automated backups
+	// immediately after the DB instance is deleted. The default is to
+	// remove automated backups immediately after the DB instance is
+	// deleted.
+	// +optional
+	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
 }
 
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
