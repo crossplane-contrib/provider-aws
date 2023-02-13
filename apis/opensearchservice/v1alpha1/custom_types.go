@@ -27,6 +27,8 @@ type CustomDomainParameters struct {
 	// For more information, see Launching your Amazon OpenSearch Service domains
 	// using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
 	VPCOptions *CustomVPCDerivedInfo `json:"vpcOptions,omitempty"`
+
+	SnapshotOptions *SnapshotOptions `json:"snapshotOptions,omitempty"`
 }
 
 // CustomEncryptionAtRestOptions includes the custom fields of EncryptionAtRestOptions
