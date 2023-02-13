@@ -7,7 +7,6 @@ spec:
     region: us-east-1
     dbParameterGroupFamilySelector:
       engine: postgres
-      engineVersion: "14"
     description: example
     parameters:
       - parameterName: application_name
