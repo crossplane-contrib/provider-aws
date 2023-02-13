@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/opensearchservice"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/opensearchservice/opensearchserviceiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -16,7 +17,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	svcsdkapi "github.com/aws/aws-sdk-go/service/opensearchservice/opensearchserviceiface"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/opensearchservice/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -347,7 +347,7 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 	return o
 }
 
-func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, error) {
+func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, error) { // nolint:gocyclo
 
 	if aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies) {
 		return false, nil
@@ -614,7 +614,7 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 	return true, nil
 }
 
-func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomainOutput) error {
+func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomainOutput) error { // nolint:gocyclo
 
 	if resp.DomainStatus.AccessPolicies != nil && resp.DomainStatus.AccessPolicies == nil {
 		cr.AccessPolicies = resp.DomainStatus.AccessPolicies
@@ -629,8 +629,7 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 		} else {
 			f2 := map[string]*string{}
 			for f2key, f2valiter := range resp.DomainStatus.AdvancedOptions {
-				var f2val string
-				f2val = *f2valiter
+				f2val := *f2valiter
 				f2[f2key] = &f2val
 			}
 			cr.AdvancedOptions = f2
@@ -1033,7 +1032,7 @@ type updateDomain struct {
 	client svcsdkapi.OpenSearchServiceAPI
 }
 
-func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.Domain)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -1210,8 +1209,7 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 	if resp.DomainConfig.AdvancedOptions != nil && resp.DomainConfig.AdvancedOptions.Options != nil {
 		f2 := map[string]*string{}
 		for f2key, f2valiter := range resp.DomainConfig.AdvancedOptions.Options {
-			var f2val string
-			f2val = *f2valiter
+			f2val := *f2valiter
 			f2[f2key] = &f2val
 		}
 		cr.Spec.ForProvider.AdvancedOptions = f2
@@ -1440,8 +1438,7 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 		if resp.DomainConfig.VPCOptions.Options.AvailabilityZones != nil {
 			f24f0 := []*string{}
 			for _, f24f0iter := range resp.DomainConfig.VPCOptions.Options.AvailabilityZones {
-				var f24f0elem string
-				f24f0elem = *f24f0iter
+				f24f0elem := *f24f0iter
 				f24f0 = append(f24f0, &f24f0elem)
 			}
 			f24.AvailabilityZones = f24f0
@@ -1449,8 +1446,7 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 		if resp.DomainConfig.VPCOptions.Options.SecurityGroupIds != nil {
 			f24f1 := []*string{}
 			for _, f24f1iter := range resp.DomainConfig.VPCOptions.Options.SecurityGroupIds {
-				var f24f1elem string
-				f24f1elem = *f24f1iter
+				f24f1elem := *f24f1iter
 				f24f1 = append(f24f1, &f24f1elem)
 			}
 			f24.SecurityGroupIDs = f24f1
@@ -1458,8 +1454,7 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 		if resp.DomainConfig.VPCOptions.Options.SubnetIds != nil {
 			f24f2 := []*string{}
 			for _, f24f2iter := range resp.DomainConfig.VPCOptions.Options.SubnetIds {
-				var f24f2elem string
-				f24f2elem = *f24f2iter
+				f24f2elem := *f24f2iter
 				f24f2 = append(f24f2, &f24f2elem)
 			}
 			f24.SubnetIDs = f24f2
