@@ -212,6 +212,7 @@ func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.FinalDBSnapshotIdentifier = aws.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
 	obj.SkipFinalSnapshot = aws.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
+	obj.DeleteAutomatedBackups = cr.Spec.ForProvider.DeleteAutomatedBackups
 
 	_, _ = e.external.Update(ctx, cr)
 	if *cr.Status.AtProvider.DBInstanceStatus == statusDeleting {

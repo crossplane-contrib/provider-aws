@@ -112,6 +112,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	eks.LateInitializeNodeGroup(&cr.Spec.ForProvider, rsp.Nodegroup)
+	if current.AMIType != nil && *current.AMIType == "CUSTOM" {
+		cr.Spec.ForProvider.ReleaseVersion = rsp.Nodegroup.ReleaseVersion
+		cr.Spec.ForProvider.Version = rsp.Nodegroup.Version
+	}
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
