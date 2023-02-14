@@ -582,7 +582,7 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 			for _, objValue := range obj.Spec.ForProvider.VPCOptions.SecurityGroupIDs {
 				found := false
 				for _, valueOut := range out.DomainStatus.VPCOptions.SecurityGroupIds {
-					if *objValue == *valueOut {
+					if aws.StringValue(objValue) == aws.StringValue(valueOut) {
 						found = true
 						break
 					}
@@ -597,7 +597,7 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 			for _, objValue := range obj.Spec.ForProvider.VPCOptions.SubnetIDs {
 				found := false
 				for _, valueOut := range out.DomainStatus.VPCOptions.SubnetIds {
-					if *objValue == *valueOut {
+					if aws.StringValue(objValue) == aws.StringValue(valueOut) {
 						found = true
 						break
 					}
