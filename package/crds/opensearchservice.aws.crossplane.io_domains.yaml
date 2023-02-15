@@ -373,6 +373,12 @@ spec:
                   region:
                     description: Region is which region the Domain will be created.
                     type: string
+                  snapshotOptions:
+                    properties:
+                      automatedSnapshotStartHour:
+                        format: int64
+                        type: integer
+                    type: object
                   tags:
                     description: A list of Tag added during domain creation.
                     items:
