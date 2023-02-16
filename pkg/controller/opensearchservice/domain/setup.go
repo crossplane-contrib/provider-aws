@@ -586,10 +586,11 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 						found = true
 						break
 					}
-					if !found {
-						return false, nil
-					}
 				}
+				if !found {
+					return false, nil
+				}
+
 			}
 			if len(out.DomainStatus.VPCOptions.SubnetIds) != len(obj.Spec.ForProvider.VPCOptions.SubnetIDs) {
 				return false, nil
@@ -601,9 +602,9 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 						found = true
 						break
 					}
-					if !found {
-						return false, nil
-					}
+				}
+				if !found {
+					return false, nil
 				}
 			}
 		}
