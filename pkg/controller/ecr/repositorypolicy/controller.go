@@ -119,9 +119,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(xpv1.Available())
 
+	upToDate, _ := awsclient.PoliciesEqual(&policyData, response.PolicyText)
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        awsclient.IsPolicyUpToDate(&policyData, response.PolicyText),
+		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }

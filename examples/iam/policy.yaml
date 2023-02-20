@@ -6,18 +6,13 @@ metadata:
 spec:
   forProvider:
     name: external-name
-    document: |
-      {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-              "Sid": "VisualEditor0",
-              "Effect": "Allow",
-              "Action": "elastic-inference:Connect",
-              "Resource": "*"
-          }
-        ]
-      }
+    document:
+      Version: '2012-10-17'
+      Statement:
+      - Sid: VisualEditor0
+        Effect: Allow
+        Action: elastic-inference:Connect
+        Resource: "*"
   providerConfigRef:
     name: example
 ---
@@ -27,7 +22,7 @@ metadata:
   name: somepolicywithpath
 spec:
   forProvider:
-    name: external-name
+    name: somepolicywithpath-external-name
     path: "/some-org-unit/"
     document: |
       {

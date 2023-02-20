@@ -4,6 +4,13 @@ import "encoding/json"
 
 // ParsePolicyBytes from a byte array representing a raw JSOn string.
 func ParsePolicyBytes(raw []byte) (Policy, error) {
+	// unpack string if necessary
+	var policyString string
+	if err := json.Unmarshal(raw, &policyString); err == nil {
+		raw = []byte(policyString)
+	}
+
+	// final parse to policy
 	policy := Policy{}
 	err := json.Unmarshal(raw, &policy)
 	return policy, err

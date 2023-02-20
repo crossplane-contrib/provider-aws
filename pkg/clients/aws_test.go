@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -814,38 +815,59 @@ func TestIsPolicyUpToDate(t *testing.T) {
 		local  string
 		remote string
 	}
+	type want struct {
+		equal bool
+		diff  string
+	}
 
 	cases := map[string]struct {
 		args args
-		want bool
+		want want
 	}{
 		"SameFields": {
 			args: args{
 				local:  "{\"testone\": \"one\", \"testtwo\": \"two\"}",
 				remote: "{\"testtwo\": \"two\", \"testone\": \"one\"}",
 			},
-			want: true,
+			want: want{
+				equal: true,
+				diff:  "",
+			},
 		},
 		"SameFieldsRealPolicy": {
 			args: args{
 				local:  policy,
 				remote: `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":"*"}],"Version":"2012-10-17"}`,
 			},
-			want: true,
+			want: want{
+				equal: true,
+				diff:  "",
+			},
 		},
 		"DifferentFields": {
 			args: args{
 				local:  "{\"testone\": \"one\", \"testtwo\": \"two\"}",
 				remote: "{\"testthree\": \"three\", \"testone\": \"one\"}",
 			},
-			want: false,
+			want: want{
+				equal: false,
+				diff: `  map[string]any{
+  	"testone":   string("one"),
++ 	"testthree": string("three"),
+- 	"testtwo":   string("two"),
+  }
+`,
+			},
 		},
 		"SameFieldsPrincipalPolicy": {
 			args: args{
 				local:  cpxPolicy,
 				remote: cpxRemPolicy,
 			},
-			want: true,
+			want: want{
+				equal: true,
+				diff:  "",
+			},
 		},
 		"SameFieldsNumericPrincipals": {
 			args: args{
@@ -854,15 +876,23 @@ func TestIsPolicyUpToDate(t *testing.T) {
 				local:  `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"foo","bar"]}],"Version":"2012-10-17"}`,
 				remote: `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"bar","foo"]}],"Version":"2012-10-17"}`,
 			},
-			want: true,
+			want: want{
+				equal: true,
+				diff:  "",
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := IsPolicyUpToDate(&tc.args.local, &tc.args.remote)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
+			gotEqual, gotDiff := PoliciesEqual(&tc.args.local, &tc.args.remote)
+			gotDiff = strings.ReplaceAll(gotDiff, "\u00a0", " ")
+
+			if diff := cmp.Diff(tc.want.diff, gotDiff); diff != "" {
+				t.Errorf("r: -want, +gotDiff:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.equal, gotEqual); diff != "" {
+				t.Errorf("r: -want, +gotEqual:\n%s", diff)
 			}
 		})
 	}

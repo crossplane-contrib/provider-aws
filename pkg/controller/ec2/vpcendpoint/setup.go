@@ -168,10 +168,13 @@ sgCompare:
 	upstreamPolicy := obj.VpcEndpoints[0].PolicyDocument
 
 	// If no declared policy, we expect the result to be equivalent to the default policy
+	upstreamPolicyEqualsEndpointPolicy, _ := awsclients.PoliciesEqual(upstreamPolicy, defaultPolicyEndpoint)
+	upstreamPolicyEqualsGatewayPolicy, _ := awsclients.PoliciesEqual(upstreamPolicy, defaultPolicyGateway)
 	if aws.StringValue(declaredPolicy) == "" {
-		return awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyEndpoint) || awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyGateway), nil
+		return upstreamPolicyEqualsEndpointPolicy || upstreamPolicyEqualsGatewayPolicy, nil
 	}
-	return awsclients.IsPolicyUpToDate(upstreamPolicy, declaredPolicy), nil
+	upstreamPolicyEqualsDeclaredPolicy, _ := awsclients.PoliciesEqual(upstreamPolicy, declaredPolicy)
+	return upstreamPolicyEqualsDeclaredPolicy, nil
 }
 
 // preUpdate adds the mutable fields into the update request input

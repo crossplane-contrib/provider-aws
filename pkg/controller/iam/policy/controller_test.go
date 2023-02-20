@@ -18,8 +18,9 @@ package policy
 
 import (
 	"context"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"net/url"
-
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -48,20 +49,10 @@ import (
 )
 
 var (
-	unexpectedItem resource.Managed
-	policyArn      = "arn:aws:iam::123456789012:policy/policy-name"
-	name           = "policy-name"
-	document       = `{
-		"Version": "2012-10-17",
-		"Statement": [
-		  {
-			  "Sid": "VisualEditor0",
-			  "Effect": "Allow",
-			  "Action": "elastic-inference:Connect",
-			  "Resource": "*"
-		  }
-		]
-	  }`
+	unexpectedItem     resource.Managed
+	policyArn          = "arn:aws:iam::123456789012:policy/policy-name"
+	name               = "policy-name"
+	document           = `{"Statement":[{"Action":"elastic-inference:Connect","Effect":"Allow","Resource":"*","Sid":"VisualEditor0"}],"Version":"2012-10-17"}`
 	documentURLEscaped = url.QueryEscape(document)
 	boolFalse          = false
 
@@ -195,13 +186,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: awsclient.NewJSONFromRaw(document),
 					Name:     name,
 				}), withExternalName(policyArn)),
 			},
 			want: want{
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: awsclient.NewJSONFromRaw(document),
 					Name:     name,
 				}), withExternalName(policyArn),
 					withConditions(xpv1.Available())),
@@ -228,13 +219,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: awsclient.NewJSONFromRaw(document),
 					Name:     name,
 				}), withExternalName(policyArn)),
 			},
 			want: want{
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: awsclient.NewJSONFromRaw(document),
 					Name:     name,
 				}), withExternalName(policyArn),
 					withConditions(xpv1.Available())),
@@ -290,6 +281,21 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
+					Diff: `  &policy.Policy{
+- 	Version:    "",
++ 	Version:    "2012-10-17",
+  	ID:         "",
+- 	Statements: nil,
++ 	Statements: policy.StatementList{
++ 		{
++ 			SID:      "VisualEditor0",
++ 			Effect:   "Allow",
++ 			Action:   policy.StringOrArray{"elastic-inference:Connect"},
++ 			Resource: policy.StringOrArray{"*"},
++ 		},
++ 	},
+  }
+`,
 				},
 			},
 		},
@@ -381,6 +387,21 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
+					Diff: `  &policy.Policy{
+- 	Version:    "",
++ 	Version:    "2012-10-17",
+  	ID:         "",
+- 	Statements: nil,
++ 	Statements: policy.StatementList{
++ 		{
++ 			SID:      "VisualEditor0",
++ 			Effect:   "Allow",
++ 			Action:   policy.StringOrArray{"elastic-inference:Connect"},
++ 			Resource: policy.StringOrArray{"*"},
++ 		},
++ 	},
+  }
+`,
 				},
 			},
 		},
@@ -405,7 +426,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: extv1.JSON{Raw: []byte(document)},
 					Name:     name,
 					Tags: []v1beta1.Tag{
 						{Key: "key2", Value: "value2"},
@@ -414,7 +435,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: policy(withSpec(v1beta1.PolicyParameters{
-					Document: document,
+					Document: awsclient.NewJSONFromRaw(document),
 					Name:     name,
 					Tags: []v1beta1.Tag{
 						{Key: "key2", Value: "value2"},
@@ -433,6 +454,7 @@ func TestObserve(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			e := &external{client: tc.iam, sts: tc.sts, kube: tc.kube}
 			o, err := e.Observe(context.Background(), tc.args.cr)
+			o.Diff = strings.ReplaceAll(o.Diff, "\u00a0", " ")
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -476,7 +498,7 @@ func TestCreate(t *testing.T) {
 				},
 				cr: policy(withSpec(v1beta1.PolicyParameters{
 					Name:        name,
-					Document:    document,
+					Document:    awsclient.NewJSONFromRaw(document),
 					Description: aws.String("description"),
 					Path:        aws.String("path"),
 					Tags: []v1beta1.Tag{
@@ -489,7 +511,7 @@ func TestCreate(t *testing.T) {
 				cr: policy(
 					withSpec(v1beta1.PolicyParameters{
 						Name:        name,
-						Document:    document,
+						Document:    awsclient.NewJSONFromRaw(document),
 						Description: aws.String("description"),
 						Path:        aws.String("path"),
 						Tags: []v1beta1.Tag{
@@ -503,7 +525,7 @@ func TestCreate(t *testing.T) {
 					PolicyName:     aws.String(name),
 					Description:    aws.String("description"),
 					Path:           aws.String("path"),
-					PolicyDocument: aws.String(document),
+					PolicyDocument: awsclient.JSONNormalize(document),
 					Tags: []awsiamtypes.Tag{
 						{Key: aws.String("key1"), Value: aws.String("value1")},
 						{Key: aws.String("key2"), Value: aws.String("value2")},

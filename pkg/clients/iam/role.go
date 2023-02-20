@@ -157,7 +157,8 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 		return false, errors.Wrap(err, errPolicyJSONUnescape)
 	}
 
-	return awsclients.IsPolicyUpToDate(&jsonA, &jsonB), nil
+	upToDate, _ := awsclients.PoliciesEqual(&jsonA, &jsonB)
+	return upToDate, nil
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.

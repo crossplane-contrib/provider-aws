@@ -1196,19 +1196,19 @@ func DiffLabels(local, remote map[string]string) (addOrModify map[string]string,
 	return
 }
 
-// IsPolicyUpToDate Marshall policies to json for a compare to get around string ordering
-func IsPolicyUpToDate(local, remote *string) bool {
+// PoliciesEqual Marshall policies to json for a compare to get around string ordering
+func PoliciesEqual(local, remote *string) (bool, string) {
 	var localUnmarshalled interface{}
 	var remoteUnmarshalled interface{}
 
 	var err error
 	err = json.Unmarshal([]byte(StringValue(local)), &localUnmarshalled)
 	if err != nil {
-		return false
+		return false, ""
 	}
 	err = json.Unmarshal([]byte(StringValue(remote)), &remoteUnmarshalled)
 	if err != nil {
-		return false
+		return false, ""
 	}
 
 	sortSlicesOpt := cmpopts.SortSlices(func(x, y interface{}) bool {
@@ -1223,7 +1223,9 @@ func IsPolicyUpToDate(local, remote *string) bool {
 		// panicing.
 		return false
 	})
-	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
+
+	diff := cmp.Diff(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
+	return diff == "", diff
 }
 
 // Wrap will remove the request-specific information from the error and only then

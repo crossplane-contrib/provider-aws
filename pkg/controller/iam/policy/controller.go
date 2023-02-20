@@ -191,7 +191,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	createOutput, err := e.client.CreatePolicy(ctx, &awsiam.CreatePolicyInput{
 		Description:    cr.Spec.ForProvider.Description,
 		Path:           cr.Spec.ForProvider.Path,
-		PolicyDocument: aws.String(cr.Spec.ForProvider.Document),
+		PolicyDocument: awsclient.GetRawJSONFromBlob(cr.Spec.ForProvider.Document),
 		PolicyName:     aws.String(cr.Spec.ForProvider.Name),
 		Tags:           inputPolicyTags,
 	})
@@ -222,7 +222,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.CreatePolicyVersion(ctx, &awsiam.CreatePolicyVersionInput{
 		PolicyArn:      aws.String(meta.GetExternalName(cr)),
-		PolicyDocument: aws.String(cr.Spec.ForProvider.Document),
+		PolicyDocument: awsclient.GetRawJSONFromBlob(cr.Spec.ForProvider.Document),
 		SetAsDefault:   true,
 	})
 

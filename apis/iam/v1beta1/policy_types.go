@@ -20,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // PolicyParameters define the desired state of an AWS IAM Policy.
@@ -32,8 +33,10 @@ type PolicyParameters struct {
 	// +optional
 	Path *string `json:"path,omitempty"`
 
-	// The JSON policy document that is the content for the policy.
-	Document string `json:"document"`
+	// The policy document that is the content for the policy.
+	//
+	// This field accepts the content as a JSON / YAML object or as a raw string.
+	Document extv1.JSON `json:"document"`
 
 	// The name of the policy.
 	Name string `json:"name"`

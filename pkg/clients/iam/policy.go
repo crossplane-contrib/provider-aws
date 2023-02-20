@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 	"net/url"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
@@ -12,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 // PolicyClient is the external client used for Policy Custom Resource
@@ -44,25 +44,34 @@ func NewSTSClient(cfg aws.Config) STSClient {
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion) (bool, string, error) {
-	externalPolicyRaw := awsclients.StringValue(policy.Document)
-	if externalPolicyRaw == "" || in.Document == "" {
-		return false, "", nil
-	}
-
-	unescapedPolicy, err := url.QueryUnescape(aws.ToString(policy.Document))
+func IsPolicyUpToDate(loc v1beta1.PolicyParameters, rem iamtypes.PolicyVersion) (upToDate bool, diff string, err error) {
+	localPolicyString := string(loc.Document.Raw)
+	localPolicyString, err = url.QueryUnescape(localPolicyString)
 	if err != nil {
 		return false, "", err
 	}
-	externpolicy, err := policyutils.ParsePolicyString(unescapedPolicy)
-	if err != nil {
-		return false, "", err
-	}
-	specPolicy, err := policyutils.ParsePolicyString(in.Document)
+	remotePolicyString := awsclients.StringValue(rem.Document)
+	remotePolicyString, err = url.QueryUnescape(remotePolicyString)
 	if err != nil {
 		return false, "", err
 	}
 
-	areEqual, diff := policyutils.ArePoliciesEqal(&specPolicy, &externpolicy)
-	return areEqual, diff, nil
+	if localPolicyString == "" {
+		localPolicyString = "{}"
+	}
+	if remotePolicyString == "" {
+		remotePolicyString = "{}"
+	}
+
+	local, err := policy.ParsePolicyString(localPolicyString)
+	if err != nil {
+		return false, "", err
+	}
+	remote, err := policy.ParsePolicyString(remotePolicyString)
+	if err != nil {
+		return false, "", err
+	}
+
+	upToDate, diff = policy.ArePoliciesEqal(&local, &remote)
+	return upToDate, diff, nil
 }

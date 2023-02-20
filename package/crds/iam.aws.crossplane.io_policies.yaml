@@ -69,9 +69,10 @@ spec:
                     description: A description of the policy.
                     type: string
                   document:
-                    description: The JSON policy document that is the content for
-                      the policy.
-                    type: string
+                    description: "The policy document that is the content for the
+                      policy. \n This field accepts the content as a JSON / YAML object
+                      or as a raw string."
+                    x-kubernetes-preserve-unknown-fields: true
                   name:
                     description: The name of the policy.
                     type: string

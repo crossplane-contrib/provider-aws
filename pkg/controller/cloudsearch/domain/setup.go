@@ -149,9 +149,8 @@ func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Do
 	spec := cr.Spec.ForProvider.CustomDomainParameters
 	current := resp.AccessPolicies
 
-	isUpToDate := awsclients.IsPolicyUpToDate(spec.AccessPolicies, current.Options) && !awsclients.BoolValue(current.Status.PendingDeletion)
-
-	return isUpToDate, nil
+	policyUpToDate, _ := awsclients.PoliciesEqual(spec.AccessPolicies, current.Options)
+	return policyUpToDate && !awsclients.BoolValue(current.Status.PendingDeletion), nil
 }
 
 func (h *hooks) isUpToDate(cr *svcapitypes.Domain, obj *svcsdk.DescribeDomainsOutput) (bool, error) {
