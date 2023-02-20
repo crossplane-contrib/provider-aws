@@ -18,6 +18,7 @@ package aws
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -34,6 +35,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -1268,5 +1270,237 @@ func TestUsePodServiceAccountAssumeRole(t *testing.T) {
 	err = os.Unsetenv("AWS_REGION")
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetRawJSONFromBlob(t *testing.T) {
+	type args struct {
+		json extv1.JSON
+	}
+	type want struct {
+		raw *string
+	}
+
+	valid := "{\"foo\":\"bar\"}"
+	invalid := "{\"foo\": \"no closing}"
+	validRawBytes, _ := json.Marshal(valid) //nolint:errchkjson
+	validRaw := string(validRawBytes)
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"ValidObject": {
+			args: args{
+				json: NewJSONFromRaw(valid),
+			},
+			want: want{
+				raw: &valid,
+			},
+		},
+		"ValidObjectRaw": {
+			args: args{
+				json: NewJSONFromRaw(validRaw),
+			},
+			want: want{
+				raw: &valid,
+			},
+		},
+		"InvalidOnInvalid": {
+			args: args{
+				json: NewJSONFromRaw(invalid),
+			},
+			want: want{
+				raw: &invalid,
+			},
+		},
+		"NilOnNil": {
+			args: args{
+				json: extv1.JSON{},
+			},
+			want: want{},
+		},
+		"NilOnEmpty": {
+			args: args{
+				json: extv1.JSON{
+					Raw: []byte{},
+				},
+			},
+			want: want{},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GetRawJSONFromBlob(tc.args.json)
+			if diff := cmp.Diff(tc.want.raw, got); diff != "" {
+				t.Errorf("\nGetRawJSONFromBlob(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestJSONNormalize(t *testing.T) {
+	type args struct {
+		jsonStr string
+	}
+	type want struct {
+		jsonRemarshalled *string
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"ValidNormalization": {
+			args: args{
+				jsonStr: "{      \"foo\"\n   :\n \"bar\"\t\n   }",
+			},
+			want: want{
+				jsonRemarshalled: String("{\"foo\":\"bar\"}"),
+			},
+		},
+		"NoValidInputGetOriginal": {
+			args: args{
+				jsonStr: "{\"foo\":\"no closing}",
+			},
+			want: want{
+				jsonRemarshalled: String("{\"foo\":\"no closing}"),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := JSONNormalize(tc.args.jsonStr)
+			if diff := cmp.Diff(tc.want.jsonRemarshalled, got); diff != "" {
+				t.Errorf("\nGetRawJSONFromBlob(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestEqualsJSON(t *testing.T) {
+	type args struct {
+		a extv1.JSON
+		b extv1.JSON
+	}
+	type want struct {
+		equal bool
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"Equals": {
+			args: args{
+				a: NewJSONFromRaw(`
+{"menu": {
+  "id": "file",
+  "popup": {
+	"intList": [3,2,1],
+    "menuitem": [
+      {"value": "New", "onclick": "CreateNewDoc()"},
+      {"value": "Open", "onclick": "OpenDoc()"},
+      {"value": "Close", "onclick": "CloseDoc()"}
+    ]
+  },
+  "value": "File"
+}}
+`),
+				b: NewJSONFromRaw(`
+{"menu": {"value": "File","id": "file","popup": {
+    "menuitem": [
+      {"value": "New", "onclick": "CreateNewDoc()"},  {"value": "Open", "onclick": "OpenDoc()"},   {"value": "Close", "onclick": "CloseDoc()"}
+    ],	"intList": [3,2,1]
+  }
+}}
+`),
+			},
+			want: want{
+				equal: true,
+			},
+		},
+		"NotEqual": {
+			args: args{
+				a: NewJSONFromRaw(`{"foo": "bar"}`),
+				b: NewJSONFromRaw(`{"bar": "foo"}`),
+			},
+			want: want{
+				equal: false,
+			},
+		},
+		"NormalStringsEquals": {
+			args: args{
+				a: NewJSONFromRaw(`The {quick} brown [fox] ]jumps{, over the lazy dog!`),
+				b: NewJSONFromRaw(`The quick brown fox does not jump over the lazy dog.`),
+			},
+			want: want{
+				equal: false,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := EqualsJSON(tc.args.a, tc.args.b)
+			if diff := cmp.Diff(tc.want.equal, got); diff != "" {
+				t.Errorf("\nGetRawJSONFromBlob(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestValidJSON(t *testing.T) {
+	type args struct {
+		a string
+	}
+	type want struct {
+		valid bool
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"Valid": {
+			args: args{
+				a: `
+{"menu": {
+  "id": "file",
+  "popup": {
+	"intList": [3,2,1],
+    "menuitem": [
+      {"value": "New", "onclick": "CreateNewDoc()"},
+      {"value": "Open", "onclick": "OpenDoc()"},
+      {"value": "Close", "onclick": "CloseDoc()"}
+    ]
+  },
+  "value": "File"
+}}
+`,
+			},
+			want: want{
+				valid: true,
+			},
+		},
+		"NotValid": {
+			args: args{
+				a: `The {quick} brown [fox] ]jumps{, over the lazy dog!`,
+			},
+			want: want{
+				valid: false,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := ValidJSON(tc.args.a)
+			if diff := cmp.Diff(tc.want.valid, got); diff != "" {
+				t.Errorf("\nGetRawJSONFromBlob(...): -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
