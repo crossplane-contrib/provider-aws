@@ -213,9 +213,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if patch.AssumeRolePolicyDocument != "" {
+	if patch.AssumeRolePolicyDocument.Size() > 0 {
 		_, err = e.client.UpdateAssumeRolePolicy(ctx, &awsiam.UpdateAssumeRolePolicyInput{
-			PolicyDocument: &cr.Spec.ForProvider.AssumeRolePolicyDocument,
+			PolicyDocument: awsclient.GetRawJSONFromBlob(cr.Spec.ForProvider.AssumeRolePolicyDocument),
 			RoleName:       aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {

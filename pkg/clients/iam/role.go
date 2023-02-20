@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"encoding/json"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 	"net/url"
 
 	"github.com/aws/smithy-go/document"
@@ -47,7 +48,7 @@ func NewRoleClient(conf aws.Config) RoleClient {
 func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.CreateRoleInput {
 	m := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
-		AssumeRolePolicyDocument: aws.String(p.AssumeRolePolicyDocument),
+		AssumeRolePolicyDocument: awsclients.GetRawJSONFromBlob(p.AssumeRolePolicyDocument),
 		Description:              p.Description,
 		MaxSessionDuration:       p.MaxSessionDuration,
 		Path:                     p.Path,
@@ -78,8 +79,8 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 // GenerateRole assigns the in RoleParamters to role.
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 
-	if in.AssumeRolePolicyDocument != "" {
-		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
+	if in.AssumeRolePolicyDocument.Size() > 0 {
+		s, err := awsclients.CompactAndEscapeJSON(*awsclients.GetRawJSONFromBlob(in.AssumeRolePolicyDocument))
 		if err != nil {
 			return errors.Wrap(err, errPolicyJSONEscape)
 		}
@@ -108,7 +109,7 @@ func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
-	in.AssumeRolePolicyDocument = awsclients.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
+	in.AssumeRolePolicyDocument = awsclients.LateInitializeJSONFromStringPtr(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
 	in.Description = awsclients.LateInitializeStringPtr(in.Description, role.Description)
 	in.MaxSessionDuration = awsclients.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
 	in.Path = awsclients.LateInitializeStringPtr(in.Path, role.Path)
@@ -143,8 +144,8 @@ func CreatePatch(in *iamtypes.Role, target *v1beta1.RoleParameters) (*v1beta1.Ro
 }
 
 func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
-	if a == nil || b == nil {
-		return a == b, nil
+	if cmp.Equal(a, b) {
+		return true, nil
 	}
 
 	jsonA, err := url.QueryUnescape(*a)
@@ -157,7 +158,17 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 		return false, errors.Wrap(err, errPolicyJSONUnescape)
 	}
 
-	upToDate, _ := awsclients.PoliciesEqual(&jsonA, &jsonB)
+	policyA, err := policy.ParsePolicyString(jsonA)
+	if err != nil {
+		return false, errors.Wrap(err, errPolicyJSONEscape)
+	}
+
+	policyB, err := policy.ParsePolicyString(jsonB)
+	if err != nil {
+		return false, errors.Wrap(err, errPolicyJSONEscape)
+	}
+
+	upToDate, _ := policy.ArePoliciesEqual(&policyA, &policyB)
 	return upToDate, nil
 }
 

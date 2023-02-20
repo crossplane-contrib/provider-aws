@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
@@ -83,11 +84,7 @@ func withArn(s string) roleModifier {
 
 func withPolicy() roleModifier {
 	return func(r *v1beta1.Role) {
-		p, err := awsclient.CompactAndEscapeJSON(policy)
-		if err != nil {
-			return
-		}
-		r.Spec.ForProvider.AssumeRolePolicyDocument = p
+		r.Spec.ForProvider.AssumeRolePolicyDocument = extv1.JSON{Raw: []byte(policy)}
 	}
 }
 

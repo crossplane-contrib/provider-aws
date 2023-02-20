@@ -187,7 +187,7 @@ func IsSNSPolicyChanged(p v1beta1.TopicParameters, attr map[string]string) (bool
 		return false, err
 	}
 
-	equalPolicies, _ := policyutils.ArePoliciesEqal(&currPolicy, &specPolicy)
+	equalPolicies, _ := policyutils.ArePoliciesEqual(&currPolicy, &specPolicy)
 
 	return equalPolicies, nil
 }

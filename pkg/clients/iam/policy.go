@@ -72,6 +72,6 @@ func IsPolicyUpToDate(loc v1beta1.PolicyParameters, rem iamtypes.PolicyVersion) 
 		return false, "", err
 	}
 
-	upToDate, diff = policy.ArePoliciesEqal(&local, &remote)
+	upToDate, diff = policy.ArePoliciesEqual(&local, &remote)
 	return upToDate, diff, nil
 }

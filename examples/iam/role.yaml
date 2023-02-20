@@ -5,29 +5,21 @@ metadata:
   name: somerole
 spec:
   forProvider:
-    assumeRolePolicyDocument: |
-      {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": [
-                        "ec2.amazonaws.com",
-                        "eks.amazonaws.com",
-                        "eks-fargate-pods.amazonaws.com",
-                        "lambda.amazonaws.com",
-                        "s3.amazonaws.com",
-                        "rds.amazonaws.com",
-                        "dax.amazonaws.com"
-                    ]
-                },
-                "Action": [
-                    "sts:AssumeRole"
-                ]
-            }
-        ]
-      }
+    assumeRolePolicyDocument:
+      Version: 2012-10-17
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - ec2.amazonaws.com
+              - eks.amazonaws.com
+              - eks-fargate-pods.amazonaws.com
+              - lambda.amazonaws.com
+              - s3.amazonaws.com
+              - rds.amazonaws.com
+              - dax.amazonaws.com
+          Action:
+            - sts:AssumeRole
     tags:
       - key: k1
         value: v1

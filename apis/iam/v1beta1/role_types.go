@@ -20,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // Tag represents user-provided metadata that can be associated
@@ -50,8 +51,10 @@ type RoleParameters struct {
 
 	// AssumeRolePolicyDocument is the the trust relationship policy document
 	// that grants an entity permission to assume the role.
+	//
+	// This field accepts a policy as a JSON / YAML object or as a raw string.
 	// +immutable
-	AssumeRolePolicyDocument string `json:"assumeRolePolicyDocument"`
+	AssumeRolePolicyDocument extv1.JSON `json:"assumeRolePolicyDocument"`
 
 	// Description is a description of the role.
 	// +optional
