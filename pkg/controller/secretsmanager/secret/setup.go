@@ -254,19 +254,21 @@ func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOu
 	if err != nil {
 		return false, errors.Wrap(err, errGetResourcePolicy)
 	}
-	if pol.ResourcePolicy != nil && cr.Spec.ForProvider.ResourcePolicy != nil {
+
+	if pol.ResourcePolicy != nil && cr.Spec.ForProvider.ResourcePolicy.Size() != 0 {
 		compactCurrentPolicy, err := awsclients.CompactAndEscapeJSON(awsclients.StringValue(pol.ResourcePolicy))
 		if err != nil {
 			return false, errors.Wrap(err, errInvalidCurrentPolicy)
 		}
-		compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(awsclients.StringValue(cr.Spec.ForProvider.ResourcePolicy))
+		specPolicy := awsclients.GetRawJSONFromBlob(cr.Spec.ForProvider.ResourcePolicy)
+		compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(awsclients.StringValue(specPolicy))
 		if err != nil {
 			return false, errors.Wrap(err, errInvalidSpecPolicy)
 		}
 		if compactCurrentPolicy != compactSpecPolicy {
 			return false, nil
 		}
-	} else if !(pol.ResourcePolicy == nil && cr.Spec.ForProvider.ResourcePolicy == nil) {
+	} else if !(pol.ResourcePolicy == nil && cr.Spec.ForProvider.ResourcePolicy.Size() == 0) {
 		return false, nil
 	}
 
@@ -361,10 +363,10 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	}
 
 	// Update resource policy
-	if cr.Spec.ForProvider.ResourcePolicy != nil {
+	if cr.Spec.ForProvider.ResourcePolicy.Size() != 0 {
 		_, err := e.client.PutResourcePolicyWithContext(ctx, &svcsdk.PutResourcePolicyInput{
 			SecretId:       awsclients.String(meta.GetExternalName(cr)),
-			ResourcePolicy: cr.Spec.ForProvider.ResourcePolicy,
+			ResourcePolicy: awsclients.GetRawJSONFromBlob(cr.Spec.ForProvider.ResourcePolicy),
 		})
 		if err != nil {
 			return errors.Wrap(err, errPutResourcePolicy)

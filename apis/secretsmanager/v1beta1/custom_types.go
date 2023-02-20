@@ -16,11 +16,14 @@ limitations under the License.
 
 package v1beta1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+)
 
 // CustomSecretParameters contains the additional fields for SecretParameters.
 type CustomSecretParameters struct {
-	// KMSKeyIDRef is a reference to an kms/v1alpha1.Key used
+	// KMSKeyIDRef is a reference to a kms/v1alpha1.Key used
 	// to set the KMSKeyID field.
 	// +optional
 	KMSKeyIDRef *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
@@ -56,7 +59,7 @@ type CustomSecretParameters struct {
 	// Use this parameter with caution. This parameter causes the operation to skip
 	// the normal waiting period before the permanent deletion that AWS would normally
 	// impose with the RecoveryWindowInDays parameter. If you delete a secret with
-	// the ForceDeleteWithouRecovery parameter, then you have no opportunity to
+	// the ForceDeleteWithoutRecovery parameter, then you have no opportunity to
 	// recover the secret. It is permanently lost.
 	ForceDeleteWithoutRecovery *bool `json:"forceDeleteWithoutRecovery,omitempty"`
 
@@ -67,8 +70,8 @@ type CustomSecretParameters struct {
 	// This value can range from 7 to 30 days. The default value is 30.
 	RecoveryWindowInDays *int64 `json:"recoveryWindowInDays,omitempty"`
 
-	// A JSON-formatted string constructed according to the grammar and syntax for
-	// an Amazon Web Services resource-based policy. The policy in the string identifies
+	// A JSON-formatted string or YAML object constructed according to the grammar and syntax for
+	// an Amazon Web Services resource-based policy. The policy identifies
 	// who can access or manage this secret and its versions. For information on
 	// how to format a JSON parameter for the various command line tool environments,
 	// see Using JSON for Parameters (http://docs.aws.amazon.com/cli/latest/userguide/cli-using-param.html#cli-using-param-json)
@@ -76,7 +79,7 @@ type CustomSecretParameters struct {
 	//
 	// ResourcePolicy is a required field
 	// +optional
-	ResourcePolicy *string `json:"resourcePolicy,omitempty"`
+	ResourcePolicy extv1.JSON `json:"resourcePolicy,omitempty"`
 }
 
 // A SecretReference is a reference to a secret in an arbitrary namespace.
