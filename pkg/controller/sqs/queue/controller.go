@@ -198,7 +198,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	removedTags, addedTags := sqs.TagsDiff(resTags.Tags, cr.Spec.ForProvider.Tags)
 
 	if len(removedTags) > 0 {
-		removedKeys := []string{}
+		var removedKeys []string
 		for k := range removedTags {
 			removedKeys = append(removedKeys, k)
 		}

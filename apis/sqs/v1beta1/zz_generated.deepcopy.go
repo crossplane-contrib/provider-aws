@@ -126,11 +126,7 @@ func (in *QueueParameters) DeepCopyInto(out *QueueParameters) {
 		*out = new(int64)
 		**out = **in
 	}
-	if in.Policy != nil {
-		in, out := &in.Policy, &out.Policy
-		*out = new(string)
-		**out = **in
-	}
+	in.Policy.DeepCopyInto(&out.Policy)
 	if in.ReceiveMessageWaitTimeSeconds != nil {
 		in, out := &in.ReceiveMessageWaitTimeSeconds, &out.ReceiveMessageWaitTimeSeconds
 		*out = new(int64)

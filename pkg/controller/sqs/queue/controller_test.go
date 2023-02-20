@@ -19,6 +19,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awssqs "github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -262,10 +266,13 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.Queue
-		result managed.ExternalUpdate
-		err    error
+		cr       *v1beta1.Queue
+		result   managed.ExternalUpdate
+		err      error
+		awsInput *awssqs.SetQueueAttributesInput
 	}
+
+	var actualAwsInput *awssqs.SetQueueAttributesInput
 
 	cases := map[string]struct {
 		args
@@ -330,6 +337,7 @@ func TestUpdate(t *testing.T) {
 				}), withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
+				awsInput: nil,
 			},
 		},
 		"UpdateFailure": {
@@ -347,7 +355,51 @@ func TestUpdate(t *testing.T) {
 				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
-				err: awsclient.Wrap(errBoom, errUpdateFailed),
+				err:      awsclient.Wrap(errBoom, errUpdateFailed),
+				awsInput: nil,
+			},
+		},
+		"PolicyNoUpdateNeeded": {
+			args: args{
+				sqs: &fake.MockSQSClient{
+					MockSetQueueAttributes: func(ctx context.Context, input *awssqs.SetQueueAttributesInput, opts []func(*awssqs.Options)) (*awssqs.SetQueueAttributesOutput, error) {
+						actualAwsInput = input
+						return &awssqs.SetQueueAttributesOutput{ResultMetadata: middleware.Metadata{}}, nil
+					},
+					MockListQueueTags: func(ctx context.Context, input *awssqs.ListQueueTagsInput, opts []func(*awssqs.Options)) (*awssqs.ListQueueTagsOutput, error) {
+						return &awssqs.ListQueueTagsOutput{}, nil
+					},
+					MockUntagQueue: func(ctx context.Context, input *awssqs.UntagQueueInput, opts []func(*awssqs.Options)) (*awssqs.UntagQueueOutput, error) {
+						return &awssqs.UntagQueueOutput{}, nil
+					},
+					MockTagQueue: func(ctx context.Context, input *awssqs.TagQueueInput, opts []func(*awssqs.Options)) (*awssqs.TagQueueOutput, error) {
+						return &awssqs.TagQueueOutput{}, nil
+					},
+				},
+				cr: queue(
+					withStatus(v1beta1.QueueObservation{
+						URL: queueURL,
+					}),
+					withSpec(v1beta1.QueueParameters{
+						Policy: awsclient.NewJSONFromRaw(*awsclient.JSONNormalize("\n\n{   \"foo\"\n\t :   \n\"bar\"  \n\t }")),
+					}),
+				),
+			},
+			want: want{
+				cr: queue(
+					withStatus(v1beta1.QueueObservation{
+						URL: queueURL,
+					}),
+					withSpec(v1beta1.QueueParameters{
+						Policy: awsclient.NewJSONFromRaw(*awsclient.JSONNormalize("{      \"foo\"\n   :\n \"bar\"\t\n   }")),
+					}),
+				),
+				awsInput: &awssqs.SetQueueAttributesInput{
+					Attributes: map[string]string{
+						v1beta1.AttributePolicy: "{\"foo\":\"bar\"}",
+					},
+					QueueUrl: ptr.String(queueURL),
+				},
 			},
 		},
 	}
@@ -366,6 +418,11 @@ func TestUpdate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
+			if diff := cmp.Diff(tc.want.awsInput, actualAwsInput, cmpopts.IgnoreUnexported(awssqs.SetQueueAttributesInput{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+
+			actualAwsInput = nil
 		})
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -89,11 +90,11 @@ type QueueParameters struct {
 	// +optional
 	MessageRetentionPeriod *int64 `json:"messageRetentionPeriod,omitempty"`
 
-	// The queue's policy. A valid AWS policy. For more information
+	// The queue's policy as JSON-formatted string or YAML object. valid AWS policy. For more information
 	// about policy structure, see Overview of AWS IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
 	// in the Amazon IAM User Guide.
 	// +optional
-	Policy *string `json:"policy,omitempty"`
+	Policy extv1.JSON `json:"policy,omitempty"`
 
 	// ReceiveMessageWaitTimeSeconds - The length of time, in seconds, for
 	// which a ReceiveMessage action waits for a message to arrive. Valid values:

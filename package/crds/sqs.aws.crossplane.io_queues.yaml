@@ -214,11 +214,11 @@ spec:
                     format: int64
                     type: integer
                   policy:
-                    description: The queue's policy. A valid AWS policy. For more
-                      information about policy structure, see Overview of AWS IAM
-                      Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
+                    description: The queue's policy as JSON-formatted string or YAML
+                      object. valid AWS policy. For more information about policy
+                      structure, see Overview of AWS IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/PoliciesOverview.html)
                       in the Amazon IAM User Guide.
-                    type: string
+                    x-kubernetes-preserve-unknown-fields: true
                   receiveMessageWaitTimeSeconds:
                     description: 'ReceiveMessageWaitTimeSeconds - The length of time,
                       in seconds, for which a ReceiveMessage action waits for a message

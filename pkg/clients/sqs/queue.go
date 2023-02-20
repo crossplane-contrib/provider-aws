@@ -86,8 +86,8 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	if p.MessageRetentionPeriod != nil {
 		m[v1beta1.AttributeMessageRetentionPeriod] = strconv.FormatInt(aws.ToInt64(p.MessageRetentionPeriod), 10)
 	}
-	if p.Policy != nil {
-		m[v1beta1.AttributePolicy] = aws.ToString(p.Policy)
+	if p.Policy.Size() != 0 {
+		m[v1beta1.AttributePolicy] = aws.ToString(awsclients.GetRawJSONFromBlob(p.Policy))
 	}
 	if p.ReceiveMessageWaitTimeSeconds != nil {
 		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.ToInt64(p.ReceiveMessageWaitTimeSeconds), 10)
@@ -215,9 +215,6 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 	if !cmp.Equal(aws.ToString(p.KMSMasterKeyID), attributes[v1beta1.AttributeKmsMasterKeyID]) {
 		return false
 	}
-	if !cmp.Equal(aws.ToString(p.Policy), attributes[v1beta1.AttributePolicy]) {
-		return false
-	}
 	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
 		return false
 	}
@@ -236,7 +233,9 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 			}
 		}
 	}
-	return true
+
+	queuePolicy := attributes[v1beta1.AttributePolicy]
+	return awsclients.EqualsJSON(p.Policy, awsclients.NewJSONFromRaw(queuePolicy))
 }
 
 // TagsDiff returns the tags added and removed from spec when compared to the AWS SQS tags.
