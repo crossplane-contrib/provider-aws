@@ -1,0 +1,165 @@
+# The following manifest will create a Global DB Aurora cluster with two Regional clusters
+# Primary Region: eu-west-2 with 2 nodes
+# Secondary Region: us-west-2 with 1 node
+#
+# It also creates two ClusterParameterGroups (one per region) to enable parallel query
+# and uses it for the cluster configuration.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-cluster-db-password
+type: Opaque
+data:
+  password: your-passwod
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: test-cluster-eu-west-2
+spec:
+  writeConnectionSecretToRef:
+    name: "test-cluster-eu-west-2-db-conn"
+  providerConfigRef:
+    name: default
+  forProvider:
+    applyImmediately: true
+    availabilityZones: ["eu-west-2a","eu-west-2b","eu-west-2c"]
+    backupRetentionPeriod: 10
+    dbSubnetGroupName: db-subnet-group-name
+    storageEncrypted: true
+    kmsKeyID: mrk-test-kms-id
+    enablePerformanceInsights: true
+    region: eu-west-2
+    engine: aurora-mysql
+    engineMode: provisioned
+    engineVersion: 8.0.mysql_aurora.3.03.0
+    enableCloudwatchLogsExports: ['audit','error','general','slowquery']
+    globalClusterIdentifier: test-cluster
+    masterUsername: admin
+    masterUserPasswordSecretRef:
+      name: "test-cluster-db-password"
+      key: password
+    skipFinalSnapshot: true
+    dbClusterParameterGroupName: test-cluster-eu-west-2-aurora-pg
+    vpcSecurityGroupIDs:
+      - vpc-sg-id
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: test-cluster-us-west-2
+spec:
+  writeConnectionSecretToRef:
+    name: "test-cluster-us-west-2-db-conn"
+  providerConfigRef:
+    name: default
+  forProvider:
+    applyImmediately: true
+    availabilityZones: ["us-west-2a","us-west-2b","us-west-2c"]
+    backupRetentionPeriod: 10
+    dbSubnetGroupName: moneywise_aurora_sg
+    storageEncrypted: true
+    kmsKeyID: mrk-test-kms-id
+    enablePerformanceInsights: true
+    region: us-west-2
+    engine: aurora-mysql
+    engineMode: provisioned
+    engineVersion: 8.0.mysql_aurora.3.03.0
+    enableCloudwatchLogsExports: ['audit','error','general','slowquery']
+    globalClusterIdentifier: test-cluster
+    skipFinalSnapshot: true
+    dbClusterParameterGroupName: test-cluster-us-west-2-aurora-pg
+    vpcSecurityGroupIDs:
+      - sg-081a9633ca227cac3
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: test-cluster-eu-west-2-aurora-pg
+spec:
+  forProvider:
+    region: eu-west-2
+    dbParameterGroupFamily: aurora-mysql8.0
+    description: Aurora MySQL 8 with Parallel Query
+    parameters:
+      - parameterName: aurora_parallel_query
+        parameterValue: '1'
+        applyMethod: immediate
+  providerConfigRef:
+    name: default
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: test-cluster-us-west-2-aurora-pg
+spec:
+  forProvider:
+    region: us-west-2
+    dbParameterGroupFamily: aurora-mysql8.0
+    description: Aurora MySQL 8 with Parallel Query
+    parameters:
+      - parameterName: aurora_parallel_query
+        parameterValue: '1'
+        applyMethod: immediate
+  providerConfigRef:
+    name: default
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: test-cluster-eu-west-2-0
+spec:
+  forProvider:
+    region: eu-west-2
+    dbInstanceClass: db.r5.large
+    engine: aurora-mysql
+    dbClusterIdentifier: test-cluster-eu-west-2
+    publiclyAccessible: true
+    enablePerformanceInsights: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: test-cluster-eu-west-2-1
+spec:
+  forProvider:
+    region: eu-west-2
+    dbInstanceClass: db.r5.large
+    engine: aurora-mysql
+    dbClusterIdentifier: test-cluster-eu-west-2
+    publiclyAccessible: true
+    enablePerformanceInsights: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: test-cluster-us-west-2-0
+spec:
+  forProvider:
+    region: us-west-2
+    dbInstanceClass: db.r5.large
+    engine: aurora-mysql
+    dbClusterIdentifier: test-cluster-us-west-2
+    publiclyAccessible: true
+    enablePerformanceInsights: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: GlobalCluster
+metadata:
+  name: test-cluster
+spec:
+  providerConfigRef:
+    name: default
+  forProvider:
+    region: eu-west-2
+    engine: aurora-mysql
+    storageEncrypted: true
+    engineVersion: 8.0.mysql_aurora.3.03.0
+

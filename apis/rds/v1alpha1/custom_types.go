@@ -193,8 +193,14 @@ type CustomDBClusterParameters struct {
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except "/", """, or "@".
 	//
-	// Constraints: Must contain from 8 to 41 characters. Required.
-	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
+	// This parameter will be required in the following scenarios:
+	// - The first cluster for a global Aurora cluster
+	// - Any cluster as long as it doesn't belong to a global Aurora cluster
+	//
+	// This parameter is required for creation of a primary cluster. However, it is not required when attaching a secondary regional cluster to an existing global cluster.
+	//
+	// Constraints: Must contain from 8 to 41 characters.
+	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef,omitempty"`
 
 	// A list of VPC security groups that the DB cluster will belong to.
 	//
