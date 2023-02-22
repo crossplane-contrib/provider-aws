@@ -97,7 +97,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 	case string(svcapitypes.ClusterState_ACTIVE):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.ClusterState_CREATING):
-		cr.SetConditions(xpv1.Creating())
+		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.ClusterState_FAILED), string(svcapitypes.ClusterState_MAINTENANCE), string(svcapitypes.ClusterState_UPDATING):
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.ClusterState_DELETING):
