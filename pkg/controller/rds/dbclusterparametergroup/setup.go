@@ -25,6 +25,10 @@ import (
 )
 
 const (
+	maxParametersPerUpdate = 20
+)
+
+const (
 	errRequireDBParameterGroupFamilyOrFromEngine = "either spec.forProvider.dbParameterGroupFamily or spec.forProvider.dbParameterGroupFamilyFromEngine is required"
 	errDetermineDBParameterGroupFamily           = "cannot determine DB parametergroup family"
 	errGetDBEngineVersion                        = "cannot decsribe DB engine versions"
@@ -39,7 +43,7 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 			c := &custom{client: e.client, kube: e.kube}
 			e.preCreate = c.preCreate
 			e.preObserve = preObserve
-			e.preUpdate = preUpdate
+			e.preUpdate = c.preUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
 			e.lateInitialize = lateInitialize
@@ -92,11 +96,31 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	return nil
 }
 
-func preUpdate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
+func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
 	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
-	obj.Parameters = make([]*svcsdk.Parameter, len(cr.Spec.ForProvider.Parameters))
+	currentParameters, err := c.getCurrentDBClusterParameters(ctx, cr)
 
-	for i, v := range cr.Spec.ForProvider.Parameters {
+	if err != nil {
+		return err
+	}
+
+	// Only 20 parameters are allowed per update request
+	// this ensures we will only include parameters that require an update.
+	// Any additional parameters will be handled during the next reconciliation.
+	parametersToUpdate := c.parametersToUpdate(cr, currentParameters)
+	if len(parametersToUpdate) > maxParametersPerUpdate {
+		obj.Parameters = make([]*svcsdk.Parameter, maxParametersPerUpdate)
+	} else {
+		obj.Parameters = make([]*svcsdk.Parameter, len(parametersToUpdate))
+	}
+
+	for i, v := range parametersToUpdate {
+		// We have reached the maximum number of
+		// parameters per update
+		if i > (maxParametersPerUpdate - 1) {
+			break
+		}
+
 		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
 		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
 			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
@@ -137,23 +161,11 @@ func (c *custom) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.D
 	if err != nil {
 		return false, err
 	}
-	observed := make(map[string]svcsdk.Parameter, len(results))
-	for _, p := range results {
-		observed[awsclients.StringValue(p.ParameterName)] = *p
+
+	if len(c.parametersToUpdate(cr, results)) != 0 {
+		return false, nil
 	}
-	// compare CR with currently set Parameters
-	for _, v := range cr.Spec.ForProvider.Parameters {
-		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
-		if !ok {
-			return false, nil
-		}
-		switch {
-		case awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue):
-			return false, nil
-		case awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod):
-			return false, nil
-		}
-	}
+
 	return true, err
 }
 
@@ -201,4 +213,30 @@ func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 		return nil, errors.New(errNoDBEngineVersions)
 	}
 	return resp.DBEngineVersions[0], nil
+}
+
+func (c *custom) parametersToUpdate(cr *svcapitypes.DBClusterParameterGroup, current []*svcsdk.Parameter) []svcapitypes.Parameter {
+	var parameters []svcapitypes.Parameter
+	observed := make(map[string]svcsdk.Parameter, len(current))
+
+	for _, p := range current {
+		observed[awsclients.StringValue(p.ParameterName)] = *p
+	}
+
+	// compare CR with currently set Parameters
+	for _, v := range cr.Spec.ForProvider.Parameters {
+		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+
+		if !ok {
+			parameters = append(parameters, v)
+			continue
+		}
+
+		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) ||
+			awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod) {
+			parameters = append(parameters, v)
+		}
+	}
+
+	return parameters
 }
