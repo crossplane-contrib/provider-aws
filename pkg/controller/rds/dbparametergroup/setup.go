@@ -24,6 +24,10 @@ import (
 )
 
 const (
+	maxParametersPerUpdate = 20
+)
+
+const (
 	errRequireDBParameterGroupFamilyOrFromEngine = "either spec.forProvider.dbParameterGroupFamily or spec.forProvider.dbParameterGroupFamilyFromEngine is required"
 	errDetermineDBParameterGroupFamily           = "cannot determine DB parametergroup family"
 	errGetDBEngineVersion                        = "cannot decsribe DB engine versions"
@@ -38,7 +42,7 @@ func SetupDBParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 			c := &custom{client: e.client, kube: e.kube}
 			e.preCreate = c.preCreate
 			e.preObserve = preObserve
-			e.preUpdate = preUpdate
+			e.preUpdate = c.preUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
 			e.lateInitialize = lateInitialize
@@ -82,8 +86,8 @@ func postObserve(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsd
 	return obs, err
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
-	if err := e.ensureParameterGroupFamily(ctx, cr); err != nil {
+func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
+	if err := c.ensureParameterGroupFamily(ctx, cr); err != nil {
 		return errors.Wrap(err, errDetermineDBParameterGroupFamily)
 	}
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
@@ -91,11 +95,31 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBParameterGroup
 	return nil
 }
 
-func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
+func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
-	obj.Parameters = make([]*svcsdk.Parameter, len(cr.Spec.ForProvider.Parameters))
+	currentParameters, err := c.getCurrentDBParameters(ctx, cr)
 
-	for i, v := range cr.Spec.ForProvider.Parameters {
+	if err != nil {
+		return err
+	}
+
+	// Only 20 parameters are allowed per update request
+	// this ensures we will only include parameters that require an update.
+	// Any additional parameters will be handled during the next reconciliation.
+	parametersToUpdate := c.parametersToUpdate(cr, currentParameters)
+	if len(parametersToUpdate) > maxParametersPerUpdate {
+		obj.Parameters = make([]*svcsdk.Parameter, maxParametersPerUpdate)
+	} else {
+		obj.Parameters = make([]*svcsdk.Parameter, len(parametersToUpdate))
+	}
+
+	for i, v := range parametersToUpdate {
+		// We have reached the maximum number of
+		// parameters per update
+		if i > (maxParametersPerUpdate - 1) {
+			break
+		}
+
 		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
 		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
 			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
@@ -129,40 +153,28 @@ func lateInitialize(spec *svcapitypes.DBParameterGroupParameters, current *svcsd
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
+func (c *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
 	// TODO(Dkaykay): We need isUpToDate to have context.
 	ctx := context.TODO()
-	results, err := e.getCurrentDBParameters(ctx, cr)
+	results, err := c.getCurrentDBParameters(ctx, cr)
 	if err != nil {
 		return false, err
 	}
-	observed := make(map[string]svcsdk.Parameter, len(results))
-	for _, p := range results {
-		observed[awsclients.StringValue(p.ParameterName)] = *p
+
+	if len(c.parametersToUpdate(cr, results)) != 0 {
+		return false, nil
 	}
-	// compare CR with currently set Parameters
-	for _, v := range cr.Spec.ForProvider.Parameters {
-		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
-		if !ok {
-			return false, nil
-		}
-		switch {
-		case awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue):
-			return false, nil
-		case awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod):
-			return false, nil
-		}
-	}
+
 	return true, err
 }
 
-func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {
+func (c *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {
 	input := &svcsdk.DescribeDBParametersInput{
 		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
 		MaxRecords:           awsclients.Int64(100),
 	}
 	var results []*svcsdk.Parameter
-	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBParametersOutput, lastPage bool) bool {
+	err := c.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBParametersOutput, lastPage bool) bool {
 		results = append(results, page.Parameters...)
 		return !lastPage
 	})
@@ -172,9 +184,9 @@ func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBP
 	return results, nil
 }
 
-func (e *custom) ensureParameterGroupFamily(ctx context.Context, cr *svcapitypes.DBParameterGroup) error {
+func (c *custom) ensureParameterGroupFamily(ctx context.Context, cr *svcapitypes.DBParameterGroup) error {
 	if cr.Spec.ForProvider.DBParameterGroupFamily == nil {
-		engineVersion, err := e.getDBEngineVersion(ctx, cr.Spec.ForProvider.DBParameterGroupFamilySelector)
+		engineVersion, err := c.getDBEngineVersion(ctx, cr.Spec.ForProvider.DBParameterGroupFamilySelector)
 		if err != nil {
 			return errors.Wrap(err, errGetDBEngineVersion)
 		}
@@ -183,12 +195,12 @@ func (e *custom) ensureParameterGroupFamily(ctx context.Context, cr *svcapitypes
 	return nil
 }
 
-func (e *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.DBParameterGroupFamilyNameSelector) (*svcsdk.DBEngineVersion, error) {
+func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.DBParameterGroupFamilyNameSelector) (*svcsdk.DBEngineVersion, error) {
 	if selector == nil {
 		return nil, errors.New(errRequireDBParameterGroupFamilyOrFromEngine)
 	}
 
-	resp, err := e.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
+	resp, err := c.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
 		Engine:        &selector.Engine,
 		EngineVersion: selector.EngineVersion,
 		DefaultOnly:   awsclients.Bool(selector.EngineVersion == nil),
@@ -200,4 +212,30 @@ func (e *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 		return nil, errors.New(errNoDBEngineVersions)
 	}
 	return resp.DBEngineVersions[0], nil
+}
+
+func (c *custom) parametersToUpdate(cr *svcapitypes.DBParameterGroup, current []*svcsdk.Parameter) []svcapitypes.Parameter {
+	var parameters []svcapitypes.Parameter
+	observed := make(map[string]svcsdk.Parameter, len(current))
+
+	for _, p := range current {
+		observed[awsclients.StringValue(p.ParameterName)] = *p
+	}
+
+	// compare CR with currently set Parameters
+	for _, v := range cr.Spec.ForProvider.Parameters {
+		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+
+		if !ok {
+			parameters = append(parameters, v)
+			continue
+		}
+
+		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) ||
+			awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod) {
+			parameters = append(parameters, v)
+		}
+	}
+
+	return parameters
 }
