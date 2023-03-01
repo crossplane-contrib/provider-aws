@@ -19,6 +19,8 @@ package v1beta1
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 )
 
 const (
@@ -158,7 +160,52 @@ type BucketParameters struct {
 	// PublicAccessBlockConfiguration that you want to apply to this Amazon
 	// S3 bucket.
 	PublicAccessBlockConfiguration *PublicAccessBlockConfiguration `json:"publicAccessBlockConfiguration,omitempty"`
+
+	// Policy is a well defined type which can be parsed into an JSON S3 Bucket
+	// Policy.
+	//
+	// By default, to ensure compatibility with previous APIs, a bucket policy
+	// is never deleted from a bucket if this field is set to null.
+	// To change this behaviour, see `policyUpdatePolicy`.
+	//
+	// +optional
+	Policy *common.BucketPolicyBody `json:"policy,omitempty"`
+
+	// PolicyUpdatePolicy specifies the update behaviour of `policy`.
+	PolicyUpdatePolicy *BucketPolicyUpdatePolicy `json:"policyUpdatePolicy,omitempty"`
 }
+
+// BucketPolicyUpdatePolicy specifies the update behaviour of a bucket policy.
+type BucketPolicyUpdatePolicy struct {
+	// DeletionPolicy specifies how and if the bucket policy should be deleted
+	// from the bucket.
+	//
+	// * `Never`: The bucket policy is never deleted, but only overwritten. If a
+	// change is detected.
+	//
+	// * `IfNull`: The bucket policy is deleted if the `policy` field is set to
+	// null.
+	//
+	// The default is `Never`.
+	//
+	// +kubebuilder:default="Never"
+	// +kubebuilder:Enum=Never;IfNull
+	DeletionPolicy BucketPolicyDeletionPolicy `json:"deletionPolicy,omitempty"`
+}
+
+// BucketPolicyDeletionPolicy determines how a bucket policy should be deleted
+// from a bucket.
+type BucketPolicyDeletionPolicy string
+
+const (
+	// BucketPolicyDeletionPolicyNever specifies that a bucket policy is never
+	// deleted but only overwritten.
+	BucketPolicyDeletionPolicyNever BucketPolicyDeletionPolicy = "Never"
+
+	// BucketPolicyDeletionPolicyIfNull specifies that a bucket policy is
+	// deleted if the corresponding spec field is null.
+	BucketPolicyDeletionPolicyIfNull BucketPolicyDeletionPolicy = "IfNull"
+)
 
 // BucketSpec represents the desired state of the Bucket.
 type BucketSpec struct {

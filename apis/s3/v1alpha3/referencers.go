@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 )
 
@@ -64,7 +65,7 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 }
 
 // ResolvePrincipal resolves all the User and Role references in a BucketPrincipal
-func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *BucketPrincipal, statementIndex int) error {
+func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *common.BucketPrincipal, statementIndex int) error {
 	if principal == nil {
 		return nil
 	}

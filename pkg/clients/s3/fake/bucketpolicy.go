@@ -35,16 +35,16 @@ type MockBucketPolicyClient struct {
 }
 
 // GetBucketPolicy mocks GetBucketPolicy method
-func (m *MockBucketPolicyClient) GetBucketPolicy(ctx context.Context, input *s3.GetBucketPolicyInput, opts ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+func (m MockBucketPolicyClient) GetBucketPolicy(ctx context.Context, input *s3.GetBucketPolicyInput, opts ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
 	return m.MockGetBucketPolicy(ctx, input, opts)
 }
 
 // PutBucketPolicy mocks PutBucketPolicy method
-func (m *MockBucketPolicyClient) PutBucketPolicy(ctx context.Context, input *s3.PutBucketPolicyInput, opts ...func(*s3.Options)) (*s3.PutBucketPolicyOutput, error) {
+func (m MockBucketPolicyClient) PutBucketPolicy(ctx context.Context, input *s3.PutBucketPolicyInput, opts ...func(*s3.Options)) (*s3.PutBucketPolicyOutput, error) {
 	return m.MockPutBucketPolicy(ctx, input, opts)
 }
 
 // DeleteBucketPolicy mocks DeleteBucketPolicy method
-func (m *MockBucketPolicyClient) DeleteBucketPolicy(ctx context.Context, input *s3.DeleteBucketPolicyInput, opts ...func(*s3.Options)) (*s3.DeleteBucketPolicyOutput, error) {
+func (m MockBucketPolicyClient) DeleteBucketPolicy(ctx context.Context, input *s3.DeleteBucketPolicyInput, opts ...func(*s3.Options)) (*s3.DeleteBucketPolicyOutput, error) {
 	return m.MockDeleteBucketPolicy(ctx, input, opts)
 }

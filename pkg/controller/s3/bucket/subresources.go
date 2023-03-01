@@ -49,6 +49,7 @@ func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
 		NewTaggingConfigurationClient(client),
 		NewWebsiteConfigurationClient(client),
 		NewPublicAccessBlockClient(client),
+		NewPolicyClient(client),
 	}
 }
 

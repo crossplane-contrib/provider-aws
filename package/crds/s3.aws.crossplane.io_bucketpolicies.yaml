@@ -32,6 +32,9 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    deprecated: true
+    deprecationWarning: BucketPolicy has been deprecated. Use spec.forProvider.policy
+      in Bucket instead.
     name: v1alpha3
     schema:
       openAPIV3Schema:

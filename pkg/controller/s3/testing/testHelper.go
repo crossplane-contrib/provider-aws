@@ -20,6 +20,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
+	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 )
 
@@ -106,6 +107,16 @@ func WithLifecycleConfig(s *v1beta1.BucketLifecycleConfiguration) BucketModifier
 // WithNotificationConfig sets the NotificationConfiguration for an S3 Bucket
 func WithNotificationConfig(s *v1beta1.NotificationConfiguration) BucketModifier { //nolint
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.NotificationConfiguration = s }
+}
+
+// WithPolicy sets the policy for an S3 Bucket
+func WithPolicy(s *common.BucketPolicyBody) BucketModifier { // nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.Policy = s }
+}
+
+// WithPolicyUpdatePolicy sets BucketPolicyUpdatePolicy for an S3 Bucket.
+func WithPolicyUpdatePolicy(s *v1beta1.BucketPolicyUpdatePolicy) BucketModifier { // nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PolicyUpdatePolicy = s }
 }
 
 // Bucket creates a v1beta1 Bucket for use in testing

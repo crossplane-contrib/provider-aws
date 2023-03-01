@@ -23,7 +23,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane-contrib/provider-aws/apis/s3/v1alpha3"
+	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
@@ -33,34 +33,34 @@ var (
 	statementID = aws.String("1")
 )
 
-type statementModifier func(statement *v1alpha3.BucketPolicyStatement)
+type statementModifier func(statement *common.BucketPolicyStatement)
 
-func withPrincipal(s *v1alpha3.BucketPrincipal) statementModifier {
-	return func(statement *v1alpha3.BucketPolicyStatement) {
+func withPrincipal(s *common.BucketPrincipal) statementModifier {
+	return func(statement *common.BucketPolicyStatement) {
 		statement.Principal = s
 	}
 }
 
 func withPolicyAction(s []string) statementModifier {
-	return func(statement *v1alpha3.BucketPolicyStatement) {
+	return func(statement *common.BucketPolicyStatement) {
 		statement.Action = s
 	}
 }
 
 func withResourcePath(s []string) statementModifier {
-	return func(statement *v1alpha3.BucketPolicyStatement) {
+	return func(statement *common.BucketPolicyStatement) {
 		statement.Resource = s
 	}
 }
 
-func withConditionBlock(m []v1alpha3.Condition) statementModifier {
-	return func(statement *v1alpha3.BucketPolicyStatement) {
+func withConditionBlock(m []common.Condition) statementModifier {
+	return func(statement *common.BucketPolicyStatement) {
 		statement.Condition = m
 	}
 }
 
-func policyStatement(m ...statementModifier) *v1alpha3.BucketPolicyStatement {
-	cr := &v1alpha3.BucketPolicyStatement{
+func policyStatement(m ...statementModifier) *common.BucketPolicyStatement {
+	cr := &common.BucketPolicyStatement{
 		SID:    statementID,
 		Effect: effect,
 	}
@@ -72,7 +72,7 @@ func policyStatement(m ...statementModifier) *v1alpha3.BucketPolicyStatement {
 
 func TestSerializeBucketPolicyStatement(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha3.BucketPolicyStatement
+		in  common.BucketPolicyStatement
 		out string
 		err error
 	}{
@@ -82,7 +82,7 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ValidInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha3.BucketPrincipal{
+				withPrincipal(&common.BucketPrincipal{
 					AllowAnon: true,
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
@@ -92,8 +92,8 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ComplexInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha3.BucketPrincipal{
-					AWSPrincipals: []v1alpha3.AWSPrincipal{
+				withPrincipal(&common.BucketPrincipal{
+					AWSPrincipals: []common.AWSPrincipal{
 						{
 							UserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
@@ -107,10 +107,10 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
 				withResourcePath([]string{"arn:aws:s3:::test.s3.crossplane.com"}),
-				withConditionBlock([]v1alpha3.Condition{
+				withConditionBlock([]common.Condition{
 					{
 						OperatorKey: "test",
-						Conditions: []v1alpha3.ConditionPair{
+						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:         "test",
 								ConditionStringValue: aws.String("testKey"),

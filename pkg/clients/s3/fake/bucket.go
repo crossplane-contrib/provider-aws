@@ -85,6 +85,8 @@ type MockBucketClient struct {
 	MockGetBucketOwnershipControls    func(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
 	MockPutBucketOwnershipControls    func(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
 	MockDeleteBucketOwnershipControls func(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
+
+	MockBucketPolicyClient
 }
 
 // HeadBucket is the fake method call to invoke the internal mock method

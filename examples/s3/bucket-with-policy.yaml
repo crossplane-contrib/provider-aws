@@ -1,0 +1,48 @@
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: test-bucket-with-policy
+  annotations:
+    # This will be the actual bucket name. It must be globally unique, so you
+    # probably want to change it before trying to apply this example.
+    crossplane.io/external-name: crossplane-example-bucket
+spec:
+  forProvider:
+    acl: private
+    locationConstraint: us-east-1
+    policy:
+      version: '2012-10-17'
+      statements:
+        - action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            - s3:ListBucketMultipartUploads
+            - s3:PutBucketCORS
+          effect: Allow
+          principal:
+            awsPrincipals:
+              - iamUserArnSelector:
+                  matchLabels:
+                    example: "true"
+          resource:
+            # This is unfortunately not currently able to be inferred from a
+            # reference to test-bucket, and must therefore be set to the ARN of
+            # test-bucket (i.e. its actual external name).
+            - "arn:aws:s3:::crossplane-example-bucket"
+          condition:
+          - operatorKey: StringEquals
+            conditions:
+              - key: "aws:Key1"
+                stringValue: "value1"
+              - key: "aws:Key2"
+                stringValue: "value2"
+          - operatorKey: IpAddress
+            conditions:
+              - key: "aws:SourceIp"
+                stringValue: "192.0.2.0/24"
+          - operatorKey: NotIpAddress
+            conditions:
+              - key: "aws:SourceIp"
+                stringValue: "192.0.2.188/32"
+  providerConfigRef:
+    name: example
