@@ -47,6 +47,16 @@ type AvailableProcessorFeature struct {
 }
 
 // +kubebuilder:skipversion
+type BlueGreenDeployment struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	DeleteTime *metav1.Time `json:"deleteTime,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Certificate struct {
 	CertificateARN *string `json:"certificateARN,omitempty"`
 
@@ -61,6 +71,13 @@ type Certificate struct {
 	Thumbprint *string `json:"thumbprint,omitempty"`
 
 	ValidFrom *metav1.Time `json:"validFrom,omitempty"`
+
+	ValidTill *metav1.Time `json:"validTill,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CertificateDetails struct {
+	CAIdentifier *string `json:"cAIdentifier,omitempty"`
 
 	ValidTill *metav1.Time `json:"validTill,omitempty"`
 }
@@ -81,11 +98,17 @@ type CloudwatchLogsExportConfiguration struct {
 
 // +kubebuilder:skipversion
 type ClusterPendingModifiedValues struct {
+	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
+
+	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
 
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 	// A list of the log types whose configuration is still pending. In other words,
@@ -117,6 +140,13 @@ type ConnectionPoolConfigurationInfo struct {
 	MaxIdleConnectionsPercent *int64 `json:"maxIdleConnectionsPercent,omitempty"`
 
 	SessionPinningFilters []*string `json:"sessionPinningFilters,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CustomDBEngineVersionAMI struct {
+	ImageID *string `json:"imageID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -193,6 +223,8 @@ type DBClusterSnapshot struct {
 	DBClusterSnapshotARN *string `json:"dbClusterSnapshotARN,omitempty"`
 
 	DBClusterSnapshotIdentifier *string `json:"dbClusterSnapshotIdentifier,omitempty"`
+
+	DBSystemID *string `json:"dbSystemID,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
 
@@ -292,6 +324,8 @@ type DBCluster_SDK struct {
 
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
 
+	DBSystemID *string `json:"dbSystemID,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
@@ -329,6 +363,15 @@ type DBCluster_SDK struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// Contains the secret managed by RDS in Amazon Web Services Secrets Manager
+	// for the master user password.
+	//
+	// For more information, see Password management with Amazon Web Services Secrets
+	// Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+	// in the Amazon RDS User Guide and Password management with Amazon Web Services
+	// Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+	// in the Amazon Aurora User Guide.
+	MasterUserSecret *MasterUserSecret `json:"masterUserSecret,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
@@ -337,6 +380,8 @@ type DBCluster_SDK struct {
 	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+
+	NetworkType *string `json:"networkType,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
 
@@ -389,6 +434,8 @@ type DBEngineVersion struct {
 
 	DBEngineDescription *string `json:"dbEngineDescription,omitempty"`
 
+	DBEngineMediaType *string `json:"dbEngineMediaType,omitempty"`
+
 	DBEngineVersionARN *string `json:"dbEngineVersionARN,omitempty"`
 
 	DBEngineVersionDescription *string `json:"dbEngineVersionDescription,omitempty"`
@@ -414,6 +461,8 @@ type DBEngineVersion struct {
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 
 	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
+
+	SupportsCertificateRotationWithoutRestart *bool `json:"supportsCertificateRotationWithoutRestart,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
@@ -473,6 +522,8 @@ type DBInstanceAutomatedBackup struct {
 
 	Status *string `json:"status,omitempty"`
 
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
+
 	StorageType *string `json:"storageType,omitempty"`
 
 	TDECredentialARN *string `json:"tdeCredentialARN,omitempty"`
@@ -517,6 +568,8 @@ type DBInstance_SDK struct {
 
 	ActivityStreamMode *string `json:"activityStreamMode,omitempty"`
 
+	ActivityStreamPolicyStatus *string `json:"activityStreamPolicyStatus,omitempty"`
+
 	ActivityStreamStatus *string `json:"activityStreamStatus,omitempty"`
 
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
@@ -538,6 +591,14 @@ type DBInstance_SDK struct {
 	BackupTarget *string `json:"backupTarget,omitempty"`
 
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+	// Returns the details of the DB instance’s server certificate.
+	//
+	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon RDS User Guide and Using SSL/TLS to encrypt a connection to
+	// a DB cluster (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon Aurora User Guide.
+	CertificateDetails *CertificateDetails `json:"certificateDetails,omitempty"`
 
 	CharacterSetName *string `json:"characterSetName,omitempty"`
 
@@ -569,6 +630,8 @@ type DBInstance_SDK struct {
 	// This data type is used as a response element in the DescribeDBSubnetGroups
 	// action.
 	DBSubnetGroup *DBSubnetGroup `json:"dbSubnetGroup,omitempty"`
+
+	DBSystemID *string `json:"dbSystemID,omitempty"`
 
 	DBInstancePort *int64 `json:"dbInstancePort,omitempty"`
 
@@ -623,6 +686,15 @@ type DBInstance_SDK struct {
 	// For the data structure that represents Amazon Aurora DB cluster endpoints,
 	// see DBClusterEndpoint.
 	ListenerEndpoint *Endpoint `json:"listenerEndpoint,omitempty"`
+	// Contains the secret managed by RDS in Amazon Web Services Secrets Manager
+	// for the master user password.
+	//
+	// For more information, see Password management with Amazon Web Services Secrets
+	// Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+	// in the Amazon RDS User Guide and Password management with Amazon Web Services
+	// Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+	// in the Amazon Aurora User Guide.
+	MasterUserSecret *MasterUserSecret `json:"masterUserSecret,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
@@ -635,6 +707,8 @@ type DBInstance_SDK struct {
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 
 	NcharCharacterSetName *string `json:"ncharCharacterSetName,omitempty"`
+
+	NetworkType *string `json:"networkType,omitempty"`
 
 	OptionGroupMemberships []*OptionGroupMembership `json:"optionGroupMemberships,omitempty"`
 	// This data type is used as a response element in the ModifyDBInstance operation
@@ -672,6 +746,8 @@ type DBInstance_SDK struct {
 	StatusInfos []*DBInstanceStatusInfo `json:"statusInfos,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
@@ -847,6 +923,8 @@ type DBSnapshot struct {
 
 	SnapshotCreateTime *metav1.Time `json:"snapshotCreateTime,omitempty"`
 
+	SnapshotDatabaseTime *metav1.Time `json:"snapshotDatabaseTime,omitempty"`
+
 	SnapshotTarget *string `json:"snapshotTarget,omitempty"`
 
 	SnapshotType *string `json:"snapshotType,omitempty"`
@@ -856,6 +934,8 @@ type DBSnapshot struct {
 	SourceRegion *string `json:"sourceRegion,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
@@ -890,6 +970,8 @@ type DBSubnetGroup struct {
 	SubnetGroupStatus *string `json:"subnetGroupStatus,omitempty"`
 
 	Subnets []*Subnet `json:"subnets,omitempty"`
+
+	SupportedNetworkTypes []*string `json:"supportedNetworkTypes,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
 }
@@ -1069,6 +1151,15 @@ type IPRange struct {
 }
 
 // +kubebuilder:skipversion
+type MasterUserSecret struct {
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	SecretARN *string `json:"secretARN,omitempty"`
+
+	SecretStatus *string `json:"secretStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type MinimumEngineVersionPerAllowedValue struct {
 	AllowedValue *string `json:"allowedValue,omitempty"`
 
@@ -1107,6 +1198,8 @@ type OptionConfiguration struct {
 type OptionGroup struct {
 	AllowsVPCAndNonVPCInstanceMemberships *bool `json:"allowsVPCAndNonVPCInstanceMemberships,omitempty"`
 
+	CopyTimestamp *metav1.Time `json:"copyTimestamp,omitempty"`
+
 	EngineName *string `json:"engineName,omitempty"`
 
 	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
@@ -1116,6 +1209,10 @@ type OptionGroup struct {
 	OptionGroupDescription *string `json:"optionGroupDescription,omitempty"`
 
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
+
+	SourceAccountID *string `json:"sourceAccountID,omitempty"`
+
+	SourceOptionGroup *string `json:"sourceOptionGroup,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
 }
@@ -1129,6 +1226,8 @@ type OptionGroupMembership struct {
 
 // +kubebuilder:skipversion
 type OptionGroupOption struct {
+	CopyableCrossAccount *bool `json:"copyableCrossAccount,omitempty"`
+
 	DefaultPort *int64 `json:"defaultPort,omitempty"`
 
 	Description *string `json:"description,omitempty"`
@@ -1217,11 +1316,19 @@ type OrderableDBInstanceOption struct {
 
 	MaxStorageSize *int64 `json:"maxStorageSize,omitempty"`
 
+	MaxStorageThroughputPerDBInstance *int64 `json:"maxStorageThroughputPerDBInstance,omitempty"`
+
+	MaxStorageThroughputPerIOPS *float64 `json:"maxStorageThroughputPerIOPS,omitempty"`
+
 	MinIOPSPerDBInstance *int64 `json:"minIOPSPerDBInstance,omitempty"`
 
 	MinIOPSPerGib *float64 `json:"minIOPSPerGib,omitempty"`
 
 	MinStorageSize *int64 `json:"minStorageSize,omitempty"`
+
+	MinStorageThroughputPerDBInstance *int64 `json:"minStorageThroughputPerDBInstance,omitempty"`
+
+	MinStorageThroughputPerIOPS *float64 `json:"minStorageThroughputPerIOPS,omitempty"`
 
 	MultiAZCapable *bool `json:"multiAZCapable,omitempty"`
 
@@ -1232,6 +1339,8 @@ type OrderableDBInstanceOption struct {
 	StorageType *string `json:"storageType,omitempty"`
 
 	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
+	SupportedNetworkTypes []*string `json:"supportedNetworkTypes,omitempty"`
 
 	SupportsClusters *bool `json:"supportsClusters,omitempty"`
 
@@ -1250,6 +1359,8 @@ type OrderableDBInstanceOption struct {
 	SupportsStorageAutoscaling *bool `json:"supportsStorageAutoscaling,omitempty"`
 
 	SupportsStorageEncryption *bool `json:"supportsStorageEncryption,omitempty"`
+
+	SupportsStorageThroughput *bool `json:"supportsStorageThroughput,omitempty"`
 
 	VPC *bool `json:"vpc,omitempty"`
 }
@@ -1342,6 +1453,8 @@ type PendingModifiedValues struct {
 	ProcessorFeatures []*ProcessorFeature `json:"processorFeatures,omitempty"`
 
 	ResumeFullAutomationModeTime *metav1.Time `json:"resumeFullAutomationModeTime,omitempty"`
+
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 }

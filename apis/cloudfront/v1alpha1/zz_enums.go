@@ -58,6 +58,13 @@ const (
 	CertificateSource_acm        CertificateSource = "acm"
 )
 
+type ContinuousDeploymentPolicyType string
+
+const (
+	ContinuousDeploymentPolicyType_SingleWeight ContinuousDeploymentPolicyType = "SingleWeight"
+	ContinuousDeploymentPolicyType_SingleHeader ContinuousDeploymentPolicyType = "SingleHeader"
+)
+
 type EventType string
 
 const (
@@ -104,8 +111,10 @@ const (
 type HTTPVersion string
 
 const (
-	HTTPVersion_http1_1 HTTPVersion = "http1.1"
-	HTTPVersion_http2   HTTPVersion = "http2"
+	HTTPVersion_http1_1   HTTPVersion = "http1.1"
+	HTTPVersion_http2     HTTPVersion = "http2"
+	HTTPVersion_http3     HTTPVersion = "http3"
+	HTTPVersion_http2and3 HTTPVersion = "http2and3"
 )
 
 type ICPRecordalStatus string
@@ -146,6 +155,26 @@ const (
 	MinimumProtocolVersion_TLSv1_2_2018 MinimumProtocolVersion = "TLSv1.2_2018"
 	MinimumProtocolVersion_TLSv1_2_2019 MinimumProtocolVersion = "TLSv1.2_2019"
 	MinimumProtocolVersion_TLSv1_2_2021 MinimumProtocolVersion = "TLSv1.2_2021"
+)
+
+type OriginAccessControlOriginTypes string
+
+const (
+	OriginAccessControlOriginTypes_s3 OriginAccessControlOriginTypes = "s3"
+)
+
+type OriginAccessControlSigningBehaviors string
+
+const (
+	OriginAccessControlSigningBehaviors_never       OriginAccessControlSigningBehaviors = "never"
+	OriginAccessControlSigningBehaviors_always      OriginAccessControlSigningBehaviors = "always"
+	OriginAccessControlSigningBehaviors_no_override OriginAccessControlSigningBehaviors = "no-override"
+)
+
+type OriginAccessControlSigningProtocols string
+
+const (
+	OriginAccessControlSigningProtocols_sigv4 OriginAccessControlSigningProtocols = "sigv4"
 )
 
 type OriginProtocolPolicy string

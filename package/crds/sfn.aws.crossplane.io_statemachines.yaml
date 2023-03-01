@@ -69,7 +69,7 @@ spec:
                     description: "Defines what execution history events are logged
                       and where they are logged. \n By default, the level is set to
                       OFF. For more information see Log Levels (https://docs.aws.amazon.com/step-functions/latest/dg/cloudwatch-log-level.html)
-                      in the AWS Step Functions User Guide."
+                      in the Step Functions User Guide."
                     properties:
                       destinations:
                         items:
@@ -180,8 +180,8 @@ spec:
                     description: "Tags to be added when creating a state machine.
                       \n An array of key-value pairs. For more information, see Using
                       Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
-                      in the AWS Billing and Cost Management User Guide, and Controlling
-                      Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
+                      in the Amazon Web Services Billing and Cost Management User
+                      Guide, and Controlling Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
                       \n Tags may only contain Unicode letters, digits, white space,
                       or these symbols: _ . : / = + - @."
                     items:
@@ -193,7 +193,7 @@ spec:
                       type: object
                     type: array
                   tracingConfiguration:
-                    description: Selects whether AWS X-Ray tracing is enabled.
+                    description: Selects whether X-Ray tracing is enabled.
                     properties:
                       enabled:
                         type: boolean

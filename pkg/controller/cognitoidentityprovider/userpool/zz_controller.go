@@ -194,15 +194,20 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.CustomDomain = nil
 	}
+	if resp.UserPool.DeletionProtection != nil {
+		cr.Spec.ForProvider.DeletionProtection = resp.UserPool.DeletionProtection
+	} else {
+		cr.Spec.ForProvider.DeletionProtection = nil
+	}
 	if resp.UserPool.DeviceConfiguration != nil {
-		f7 := &svcapitypes.DeviceConfigurationType{}
+		f8 := &svcapitypes.DeviceConfigurationType{}
 		if resp.UserPool.DeviceConfiguration.ChallengeRequiredOnNewDevice != nil {
-			f7.ChallengeRequiredOnNewDevice = resp.UserPool.DeviceConfiguration.ChallengeRequiredOnNewDevice
+			f8.ChallengeRequiredOnNewDevice = resp.UserPool.DeviceConfiguration.ChallengeRequiredOnNewDevice
 		}
 		if resp.UserPool.DeviceConfiguration.DeviceOnlyRememberedOnUserPrompt != nil {
-			f7.DeviceOnlyRememberedOnUserPrompt = resp.UserPool.DeviceConfiguration.DeviceOnlyRememberedOnUserPrompt
+			f8.DeviceOnlyRememberedOnUserPrompt = resp.UserPool.DeviceConfiguration.DeviceOnlyRememberedOnUserPrompt
 		}
-		cr.Spec.ForProvider.DeviceConfiguration = f7
+		cr.Spec.ForProvider.DeviceConfiguration = f8
 	} else {
 		cr.Spec.ForProvider.DeviceConfiguration = nil
 	}
@@ -212,23 +217,23 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Domain = nil
 	}
 	if resp.UserPool.EmailConfiguration != nil {
-		f9 := &svcapitypes.EmailConfigurationType{}
+		f10 := &svcapitypes.EmailConfigurationType{}
 		if resp.UserPool.EmailConfiguration.ConfigurationSet != nil {
-			f9.ConfigurationSet = resp.UserPool.EmailConfiguration.ConfigurationSet
+			f10.ConfigurationSet = resp.UserPool.EmailConfiguration.ConfigurationSet
 		}
 		if resp.UserPool.EmailConfiguration.EmailSendingAccount != nil {
-			f9.EmailSendingAccount = resp.UserPool.EmailConfiguration.EmailSendingAccount
+			f10.EmailSendingAccount = resp.UserPool.EmailConfiguration.EmailSendingAccount
 		}
 		if resp.UserPool.EmailConfiguration.From != nil {
-			f9.From = resp.UserPool.EmailConfiguration.From
+			f10.From = resp.UserPool.EmailConfiguration.From
 		}
 		if resp.UserPool.EmailConfiguration.ReplyToEmailAddress != nil {
-			f9.ReplyToEmailAddress = resp.UserPool.EmailConfiguration.ReplyToEmailAddress
+			f10.ReplyToEmailAddress = resp.UserPool.EmailConfiguration.ReplyToEmailAddress
 		}
 		if resp.UserPool.EmailConfiguration.SourceArn != nil {
-			f9.SourceARN = resp.UserPool.EmailConfiguration.SourceArn
+			f10.SourceARN = resp.UserPool.EmailConfiguration.SourceArn
 		}
-		cr.Spec.ForProvider.EmailConfiguration = f9
+		cr.Spec.ForProvider.EmailConfiguration = f10
 	} else {
 		cr.Spec.ForProvider.EmailConfiguration = nil
 	}
@@ -258,61 +263,61 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.ID = nil
 	}
 	if resp.UserPool.LambdaConfig != nil {
-		f15 := &svcapitypes.LambdaConfigType{}
+		f16 := &svcapitypes.LambdaConfigType{}
 		if resp.UserPool.LambdaConfig.CreateAuthChallenge != nil {
-			f15.CreateAuthChallenge = resp.UserPool.LambdaConfig.CreateAuthChallenge
+			f16.CreateAuthChallenge = resp.UserPool.LambdaConfig.CreateAuthChallenge
 		}
 		if resp.UserPool.LambdaConfig.CustomEmailSender != nil {
-			f15f1 := &svcapitypes.CustomEmailLambdaVersionConfigType{}
+			f16f1 := &svcapitypes.CustomEmailLambdaVersionConfigType{}
 			if resp.UserPool.LambdaConfig.CustomEmailSender.LambdaArn != nil {
-				f15f1.LambdaARN = resp.UserPool.LambdaConfig.CustomEmailSender.LambdaArn
+				f16f1.LambdaARN = resp.UserPool.LambdaConfig.CustomEmailSender.LambdaArn
 			}
 			if resp.UserPool.LambdaConfig.CustomEmailSender.LambdaVersion != nil {
-				f15f1.LambdaVersion = resp.UserPool.LambdaConfig.CustomEmailSender.LambdaVersion
+				f16f1.LambdaVersion = resp.UserPool.LambdaConfig.CustomEmailSender.LambdaVersion
 			}
-			f15.CustomEmailSender = f15f1
+			f16.CustomEmailSender = f16f1
 		}
 		if resp.UserPool.LambdaConfig.CustomMessage != nil {
-			f15.CustomMessage = resp.UserPool.LambdaConfig.CustomMessage
+			f16.CustomMessage = resp.UserPool.LambdaConfig.CustomMessage
 		}
 		if resp.UserPool.LambdaConfig.CustomSMSSender != nil {
-			f15f3 := &svcapitypes.CustomSMSLambdaVersionConfigType{}
+			f16f3 := &svcapitypes.CustomSMSLambdaVersionConfigType{}
 			if resp.UserPool.LambdaConfig.CustomSMSSender.LambdaArn != nil {
-				f15f3.LambdaARN = resp.UserPool.LambdaConfig.CustomSMSSender.LambdaArn
+				f16f3.LambdaARN = resp.UserPool.LambdaConfig.CustomSMSSender.LambdaArn
 			}
 			if resp.UserPool.LambdaConfig.CustomSMSSender.LambdaVersion != nil {
-				f15f3.LambdaVersion = resp.UserPool.LambdaConfig.CustomSMSSender.LambdaVersion
+				f16f3.LambdaVersion = resp.UserPool.LambdaConfig.CustomSMSSender.LambdaVersion
 			}
-			f15.CustomSMSSender = f15f3
+			f16.CustomSMSSender = f16f3
 		}
 		if resp.UserPool.LambdaConfig.DefineAuthChallenge != nil {
-			f15.DefineAuthChallenge = resp.UserPool.LambdaConfig.DefineAuthChallenge
+			f16.DefineAuthChallenge = resp.UserPool.LambdaConfig.DefineAuthChallenge
 		}
 		if resp.UserPool.LambdaConfig.KMSKeyID != nil {
-			f15.KMSKeyID = resp.UserPool.LambdaConfig.KMSKeyID
+			f16.KMSKeyID = resp.UserPool.LambdaConfig.KMSKeyID
 		}
 		if resp.UserPool.LambdaConfig.PostAuthentication != nil {
-			f15.PostAuthentication = resp.UserPool.LambdaConfig.PostAuthentication
+			f16.PostAuthentication = resp.UserPool.LambdaConfig.PostAuthentication
 		}
 		if resp.UserPool.LambdaConfig.PostConfirmation != nil {
-			f15.PostConfirmation = resp.UserPool.LambdaConfig.PostConfirmation
+			f16.PostConfirmation = resp.UserPool.LambdaConfig.PostConfirmation
 		}
 		if resp.UserPool.LambdaConfig.PreAuthentication != nil {
-			f15.PreAuthentication = resp.UserPool.LambdaConfig.PreAuthentication
+			f16.PreAuthentication = resp.UserPool.LambdaConfig.PreAuthentication
 		}
 		if resp.UserPool.LambdaConfig.PreSignUp != nil {
-			f15.PreSignUp = resp.UserPool.LambdaConfig.PreSignUp
+			f16.PreSignUp = resp.UserPool.LambdaConfig.PreSignUp
 		}
 		if resp.UserPool.LambdaConfig.PreTokenGeneration != nil {
-			f15.PreTokenGeneration = resp.UserPool.LambdaConfig.PreTokenGeneration
+			f16.PreTokenGeneration = resp.UserPool.LambdaConfig.PreTokenGeneration
 		}
 		if resp.UserPool.LambdaConfig.UserMigration != nil {
-			f15.UserMigration = resp.UserPool.LambdaConfig.UserMigration
+			f16.UserMigration = resp.UserPool.LambdaConfig.UserMigration
 		}
 		if resp.UserPool.LambdaConfig.VerifyAuthChallengeResponse != nil {
-			f15.VerifyAuthChallengeResponse = resp.UserPool.LambdaConfig.VerifyAuthChallengeResponse
+			f16.VerifyAuthChallengeResponse = resp.UserPool.LambdaConfig.VerifyAuthChallengeResponse
 		}
-		cr.Spec.ForProvider.LambdaConfig = f15
+		cr.Spec.ForProvider.LambdaConfig = f16
 	} else {
 		cr.Spec.ForProvider.LambdaConfig = nil
 	}
@@ -332,75 +337,75 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Name = nil
 	}
 	if resp.UserPool.Policies != nil {
-		f19 := &svcapitypes.UserPoolPolicyType{}
+		f20 := &svcapitypes.UserPoolPolicyType{}
 		if resp.UserPool.Policies.PasswordPolicy != nil {
-			f19f0 := &svcapitypes.PasswordPolicyType{}
+			f20f0 := &svcapitypes.PasswordPolicyType{}
 			if resp.UserPool.Policies.PasswordPolicy.MinimumLength != nil {
-				f19f0.MinimumLength = resp.UserPool.Policies.PasswordPolicy.MinimumLength
+				f20f0.MinimumLength = resp.UserPool.Policies.PasswordPolicy.MinimumLength
 			}
 			if resp.UserPool.Policies.PasswordPolicy.RequireLowercase != nil {
-				f19f0.RequireLowercase = resp.UserPool.Policies.PasswordPolicy.RequireLowercase
+				f20f0.RequireLowercase = resp.UserPool.Policies.PasswordPolicy.RequireLowercase
 			}
 			if resp.UserPool.Policies.PasswordPolicy.RequireNumbers != nil {
-				f19f0.RequireNumbers = resp.UserPool.Policies.PasswordPolicy.RequireNumbers
+				f20f0.RequireNumbers = resp.UserPool.Policies.PasswordPolicy.RequireNumbers
 			}
 			if resp.UserPool.Policies.PasswordPolicy.RequireSymbols != nil {
-				f19f0.RequireSymbols = resp.UserPool.Policies.PasswordPolicy.RequireSymbols
+				f20f0.RequireSymbols = resp.UserPool.Policies.PasswordPolicy.RequireSymbols
 			}
 			if resp.UserPool.Policies.PasswordPolicy.RequireUppercase != nil {
-				f19f0.RequireUppercase = resp.UserPool.Policies.PasswordPolicy.RequireUppercase
+				f20f0.RequireUppercase = resp.UserPool.Policies.PasswordPolicy.RequireUppercase
 			}
 			if resp.UserPool.Policies.PasswordPolicy.TemporaryPasswordValidityDays != nil {
-				f19f0.TemporaryPasswordValidityDays = resp.UserPool.Policies.PasswordPolicy.TemporaryPasswordValidityDays
+				f20f0.TemporaryPasswordValidityDays = resp.UserPool.Policies.PasswordPolicy.TemporaryPasswordValidityDays
 			}
-			f19.PasswordPolicy = f19f0
+			f20.PasswordPolicy = f20f0
 		}
-		cr.Spec.ForProvider.Policies = f19
+		cr.Spec.ForProvider.Policies = f20
 	} else {
 		cr.Spec.ForProvider.Policies = nil
 	}
 	if resp.UserPool.SchemaAttributes != nil {
-		f20 := []*svcapitypes.SchemaAttributeType{}
-		for _, f20iter := range resp.UserPool.SchemaAttributes {
-			f20elem := &svcapitypes.SchemaAttributeType{}
-			if f20iter.AttributeDataType != nil {
-				f20elem.AttributeDataType = f20iter.AttributeDataType
+		f21 := []*svcapitypes.SchemaAttributeType{}
+		for _, f21iter := range resp.UserPool.SchemaAttributes {
+			f21elem := &svcapitypes.SchemaAttributeType{}
+			if f21iter.AttributeDataType != nil {
+				f21elem.AttributeDataType = f21iter.AttributeDataType
 			}
-			if f20iter.DeveloperOnlyAttribute != nil {
-				f20elem.DeveloperOnlyAttribute = f20iter.DeveloperOnlyAttribute
+			if f21iter.DeveloperOnlyAttribute != nil {
+				f21elem.DeveloperOnlyAttribute = f21iter.DeveloperOnlyAttribute
 			}
-			if f20iter.Mutable != nil {
-				f20elem.Mutable = f20iter.Mutable
+			if f21iter.Mutable != nil {
+				f21elem.Mutable = f21iter.Mutable
 			}
-			if f20iter.Name != nil {
-				f20elem.Name = f20iter.Name
+			if f21iter.Name != nil {
+				f21elem.Name = f21iter.Name
 			}
-			if f20iter.NumberAttributeConstraints != nil {
-				f20elemf4 := &svcapitypes.NumberAttributeConstraintsType{}
-				if f20iter.NumberAttributeConstraints.MaxValue != nil {
-					f20elemf4.MaxValue = f20iter.NumberAttributeConstraints.MaxValue
+			if f21iter.NumberAttributeConstraints != nil {
+				f21elemf4 := &svcapitypes.NumberAttributeConstraintsType{}
+				if f21iter.NumberAttributeConstraints.MaxValue != nil {
+					f21elemf4.MaxValue = f21iter.NumberAttributeConstraints.MaxValue
 				}
-				if f20iter.NumberAttributeConstraints.MinValue != nil {
-					f20elemf4.MinValue = f20iter.NumberAttributeConstraints.MinValue
+				if f21iter.NumberAttributeConstraints.MinValue != nil {
+					f21elemf4.MinValue = f21iter.NumberAttributeConstraints.MinValue
 				}
-				f20elem.NumberAttributeConstraints = f20elemf4
+				f21elem.NumberAttributeConstraints = f21elemf4
 			}
-			if f20iter.Required != nil {
-				f20elem.Required = f20iter.Required
+			if f21iter.Required != nil {
+				f21elem.Required = f21iter.Required
 			}
-			if f20iter.StringAttributeConstraints != nil {
-				f20elemf6 := &svcapitypes.StringAttributeConstraintsType{}
-				if f20iter.StringAttributeConstraints.MaxLength != nil {
-					f20elemf6.MaxLength = f20iter.StringAttributeConstraints.MaxLength
+			if f21iter.StringAttributeConstraints != nil {
+				f21elemf6 := &svcapitypes.StringAttributeConstraintsType{}
+				if f21iter.StringAttributeConstraints.MaxLength != nil {
+					f21elemf6.MaxLength = f21iter.StringAttributeConstraints.MaxLength
 				}
-				if f20iter.StringAttributeConstraints.MinLength != nil {
-					f20elemf6.MinLength = f20iter.StringAttributeConstraints.MinLength
+				if f21iter.StringAttributeConstraints.MinLength != nil {
+					f21elemf6.MinLength = f21iter.StringAttributeConstraints.MinLength
 				}
-				f20elem.StringAttributeConstraints = f20elemf6
+				f21elem.StringAttributeConstraints = f21elemf6
 			}
-			f20 = append(f20, f20elem)
+			f21 = append(f21, f21elem)
 		}
-		cr.Status.AtProvider.SchemaAttributes = f20
+		cr.Status.AtProvider.SchemaAttributes = f21
 	} else {
 		cr.Status.AtProvider.SchemaAttributes = nil
 	}
@@ -410,17 +415,17 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.SmsAuthenticationMessage = nil
 	}
 	if resp.UserPool.SmsConfiguration != nil {
-		f22 := &svcapitypes.SmsConfigurationType{}
+		f23 := &svcapitypes.SmsConfigurationType{}
 		if resp.UserPool.SmsConfiguration.ExternalId != nil {
-			f22.ExternalID = resp.UserPool.SmsConfiguration.ExternalId
+			f23.ExternalID = resp.UserPool.SmsConfiguration.ExternalId
 		}
 		if resp.UserPool.SmsConfiguration.SnsCallerArn != nil {
-			f22.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
+			f23.SNSCallerARN = resp.UserPool.SmsConfiguration.SnsCallerArn
 		}
 		if resp.UserPool.SmsConfiguration.SnsRegion != nil {
-			f22.SNSRegion = resp.UserPool.SmsConfiguration.SnsRegion
+			f23.SNSRegion = resp.UserPool.SmsConfiguration.SnsRegion
 		}
-		cr.Spec.ForProvider.SmsConfiguration = f22
+		cr.Spec.ForProvider.SmsConfiguration = f23
 	} else {
 		cr.Spec.ForProvider.SmsConfiguration = nil
 	}
@@ -439,67 +444,82 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.Status = nil
 	}
-	if resp.UserPool.UserPoolAddOns != nil {
-		f26 := &svcapitypes.UserPoolAddOnsType{}
-		if resp.UserPool.UserPoolAddOns.AdvancedSecurityMode != nil {
-			f26.AdvancedSecurityMode = resp.UserPool.UserPoolAddOns.AdvancedSecurityMode
+	if resp.UserPool.UserAttributeUpdateSettings != nil {
+		f27 := &svcapitypes.UserAttributeUpdateSettingsType{}
+		if resp.UserPool.UserAttributeUpdateSettings.AttributesRequireVerificationBeforeUpdate != nil {
+			f27f0 := []*string{}
+			for _, f27f0iter := range resp.UserPool.UserAttributeUpdateSettings.AttributesRequireVerificationBeforeUpdate {
+				var f27f0elem string
+				f27f0elem = *f27f0iter
+				f27f0 = append(f27f0, &f27f0elem)
+			}
+			f27.AttributesRequireVerificationBeforeUpdate = f27f0
 		}
-		cr.Spec.ForProvider.UserPoolAddOns = f26
+		cr.Spec.ForProvider.UserAttributeUpdateSettings = f27
+	} else {
+		cr.Spec.ForProvider.UserAttributeUpdateSettings = nil
+	}
+	if resp.UserPool.UserPoolAddOns != nil {
+		f28 := &svcapitypes.UserPoolAddOnsType{}
+		if resp.UserPool.UserPoolAddOns.AdvancedSecurityMode != nil {
+			f28.AdvancedSecurityMode = resp.UserPool.UserPoolAddOns.AdvancedSecurityMode
+		}
+		cr.Spec.ForProvider.UserPoolAddOns = f28
 	} else {
 		cr.Spec.ForProvider.UserPoolAddOns = nil
 	}
 	if resp.UserPool.UserPoolTags != nil {
-		f27 := map[string]*string{}
-		for f27key, f27valiter := range resp.UserPool.UserPoolTags {
-			var f27val string
-			f27val = *f27valiter
-			f27[f27key] = &f27val
+		f29 := map[string]*string{}
+		for f29key, f29valiter := range resp.UserPool.UserPoolTags {
+			var f29val string
+			f29val = *f29valiter
+			f29[f29key] = &f29val
 		}
-		cr.Spec.ForProvider.UserPoolTags = f27
+		cr.Spec.ForProvider.UserPoolTags = f29
 	} else {
 		cr.Spec.ForProvider.UserPoolTags = nil
 	}
 	if resp.UserPool.UsernameAttributes != nil {
-		f28 := []*string{}
-		for _, f28iter := range resp.UserPool.UsernameAttributes {
-			var f28elem string
-			f28elem = *f28iter
-			f28 = append(f28, &f28elem)
+		f30 := []*string{}
+		for _, f30iter := range resp.UserPool.UsernameAttributes {
+			var f30elem string
+			f30elem = *f30iter
+			f30 = append(f30, &f30elem)
 		}
-		cr.Spec.ForProvider.UsernameAttributes = f28
+		cr.Spec.ForProvider.UsernameAttributes = f30
 	} else {
 		cr.Spec.ForProvider.UsernameAttributes = nil
 	}
 	if resp.UserPool.UsernameConfiguration != nil {
-		f29 := &svcapitypes.UsernameConfigurationType{}
+		f31 := &svcapitypes.UsernameConfigurationType{}
 		if resp.UserPool.UsernameConfiguration.CaseSensitive != nil {
-			f29.CaseSensitive = resp.UserPool.UsernameConfiguration.CaseSensitive
+			f31.CaseSensitive = resp.UserPool.UsernameConfiguration.CaseSensitive
 		}
-		cr.Spec.ForProvider.UsernameConfiguration = f29
+		cr.Spec.ForProvider.UsernameConfiguration = f31
 	} else {
 		cr.Spec.ForProvider.UsernameConfiguration = nil
 	}
 	if resp.UserPool.VerificationMessageTemplate != nil {
-		f30 := &svcapitypes.VerificationMessageTemplateType{}
+		f32 := &svcapitypes.VerificationMessageTemplateType{}
 		if resp.UserPool.VerificationMessageTemplate.DefaultEmailOption != nil {
-			f30.DefaultEmailOption = resp.UserPool.VerificationMessageTemplate.DefaultEmailOption
+			f32.DefaultEmailOption = resp.UserPool.VerificationMessageTemplate.DefaultEmailOption
 		}
 		if resp.UserPool.VerificationMessageTemplate.EmailMessage != nil {
-			f30.EmailMessage = resp.UserPool.VerificationMessageTemplate.EmailMessage
+			f32.EmailMessage = resp.UserPool.VerificationMessageTemplate.EmailMessage
 		}
 		if resp.UserPool.VerificationMessageTemplate.EmailMessageByLink != nil {
-			f30.EmailMessageByLink = resp.UserPool.VerificationMessageTemplate.EmailMessageByLink
+			f32.EmailMessageByLink = resp.UserPool.VerificationMessageTemplate.EmailMessageByLink
 		}
 		if resp.UserPool.VerificationMessageTemplate.EmailSubject != nil {
-			f30.EmailSubject = resp.UserPool.VerificationMessageTemplate.EmailSubject
+			f32.EmailSubject = resp.UserPool.VerificationMessageTemplate.EmailSubject
 		}
 		if resp.UserPool.VerificationMessageTemplate.EmailSubjectByLink != nil {
-			f30.EmailSubjectByLink = resp.UserPool.VerificationMessageTemplate.EmailSubjectByLink
+			f32.EmailSubjectByLink = resp.UserPool.VerificationMessageTemplate.EmailSubjectByLink
 		}
 		if resp.UserPool.VerificationMessageTemplate.SmsMessage != nil {
-			f30.SmsMessage = resp.UserPool.VerificationMessageTemplate.SmsMessage
+			f32.SmsMessage = resp.UserPool.VerificationMessageTemplate.SmsMessage
 		}
-		cr.Spec.ForProvider.VerificationMessageTemplate = f30
+		cr.Spec.ForProvider.VerificationMessageTemplate = f32
 	} else {
 		cr.Spec.ForProvider.VerificationMessageTemplate = nil
 	}

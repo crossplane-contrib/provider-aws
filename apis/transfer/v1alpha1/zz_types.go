@@ -47,6 +47,39 @@ type DescribedAccess struct {
 }
 
 // +kubebuilder:skipversion
+type DescribedAgreement struct {
+	AccessRole *string `json:"accessRole,omitempty"`
+
+	ARN *string `json:"arn,omitempty"`
+
+	BaseDirectory *string `json:"baseDirectory,omitempty"`
+
+	ServerID *string `json:"serverID,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DescribedCertificate struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DescribedConnector struct {
+	AccessRole *string `json:"accessRole,omitempty"`
+
+	ARN *string `json:"arn,omitempty"`
+
+	LoggingRole *string `json:"loggingRole,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	URL *string `json:"url,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DescribedExecution struct {
 	ExecutionRole *string `json:"executionRole,omitempty"`
 	// The full POSIX identity, including user ID (Uid), group ID (Gid), and any
@@ -55,6 +88,24 @@ type DescribedExecution struct {
 	// and directories in your file system determine the level of access your users
 	// get when transferring files into and out of your Amazon EFS file systems.
 	PosixProfile *PosixProfile `json:"posixProfile,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DescribedHostKey struct {
+	ARN *string `json:"arn,omitempty"`
+
+	DateImported *metav1.Time `json:"dateImported,omitempty"`
+
+	HostKeyFingerprint *string `json:"hostKeyFingerprint,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DescribedProfile struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -209,6 +260,39 @@ type ListedAccess struct {
 }
 
 // +kubebuilder:skipversion
+type ListedAgreement struct {
+	ARN *string `json:"arn,omitempty"`
+
+	ServerID *string `json:"serverID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListedCertificate struct {
+	ARN *string `json:"arn,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListedConnector struct {
+	ARN *string `json:"arn,omitempty"`
+
+	URL *string `json:"url,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListedHostKey struct {
+	ARN *string `json:"arn,omitempty"`
+
+	DateImported *metav1.Time `json:"dateImported,omitempty"`
+
+	Fingerprint *string `json:"fingerprint,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListedProfile struct {
+	ARN *string `json:"arn,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ListedServer struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -279,7 +363,11 @@ type PosixProfile struct {
 
 // +kubebuilder:skipversion
 type ProtocolDetails struct {
+	As2Transports []*string `json:"as2Transports,omitempty"`
+
 	PassiveIP *string `json:"passiveIP,omitempty"`
+
+	SetStatOption *string `json:"setStatOption,omitempty"`
 
 	TLSSessionResumptionMode *string `json:"tlsSessionResumptionMode,omitempty"`
 }
@@ -316,5 +404,7 @@ type WorkflowDetail struct {
 
 // +kubebuilder:skipversion
 type WorkflowDetails struct {
+	OnPartialUpload []*WorkflowDetail `json:"onPartialUpload,omitempty"`
+
 	OnUpload []*WorkflowDetail `json:"onUpload,omitempty"`
 }

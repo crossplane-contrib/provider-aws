@@ -33,6 +33,10 @@ import (
 func GenerateDescribeStreamInput(cr *svcapitypes.Stream) *svcsdk.DescribeStreamInput {
 	res := &svcsdk.DescribeStreamInput{}
 
+	if cr.Status.AtProvider.StreamARN != nil {
+		res.SetStreamARN(*cr.Status.AtProvider.StreamARN)
+	}
+
 	return res
 }
 
@@ -162,6 +166,10 @@ func GenerateCreateStreamInput(cr *svcapitypes.Stream) *svcsdk.CreateStreamInput
 // GenerateDeleteStreamInput returns a deletion input.
 func GenerateDeleteStreamInput(cr *svcapitypes.Stream) *svcsdk.DeleteStreamInput {
 	res := &svcsdk.DeleteStreamInput{}
+
+	if cr.Status.AtProvider.StreamARN != nil {
+		res.SetStreamARN(*cr.Status.AtProvider.StreamARN)
+	}
 
 	return res
 }

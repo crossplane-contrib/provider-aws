@@ -25,6 +25,15 @@ const (
 	ActivityStreamMode_async ActivityStreamMode = "async"
 )
 
+type ActivityStreamPolicyStatus string
+
+const (
+	ActivityStreamPolicyStatus_locked           ActivityStreamPolicyStatus = "locked"
+	ActivityStreamPolicyStatus_unlocked         ActivityStreamPolicyStatus = "unlocked"
+	ActivityStreamPolicyStatus_locking_policy   ActivityStreamPolicyStatus = "locking-policy"
+	ActivityStreamPolicyStatus_unlocking_policy ActivityStreamPolicyStatus = "unlocking-policy"
+)
+
 type ActivityStreamStatus string
 
 const (
@@ -41,6 +50,13 @@ const (
 	ApplyMethod_pending_reboot ApplyMethod = "pending-reboot"
 )
 
+type AuditPolicyState string
+
+const (
+	AuditPolicyState_locked   AuditPolicyState = "locked"
+	AuditPolicyState_unlocked AuditPolicyState = "unlocked"
+)
+
 type AuthScheme string
 
 const (
@@ -52,6 +68,15 @@ type AutomationMode string
 const (
 	AutomationMode_full       AutomationMode = "full"
 	AutomationMode_all_paused AutomationMode = "all-paused"
+)
+
+type ClientPasswordAuthType string
+
+const (
+	ClientPasswordAuthType_MYSQL_NATIVE_PASSWORD     ClientPasswordAuthType = "MYSQL_NATIVE_PASSWORD"
+	ClientPasswordAuthType_POSTGRES_SCRAM_SHA_256    ClientPasswordAuthType = "POSTGRES_SCRAM_SHA_256"
+	ClientPasswordAuthType_POSTGRES_MD5              ClientPasswordAuthType = "POSTGRES_MD5"
+	ClientPasswordAuthType_SQL_SERVER_AUTHENTICATION ClientPasswordAuthType = "SQL_SERVER_AUTHENTICATION"
 )
 
 type CustomEngineVersionStatus string
@@ -99,6 +124,14 @@ type EngineFamily string
 const (
 	EngineFamily_MYSQL      EngineFamily = "MYSQL"
 	EngineFamily_POSTGRESQL EngineFamily = "POSTGRESQL"
+	EngineFamily_SQLSERVER  EngineFamily = "SQLSERVER"
+)
+
+type ExportSourceType string
+
+const (
+	ExportSourceType_SNAPSHOT ExportSourceType = "SNAPSHOT"
+	ExportSourceType_CLUSTER  ExportSourceType = "CLUSTER"
 )
 
 type FailoverStatus string
@@ -114,6 +147,7 @@ type IAMAuthMode string
 const (
 	IAMAuthMode_DISABLED IAMAuthMode = "DISABLED"
 	IAMAuthMode_REQUIRED IAMAuthMode = "REQUIRED"
+	IAMAuthMode_ENABLED  IAMAuthMode = "ENABLED"
 )
 
 type ReplicaMode string
@@ -134,6 +168,7 @@ const (
 	SourceType_db_cluster_snapshot   SourceType = "db-cluster-snapshot"
 	SourceType_custom_engine_version SourceType = "custom-engine-version"
 	SourceType_db_proxy              SourceType = "db-proxy"
+	SourceType_blue_green_deployment SourceType = "blue-green-deployment"
 )
 
 type TargetHealthReason string

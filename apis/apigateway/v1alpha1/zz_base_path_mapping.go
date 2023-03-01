@@ -34,7 +34,7 @@ type BasePathMappingParameters struct {
 	// across a single API. Specify '(none)' if you do not want callers to specify
 	// a base path name after the domain name.
 	BasePath *string `json:"basePath,omitempty"`
-	// [Required] The domain name of the BasePathMapping resource to create.
+	// The domain name of the BasePathMapping resource to create.
 	// +kubebuilder:validation:Required
 	DomainName *string `json:"domainName"`
 	// The name of the API's stage that you want to use for this mapping. Specify

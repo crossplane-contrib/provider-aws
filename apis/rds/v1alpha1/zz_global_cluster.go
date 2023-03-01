@@ -29,7 +29,7 @@ type GlobalClusterParameters struct {
 	// Region is which region the GlobalCluster will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The name for your database of up to 64 alpha-numeric characters. If you do
+	// The name for your database of up to 64 alphanumeric characters. If you do
 	// not provide a name, Amazon Aurora will not create a database in the global
 	// database cluster you are creating.
 	DatabaseName *string `json:"databaseName,omitempty"`

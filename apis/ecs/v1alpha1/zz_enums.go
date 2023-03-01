@@ -29,6 +29,14 @@ const (
 	AgentUpdateStatus_FAILED   AgentUpdateStatus = "FAILED"
 )
 
+type ApplicationProtocol string
+
+const (
+	ApplicationProtocol_http  ApplicationProtocol = "http"
+	ApplicationProtocol_http2 ApplicationProtocol = "http2"
+	ApplicationProtocol_grpc  ApplicationProtocol = "grpc"
+)
+
 type AssignPublicIP string
 
 const (
@@ -432,9 +440,12 @@ const (
 type TaskStopCode string
 
 const (
-	TaskStopCode_TaskFailedToStart        TaskStopCode = "TaskFailedToStart"
-	TaskStopCode_EssentialContainerExited TaskStopCode = "EssentialContainerExited"
-	TaskStopCode_UserInitiated            TaskStopCode = "UserInitiated"
+	TaskStopCode_TaskFailedToStart         TaskStopCode = "TaskFailedToStart"
+	TaskStopCode_EssentialContainerExited  TaskStopCode = "EssentialContainerExited"
+	TaskStopCode_UserInitiated             TaskStopCode = "UserInitiated"
+	TaskStopCode_ServiceSchedulerInitiated TaskStopCode = "ServiceSchedulerInitiated"
+	TaskStopCode_SpotInterruption          TaskStopCode = "SpotInterruption"
+	TaskStopCode_TerminationNotice         TaskStopCode = "TerminationNotice"
 )
 
 type TransportProtocol string

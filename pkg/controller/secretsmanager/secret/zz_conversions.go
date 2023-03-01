@@ -57,43 +57,43 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 		cr.Spec.ForProvider.KMSKeyID = nil
 	}
 	if resp.ReplicationStatus != nil {
-		f10 := []*svcapitypes.ReplicationStatusType{}
-		for _, f10iter := range resp.ReplicationStatus {
-			f10elem := &svcapitypes.ReplicationStatusType{}
-			if f10iter.KmsKeyId != nil {
-				f10elem.KMSKeyID = f10iter.KmsKeyId
+		f11 := []*svcapitypes.ReplicationStatusType{}
+		for _, f11iter := range resp.ReplicationStatus {
+			f11elem := &svcapitypes.ReplicationStatusType{}
+			if f11iter.KmsKeyId != nil {
+				f11elem.KMSKeyID = f11iter.KmsKeyId
 			}
-			if f10iter.LastAccessedDate != nil {
-				f10elem.LastAccessedDate = &metav1.Time{*f10iter.LastAccessedDate}
+			if f11iter.LastAccessedDate != nil {
+				f11elem.LastAccessedDate = &metav1.Time{*f11iter.LastAccessedDate}
 			}
-			if f10iter.Region != nil {
-				f10elem.Region = f10iter.Region
+			if f11iter.Region != nil {
+				f11elem.Region = f11iter.Region
 			}
-			if f10iter.Status != nil {
-				f10elem.Status = f10iter.Status
+			if f11iter.Status != nil {
+				f11elem.Status = f11iter.Status
 			}
-			if f10iter.StatusMessage != nil {
-				f10elem.StatusMessage = f10iter.StatusMessage
+			if f11iter.StatusMessage != nil {
+				f11elem.StatusMessage = f11iter.StatusMessage
 			}
-			f10 = append(f10, f10elem)
+			f11 = append(f11, f11elem)
 		}
-		cr.Status.AtProvider.ReplicationStatus = f10
+		cr.Status.AtProvider.ReplicationStatus = f11
 	} else {
 		cr.Status.AtProvider.ReplicationStatus = nil
 	}
 	if resp.Tags != nil {
-		f14 := []*svcapitypes.Tag{}
-		for _, f14iter := range resp.Tags {
-			f14elem := &svcapitypes.Tag{}
-			if f14iter.Key != nil {
-				f14elem.Key = f14iter.Key
+		f15 := []*svcapitypes.Tag{}
+		for _, f15iter := range resp.Tags {
+			f15elem := &svcapitypes.Tag{}
+			if f15iter.Key != nil {
+				f15elem.Key = f15iter.Key
 			}
-			if f14iter.Value != nil {
-				f14elem.Value = f14iter.Value
+			if f15iter.Value != nil {
+				f15elem.Value = f15iter.Value
 			}
-			f14 = append(f14, f14elem)
+			f15 = append(f15, f15elem)
 		}
-		cr.Spec.ForProvider.Tags = f14
+		cr.Spec.ForProvider.Tags = f15
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

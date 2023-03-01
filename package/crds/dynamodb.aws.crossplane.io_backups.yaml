@@ -341,7 +341,9 @@ spec:
                     format: date-time
                     type: string
                   backupSizeBytes:
-                    description: Size of the backup in bytes.
+                    description: Size of the backup in bytes. DynamoDB updates this
+                      value approximately every six hours. Recent changes might not
+                      be reflected in this value.
                     format: int64
                     type: integer
                   backupStatus:

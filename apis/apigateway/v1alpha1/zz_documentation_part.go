@@ -29,13 +29,13 @@ type DocumentationPartParameters struct {
 	// Region is which region the DocumentationPart will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// [Required] The location of the targeted API entity of the to-be-created documentation
+	// The location of the targeted API entity of the to-be-created documentation
 	// part.
 	// +kubebuilder:validation:Required
 	Location *DocumentationPartLocation `json:"location"`
-	// [Required] The new documentation content map of the targeted API entity.
-	// Enclosed key-value pairs are API-specific, but only OpenAPI-compliant key-value
-	// pairs can be exported and, hence, published.
+	// The new documentation content map of the targeted API entity. Enclosed key-value
+	// pairs are API-specific, but only OpenAPI-compliant key-value pairs can be
+	// exported and, hence, published.
 	// +kubebuilder:validation:Required
 	Properties                        *string `json:"properties"`
 	CustomDocumentationPartParameters `json:",inline"`

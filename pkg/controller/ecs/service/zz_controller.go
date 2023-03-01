@@ -151,15 +151,34 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	if resp.Service.DeploymentConfiguration != nil {
 		f4 := &svcapitypes.DeploymentConfiguration{}
+		if resp.Service.DeploymentConfiguration.Alarms != nil {
+			f4f0 := &svcapitypes.DeploymentAlarms{}
+			if resp.Service.DeploymentConfiguration.Alarms.AlarmNames != nil {
+				f4f0f0 := []*string{}
+				for _, f4f0f0iter := range resp.Service.DeploymentConfiguration.Alarms.AlarmNames {
+					var f4f0f0elem string
+					f4f0f0elem = *f4f0f0iter
+					f4f0f0 = append(f4f0f0, &f4f0f0elem)
+				}
+				f4f0.AlarmNames = f4f0f0
+			}
+			if resp.Service.DeploymentConfiguration.Alarms.Enable != nil {
+				f4f0.Enable = resp.Service.DeploymentConfiguration.Alarms.Enable
+			}
+			if resp.Service.DeploymentConfiguration.Alarms.Rollback != nil {
+				f4f0.Rollback = resp.Service.DeploymentConfiguration.Alarms.Rollback
+			}
+			f4.Alarms = f4f0
+		}
 		if resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker != nil {
-			f4f0 := &svcapitypes.DeploymentCircuitBreaker{}
+			f4f1 := &svcapitypes.DeploymentCircuitBreaker{}
 			if resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Enable != nil {
-				f4f0.Enable = resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Enable
+				f4f1.Enable = resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Enable
 			}
 			if resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Rollback != nil {
-				f4f0.Rollback = resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Rollback
+				f4f1.Rollback = resp.Service.DeploymentConfiguration.DeploymentCircuitBreaker.Rollback
 			}
-			f4.DeploymentCircuitBreaker = f4f0
+			f4.DeploymentCircuitBreaker = f4f1
 		}
 		if resp.Service.DeploymentConfiguration.MaximumPercent != nil {
 			f4.MaximumPercent = resp.Service.DeploymentConfiguration.MaximumPercent
@@ -262,6 +281,91 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			if f6iter.RunningCount != nil {
 				f6elem.RunningCount = f6iter.RunningCount
+			}
+			if f6iter.ServiceConnectConfiguration != nil {
+				f6elemf13 := &svcapitypes.ServiceConnectConfiguration{}
+				if f6iter.ServiceConnectConfiguration.Enabled != nil {
+					f6elemf13.Enabled = f6iter.ServiceConnectConfiguration.Enabled
+				}
+				if f6iter.ServiceConnectConfiguration.LogConfiguration != nil {
+					f6elemf13f1 := &svcapitypes.LogConfiguration{}
+					if f6iter.ServiceConnectConfiguration.LogConfiguration.LogDriver != nil {
+						f6elemf13f1.LogDriver = f6iter.ServiceConnectConfiguration.LogConfiguration.LogDriver
+					}
+					if f6iter.ServiceConnectConfiguration.LogConfiguration.Options != nil {
+						f6elemf13f1f1 := map[string]*string{}
+						for f6elemf13f1f1key, f6elemf13f1f1valiter := range f6iter.ServiceConnectConfiguration.LogConfiguration.Options {
+							var f6elemf13f1f1val string
+							f6elemf13f1f1val = *f6elemf13f1f1valiter
+							f6elemf13f1f1[f6elemf13f1f1key] = &f6elemf13f1f1val
+						}
+						f6elemf13f1.Options = f6elemf13f1f1
+					}
+					if f6iter.ServiceConnectConfiguration.LogConfiguration.SecretOptions != nil {
+						f6elemf13f1f2 := []*svcapitypes.Secret{}
+						for _, f6elemf13f1f2iter := range f6iter.ServiceConnectConfiguration.LogConfiguration.SecretOptions {
+							f6elemf13f1f2elem := &svcapitypes.Secret{}
+							if f6elemf13f1f2iter.Name != nil {
+								f6elemf13f1f2elem.Name = f6elemf13f1f2iter.Name
+							}
+							if f6elemf13f1f2iter.ValueFrom != nil {
+								f6elemf13f1f2elem.ValueFrom = f6elemf13f1f2iter.ValueFrom
+							}
+							f6elemf13f1f2 = append(f6elemf13f1f2, f6elemf13f1f2elem)
+						}
+						f6elemf13f1.SecretOptions = f6elemf13f1f2
+					}
+					f6elemf13.LogConfiguration = f6elemf13f1
+				}
+				if f6iter.ServiceConnectConfiguration.Namespace != nil {
+					f6elemf13.Namespace = f6iter.ServiceConnectConfiguration.Namespace
+				}
+				if f6iter.ServiceConnectConfiguration.Services != nil {
+					f6elemf13f3 := []*svcapitypes.ServiceConnectService{}
+					for _, f6elemf13f3iter := range f6iter.ServiceConnectConfiguration.Services {
+						f6elemf13f3elem := &svcapitypes.ServiceConnectService{}
+						if f6elemf13f3iter.ClientAliases != nil {
+							f6elemf13f3elemf0 := []*svcapitypes.ServiceConnectClientAlias{}
+							for _, f6elemf13f3elemf0iter := range f6elemf13f3iter.ClientAliases {
+								f6elemf13f3elemf0elem := &svcapitypes.ServiceConnectClientAlias{}
+								if f6elemf13f3elemf0iter.DnsName != nil {
+									f6elemf13f3elemf0elem.DNSName = f6elemf13f3elemf0iter.DnsName
+								}
+								if f6elemf13f3elemf0iter.Port != nil {
+									f6elemf13f3elemf0elem.Port = f6elemf13f3elemf0iter.Port
+								}
+								f6elemf13f3elemf0 = append(f6elemf13f3elemf0, f6elemf13f3elemf0elem)
+							}
+							f6elemf13f3elem.ClientAliases = f6elemf13f3elemf0
+						}
+						if f6elemf13f3iter.DiscoveryName != nil {
+							f6elemf13f3elem.DiscoveryName = f6elemf13f3iter.DiscoveryName
+						}
+						if f6elemf13f3iter.IngressPortOverride != nil {
+							f6elemf13f3elem.IngressPortOverride = f6elemf13f3iter.IngressPortOverride
+						}
+						if f6elemf13f3iter.PortName != nil {
+							f6elemf13f3elem.PortName = f6elemf13f3iter.PortName
+						}
+						f6elemf13f3 = append(f6elemf13f3, f6elemf13f3elem)
+					}
+					f6elemf13.Services = f6elemf13f3
+				}
+				f6elem.ServiceConnectConfiguration = f6elemf13
+			}
+			if f6iter.ServiceConnectResources != nil {
+				f6elemf14 := []*svcapitypes.ServiceConnectServiceResource{}
+				for _, f6elemf14iter := range f6iter.ServiceConnectResources {
+					f6elemf14elem := &svcapitypes.ServiceConnectServiceResource{}
+					if f6elemf14iter.DiscoveryArn != nil {
+						f6elemf14elem.DiscoveryARN = f6elemf14iter.DiscoveryArn
+					}
+					if f6elemf14iter.DiscoveryName != nil {
+						f6elemf14elem.DiscoveryName = f6elemf14iter.DiscoveryName
+					}
+					f6elemf14 = append(f6elemf14, f6elemf14elem)
+				}
+				f6elem.ServiceConnectResources = f6elemf14
 			}
 			if f6iter.Status != nil {
 				f6elem.Status = f6iter.Status

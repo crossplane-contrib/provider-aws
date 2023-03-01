@@ -51,25 +51,23 @@ type AuthorizerParameters struct {
 	// path to the resource, including the initial /. For Lambda functions, this
 	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations.
 	AuthorizerURI *string `json:"authorizerURI,omitempty"`
-	// The identity source for which authorization is requested.
-	//    * For a TOKEN or COGNITO_USER_POOLS authorizer, this is required and specifies
-	//    the request header mapping expression for the custom header holding the
-	//    authorization token submitted by the client. For example, if the token
-	//    header name is Auth, the header mapping expression is method.request.header.Auth.
-	//
-	//    * For the REQUEST authorizer, this is required when authorization caching
-	//    is enabled. The value is a comma-separated string of one or more mapping
-	//    expressions of the specified request parameters. For example, if an Auth
-	//    header, a Name query string parameter are defined as identity sources,
-	//    this value is method.request.header.Auth, method.request.querystring.Name.
-	//    These parameters will be used to derive the authorization caching key
-	//    and to perform runtime validation of the REQUEST authorizer by verifying
-	//    all of the identity-related request parameters are present, not null and
-	//    non-empty. Only when this is true does the authorizer invoke the authorizer
-	//    Lambda function, otherwise, it returns a 401 Unauthorized response without
-	//    calling the Lambda function. The valid value is a string of comma-separated
-	//    mapping expressions of the specified request parameters. When the authorization
-	//    caching is not enabled, this property is optional.
+	// The identity source for which authorization is requested. For a TOKEN or
+	// COGNITO_USER_POOLS authorizer, this is required and specifies the request
+	// header mapping expression for the custom header holding the authorization
+	// token submitted by the client. For example, if the token header name is Auth,
+	// the header mapping expression is method.request.header.Auth. For the REQUEST
+	// authorizer, this is required when authorization caching is enabled. The value
+	// is a comma-separated string of one or more mapping expressions of the specified
+	// request parameters. For example, if an Auth header, a Name query string parameter
+	// are defined as identity sources, this value is method.request.header.Auth,
+	// method.request.querystring.Name. These parameters will be used to derive
+	// the authorization caching key and to perform runtime validation of the REQUEST
+	// authorizer by verifying all of the identity-related request parameters are
+	// present, not null and non-empty. Only when this is true does the authorizer
+	// invoke the authorizer Lambda function, otherwise, it returns a 401 Unauthorized
+	// response without calling the Lambda function. The valid value is a string
+	// of comma-separated mapping expressions of the specified request parameters.
+	// When the authorization caching is not enabled, this property is optional.
 	IdentitySource *string `json:"identitySource,omitempty"`
 	// A validation expression for the incoming identity token. For TOKEN authorizers,
 	// this value is a regular expression. For COGNITO_USER_POOLS authorizers, API
@@ -79,13 +77,13 @@ type AuthorizerParameters struct {
 	// response without calling the Lambda function. The validation expression does
 	// not apply to the REQUEST authorizer.
 	IdentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
-	// [Required] The name of the authorizer.
+	// The name of the authorizer.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// [Required] The authorizer type. Valid values are TOKEN for a Lambda function
-	// using a single authorization token submitted in a custom header, REQUEST
-	// for a Lambda function using incoming request parameters, and COGNITO_USER_POOLS
-	// for using an Amazon Cognito user pool.
+	// The authorizer type. Valid values are TOKEN for a Lambda function using a
+	// single authorization token submitted in a custom header, REQUEST for a Lambda
+	// function using incoming request parameters, and COGNITO_USER_POOLS for using
+	// an Amazon Cognito user pool.
 	// +kubebuilder:validation:Required
 	Type                       *string `json:"type_"`
 	CustomAuthorizerParameters `json:",inline"`

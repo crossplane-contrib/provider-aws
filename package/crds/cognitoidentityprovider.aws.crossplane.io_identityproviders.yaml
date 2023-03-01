@@ -65,11 +65,11 @@ spec:
                   attributeMapping:
                     additionalProperties:
                       type: string
-                    description: A mapping of identity provider attributes to standard
-                      and custom user pool attributes.
+                    description: A mapping of IdP attributes to standard and custom
+                      user pool attributes.
                     type: object
                   idpIdentifiers:
-                    description: A list of identity provider identifiers.
+                    description: A list of IdP identifiers.
                     items:
                       type: string
                     type: array
@@ -101,7 +101,7 @@ spec:
                     - namespace
                     type: object
                   providerType:
-                    description: The identity provider type.
+                    description: The IdP type.
                     type: string
                   region:
                     description: Region is which region the IdentityProvider will
@@ -367,15 +367,15 @@ spec:
                   of IdentityProvider
                 properties:
                   creationDate:
-                    description: The date the identity provider was created.
+                    description: The date the IdP was created.
                     format: date-time
                     type: string
                   lastModifiedDate:
-                    description: The date the identity provider was last modified.
+                    description: The date the IdP was last modified.
                     format: date-time
                     type: string
                   providerName:
-                    description: The identity provider name.
+                    description: The IdP name.
                     type: string
                   userPoolID:
                     description: The user pool ID.

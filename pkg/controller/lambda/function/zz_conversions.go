@@ -167,24 +167,31 @@ func GenerateCreateFunctionInput(cr *svcapitypes.Function) *svcsdk.CreateFunctio
 	if cr.Spec.ForProvider.Runtime != nil {
 		res.SetRuntime(*cr.Spec.ForProvider.Runtime)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f15 := map[string]*string{}
-		for f15key, f15valiter := range cr.Spec.ForProvider.Tags {
-			var f15val string
-			f15val = *f15valiter
-			f15[f15key] = &f15val
+	if cr.Spec.ForProvider.SnapStart != nil {
+		f15 := &svcsdk.SnapStart{}
+		if cr.Spec.ForProvider.SnapStart.ApplyOn != nil {
+			f15.SetApplyOn(*cr.Spec.ForProvider.SnapStart.ApplyOn)
 		}
-		res.SetTags(f15)
+		res.SetSnapStart(f15)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f16 := map[string]*string{}
+		for f16key, f16valiter := range cr.Spec.ForProvider.Tags {
+			var f16val string
+			f16val = *f16valiter
+			f16[f16key] = &f16val
+		}
+		res.SetTags(f16)
 	}
 	if cr.Spec.ForProvider.Timeout != nil {
 		res.SetTimeout(*cr.Spec.ForProvider.Timeout)
 	}
 	if cr.Spec.ForProvider.TracingConfig != nil {
-		f17 := &svcsdk.TracingConfig{}
+		f18 := &svcsdk.TracingConfig{}
 		if cr.Spec.ForProvider.TracingConfig.Mode != nil {
-			f17.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
+			f18.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
 		}
-		res.SetTracingConfig(f17)
+		res.SetTracingConfig(f18)
 	}
 
 	return res

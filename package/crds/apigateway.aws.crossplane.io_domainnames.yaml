@@ -90,7 +90,7 @@ spec:
                       name certificate''s private key.'
                     type: string
                   domainName:
-                    description: '[Required] The name of the DomainName resource.'
+                    description: The name of the DomainName resource.
                     type: string
                   endpointConfiguration:
                     description: The endpoint configuration of this DomainName showing
@@ -335,19 +335,17 @@ spec:
                       endpoint. You set up this association when adding a DNS record
                       pointing the custom domain name to this distribution name. For
                       more information about CloudFront distributions, see the Amazon
-                      CloudFront documentation (https://aws.amazon.com/documentation/cloudfront/).
+                      CloudFront documentation.
                     type: string
                   distributionHostedZoneID:
                     description: The region-agnostic Amazon Route 53 Hosted Zone ID
                       of the edge-optimized endpoint. The valid value is Z2FDTNDATAQYW2
                       for all the regions. For more information, see Set up a Regional
-                      Custom Domain Name (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html)
-                      and AWS Regions and Endpoints for API Gateway (https://docs.aws.amazon.com/general/latest/gr/rande.html#apigateway_region).
+                      Custom Domain Name and AWS Regions and Endpoints for API Gateway.
                     type: string
                   domainNameStatus:
                     description: The status of the DomainName migration. The valid
-                      values are AVAILABLE, UPDATING, PENDING_CERTIFICATE_REIMPORT,
-                      and PENDING_OWNERSHIP_VERIFICATION. If the status is UPDATING,
+                      values are AVAILABLE and UPDATING. If the status is UPDATING,
                       the domain cannot be modified further until the existing operation
                       is complete. If it is AVAILABLE, the domain can be updated.
                     type: string
@@ -365,8 +363,8 @@ spec:
                   regionalHostedZoneID:
                     description: The region-specific Amazon Route 53 Hosted Zone ID
                       of the regional endpoint. For more information, see Set up a
-                      Regional Custom Domain Name (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html)
-                      and AWS Regions and Endpoints for API Gateway (https://docs.aws.amazon.com/general/latest/gr/rande.html#apigateway_region).
+                      Regional Custom Domain Name and AWS Regions and Endpoints for
+                      API Gateway.
                     type: string
                 type: object
               conditions:

@@ -38,9 +38,8 @@ type IntegrationParameters struct {
 	// across resources to return the same cached data for requests to different
 	// resources.
 	CacheNamespace *string `json:"cacheNamespace,omitempty"`
-	// The (id (https://docs.aws.amazon.com/apigateway/api-reference/resource/vpc-link/#id))
-	// of the VpcLink used for the integration when connectionType=VPC_LINK and
-	// undefined, otherwise.
+	// The ID of the VpcLink used for the integration. Specify this value only if
+	// you specify VPC_LINK as the connection type.
 	ConnectionID *string `json:"connectionID,omitempty"`
 	// The type of the network connection to the integration endpoint. The valid
 	// value is INTERNET for connections through the public routable internet or
@@ -50,38 +49,21 @@ type IntegrationParameters struct {
 	// Specifies how to handle request payload content type conversions. Supported
 	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
 	//
-	//    * CONVERT_TO_BINARY: Converts a request payload from a Base64-encoded
-	//    string to the corresponding binary blob.
-	//
-	//    * CONVERT_TO_TEXT: Converts a request payload from a binary blob to a
-	//    Base64-encoded string.
-	//
 	// If this property is not defined, the request payload will be passed through
 	// from the method request to integration request without modification, provided
 	// that the passthroughBehavior is configured to support payload pass-through.
 	ContentHandling *string `json:"contentHandling,omitempty"`
 	// Specifies whether credentials are required for a put integration.
 	Credentials *string `json:"credentials,omitempty"`
-	// [Required] Specifies a put integration request's HTTP method.
+	// Specifies the HTTP method for the integration.
 	// +kubebuilder:validation:Required
 	HTTPMethod *string `json:"httpMethod"`
-	// Specifies a put integration HTTP method. When the integration type is HTTP
-	// or AWS, this field is required.
+	// The HTTP method for the integration.
 	IntegrationHTTPMethod *string `json:"integrationHTTPMethod,omitempty"`
 	// Specifies the pass-through behavior for incoming requests based on the Content-Type
 	// header in the request, and the available mapping templates specified as the
 	// requestTemplates property on the Integration resource. There are three valid
 	// values: WHEN_NO_MATCH, WHEN_NO_TEMPLATES, and NEVER.
-	//
-	//    * WHEN_NO_MATCH passes the request body for unmapped content types through
-	//    to the integration back end without transformation.
-	//
-	//    * NEVER rejects unmapped content types with an HTTP 415 'Unsupported Media
-	//    Type' response.
-	//
-	//    * WHEN_NO_TEMPLATES allows pass-through when the integration has NO content
-	//    types mapped to templates. However if there is at least one content type
-	//    defined, unmapped content types will be rejected with the same 415 response.
 	PassthroughBehavior *string `json:"passthroughBehavior,omitempty"`
 	// A key-value map specifying request parameters that are passed from the method
 	// request to the back end. The key is an integration request parameter name
@@ -101,30 +83,28 @@ type IntegrationParameters struct {
 	TimeoutInMillis *int64 `json:"timeoutInMillis,omitempty"`
 
 	TLSConfig *TLSConfig `json:"tlsConfig,omitempty"`
-	// [Required] Specifies a put integration input's type.
+	// Specifies a put integration input's type.
 	// +kubebuilder:validation:Required
 	Type *string `json:"type_"`
 	// Specifies Uniform Resource Identifier (URI) of the integration endpoint.
-	//
-	//    * For HTTP or HTTP_PROXY integrations, the URI must be a fully formed,
-	//    encoded HTTP(S) URL according to the RFC-3986 specification (https://en.wikipedia.org/wiki/Uniform_Resource_Identifier),
-	//    for either standard integration, where connectionType is not VPC_LINK,
-	//    or private integration, where connectionType is VPC_LINK. For a private
-	//    HTTP integration, the URI is not used for routing.
-	//
-	//    * For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
-	//    Here, {Region} is the API Gateway region (e.g., us-east-1); {service}
-	//    is the name of the integrated AWS service (e.g., s3); and {subdomain}
-	//    is a designated subdomain supported by certain AWS service for fast host-name
-	//    lookup. action can be used for an AWS service action-based API, using
-	//    an Action={name}&{p1}={v1}&p2={v2}... query string. The ensuing {service_api}
-	//    refers to a supported action {name} plus any required input parameters.
-	//    Alternatively, path can be used for an AWS service path-based API. The
-	//    ensuing service_api refers to the path to an AWS service resource, including
-	//    the region of the integrated AWS service, if applicable. For example,
-	//    for integration with the S3 API of GetObject (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html),
-	//    the uri can be either arn:aws:apigateway:us-west-2:s3:action/GetObject&Bucket={bucket}&Key={key}
-	//    or arn:aws:apigateway:us-west-2:s3:path/{bucket}/{key}
+	// For HTTP or HTTP_PROXY integrations, the URI must be a fully formed, encoded
+	// HTTP(S) URL according to the RFC-3986 specification, for either standard
+	// integration, where connectionType is not VPC_LINK, or private integration,
+	// where connectionType is VPC_LINK. For a private HTTP integration, the URI
+	// is not used for routing. For AWS or AWS_PROXY integrations, the URI is of
+	// the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
+	// Here, {Region} is the API Gateway region (e.g., us-east-1); {service} is
+	// the name of the integrated Amazon Web Services service (e.g., s3); and {subdomain}
+	// is a designated subdomain supported by certain Amazon Web Services service
+	// for fast host-name lookup. action can be used for an Amazon Web Services
+	// service action-based API, using an Action={name}&{p1}={v1}&p2={v2}... query
+	// string. The ensuing {service_api} refers to a supported action {name} plus
+	// any required input parameters. Alternatively, path can be used for an Amazon
+	// Web Services service path-based API. The ensuing service_api refers to the
+	// path to an Amazon Web Services service resource, including the region of
+	// the integrated Amazon Web Services service, if applicable. For example, for
+	// integration with the S3 API of GetObject, the uri can be either arn:aws:apigateway:us-west-2:s3:action/GetObject&Bucket={bucket}&Key={key}
+	// or arn:aws:apigateway:us-west-2:s3:path/{bucket}/{key}.
 	URI                         *string `json:"uri,omitempty"`
 	CustomIntegrationParameters `json:",inline"`
 }

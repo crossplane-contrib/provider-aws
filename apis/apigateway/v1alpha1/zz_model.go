@@ -29,16 +29,16 @@ type ModelParameters struct {
 	// Region is which region the Model will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// [Required] The content-type for the model.
+	// The content-type for the model.
 	// +kubebuilder:validation:Required
 	ContentType *string `json:"contentType"`
 	// The description of the model.
 	Description *string `json:"description,omitempty"`
-	// [Required] The name of the model. Must be alphanumeric.
+	// The name of the model. Must be alphanumeric.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
 	// The schema for the model. For application/json models, this should be JSON
-	// schema draft 4 (https://tools.ietf.org/html/draft-zyp-json-schema-04) model.
+	// schema draft 4 model.
 	Schema                *string `json:"schema,omitempty"`
 	CustomModelParameters `json:",inline"`
 }

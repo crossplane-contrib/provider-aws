@@ -64,12 +64,1551 @@ spec:
                   allocatedCapacity:
                     description: "This parameter is deprecated. Use MaxCapacity instead.
                       \n The number of Glue data processing units (DPUs) to allocate
-                      to this Job. You can allocate from 2 to 100 DPUs; the default
+                      to this Job. You can allocate a minimum of 2 DPUs; the default
                       is 10. A DPU is a relative measure of processing power that
                       consists of 4 vCPUs of compute capacity and 16 GB of memory.
                       For more information, see the Glue pricing page (https://aws.amazon.com/glue/pricing/)."
                     format: int64
                     type: integer
+                  codeGenConfigurationNodes:
+                    additionalProperties:
+                      properties:
+                        aggregate:
+                          description: Specifies a transform that groups rows by chosen
+                            fields and computes the aggregated value by specified
+                            function.
+                          properties:
+                            aggs:
+                              items:
+                                properties:
+                                  aggFunc:
+                                    type: string
+                                  column:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              type: array
+                            groups:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        applyMapping:
+                          description: Specifies a transform that maps data property
+                            keys in the data source to data property keys in the data
+                            target. You can rename keys, modify the data types for
+                            keys, and choose which keys to drop from the dataset.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            mapping:
+                              items:
+                                properties:
+                                  dropped:
+                                    type: boolean
+                                  fromPath:
+                                    items:
+                                      type: string
+                                    type: array
+                                  fromType:
+                                    type: string
+                                  toKey:
+                                    type: string
+                                  toType:
+                                    type: string
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        athenaConnectorSource:
+                          description: Specifies a connector to an Amazon Athena data
+                            source.
+                          properties:
+                            connectionName:
+                              type: string
+                            connectionTable:
+                              type: string
+                            connectionType:
+                              type: string
+                            connectorName:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            schemaName:
+                              type: string
+                          type: object
+                        catalogKafkaSource:
+                          description: Specifies an Apache Kafka data store in the
+                            Data Catalog.
+                          properties:
+                            dataPreviewOptions:
+                              description: Specifies options related to data preview
+                                for viewing a sample of your data.
+                              properties:
+                                pollingTime:
+                                  format: int64
+                                  type: integer
+                                recordPollingLimit:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            database:
+                              type: string
+                            detectSchema:
+                              type: boolean
+                            name:
+                              type: string
+                            streamingOptions:
+                              description: Additional options for streaming.
+                              properties:
+                                assign:
+                                  type: string
+                                bootstrapServers:
+                                  type: string
+                                classification:
+                                  type: string
+                                connectionName:
+                                  type: string
+                                delimiter:
+                                  type: string
+                                endingOffsets:
+                                  type: string
+                                maxOffsetsPerTrigger:
+                                  format: int64
+                                  type: integer
+                                minPartitions:
+                                  format: int64
+                                  type: integer
+                                numRetries:
+                                  format: int64
+                                  type: integer
+                                pollTimeoutMs:
+                                  format: int64
+                                  type: integer
+                                retryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                securityProtocol:
+                                  type: string
+                                startingOffsets:
+                                  type: string
+                                subscribePattern:
+                                  type: string
+                                topicName:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                            windowSize:
+                              format: int64
+                              type: integer
+                          type: object
+                        catalogKinesisSource:
+                          description: Specifies a Kinesis data source in the Glue
+                            Data Catalog.
+                          properties:
+                            dataPreviewOptions:
+                              description: Specifies options related to data preview
+                                for viewing a sample of your data.
+                              properties:
+                                pollingTime:
+                                  format: int64
+                                  type: integer
+                                recordPollingLimit:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            database:
+                              type: string
+                            detectSchema:
+                              type: boolean
+                            name:
+                              type: string
+                            streamingOptions:
+                              description: Additional options for the Amazon Kinesis
+                                streaming data source.
+                              properties:
+                                addIdleTimeBetweenReads:
+                                  type: boolean
+                                avoidEmptyBatches:
+                                  type: boolean
+                                classification:
+                                  type: string
+                                delimiter:
+                                  type: string
+                                describeShardInterval:
+                                  format: int64
+                                  type: integer
+                                endpointURL:
+                                  type: string
+                                idleTimeBetweenReadsInMs:
+                                  format: int64
+                                  type: integer
+                                maxFetchRecordsPerShard:
+                                  format: int64
+                                  type: integer
+                                maxFetchTimeInMs:
+                                  format: int64
+                                  type: integer
+                                maxRecordPerRead:
+                                  format: int64
+                                  type: integer
+                                maxRetryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                numRetries:
+                                  format: int64
+                                  type: integer
+                                retryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                roleARN:
+                                  type: string
+                                roleSessionName:
+                                  type: string
+                                startingPosition:
+                                  type: string
+                                streamARN:
+                                  type: string
+                                streamName:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                            windowSize:
+                              format: int64
+                              type: integer
+                          type: object
+                        catalogSource:
+                          description: Specifies a data store in the Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        catalogTarget:
+                          description: Specifies a target that uses a Glue Data Catalog
+                            table.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        customCode:
+                          description: Specifies a transform that uses custom code
+                            you provide to perform the data transformation. The output
+                            is a collection of DynamicFrames.
+                          properties:
+                            className:
+                              type: string
+                            code:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        directKafkaSource:
+                          description: Specifies an Apache Kafka data store.
+                          properties:
+                            dataPreviewOptions:
+                              description: Specifies options related to data preview
+                                for viewing a sample of your data.
+                              properties:
+                                pollingTime:
+                                  format: int64
+                                  type: integer
+                                recordPollingLimit:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            detectSchema:
+                              type: boolean
+                            name:
+                              type: string
+                            streamingOptions:
+                              description: Additional options for streaming.
+                              properties:
+                                assign:
+                                  type: string
+                                bootstrapServers:
+                                  type: string
+                                classification:
+                                  type: string
+                                connectionName:
+                                  type: string
+                                delimiter:
+                                  type: string
+                                endingOffsets:
+                                  type: string
+                                maxOffsetsPerTrigger:
+                                  format: int64
+                                  type: integer
+                                minPartitions:
+                                  format: int64
+                                  type: integer
+                                numRetries:
+                                  format: int64
+                                  type: integer
+                                pollTimeoutMs:
+                                  format: int64
+                                  type: integer
+                                retryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                securityProtocol:
+                                  type: string
+                                startingOffsets:
+                                  type: string
+                                subscribePattern:
+                                  type: string
+                                topicName:
+                                  type: string
+                              type: object
+                            windowSize:
+                              format: int64
+                              type: integer
+                          type: object
+                        directKinesisSource:
+                          description: Specifies a direct Amazon Kinesis data source.
+                          properties:
+                            dataPreviewOptions:
+                              description: Specifies options related to data preview
+                                for viewing a sample of your data.
+                              properties:
+                                pollingTime:
+                                  format: int64
+                                  type: integer
+                                recordPollingLimit:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            detectSchema:
+                              type: boolean
+                            name:
+                              type: string
+                            streamingOptions:
+                              description: Additional options for the Amazon Kinesis
+                                streaming data source.
+                              properties:
+                                addIdleTimeBetweenReads:
+                                  type: boolean
+                                avoidEmptyBatches:
+                                  type: boolean
+                                classification:
+                                  type: string
+                                delimiter:
+                                  type: string
+                                describeShardInterval:
+                                  format: int64
+                                  type: integer
+                                endpointURL:
+                                  type: string
+                                idleTimeBetweenReadsInMs:
+                                  format: int64
+                                  type: integer
+                                maxFetchRecordsPerShard:
+                                  format: int64
+                                  type: integer
+                                maxFetchTimeInMs:
+                                  format: int64
+                                  type: integer
+                                maxRecordPerRead:
+                                  format: int64
+                                  type: integer
+                                maxRetryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                numRetries:
+                                  format: int64
+                                  type: integer
+                                retryIntervalMs:
+                                  format: int64
+                                  type: integer
+                                roleARN:
+                                  type: string
+                                roleSessionName:
+                                  type: string
+                                startingPosition:
+                                  type: string
+                                streamARN:
+                                  type: string
+                                streamName:
+                                  type: string
+                              type: object
+                            windowSize:
+                              format: int64
+                              type: integer
+                          type: object
+                        dropDuplicates:
+                          description: Specifies a transform that removes rows of
+                            repeating data from a data set.
+                          properties:
+                            columns:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        dropFields:
+                          description: Specifies a transform that chooses the data
+                            property keys that you want to drop.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            paths:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                          type: object
+                        dropNullFields:
+                          description: Specifies a transform that removes columns
+                            from the dataset if all values in the column are 'null'.
+                            By default, Glue Studio will recognize null objects, but
+                            some values such as empty strings, strings that are "null",
+                            -1 integers or other placeholders such as zeros, are not
+                            automatically recognized as nulls.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            nullCheckBoxList:
+                              description: Represents whether certain values are recognized
+                                as null values for removal.
+                              properties:
+                                isEmpty:
+                                  type: boolean
+                                isNegOne:
+                                  type: boolean
+                                isNullString:
+                                  type: boolean
+                              type: object
+                            nullTextList:
+                              items:
+                                properties:
+                                  datatype:
+                                    description: A structure representing the datatype
+                                      of the value.
+                                    properties:
+                                      id:
+                                        type: string
+                                      label:
+                                        type: string
+                                    type: object
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                        dynamicTransform:
+                          description: Specifies the set of parameters needed to perform
+                            the dynamic transform.
+                          properties:
+                            functionName:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            parameters:
+                              items:
+                                properties:
+                                  isOptional:
+                                    type: boolean
+                                  listType:
+                                    type: string
+                                  name:
+                                    type: string
+                                  type_:
+                                    type: string
+                                  validationMessage:
+                                    type: string
+                                  validationRule:
+                                    type: string
+                                  value:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              type: array
+                            path:
+                              type: string
+                            transformName:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        dynamoDBCatalogSource:
+                          description: Specifies a DynamoDB data source in the Glue
+                            Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        evaluateDataQuality:
+                          description: Specifies your data quality evaluation criteria.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            output:
+                              type: string
+                            publishingOptions:
+                              description: Options to configure how your data quality
+                                evaluation results are published.
+                              properties:
+                                cloudWatchMetricsEnabled:
+                                  type: boolean
+                                evaluationContext:
+                                  type: string
+                                resultsPublishingEnabled:
+                                  type: boolean
+                                resultsS3Prefix:
+                                  type: string
+                              type: object
+                            ruleset:
+                              type: string
+                            stopJobOnFailureOptions:
+                              description: Options to configure how your job will
+                                stop if your data quality evaluation fails.
+                              properties:
+                                stopJobOnFailureTiming:
+                                  type: string
+                              type: object
+                          type: object
+                        fillMissingValues:
+                          description: Specifies a transform that locates records
+                            in the dataset that have missing values and adds a new
+                            field with a value determined by imputation. The input
+                            data set is used to train the machine learning model that
+                            determines what the missing value should be.
+                          properties:
+                            filledPath:
+                              type: string
+                            imputedPath:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        filter:
+                          description: Specifies a transform that splits a dataset
+                            into two, based on a filter condition.
+                          properties:
+                            filters:
+                              items:
+                                properties:
+                                  negated:
+                                    type: boolean
+                                  operation:
+                                    type: string
+                                  values:
+                                    items:
+                                      properties:
+                                        type_:
+                                          type: string
+                                        value:
+                                          items:
+                                            type: string
+                                          type: array
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            logicalOperator:
+                              type: string
+                            name:
+                              type: string
+                          type: object
+                        governedCatalogSource:
+                          description: Specifies the data store in the governed Glue
+                            Data Catalog.
+                          properties:
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            partitionPredicate:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        governedCatalogTarget:
+                          description: Specifies a data target that writes to Amazon
+                            S3 using the Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                enableUpdateCatalog:
+                                  type: boolean
+                                updateBehavior:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                          type: object
+                        jDBCConnectorSource:
+                          description: Specifies a connector to a JDBC data source.
+                          properties:
+                            additionalOptions:
+                              description: Additional connection options for the connector.
+                              properties:
+                                dataTypeMapping:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                filterPredicate:
+                                  type: string
+                                jobBookmarkKeys:
+                                  items:
+                                    type: string
+                                  type: array
+                                jobBookmarkKeysSortOrder:
+                                  type: string
+                                lowerBound:
+                                  format: int64
+                                  type: integer
+                                numPartitions:
+                                  format: int64
+                                  type: integer
+                                partitionColumn:
+                                  type: string
+                                upperBound:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            connectionName:
+                              type: string
+                            connectionTable:
+                              type: string
+                            connectionType:
+                              type: string
+                            connectorName:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            query:
+                              type: string
+                          type: object
+                        jDBCConnectorTarget:
+                          description: Specifies a data target that writes to Amazon
+                            S3 in Apache Parquet columnar storage.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            connectionName:
+                              type: string
+                            connectionTable:
+                              type: string
+                            connectionType:
+                              type: string
+                            connectorName:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        join:
+                          description: Specifies a transform that joins two datasets
+                            into one dataset using a comparison phrase on the specified
+                            data property keys. You can use inner, outer, left, right,
+                            left semi, and left anti joins.
+                          properties:
+                            columns:
+                              items:
+                                properties:
+                                  from:
+                                    type: string
+                                  keys:
+                                    items:
+                                      items:
+                                        type: string
+                                      type: array
+                                    type: array
+                                type: object
+                              type: array
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            joinType:
+                              type: string
+                            name:
+                              type: string
+                          type: object
+                        merge:
+                          description: Specifies a transform that merges a DynamicFrame
+                            with a staging DynamicFrame based on the specified primary
+                            keys to identify records. Duplicate records (records with
+                            the same primary keys) are not de-duplicated.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            primaryKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            source:
+                              type: string
+                          type: object
+                        microsoftSQLServerCatalogSource:
+                          description: Specifies a Microsoft SQL server data source
+                            in the Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        microsoftSQLServerCatalogTarget:
+                          description: Specifies a target that uses Microsoft SQL.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        mySQLCatalogSource:
+                          description: Specifies a MySQL data source in the Glue Data
+                            Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        mySQLCatalogTarget:
+                          description: Specifies a target that uses MySQL.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        oracleSQLCatalogSource:
+                          description: Specifies an Oracle data source in the Glue
+                            Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        oracleSQLCatalogTarget:
+                          description: Specifies a target that uses Oracle SQL.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        pIIDetection:
+                          description: Specifies a transform that identifies, removes
+                            or masks PII data.
+                          properties:
+                            entityTypesToDetect:
+                              items:
+                                type: string
+                              type: array
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            maskValue:
+                              type: string
+                            name:
+                              type: string
+                            outputColumnName:
+                              type: string
+                            piiType:
+                              type: string
+                            sampleFraction:
+                              type: number
+                            thresholdFraction:
+                              type: number
+                          type: object
+                        postgreSQLCatalogSource:
+                          description: Specifies a PostgresSQL data source in the
+                            Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        postgreSQLCatalogTarget:
+                          description: Specifies a target that uses Postgres SQL.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        redshiftSource:
+                          description: Specifies an Amazon Redshift data store.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            redshiftTmpDir:
+                              type: string
+                            table:
+                              type: string
+                            tmpDirIAMRole:
+                              type: string
+                          type: object
+                        redshiftTarget:
+                          description: Specifies a target that uses Amazon Redshift.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            redshiftTmpDir:
+                              type: string
+                            table:
+                              type: string
+                            tmpDirIAMRole:
+                              type: string
+                            upsertRedshiftOptions:
+                              description: The options to configure an upsert operation
+                                when writing to a Redshift target .
+                              properties:
+                                connectionName:
+                                  type: string
+                                tableLocation:
+                                  type: string
+                                upsertKeys:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        relationalCatalogSource:
+                          description: Specifies a Relational database data source
+                            in the Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        renameField:
+                          description: Specifies a transform that renames a single
+                            data property key.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            sourcePath:
+                              items:
+                                type: string
+                              type: array
+                            targetPath:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        s3CatalogSource:
+                          description: Specifies an Amazon S3 data store in the Glue
+                            Data Catalog.
+                          properties:
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            partitionPredicate:
+                              type: string
+                            table:
+                              type: string
+                          type: object
+                        s3CatalogTarget:
+                          description: Specifies a data target that writes to Amazon
+                            S3 using the Glue Data Catalog.
+                          properties:
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                enableUpdateCatalog:
+                                  type: boolean
+                                updateBehavior:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                          type: object
+                        s3CsvSource:
+                          description: Specifies a command-separated value (CSV) data
+                            store stored in Amazon S3.
+                          properties:
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            compressionType:
+                              type: string
+                            escaper:
+                              type: string
+                            exclusions:
+                              items:
+                                type: string
+                              type: array
+                            groupFiles:
+                              type: string
+                            groupSize:
+                              type: string
+                            maxBand:
+                              format: int64
+                              type: integer
+                            maxFilesInBand:
+                              format: int64
+                              type: integer
+                            multiline:
+                              type: boolean
+                            name:
+                              type: string
+                            optimizePerformance:
+                              type: boolean
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
+                            quoteChar:
+                              type: string
+                            recurse:
+                              type: boolean
+                            separator:
+                              type: string
+                            skipFirst:
+                              type: boolean
+                            withHeader:
+                              type: boolean
+                            writeHeader:
+                              type: boolean
+                          type: object
+                        s3DirectTarget:
+                          description: Specifies a data target that writes to Amazon
+                            S3.
+                          properties:
+                            compression:
+                              type: string
+                            format:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            path:
+                              type: string
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                database:
+                                  type: string
+                                enableUpdateCatalog:
+                                  type: boolean
+                                table:
+                                  type: string
+                                updateBehavior:
+                                  type: string
+                              type: object
+                          type: object
+                        s3GlueParquetTarget:
+                          description: Specifies a data target that writes to Amazon
+                            S3 in Apache Parquet columnar storage.
+                          properties:
+                            compression:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            path:
+                              type: string
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                database:
+                                  type: string
+                                enableUpdateCatalog:
+                                  type: boolean
+                                table:
+                                  type: string
+                                updateBehavior:
+                                  type: string
+                              type: object
+                          type: object
+                        s3JSONSource:
+                          description: Specifies a JSON data store stored in Amazon
+                            S3.
+                          properties:
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            compressionType:
+                              type: string
+                            exclusions:
+                              items:
+                                type: string
+                              type: array
+                            groupFiles:
+                              type: string
+                            groupSize:
+                              type: string
+                            jsonPath:
+                              type: string
+                            maxBand:
+                              format: int64
+                              type: integer
+                            maxFilesInBand:
+                              format: int64
+                              type: integer
+                            multiline:
+                              type: boolean
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
+                            recurse:
+                              type: boolean
+                          type: object
+                        s3ParquetSource:
+                          description: Specifies an Apache Parquet data store stored
+                            in Amazon S3.
+                          properties:
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            compressionType:
+                              type: string
+                            exclusions:
+                              items:
+                                type: string
+                              type: array
+                            groupFiles:
+                              type: string
+                            groupSize:
+                              type: string
+                            maxBand:
+                              format: int64
+                              type: integer
+                            maxFilesInBand:
+                              format: int64
+                              type: integer
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
+                            recurse:
+                              type: boolean
+                          type: object
+                        selectFields:
+                          description: Specifies a transform that chooses the data
+                            property keys that you want to keep.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            paths:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                          type: object
+                        selectFromCollection:
+                          description: Specifies a transform that chooses one DynamicFrame
+                            from a collection of DynamicFrames. The output is the
+                            selected DynamicFrame
+                          properties:
+                            index:
+                              format: int64
+                              type: integer
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        sparkConnectorSource:
+                          description: Specifies a connector to an Apache Spark data
+                            source.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            connectionName:
+                              type: string
+                            connectionType:
+                              type: string
+                            connectorName:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        sparkConnectorTarget:
+                          description: Specifies a target that uses an Apache Spark
+                            connector.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            connectionName:
+                              type: string
+                            connectionType:
+                              type: string
+                            connectorName:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        sparkSQL:
+                          description: Specifies a transform where you enter a SQL
+                            query using Spark SQL syntax to transform the data. The
+                            output is a single DynamicFrame.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            sqlAliases:
+                              items:
+                                properties:
+                                  alias:
+                                    type: string
+                                  from:
+                                    type: string
+                                type: object
+                              type: array
+                            sqlQuery:
+                              type: string
+                          type: object
+                        spigot:
+                          description: Specifies a transform that writes samples of
+                            the data to an Amazon S3 bucket.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            path:
+                              type: string
+                            prob:
+                              type: number
+                            topk:
+                              format: int64
+                              type: integer
+                          type: object
+                        splitFields:
+                          description: 'Specifies a transform that splits data property
+                            keys into two DynamicFrames. The output is a collection
+                            of DynamicFrames: one with selected data property keys,
+                            and one with the remaining data property keys.'
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            paths:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                          type: object
+                        union:
+                          description: Specifies a transform that combines the rows
+                            from two or more datasets into a single result.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            unionType:
+                              type: string
+                          type: object
+                      type: object
+                    description: The representation of a directed acyclic graph on
+                      which both the Glue Studio visual component and Glue Studio
+                      code generation is based.
+                    type: object
                   command:
                     description: The JobCommand that runs this job.
                     properties:
@@ -168,9 +1707,12 @@ spec:
                       type: string
                     description: "The default arguments for this job. \n You can specify
                       arguments here that your own job-execution script consumes,
-                      as well as arguments that Glue itself consumes. \n For information
-                      about how to specify and consume your own Job arguments, see
-                      the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
+                      as well as arguments that Glue itself consumes. \n Job arguments
+                      may be logged. Do not pass plaintext secrets as arguments. Retrieve
+                      secrets from a Glue Connection, Secrets Manager or other secret
+                      management mechanism if you intend to keep them within the Job.
+                      \n For information about how to specify and consume your own
+                      Job arguments, see the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
                       topic in the developer guide. \n For information about the key-value
                       pairs that Glue consumes to set up your job, see the Special
                       Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
@@ -178,6 +1720,17 @@ spec:
                     type: object
                   description:
                     description: Description of the job being defined.
+                    type: string
+                  executionClass:
+                    description: "Indicates whether the job is run with a standard
+                      or flexible execution class. The standard execution-class is
+                      ideal for time-sensitive workloads that require fast job startup
+                      and dedicated resources. \n The flexible execution class is
+                      appropriate for time-insensitive jobs whose start and completion
+                      times may vary. \n Only jobs with Glue version 3.0 and above
+                      and command type glueetl will be allowed to set ExecutionClass
+                      to FLEX. The flexible execution class is available for Spark
+                      jobs."
                     type: string
                   executionProperty:
                     description: An ExecutionProperty specifying the maximum number
@@ -213,7 +1766,7 @@ spec:
                       you can allocate either 0.0625 or 1 DPU. The default is 0.0625
                       DPU. \n * When you specify an Apache Spark ETL job (JobCommand.Name=\"glueetl\")
                       or Apache Spark streaming ETL job (JobCommand.Name=\"gluestreaming\"),
-                      you can allocate from 2 to 100 DPUs. The default is 10 DPUs.
+                      you can allocate a minimum of 2 DPUs. The default is 10 DPUs.
                       This job type cannot have a fractional DPU allocation. \n For
                       Glue version 2.0 jobs, you cannot instead specify a Maximum
                       capacity. Instead, you should specify a Worker type and the
@@ -238,9 +1791,8 @@ spec:
                         type: integer
                     type: object
                   numberOfWorkers:
-                    description: "The number of workers of a defined workerType that
-                      are allocated when a job runs. \n The maximum number of workers
-                      you can define are 299 for G.1X, and 149 for G.2X."
+                    description: The number of workers of a defined workerType that
+                      are allocated when a job runs.
                     format: int64
                     type: integer
                   region:
@@ -404,6 +1956,28 @@ spec:
                             type: string
                         type: object
                     type: object
+                  sourceControlDetails:
+                    description: The details for a source control configuration for
+                      a job, allowing synchronization of job artifacts to or from
+                      a remote repository.
+                    properties:
+                      authStrategy:
+                        type: string
+                      authToken:
+                        type: string
+                      branch:
+                        type: string
+                      folder:
+                        type: string
+                      lastCommitID:
+                        type: string
+                      owner:
+                        type: string
+                      provider:
+                        type: string
+                      repository:
+                        type: string
+                    type: object
                   tags:
                     additionalProperties:
                       type: string
@@ -421,16 +1995,20 @@ spec:
                     type: integer
                   workerType:
                     description: "The type of predefined worker that is allocated
-                      when a job runs. Accepts a value of Standard, G.1X, or G.2X.
-                      \n * For the Standard worker type, each worker provides 4 vCPU,
-                      16 GB of memory and a 50GB disk, and 2 executors per worker.
-                      \n * For the G.1X worker type, each worker maps to 1 DPU (4
-                      vCPU, 16 GB of memory, 64 GB disk), and provides 1 executor
+                      when a job runs. Accepts a value of Standard, G.1X, G.2X, or
+                      G.025X. \n * For the Standard worker type, each worker provides
+                      4 vCPU, 16 GB of memory and a 50GB disk, and 2 executors per
+                      worker. \n * For the G.1X worker type, each worker maps to 1
+                      DPU (4 vCPU, 16 GB of memory, 64 GB disk), and provides 1 executor
                       per worker. We recommend this worker type for memory-intensive
                       jobs. \n * For the G.2X worker type, each worker maps to 2 DPU
                       (8 vCPU, 32 GB of memory, 128 GB disk), and provides 1 executor
                       per worker. We recommend this worker type for memory-intensive
-                      jobs."
+                      jobs. \n * For the G.025X worker type, each worker maps to 0.25
+                      DPU (2 vCPU, 4 GB of memory, 64 GB disk), and provides 1 executor
+                      per worker. We recommend this worker type for low volume streaming
+                      jobs. This worker type is only available for Glue version 3.0
+                      streaming jobs."
                     type: string
                 required:
                 - command

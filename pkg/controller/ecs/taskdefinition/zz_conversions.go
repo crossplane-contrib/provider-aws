@@ -394,11 +394,20 @@ func GenerateTaskDefinition(resp *svcsdk.DescribeTaskDefinitionOutput) *svcapity
 					f1f1elemf25 := []*svcapitypes.PortMapping{}
 					for _, f1f1elemf25iter := range f1f1iter.PortMappings {
 						f1f1elemf25elem := &svcapitypes.PortMapping{}
+						if f1f1elemf25iter.AppProtocol != nil {
+							f1f1elemf25elem.AppProtocol = f1f1elemf25iter.AppProtocol
+						}
 						if f1f1elemf25iter.ContainerPort != nil {
 							f1f1elemf25elem.ContainerPort = f1f1elemf25iter.ContainerPort
 						}
+						if f1f1elemf25iter.ContainerPortRange != nil {
+							f1f1elemf25elem.ContainerPortRange = f1f1elemf25iter.ContainerPortRange
+						}
 						if f1f1elemf25iter.HostPort != nil {
 							f1f1elemf25elem.HostPort = f1f1elemf25iter.HostPort
+						}
+						if f1f1elemf25iter.Name != nil {
+							f1f1elemf25elem.Name = f1f1elemf25iter.Name
 						}
 						if f1f1elemf25iter.Protocol != nil {
 							f1f1elemf25elem.Protocol = f1f1elemf25iter.Protocol
@@ -1085,11 +1094,20 @@ func GenerateRegisterTaskDefinitionInput(cr *svcapitypes.TaskDefinition) *svcsdk
 				f0elemf25 := []*svcsdk.PortMapping{}
 				for _, f0elemf25iter := range f0iter.PortMappings {
 					f0elemf25elem := &svcsdk.PortMapping{}
+					if f0elemf25iter.AppProtocol != nil {
+						f0elemf25elem.SetAppProtocol(*f0elemf25iter.AppProtocol)
+					}
 					if f0elemf25iter.ContainerPort != nil {
 						f0elemf25elem.SetContainerPort(*f0elemf25iter.ContainerPort)
 					}
+					if f0elemf25iter.ContainerPortRange != nil {
+						f0elemf25elem.SetContainerPortRange(*f0elemf25iter.ContainerPortRange)
+					}
 					if f0elemf25iter.HostPort != nil {
 						f0elemf25elem.SetHostPort(*f0elemf25iter.HostPort)
+					}
+					if f0elemf25iter.Name != nil {
+						f0elemf25elem.SetName(*f0elemf25iter.Name)
 					}
 					if f0elemf25iter.Protocol != nil {
 						f0elemf25elem.SetProtocol(*f0elemf25iter.Protocol)

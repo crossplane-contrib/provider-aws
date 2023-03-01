@@ -35,6 +35,12 @@ type AddonHealth struct {
 // +kubebuilder:skipversion
 type AddonInfo struct {
 	AddonName *string `json:"addonName,omitempty"`
+	// Information about an Amazon EKS add-on from the Amazon Web Services Marketplace.
+	MarketplaceInformation *MarketplaceInformation `json:"marketplaceInformation,omitempty"`
+
+	Owner *string `json:"owner,omitempty"`
+
+	Publisher *string `json:"publisher,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
 }
@@ -53,6 +59,8 @@ type AddonVersionInfo struct {
 	AddonVersion *string `json:"addonVersion,omitempty"`
 
 	Architecture []*string `json:"architecture,omitempty"`
+
+	RequiresConfiguration *bool `json:"requiresConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -65,11 +73,19 @@ type Addon_SDK struct {
 
 	ClusterName *string `json:"clusterName,omitempty"`
 
+	ConfigurationValues *string `json:"configurationValues,omitempty"`
+
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 	// The health of the add-on.
 	Health *AddonHealth `json:"health,omitempty"`
+	// Information about an Amazon EKS add-on from the Amazon Web Services Marketplace.
+	MarketplaceInformation *MarketplaceInformation `json:"marketplaceInformation,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+
+	Owner *string `json:"owner,omitempty"`
+
+	Publisher *string `json:"publisher,omitempty"`
 
 	ServiceAccountRoleARN *string `json:"serviceAccountRoleARN,omitempty"`
 
@@ -86,6 +102,13 @@ type AutoScalingGroup struct {
 // +kubebuilder:skipversion
 type Certificate struct {
 	Data *string `json:"data,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ClusterIssue struct {
+	Message *string `json:"message,omitempty"`
+
+	ResourceIDs []*string `json:"resourceIDs,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -113,6 +136,16 @@ type ConnectorConfigResponse struct {
 	Provider *string `json:"provider,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ControlPlanePlacementRequest struct {
+	GroupName *string `json:"groupName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ControlPlanePlacementResponse struct {
+	GroupName *string `json:"groupName,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -163,6 +196,13 @@ type LaunchTemplateSpecification struct {
 }
 
 // +kubebuilder:skipversion
+type MarketplaceInformation struct {
+	ProductID *string `json:"productID,omitempty"`
+
+	ProductURL *string `json:"productURL,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type NodegroupResources struct {
 	RemoteAccessSecurityGroup *string `json:"remoteAccessSecurityGroup,omitempty"`
 }
@@ -210,6 +250,20 @@ type OIDCIdentityProviderConfigRequest struct {
 	UsernameClaim *string `json:"usernameClaim,omitempty"`
 
 	UsernamePrefix *string `json:"usernamePrefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OutpostConfigRequest struct {
+	ControlPlaneInstanceType *string `json:"controlPlaneInstanceType,omitempty"`
+
+	OutpostARNs []*string `json:"outpostARNs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OutpostConfigResponse struct {
+	ControlPlaneInstanceType *string `json:"controlPlaneInstanceType,omitempty"`
+
+	OutpostARNs []*string `json:"outpostARNs,omitempty"`
 }
 
 // +kubebuilder:skipversion

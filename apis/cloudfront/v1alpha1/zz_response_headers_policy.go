@@ -30,7 +30,7 @@ type ResponseHeadersPolicyParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// Contains metadata about the response headers policy, and a set of configurations
-	// that specify the response headers.
+	// that specify the HTTP headers.
 	// +kubebuilder:validation:Required
 	ResponseHeadersPolicyConfig           *ResponseHeadersPolicyConfig `json:"responseHeadersPolicyConfig"`
 	CustomResponseHeadersPolicyParameters `json:",inline"`

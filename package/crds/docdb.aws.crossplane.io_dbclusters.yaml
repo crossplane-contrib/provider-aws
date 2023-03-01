@@ -740,6 +740,10 @@ spec:
                           type: string
                       type: object
                     type: array
+                  cloneGroupID:
+                    description: Identifies the clone group to which the DB cluster
+                      is associated.
+                    type: string
                   clusterCreateTime:
                     description: Specifies the time when the cluster was created,
                       in Universal Coordinated Time (UTC).

@@ -220,6 +220,9 @@ func GenerateModifyTransitGatewayInput(cr *svcapitypes.TransitGateway) *svcsdk.M
 	}
 	if cr.Spec.ForProvider.Options != nil {
 		f2 := &svcsdk.ModifyTransitGatewayOptions{}
+		if cr.Spec.ForProvider.Options.AmazonSideASN != nil {
+			f2.SetAmazonSideAsn(*cr.Spec.ForProvider.Options.AmazonSideASN)
+		}
 		if cr.Spec.ForProvider.Options.AutoAcceptSharedAttachments != nil {
 			f2.SetAutoAcceptSharedAttachments(*cr.Spec.ForProvider.Options.AutoAcceptSharedAttachments)
 		}

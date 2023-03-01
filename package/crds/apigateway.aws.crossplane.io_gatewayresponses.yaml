@@ -80,7 +80,7 @@ spec:
                       map of key-value pairs.
                     type: object
                   responseType:
-                    description: '[Required] The response type of the associated GatewayResponse.'
+                    description: The response type of the associated GatewayResponse
                     type: string
                   restApiId:
                     description: RestAPIID is the ID for the RestAPI.

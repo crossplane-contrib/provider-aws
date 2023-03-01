@@ -63,7 +63,7 @@ spec:
                   GlobalCluster
                 properties:
                   databaseName:
-                    description: The name for your database of up to 64 alpha-numeric
+                    description: The name for your database of up to 64 alphanumeric
                       characters. If you do not provide a name, Amazon Aurora will
                       not create a database in the global database cluster you are
                       creating.

@@ -92,8 +92,8 @@ type DBClusterParameters struct {
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 	// The compute and memory capacity of each DB instance in the Multi-AZ DB cluster,
-	// for example db.m6g.xlarge. Not all DB instance classes are available in all
-	// Amazon Web Services Regions, or for all database engines.
+	// for example db.m6gd.xlarge. Not all DB instance classes are available in
+	// all Amazon Web Services Regions, or for all database engines.
 	//
 	// For the full list of DB instance classes and availability for your engine,
 	// see DB instance class (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
@@ -125,6 +125,8 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
+	// Reserved for future use.
+	DBSystemID *string `json:"dbSystemID,omitempty"`
 	// The name for your database of up to 64 alphanumeric characters. If you do
 	// not provide a name, Amazon RDS doesn't create a database in the DB cluster
 	// you are creating.
@@ -214,7 +216,7 @@ type DBClusterParameters struct {
 	// isn't enabled.
 	//
 	// For more information, see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
-	// in the Amazon Aurora User Guide..
+	// in the Amazon Aurora User Guide.
 	//
 	// Valid for: Aurora DB clusters only
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
@@ -255,6 +257,8 @@ type DBClusterParameters struct {
 	// The multimaster engine mode only applies for DB clusters created with Aurora
 	// MySQL version 5.6.10a.
 	//
+	// The serverless engine mode only applies for Aurora Serverless v1 DB clusters.
+	//
 	// For Aurora PostgreSQL, the global engine mode isn't required, and both the
 	// parallelquery and the multimaster engine modes currently aren't supported.
 	//
@@ -262,6 +266,8 @@ type DBClusterParameters struct {
 	// see the following sections in the Amazon Aurora User Guide:
 	//
 	//    * Limitations of Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
+	//
+	//    * Requirements for Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.requirements.html)
 	//
 	//    * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
 	//
@@ -329,8 +335,8 @@ type DBClusterParameters struct {
 	// The amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for each DB instance in the Multi-AZ DB cluster.
 	//
-	// For information about valid Iops values, see Amazon RDS Provisioned IOPS
-	// storage to improve performance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
+	// For information about valid IOPS values, see Amazon RDS Provisioned IOPS
+	// storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
 	// in the Amazon RDS User Guide.
 	//
 	// This setting is required to create a Multi-AZ DB cluster.
@@ -366,6 +372,43 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	// A value that indicates whether to manage the master user password with Amazon
+	// Web Services Secrets Manager.
+	//
+	// For more information, see Password management with Amazon Web Services Secrets
+	// Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+	// in the Amazon RDS User Guide and Password management with Amazon Web Services
+	// Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+	// in the Amazon Aurora User Guide.
+	//
+	// Constraints:
+	//
+	//    * Can't manage the master user password with Amazon Web Services Secrets
+	//    Manager if MasterUserPassword is specified.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
+	ManageMasterUserPassword *bool `json:"manageMasterUserPassword,omitempty"`
+	// The Amazon Web Services KMS key identifier to encrypt a secret that is automatically
+	// generated and managed in Amazon Web Services Secrets Manager.
+	//
+	// This setting is valid only if the master user password is managed by RDS
+	// in Amazon Web Services Secrets Manager for the DB cluster.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+	// Web Services account, specify the key ARN or alias ARN.
+	//
+	// If you don't specify MasterUserSecretKmsKeyId, then the aws/secretsmanager
+	// KMS key is used to encrypt the secret. If the secret is in a different Amazon
+	// Web Services account, then you can't use the aws/secretsmanager KMS key to
+	// encrypt the secret, and you must use a customer managed KMS key.
+	//
+	// There is a default KMS key for your Amazon Web Services account. Your Amazon
+	// Web Services account has a different default KMS key for each Amazon Web
+	// Services Region.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
+	MasterUserSecretKMSKeyID *string `json:"masterUserSecretKMSKeyID,omitempty"`
 	// The name of the master user for the DB cluster.
 	//
 	// Constraints:
@@ -400,6 +443,23 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Multi-AZ DB clusters only
 	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
+	// The network type of the DB cluster.
+	//
+	// Valid values:
+	//
+	//    * IPV4
+	//
+	//    * DUAL
+	//
+	// The network type is determined by the DBSubnetGroup specified for the DB
+	// cluster. A DBSubnetGroup can support only the IPv4 protocol or the IPv4 and
+	// the IPv6 protocols (DUAL).
+	//
+	// For more information, see Working with a DB instance in a VPC (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html)
+	// in the Amazon Aurora User Guide.
+	//
+	// Valid for: Aurora DB clusters only
+	NetworkType *string `json:"networkType,omitempty"`
 	// A value that indicates that the DB cluster should be associated with the
 	// specified option group.
 	//
@@ -418,8 +478,27 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Multi-AZ DB clusters only
 	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
-	// The amount of time, in days, to retain Performance Insights data. Valid values
-	// are 7 or 731 (2 years).
+	// The number of days to retain Performance Insights data. The default is 7
+	// days. The following values are valid:
+	//
+	//    * 7
+	//
+	//    * month * 31, where month is a number of months from 1-23
+	//
+	//    * 731
+	//
+	// For example, the following values are valid:
+	//
+	//    * 93 (3 months * 31)
+	//
+	//    * 341 (11 months * 31)
+	//
+	//    * 589 (19 months * 31)
+	//
+	//    * 731
+	//
+	// If you specify a retention period such as 94, which isn't a valid value,
+	// RDS issues an error.
 	//
 	// Valid for: Multi-AZ DB clusters only
 	PerformanceInsightsRetentionPeriod *int64 `json:"performanceInsightsRetentionPeriod,omitempty"`
@@ -439,22 +518,24 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	Port *int64 `json:"port,omitempty"`
-	// A URL that contains a Signature Version 4 signed request for the CreateDBCluster
-	// action to be called in the source Amazon Web Services Region where the DB
-	// cluster is replicated from. Specify PreSignedUrl only when you are performing
-	// cross-Region replication from an encrypted DB cluster.
+	// When you are replicating a DB cluster from one Amazon Web Services GovCloud
+	// (US) Region to another, an URL that contains a Signature Version 4 signed
+	// request for the CreateDBCluster operation to be called in the source Amazon
+	// Web Services Region where the DB cluster is replicated from. Specify PreSignedUrl
+	// only when you are performing cross-Region replication from an encrypted DB
+	// cluster.
 	//
-	// The pre-signed URL must be a valid request for the CreateDBCluster API action
-	// that can be executed in the source Amazon Web Services Region that contains
-	// the encrypted DB cluster to be copied.
+	// The presigned URL must be a valid request for the CreateDBCluster API operation
+	// that can run in the source Amazon Web Services Region that contains the encrypted
+	// DB cluster to copy.
 	//
-	// The pre-signed URL request must contain the following parameter values:
+	// The presigned URL request must contain the following parameter values:
 	//
-	//    * KmsKeyId - The Amazon Web Services KMS key identifier for the KMS key
-	//    to use to encrypt the copy of the DB cluster in the destination Amazon
-	//    Web Services Region. This should refer to the same KMS key for both the
-	//    CreateDBCluster action that is called in the destination Amazon Web Services
-	//    Region, and the action contained in the pre-signed URL.
+	//    * KmsKeyId - The KMS key identifier for the KMS key to use to encrypt
+	//    the copy of the DB cluster in the destination Amazon Web Services Region.
+	//    This should refer to the same KMS key for both the CreateDBCluster operation
+	//    that is called in the destination Amazon Web Services Region, and the
+	//    operation contained in the presigned URL.
 	//
 	//    * DestinationRegion - The name of the Amazon Web Services Region that
 	//    Aurora read replica will be created in.
@@ -473,9 +554,9 @@ type DBClusterParameters struct {
 	//
 	// If you are using an Amazon Web Services SDK tool or the CLI, you can specify
 	// SourceRegion (or --source-region for the CLI) instead of specifying PreSignedUrl
-	// manually. Specifying SourceRegion autogenerates a pre-signed URL that is
-	// a valid request for the operation that can be executed in the source Amazon
-	// Web Services Region.
+	// manually. Specifying SourceRegion autogenerates a presigned URL that is a
+	// valid request for the operation that can run in the source Amazon Web Services
+	// Region.
 	//
 	// Valid for: Aurora DB clusters only
 	PreSignedURL *string `json:"preSignedURL,omitempty"`
@@ -700,6 +781,15 @@ type DBClusterObservation struct {
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// Contains the secret managed by RDS in Amazon Web Services Secrets Manager
+	// for the master user password.
+	//
+	// For more information, see Password management with Amazon Web Services Secrets
+	// Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+	// in the Amazon RDS User Guide and Password management with Amazon Web Services
+	// Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+	// in the Amazon Aurora User Guide.
+	MasterUserSecret *MasterUserSecret `json:"masterUserSecret,omitempty"`
 	// Specifies whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 	// Specifies the progress of the operation as a percentage.

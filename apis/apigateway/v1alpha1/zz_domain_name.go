@@ -50,7 +50,7 @@ type DomainNameParameters struct {
 	// [Deprecated] Your edge-optimized endpoint's domain name certificate's private
 	// key.
 	CertificatePrivateKey *string `json:"certificatePrivateKey,omitempty"`
-	// [Required] The name of the DomainName resource.
+	// The name of the DomainName resource.
 	// +kubebuilder:validation:Required
 	DomainName *string `json:"domainName"`
 	// The endpoint configuration of this DomainName showing the endpoint types
@@ -94,17 +94,17 @@ type DomainNameObservation struct {
 	// custom domain name for an edge-optimized endpoint. You set up this association
 	// when adding a DNS record pointing the custom domain name to this distribution
 	// name. For more information about CloudFront distributions, see the Amazon
-	// CloudFront documentation (https://aws.amazon.com/documentation/cloudfront/).
+	// CloudFront documentation.
 	DistributionDomainName *string `json:"distributionDomainName,omitempty"`
 	// The region-agnostic Amazon Route 53 Hosted Zone ID of the edge-optimized
 	// endpoint. The valid value is Z2FDTNDATAQYW2 for all the regions. For more
-	// information, see Set up a Regional Custom Domain Name (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html)
-	// and AWS Regions and Endpoints for API Gateway (https://docs.aws.amazon.com/general/latest/gr/rande.html#apigateway_region).
+	// information, see Set up a Regional Custom Domain Name and AWS Regions and
+	// Endpoints for API Gateway.
 	DistributionHostedZoneID *string `json:"distributionHostedZoneID,omitempty"`
-	// The status of the DomainName migration. The valid values are AVAILABLE, UPDATING,
-	// PENDING_CERTIFICATE_REIMPORT, and PENDING_OWNERSHIP_VERIFICATION. If the
-	// status is UPDATING, the domain cannot be modified further until the existing
-	// operation is complete. If it is AVAILABLE, the domain can be updated.
+	// The status of the DomainName migration. The valid values are AVAILABLE and
+	// UPDATING. If the status is UPDATING, the domain cannot be modified further
+	// until the existing operation is complete. If it is AVAILABLE, the domain
+	// can be updated.
 	DomainNameStatus *string `json:"domainNameStatus,omitempty"`
 	// An optional text message containing detailed information about status of
 	// the DomainName migration.
@@ -115,8 +115,8 @@ type DomainNameObservation struct {
 	// is returned by API Gateway when you create a regional endpoint.
 	RegionalDomainName *string `json:"regionalDomainName,omitempty"`
 	// The region-specific Amazon Route 53 Hosted Zone ID of the regional endpoint.
-	// For more information, see Set up a Regional Custom Domain Name (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-regional-api-custom-domain-create.html)
-	// and AWS Regions and Endpoints for API Gateway (https://docs.aws.amazon.com/general/latest/gr/rande.html#apigateway_region).
+	// For more information, see Set up a Regional Custom Domain Name and AWS Regions
+	// and Endpoints for API Gateway.
 	RegionalHostedZoneID *string `json:"regionalHostedZoneID,omitempty"`
 }
 

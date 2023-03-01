@@ -21,12 +21,18 @@ package v1alpha1
 type AMITypes string
 
 const (
-	AMITypes_AL2_x86_64          AMITypes = "AL2_x86_64"
-	AMITypes_AL2_x86_64_GPU      AMITypes = "AL2_x86_64_GPU"
-	AMITypes_AL2_ARM_64          AMITypes = "AL2_ARM_64"
-	AMITypes_CUSTOM              AMITypes = "CUSTOM"
-	AMITypes_BOTTLEROCKET_ARM_64 AMITypes = "BOTTLEROCKET_ARM_64"
-	AMITypes_BOTTLEROCKET_x86_64 AMITypes = "BOTTLEROCKET_x86_64"
+	AMITypes_AL2_x86_64                 AMITypes = "AL2_x86_64"
+	AMITypes_AL2_x86_64_GPU             AMITypes = "AL2_x86_64_GPU"
+	AMITypes_AL2_ARM_64                 AMITypes = "AL2_ARM_64"
+	AMITypes_CUSTOM                     AMITypes = "CUSTOM"
+	AMITypes_BOTTLEROCKET_ARM_64        AMITypes = "BOTTLEROCKET_ARM_64"
+	AMITypes_BOTTLEROCKET_x86_64        AMITypes = "BOTTLEROCKET_x86_64"
+	AMITypes_BOTTLEROCKET_ARM_64_NVIDIA AMITypes = "BOTTLEROCKET_ARM_64_NVIDIA"
+	AMITypes_BOTTLEROCKET_x86_64_NVIDIA AMITypes = "BOTTLEROCKET_x86_64_NVIDIA"
+	AMITypes_WINDOWS_CORE_2019_x86_64   AMITypes = "WINDOWS_CORE_2019_x86_64"
+	AMITypes_WINDOWS_FULL_2019_x86_64   AMITypes = "WINDOWS_FULL_2019_x86_64"
+	AMITypes_WINDOWS_CORE_2022_x86_64   AMITypes = "WINDOWS_CORE_2022_x86_64"
+	AMITypes_WINDOWS_FULL_2022_x86_64   AMITypes = "WINDOWS_FULL_2022_x86_64"
 )
 
 type AddonIssueCode string
@@ -52,6 +58,7 @@ const (
 	AddonStatus_SDK_DELETING      AddonStatus_SDK = "DELETING"
 	AddonStatus_SDK_DELETE_FAILED AddonStatus_SDK = "DELETE_FAILED"
 	AddonStatus_SDK_DEGRADED      AddonStatus_SDK = "DEGRADED"
+	AddonStatus_SDK_UPDATE_FAILED AddonStatus_SDK = "UPDATE_FAILED"
 )
 
 type CapacityTypes string
@@ -59,6 +66,17 @@ type CapacityTypes string
 const (
 	CapacityTypes_ON_DEMAND CapacityTypes = "ON_DEMAND"
 	CapacityTypes_SPOT      CapacityTypes = "SPOT"
+)
+
+type ClusterIssueCode string
+
+const (
+	ClusterIssueCode_AccessDenied          ClusterIssueCode = "AccessDenied"
+	ClusterIssueCode_ClusterUnreachable    ClusterIssueCode = "ClusterUnreachable"
+	ClusterIssueCode_ConfigurationConflict ClusterIssueCode = "ConfigurationConflict"
+	ClusterIssueCode_InternalFailure       ClusterIssueCode = "InternalFailure"
+	ClusterIssueCode_ResourceLimitExceeded ClusterIssueCode = "ResourceLimitExceeded"
+	ClusterIssueCode_ResourceNotFound      ClusterIssueCode = "ResourceNotFound"
 )
 
 type ClusterStatus string
@@ -184,6 +202,7 @@ type ResolveConflicts string
 const (
 	ResolveConflicts_OVERWRITE ResolveConflicts = "OVERWRITE"
 	ResolveConflicts_NONE      ResolveConflicts = "NONE"
+	ResolveConflicts_PRESERVE  ResolveConflicts = "PRESERVE"
 )
 
 type TaintEffect string

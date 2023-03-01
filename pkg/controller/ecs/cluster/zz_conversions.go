@@ -175,26 +175,19 @@ func GenerateCluster(resp *svcsdk.DescribeClustersOutput) *svcapitypes.Cluster {
 		} else {
 			cr.Status.AtProvider.RunningTasksCount = nil
 		}
-		if elem.Settings != nil {
-			f11 := []*svcapitypes.ClusterSetting{}
-			for _, f11iter := range elem.Settings {
-				f11elem := &svcapitypes.ClusterSetting{}
-				if f11iter.Name != nil {
-					f11elem.Name = f11iter.Name
-				}
-				if f11iter.Value != nil {
-					f11elem.Value = f11iter.Value
-				}
-				f11 = append(f11, f11elem)
+		if elem.ServiceConnectDefaults != nil {
+			f11 := &svcapitypes.ClusterServiceConnectDefaultsRequest{}
+			if elem.ServiceConnectDefaults.Namespace != nil {
+				f11.Namespace = elem.ServiceConnectDefaults.Namespace
 			}
-			cr.Spec.ForProvider.Settings = f11
+			cr.Spec.ForProvider.ServiceConnectDefaults = f11
 		} else {
-			cr.Spec.ForProvider.Settings = nil
+			cr.Spec.ForProvider.ServiceConnectDefaults = nil
 		}
-		if elem.Statistics != nil {
-			f12 := []*svcapitypes.KeyValuePair{}
-			for _, f12iter := range elem.Statistics {
-				f12elem := &svcapitypes.KeyValuePair{}
+		if elem.Settings != nil {
+			f12 := []*svcapitypes.ClusterSetting{}
+			for _, f12iter := range elem.Settings {
+				f12elem := &svcapitypes.ClusterSetting{}
 				if f12iter.Name != nil {
 					f12elem.Name = f12iter.Name
 				}
@@ -203,7 +196,23 @@ func GenerateCluster(resp *svcsdk.DescribeClustersOutput) *svcapitypes.Cluster {
 				}
 				f12 = append(f12, f12elem)
 			}
-			cr.Status.AtProvider.Statistics = f12
+			cr.Spec.ForProvider.Settings = f12
+		} else {
+			cr.Spec.ForProvider.Settings = nil
+		}
+		if elem.Statistics != nil {
+			f13 := []*svcapitypes.KeyValuePair{}
+			for _, f13iter := range elem.Statistics {
+				f13elem := &svcapitypes.KeyValuePair{}
+				if f13iter.Name != nil {
+					f13elem.Name = f13iter.Name
+				}
+				if f13iter.Value != nil {
+					f13elem.Value = f13iter.Value
+				}
+				f13 = append(f13, f13elem)
+			}
+			cr.Status.AtProvider.Statistics = f13
 		} else {
 			cr.Status.AtProvider.Statistics = nil
 		}
@@ -213,18 +222,18 @@ func GenerateCluster(resp *svcsdk.DescribeClustersOutput) *svcapitypes.Cluster {
 			cr.Status.AtProvider.Status = nil
 		}
 		if elem.Tags != nil {
-			f14 := []*svcapitypes.Tag{}
-			for _, f14iter := range elem.Tags {
-				f14elem := &svcapitypes.Tag{}
-				if f14iter.Key != nil {
-					f14elem.Key = f14iter.Key
+			f15 := []*svcapitypes.Tag{}
+			for _, f15iter := range elem.Tags {
+				f15elem := &svcapitypes.Tag{}
+				if f15iter.Key != nil {
+					f15elem.Key = f15iter.Key
 				}
-				if f14iter.Value != nil {
-					f14elem.Value = f14iter.Value
+				if f15iter.Value != nil {
+					f15elem.Value = f15iter.Value
 				}
-				f14 = append(f14, f14elem)
+				f15 = append(f15, f15elem)
 			}
-			cr.Spec.ForProvider.Tags = f14
+			cr.Spec.ForProvider.Tags = f15
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}
@@ -304,33 +313,40 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		}
 		res.SetDefaultCapacityProviderStrategy(f3)
 	}
-	if cr.Spec.ForProvider.Settings != nil {
-		f4 := []*svcsdk.ClusterSetting{}
-		for _, f4iter := range cr.Spec.ForProvider.Settings {
-			f4elem := &svcsdk.ClusterSetting{}
-			if f4iter.Name != nil {
-				f4elem.SetName(*f4iter.Name)
-			}
-			if f4iter.Value != nil {
-				f4elem.SetValue(*f4iter.Value)
-			}
-			f4 = append(f4, f4elem)
+	if cr.Spec.ForProvider.ServiceConnectDefaults != nil {
+		f4 := &svcsdk.ClusterServiceConnectDefaultsRequest{}
+		if cr.Spec.ForProvider.ServiceConnectDefaults.Namespace != nil {
+			f4.SetNamespace(*cr.Spec.ForProvider.ServiceConnectDefaults.Namespace)
 		}
-		res.SetSettings(f4)
+		res.SetServiceConnectDefaults(f4)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f5 := []*svcsdk.Tag{}
-		for _, f5iter := range cr.Spec.ForProvider.Tags {
-			f5elem := &svcsdk.Tag{}
-			if f5iter.Key != nil {
-				f5elem.SetKey(*f5iter.Key)
+	if cr.Spec.ForProvider.Settings != nil {
+		f5 := []*svcsdk.ClusterSetting{}
+		for _, f5iter := range cr.Spec.ForProvider.Settings {
+			f5elem := &svcsdk.ClusterSetting{}
+			if f5iter.Name != nil {
+				f5elem.SetName(*f5iter.Name)
 			}
 			if f5iter.Value != nil {
 				f5elem.SetValue(*f5iter.Value)
 			}
 			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f5)
+		res.SetSettings(f5)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f6 := []*svcsdk.Tag{}
+		for _, f6iter := range cr.Spec.ForProvider.Tags {
+			f6elem := &svcsdk.Tag{}
+			if f6iter.Key != nil {
+				f6elem.SetKey(*f6iter.Key)
+			}
+			if f6iter.Value != nil {
+				f6elem.SetValue(*f6iter.Value)
+			}
+			f6 = append(f6, f6elem)
+		}
+		res.SetTags(f6)
 	}
 
 	return res
@@ -373,19 +389,26 @@ func GenerateUpdateClusterInput(cr *svcapitypes.Cluster) *svcsdk.UpdateClusterIn
 		}
 		res.SetConfiguration(f1)
 	}
-	if cr.Spec.ForProvider.Settings != nil {
-		f2 := []*svcsdk.ClusterSetting{}
-		for _, f2iter := range cr.Spec.ForProvider.Settings {
-			f2elem := &svcsdk.ClusterSetting{}
-			if f2iter.Name != nil {
-				f2elem.SetName(*f2iter.Name)
-			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
-			}
-			f2 = append(f2, f2elem)
+	if cr.Spec.ForProvider.ServiceConnectDefaults != nil {
+		f2 := &svcsdk.ClusterServiceConnectDefaultsRequest{}
+		if cr.Spec.ForProvider.ServiceConnectDefaults.Namespace != nil {
+			f2.SetNamespace(*cr.Spec.ForProvider.ServiceConnectDefaults.Namespace)
 		}
-		res.SetSettings(f2)
+		res.SetServiceConnectDefaults(f2)
+	}
+	if cr.Spec.ForProvider.Settings != nil {
+		f3 := []*svcsdk.ClusterSetting{}
+		for _, f3iter := range cr.Spec.ForProvider.Settings {
+			f3elem := &svcsdk.ClusterSetting{}
+			if f3iter.Name != nil {
+				f3elem.SetName(*f3iter.Name)
+			}
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetSettings(f3)
 	}
 
 	return res

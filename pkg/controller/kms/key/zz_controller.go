@@ -276,6 +276,15 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.ValidTo = nil
 	}
+	if resp.KeyMetadata.XksKeyConfiguration != nil {
+		f23 := &svcapitypes.XksKeyConfigurationType{}
+		if resp.KeyMetadata.XksKeyConfiguration.Id != nil {
+			f23.ID = resp.KeyMetadata.XksKeyConfiguration.Id
+		}
+		cr.Status.AtProvider.XksKeyConfiguration = f23
+	} else {
+		cr.Status.AtProvider.XksKeyConfiguration = nil
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

@@ -261,6 +261,13 @@ const (
 	PackageType_TXT_DICTIONARY PackageType = "TXT-DICTIONARY"
 )
 
+type PrincipalType string
+
+const (
+	PrincipalType_AWS_ACCOUNT PrincipalType = "AWS_ACCOUNT"
+	PrincipalType_AWS_SERVICE PrincipalType = "AWS_SERVICE"
+)
+
 type ReservedInstancePaymentOption string
 
 const (
@@ -321,10 +328,30 @@ const (
 	UpgradeStep_UPGRADE           UpgradeStep = "UPGRADE"
 )
 
+type VPCEndpointErrorCode string
+
+const (
+	VPCEndpointErrorCode_ENDPOINT_NOT_FOUND VPCEndpointErrorCode = "ENDPOINT_NOT_FOUND"
+	VPCEndpointErrorCode_SERVER_ERROR       VPCEndpointErrorCode = "SERVER_ERROR"
+)
+
+type VPCEndpointStatus string
+
+const (
+	VPCEndpointStatus_CREATING      VPCEndpointStatus = "CREATING"
+	VPCEndpointStatus_CREATE_FAILED VPCEndpointStatus = "CREATE_FAILED"
+	VPCEndpointStatus_ACTIVE        VPCEndpointStatus = "ACTIVE"
+	VPCEndpointStatus_UPDATING      VPCEndpointStatus = "UPDATING"
+	VPCEndpointStatus_UPDATE_FAILED VPCEndpointStatus = "UPDATE_FAILED"
+	VPCEndpointStatus_DELETING      VPCEndpointStatus = "DELETING"
+	VPCEndpointStatus_DELETE_FAILED VPCEndpointStatus = "DELETE_FAILED"
+)
+
 type VolumeType string
 
 const (
 	VolumeType_standard VolumeType = "standard"
 	VolumeType_gp2      VolumeType = "gp2"
 	VolumeType_io1      VolumeType = "io1"
+	VolumeType_gp3      VolumeType = "gp3"
 )

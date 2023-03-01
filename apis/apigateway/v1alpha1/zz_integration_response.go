@@ -32,16 +32,10 @@ type IntegrationResponseParameters struct {
 	// Specifies how to handle response payload content type conversions. Supported
 	// values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors:
 	//
-	//    * CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded
-	//    string to the corresponding binary blob.
-	//
-	//    * CONVERT_TO_TEXT: Converts a response payload from a binary blob to a
-	//    Base64-encoded string.
-	//
 	// If this property is not defined, the response payload will be passed through
 	// from the integration response to the method response without modification.
 	ContentHandling *string `json:"contentHandling,omitempty"`
-	// [Required] Specifies a put integration response request's HTTP method.
+	// Specifies a put integration response request's HTTP method.
 	// +kubebuilder:validation:Required
 	HTTPMethod *string `json:"httpMethod"`
 	// A key-value map specifying response parameters that are passed to the method
@@ -59,8 +53,8 @@ type IntegrationResponseParameters struct {
 	ResponseTemplates map[string]*string `json:"responseTemplates,omitempty"`
 	// Specifies the selection pattern of a put integration response.
 	SelectionPattern *string `json:"selectionPattern,omitempty"`
-	// [Required] Specifies the status code that is used to map the integration
-	// response to an existing MethodResponse.
+	// Specifies the status code that is used to map the integration response to
+	// an existing MethodResponse.
 	// +kubebuilder:validation:Required
 	StatusCode                          *string `json:"statusCode"`
 	CustomIntegrationResponseParameters `json:",inline"`

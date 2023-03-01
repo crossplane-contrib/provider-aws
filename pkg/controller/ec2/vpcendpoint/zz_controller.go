@@ -140,42 +140,56 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DNSEntries = nil
 	}
-	if resp.VpcEndpoint.Groups != nil {
-		f2 := []*svcapitypes.SecurityGroupIdentifier{}
-		for _, f2iter := range resp.VpcEndpoint.Groups {
-			f2elem := &svcapitypes.SecurityGroupIdentifier{}
-			if f2iter.GroupId != nil {
-				f2elem.GroupID = f2iter.GroupId
-			}
-			if f2iter.GroupName != nil {
-				f2elem.GroupName = f2iter.GroupName
-			}
-			f2 = append(f2, f2elem)
+	if resp.VpcEndpoint.DnsOptions != nil {
+		f2 := &svcapitypes.DNSOptionsSpecification{}
+		if resp.VpcEndpoint.DnsOptions.DnsRecordIpType != nil {
+			f2.DNSRecordIPType = resp.VpcEndpoint.DnsOptions.DnsRecordIpType
 		}
-		cr.Status.AtProvider.Groups = f2
+		cr.Spec.ForProvider.DNSOptions = f2
+	} else {
+		cr.Spec.ForProvider.DNSOptions = nil
+	}
+	if resp.VpcEndpoint.Groups != nil {
+		f3 := []*svcapitypes.SecurityGroupIdentifier{}
+		for _, f3iter := range resp.VpcEndpoint.Groups {
+			f3elem := &svcapitypes.SecurityGroupIdentifier{}
+			if f3iter.GroupId != nil {
+				f3elem.GroupID = f3iter.GroupId
+			}
+			if f3iter.GroupName != nil {
+				f3elem.GroupName = f3iter.GroupName
+			}
+			f3 = append(f3, f3elem)
+		}
+		cr.Status.AtProvider.Groups = f3
 	} else {
 		cr.Status.AtProvider.Groups = nil
 	}
+	if resp.VpcEndpoint.IpAddressType != nil {
+		cr.Spec.ForProvider.IPAddressType = resp.VpcEndpoint.IpAddressType
+	} else {
+		cr.Spec.ForProvider.IPAddressType = nil
+	}
 	if resp.VpcEndpoint.LastError != nil {
-		f3 := &svcapitypes.LastError{}
+		f5 := &svcapitypes.LastError{}
 		if resp.VpcEndpoint.LastError.Code != nil {
-			f3.Code = resp.VpcEndpoint.LastError.Code
+			f5.Code = resp.VpcEndpoint.LastError.Code
 		}
 		if resp.VpcEndpoint.LastError.Message != nil {
-			f3.Message = resp.VpcEndpoint.LastError.Message
+			f5.Message = resp.VpcEndpoint.LastError.Message
 		}
-		cr.Status.AtProvider.LastError = f3
+		cr.Status.AtProvider.LastError = f5
 	} else {
 		cr.Status.AtProvider.LastError = nil
 	}
 	if resp.VpcEndpoint.NetworkInterfaceIds != nil {
-		f4 := []*string{}
-		for _, f4iter := range resp.VpcEndpoint.NetworkInterfaceIds {
-			var f4elem string
-			f4elem = *f4iter
-			f4 = append(f4, &f4elem)
+		f6 := []*string{}
+		for _, f6iter := range resp.VpcEndpoint.NetworkInterfaceIds {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		cr.Status.AtProvider.NetworkInterfaceIDs = f4
+		cr.Status.AtProvider.NetworkInterfaceIDs = f6
 	} else {
 		cr.Status.AtProvider.NetworkInterfaceIDs = nil
 	}
@@ -200,13 +214,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.RequesterManaged = nil
 	}
 	if resp.VpcEndpoint.RouteTableIds != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.VpcEndpoint.RouteTableIds {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f11 := []*string{}
+		for _, f11iter := range resp.VpcEndpoint.RouteTableIds {
+			var f11elem string
+			f11elem = *f11iter
+			f11 = append(f11, &f11elem)
 		}
-		cr.Status.AtProvider.RouteTableIDs = f9
+		cr.Status.AtProvider.RouteTableIDs = f11
 	} else {
 		cr.Status.AtProvider.RouteTableIDs = nil
 	}
@@ -221,29 +235,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.State = nil
 	}
 	if resp.VpcEndpoint.SubnetIds != nil {
-		f12 := []*string{}
-		for _, f12iter := range resp.VpcEndpoint.SubnetIds {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f14 := []*string{}
+		for _, f14iter := range resp.VpcEndpoint.SubnetIds {
+			var f14elem string
+			f14elem = *f14iter
+			f14 = append(f14, &f14elem)
 		}
-		cr.Status.AtProvider.SubnetIDs = f12
+		cr.Status.AtProvider.SubnetIDs = f14
 	} else {
 		cr.Status.AtProvider.SubnetIDs = nil
 	}
 	if resp.VpcEndpoint.Tags != nil {
-		f13 := []*svcapitypes.Tag{}
-		for _, f13iter := range resp.VpcEndpoint.Tags {
-			f13elem := &svcapitypes.Tag{}
-			if f13iter.Key != nil {
-				f13elem.Key = f13iter.Key
+		f15 := []*svcapitypes.Tag{}
+		for _, f15iter := range resp.VpcEndpoint.Tags {
+			f15elem := &svcapitypes.Tag{}
+			if f15iter.Key != nil {
+				f15elem.Key = f15iter.Key
 			}
-			if f13iter.Value != nil {
-				f13elem.Value = f13iter.Value
+			if f15iter.Value != nil {
+				f15elem.Value = f15iter.Value
 			}
-			f13 = append(f13, f13elem)
+			f15 = append(f15, f15elem)
 		}
-		cr.Status.AtProvider.Tags = f13
+		cr.Status.AtProvider.Tags = f15
 	} else {
 		cr.Status.AtProvider.Tags = nil
 	}

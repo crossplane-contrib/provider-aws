@@ -172,6 +172,21 @@ type StreamModeDetails struct {
 }
 
 // +kubebuilder:skipversion
+type StreamSummary struct {
+	StreamARN *string `json:"streamARN,omitempty"`
+
+	StreamCreationTimestamp *metav1.Time `json:"streamCreationTimestamp,omitempty"`
+	// Specifies the capacity mode to which you want to set your data stream. Currently,
+	// in Kinesis Data Streams, you can choose between an on-demand capacity mode
+	// and a provisioned capacity mode for your data streams.
+	StreamModeDetails *StreamModeDetails `json:"streamModeDetails,omitempty"`
+
+	StreamName *string `json:"streamName,omitempty"`
+
+	StreamStatus *string `json:"streamStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SubscribeToShardEvent struct {
 	ContinuationSequenceNumber *string `json:"continuationSequenceNumber,omitempty"`
 }

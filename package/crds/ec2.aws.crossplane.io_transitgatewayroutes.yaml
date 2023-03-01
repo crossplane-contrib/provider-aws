@@ -431,6 +431,9 @@ spec:
                           type: string
                       type: object
                     type: array
+                  transitGatewayRouteTableAnnouncementID:
+                    description: The ID of the transit gateway route table announcement.
+                    type: string
                   type_:
                     description: The route type.
                     type: string

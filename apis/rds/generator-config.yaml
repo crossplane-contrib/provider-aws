@@ -79,3 +79,4 @@ ignore:
     - DBSubnetGroup
     - EventSubscription
     - OptionGroup
+    - BlueGreenDeployment

@@ -137,7 +137,7 @@ spec:
                         firelensConfiguration:
                           description: The FireLens configuration for the container.
                             This is used to specify and configure a log router for
-                            container logs. For more information, see Custom Log Routing
+                            container logs. For more information, see Custom log routing
                             (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html)
                             in the Amazon Elastic Container Service Developer Guide.
                           properties:
@@ -171,25 +171,33 @@ spec:
                             or there's no container health check defined. \n The following
                             describes the possible healthStatus values for a task.
                             The container health check status of nonessential containers
-                            do not have an effect on the health status of a task.
-                            \n * HEALTHY-All essential containers within the task
-                            have passed their health checks. \n * UNHEALTHY-One or
-                            more essential containers have failed their health check.
-                            \n * UNKNOWN-The essential containers within the task
-                            are still having their health checks evaluated or there
-                            are no container health checks defined. \n If a task is
-                            run manually, and not as part of a service, the task will
-                            continue its lifecycle regardless of its health status.
-                            For tasks that are part of a service, if the task reports
-                            as unhealthy then the task will be stopped and the service
-                            scheduler will replace it. \n The following are notes
+                            only affects the health status of a task if no essential
+                            containers have health checks defined. \n * HEALTHY-All
+                            essential containers within the task have passed their
+                            health checks. \n * UNHEALTHY-One or more essential containers
+                            have failed their health check. \n * UNKNOWN-The essential
+                            containers within the task are still having their health
+                            checks evaluated or there are only nonessential containers
+                            with health checks defined. \n If a task is run manually,
+                            and not as part of a service, the task will continue its
+                            lifecycle regardless of its health status. For tasks that
+                            are part of a service, if the task reports as unhealthy
+                            then the task will be stopped and the service scheduler
+                            will replace it. \n For tasks that are a part of a service
+                            and the service uses the ECS rolling deployment type,
+                            the deployment is paused while the new tasks have the
+                            UNKNOWN task health check status. For example, tasks that
+                            define health checks for nonessential containers when
+                            no essential containers have health checks will have the
+                            UNKNOWN health check status indefinitely which prevents
+                            the deployment from completing. \n The following are notes
                             about container health check support: \n * Container health
                             checks require version 1.17.0 or greater of the Amazon
                             ECS container agent. For more information, see Updating
-                            the Amazon ECS Container Agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
+                            the Amazon ECS container agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
                             \n * Container health checks are supported for Fargate
                             tasks if you're using platform version 1.1.0 or greater.
-                            For more information, see Fargate Platform Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html).
+                            For more information, see Fargate platform versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html).
                             \n * Container health checks aren't supported for tasks
                             that are part of a service that's configured to use a
                             Classic Load Balancer."
@@ -359,12 +367,18 @@ spec:
                         portMappings:
                           items:
                             properties:
+                              appProtocol:
+                                type: string
                               containerPort:
                                 format: int64
                                 type: integer
+                              containerPortRange:
+                                type: string
                               hostPort:
                                 format: int64
                                 type: integer
+                              name:
+                                type: string
                               protocol:
                                 type: string
                             type: object
@@ -453,7 +467,8 @@ spec:
                       containers. We recommend specifying container-level resources
                       for Windows containers. \n If you're using the EC2 launch type,
                       this field is optional. Supported values are between 128 CPU
-                      units (0.125 vCPUs) and 10240 CPU units (10 vCPUs). \n If you're
+                      units (0.125 vCPUs) and 10240 CPU units (10 vCPUs). If you do
+                      not specify a value, the parameter is ignored. \n If you're
                       using the Fargate launch type, this field is required and you
                       must use one of the following values, which determines your
                       range of supported values for the memory parameter: \n The CPU
@@ -464,9 +479,13 @@ spec:
                       GB) \n * 1024 (1 vCPU) - Available memory values: 2048 (2 GB),
                       3072 (3 GB), 4096 (4 GB), 5120 (5 GB), 6144 (6 GB), 7168 (7
                       GB), 8192 (8 GB) \n * 2048 (2 vCPU) - Available memory values:
-                      Between 4096 (4 GB) and 16384 (16 GB) in increments of 1024
-                      (1 GB) \n * 4096 (4 vCPU) - Available memory values: Between
-                      8192 (8 GB) and 30720 (30 GB) in increments of 1024 (1 GB)"
+                      4096 (4 GB) and 16384 (16 GB) in increments of 1024 (1 GB) \n
+                      * 4096 (4 vCPU) - Available memory values: 8192 (8 GB) and 30720
+                      (30 GB) in increments of 1024 (1 GB) \n * 8192 (8 vCPU) - Available
+                      memory values: 16 GB and 60 GB in 4 GB increments This option
+                      requires Linux platform 1.4.0 or later. \n * 16384 (16vCPU)
+                      - Available memory values: 32GB and 120 GB in 8 GB increments
+                      This option requires Linux platform 1.4.0 or later."
                     type: string
                   ephemeralStorage:
                     description: "The amount of ephemeral storage to allocate for
@@ -476,8 +495,7 @@ spec:
                       storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
                       in the Amazon ECS User Guide for Fargate. \n This parameter
                       is only supported for tasks hosted on Fargate using the following
-                      platform versions: \n * Linux platform version 1.4.0 or later.
-                      \n * Windows platform version 1.0.0 or later."
+                      platform versions: \n * Linux platform version 1.4.0 or later."
                     properties:
                       sizeInGiB:
                         format: int64
@@ -631,7 +649,11 @@ spec:
                       vCPU) \n * Between 4096 (4 GB) and 16384 (16 GB) in increments
                       of 1024 (1 GB) - Available cpu values: 2048 (2 vCPU) \n * Between
                       8192 (8 GB) and 30720 (30 GB) in increments of 1024 (1 GB) -
-                      Available cpu values: 4096 (4 vCPU)"
+                      Available cpu values: 4096 (4 vCPU) \n * Between 16 GB and 60
+                      GB in 4 GB increments - Available cpu values: 8192 (8 vCPU)
+                      This option requires Linux platform 1.4.0 or later. \n * Between
+                      32GB and 120 GB in 8 GB increments - Available cpu values: 16384
+                      (16 vCPU) This option requires Linux platform 1.4.0 or later."
                     type: string
                   networkMode:
                     description: "The Docker networking mode to use for the containers
@@ -1097,9 +1119,9 @@ spec:
                               description: "The authorization configuration details
                                 for Amazon FSx for Windows File Server file system.
                                 See FSxWindowsFileServerVolumeConfiguration (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_FSxWindowsFileServerVolumeConfiguration.html)
-                                in the Amazon Elastic Container Service API Reference.
-                                \n For more information and the input format, see
-                                Amazon FSx for Windows File Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
+                                in the Amazon ECS API Reference. \n For more information
+                                and the input format, see Amazon FSx for Windows File
+                                Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
                                 in the Amazon Elastic Container Service Developer
                                 Guide."
                               properties:
@@ -1390,7 +1412,7 @@ spec:
                               description: The FireLens configuration for the container.
                                 This is used to specify and configure a log router
                                 for container logs. For more information, see Custom
-                                Log Routing (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html)
+                                log routing (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html)
                                 in the Amazon Elastic Container Service Developer
                                 Guide.
                               properties:
@@ -1425,27 +1447,36 @@ spec:
                                 check is being evaluated or there's no container health
                                 check defined. \n The following describes the possible
                                 healthStatus values for a task. The container health
-                                check status of nonessential containers do not have
-                                an effect on the health status of a task. \n * HEALTHY-All
-                                essential containers within the task have passed their
-                                health checks. \n * UNHEALTHY-One or more essential
-                                containers have failed their health check. \n * UNKNOWN-The
-                                essential containers within the task are still having
-                                their health checks evaluated or there are no container
-                                health checks defined. \n If a task is run manually,
-                                and not as part of a service, the task will continue
-                                its lifecycle regardless of its health status. For
-                                tasks that are part of a service, if the task reports
-                                as unhealthy then the task will be stopped and the
-                                service scheduler will replace it. \n The following
-                                are notes about container health check support: \n
-                                * Container health checks require version 1.17.0 or
-                                greater of the Amazon ECS container agent. For more
-                                information, see Updating the Amazon ECS Container
-                                Agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
+                                check status of nonessential containers only affects
+                                the health status of a task if no essential containers
+                                have health checks defined. \n * HEALTHY-All essential
+                                containers within the task have passed their health
+                                checks. \n * UNHEALTHY-One or more essential containers
+                                have failed their health check. \n * UNKNOWN-The essential
+                                containers within the task are still having their
+                                health checks evaluated or there are only nonessential
+                                containers with health checks defined. \n If a task
+                                is run manually, and not as part of a service, the
+                                task will continue its lifecycle regardless of its
+                                health status. For tasks that are part of a service,
+                                if the task reports as unhealthy then the task will
+                                be stopped and the service scheduler will replace
+                                it. \n For tasks that are a part of a service and
+                                the service uses the ECS rolling deployment type,
+                                the deployment is paused while the new tasks have
+                                the UNKNOWN task health check status. For example,
+                                tasks that define health checks for nonessential containers
+                                when no essential containers have health checks will
+                                have the UNKNOWN health check status indefinitely
+                                which prevents the deployment from completing. \n
+                                The following are notes about container health check
+                                support: \n * Container health checks require version
+                                1.17.0 or greater of the Amazon ECS container agent.
+                                For more information, see Updating the Amazon ECS
+                                container agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
                                 \n * Container health checks are supported for Fargate
                                 tasks if you're using platform version 1.1.0 or greater.
-                                For more information, see Fargate Platform Versions
+                                For more information, see Fargate platform versions
                                 (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html).
                                 \n * Container health checks aren't supported for
                                 tasks that are part of a service that's configured
@@ -1617,12 +1648,18 @@ spec:
                             portMappings:
                               items:
                                 properties:
+                                  appProtocol:
+                                    type: string
                                   containerPort:
                                     format: int64
                                     type: integer
+                                  containerPortRange:
+                                    type: string
                                   hostPort:
                                     format: int64
                                     type: integer
+                                  name:
+                                    type: string
                                   protocol:
                                     type: string
                                 type: object
@@ -1803,7 +1840,7 @@ spec:
                         type: integer
                       runtimePlatform:
                         description: "Information about the platform for the Amazon
-                          ECS service or task. \n For more informataion about RuntimePlatform,
+                          ECS service or task. \n For more information about RuntimePlatform,
                           see RuntimePlatform (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform)
                           in the Amazon Elastic Container Service Developer Guide."
                         properties:
@@ -1847,7 +1884,7 @@ spec:
                               description: This parameter is specified when you're
                                 using an Amazon Elastic File System file system for
                                 task storage. For more information, see Amazon EFS
-                                Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html)
+                                volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html)
                                 in the Amazon Elastic Container Service Developer
                                 Guide.
                               properties:
@@ -1875,7 +1912,7 @@ spec:
                                 using Amazon FSx for Windows File Server (https://docs.aws.amazon.com/fsx/latest/WindowsGuide/what-is.html)
                                 file system for task storage. \n For more information
                                 and the input format, see Amazon FSx for Windows File
-                                Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
+                                Server volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
                                 in the Amazon Elastic Container Service Developer
                                 Guide."
                               properties:
@@ -1883,10 +1920,9 @@ spec:
                                   description: "The authorization configuration details
                                     for Amazon FSx for Windows File Server file system.
                                     See FSxWindowsFileServerVolumeConfiguration (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_FSxWindowsFileServerVolumeConfiguration.html)
-                                    in the Amazon Elastic Container Service API Reference.
-                                    \n For more information and the input format,
-                                    see Amazon FSx for Windows File Server Volumes
-                                    (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
+                                    in the Amazon ECS API Reference. \n For more information
+                                    and the input format, see Amazon FSx for Windows
+                                    File Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
                                     in the Amazon Elastic Container Service Developer
                                     Guide."
                                   properties:

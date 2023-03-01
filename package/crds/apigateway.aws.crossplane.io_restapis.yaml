@@ -62,11 +62,11 @@ spec:
                 description: RestAPIParameters defines the desired state of RestAPI
                 properties:
                   apiKeySource:
-                    description: "The source of the API key for metering requests
-                      according to a usage plan. Valid values are: * HEADER to read
-                      the API key from the X-API-Key header of a request. \n * AUTHORIZER
+                    description: 'The source of the API key for metering requests
+                      according to a usage plan. Valid values are: >HEADER to read
+                      the API key from the X-API-Key header of a request. AUTHORIZER
                       to read the API key from the UsageIdentifierKey from a custom
-                      authorizer."
+                      authorizer.'
                     type: string
                   binaryMediaTypes:
                     description: The list of binary media types supported by the RestApi.
@@ -85,7 +85,7 @@ spec:
                       using the default execute-api endpoint. By default, clients
                       can invoke your API with the default https://{api_id}.execute-api.{region}.amazonaws.com
                       endpoint. To require that clients use a custom domain name to
-                      invoke your API, disable the default endpoint.
+                      invoke your API, disable the default endpoint
                     type: boolean
                   endpointConfiguration:
                     description: The endpoint configuration of this RestApi showing
@@ -110,7 +110,7 @@ spec:
                     format: int64
                     type: integer
                   name:
-                    description: '[Required] The name of the RestApi.'
+                    description: The name of the RestApi.
                     type: string
                   policy:
                     description: A stringified JSON policy document that applies to

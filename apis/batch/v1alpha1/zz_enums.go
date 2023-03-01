@@ -152,6 +152,13 @@ const (
 	LogDriver_splunk    LogDriver = "splunk"
 )
 
+type OrchestrationType string
+
+const (
+	OrchestrationType_ECS OrchestrationType = "ECS"
+	OrchestrationType_EKS OrchestrationType = "EKS"
+)
+
 type PlatformCapability string
 
 const (

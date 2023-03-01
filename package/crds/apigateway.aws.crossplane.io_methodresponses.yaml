@@ -63,7 +63,7 @@ spec:
                   MethodResponse
                 properties:
                   httpMethod:
-                    description: '[Required] The HTTP verb of the Method resource.'
+                    description: The HTTP verb of the Method resource.
                     type: string
                   region:
                     description: Region is which region the MethodResponse will be
@@ -252,7 +252,7 @@ spec:
                         type: object
                     type: object
                   statusCode:
-                    description: '[Required] The method response''s status code.'
+                    description: The method response's status code.
                     type: string
                 required:
                 - httpMethod

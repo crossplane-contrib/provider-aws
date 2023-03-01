@@ -206,14 +206,19 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 	} else {
 		cr.Status.AtProvider.State = nil
 	}
+	if resp.ClusterInfo.StorageMode != nil {
+		cr.Spec.ForProvider.StorageMode = resp.ClusterInfo.StorageMode
+	} else {
+		cr.Spec.ForProvider.StorageMode = nil
+	}
 	if resp.ClusterInfo.Tags != nil {
-		f15 := map[string]*string{}
-		for f15key, f15valiter := range resp.ClusterInfo.Tags {
-			var f15val string
-			f15val = *f15valiter
-			f15[f15key] = &f15val
+		f16 := map[string]*string{}
+		for f16key, f16valiter := range resp.ClusterInfo.Tags {
+			var f16val string
+			f16val = *f16valiter
+			f16[f16key] = &f16val
 		}
-		cr.Spec.ForProvider.Tags = f15
+		cr.Spec.ForProvider.Tags = f16
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -366,14 +371,17 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 		}
 		res.SetOpenMonitoring(f7)
 	}
+	if cr.Spec.ForProvider.StorageMode != nil {
+		res.SetStorageMode(*cr.Spec.ForProvider.StorageMode)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f8 := map[string]*string{}
-		for f8key, f8valiter := range cr.Spec.ForProvider.Tags {
-			var f8val string
-			f8val = *f8valiter
-			f8[f8key] = &f8val
+		f9 := map[string]*string{}
+		for f9key, f9valiter := range cr.Spec.ForProvider.Tags {
+			var f9val string
+			f9val = *f9valiter
+			f9[f9key] = &f9val
 		}
-		res.SetTags(f8)
+		res.SetTags(f9)
 	}
 
 	return res

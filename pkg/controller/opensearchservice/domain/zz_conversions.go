@@ -239,6 +239,9 @@ func GenerateDomain(resp *svcsdk.DescribeDomainOutput) *svcapitypes.Domain {
 		if resp.DomainStatus.EBSOptions.Iops != nil {
 			f13.IOPS = resp.DomainStatus.EBSOptions.Iops
 		}
+		if resp.DomainStatus.EBSOptions.Throughput != nil {
+			f13.Throughput = resp.DomainStatus.EBSOptions.Throughput
+		}
 		if resp.DomainStatus.EBSOptions.VolumeSize != nil {
 			f13.VolumeSize = resp.DomainStatus.EBSOptions.VolumeSize
 		}
@@ -591,6 +594,9 @@ func GenerateCreateDomainInput(cr *svcapitypes.Domain) *svcsdk.CreateDomainInput
 		}
 		if cr.Spec.ForProvider.EBSOptions.IOPS != nil {
 			f8.SetIops(*cr.Spec.ForProvider.EBSOptions.IOPS)
+		}
+		if cr.Spec.ForProvider.EBSOptions.Throughput != nil {
+			f8.SetThroughput(*cr.Spec.ForProvider.EBSOptions.Throughput)
 		}
 		if cr.Spec.ForProvider.EBSOptions.VolumeSize != nil {
 			f8.SetVolumeSize(*cr.Spec.ForProvider.EBSOptions.VolumeSize)

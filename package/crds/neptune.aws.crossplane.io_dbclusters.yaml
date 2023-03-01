@@ -134,6 +134,10 @@ spec:
                     description: "The version number of the database engine to use
                       for the new DB cluster. \n Example: 1.0.2.1"
                     type: string
+                  globalClusterIdentifier:
+                    description: The ID of the Neptune global database to which this
+                      new DB cluster should be added.
+                    type: string
                   kmsKeyID:
                     description: "The Amazon KMS key identifier for an encrypted DB
                       cluster. \n The KMS key identifier is the Amazon Resource Name
@@ -201,6 +205,13 @@ spec:
                     description: The Amazon Resource Name (ARN) of the source DB instance
                       or DB cluster if this DB cluster is created as a Read Replica.
                     type: string
+                  serverlessV2ScalingConfiguration:
+                    properties:
+                      maxCapacity:
+                        type: number
+                      minCapacity:
+                        type: number
+                    type: object
                   skipFinalSnapshot:
                     description: "Determines whether a final DB cluster snapshot is
                       created before the DB cluster is deleted. If true is specified,

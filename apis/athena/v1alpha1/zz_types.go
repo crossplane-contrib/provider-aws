@@ -33,8 +33,20 @@ type ACLConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type ApplicationDPUSizes struct {
+	ApplicationRuntimeID *string `json:"applicationRuntimeID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AthenaError struct {
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CalculationStatus struct {
+	CompletionDateTime *metav1.Time `json:"completionDateTime,omitempty"`
+
+	SubmissionDateTime *metav1.Time `json:"submissionDateTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -55,6 +67,11 @@ type ColumnInfo struct {
 	TableName *string `json:"tableName,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CustomerContentEncryptionConfiguration struct {
+	KMSKey *string `json:"kmsKey,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -84,6 +101,20 @@ type NamedQuery struct {
 }
 
 // +kubebuilder:skipversion
+type NotebookMetadata struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+
+	WorkGroup *string `json:"workGroup,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NotebookSessionSummary struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type PreparedStatement struct {
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 
@@ -97,7 +128,8 @@ type PreparedStatementSummary struct {
 
 // +kubebuilder:skipversion
 type QueryExecution struct {
-	// The Athena engine version for running queries.
+	// The Athena engine version for running queries, or the PySpark engine version
+	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
 	// The location in Amazon S3 where query results are stored and the encryption
 	// option, if any, used for query results. These are known as "client-side settings".
@@ -120,6 +152,18 @@ type QueryExecutionStatus struct {
 	StateChangeReason *string `json:"stateChangeReason,omitempty"`
 
 	SubmissionDateTime *metav1.Time `json:"submissionDateTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type QueryStage struct {
+	State *string `json:"state,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type QueryStagePlanNode struct {
+	Identifier *string `json:"identifier,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -165,6 +209,37 @@ type ResultConfigurationUpdates struct {
 }
 
 // +kubebuilder:skipversion
+type SessionConfiguration struct {
+	// If query results are encrypted in Amazon S3, indicates the encryption option
+	// used (for example, SSE_KMS or CSE_KMS) and key information.
+	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
+
+	ExecutionRole *string `json:"executionRole,omitempty"`
+
+	WorkingDirectory *string `json:"workingDirectory,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SessionStatus struct {
+	EndDateTime *metav1.Time `json:"endDateTime,omitempty"`
+
+	IdleSinceDateTime *metav1.Time `json:"idleSinceDateTime,omitempty"`
+
+	LastModifiedDateTime *metav1.Time `json:"lastModifiedDateTime,omitempty"`
+
+	StartDateTime *metav1.Time `json:"startDateTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SessionSummary struct {
+	// The Athena engine version for running queries, or the PySpark engine version
+	// for running sessions.
+	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
+
+	NotebookVersion *string `json:"notebookVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type TableMetadata struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -178,11 +253,18 @@ type Tag struct {
 
 // +kubebuilder:skipversion
 type WorkGroupConfiguration struct {
+	AdditionalConfiguration *string `json:"additionalConfiguration,omitempty"`
+
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
+	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
+	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
 
 	EnforceWorkGroupConfiguration *bool `json:"enforceWorkGroupConfiguration,omitempty"`
-	// The Athena engine version for running queries.
+	// The Athena engine version for running queries, or the PySpark engine version
+	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
+
+	ExecutionRole *string `json:"executionRole,omitempty"`
 
 	PublishCloudWatchMetricsEnabled *bool `json:"publishCloudWatchMetricsEnabled,omitempty"`
 
@@ -196,15 +278,24 @@ type WorkGroupConfiguration struct {
 
 // +kubebuilder:skipversion
 type WorkGroupConfigurationUpdates struct {
+	AdditionalConfiguration *string `json:"additionalConfiguration,omitempty"`
+
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
+	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
+	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
 
 	EnforceWorkGroupConfiguration *bool `json:"enforceWorkGroupConfiguration,omitempty"`
-	// The Athena engine version for running queries.
+	// The Athena engine version for running queries, or the PySpark engine version
+	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
+
+	ExecutionRole *string `json:"executionRole,omitempty"`
 
 	PublishCloudWatchMetricsEnabled *bool `json:"publishCloudWatchMetricsEnabled,omitempty"`
 
 	RemoveBytesScannedCutoffPerQuery *bool `json:"removeBytesScannedCutoffPerQuery,omitempty"`
+
+	RemoveCustomerContentEncryptionConfiguration *bool `json:"removeCustomerContentEncryptionConfiguration,omitempty"`
 
 	RequesterPaysEnabled *bool `json:"requesterPaysEnabled,omitempty"`
 	// The information about the updates in the query results, such as output location
@@ -217,7 +308,8 @@ type WorkGroupSummary struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	Description *string `json:"description,omitempty"`
-	// The Athena engine version for running queries.
+	// The Athena engine version for running queries, or the PySpark engine version
+	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
 
 	Name *string `json:"name,omitempty"`

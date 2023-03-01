@@ -244,6 +244,12 @@ spec:
                     description: Region is which region the VPCEndpointServiceConfiguration
                       will be created.
                     type: string
+                  supportedIPAddressTypes:
+                    description: The supported IP address types. The possible values
+                      are ipv4 and ipv6.
+                    items:
+                      type: string
+                    type: array
                   tagSpecifications:
                     description: The tags to associate with the service.
                     items:
@@ -509,6 +515,10 @@ spec:
                             serviceType:
                               type: string
                           type: object
+                        type: array
+                      supportedIPAddressTypes:
+                        items:
+                          type: string
                         type: array
                       tags:
                         items:

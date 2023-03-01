@@ -227,78 +227,106 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.Name != nil {
 				f2f2.Name = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.Name
 			}
+			if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.RemoveHeadersConfig != nil {
+				f2f2f4 := &svcapitypes.ResponseHeadersPolicyRemoveHeadersConfig{}
+				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.RemoveHeadersConfig.Items != nil {
+					f2f2f4f0 := []*svcapitypes.ResponseHeadersPolicyRemoveHeader{}
+					for _, f2f2f4f0iter := range resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.RemoveHeadersConfig.Items {
+						f2f2f4f0elem := &svcapitypes.ResponseHeadersPolicyRemoveHeader{}
+						if f2f2f4f0iter.Header != nil {
+							f2f2f4f0elem.Header = f2f2f4f0iter.Header
+						}
+						f2f2f4f0 = append(f2f2f4f0, f2f2f4f0elem)
+					}
+					f2f2f4.Items = f2f2f4f0
+				}
+				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.RemoveHeadersConfig.Quantity != nil {
+					f2f2f4.Quantity = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.RemoveHeadersConfig.Quantity
+				}
+				f2f2.RemoveHeadersConfig = f2f2f4
+			}
 			if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig != nil {
-				f2f2f4 := &svcapitypes.ResponseHeadersPolicySecurityHeadersConfig{}
+				f2f2f5 := &svcapitypes.ResponseHeadersPolicySecurityHeadersConfig{}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy != nil {
-					f2f2f4f0 := &svcapitypes.ResponseHeadersPolicyContentSecurityPolicy{}
+					f2f2f5f0 := &svcapitypes.ResponseHeadersPolicyContentSecurityPolicy{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.ContentSecurityPolicy != nil {
-						f2f2f4f0.ContentSecurityPolicy = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.ContentSecurityPolicy
+						f2f2f5f0.ContentSecurityPolicy = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.ContentSecurityPolicy
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.Override != nil {
-						f2f2f4f0.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.Override
+						f2f2f5f0.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentSecurityPolicy.Override
 					}
-					f2f2f4.ContentSecurityPolicy = f2f2f4f0
+					f2f2f5.ContentSecurityPolicy = f2f2f5f0
 				}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentTypeOptions != nil {
-					f2f2f4f1 := &svcapitypes.ResponseHeadersPolicyContentTypeOptions{}
+					f2f2f5f1 := &svcapitypes.ResponseHeadersPolicyContentTypeOptions{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentTypeOptions.Override != nil {
-						f2f2f4f1.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentTypeOptions.Override
+						f2f2f5f1.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ContentTypeOptions.Override
 					}
-					f2f2f4.ContentTypeOptions = f2f2f4f1
+					f2f2f5.ContentTypeOptions = f2f2f5f1
 				}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions != nil {
-					f2f2f4f2 := &svcapitypes.ResponseHeadersPolicyFrameOptions{}
+					f2f2f5f2 := &svcapitypes.ResponseHeadersPolicyFrameOptions{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.FrameOption != nil {
-						f2f2f4f2.FrameOption = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.FrameOption
+						f2f2f5f2.FrameOption = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.FrameOption
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.Override != nil {
-						f2f2f4f2.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.Override
+						f2f2f5f2.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.FrameOptions.Override
 					}
-					f2f2f4.FrameOptions = f2f2f4f2
+					f2f2f5.FrameOptions = f2f2f5f2
 				}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy != nil {
-					f2f2f4f3 := &svcapitypes.ResponseHeadersPolicyReferrerPolicy{}
+					f2f2f5f3 := &svcapitypes.ResponseHeadersPolicyReferrerPolicy{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.Override != nil {
-						f2f2f4f3.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.Override
+						f2f2f5f3.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.Override
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.ReferrerPolicy != nil {
-						f2f2f4f3.ReferrerPolicy = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.ReferrerPolicy
+						f2f2f5f3.ReferrerPolicy = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.ReferrerPolicy.ReferrerPolicy
 					}
-					f2f2f4.ReferrerPolicy = f2f2f4f3
+					f2f2f5.ReferrerPolicy = f2f2f5f3
 				}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity != nil {
-					f2f2f4f4 := &svcapitypes.ResponseHeadersPolicyStrictTransportSecurity{}
+					f2f2f5f4 := &svcapitypes.ResponseHeadersPolicyStrictTransportSecurity{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.AccessControlMaxAgeSec != nil {
-						f2f2f4f4.AccessControlMaxAgeSec = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.AccessControlMaxAgeSec
+						f2f2f5f4.AccessControlMaxAgeSec = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.AccessControlMaxAgeSec
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.IncludeSubdomains != nil {
-						f2f2f4f4.IncludeSubdomains = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.IncludeSubdomains
+						f2f2f5f4.IncludeSubdomains = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.IncludeSubdomains
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Override != nil {
-						f2f2f4f4.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Override
+						f2f2f5f4.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Override
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Preload != nil {
-						f2f2f4f4.Preload = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Preload
+						f2f2f5f4.Preload = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Preload
 					}
-					f2f2f4.StrictTransportSecurity = f2f2f4f4
+					f2f2f5.StrictTransportSecurity = f2f2f5f4
 				}
 				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection != nil {
-					f2f2f4f5 := &svcapitypes.ResponseHeadersPolicyXSSProtection{}
+					f2f2f5f5 := &svcapitypes.ResponseHeadersPolicyXSSProtection{}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ModeBlock != nil {
-						f2f2f4f5.ModeBlock = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ModeBlock
+						f2f2f5f5.ModeBlock = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ModeBlock
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Override != nil {
-						f2f2f4f5.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Override
+						f2f2f5f5.Override = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Override
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Protection != nil {
-						f2f2f4f5.Protection = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Protection
+						f2f2f5f5.Protection = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.Protection
 					}
 					if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ReportUri != nil {
-						f2f2f4f5.ReportURI = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ReportUri
+						f2f2f5f5.ReportURI = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.SecurityHeadersConfig.XSSProtection.ReportUri
 					}
-					f2f2f4.XSSProtection = f2f2f4f5
+					f2f2f5.XSSProtection = f2f2f5f5
 				}
-				f2f2.SecurityHeadersConfig = f2f2f4
+				f2f2.SecurityHeadersConfig = f2f2f5
+			}
+			if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.ServerTimingHeadersConfig != nil {
+				f2f2f6 := &svcapitypes.ResponseHeadersPolicyServerTimingHeadersConfig{}
+				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.ServerTimingHeadersConfig.Enabled != nil {
+					f2f2f6.Enabled = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.ServerTimingHeadersConfig.Enabled
+				}
+				if resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.ServerTimingHeadersConfig.SamplingRate != nil {
+					f2f2f6.SamplingRate = resp.ResponseHeadersPolicy.ResponseHeadersPolicyConfig.ServerTimingHeadersConfig.SamplingRate
+				}
+				f2f2.ServerTimingHeadersConfig = f2f2f6
 			}
 			f2.ResponseHeadersPolicyConfig = f2f2
 		}

@@ -31,7 +31,9 @@ type DatabaseParameters struct {
 	Region string `json:"region"`
 	// The ID of the Data Catalog in which to create the database. If none is provided,
 	// the Amazon Web Services account ID is used by default.
-	CatalogID                *string `json:"catalogID,omitempty"`
+	CatalogID *string `json:"catalogID,omitempty"`
+	// The tags you assign to the database.
+	Tags                     map[string]*string `json:"tags,omitempty"`
 	CustomDatabaseParameters `json:",inline"`
 }
 

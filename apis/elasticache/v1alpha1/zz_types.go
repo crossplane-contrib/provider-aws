@@ -395,6 +395,8 @@ type RegionalConfiguration struct {
 type ReplicationGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
 	Description *string `json:"description,omitempty"`

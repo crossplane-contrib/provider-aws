@@ -97,6 +97,16 @@ type ClusterConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type ClusterServiceConnectDefaults struct {
+	Namespace *string `json:"namespace,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ClusterServiceConnectDefaultsRequest struct {
+	Namespace *string `json:"namespace,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ClusterSetting struct {
 	Name *string `json:"name,omitempty"`
 
@@ -126,6 +136,22 @@ type Cluster_SDK struct {
 	RegisteredContainerInstancesCount *int64 `json:"registeredContainerInstancesCount,omitempty"`
 
 	RunningTasksCount *int64 `json:"runningTasksCount,omitempty"`
+	// Use this parameter to set a default Service Connect namespace. After you
+	// set a default Service Connect namespace, any new services with Service Connect
+	// turned on that are created in the cluster are added as client services in
+	// the namespace. This setting only applies to new services that set the enabled
+	// parameter to true in the ServiceConnectConfiguration. You can set the namespace
+	// of each service individually in the ServiceConnectConfiguration to override
+	// this default parameter.
+	//
+	// Tasks that run in a namespace can use short names to connect to services
+	// in the namespace. Tasks can connect to services across all of the clusters
+	// in the namespace. Tasks connect through a managed proxy container that collects
+	// logs and metrics for increased visibility. Only the tasks that Amazon ECS
+	// services create are supported with Service Connect. For more information,
+	// see Service Connect (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	ServiceConnectDefaults *ClusterServiceConnectDefaults `json:"serviceConnectDefaults,omitempty"`
 
 	Settings []*ClusterSetting `json:"settings,omitempty"`
 
@@ -192,7 +218,7 @@ type ContainerDefinition struct {
 	ExtraHosts []*HostEntry `json:"extraHosts,omitempty"`
 	// The FireLens configuration for the container. This is used to specify and
 	// configure a log router for container logs. For more information, see Custom
-	// Log Routing (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html)
+	// log routing (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	FirelensConfiguration *FirelensConfiguration `json:"firelensConfiguration,omitempty"`
 	// An object representing a container health check. Health check parameters
@@ -219,8 +245,8 @@ type ContainerDefinition struct {
 	//    container health check defined.
 	//
 	// The following describes the possible healthStatus values for a task. The
-	// container health check status of nonessential containers do not have an effect
-	// on the health status of a task.
+	// container health check status of nonessential containers only affects the
+	// health status of a task if no essential containers have health checks defined.
 	//
 	//    * HEALTHY-All essential containers within the task have passed their health
 	//    checks.
@@ -229,22 +255,30 @@ type ContainerDefinition struct {
 	//    check.
 	//
 	//    * UNKNOWN-The essential containers within the task are still having their
-	//    health checks evaluated or there are no container health checks defined.
+	//    health checks evaluated or there are only nonessential containers with
+	//    health checks defined.
 	//
 	// If a task is run manually, and not as part of a service, the task will continue
 	// its lifecycle regardless of its health status. For tasks that are part of
 	// a service, if the task reports as unhealthy then the task will be stopped
 	// and the service scheduler will replace it.
 	//
+	// For tasks that are a part of a service and the service uses the ECS rolling
+	// deployment type, the deployment is paused while the new tasks have the UNKNOWN
+	// task health check status. For example, tasks that define health checks for
+	// nonessential containers when no essential containers have health checks will
+	// have the UNKNOWN health check status indefinitely which prevents the deployment
+	// from completing.
+	//
 	// The following are notes about container health check support:
 	//
 	//    * Container health checks require version 1.17.0 or greater of the Amazon
 	//    ECS container agent. For more information, see Updating the Amazon ECS
-	//    Container Agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
+	//    container agent (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-update.html).
 	//
 	//    * Container health checks are supported for Fargate tasks if you're using
-	//    platform version 1.1.0 or greater. For more information, see Fargate Platform
-	//    Versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html).
+	//    platform version 1.1.0 or greater. For more information, see Fargate platform
+	//    versions (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/platform_versions.html).
 	//
 	//    * Container health checks aren't supported for tasks that are part of
 	//    a service that's configured to use a Classic Load Balancer.
@@ -425,12 +459,35 @@ type Deployment struct {
 	RolloutStateReason *string `json:"rolloutStateReason,omitempty"`
 
 	RunningCount *int64 `json:"runningCount,omitempty"`
+	// The Service Connect configuration of your Amazon ECS service. The configuration
+	// for this service to discover and connect to services, and be discovered by,
+	// and connected from, other services within a namespace.
+	//
+	// Tasks that run in a namespace can use short names to connect to services
+	// in the namespace. Tasks can connect to services across all of the clusters
+	// in the namespace. Tasks connect through a managed proxy container that collects
+	// logs and metrics for increased visibility. Only the tasks that Amazon ECS
+	// services create are supported with Service Connect. For more information,
+	// see Service Connect (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	ServiceConnectConfiguration *ServiceConnectConfiguration `json:"serviceConnectConfiguration,omitempty"`
+
+	ServiceConnectResources []*ServiceConnectServiceResource `json:"serviceConnectResources,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
 	TaskDefinition *string `json:"taskDefinition,omitempty"`
 
 	UpdatedAt *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeploymentAlarms struct {
+	AlarmNames []*string `json:"alarmNames,omitempty"`
+
+	Enable *bool `json:"enable,omitempty"`
+
+	Rollback *bool `json:"rollback,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -442,6 +499,20 @@ type DeploymentCircuitBreaker struct {
 
 // +kubebuilder:skipversion
 type DeploymentConfiguration struct {
+	// One of the methods which provide a way for you to quickly identify when a
+	// deployment has failed, and then to optionally roll back the failure to the
+	// last working deployment.
+	//
+	// When the alarms are generated, Amazon ECS sets the service deployment to
+	// failed. Set the rollback parameter to have Amazon ECS to roll back your service
+	// to the last completed deployment after a failure.
+	//
+	// You can only use the DeploymentAlarms method to detect failures when the
+	// DeploymentController is set to ECS (rolling update).
+	//
+	// For more information, see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+	// in the Amazon Elastic Container Service Developer Guide .
+	Alarms *DeploymentAlarms `json:"alarms,omitempty"`
 	//
 	// The deployment circuit breaker can only be used for services using the rolling
 	// update (ECS) deployment type that aren't behind a Classic Load Balancer.
@@ -553,7 +624,7 @@ type FSxWindowsFileServerAuthorizationConfig struct {
 type FSxWindowsFileServerVolumeConfiguration struct {
 	// The authorization configuration details for Amazon FSx for Windows File Server
 	// file system. See FSxWindowsFileServerVolumeConfiguration (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_FSxWindowsFileServerVolumeConfiguration.html)
-	// in the Amazon Elastic Container Service API Reference.
+	// in the Amazon ECS API Reference.
 	//
 	// For more information and the input format, see Amazon FSx for Windows File
 	// Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
@@ -718,7 +789,11 @@ type NetworkBinding struct {
 
 	ContainerPort *int64 `json:"containerPort,omitempty"`
 
+	ContainerPortRange *string `json:"containerPortRange,omitempty"`
+
 	HostPort *int64 `json:"hostPort,omitempty"`
+
+	HostPortRange *string `json:"hostPortRange,omitempty"`
 
 	Protocol *string `json:"protocol,omitempty"`
 }
@@ -759,11 +834,26 @@ type PlatformDevice struct {
 
 // +kubebuilder:skipversion
 type PortMapping struct {
+	AppProtocol *string `json:"appProtocol,omitempty"`
+
 	ContainerPort *int64 `json:"containerPort,omitempty"`
+
+	ContainerPortRange *string `json:"containerPortRange,omitempty"`
 
 	HostPort *int64 `json:"hostPort,omitempty"`
 
+	Name *string `json:"name,omitempty"`
+
 	Protocol *string `json:"protocol,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ProtectedTask struct {
+	ExpirationDate *metav1.Time `json:"expirationDate,omitempty"`
+
+	ProtectionEnabled *bool `json:"protectionEnabled,omitempty"`
+
+	TaskARN *string `json:"taskARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -822,6 +912,75 @@ type Secret struct {
 }
 
 // +kubebuilder:skipversion
+type ServiceConnectClientAlias struct {
+	DNSName *string `json:"dnsName,omitempty"`
+
+	Port *int64 `json:"port,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceConnectConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+	// The log configuration for the container. This parameter maps to LogConfig
+	// in the Create a container (https://docs.docker.com/engine/api/v1.35/#operation/ContainerCreate)
+	// section of the Docker Remote API (https://docs.docker.com/engine/api/v1.35/)
+	// and the --log-driver option to docker run (https://docs.docker.com/engine/reference/commandline/run/).
+	//
+	// By default, containers use the same logging driver that the Docker daemon
+	// uses. However, the container might use a different logging driver than the
+	// Docker daemon by specifying a log driver configuration in the container definition.
+	// For more information about the options for different supported log drivers,
+	// see Configure logging drivers (https://docs.docker.com/engine/admin/logging/overview/)
+	// in the Docker documentation.
+	//
+	// Understand the following when specifying a log configuration for your containers.
+	//
+	//    * Amazon ECS currently supports a subset of the logging drivers available
+	//    to the Docker daemon (shown in the valid values below). Additional log
+	//    drivers may be available in future releases of the Amazon ECS container
+	//    agent.
+	//
+	//    * This parameter requires version 1.18 of the Docker Remote API or greater
+	//    on your container instance.
+	//
+	//    * For tasks that are hosted on Amazon EC2 instances, the Amazon ECS container
+	//    agent must register the available logging drivers with the ECS_AVAILABLE_LOGGING_DRIVERS
+	//    environment variable before containers placed on that instance can use
+	//    these log configuration options. For more information, see Amazon ECS
+	//    container agent configuration (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html)
+	//    in the Amazon Elastic Container Service Developer Guide.
+	//
+	//    * For tasks that are on Fargate, because you don't have access to the
+	//    underlying infrastructure your tasks are hosted on, any additional software
+	//    needed must be installed outside of the task. For example, the Fluentd
+	//    output aggregators or a remote host running Logstash to send Gelf logs
+	//    to.
+	LogConfiguration *LogConfiguration `json:"logConfiguration,omitempty"`
+
+	Namespace *string `json:"namespace,omitempty"`
+
+	Services []*ServiceConnectService `json:"services,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceConnectService struct {
+	ClientAliases []*ServiceConnectClientAlias `json:"clientAliases,omitempty"`
+
+	DiscoveryName *string `json:"discoveryName,omitempty"`
+
+	IngressPortOverride *int64 `json:"ingressPortOverride,omitempty"`
+
+	PortName *string `json:"portName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceConnectServiceResource struct {
+	DiscoveryARN *string `json:"discoveryARN,omitempty"`
+
+	DiscoveryName *string `json:"discoveryName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ServiceEvent struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
@@ -854,7 +1013,7 @@ type Service_SDK struct {
 	// and the ordering of stopping and starting tasks.
 	DeploymentConfiguration *DeploymentConfiguration `json:"deploymentConfiguration,omitempty"`
 	// The deployment controller to use for the service. For more information, see
-	// Amazon ECS Deployment Types (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html)
+	// Amazon ECS deployment types (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	DeploymentController *DeploymentController `json:"deploymentController,omitempty"`
 
@@ -1069,7 +1228,7 @@ type TaskDefinition_SDK struct {
 	Revision *int64 `json:"revision,omitempty"`
 	// Information about the platform for the Amazon ECS service or task.
 	//
-	// For more informataion about RuntimePlatform, see RuntimePlatform (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform)
+	// For more information about RuntimePlatform, see RuntimePlatform (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform)
 	// in the Amazon Elastic Container Service Developer Guide.
 	RuntimePlatform *RuntimePlatform `json:"runtimePlatform,omitempty"`
 
@@ -1190,7 +1349,7 @@ type Volume struct {
 	// instead.
 	DockerVolumeConfiguration *DockerVolumeConfiguration `json:"dockerVolumeConfiguration,omitempty"`
 	// This parameter is specified when you're using an Amazon Elastic File System
-	// file system for task storage. For more information, see Amazon EFS Volumes
+	// file system for task storage. For more information, see Amazon EFS volumes
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	EFSVolumeConfiguration *EFSVolumeConfiguration `json:"efsVolumeConfiguration,omitempty"`
@@ -1199,7 +1358,7 @@ type Volume struct {
 	// file system for task storage.
 	//
 	// For more information and the input format, see Amazon FSx for Windows File
-	// Server Volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
+	// Server volumes (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/wfsx-volumes.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	FsxWindowsFileServerVolumeConfiguration *FSxWindowsFileServerVolumeConfiguration `json:"fsxWindowsFileServerVolumeConfiguration,omitempty"`
 	// Details on a container instance bind mount host volume.

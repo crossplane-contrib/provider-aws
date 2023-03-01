@@ -62,28 +62,41 @@ spec:
                 description: WorkGroupParameters defines the desired state of WorkGroup
                 properties:
                   configuration:
-                    description: The configuration for the workgroup, which includes
-                      the location in Amazon S3 where query results are stored, the
-                      encryption configuration, if any, used for encrypting query
-                      results, whether the Amazon CloudWatch Metrics are enabled for
-                      the workgroup, the limit for the amount of bytes scanned (cutoff)
-                      per query, if it is specified, and whether workgroup's settings
-                      (specified with EnforceWorkGroupConfiguration) in the WorkGroupConfiguration
+                    description: Contains configuration information for creating an
+                      Athena SQL workgroup, which includes the location in Amazon
+                      S3 where query results are stored, the encryption configuration,
+                      if any, used for encrypting query results, whether the Amazon
+                      CloudWatch Metrics are enabled for the workgroup, the limit
+                      for the amount of bytes scanned (cutoff) per query, if it is
+                      specified, and whether workgroup's settings (specified with
+                      EnforceWorkGroupConfiguration) in the WorkGroupConfiguration
                       override client-side settings. See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
                     properties:
+                      additionalConfiguration:
+                        type: string
                       bytesScannedCutoffPerQuery:
                         format: int64
                         type: integer
+                      customerContentEncryptionConfiguration:
+                        description: Specifies the KMS key that is used to encrypt
+                          the user's data stores in Athena.
+                        properties:
+                          kmsKey:
+                            type: string
+                        type: object
                       enforceWorkGroupConfiguration:
                         type: boolean
                       engineVersion:
-                        description: The Athena engine version for running queries.
+                        description: The Athena engine version for running queries,
+                          or the PySpark engine version for running sessions.
                         properties:
                           effectiveEngineVersion:
                             type: string
                           selectedEngineVersion:
                             type: string
                         type: object
+                      executionRole:
+                        type: string
                       publishCloudWatchMetricsEnabled:
                         type: boolean
                       requesterPaysEnabled:

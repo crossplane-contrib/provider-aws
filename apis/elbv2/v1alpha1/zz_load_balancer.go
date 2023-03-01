@@ -61,7 +61,7 @@ type LoadBalancerParameters struct {
 	// balancer.
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
 	// The IDs of the public subnets. You can specify only one subnet per Availability
-	// Zone. You must specify either subnets or subnet mappings.
+	// Zone. You must specify either subnets or subnet mappings, but not both.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
 	// Zones. You cannot specify Elastic IP addresses for your subnets.
@@ -82,7 +82,8 @@ type LoadBalancerParameters struct {
 	// Zones. You cannot specify Elastic IP addresses for your subnets.
 	SubnetMappings []*SubnetMapping `json:"subnetMappings,omitempty"`
 	// The IDs of the public subnets. You can specify only one subnet per Availability
-	// Zone. You must specify either subnets or subnet mappings.
+	// Zone. You must specify either subnets or subnet mappings, but not both. To
+	// specify an Elastic IP address, specify subnet mappings instead of subnets.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
 	// Zones.

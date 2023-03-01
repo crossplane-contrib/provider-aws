@@ -389,6 +389,14 @@ const (
 	IndexStatus_REBUILDING IndexStatus = "REBUILDING"
 )
 
+type JobEndBehavior string
+
+const (
+	JobEndBehavior_STOP_ROLLOUT JobEndBehavior = "STOP_ROLLOUT"
+	JobEndBehavior_CANCEL       JobEndBehavior = "CANCEL"
+	JobEndBehavior_FORCE_CANCEL JobEndBehavior = "FORCE_CANCEL"
+)
+
 type JobExecutionFailureType string
 
 const (
@@ -418,6 +426,7 @@ const (
 	JobStatus_CANCELED             JobStatus = "CANCELED"
 	JobStatus_COMPLETED            JobStatus = "COMPLETED"
 	JobStatus_DELETION_IN_PROGRESS JobStatus = "DELETION_IN_PROGRESS"
+	JobStatus_SCHEDULED            JobStatus = "SCHEDULED"
 )
 
 type LogLevel string
@@ -513,6 +522,7 @@ const (
 	ResourceType_ACCOUNT_SETTINGS      ResourceType = "ACCOUNT_SETTINGS"
 	ResourceType_ROLE_ALIAS            ResourceType = "ROLE_ALIAS"
 	ResourceType_IAM_ROLE              ResourceType = "IAM_ROLE"
+	ResourceType_ISSUER_CERTIFICATE    ResourceType = "ISSUER_CERTIFICATE"
 )
 
 type RetryableFailureType string
@@ -553,6 +563,13 @@ type TargetSelection string
 const (
 	TargetSelection_CONTINUOUS TargetSelection = "CONTINUOUS"
 	TargetSelection_SNAPSHOT   TargetSelection = "SNAPSHOT"
+)
+
+type TemplateType string
+
+const (
+	TemplateType_FLEET_PROVISIONING TemplateType = "FLEET_PROVISIONING"
+	TemplateType_JITP               TemplateType = "JITP"
 )
 
 type ThingConnectivityIndexingMode string

@@ -29,6 +29,17 @@ const (
 	AlertManagerDefinitionStatusCode_UPDATE_FAILED   AlertManagerDefinitionStatusCode = "UPDATE_FAILED"
 )
 
+type LoggingConfigurationStatusCode string
+
+const (
+	LoggingConfigurationStatusCode_CREATING        LoggingConfigurationStatusCode = "CREATING"
+	LoggingConfigurationStatusCode_ACTIVE          LoggingConfigurationStatusCode = "ACTIVE"
+	LoggingConfigurationStatusCode_UPDATING        LoggingConfigurationStatusCode = "UPDATING"
+	LoggingConfigurationStatusCode_DELETING        LoggingConfigurationStatusCode = "DELETING"
+	LoggingConfigurationStatusCode_CREATION_FAILED LoggingConfigurationStatusCode = "CREATION_FAILED"
+	LoggingConfigurationStatusCode_UPDATE_FAILED   LoggingConfigurationStatusCode = "UPDATE_FAILED"
+)
+
 type RuleGroupsNamespaceStatusCode string
 
 const (

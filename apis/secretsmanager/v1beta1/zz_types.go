@@ -90,6 +90,8 @@ type SecretListEntry struct {
 	
 	Name *string `json:"name,omitempty"`
 	
+	NextRotationDate *metav1.Time `json:"nextRotationDate,omitempty"`
+	
 	OwningService *string `json:"owningService,omitempty"`
 	
 	PrimaryRegion *string `json:"primaryRegion,omitempty"`

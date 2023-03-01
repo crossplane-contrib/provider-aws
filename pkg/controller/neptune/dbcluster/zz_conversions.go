@@ -292,6 +292,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Spec.ForProvider.ReplicationSourceIdentifier = nil
 		}
+		if elem.ServerlessV2ScalingConfiguration != nil {
+			f37 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+			if elem.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+				f37.MaxCapacity = elem.ServerlessV2ScalingConfiguration.MaxCapacity
+			}
+			if elem.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+				f37.MinCapacity = elem.ServerlessV2ScalingConfiguration.MinCapacity
+			}
+			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f37
+		} else {
+			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = nil
+		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
 		} else {
@@ -303,18 +315,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f39 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f39iter := range elem.VpcSecurityGroups {
-				f39elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f39iter.Status != nil {
-					f39elem.Status = f39iter.Status
+			f40 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f40iter := range elem.VpcSecurityGroups {
+				f40elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f40iter.Status != nil {
+					f40elem.Status = f40iter.Status
 				}
-				if f39iter.VpcSecurityGroupId != nil {
-					f39elem.VPCSecurityGroupID = f39iter.VpcSecurityGroupId
+				if f40iter.VpcSecurityGroupId != nil {
+					f40elem.VPCSecurityGroupID = f40iter.VpcSecurityGroupId
 				}
-				f39 = append(f39, f39elem)
+				f40 = append(f40, f40elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f39
+			cr.Status.AtProvider.VPCSecurityGroups = f40
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -383,6 +395,9 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
+	if cr.Spec.ForProvider.GlobalClusterIdentifier != nil {
+		res.SetGlobalClusterIdentifier(*cr.Spec.ForProvider.GlobalClusterIdentifier)
+	}
 	if cr.Spec.ForProvider.KMSKeyID != nil {
 		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
 	}
@@ -410,6 +425,16 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.ReplicationSourceIdentifier != nil {
 		res.SetReplicationSourceIdentifier(*cr.Spec.ForProvider.ReplicationSourceIdentifier)
 	}
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		f23 := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f23.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
+		}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f23.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(f23)
+	}
 	if cr.Spec.ForProvider.SourceRegion != nil {
 		res.SetSourceRegion(*cr.Spec.ForProvider.SourceRegion)
 	}
@@ -417,27 +442,27 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f24 := []*svcsdk.Tag{}
-		for _, f24iter := range cr.Spec.ForProvider.Tags {
-			f24elem := &svcsdk.Tag{}
-			if f24iter.Key != nil {
-				f24elem.SetKey(*f24iter.Key)
+		f26 := []*svcsdk.Tag{}
+		for _, f26iter := range cr.Spec.ForProvider.Tags {
+			f26elem := &svcsdk.Tag{}
+			if f26iter.Key != nil {
+				f26elem.SetKey(*f26iter.Key)
 			}
-			if f24iter.Value != nil {
-				f24elem.SetValue(*f24iter.Value)
+			if f26iter.Value != nil {
+				f26elem.SetValue(*f26iter.Value)
 			}
-			f24 = append(f24, f24elem)
+			f26 = append(f26, f26elem)
 		}
-		res.SetTags(f24)
+		res.SetTags(f26)
 	}
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f25 := []*string{}
-		for _, f25iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f25elem string
-			f25elem = *f25iter
-			f25 = append(f25, &f25elem)
+		f27 := []*string{}
+		for _, f27iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f27elem string
+			f27elem = *f27iter
+			f27 = append(f27, &f27elem)
 		}
-		res.SetVpcSecurityGroupIds(f25)
+		res.SetVpcSecurityGroupIds(f27)
 	}
 
 	return res
@@ -480,14 +505,24 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
-	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f16 := []*string{}
-		for _, f16iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+	if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration != nil {
+		f16 := &svcsdk.ServerlessV2ScalingConfiguration{}
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f16.SetMaxCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MaxCapacity)
 		}
-		res.SetVpcSecurityGroupIds(f16)
+		if cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f16.SetMinCapacity(*cr.Spec.ForProvider.ServerlessV2ScalingConfiguration.MinCapacity)
+		}
+		res.SetServerlessV2ScalingConfiguration(f16)
+	}
+	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
+		f17 := []*string{}
+		for _, f17iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f17elem string
+			f17elem = *f17iter
+			f17 = append(f17, &f17elem)
+		}
+		res.SetVpcSecurityGroupIds(f17)
 	}
 
 	return res

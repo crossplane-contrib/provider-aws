@@ -247,26 +247,19 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.RunningTasksCount = nil
 	}
-	if resp.Cluster.Settings != nil {
-		f11 := []*svcapitypes.ClusterSetting{}
-		for _, f11iter := range resp.Cluster.Settings {
-			f11elem := &svcapitypes.ClusterSetting{}
-			if f11iter.Name != nil {
-				f11elem.Name = f11iter.Name
-			}
-			if f11iter.Value != nil {
-				f11elem.Value = f11iter.Value
-			}
-			f11 = append(f11, f11elem)
+	if resp.Cluster.ServiceConnectDefaults != nil {
+		f11 := &svcapitypes.ClusterServiceConnectDefaultsRequest{}
+		if resp.Cluster.ServiceConnectDefaults.Namespace != nil {
+			f11.Namespace = resp.Cluster.ServiceConnectDefaults.Namespace
 		}
-		cr.Spec.ForProvider.Settings = f11
+		cr.Spec.ForProvider.ServiceConnectDefaults = f11
 	} else {
-		cr.Spec.ForProvider.Settings = nil
+		cr.Spec.ForProvider.ServiceConnectDefaults = nil
 	}
-	if resp.Cluster.Statistics != nil {
-		f12 := []*svcapitypes.KeyValuePair{}
-		for _, f12iter := range resp.Cluster.Statistics {
-			f12elem := &svcapitypes.KeyValuePair{}
+	if resp.Cluster.Settings != nil {
+		f12 := []*svcapitypes.ClusterSetting{}
+		for _, f12iter := range resp.Cluster.Settings {
+			f12elem := &svcapitypes.ClusterSetting{}
 			if f12iter.Name != nil {
 				f12elem.Name = f12iter.Name
 			}
@@ -275,7 +268,23 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			f12 = append(f12, f12elem)
 		}
-		cr.Status.AtProvider.Statistics = f12
+		cr.Spec.ForProvider.Settings = f12
+	} else {
+		cr.Spec.ForProvider.Settings = nil
+	}
+	if resp.Cluster.Statistics != nil {
+		f13 := []*svcapitypes.KeyValuePair{}
+		for _, f13iter := range resp.Cluster.Statistics {
+			f13elem := &svcapitypes.KeyValuePair{}
+			if f13iter.Name != nil {
+				f13elem.Name = f13iter.Name
+			}
+			if f13iter.Value != nil {
+				f13elem.Value = f13iter.Value
+			}
+			f13 = append(f13, f13elem)
+		}
+		cr.Status.AtProvider.Statistics = f13
 	} else {
 		cr.Status.AtProvider.Statistics = nil
 	}
@@ -285,18 +294,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Cluster.Tags != nil {
-		f14 := []*svcapitypes.Tag{}
-		for _, f14iter := range resp.Cluster.Tags {
-			f14elem := &svcapitypes.Tag{}
-			if f14iter.Key != nil {
-				f14elem.Key = f14iter.Key
+		f15 := []*svcapitypes.Tag{}
+		for _, f15iter := range resp.Cluster.Tags {
+			f15elem := &svcapitypes.Tag{}
+			if f15iter.Key != nil {
+				f15elem.Key = f15iter.Key
 			}
-			if f14iter.Value != nil {
-				f14elem.Value = f14iter.Value
+			if f15iter.Value != nil {
+				f15elem.Value = f15iter.Value
 			}
-			f14 = append(f14, f14elem)
+			f15 = append(f15, f15elem)
 		}
-		cr.Spec.ForProvider.Tags = f14
+		cr.Spec.ForProvider.Tags = f15
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

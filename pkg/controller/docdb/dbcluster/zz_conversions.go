@@ -75,6 +75,11 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Spec.ForProvider.BackupRetentionPeriod = nil
 		}
+		if elem.CloneGroupId != nil {
+			cr.Status.AtProvider.CloneGroupID = elem.CloneGroupId
+		} else {
+			cr.Status.AtProvider.CloneGroupID = nil
+		}
 		if elem.ClusterCreateTime != nil {
 			cr.Status.AtProvider.ClusterCreateTime = &metav1.Time{*elem.ClusterCreateTime}
 		} else {
@@ -91,24 +96,24 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Status.AtProvider.DBClusterIdentifier = nil
 		}
 		if elem.DBClusterMembers != nil {
-			f6 := []*svcapitypes.DBClusterMember{}
-			for _, f6iter := range elem.DBClusterMembers {
-				f6elem := &svcapitypes.DBClusterMember{}
-				if f6iter.DBClusterParameterGroupStatus != nil {
-					f6elem.DBClusterParameterGroupStatus = f6iter.DBClusterParameterGroupStatus
+			f7 := []*svcapitypes.DBClusterMember{}
+			for _, f7iter := range elem.DBClusterMembers {
+				f7elem := &svcapitypes.DBClusterMember{}
+				if f7iter.DBClusterParameterGroupStatus != nil {
+					f7elem.DBClusterParameterGroupStatus = f7iter.DBClusterParameterGroupStatus
 				}
-				if f6iter.DBInstanceIdentifier != nil {
-					f6elem.DBInstanceIdentifier = f6iter.DBInstanceIdentifier
+				if f7iter.DBInstanceIdentifier != nil {
+					f7elem.DBInstanceIdentifier = f7iter.DBInstanceIdentifier
 				}
-				if f6iter.IsClusterWriter != nil {
-					f6elem.IsClusterWriter = f6iter.IsClusterWriter
+				if f7iter.IsClusterWriter != nil {
+					f7elem.IsClusterWriter = f7iter.IsClusterWriter
 				}
-				if f6iter.PromotionTier != nil {
-					f6elem.PromotionTier = f6iter.PromotionTier
+				if f7iter.PromotionTier != nil {
+					f7elem.PromotionTier = f7iter.PromotionTier
 				}
-				f6 = append(f6, f6elem)
+				f7 = append(f7, f7elem)
 			}
-			cr.Status.AtProvider.DBClusterMembers = f6
+			cr.Status.AtProvider.DBClusterMembers = f7
 		} else {
 			cr.Status.AtProvider.DBClusterMembers = nil
 		}
@@ -138,13 +143,13 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Status.AtProvider.EarliestRestorableTime = nil
 		}
 		if elem.EnabledCloudwatchLogsExports != nil {
-			f12 := []*string{}
-			for _, f12iter := range elem.EnabledCloudwatchLogsExports {
-				var f12elem string
-				f12elem = *f12iter
-				f12 = append(f12, &f12elem)
+			f13 := []*string{}
+			for _, f13iter := range elem.EnabledCloudwatchLogsExports {
+				var f13elem string
+				f13elem = *f13iter
+				f13 = append(f13, &f13elem)
 			}
-			cr.Status.AtProvider.EnabledCloudwatchLogsExports = f12
+			cr.Status.AtProvider.EnabledCloudwatchLogsExports = f13
 		} else {
 			cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 		}
@@ -209,13 +214,13 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
 		}
 		if elem.ReadReplicaIdentifiers != nil {
-			f25 := []*string{}
-			for _, f25iter := range elem.ReadReplicaIdentifiers {
-				var f25elem string
-				f25elem = *f25iter
-				f25 = append(f25, &f25elem)
+			f26 := []*string{}
+			for _, f26iter := range elem.ReadReplicaIdentifiers {
+				var f26elem string
+				f26elem = *f26iter
+				f26 = append(f26, &f26elem)
 			}
-			cr.Status.AtProvider.ReadReplicaIdentifiers = f25
+			cr.Status.AtProvider.ReadReplicaIdentifiers = f26
 		} else {
 			cr.Status.AtProvider.ReadReplicaIdentifiers = nil
 		}
@@ -240,18 +245,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f30 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f30iter := range elem.VpcSecurityGroups {
-				f30elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f30iter.Status != nil {
-					f30elem.Status = f30iter.Status
+			f31 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f31iter := range elem.VpcSecurityGroups {
+				f31elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f31iter.Status != nil {
+					f31elem.Status = f31iter.Status
 				}
-				if f30iter.VpcSecurityGroupId != nil {
-					f30elem.VPCSecurityGroupID = f30iter.VpcSecurityGroupId
+				if f31iter.VpcSecurityGroupId != nil {
+					f31elem.VPCSecurityGroupID = f31iter.VpcSecurityGroupId
 				}
-				f30 = append(f30, f30elem)
+				f31 = append(f31, f31elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f30
+			cr.Status.AtProvider.VPCSecurityGroups = f31
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}

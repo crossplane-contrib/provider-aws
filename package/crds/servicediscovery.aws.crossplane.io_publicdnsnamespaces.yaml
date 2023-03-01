@@ -67,7 +67,9 @@ spec:
                     description: A description for the namespace.
                     type: string
                   name:
-                    description: The name that you want to assign to this namespace.
+                    description: "The name that you want to assign to this namespace.
+                      \n Do not include sensitive information in the name. The name
+                      is publicly available using DNS queries."
                     type: string
                   properties:
                     description: Properties for the public DNS namespace.

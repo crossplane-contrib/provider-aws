@@ -150,7 +150,8 @@ spec:
                   configuration:
                     description: Crawler configuration information. This versioned
                       JSON string allows users to specify aspects of a crawler's behavior.
-                      For more information, see Configuring a Crawler (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
+                      For more information, see Setting crawler configuration options
+                      (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
                     type: string
                   crawlerSecurityConfiguration:
                     description: The name of the SecurityConfiguration structure to
@@ -314,6 +315,8 @@ spec:
                     description: A description of the new crawler.
                     type: string
                   lakeFormationConfiguration:
+                    description: Specifies Lake Formation configuration settings for
+                      the crawler.
                     properties:
                       accountID:
                         type: string

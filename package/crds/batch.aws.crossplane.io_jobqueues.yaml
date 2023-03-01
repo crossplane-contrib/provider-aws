@@ -207,7 +207,7 @@ spec:
                       specified, the job queue uses a first in, first out (FIFO) scheduling
                       policy. After a job queue is created, you can replace but can't
                       remove the fair share scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-                      . An example is aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+                      . An example is aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
                     type: string
                   tags:
                     additionalProperties:
@@ -408,9 +408,9 @@ spec:
                     type: string
                   state:
                     description: Describes the ability of the queue to accept new
-                      jobs. If the job queue state is ENABLED, it's able to accept
-                      jobs. If the job queue state is DISABLED, new jobs can't be
-                      added to the queue, but jobs already in the queue can finish.
+                      jobs. If the job queue state is ENABLED, it can accept jobs.
+                      If the job queue state is DISABLED, new jobs can't be added
+                      to the queue, but jobs already in the queue can finish.
                     type: string
                   status:
                     description: The status of the job queue (for example, CREATING

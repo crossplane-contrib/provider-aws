@@ -133,11 +133,11 @@ type FunctionConfiguration struct {
 
 	Description *string `json:"description,omitempty"`
 	// The results of an operation to update or read environment variables. If the
-	// operation is successful, the response contains the environment variables.
-	// If it failed, the response contains details about the error.
+	// operation succeeds, the response contains the environment variables. If it
+	// fails, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
-	// The size of the function’s /tmp directory in MB. The default value is 512,
-	// but can be any whole number between 512 and 10240 MB.
+	// The size of the function's /tmp directory in MB. The default value is 512,
+	// but it can be any whole number between 512 and 10,240 MB.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
@@ -147,7 +147,7 @@ type FunctionConfiguration struct {
 	FunctionName *string `json:"functionName,omitempty"`
 
 	Handler *string `json:"handler,omitempty"`
-	// Response to GetFunctionConfiguration request.
+	// Response to a GetFunctionConfiguration request.
 	ImageConfigResponse *ImageConfigResponse `json:"imageConfigResponse,omitempty"`
 
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
@@ -175,6 +175,9 @@ type FunctionConfiguration struct {
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 
 	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
+	// The function's SnapStart (https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
+	// setting.
+	SnapStart *SnapStartResponse `json:"snapStart,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
@@ -235,7 +238,7 @@ type ImageConfigResponse struct {
 	// Error response to GetFunctionConfiguration.
 	Error *ImageConfigError `json:"error,omitempty"`
 	// Configuration values that override the container image Dockerfile settings.
-	// See Container settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
+	// For more information, see Container image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
 }
 
@@ -284,6 +287,18 @@ type ProvisionedConcurrencyConfigListItem struct {
 // +kubebuilder:skipversion
 type PutFunctionConcurrencyOutput struct {
 	ReservedConcurrentExecutions *int64 `json:"reservedConcurrentExecutions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnapStart struct {
+	ApplyOn *string `json:"applyOn,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnapStartResponse struct {
+	ApplyOn *string `json:"applyOn,omitempty"`
+
+	OptimizationStatus *string `json:"optimizationStatus,omitempty"`
 }
 
 // +kubebuilder:skipversion

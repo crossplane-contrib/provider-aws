@@ -56,29 +56,29 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 		cr.Spec.ForProvider.Definition = nil
 	}
 	if resp.LoggingConfiguration != nil {
-		f2 := &svcapitypes.LoggingConfiguration{}
+		f3 := &svcapitypes.LoggingConfiguration{}
 		if resp.LoggingConfiguration.Destinations != nil {
-			f2f0 := []*svcapitypes.LogDestination{}
-			for _, f2f0iter := range resp.LoggingConfiguration.Destinations {
-				f2f0elem := &svcapitypes.LogDestination{}
-				if f2f0iter.CloudWatchLogsLogGroup != nil {
-					f2f0elemf0 := &svcapitypes.CloudWatchLogsLogGroup{}
-					if f2f0iter.CloudWatchLogsLogGroup.LogGroupArn != nil {
-						f2f0elemf0.LogGroupARN = f2f0iter.CloudWatchLogsLogGroup.LogGroupArn
+			f3f0 := []*svcapitypes.LogDestination{}
+			for _, f3f0iter := range resp.LoggingConfiguration.Destinations {
+				f3f0elem := &svcapitypes.LogDestination{}
+				if f3f0iter.CloudWatchLogsLogGroup != nil {
+					f3f0elemf0 := &svcapitypes.CloudWatchLogsLogGroup{}
+					if f3f0iter.CloudWatchLogsLogGroup.LogGroupArn != nil {
+						f3f0elemf0.LogGroupARN = f3f0iter.CloudWatchLogsLogGroup.LogGroupArn
 					}
-					f2f0elem.CloudWatchLogsLogGroup = f2f0elemf0
+					f3f0elem.CloudWatchLogsLogGroup = f3f0elemf0
 				}
-				f2f0 = append(f2f0, f2f0elem)
+				f3f0 = append(f3f0, f3f0elem)
 			}
-			f2.Destinations = f2f0
+			f3.Destinations = f3f0
 		}
 		if resp.LoggingConfiguration.IncludeExecutionData != nil {
-			f2.IncludeExecutionData = resp.LoggingConfiguration.IncludeExecutionData
+			f3.IncludeExecutionData = resp.LoggingConfiguration.IncludeExecutionData
 		}
 		if resp.LoggingConfiguration.Level != nil {
-			f2.Level = resp.LoggingConfiguration.Level
+			f3.Level = resp.LoggingConfiguration.Level
 		}
-		cr.Spec.ForProvider.LoggingConfiguration = f2
+		cr.Spec.ForProvider.LoggingConfiguration = f3
 	} else {
 		cr.Spec.ForProvider.LoggingConfiguration = nil
 	}
@@ -93,11 +93,11 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 		cr.Status.AtProvider.StateMachineARN = nil
 	}
 	if resp.TracingConfiguration != nil {
-		f7 := &svcapitypes.TracingConfiguration{}
+		f8 := &svcapitypes.TracingConfiguration{}
 		if resp.TracingConfiguration.Enabled != nil {
-			f7.Enabled = resp.TracingConfiguration.Enabled
+			f8.Enabled = resp.TracingConfiguration.Enabled
 		}
-		cr.Spec.ForProvider.TracingConfiguration = f7
+		cr.Spec.ForProvider.TracingConfiguration = f8
 	} else {
 		cr.Spec.ForProvider.TracingConfiguration = nil
 	}

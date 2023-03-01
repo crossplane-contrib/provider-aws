@@ -48,23 +48,28 @@ func GenerateFlowLog(resp *svcsdk.DescribeFlowLogsOutput) *svcapitypes.FlowLog {
 		} else {
 			cr.Status.AtProvider.CreationTime = nil
 		}
+		if elem.DeliverCrossAccountRole != nil {
+			cr.Spec.ForProvider.DeliverCrossAccountRole = elem.DeliverCrossAccountRole
+		} else {
+			cr.Spec.ForProvider.DeliverCrossAccountRole = nil
+		}
 		if elem.DeliverLogsStatus != nil {
 			cr.Status.AtProvider.DeliverLogsStatus = elem.DeliverLogsStatus
 		} else {
 			cr.Status.AtProvider.DeliverLogsStatus = nil
 		}
 		if elem.DestinationOptions != nil {
-			f4 := &svcapitypes.DestinationOptionsRequest{}
+			f5 := &svcapitypes.DestinationOptionsRequest{}
 			if elem.DestinationOptions.FileFormat != nil {
-				f4.FileFormat = elem.DestinationOptions.FileFormat
+				f5.FileFormat = elem.DestinationOptions.FileFormat
 			}
 			if elem.DestinationOptions.HiveCompatiblePartitions != nil {
-				f4.HiveCompatiblePartitions = elem.DestinationOptions.HiveCompatiblePartitions
+				f5.HiveCompatiblePartitions = elem.DestinationOptions.HiveCompatiblePartitions
 			}
 			if elem.DestinationOptions.PerHourPartition != nil {
-				f4.PerHourPartition = elem.DestinationOptions.PerHourPartition
+				f5.PerHourPartition = elem.DestinationOptions.PerHourPartition
 			}
-			cr.Spec.ForProvider.DestinationOptions = f4
+			cr.Spec.ForProvider.DestinationOptions = f5
 		} else {
 			cr.Spec.ForProvider.DestinationOptions = nil
 		}
@@ -109,18 +114,18 @@ func GenerateFlowLog(resp *svcsdk.DescribeFlowLogsOutput) *svcapitypes.FlowLog {
 			cr.Status.AtProvider.ResourceID = nil
 		}
 		if elem.Tags != nil {
-			f13 := []*svcapitypes.Tag{}
-			for _, f13iter := range elem.Tags {
-				f13elem := &svcapitypes.Tag{}
-				if f13iter.Key != nil {
-					f13elem.Key = f13iter.Key
+			f14 := []*svcapitypes.Tag{}
+			for _, f14iter := range elem.Tags {
+				f14elem := &svcapitypes.Tag{}
+				if f14iter.Key != nil {
+					f14elem.Key = f14iter.Key
 				}
-				if f13iter.Value != nil {
-					f13elem.Value = f13iter.Value
+				if f14iter.Value != nil {
+					f14elem.Value = f14iter.Value
 				}
-				f13 = append(f13, f13elem)
+				f14 = append(f14, f14elem)
 			}
-			cr.Status.AtProvider.Tags = f13
+			cr.Status.AtProvider.Tags = f14
 		} else {
 			cr.Status.AtProvider.Tags = nil
 		}
@@ -146,18 +151,21 @@ func GenerateCreateFlowLogsInput(cr *svcapitypes.FlowLog) *svcsdk.CreateFlowLogs
 	if cr.Spec.ForProvider.ClientToken != nil {
 		res.SetClientToken(*cr.Spec.ForProvider.ClientToken)
 	}
+	if cr.Spec.ForProvider.DeliverCrossAccountRole != nil {
+		res.SetDeliverCrossAccountRole(*cr.Spec.ForProvider.DeliverCrossAccountRole)
+	}
 	if cr.Spec.ForProvider.DestinationOptions != nil {
-		f1 := &svcsdk.DestinationOptionsRequest{}
+		f2 := &svcsdk.DestinationOptionsRequest{}
 		if cr.Spec.ForProvider.DestinationOptions.FileFormat != nil {
-			f1.SetFileFormat(*cr.Spec.ForProvider.DestinationOptions.FileFormat)
+			f2.SetFileFormat(*cr.Spec.ForProvider.DestinationOptions.FileFormat)
 		}
 		if cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions != nil {
-			f1.SetHiveCompatiblePartitions(*cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions)
+			f2.SetHiveCompatiblePartitions(*cr.Spec.ForProvider.DestinationOptions.HiveCompatiblePartitions)
 		}
 		if cr.Spec.ForProvider.DestinationOptions.PerHourPartition != nil {
-			f1.SetPerHourPartition(*cr.Spec.ForProvider.DestinationOptions.PerHourPartition)
+			f2.SetPerHourPartition(*cr.Spec.ForProvider.DestinationOptions.PerHourPartition)
 		}
-		res.SetDestinationOptions(f1)
+		res.SetDestinationOptions(f2)
 	}
 	if cr.Spec.ForProvider.LogDestination != nil {
 		res.SetLogDestination(*cr.Spec.ForProvider.LogDestination)

@@ -415,6 +415,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 			}
 		}
 	}
+	if in.CloneGroupID != nil {
+		in, out := &in.CloneGroupID, &out.CloneGroupID
+		*out = new(string)
+		**out = **in
+	}
 	if in.ClusterCreateTime != nil {
 		in, out := &in.ClusterCreateTime, &out.ClusterCreateTime
 		*out = (*in).DeepCopy()
@@ -1106,6 +1111,11 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.CloneGroupID != nil {
+		in, out := &in.CloneGroupID, &out.CloneGroupID
+		*out = new(string)
+		**out = **in
+	}
 	if in.ClusterCreateTime != nil {
 		in, out := &in.ClusterCreateTime, &out.ClusterCreateTime
 		*out = (*in).DeepCopy()
@@ -1538,6 +1548,11 @@ func (in *DBInstanceParameters) DeepCopyInto(out *DBInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CopyTagsToSnapshot != nil {
+		in, out := &in.CopyTagsToSnapshot, &out.CopyTagsToSnapshot
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DBInstanceClass != nil {
 		in, out := &in.DBInstanceClass, &out.DBInstanceClass
 		*out = new(string)
@@ -1682,6 +1697,11 @@ func (in *DBInstance_SDK) DeepCopyInto(out *DBInstance_SDK) {
 	if in.CACertificateIdentifier != nil {
 		in, out := &in.CACertificateIdentifier, &out.CACertificateIdentifier
 		*out = new(string)
+		**out = **in
+	}
+	if in.CopyTagsToSnapshot != nil {
+		in, out := &in.CopyTagsToSnapshot, &out.CopyTagsToSnapshot
+		*out = new(bool)
 		**out = **in
 	}
 	if in.DBClusterIdentifier != nil {

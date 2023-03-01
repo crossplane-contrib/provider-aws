@@ -44,19 +44,28 @@ type UserPoolParameters struct {
 	AliasAttributes []*string `json:"aliasAttributes,omitempty"`
 	// The attributes to be auto-verified. Possible values: email, phone_number.
 	AutoVerifiedAttributes []*string `json:"autoVerifiedAttributes,omitempty"`
-	// The device configuration.
+	// When active, DeletionProtection prevents accidental deletion of your user
+	// pool. Before you can delete a user pool that you have protected against deletion,
+	// you must deactivate this feature.
+	//
+	// When you try to delete a protected user pool in a DeleteUserPool API request,
+	// Amazon Cognito returns an InvalidParameterException error. To delete a protected
+	// user pool, send a new DeleteUserPool request after you deactivate deletion
+	// protection in an UpdateUserPool API request.
+	DeletionProtection *string `json:"deletionProtection,omitempty"`
+	// The device-remembering configuration for a user pool. A null value indicates
+	// that you have deactivated device remembering in your user pool.
+	//
+	// When you provide a value for any DeviceConfiguration field, you activate
+	// the Amazon Cognito device-remembering feature.
 	DeviceConfiguration *DeviceConfigurationType `json:"deviceConfiguration,omitempty"`
 	// The email configuration of your user pool. The email configuration type sets
 	// your preferred sending method, Amazon Web Services Region, and sender for
 	// messages from your user pool.
 	EmailConfiguration *EmailConfigurationType `json:"emailConfiguration,omitempty"`
-	// A string representing the email verification message. EmailVerificationMessage
-	// is allowed only if EmailSendingAccount (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_EmailConfigurationType.html#CognitoUserPools-Type-EmailConfigurationType-EmailSendingAccount)
-	// is DEVELOPER.
+	// This parameter is no longer used. See VerificationMessageTemplateType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_VerificationMessageTemplateType.html).
 	EmailVerificationMessage *string `json:"emailVerificationMessage,omitempty"`
-	// A string representing the email verification subject. EmailVerificationSubject
-	// is allowed only if EmailSendingAccount (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_EmailConfigurationType.html#CognitoUserPools-Type-EmailConfigurationType-EmailSendingAccount)
-	// is DEVELOPER.
+	// This parameter is no longer used. See VerificationMessageTemplateType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_VerificationMessageTemplateType.html).
 	EmailVerificationSubject *string `json:"emailVerificationSubject,omitempty"`
 	// The Lambda trigger configuration information for the new user pool.
 	//
@@ -88,10 +97,16 @@ type UserPoolParameters struct {
 	// pool uses an Identity and Access Management (IAM) role in your Amazon Web
 	// Services account.
 	SmsConfiguration *SmsConfigurationType `json:"smsConfiguration,omitempty"`
-	// A string representing the SMS verification message.
+	// This parameter is no longer used. See VerificationMessageTemplateType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_VerificationMessageTemplateType.html).
 	SmsVerificationMessage *string `json:"smsVerificationMessage,omitempty"`
 	// The software token MFA configuration.
 	SoftwareTokenMFAConfiguration *SoftwareTokenMFAConfigType `json:"softwareTokenMFAConfiguration,omitempty"`
+	// The settings for updates to user attributes. These settings include the property
+	// AttributesRequireVerificationBeforeUpdate, a user-pool setting that tells
+	// Amazon Cognito how to handle changes to the value of your users' email address
+	// and phone number attributes. For more information, see Verifying updates
+	// to email addresses and phone numbers (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-email-phone-verification.html#user-pool-settings-verifications-verify-attribute-updates).
+	UserAttributeUpdateSettings *UserAttributeUpdateSettingsType `json:"userAttributeUpdateSettings,omitempty"`
 	// Enables advanced security risk detection. Set the key AdvancedSecurityMode
 	// to the value "AUDIT".
 	UserPoolAddOns *UserPoolAddOnsType `json:"userPoolAddOns,omitempty"`

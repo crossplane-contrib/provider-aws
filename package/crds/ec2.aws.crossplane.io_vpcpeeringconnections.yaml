@@ -497,7 +497,11 @@ spec:
                       ownerID:
                         type: string
                       peeringOptions:
-                        description: Describes the VPC peering connection options.
+                        description: "We are retiring EC2-Classic. We recommend that
+                          you migrate from EC2-Classic to a VPC. For more information,
+                          see Migrate from EC2-Classic to a VPC (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/vpc-migrate.html)
+                          in the Amazon Elastic Compute Cloud User Guide. \n Describes
+                          the VPC peering connection options."
                         properties:
                           allowDNSResolutionFromRemoteVPC:
                             type: boolean
@@ -539,7 +543,11 @@ spec:
                       ownerID:
                         type: string
                       peeringOptions:
-                        description: Describes the VPC peering connection options.
+                        description: "We are retiring EC2-Classic. We recommend that
+                          you migrate from EC2-Classic to a VPC. For more information,
+                          see Migrate from EC2-Classic to a VPC (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/vpc-migrate.html)
+                          in the Amazon Elastic Compute Cloud User Guide. \n Describes
+                          the VPC peering connection options."
                         properties:
                           allowDNSResolutionFromRemoteVPC:
                             type: boolean

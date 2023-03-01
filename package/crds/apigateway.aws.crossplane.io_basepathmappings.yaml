@@ -70,8 +70,8 @@ spec:
                       after the domain name.
                     type: string
                   domainName:
-                    description: '[Required] The domain name of the BasePathMapping
-                      resource to create.'
+                    description: The domain name of the BasePathMapping resource to
+                      create.
                     type: string
                   region:
                     description: Region is which region the BasePathMapping will be

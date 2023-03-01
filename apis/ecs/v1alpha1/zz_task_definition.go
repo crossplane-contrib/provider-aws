@@ -42,7 +42,8 @@ type TaskDefinitionParameters struct {
 	// We recommend specifying container-level resources for Windows containers.
 	//
 	// If you're using the EC2 launch type, this field is optional. Supported values
-	// are between 128 CPU units (0.125 vCPUs) and 10240 CPU units (10 vCPUs).
+	// are between 128 CPU units (0.125 vCPUs) and 10240 CPU units (10 vCPUs). If
+	// you do not specify a value, the parameter is ignored.
 	//
 	// If you're using the Fargate launch type, this field is required and you must
 	// use one of the following values, which determines your range of supported
@@ -60,11 +61,17 @@ type TaskDefinitionParameters struct {
 	//    * 1024 (1 vCPU) - Available memory values: 2048 (2 GB), 3072 (3 GB), 4096
 	//    (4 GB), 5120 (5 GB), 6144 (6 GB), 7168 (7 GB), 8192 (8 GB)
 	//
-	//    * 2048 (2 vCPU) - Available memory values: Between 4096 (4 GB) and 16384
-	//    (16 GB) in increments of 1024 (1 GB)
+	//    * 2048 (2 vCPU) - Available memory values: 4096 (4 GB) and 16384 (16 GB)
+	//    in increments of 1024 (1 GB)
 	//
-	//    * 4096 (4 vCPU) - Available memory values: Between 8192 (8 GB) and 30720
-	//    (30 GB) in increments of 1024 (1 GB)
+	//    * 4096 (4 vCPU) - Available memory values: 8192 (8 GB) and 30720 (30 GB)
+	//    in increments of 1024 (1 GB)
+	//
+	//    * 8192 (8 vCPU) - Available memory values: 16 GB and 60 GB in 4 GB increments
+	//    This option requires Linux platform 1.4.0 or later.
+	//
+	//    * 16384 (16vCPU) - Available memory values: 32GB and 120 GB in 8 GB increments
+	//    This option requires Linux platform 1.4.0 or later.
 	CPU *string `json:"cpu,omitempty"`
 	// The amount of ephemeral storage to allocate for the task. This parameter
 	// is used to expand the total amount of ephemeral storage available, beyond
@@ -76,8 +83,6 @@ type TaskDefinitionParameters struct {
 	// platform versions:
 	//
 	//    * Linux platform version 1.4.0 or later.
-	//
-	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 	// You must specify a family for a task definition. You can use it track multiple
 	// versions of the same task definition. The family is used as a name for your
@@ -147,6 +152,12 @@ type TaskDefinitionParameters struct {
 	//
 	//    * Between 8192 (8 GB) and 30720 (30 GB) in increments of 1024 (1 GB) -
 	//    Available cpu values: 4096 (4 vCPU)
+	//
+	//    * Between 16 GB and 60 GB in 4 GB increments - Available cpu values: 8192
+	//    (8 vCPU) This option requires Linux platform 1.4.0 or later.
+	//
+	//    * Between 32GB and 120 GB in 8 GB increments - Available cpu values: 16384
+	//    (16 vCPU) This option requires Linux platform 1.4.0 or later.
 	Memory *string `json:"memory,omitempty"`
 	// The Docker networking mode to use for the containers in the task. The valid
 	// values are none, bridge, awsvpc, and host. If no network mode is specified,

@@ -65,7 +65,9 @@ spec:
                     description: Whether cache clustering is enabled for the stage.
                     type: boolean
                   cacheClusterSize:
-                    description: The stage's cache cluster size.
+                    description: The stage's cache capacity in GB. For more information
+                      about choosing a cache size, see Enabling API caching to enhance
+                      responsiveness (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html).
                     type: string
                   canarySettings:
                     description: CustomStageCanarySettings includes the custom field
@@ -325,9 +327,9 @@ spec:
                         type: object
                     type: object
                   stageName:
-                    description: '[Required] The name for the Stage resource. Stage
-                      names can only contain alphanumeric characters, hyphens, and
-                      underscores. Maximum length is 128 characters.'
+                    description: The name for the Stage resource. Stage names can
+                      only contain alphanumeric characters, hyphens, and underscores.
+                      Maximum length is 128 characters.
                     type: string
                   tags:
                     additionalProperties:

@@ -85,6 +85,11 @@ spec:
                     description: The identifier of the CA certificate for this DB
                       instance.
                     type: string
+                  copyTagsToSnapshot:
+                    description: A value that indicates whether to copy tags from
+                      the DB instance to snapshots of the DB instance. By default,
+                      tags are not copied.
+                    type: boolean
                   dbClusterIdentifier:
                     description: The identifier of the cluster this instance will
                       belong to

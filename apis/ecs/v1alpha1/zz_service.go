@@ -50,7 +50,7 @@ type ServiceParameters struct {
 	// schedulingStrategy is DAEMON then this isn't required.
 	DesiredCount *int64 `json:"desiredCount,omitempty"`
 	// Specifies whether to turn on Amazon ECS managed tags for the tasks within
-	// the service. For more information, see Tagging Your Amazon ECS Resources
+	// the service. For more information, see Tagging your Amazon ECS resources
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	EnableECSManagedTags *bool `json:"enableECSManagedTags,omitempty"`
@@ -64,8 +64,8 @@ type ServiceParameters struct {
 	// balancer. If your service has a load balancer defined and you don't specify
 	// a health check grace period value, the default value of 0 is used.
 	//
-	// If you do not use an Elastic Load Balancing, we recomend that you use the
-	// startPeriod in the task definition healtch check parameters. For more information,
+	// If you do not use an Elastic Load Balancing, we recommend that you use the
+	// startPeriod in the task definition health check parameters. For more information,
 	// see Health check (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html).
 	//
 	// If your service's tasks take a while to start and respond to Elastic Load
@@ -159,6 +159,17 @@ type ServiceParameters struct {
 	//    launch type or the CODE_DEPLOY or EXTERNAL deployment controller types
 	//    don't support the DAEMON scheduling strategy.
 	SchedulingStrategy *string `json:"schedulingStrategy,omitempty"`
+	// The configuration for this service to discover and connect to services, and
+	// be discovered by, and connected from, other services within a namespace.
+	//
+	// Tasks that run in a namespace can use short names to connect to services
+	// in the namespace. Tasks can connect to services across all of the clusters
+	// in the namespace. Tasks connect through a managed proxy container that collects
+	// logs and metrics for increased visibility. Only the tasks that Amazon ECS
+	// services create are supported with Service Connect. For more information,
+	// see Service Connect (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	ServiceConnectConfiguration *ServiceConnectConfiguration `json:"serviceConnectConfiguration,omitempty"`
 	// The details of the service discovery registry to associate with this service.
 	// For more information, see Service discovery (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html).
 	//
@@ -235,10 +246,9 @@ type ServiceObservation struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 	// The number of tasks in the cluster that are in the RUNNING state.
 	RunningCount *int64 `json:"runningCount,omitempty"`
-	// The ARN that identifies the service. The ARN contains the arn:aws:ecs namespace,
-	// followed by the Region of the service, the Amazon Web Services account ID
-	// of the service owner, the service namespace, and then the service name. For
-	// example, arn:aws:ecs:region:012345678910:service/my-service.
+	// The ARN that identifies the service. For more information about the ARN format,
+	// see Amazon Resource Name (ARN) (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#ecs-resource-ids)
+	// in the Amazon ECS Developer Guide.
 	ServiceARN *string `json:"serviceARN,omitempty"`
 	// The name of your service. Up to 255 letters (uppercase and lowercase), numbers,
 	// underscores, and hyphens are allowed. Service names must be unique within

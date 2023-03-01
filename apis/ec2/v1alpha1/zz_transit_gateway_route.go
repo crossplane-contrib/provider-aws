@@ -52,6 +52,8 @@ type TransitGatewayRouteObservation struct {
 	State *string `json:"state,omitempty"`
 	// The attachments.
 	TransitGatewayAttachments []*TransitGatewayRouteAttachment `json:"transitGatewayAttachments,omitempty"`
+	// The ID of the transit gateway route table announcement.
+	TransitGatewayRouteTableAnnouncementID *string `json:"transitGatewayRouteTableAnnouncementID,omitempty"`
 	// The route type.
 	Type *string `json:"type_,omitempty"`
 }

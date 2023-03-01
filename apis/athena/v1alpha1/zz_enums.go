@@ -18,6 +18,19 @@ limitations under the License.
 
 package v1alpha1
 
+type CalculationExecutionState string
+
+const (
+	CalculationExecutionState_CREATING  CalculationExecutionState = "CREATING"
+	CalculationExecutionState_CREATED   CalculationExecutionState = "CREATED"
+	CalculationExecutionState_QUEUED    CalculationExecutionState = "QUEUED"
+	CalculationExecutionState_RUNNING   CalculationExecutionState = "RUNNING"
+	CalculationExecutionState_CANCELING CalculationExecutionState = "CANCELING"
+	CalculationExecutionState_CANCELED  CalculationExecutionState = "CANCELED"
+	CalculationExecutionState_COMPLETED CalculationExecutionState = "COMPLETED"
+	CalculationExecutionState_FAILED    CalculationExecutionState = "FAILED"
+)
+
 type ColumnNullable string
 
 const (
@@ -42,6 +55,31 @@ const (
 	EncryptionOption_CSE_KMS EncryptionOption = "CSE_KMS"
 )
 
+type ExecutorState string
+
+const (
+	ExecutorState_CREATING    ExecutorState = "CREATING"
+	ExecutorState_CREATED     ExecutorState = "CREATED"
+	ExecutorState_REGISTERED  ExecutorState = "REGISTERED"
+	ExecutorState_TERMINATING ExecutorState = "TERMINATING"
+	ExecutorState_TERMINATED  ExecutorState = "TERMINATED"
+	ExecutorState_FAILED      ExecutorState = "FAILED"
+)
+
+type ExecutorType string
+
+const (
+	ExecutorType_COORDINATOR ExecutorType = "COORDINATOR"
+	ExecutorType_GATEWAY     ExecutorType = "GATEWAY"
+	ExecutorType_WORKER      ExecutorType = "WORKER"
+)
+
+type NotebookType string
+
+const (
+	NotebookType_IPYNB NotebookType = "IPYNB"
+)
+
 type QueryExecutionState string
 
 const (
@@ -56,6 +94,19 @@ type S3ACLOption string
 
 const (
 	S3ACLOption_BUCKET_OWNER_FULL_CONTROL S3ACLOption = "BUCKET_OWNER_FULL_CONTROL"
+)
+
+type SessionState string
+
+const (
+	SessionState_CREATING    SessionState = "CREATING"
+	SessionState_CREATED     SessionState = "CREATED"
+	SessionState_IDLE        SessionState = "IDLE"
+	SessionState_BUSY        SessionState = "BUSY"
+	SessionState_TERMINATING SessionState = "TERMINATING"
+	SessionState_TERMINATED  SessionState = "TERMINATED"
+	SessionState_DEGRADED    SessionState = "DEGRADED"
+	SessionState_FAILED      SessionState = "FAILED"
 )
 
 type StatementType string

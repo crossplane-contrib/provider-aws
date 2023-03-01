@@ -94,6 +94,17 @@ const (
 	LastUpdateStatusReasonCode_ImageDeleted                LastUpdateStatusReasonCode = "ImageDeleted"
 	LastUpdateStatusReasonCode_ImageAccessDenied           LastUpdateStatusReasonCode = "ImageAccessDenied"
 	LastUpdateStatusReasonCode_InvalidImage                LastUpdateStatusReasonCode = "InvalidImage"
+	LastUpdateStatusReasonCode_KMSKeyAccessDenied          LastUpdateStatusReasonCode = "KMSKeyAccessDenied"
+	LastUpdateStatusReasonCode_KMSKeyNotFound              LastUpdateStatusReasonCode = "KMSKeyNotFound"
+	LastUpdateStatusReasonCode_InvalidStateKMSKey          LastUpdateStatusReasonCode = "InvalidStateKMSKey"
+	LastUpdateStatusReasonCode_DisabledKMSKey              LastUpdateStatusReasonCode = "DisabledKMSKey"
+	LastUpdateStatusReasonCode_EFSIOError                  LastUpdateStatusReasonCode = "EFSIOError"
+	LastUpdateStatusReasonCode_EFSMountConnectivityError   LastUpdateStatusReasonCode = "EFSMountConnectivityError"
+	LastUpdateStatusReasonCode_EFSMountFailure             LastUpdateStatusReasonCode = "EFSMountFailure"
+	LastUpdateStatusReasonCode_EFSMountTimeout             LastUpdateStatusReasonCode = "EFSMountTimeout"
+	LastUpdateStatusReasonCode_InvalidRuntime              LastUpdateStatusReasonCode = "InvalidRuntime"
+	LastUpdateStatusReasonCode_InvalidZipFileException     LastUpdateStatusReasonCode = "InvalidZipFileException"
+	LastUpdateStatusReasonCode_FunctionError               LastUpdateStatusReasonCode = "FunctionError"
 )
 
 type LogType string
@@ -128,6 +139,7 @@ const (
 	Runtime_nodejs10_x     Runtime = "nodejs10.x"
 	Runtime_nodejs12_x     Runtime = "nodejs12.x"
 	Runtime_nodejs14_x     Runtime = "nodejs14.x"
+	Runtime_nodejs16_x     Runtime = "nodejs16.x"
 	Runtime_java8          Runtime = "java8"
 	Runtime_java8_al2      Runtime = "java8.al2"
 	Runtime_java11         Runtime = "java11"
@@ -147,6 +159,21 @@ const (
 	Runtime_ruby2_7        Runtime = "ruby2.7"
 	Runtime_provided       Runtime = "provided"
 	Runtime_provided_al2   Runtime = "provided.al2"
+	Runtime_nodejs18_x     Runtime = "nodejs18.x"
+)
+
+type SnapStartApplyOn string
+
+const (
+	SnapStartApplyOn_PublishedVersions SnapStartApplyOn = "PublishedVersions"
+	SnapStartApplyOn_None              SnapStartApplyOn = "None"
+)
+
+type SnapStartOptimizationStatus string
+
+const (
+	SnapStartOptimizationStatus_On  SnapStartOptimizationStatus = "On"
+	SnapStartOptimizationStatus_Off SnapStartOptimizationStatus = "Off"
 )
 
 type SourceAccessType string
@@ -187,6 +214,17 @@ const (
 	StateReasonCode_ImageDeleted                StateReasonCode = "ImageDeleted"
 	StateReasonCode_ImageAccessDenied           StateReasonCode = "ImageAccessDenied"
 	StateReasonCode_InvalidImage                StateReasonCode = "InvalidImage"
+	StateReasonCode_KMSKeyAccessDenied          StateReasonCode = "KMSKeyAccessDenied"
+	StateReasonCode_KMSKeyNotFound              StateReasonCode = "KMSKeyNotFound"
+	StateReasonCode_InvalidStateKMSKey          StateReasonCode = "InvalidStateKMSKey"
+	StateReasonCode_DisabledKMSKey              StateReasonCode = "DisabledKMSKey"
+	StateReasonCode_EFSIOError                  StateReasonCode = "EFSIOError"
+	StateReasonCode_EFSMountConnectivityError   StateReasonCode = "EFSMountConnectivityError"
+	StateReasonCode_EFSMountFailure             StateReasonCode = "EFSMountFailure"
+	StateReasonCode_EFSMountTimeout             StateReasonCode = "EFSMountTimeout"
+	StateReasonCode_InvalidRuntime              StateReasonCode = "InvalidRuntime"
+	StateReasonCode_InvalidZipFileException     StateReasonCode = "InvalidZipFileException"
+	StateReasonCode_FunctionError               StateReasonCode = "FunctionError"
 )
 
 type ThrottleReason string
@@ -197,6 +235,7 @@ const (
 	ThrottleReason_ReservedFunctionConcurrentInvocationLimitExceeded ThrottleReason = "ReservedFunctionConcurrentInvocationLimitExceeded"
 	ThrottleReason_ReservedFunctionInvocationRateLimitExceeded       ThrottleReason = "ReservedFunctionInvocationRateLimitExceeded"
 	ThrottleReason_CallerRateLimitExceeded                           ThrottleReason = "CallerRateLimitExceeded"
+	ThrottleReason_ConcurrentSnapshotCreateLimitExceeded             ThrottleReason = "ConcurrentSnapshotCreateLimitExceeded"
 )
 
 type TracingMode string

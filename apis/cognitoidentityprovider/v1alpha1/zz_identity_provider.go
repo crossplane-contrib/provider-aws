@@ -29,12 +29,11 @@ type IdentityProviderParameters struct {
 	// Region is which region the IdentityProvider will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// A mapping of identity provider attributes to standard and custom user pool
-	// attributes.
+	// A mapping of IdP attributes to standard and custom user pool attributes.
 	AttributeMapping map[string]*string `json:"attributeMapping,omitempty"`
-	// A list of identity provider identifiers.
+	// A list of IdP identifiers.
 	IDpIdentifiers []*string `json:"idpIdentifiers,omitempty"`
-	// The identity provider type.
+	// The IdP type.
 	// +kubebuilder:validation:Required
 	ProviderType                     *string `json:"providerType"`
 	CustomIdentityProviderParameters `json:",inline"`
@@ -48,11 +47,11 @@ type IdentityProviderSpec struct {
 
 // IdentityProviderObservation defines the observed state of IdentityProvider
 type IdentityProviderObservation struct {
-	// The date the identity provider was created.
+	// The date the IdP was created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// The date the identity provider was last modified.
+	// The date the IdP was last modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
-	// The identity provider name.
+	// The IdP name.
 	ProviderName *string `json:"providerName,omitempty"`
 	// The user pool ID.
 	UserPoolID *string `json:"userPoolID,omitempty"`

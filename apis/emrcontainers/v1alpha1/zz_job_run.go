@@ -32,14 +32,15 @@ type JobRunParameters struct {
 
 	ConfigurationOverrides *string `json:"configurationOverrides,omitempty"`
 	// The execution role ARN for the job run.
-	// +kubebuilder:validation:Required
-	ExecutionRoleARN *string `json:"executionRoleARN"`
+	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
 	// The job driver for the job run.
-	// +kubebuilder:validation:Required
-	JobDriver *JobDriver `json:"jobDriver"`
+	JobDriver *JobDriver `json:"jobDriver,omitempty"`
+	// The job template ID to be used to start the job run.
+	JobTemplateID *string `json:"jobTemplateID,omitempty"`
+	// The values of job template parameters to start a job run.
+	JobTemplateParameters map[string]*string `json:"jobTemplateParameters,omitempty"`
 	// The Amazon EMR release version to use for the job run.
-	// +kubebuilder:validation:Required
-	ReleaseLabel *string `json:"releaseLabel"`
+	ReleaseLabel *string `json:"releaseLabel,omitempty"`
 	// The tags assigned to job runs.
 	Tags                   map[string]*string `json:"tags,omitempty"`
 	CustomJobRunParameters `json:",inline"`

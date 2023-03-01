@@ -468,11 +468,20 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f1f1elemf25 := []*svcapitypes.PortMapping{}
 					for _, f1f1elemf25iter := range f1f1iter.PortMappings {
 						f1f1elemf25elem := &svcapitypes.PortMapping{}
+						if f1f1elemf25iter.AppProtocol != nil {
+							f1f1elemf25elem.AppProtocol = f1f1elemf25iter.AppProtocol
+						}
 						if f1f1elemf25iter.ContainerPort != nil {
 							f1f1elemf25elem.ContainerPort = f1f1elemf25iter.ContainerPort
 						}
+						if f1f1elemf25iter.ContainerPortRange != nil {
+							f1f1elemf25elem.ContainerPortRange = f1f1elemf25iter.ContainerPortRange
+						}
 						if f1f1elemf25iter.HostPort != nil {
 							f1f1elemf25elem.HostPort = f1f1elemf25iter.HostPort
+						}
+						if f1f1elemf25iter.Name != nil {
+							f1f1elemf25elem.Name = f1f1elemf25iter.Name
 						}
 						if f1f1elemf25iter.Protocol != nil {
 							f1f1elemf25elem.Protocol = f1f1elemf25iter.Protocol
