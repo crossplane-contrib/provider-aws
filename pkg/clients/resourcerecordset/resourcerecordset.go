@@ -166,7 +166,9 @@ func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53type
 		return
 	}
 	if rrSet.AliasTarget != nil {
-		in.AliasTarget = &v1alpha1.AliasTarget{}
+		if in.AliasTarget == nil {
+			in.AliasTarget = &v1alpha1.AliasTarget{}
+		}
 		in.AliasTarget.HostedZoneID = awsclients.LateInitializeString(in.AliasTarget.HostedZoneID, rrSet.AliasTarget.HostedZoneId)
 		in.AliasTarget.DNSName = awsclients.LateInitializeString(in.AliasTarget.DNSName, rrSet.AliasTarget.DNSName)
 		in.AliasTarget.EvaluateTargetHealth = rrSet.AliasTarget.EvaluateTargetHealth
