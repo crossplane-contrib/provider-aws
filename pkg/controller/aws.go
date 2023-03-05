@@ -161,6 +161,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/dbinstanceroleassociation"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/globalcluster"
+	optiongroup "github.com/crossplane-contrib/provider-aws/pkg/controller/rds/optiongroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/redshift"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/resourcerecordset"
@@ -346,6 +347,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		batchjob.SetupJob,
 		emrcontainersjobrun.SetupJobRun,
 		emrcontainersvirtualcluster.SetupVirtualCluster,
+		optiongroup.SetupOptionGroup,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

@@ -1174,6 +1174,8 @@ type Option struct {
 
 	OptionName *string `json:"optionName,omitempty"`
 
+	OptionSettings []*OptionSetting `json:"optionSettings,omitempty"`
+
 	OptionVersion *string `json:"optionVersion,omitempty"`
 
 	Permanent *bool `json:"permanent,omitempty"`
@@ -1187,34 +1189,17 @@ type Option struct {
 
 // +kubebuilder:skipversion
 type OptionConfiguration struct {
+	DBSecurityGroupMemberships []*string `json:"dbSecurityGroupMemberships,omitempty"`
+
 	OptionName *string `json:"optionName,omitempty"`
+
+	OptionSettings []*OptionSetting `json:"optionSettings,omitempty"`
 
 	OptionVersion *string `json:"optionVersion,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
-}
 
-// +kubebuilder:skipversion
-type OptionGroup struct {
-	AllowsVPCAndNonVPCInstanceMemberships *bool `json:"allowsVPCAndNonVPCInstanceMemberships,omitempty"`
-
-	CopyTimestamp *metav1.Time `json:"copyTimestamp,omitempty"`
-
-	EngineName *string `json:"engineName,omitempty"`
-
-	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
-
-	OptionGroupARN *string `json:"optionGroupARN,omitempty"`
-
-	OptionGroupDescription *string `json:"optionGroupDescription,omitempty"`
-
-	OptionGroupName *string `json:"optionGroupName,omitempty"`
-
-	SourceAccountID *string `json:"sourceAccountID,omitempty"`
-
-	SourceOptionGroup *string `json:"sourceOptionGroup,omitempty"`
-
-	VPCID *string `json:"vpcID,omitempty"`
+	VPCSecurityGroupMemberships []*string `json:"vpcSecurityGroupMemberships,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1268,6 +1253,31 @@ type OptionGroupOptionSetting struct {
 	SettingDescription *string `json:"settingDescription,omitempty"`
 
 	SettingName *string `json:"settingName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OptionGroup_SDK struct {
+	AllowsVPCAndNonVPCInstanceMemberships *bool `json:"allowsVPCAndNonVPCInstanceMemberships,omitempty"`
+
+	CopyTimestamp *metav1.Time `json:"copyTimestamp,omitempty"`
+
+	EngineName *string `json:"engineName,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
+
+	OptionGroupARN *string `json:"optionGroupARN,omitempty"`
+
+	OptionGroupDescription *string `json:"optionGroupDescription,omitempty"`
+
+	OptionGroupName *string `json:"optionGroupName,omitempty"`
+
+	Options []*Option `json:"options,omitempty"`
+
+	SourceAccountID *string `json:"sourceAccountID,omitempty"`
+
+	SourceOptionGroup *string `json:"sourceOptionGroup,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // +kubebuilder:skipversion
