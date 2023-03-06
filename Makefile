@@ -48,6 +48,8 @@ GO111MODULE = on
 
 UP_VERSION = v0.13.0
 UP_CHANNEL = stable
+UPTEST_VERSION = v0.5.0
+
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
@@ -156,6 +158,23 @@ services: $(GOIMPORTS)
 
 services.all:
 	@$(MAKE) services SERVICES="$(GENERATED_SERVICES)"
+
+crddiff: $(UPTEST)
+	@$(INFO) Checking breaking CRD schema changes
+	@for crd in $${MODIFIED_CRD_LIST}; do \
+		if ! git cat-file -e "$${GITHUB_BASE_REF}:$${crd}" 2>/dev/null; then \
+			echo "CRD $${crd} does not exist in the $${GITHUB_BASE_REF} branch. Skipping..." ; \
+			continue ; \
+		fi ; \
+		echo "Checking $${crd} for breaking API changes..." ; \
+		changes_detected=$$($(UPTEST) crddiff revision <(git cat-file -p "$${GITHUB_BASE_REF}:$${crd}") "$${crd}" 2>&1) ; \
+		if [[ $$? != 0 ]] ; then \
+			printf "\033[31m"; echo "Breaking change detected!"; printf "\033[0m" ; \
+			echo "$${changes_detected}" ; \
+			echo ; \
+		fi ; \
+	done
+	@$(OK) Checking breaking CRD schema changes
 
 # ====================================================================================
 # Special Targets
