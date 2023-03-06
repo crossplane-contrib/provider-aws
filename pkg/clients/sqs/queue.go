@@ -117,6 +117,9 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	if p.ContentBasedDeduplication != nil {
 		m[v1beta1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication))
 	}
+	if p.SqsManagedSseEnabled != nil {
+		m[v1beta1.AttributeSqsManagedSseEnabled] = strconv.FormatBool(aws.ToBool(p.SqsManagedSseEnabled))
+	}
 	if len(m) == 0 {
 		return nil
 	}
@@ -209,6 +212,9 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 		return false
 	}
 	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
+		return false
+	}
+	if attributes[v1beta1.AttributeSqsManagedSseEnabled] != "" && strconv.FormatBool(aws.ToBool(p.SqsManagedSseEnabled)) != attributes[v1beta1.AttributeSqsManagedSseEnabled] {
 		return false
 	}
 	if p.RedrivePolicy != nil {

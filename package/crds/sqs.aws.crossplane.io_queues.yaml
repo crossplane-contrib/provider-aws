@@ -104,6 +104,11 @@ spec:
                       see FIFO Queue Logic (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-understanding-logic)
                       in the Amazon Simple Queue Service Developer Guide.'
                     type: boolean
+                  sseEnabled:
+                    description: Boolean to enable server-side encryption (SSE) of
+                      message content with SQS-owned encryption keys. See Encryption
+                      at rest.
+                    type: boolean
                   kmsDataKeyReusePeriodSeconds:
                     description: 'KMSDataKeyReusePeriodSeconds - The length of time,
                       in seconds, for which Amazon SQS can reuse a data key (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#data-keys)
