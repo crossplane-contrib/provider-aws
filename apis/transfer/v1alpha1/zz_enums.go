@@ -18,6 +18,48 @@ limitations under the License.
 
 package v1alpha1
 
+type AgreementStatusType string
+
+const (
+	AgreementStatusType_ACTIVE   AgreementStatusType = "ACTIVE"
+	AgreementStatusType_INACTIVE AgreementStatusType = "INACTIVE"
+)
+
+type As2Transport string
+
+const (
+	As2Transport_HTTP As2Transport = "HTTP"
+)
+
+type CertificateStatusType string
+
+const (
+	CertificateStatusType_ACTIVE           CertificateStatusType = "ACTIVE"
+	CertificateStatusType_PENDING_ROTATION CertificateStatusType = "PENDING_ROTATION"
+	CertificateStatusType_INACTIVE         CertificateStatusType = "INACTIVE"
+)
+
+type CertificateType string
+
+const (
+	CertificateType_CERTIFICATE                  CertificateType = "CERTIFICATE"
+	CertificateType_CERTIFICATE_WITH_PRIVATE_KEY CertificateType = "CERTIFICATE_WITH_PRIVATE_KEY"
+)
+
+type CertificateUsageType string
+
+const (
+	CertificateUsageType_SIGNING    CertificateUsageType = "SIGNING"
+	CertificateUsageType_ENCRYPTION CertificateUsageType = "ENCRYPTION"
+)
+
+type CompressionEnum string
+
+const (
+	CompressionEnum_ZLIB     CompressionEnum = "ZLIB"
+	CompressionEnum_DISABLED CompressionEnum = "DISABLED"
+)
+
 type CustomStepStatus string
 
 const (
@@ -30,6 +72,21 @@ type Domain string
 const (
 	Domain_S3  Domain = "S3"
 	Domain_EFS Domain = "EFS"
+)
+
+type EncryptionAlg string
+
+const (
+	EncryptionAlg_AES128_CBC EncryptionAlg = "AES128_CBC"
+	EncryptionAlg_AES192_CBC EncryptionAlg = "AES192_CBC"
+	EncryptionAlg_AES256_CBC EncryptionAlg = "AES256_CBC"
+	EncryptionAlg_NONE       EncryptionAlg = "NONE"
+)
+
+type EncryptionType string
+
+const (
+	EncryptionType_PGP EncryptionType = "PGP"
 )
 
 type EndpointType string
@@ -78,11 +135,36 @@ const (
 	IdentityProviderType_AWS_LAMBDA            IdentityProviderType = "AWS_LAMBDA"
 )
 
+type MdnResponse string
+
+const (
+	MdnResponse_SYNC MdnResponse = "SYNC"
+	MdnResponse_NONE MdnResponse = "NONE"
+)
+
+type MdnSigningAlg string
+
+const (
+	MdnSigningAlg_SHA256  MdnSigningAlg = "SHA256"
+	MdnSigningAlg_SHA384  MdnSigningAlg = "SHA384"
+	MdnSigningAlg_SHA512  MdnSigningAlg = "SHA512"
+	MdnSigningAlg_SHA1    MdnSigningAlg = "SHA1"
+	MdnSigningAlg_NONE    MdnSigningAlg = "NONE"
+	MdnSigningAlg_DEFAULT MdnSigningAlg = "DEFAULT"
+)
+
 type OverwriteExisting string
 
 const (
 	OverwriteExisting_TRUE  OverwriteExisting = "TRUE"
 	OverwriteExisting_FALSE OverwriteExisting = "FALSE"
+)
+
+type ProfileType string
+
+const (
+	ProfileType_LOCAL   ProfileType = "LOCAL"
+	ProfileType_PARTNER ProfileType = "PARTNER"
 )
 
 type Protocol string
@@ -91,6 +173,24 @@ const (
 	Protocol_SFTP Protocol = "SFTP"
 	Protocol_FTP  Protocol = "FTP"
 	Protocol_FTPS Protocol = "FTPS"
+	Protocol_AS2  Protocol = "AS2"
+)
+
+type SetStatOption string
+
+const (
+	SetStatOption_DEFAULT      SetStatOption = "DEFAULT"
+	SetStatOption_ENABLE_NO_OP SetStatOption = "ENABLE_NO_OP"
+)
+
+type SigningAlg string
+
+const (
+	SigningAlg_SHA256 SigningAlg = "SHA256"
+	SigningAlg_SHA384 SigningAlg = "SHA384"
+	SigningAlg_SHA512 SigningAlg = "SHA512"
+	SigningAlg_SHA1   SigningAlg = "SHA1"
+	SigningAlg_NONE   SigningAlg = "NONE"
 )
 
 type State string
@@ -115,8 +215,9 @@ const (
 type WorkflowStepType string
 
 const (
-	WorkflowStepType_COPY   WorkflowStepType = "COPY"
-	WorkflowStepType_CUSTOM WorkflowStepType = "CUSTOM"
-	WorkflowStepType_TAG    WorkflowStepType = "TAG"
-	WorkflowStepType_DELETE WorkflowStepType = "DELETE"
+	WorkflowStepType_COPY    WorkflowStepType = "COPY"
+	WorkflowStepType_CUSTOM  WorkflowStepType = "CUSTOM"
+	WorkflowStepType_TAG     WorkflowStepType = "TAG"
+	WorkflowStepType_DELETE  WorkflowStepType = "DELETE"
+	WorkflowStepType_DECRYPT WorkflowStepType = "DECRYPT"
 )

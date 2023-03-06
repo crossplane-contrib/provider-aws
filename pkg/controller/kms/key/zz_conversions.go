@@ -206,6 +206,15 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 	} else {
 		cr.Status.AtProvider.ValidTo = nil
 	}
+	if resp.KeyMetadata.XksKeyConfiguration != nil {
+		f23 := &svcapitypes.XksKeyConfigurationType{}
+		if resp.KeyMetadata.XksKeyConfiguration.Id != nil {
+			f23.ID = resp.KeyMetadata.XksKeyConfiguration.Id
+		}
+		cr.Status.AtProvider.XksKeyConfiguration = f23
+	} else {
+		cr.Status.AtProvider.XksKeyConfiguration = nil
+	}
 
 	return cr
 }
@@ -254,6 +263,9 @@ func GenerateCreateKeyInput(cr *svcapitypes.Key) *svcsdk.CreateKeyInput {
 			f9 = append(f9, f9elem)
 		}
 		res.SetTags(f9)
+	}
+	if cr.Spec.ForProvider.XksKeyID != nil {
+		res.SetXksKeyId(*cr.Spec.ForProvider.XksKeyID)
 	}
 
 	return res

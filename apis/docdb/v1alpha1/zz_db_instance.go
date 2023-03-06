@@ -41,6 +41,9 @@ type DBInstanceParameters struct {
 	//
 	// Example: us-east-1d
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+	// A value that indicates whether to copy tags from the DB instance to snapshots
+	// of the DB instance. By default, tags are not copied.
+	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 	// The compute and memory capacity of the instance; for example, db.r5.large.
 	// +kubebuilder:validation:Required
 	DBInstanceClass *string `json:"dbInstanceClass"`

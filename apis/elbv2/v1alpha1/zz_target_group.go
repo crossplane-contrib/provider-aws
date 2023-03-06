@@ -34,10 +34,10 @@ type TargetGroupParameters struct {
 	// is instance, ip, or alb, health checks are always enabled and cannot be disabled.
 	HealthCheckEnabled *bool `json:"healthCheckEnabled,omitempty"`
 	// The approximate amount of time, in seconds, between health checks of an individual
-	// target. If the target group protocol is TCP, TLS, UDP, or TCP_UDP, the supported
-	// values are 10 and 30 seconds. If the target group protocol is HTTP or HTTPS,
-	// the default is 30 seconds. If the target group protocol is GENEVE, the default
-	// is 10 seconds. If the target type is lambda, the default is 35 seconds.
+	// target. The range is 5-300. If the target group protocol is TCP, TLS, UDP,
+	// TCP_UDP, HTTP or HTTPS, the default is 30 seconds. If the target group protocol
+	// is GENEVE, the default is 10 seconds. If the target type is lambda, the default
+	// is 35 seconds.
 	HealthCheckIntervalSeconds *int64 `json:"healthCheckIntervalSeconds,omitempty"`
 	// [HTTP/HTTPS health checks] The destination for health checks on the targets.
 	//
@@ -58,23 +58,27 @@ type TargetGroupParameters struct {
 	// GENEVE, TLS, UDP, and TCP_UDP protocols are not supported for health checks.
 	HealthCheckProtocol *string `json:"healthCheckProtocol,omitempty"`
 	// The amount of time, in seconds, during which no response from a target means
-	// a failed health check. For target groups with a protocol of HTTP, HTTPS,
-	// or GENEVE, the default is 5 seconds. For target groups with a protocol of
-	// TCP or TLS, this value must be 6 seconds for HTTP health checks and 10 seconds
-	// for TCP and HTTPS health checks. If the target type is lambda, the default
-	// is 30 seconds.
+	// a failed health check. The range is 2–120 seconds. For target groups with
+	// a protocol of HTTP, the default is 6 seconds. For target groups with a protocol
+	// of TCP, TLS or HTTPS, the default is 10 seconds. For target groups with a
+	// protocol of GENEVE, the default is 5 seconds. If the target type is lambda,
+	// the default is 30 seconds.
 	HealthCheckTimeoutSeconds *int64 `json:"healthCheckTimeoutSeconds,omitempty"`
-	// The number of consecutive health checks successes required before considering
-	// an unhealthy target healthy. For target groups with a protocol of HTTP or
-	// HTTPS, the default is 5. For target groups with a protocol of TCP, TLS, or
-	// GENEVE, the default is 3. If the target type is lambda, the default is 5.
+	// The number of consecutive health check successes required before considering
+	// a target healthy. The range is 2-10. If the target group protocol is TCP,
+	// TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 5. For target groups with
+	// a protocol of GENEVE, the default is 3. If the target type is lambda, the
+	// default is 5.
 	HealthyThresholdCount *int64 `json:"healthyThresholdCount,omitempty"`
 	// The type of IP address used for this target group. The possible values are
 	// ipv4 and ipv6. This is an optional parameter. If not specified, the IP address
 	// type defaults to ipv4.
 	IPAddressType *string `json:"ipAddressType,omitempty"`
 	// [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for
-	// a successful response from a target.
+	// a successful response from a target. For target groups with a protocol of
+	// TCP, TCP_UDP, UDP or TLS the range is 200-599. For target groups with a protocol
+	// of HTTP or HTTPS, the range is 200-499. For target groups with a protocol
+	// of GENEVE, the range is 200-399.
 	Matcher *Matcher `json:"matcher,omitempty"`
 	// The name of the target group.
 	//
@@ -118,10 +122,10 @@ type TargetGroupParameters struct {
 	//    * alb - Register a single Application Load Balancer as a target.
 	TargetType *string `json:"targetType,omitempty"`
 	// The number of consecutive health check failures required before considering
-	// a target unhealthy. If the target group protocol is HTTP or HTTPS, the default
-	// is 2. If the target group protocol is TCP or TLS, this value must be the
-	// same as the healthy threshold count. If the target group protocol is GENEVE,
-	// the default is 3. If the target type is lambda, the default is 2.
+	// a target unhealthy. The range is 2-10. If the target group protocol is TCP,
+	// TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 2. For target groups with
+	// a protocol of GENEVE, the default is 3. If the target type is lambda, the
+	// default is 5.
 	UnhealthyThresholdCount *int64 `json:"unhealthyThresholdCount,omitempty"`
 	// The identifier of the virtual private cloud (VPC). If the target is a Lambda
 	// function, this parameter does not apply. Otherwise, this parameter is required.

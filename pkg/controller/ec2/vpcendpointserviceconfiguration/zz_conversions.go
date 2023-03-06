@@ -52,6 +52,17 @@ func GenerateVPCEndpointServiceConfiguration(resp *svcsdk.DescribeVpcEndpointSer
 		} else {
 			cr.Spec.ForProvider.PrivateDNSName = nil
 		}
+		if elem.SupportedIpAddressTypes != nil {
+			f13 := []*string{}
+			for _, f13iter := range elem.SupportedIpAddressTypes {
+				var f13elem string
+				f13elem = *f13iter
+				f13 = append(f13, &f13elem)
+			}
+			cr.Spec.ForProvider.SupportedIPAddressTypes = f13
+		} else {
+			cr.Spec.ForProvider.SupportedIPAddressTypes = nil
+		}
 		found = true
 		break
 	}
@@ -72,30 +83,39 @@ func GenerateCreateVpcEndpointServiceConfigurationInput(cr *svcapitypes.VPCEndpo
 	if cr.Spec.ForProvider.PrivateDNSName != nil {
 		res.SetPrivateDnsName(*cr.Spec.ForProvider.PrivateDNSName)
 	}
-	if cr.Spec.ForProvider.TagSpecifications != nil {
-		f2 := []*svcsdk.TagSpecification{}
-		for _, f2iter := range cr.Spec.ForProvider.TagSpecifications {
-			f2elem := &svcsdk.TagSpecification{}
-			if f2iter.ResourceType != nil {
-				f2elem.SetResourceType(*f2iter.ResourceType)
-			}
-			if f2iter.Tags != nil {
-				f2elemf1 := []*svcsdk.Tag{}
-				for _, f2elemf1iter := range f2iter.Tags {
-					f2elemf1elem := &svcsdk.Tag{}
-					if f2elemf1iter.Key != nil {
-						f2elemf1elem.SetKey(*f2elemf1iter.Key)
-					}
-					if f2elemf1iter.Value != nil {
-						f2elemf1elem.SetValue(*f2elemf1iter.Value)
-					}
-					f2elemf1 = append(f2elemf1, f2elemf1elem)
-				}
-				f2elem.SetTags(f2elemf1)
-			}
-			f2 = append(f2, f2elem)
+	if cr.Spec.ForProvider.SupportedIPAddressTypes != nil {
+		f2 := []*string{}
+		for _, f2iter := range cr.Spec.ForProvider.SupportedIPAddressTypes {
+			var f2elem string
+			f2elem = *f2iter
+			f2 = append(f2, &f2elem)
 		}
-		res.SetTagSpecifications(f2)
+		res.SetSupportedIpAddressTypes(f2)
+	}
+	if cr.Spec.ForProvider.TagSpecifications != nil {
+		f3 := []*svcsdk.TagSpecification{}
+		for _, f3iter := range cr.Spec.ForProvider.TagSpecifications {
+			f3elem := &svcsdk.TagSpecification{}
+			if f3iter.ResourceType != nil {
+				f3elem.SetResourceType(*f3iter.ResourceType)
+			}
+			if f3iter.Tags != nil {
+				f3elemf1 := []*svcsdk.Tag{}
+				for _, f3elemf1iter := range f3iter.Tags {
+					f3elemf1elem := &svcsdk.Tag{}
+					if f3elemf1iter.Key != nil {
+						f3elemf1elem.SetKey(*f3elemf1iter.Key)
+					}
+					if f3elemf1iter.Value != nil {
+						f3elemf1elem.SetValue(*f3elemf1iter.Value)
+					}
+					f3elemf1 = append(f3elemf1, f3elemf1elem)
+				}
+				f3elem.SetTags(f3elemf1)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetTagSpecifications(f3)
 	}
 
 	return res

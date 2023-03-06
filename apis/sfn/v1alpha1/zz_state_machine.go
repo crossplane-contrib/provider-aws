@@ -37,7 +37,7 @@ type StateMachineParameters struct {
 	//
 	// By default, the level is set to OFF. For more information see Log Levels
 	// (https://docs.aws.amazon.com/step-functions/latest/dg/cloudwatch-log-level.html)
-	// in the AWS Step Functions User Guide.
+	// in the Step Functions User Guide.
 	LoggingConfiguration *LoggingConfiguration `json:"loggingConfiguration,omitempty"`
 	// The name of the state machine.
 	//
@@ -61,13 +61,13 @@ type StateMachineParameters struct {
 	//
 	// An array of key-value pairs. For more information, see Using Cost Allocation
 	// Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
-	// in the AWS Billing and Cost Management User Guide, and Controlling Access
-	// Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
+	// in the Amazon Web Services Billing and Cost Management User Guide, and Controlling
+	// Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
 	//
 	// Tags may only contain Unicode letters, digits, white space, or these symbols:
 	// _ . : / = + - @.
 	Tags []*Tag `json:"tags,omitempty"`
-	// Selects whether AWS X-Ray tracing is enabled.
+	// Selects whether X-Ray tracing is enabled.
 	TracingConfiguration         *TracingConfiguration `json:"tracingConfiguration,omitempty"`
 	CustomStateMachineParameters `json:",inline"`
 }

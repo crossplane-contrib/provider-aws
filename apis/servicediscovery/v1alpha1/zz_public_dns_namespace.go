@@ -32,6 +32,9 @@ type PublicDNSNamespaceParameters struct {
 	// A description for the namespace.
 	Description *string `json:"description,omitempty"`
 	// The name that you want to assign to this namespace.
+	//
+	// Do not include sensitive information in the name. The name is publicly available
+	// using DNS queries.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
 	// Properties for the public DNS namespace.

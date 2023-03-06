@@ -101,14 +101,19 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 	} else {
 		cr.Spec.ForProvider.AnalyticsConfiguration = nil
 	}
+	if resp.UserPoolClient.AuthSessionValidity != nil {
+		cr.Spec.ForProvider.AuthSessionValidity = resp.UserPoolClient.AuthSessionValidity
+	} else {
+		cr.Spec.ForProvider.AuthSessionValidity = nil
+	}
 	if resp.UserPoolClient.CallbackURLs != nil {
-		f5 := []*string{}
-		for _, f5iter := range resp.UserPoolClient.CallbackURLs {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+		f6 := []*string{}
+		for _, f6iter := range resp.UserPoolClient.CallbackURLs {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		cr.Spec.ForProvider.CallbackURLs = f5
+		cr.Spec.ForProvider.CallbackURLs = f6
 	} else {
 		cr.Spec.ForProvider.CallbackURLs = nil
 	}
@@ -137,19 +142,24 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 	} else {
 		cr.Spec.ForProvider.DefaultRedirectURI = nil
 	}
+	if resp.UserPoolClient.EnablePropagateAdditionalUserContextData != nil {
+		cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData = resp.UserPoolClient.EnablePropagateAdditionalUserContextData
+	} else {
+		cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData = nil
+	}
 	if resp.UserPoolClient.EnableTokenRevocation != nil {
 		cr.Spec.ForProvider.EnableTokenRevocation = resp.UserPoolClient.EnableTokenRevocation
 	} else {
 		cr.Spec.ForProvider.EnableTokenRevocation = nil
 	}
 	if resp.UserPoolClient.ExplicitAuthFlows != nil {
-		f12 := []*string{}
-		for _, f12iter := range resp.UserPoolClient.ExplicitAuthFlows {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f14 := []*string{}
+		for _, f14iter := range resp.UserPoolClient.ExplicitAuthFlows {
+			var f14elem string
+			f14elem = *f14iter
+			f14 = append(f14, &f14elem)
 		}
-		cr.Spec.ForProvider.ExplicitAuthFlows = f12
+		cr.Spec.ForProvider.ExplicitAuthFlows = f14
 	} else {
 		cr.Spec.ForProvider.ExplicitAuthFlows = nil
 	}
@@ -164,13 +174,13 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 		cr.Status.AtProvider.LastModifiedDate = nil
 	}
 	if resp.UserPoolClient.LogoutURLs != nil {
-		f15 := []*string{}
-		for _, f15iter := range resp.UserPoolClient.LogoutURLs {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+		f17 := []*string{}
+		for _, f17iter := range resp.UserPoolClient.LogoutURLs {
+			var f17elem string
+			f17elem = *f17iter
+			f17 = append(f17, &f17elem)
 		}
-		cr.Spec.ForProvider.LogoutURLs = f15
+		cr.Spec.ForProvider.LogoutURLs = f17
 	} else {
 		cr.Spec.ForProvider.LogoutURLs = nil
 	}
@@ -180,13 +190,13 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 		cr.Spec.ForProvider.PreventUserExistenceErrors = nil
 	}
 	if resp.UserPoolClient.ReadAttributes != nil {
-		f17 := []*string{}
-		for _, f17iter := range resp.UserPoolClient.ReadAttributes {
-			var f17elem string
-			f17elem = *f17iter
-			f17 = append(f17, &f17elem)
+		f19 := []*string{}
+		for _, f19iter := range resp.UserPoolClient.ReadAttributes {
+			var f19elem string
+			f19elem = *f19iter
+			f19 = append(f19, &f19elem)
 		}
-		cr.Spec.ForProvider.ReadAttributes = f17
+		cr.Spec.ForProvider.ReadAttributes = f19
 	} else {
 		cr.Spec.ForProvider.ReadAttributes = nil
 	}
@@ -196,28 +206,28 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 		cr.Spec.ForProvider.RefreshTokenValidity = nil
 	}
 	if resp.UserPoolClient.SupportedIdentityProviders != nil {
-		f19 := []*string{}
-		for _, f19iter := range resp.UserPoolClient.SupportedIdentityProviders {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f21 := []*string{}
+		for _, f21iter := range resp.UserPoolClient.SupportedIdentityProviders {
+			var f21elem string
+			f21elem = *f21iter
+			f21 = append(f21, &f21elem)
 		}
-		cr.Spec.ForProvider.SupportedIdentityProviders = f19
+		cr.Spec.ForProvider.SupportedIdentityProviders = f21
 	} else {
 		cr.Spec.ForProvider.SupportedIdentityProviders = nil
 	}
 	if resp.UserPoolClient.TokenValidityUnits != nil {
-		f20 := &svcapitypes.TokenValidityUnitsType{}
+		f22 := &svcapitypes.TokenValidityUnitsType{}
 		if resp.UserPoolClient.TokenValidityUnits.AccessToken != nil {
-			f20.AccessToken = resp.UserPoolClient.TokenValidityUnits.AccessToken
+			f22.AccessToken = resp.UserPoolClient.TokenValidityUnits.AccessToken
 		}
 		if resp.UserPoolClient.TokenValidityUnits.IdToken != nil {
-			f20.IDToken = resp.UserPoolClient.TokenValidityUnits.IdToken
+			f22.IDToken = resp.UserPoolClient.TokenValidityUnits.IdToken
 		}
 		if resp.UserPoolClient.TokenValidityUnits.RefreshToken != nil {
-			f20.RefreshToken = resp.UserPoolClient.TokenValidityUnits.RefreshToken
+			f22.RefreshToken = resp.UserPoolClient.TokenValidityUnits.RefreshToken
 		}
-		cr.Spec.ForProvider.TokenValidityUnits = f20
+		cr.Spec.ForProvider.TokenValidityUnits = f22
 	} else {
 		cr.Spec.ForProvider.TokenValidityUnits = nil
 	}
@@ -227,13 +237,13 @@ func GenerateUserPoolClient(resp *svcsdk.DescribeUserPoolClientOutput) *svcapity
 		cr.Status.AtProvider.UserPoolID = nil
 	}
 	if resp.UserPoolClient.WriteAttributes != nil {
-		f22 := []*string{}
-		for _, f22iter := range resp.UserPoolClient.WriteAttributes {
-			var f22elem string
-			f22elem = *f22iter
-			f22 = append(f22, &f22elem)
+		f24 := []*string{}
+		for _, f24iter := range resp.UserPoolClient.WriteAttributes {
+			var f24elem string
+			f24elem = *f24iter
+			f24 = append(f24, &f24elem)
 		}
-		cr.Spec.ForProvider.WriteAttributes = f22
+		cr.Spec.ForProvider.WriteAttributes = f24
 	} else {
 		cr.Spec.ForProvider.WriteAttributes = nil
 	}
@@ -288,14 +298,17 @@ func GenerateCreateUserPoolClientInput(cr *svcapitypes.UserPoolClient) *svcsdk.C
 		}
 		res.SetAnalyticsConfiguration(f4)
 	}
+	if cr.Spec.ForProvider.AuthSessionValidity != nil {
+		res.SetAuthSessionValidity(*cr.Spec.ForProvider.AuthSessionValidity)
+	}
 	if cr.Spec.ForProvider.CallbackURLs != nil {
-		f5 := []*string{}
-		for _, f5iter := range cr.Spec.ForProvider.CallbackURLs {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.CallbackURLs {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		res.SetCallbackURLs(f5)
+		res.SetCallbackURLs(f6)
 	}
 	if cr.Spec.ForProvider.ClientName != nil {
 		res.SetClientName(*cr.Spec.ForProvider.ClientName)
@@ -303,17 +316,20 @@ func GenerateCreateUserPoolClientInput(cr *svcapitypes.UserPoolClient) *svcsdk.C
 	if cr.Spec.ForProvider.DefaultRedirectURI != nil {
 		res.SetDefaultRedirectURI(*cr.Spec.ForProvider.DefaultRedirectURI)
 	}
+	if cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData != nil {
+		res.SetEnablePropagateAdditionalUserContextData(*cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData)
+	}
 	if cr.Spec.ForProvider.EnableTokenRevocation != nil {
 		res.SetEnableTokenRevocation(*cr.Spec.ForProvider.EnableTokenRevocation)
 	}
 	if cr.Spec.ForProvider.ExplicitAuthFlows != nil {
-		f9 := []*string{}
-		for _, f9iter := range cr.Spec.ForProvider.ExplicitAuthFlows {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f11 := []*string{}
+		for _, f11iter := range cr.Spec.ForProvider.ExplicitAuthFlows {
+			var f11elem string
+			f11elem = *f11iter
+			f11 = append(f11, &f11elem)
 		}
-		res.SetExplicitAuthFlows(f9)
+		res.SetExplicitAuthFlows(f11)
 	}
 	if cr.Spec.ForProvider.GenerateSecret != nil {
 		res.SetGenerateSecret(*cr.Spec.ForProvider.GenerateSecret)
@@ -322,59 +338,59 @@ func GenerateCreateUserPoolClientInput(cr *svcapitypes.UserPoolClient) *svcsdk.C
 		res.SetIdTokenValidity(*cr.Spec.ForProvider.IDTokenValidity)
 	}
 	if cr.Spec.ForProvider.LogoutURLs != nil {
-		f12 := []*string{}
-		for _, f12iter := range cr.Spec.ForProvider.LogoutURLs {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f14 := []*string{}
+		for _, f14iter := range cr.Spec.ForProvider.LogoutURLs {
+			var f14elem string
+			f14elem = *f14iter
+			f14 = append(f14, &f14elem)
 		}
-		res.SetLogoutURLs(f12)
+		res.SetLogoutURLs(f14)
 	}
 	if cr.Spec.ForProvider.PreventUserExistenceErrors != nil {
 		res.SetPreventUserExistenceErrors(*cr.Spec.ForProvider.PreventUserExistenceErrors)
 	}
 	if cr.Spec.ForProvider.ReadAttributes != nil {
-		f14 := []*string{}
-		for _, f14iter := range cr.Spec.ForProvider.ReadAttributes {
-			var f14elem string
-			f14elem = *f14iter
-			f14 = append(f14, &f14elem)
+		f16 := []*string{}
+		for _, f16iter := range cr.Spec.ForProvider.ReadAttributes {
+			var f16elem string
+			f16elem = *f16iter
+			f16 = append(f16, &f16elem)
 		}
-		res.SetReadAttributes(f14)
+		res.SetReadAttributes(f16)
 	}
 	if cr.Spec.ForProvider.RefreshTokenValidity != nil {
 		res.SetRefreshTokenValidity(*cr.Spec.ForProvider.RefreshTokenValidity)
 	}
 	if cr.Spec.ForProvider.SupportedIdentityProviders != nil {
-		f16 := []*string{}
-		for _, f16iter := range cr.Spec.ForProvider.SupportedIdentityProviders {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
-		}
-		res.SetSupportedIdentityProviders(f16)
-	}
-	if cr.Spec.ForProvider.TokenValidityUnits != nil {
-		f17 := &svcsdk.TokenValidityUnitsType{}
-		if cr.Spec.ForProvider.TokenValidityUnits.AccessToken != nil {
-			f17.SetAccessToken(*cr.Spec.ForProvider.TokenValidityUnits.AccessToken)
-		}
-		if cr.Spec.ForProvider.TokenValidityUnits.IDToken != nil {
-			f17.SetIdToken(*cr.Spec.ForProvider.TokenValidityUnits.IDToken)
-		}
-		if cr.Spec.ForProvider.TokenValidityUnits.RefreshToken != nil {
-			f17.SetRefreshToken(*cr.Spec.ForProvider.TokenValidityUnits.RefreshToken)
-		}
-		res.SetTokenValidityUnits(f17)
-	}
-	if cr.Spec.ForProvider.WriteAttributes != nil {
 		f18 := []*string{}
-		for _, f18iter := range cr.Spec.ForProvider.WriteAttributes {
+		for _, f18iter := range cr.Spec.ForProvider.SupportedIdentityProviders {
 			var f18elem string
 			f18elem = *f18iter
 			f18 = append(f18, &f18elem)
 		}
-		res.SetWriteAttributes(f18)
+		res.SetSupportedIdentityProviders(f18)
+	}
+	if cr.Spec.ForProvider.TokenValidityUnits != nil {
+		f19 := &svcsdk.TokenValidityUnitsType{}
+		if cr.Spec.ForProvider.TokenValidityUnits.AccessToken != nil {
+			f19.SetAccessToken(*cr.Spec.ForProvider.TokenValidityUnits.AccessToken)
+		}
+		if cr.Spec.ForProvider.TokenValidityUnits.IDToken != nil {
+			f19.SetIdToken(*cr.Spec.ForProvider.TokenValidityUnits.IDToken)
+		}
+		if cr.Spec.ForProvider.TokenValidityUnits.RefreshToken != nil {
+			f19.SetRefreshToken(*cr.Spec.ForProvider.TokenValidityUnits.RefreshToken)
+		}
+		res.SetTokenValidityUnits(f19)
+	}
+	if cr.Spec.ForProvider.WriteAttributes != nil {
+		f20 := []*string{}
+		for _, f20iter := range cr.Spec.ForProvider.WriteAttributes {
+			var f20elem string
+			f20elem = *f20iter
+			f20 = append(f20, &f20elem)
+		}
+		res.SetWriteAttributes(f20)
 	}
 
 	return res
@@ -427,14 +443,17 @@ func GenerateUpdateUserPoolClientInput(cr *svcapitypes.UserPoolClient) *svcsdk.U
 		}
 		res.SetAnalyticsConfiguration(f4)
 	}
+	if cr.Spec.ForProvider.AuthSessionValidity != nil {
+		res.SetAuthSessionValidity(*cr.Spec.ForProvider.AuthSessionValidity)
+	}
 	if cr.Spec.ForProvider.CallbackURLs != nil {
-		f5 := []*string{}
-		for _, f5iter := range cr.Spec.ForProvider.CallbackURLs {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.CallbackURLs {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		res.SetCallbackURLs(f5)
+		res.SetCallbackURLs(f6)
 	}
 	if cr.Status.AtProvider.ClientID != nil {
 		res.SetClientId(*cr.Status.AtProvider.ClientID)
@@ -445,78 +464,81 @@ func GenerateUpdateUserPoolClientInput(cr *svcapitypes.UserPoolClient) *svcsdk.U
 	if cr.Spec.ForProvider.DefaultRedirectURI != nil {
 		res.SetDefaultRedirectURI(*cr.Spec.ForProvider.DefaultRedirectURI)
 	}
+	if cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData != nil {
+		res.SetEnablePropagateAdditionalUserContextData(*cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData)
+	}
 	if cr.Spec.ForProvider.EnableTokenRevocation != nil {
 		res.SetEnableTokenRevocation(*cr.Spec.ForProvider.EnableTokenRevocation)
 	}
 	if cr.Spec.ForProvider.ExplicitAuthFlows != nil {
-		f10 := []*string{}
-		for _, f10iter := range cr.Spec.ForProvider.ExplicitAuthFlows {
-			var f10elem string
-			f10elem = *f10iter
-			f10 = append(f10, &f10elem)
+		f12 := []*string{}
+		for _, f12iter := range cr.Spec.ForProvider.ExplicitAuthFlows {
+			var f12elem string
+			f12elem = *f12iter
+			f12 = append(f12, &f12elem)
 		}
-		res.SetExplicitAuthFlows(f10)
+		res.SetExplicitAuthFlows(f12)
 	}
 	if cr.Spec.ForProvider.IDTokenValidity != nil {
 		res.SetIdTokenValidity(*cr.Spec.ForProvider.IDTokenValidity)
 	}
 	if cr.Spec.ForProvider.LogoutURLs != nil {
-		f12 := []*string{}
-		for _, f12iter := range cr.Spec.ForProvider.LogoutURLs {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f14 := []*string{}
+		for _, f14iter := range cr.Spec.ForProvider.LogoutURLs {
+			var f14elem string
+			f14elem = *f14iter
+			f14 = append(f14, &f14elem)
 		}
-		res.SetLogoutURLs(f12)
+		res.SetLogoutURLs(f14)
 	}
 	if cr.Spec.ForProvider.PreventUserExistenceErrors != nil {
 		res.SetPreventUserExistenceErrors(*cr.Spec.ForProvider.PreventUserExistenceErrors)
 	}
 	if cr.Spec.ForProvider.ReadAttributes != nil {
-		f14 := []*string{}
-		for _, f14iter := range cr.Spec.ForProvider.ReadAttributes {
-			var f14elem string
-			f14elem = *f14iter
-			f14 = append(f14, &f14elem)
+		f16 := []*string{}
+		for _, f16iter := range cr.Spec.ForProvider.ReadAttributes {
+			var f16elem string
+			f16elem = *f16iter
+			f16 = append(f16, &f16elem)
 		}
-		res.SetReadAttributes(f14)
+		res.SetReadAttributes(f16)
 	}
 	if cr.Spec.ForProvider.RefreshTokenValidity != nil {
 		res.SetRefreshTokenValidity(*cr.Spec.ForProvider.RefreshTokenValidity)
 	}
 	if cr.Spec.ForProvider.SupportedIdentityProviders != nil {
-		f16 := []*string{}
-		for _, f16iter := range cr.Spec.ForProvider.SupportedIdentityProviders {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f18 := []*string{}
+		for _, f18iter := range cr.Spec.ForProvider.SupportedIdentityProviders {
+			var f18elem string
+			f18elem = *f18iter
+			f18 = append(f18, &f18elem)
 		}
-		res.SetSupportedIdentityProviders(f16)
+		res.SetSupportedIdentityProviders(f18)
 	}
 	if cr.Spec.ForProvider.TokenValidityUnits != nil {
-		f17 := &svcsdk.TokenValidityUnitsType{}
+		f19 := &svcsdk.TokenValidityUnitsType{}
 		if cr.Spec.ForProvider.TokenValidityUnits.AccessToken != nil {
-			f17.SetAccessToken(*cr.Spec.ForProvider.TokenValidityUnits.AccessToken)
+			f19.SetAccessToken(*cr.Spec.ForProvider.TokenValidityUnits.AccessToken)
 		}
 		if cr.Spec.ForProvider.TokenValidityUnits.IDToken != nil {
-			f17.SetIdToken(*cr.Spec.ForProvider.TokenValidityUnits.IDToken)
+			f19.SetIdToken(*cr.Spec.ForProvider.TokenValidityUnits.IDToken)
 		}
 		if cr.Spec.ForProvider.TokenValidityUnits.RefreshToken != nil {
-			f17.SetRefreshToken(*cr.Spec.ForProvider.TokenValidityUnits.RefreshToken)
+			f19.SetRefreshToken(*cr.Spec.ForProvider.TokenValidityUnits.RefreshToken)
 		}
-		res.SetTokenValidityUnits(f17)
+		res.SetTokenValidityUnits(f19)
 	}
 	if cr.Status.AtProvider.UserPoolID != nil {
 		res.SetUserPoolId(*cr.Status.AtProvider.UserPoolID)
 	}
 	if cr.Spec.ForProvider.WriteAttributes != nil {
-		f19 := []*string{}
-		for _, f19iter := range cr.Spec.ForProvider.WriteAttributes {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f21 := []*string{}
+		for _, f21iter := range cr.Spec.ForProvider.WriteAttributes {
+			var f21elem string
+			f21elem = *f21iter
+			f21 = append(f21, &f21elem)
 		}
-		res.SetWriteAttributes(f19)
+		res.SetWriteAttributes(f21)
 	}
 
 	return res

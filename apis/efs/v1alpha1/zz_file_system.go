@@ -90,13 +90,12 @@ type FileSystemParameters struct {
 	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
 	// in the Amazon Web Services General Reference Guide.
 	Tags []*Tag `json:"tags,omitempty"`
-	// Specifies the throughput mode for the file system, either bursting or provisioned.
-	// If you set ThroughputMode to provisioned, you must also set a value for ProvisionedThroughputInMibps.
-	// After you create the file system, you can decrease your file system's throughput
-	// in Provisioned Throughput mode or change between the throughput modes, as
-	// long as it’s been more than 24 hours since the last decrease or throughput
-	// mode change. For more information, see Specifying throughput with provisioned
-	// mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
+	// Specifies the throughput mode for the file system. The mode can be bursting,
+	// provisioned, or elastic. If you set ThroughputMode to provisioned, you must
+	// also set a value for ProvisionedThroughputInMibps. After you create the file
+	// system, you can decrease your file system's throughput in Provisioned Throughput
+	// mode or change between the throughput modes, with certain time restrictions.
+	// For more information, see Specifying throughput with provisioned mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
 	// in the Amazon EFS User Guide.
 	//
 	// Default is bursting.

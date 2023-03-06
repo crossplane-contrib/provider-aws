@@ -29,28 +29,41 @@ type UserPoolClientParameters struct {
 	// Region is which region the UserPoolClient will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The time limit, between 5 minutes and 1 day, after which the access token
-	// is no longer valid and can't be used. If you supply a TokenValidityUnits
-	// value, you will override the default time unit.
+	// The access token time limit. After this limit expires, your user can't use
+	// their access token. To specify the time unit for AccessTokenValidity as seconds,
+	// minutes, hours, or days, set a TokenValidityUnits value in your API request.
+	//
+	// For example, when you set AccessTokenValidity to 10 and TokenValidityUnits
+	// to hours, your user can authorize access with their access token for 10 hours.
+	//
+	// The default time unit for AccessTokenValidity in an API request is hours.
+	// Valid range is displayed below in seconds.
+	//
+	// If you don't specify otherwise in the configuration of your app client, your
+	// access tokens are valid for one hour.
 	AccessTokenValidity *int64 `json:"accessTokenValidity,omitempty"`
 	// The allowed OAuth flows.
 	//
-	// Set to code to initiate a code grant flow, which provides an authorization
-	// code as the response. This code can be exchanged for access tokens with the
-	// token endpoint.
+	// code
 	//
-	// Set to implicit to specify that the client should get the access token (and,
-	// optionally, ID token, based on scopes) directly.
+	// Use a code grant flow, which provides an authorization code as the response.
+	// This code can be exchanged for access tokens with the /oauth2/token endpoint.
 	//
-	// Set to client_credentials to specify that the client should get the access
-	// token (and, optionally, ID token, based on scopes) from the token endpoint
-	// using a combination of client and client_secret.
+	// implicit
+	//
+	// Issue the access token (and, optionally, ID token, based on scopes) directly
+	// to your user.
+	//
+	// client_credentials
+	//
+	// Issue the access token from the /oauth2/token endpoint directly to a non-person
+	// user using a combination of the client ID and client secret.
 	AllowedOAuthFlows []*string `json:"allowedOAuthFlows,omitempty"`
 	// Set to true if the client is allowed to follow the OAuth protocol when interacting
 	// with Amazon Cognito user pools.
 	AllowedOAuthFlowsUserPoolClient *bool `json:"allowedOAuthFlowsUserPoolClient,omitempty"`
-	// The allowed OAuth scopes. Possible values provided by OAuth are: phone, email,
-	// openid, and profile. Possible values provided by Amazon Web Services are:
+	// The allowed OAuth scopes. Possible values provided by OAuth are phone, email,
+	// openid, and profile. Possible values provided by Amazon Web Services are
 	// aws.cognito.signin.user.admin. Custom scopes created in Resource Servers
 	// are also supported.
 	AllowedOAuthScopes []*string `json:"allowedOAuthScopes,omitempty"`
@@ -63,7 +76,12 @@ type UserPoolClientParameters struct {
 	// user pools support sending events to Amazon Pinpoint projects within that
 	// same Region.
 	AnalyticsConfiguration *AnalyticsConfigurationType `json:"analyticsConfiguration,omitempty"`
-	// A list of allowed redirect (callback) URLs for the identity providers.
+	// Amazon Cognito creates a session token for each API request in an authentication
+	// flow. AuthSessionValidity is the duration, in minutes, of that session token.
+	// Your user pool native user must respond to each authentication challenge
+	// before the session expires.
+	AuthSessionValidity *int64 `json:"authSessionValidity,omitempty"`
+	// A list of allowed redirect (callback) URLs for the IdPs.
 	//
 	// A redirect URI must:
 	//
@@ -100,25 +118,36 @@ type UserPoolClientParameters struct {
 	//
 	// App callback URLs such as myapp://example are also supported.
 	DefaultRedirectURI *string `json:"defaultRedirectURI,omitempty"`
+	// Activates the propagation of additional user context data. For more information
+	// about propagation of user context data, see Adding advanced security to a
+	// user pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-settings-advanced-security.html).
+	// If you don’t include this parameter, you can't send device fingerprint
+	// information, including source IP address, to Amazon Cognito advanced security.
+	// You can only activate EnablePropagateAdditionalUserContextData in an app
+	// client that has a client secret.
+	EnablePropagateAdditionalUserContextData *bool `json:"enablePropagateAdditionalUserContextData,omitempty"`
 	// Activates or deactivates token revocation. For more information about revoking
 	// tokens, see RevokeToken (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RevokeToken.html).
 	//
 	// If you don't include this parameter, token revocation is automatically activated
 	// for the new user pool client.
 	EnableTokenRevocation *bool `json:"enableTokenRevocation,omitempty"`
-	// The authentication flows that are supported by the user pool clients. Flow
-	// names without the ALLOW_ prefix are no longer supported, in favor of new
-	// names with the ALLOW_ prefix.
+	// The authentication flows that you want your user pool client to support.
+	// For each app client in your user pool, you can sign in your users with any
+	// combination of one or more flows, including with a user name and Secure Remote
+	// Password (SRP), a user name and password, or a custom authentication process
+	// that you define with Lambda functions.
 	//
-	// Values with ALLOW_ prefix must be used only along with the ALLOW_ prefix.
+	// If you don't specify a value for ExplicitAuthFlows, your user client supports
+	// ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_SRP_AUTH, and ALLOW_CUSTOM_AUTH.
 	//
 	// Valid values include:
 	//
 	//    * ALLOW_ADMIN_USER_PASSWORD_AUTH: Enable admin based user password authentication
 	//    flow ADMIN_USER_PASSWORD_AUTH. This setting replaces the ADMIN_NO_SRP_AUTH
-	//    setting. With this authentication flow, Amazon Cognito receives the password
-	//    in the request instead of using the Secure Remote Password (SRP) protocol
-	//    to verify passwords.
+	//    setting. With this authentication flow, your app passes a user name and
+	//    password to Amazon Cognito in the request, instead of using the Secure
+	//    Remote Password (SRP) protocol to securely transmit the password.
 	//
 	//    * ALLOW_CUSTOM_AUTH: Enable Lambda trigger based authentication.
 	//
@@ -129,15 +158,30 @@ type UserPoolClientParameters struct {
 	//    * ALLOW_USER_SRP_AUTH: Enable SRP-based authentication.
 	//
 	//    * ALLOW_REFRESH_TOKEN_AUTH: Enable authflow to refresh tokens.
+	//
+	// In some environments, you will see the values ADMIN_NO_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY,
+	// or USER_PASSWORD_AUTH. You can't assign these legacy ExplicitAuthFlows values
+	// to user pool clients at the same time as values that begin with ALLOW_, like
+	// ALLOW_USER_SRP_AUTH.
 	ExplicitAuthFlows []*string `json:"explicitAuthFlows,omitempty"`
 	// Boolean to specify whether you want to generate a secret for the user pool
 	// client being created.
 	GenerateSecret *bool `json:"generateSecret,omitempty"`
-	// The time limit, between 5 minutes and 1 day, after which the access token
-	// is no longer valid and can't be used. If you supply a TokenValidityUnits
-	// value, you will override the default time unit.
+	// The ID token time limit. After this limit expires, your user can't use their
+	// ID token. To specify the time unit for IdTokenValidity as seconds, minutes,
+	// hours, or days, set a TokenValidityUnits value in your API request.
+	//
+	// For example, when you set IdTokenValidity as 10 and TokenValidityUnits as
+	// hours, your user can authenticate their session with their ID token for 10
+	// hours.
+	//
+	// The default time unit for AccessTokenValidity in an API request is hours.
+	// Valid range is displayed below in seconds.
+	//
+	// If you don't specify otherwise in the configuration of your app client, your
+	// ID tokens are valid for one hour.
 	IDTokenValidity *int64 `json:"idTokenValidity,omitempty"`
-	// A list of allowed logout URLs for the identity providers.
+	// A list of allowed logout URLs for the IdPs.
 	LogoutURLs []*string `json:"logoutURLs,omitempty"`
 	// Errors and responses that you want Amazon Cognito APIs to return during authentication,
 	// account confirmation, and password recovery when the user doesn't exist in
@@ -157,24 +201,40 @@ type UserPoolClientParameters struct {
 	PreventUserExistenceErrors *string `json:"preventUserExistenceErrors,omitempty"`
 	// The read attributes.
 	ReadAttributes []*string `json:"readAttributes,omitempty"`
-	// The time limit, in days, after which the refresh token is no longer valid
-	// and can't be used.
+	// The refresh token time limit. After this limit expires, your user can't use
+	// their refresh token. To specify the time unit for RefreshTokenValidity as
+	// seconds, minutes, hours, or days, set a TokenValidityUnits value in your
+	// API request.
+	//
+	// For example, when you set RefreshTokenValidity as 10 and TokenValidityUnits
+	// as days, your user can refresh their session and retrieve new access and
+	// ID tokens for 10 days.
+	//
+	// The default time unit for RefreshTokenValidity in an API request is days.
+	// You can't set RefreshTokenValidity to 0. If you do, Amazon Cognito overrides
+	// the value with the default value of 30 days. Valid range is displayed below
+	// in seconds.
+	//
+	// If you don't specify otherwise in the configuration of your app client, your
+	// refresh tokens are valid for 30 days.
 	RefreshTokenValidity *int64 `json:"refreshTokenValidity,omitempty"`
-	// A list of provider names for the identity providers that are supported on
-	// this client. The following are supported: COGNITO, Facebook, Google and LoginWithAmazon.
+	// A list of provider names for the identity providers (IdPs) that are supported
+	// on this client. The following are supported: COGNITO, Facebook, Google, SignInWithApple,
+	// and LoginWithAmazon. You can also specify the names that you configured for
+	// the SAML and OIDC IdPs in your user pool, for example MySAMLIdP or MyOIDCIdP.
 	SupportedIdentityProviders []*string `json:"supportedIdentityProviders,omitempty"`
-	// The units in which the validity times are represented. Default for RefreshToken
-	// is days, and default for ID and access tokens are hours.
+	// The units in which the validity times are represented. The default unit for
+	// RefreshToken is days, and default for ID and access tokens are hours.
 	TokenValidityUnits *TokenValidityUnitsType `json:"tokenValidityUnits,omitempty"`
 	// The user pool attributes that the app client can write to.
 	//
-	// If your app client allows users to sign in through an identity provider,
-	// this array must include all attributes that you have mapped to identity provider
-	// attributes. Amazon Cognito updates mapped attributes when users sign in to
-	// your application through an identity provider. If your app client does not
-	// have write access to a mapped attribute, Amazon Cognito throws an error when
-	// it tries to update the attribute. For more information, see Specifying Identity
-	// Provider Attribute Mappings for Your user pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-specifying-attribute-mapping.html).
+	// If your app client allows users to sign in through an IdP, this array must
+	// include all attributes that you have mapped to IdP attributes. Amazon Cognito
+	// updates mapped attributes when users sign in to your application through
+	// an IdP. If your app client does not have write access to a mapped attribute,
+	// Amazon Cognito throws an error when it tries to update the attribute. For
+	// more information, see Specifying IdP Attribute Mappings for Your user pool
+	// (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-specifying-attribute-mapping.html).
 	WriteAttributes                []*string `json:"writeAttributes,omitempty"`
 	CustomUserPoolClientParameters `json:",inline"`
 }

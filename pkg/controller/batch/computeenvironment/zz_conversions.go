@@ -67,6 +67,9 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 					if f2f2iter.ImageIdOverride != nil {
 						f2f2elem.ImageIDOverride = f2f2iter.ImageIdOverride
 					}
+					if f2f2iter.ImageKubernetesVersion != nil {
+						f2f2elem.ImageKubernetesVersion = f2f2iter.ImageKubernetesVersion
+					}
 					if f2f2iter.ImageType != nil {
 						f2f2elem.ImageType = f2f2iter.ImageType
 					}
@@ -124,6 +127,18 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 		} else {
 			cr.Spec.ForProvider.ComputeResources = nil
 		}
+		if elem.EksConfiguration != nil {
+			f5 := &svcapitypes.EKSConfiguration{}
+			if elem.EksConfiguration.EksClusterArn != nil {
+				f5.EKSClusterARN = elem.EksConfiguration.EksClusterArn
+			}
+			if elem.EksConfiguration.KubernetesNamespace != nil {
+				f5.KubernetesNamespace = elem.EksConfiguration.KubernetesNamespace
+			}
+			cr.Spec.ForProvider.EKSConfiguration = f5
+		} else {
+			cr.Spec.ForProvider.EKSConfiguration = nil
+		}
 		if elem.State != nil {
 			cr.Status.AtProvider.State = elem.State
 		} else {
@@ -135,13 +150,13 @@ func GenerateComputeEnvironment(resp *svcsdk.DescribeComputeEnvironmentsOutput) 
 			cr.Status.AtProvider.Status = nil
 		}
 		if elem.Tags != nil {
-			f8 := map[string]*string{}
-			for f8key, f8valiter := range elem.Tags {
-				var f8val string
-				f8val = *f8valiter
-				f8[f8key] = &f8val
+			f10 := map[string]*string{}
+			for f10key, f10valiter := range elem.Tags {
+				var f10val string
+				f10val = *f10valiter
+				f10[f10key] = &f10val
 			}
-			cr.Spec.ForProvider.Tags = f8
+			cr.Spec.ForProvider.Tags = f10
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}
@@ -183,6 +198,9 @@ func GenerateCreateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 				f0f2elem := &svcsdk.Ec2Configuration{}
 				if f0f2iter.ImageIDOverride != nil {
 					f0f2elem.SetImageIdOverride(*f0f2iter.ImageIDOverride)
+				}
+				if f0f2iter.ImageKubernetesVersion != nil {
+					f0f2elem.SetImageKubernetesVersion(*f0f2iter.ImageKubernetesVersion)
 				}
 				if f0f2iter.ImageType != nil {
 					f0f2elem.SetImageType(*f0f2iter.ImageType)
@@ -239,14 +257,24 @@ func GenerateCreateComputeEnvironmentInput(cr *svcapitypes.ComputeEnvironment) *
 		}
 		res.SetComputeResources(f0)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f1 := map[string]*string{}
-		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
-			var f1val string
-			f1val = *f1valiter
-			f1[f1key] = &f1val
+	if cr.Spec.ForProvider.EKSConfiguration != nil {
+		f1 := &svcsdk.EksConfiguration{}
+		if cr.Spec.ForProvider.EKSConfiguration.EKSClusterARN != nil {
+			f1.SetEksClusterArn(*cr.Spec.ForProvider.EKSConfiguration.EKSClusterARN)
 		}
-		res.SetTags(f1)
+		if cr.Spec.ForProvider.EKSConfiguration.KubernetesNamespace != nil {
+			f1.SetKubernetesNamespace(*cr.Spec.ForProvider.EKSConfiguration.KubernetesNamespace)
+		}
+		res.SetEksConfiguration(f1)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
+		}
+		res.SetTags(f2)
 	}
 	if cr.Spec.ForProvider.Type != nil {
 		res.SetType(*cr.Spec.ForProvider.Type)

@@ -29,7 +29,7 @@ type MethodResponseParameters struct {
 	// Region is which region the MethodResponse will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// [Required] The HTTP verb of the Method resource.
+	// The HTTP verb of the Method resource.
 	// +kubebuilder:validation:Required
 	HTTPMethod *string `json:"httpMethod"`
 	// Specifies the Model resources used for the response's content type. Response
@@ -48,7 +48,7 @@ type MethodResponseParameters struct {
 	// or a JSON expression from the back-end response payload in the form of integration.response.body.{JSON-expression},
 	// where JSON-expression is a valid JSON expression without the $ prefix.)
 	ResponseParameters map[string]*bool `json:"responseParameters,omitempty"`
-	// [Required] The method response's status code.
+	// The method response's status code.
 	// +kubebuilder:validation:Required
 	StatusCode                     *string `json:"statusCode"`
 	CustomMethodResponseParameters `json:",inline"`

@@ -49,6 +49,8 @@ type ClusterParameters struct {
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes"`
 	// The settings for open monitoring.
 	OpenMonitoring *OpenMonitoringInfo `json:"openMonitoring,omitempty"`
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `json:"storageMode,omitempty"`
 	// Create tags when creating the cluster.
 	Tags                    map[string]*string `json:"tags,omitempty"`
 	CustomClusterParameters `json:",inline"`

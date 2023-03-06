@@ -29,13 +29,13 @@ type WorkGroupParameters struct {
 	// Region is which region the WorkGroup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The configuration for the workgroup, which includes the location in Amazon
-	// S3 where query results are stored, the encryption configuration, if any,
-	// used for encrypting query results, whether the Amazon CloudWatch Metrics
-	// are enabled for the workgroup, the limit for the amount of bytes scanned
-	// (cutoff) per query, if it is specified, and whether workgroup's settings
-	// (specified with EnforceWorkGroupConfiguration) in the WorkGroupConfiguration
-	// override client-side settings. See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
+	// Contains configuration information for creating an Athena SQL workgroup,
+	// which includes the location in Amazon S3 where query results are stored,
+	// the encryption configuration, if any, used for encrypting query results,
+	// whether the Amazon CloudWatch Metrics are enabled for the workgroup, the
+	// limit for the amount of bytes scanned (cutoff) per query, if it is specified,
+	// and whether workgroup's settings (specified with EnforceWorkGroupConfiguration)
+	// in the WorkGroupConfiguration override client-side settings. See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
 	Configuration *WorkGroupConfiguration `json:"configuration,omitempty"`
 	// The workgroup description.
 	Description *string `json:"description,omitempty"`

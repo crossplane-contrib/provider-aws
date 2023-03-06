@@ -69,24 +69,34 @@ func GenerateJobRun(resp *svcsdk.DescribeJobRunOutput) *svcapitypes.JobRun {
 	}
 	if resp.JobRun.JobDriver != nil {
 		f8 := &svcapitypes.JobDriver{}
+		if resp.JobRun.JobDriver.SparkSqlJobDriver != nil {
+			f8f0 := &svcapitypes.SparkSqlJobDriver{}
+			if resp.JobRun.JobDriver.SparkSqlJobDriver.EntryPoint != nil {
+				f8f0.EntryPoint = resp.JobRun.JobDriver.SparkSqlJobDriver.EntryPoint
+			}
+			if resp.JobRun.JobDriver.SparkSqlJobDriver.SparkSqlParameters != nil {
+				f8f0.SparkSqlParameters = resp.JobRun.JobDriver.SparkSqlJobDriver.SparkSqlParameters
+			}
+			f8.SparkSqlJobDriver = f8f0
+		}
 		if resp.JobRun.JobDriver.SparkSubmitJobDriver != nil {
-			f8f0 := &svcapitypes.SparkSubmitJobDriver{}
+			f8f1 := &svcapitypes.SparkSubmitJobDriver{}
 			if resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPoint != nil {
-				f8f0.EntryPoint = resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPoint
+				f8f1.EntryPoint = resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPoint
 			}
 			if resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPointArguments != nil {
-				f8f0f1 := []*string{}
-				for _, f8f0f1iter := range resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPointArguments {
-					var f8f0f1elem string
-					f8f0f1elem = *f8f0f1iter
-					f8f0f1 = append(f8f0f1, &f8f0f1elem)
+				f8f1f1 := []*string{}
+				for _, f8f1f1iter := range resp.JobRun.JobDriver.SparkSubmitJobDriver.EntryPointArguments {
+					var f8f1f1elem string
+					f8f1f1elem = *f8f1f1iter
+					f8f1f1 = append(f8f1f1, &f8f1f1elem)
 				}
-				f8f0.EntryPointArguments = f8f0f1
+				f8f1.EntryPointArguments = f8f1f1
 			}
 			if resp.JobRun.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters != nil {
-				f8f0.SparkSubmitParameters = resp.JobRun.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters
+				f8f1.SparkSubmitParameters = resp.JobRun.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters
 			}
-			f8.SparkSubmitJobDriver = f8f0
+			f8.SparkSubmitJobDriver = f8f1
 		}
 		cr.Spec.ForProvider.JobDriver = f8
 	} else {
@@ -141,38 +151,60 @@ func GenerateStartJobRunInput(cr *svcapitypes.JobRun) *svcsdk.StartJobRunInput {
 	}
 	if cr.Spec.ForProvider.JobDriver != nil {
 		f1 := &svcsdk.JobDriver{}
+		if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver != nil {
+			f1f0 := &svcsdk.SparkSqlJobDriver{}
+			if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.EntryPoint != nil {
+				f1f0.SetEntryPoint(*cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.EntryPoint)
+			}
+			if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.SparkSqlParameters != nil {
+				f1f0.SetSparkSqlParameters(*cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.SparkSqlParameters)
+			}
+			f1.SetSparkSqlJobDriver(f1f0)
+		}
 		if cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver != nil {
-			f1f0 := &svcsdk.SparkSubmitJobDriver{}
+			f1f1 := &svcsdk.SparkSubmitJobDriver{}
 			if cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPoint != nil {
-				f1f0.SetEntryPoint(*cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPoint)
+				f1f1.SetEntryPoint(*cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPoint)
 			}
 			if cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPointArguments != nil {
-				f1f0f1 := []*string{}
-				for _, f1f0f1iter := range cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPointArguments {
-					var f1f0f1elem string
-					f1f0f1elem = *f1f0f1iter
-					f1f0f1 = append(f1f0f1, &f1f0f1elem)
+				f1f1f1 := []*string{}
+				for _, f1f1f1iter := range cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.EntryPointArguments {
+					var f1f1f1elem string
+					f1f1f1elem = *f1f1f1iter
+					f1f1f1 = append(f1f1f1, &f1f1f1elem)
 				}
-				f1f0.SetEntryPointArguments(f1f0f1)
+				f1f1.SetEntryPointArguments(f1f1f1)
 			}
 			if cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters != nil {
-				f1f0.SetSparkSubmitParameters(*cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters)
+				f1f1.SetSparkSubmitParameters(*cr.Spec.ForProvider.JobDriver.SparkSubmitJobDriver.SparkSubmitParameters)
 			}
-			f1.SetSparkSubmitJobDriver(f1f0)
+			f1.SetSparkSubmitJobDriver(f1f1)
 		}
 		res.SetJobDriver(f1)
+	}
+	if cr.Spec.ForProvider.JobTemplateID != nil {
+		res.SetJobTemplateId(*cr.Spec.ForProvider.JobTemplateID)
+	}
+	if cr.Spec.ForProvider.JobTemplateParameters != nil {
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range cr.Spec.ForProvider.JobTemplateParameters {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
+		}
+		res.SetJobTemplateParameters(f3)
 	}
 	if cr.Spec.ForProvider.ReleaseLabel != nil {
 		res.SetReleaseLabel(*cr.Spec.ForProvider.ReleaseLabel)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := map[string]*string{}
-		for f3key, f3valiter := range cr.Spec.ForProvider.Tags {
-			var f3val string
-			f3val = *f3valiter
-			f3[f3key] = &f3val
+		f5 := map[string]*string{}
+		for f5key, f5valiter := range cr.Spec.ForProvider.Tags {
+			var f5val string
+			f5val = *f5valiter
+			f5[f5key] = &f5val
 		}
-		res.SetTags(f3)
+		res.SetTags(f5)
 	}
 
 	return res

@@ -94,6 +94,17 @@ type MapIterationEventDetails struct {
 }
 
 // +kubebuilder:skipversion
+type MapRunListItem struct {
+	ExecutionARN *string `json:"executionARN,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
+	StateMachineARN *string `json:"stateMachineARN,omitempty"`
+
+	StopDate *metav1.Time `json:"stopDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type StateEnteredEventDetails struct {
 	Name *string `json:"name,omitempty"`
 }

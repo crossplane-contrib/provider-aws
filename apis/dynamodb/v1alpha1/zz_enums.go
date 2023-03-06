@@ -157,6 +157,16 @@ const (
 	GlobalTableStatus_SDK_UPDATING GlobalTableStatus_SDK = "UPDATING"
 )
 
+type ImportStatus string
+
+const (
+	ImportStatus_IN_PROGRESS ImportStatus = "IN_PROGRESS"
+	ImportStatus_COMPLETED   ImportStatus = "COMPLETED"
+	ImportStatus_CANCELLING  ImportStatus = "CANCELLING"
+	ImportStatus_CANCELLED   ImportStatus = "CANCELLED"
+	ImportStatus_FAILED      ImportStatus = "FAILED"
+)
+
 type IndexStatus string
 
 const (
@@ -164,6 +174,22 @@ const (
 	IndexStatus_UPDATING IndexStatus = "UPDATING"
 	IndexStatus_DELETING IndexStatus = "DELETING"
 	IndexStatus_ACTIVE   IndexStatus = "ACTIVE"
+)
+
+type InputCompressionType string
+
+const (
+	InputCompressionType_GZIP InputCompressionType = "GZIP"
+	InputCompressionType_ZSTD InputCompressionType = "ZSTD"
+	InputCompressionType_NONE InputCompressionType = "NONE"
+)
+
+type InputFormat string
+
+const (
+	InputFormat_DYNAMODB_JSON InputFormat = "DYNAMODB_JSON"
+	InputFormat_ION           InputFormat = "ION"
+	InputFormat_CSV           InputFormat = "CSV"
 )
 
 type KeyType string

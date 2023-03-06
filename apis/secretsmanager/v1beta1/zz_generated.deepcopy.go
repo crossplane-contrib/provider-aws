@@ -303,6 +303,10 @@ func (in *SecretListEntry) DeepCopyInto(out *SecretListEntry) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.NextRotationDate != nil {
+		in, out := &in.NextRotationDate, &out.NextRotationDate
+		*out = (*in).DeepCopy()
+	}
 	if in.OwningService != nil {
 		in, out := &in.OwningService, &out.OwningService
 		*out = new(string)

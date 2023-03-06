@@ -14,6 +14,7 @@ ignore:
     - Partition
     - Session
     - CustomEntityType
+    - DataQualityRuleset
   field_paths:
     - CreateJobInput.Name
     - CreateJobInput.Role
@@ -33,6 +34,7 @@ ignore:
     - CreateClassifierInput.JsonClassifier
     - CreateClassifierInput.GrokClassifier
     - CreateConnectionInput.ConnectionInput
+    - Mapping.Children
 resources:
   Job:
     exceptions:

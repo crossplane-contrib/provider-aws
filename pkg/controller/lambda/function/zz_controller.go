@@ -310,6 +310,15 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.SigningProfileVersionARN = nil
 	}
+	if resp.SnapStart != nil {
+		f25 := &svcapitypes.SnapStart{}
+		if resp.SnapStart.ApplyOn != nil {
+			f25.ApplyOn = resp.SnapStart.ApplyOn
+		}
+		cr.Spec.ForProvider.SnapStart = f25
+	} else {
+		cr.Spec.ForProvider.SnapStart = nil
+	}
 	if resp.State != nil {
 		cr.Status.AtProvider.State = resp.State
 	} else {
@@ -331,11 +340,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.Timeout = nil
 	}
 	if resp.TracingConfig != nil {
-		f29 := &svcapitypes.TracingConfig{}
+		f30 := &svcapitypes.TracingConfig{}
 		if resp.TracingConfig.Mode != nil {
-			f29.Mode = resp.TracingConfig.Mode
+			f30.Mode = resp.TracingConfig.Mode
 		}
-		cr.Spec.ForProvider.TracingConfig = f29
+		cr.Spec.ForProvider.TracingConfig = f30
 	} else {
 		cr.Spec.ForProvider.TracingConfig = nil
 	}
@@ -345,29 +354,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f31 := &svcapitypes.VPCConfigResponse{}
+		f32 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f31f0 := []*string{}
-			for _, f31f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f31f0elem string
-				f31f0elem = *f31f0iter
-				f31f0 = append(f31f0, &f31f0elem)
+			f32f0 := []*string{}
+			for _, f32f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f32f0elem string
+				f32f0elem = *f32f0iter
+				f32f0 = append(f32f0, &f32f0elem)
 			}
-			f31.SecurityGroupIDs = f31f0
+			f32.SecurityGroupIDs = f32f0
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f31f1 := []*string{}
-			for _, f31f1iter := range resp.VpcConfig.SubnetIds {
-				var f31f1elem string
-				f31f1elem = *f31f1iter
-				f31f1 = append(f31f1, &f31f1elem)
+			f32f1 := []*string{}
+			for _, f32f1iter := range resp.VpcConfig.SubnetIds {
+				var f32f1elem string
+				f32f1elem = *f32f1iter
+				f32f1 = append(f32f1, &f32f1elem)
 			}
-			f31.SubnetIDs = f31f1
+			f32.SubnetIDs = f32f1
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f31.VPCID = resp.VpcConfig.VpcId
+			f32.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f31
+		cr.Status.AtProvider.VPCConfig = f32
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

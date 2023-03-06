@@ -4,6 +4,7 @@ ignore:
     - Package
     # - Domain
     - OutboundConnection
+    - VpcEndpoint
   field_paths:
     # SnapshotOptions is irrelevant for OpenSearch 5.3+
     - CreateDomainInput.SnapshotOptions

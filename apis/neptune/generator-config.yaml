@@ -8,6 +8,7 @@ ignore:
     - DBParameterGroup
     - DBSubnetGroup
     - EventSubscription
+    - GlobalCluster
   field_paths:
     - CreateDBClusterInput.DBClusterIdentifier
     - ModifyDBClusterInput.DBClusterIdentifier

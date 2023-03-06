@@ -79,10 +79,10 @@ spec:
                       type: string
                     type: array
                   authorizationType:
-                    description: '[Required] The method''s authorization type. Valid
-                      values are NONE for open access, AWS_IAM for using AWS IAM permissions,
+                    description: The method's authorization type. Valid values are
+                      NONE for open access, AWS_IAM for using AWS IAM permissions,
                       CUSTOM for using a custom authorizer, or COGNITO_USER_POOLS
-                      for using a Cognito user pool.'
+                      for using a Cognito user pool.
                     type: string
                   authorizerID:
                     description: Specifies the identifier of an Authorizer to use
@@ -169,8 +169,7 @@ spec:
                         type: object
                     type: object
                   httpMethod:
-                    description: '[Required] Specifies the method request''s HTTP
-                      method type.'
+                    description: Specifies the method request's HTTP method type.
                     type: string
                   operationName:
                     description: A human-friendly operation identifier for the method.

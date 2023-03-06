@@ -37,7 +37,9 @@ type SecretParameters struct {
 // Region.
 	 ForceOverwriteReplicaSecret *bool `json:"forceOverwriteReplicaSecret,omitempty"` 
 	// The ARN, key ID, or alias of the KMS key that Secrets Manager uses to encrypt
-// the secret value in the secret.
+// the secret value in the secret. An alias is always prefixed by alias/, for
+// example alias/aws/secretsmanager. For more information, see About aliases
+// (https://docs.aws.amazon.com/kms/latest/developerguide/alias-about.html).
 // 
 // To use a KMS key in a different account, use the key ARN or the alias ARN.
 // 

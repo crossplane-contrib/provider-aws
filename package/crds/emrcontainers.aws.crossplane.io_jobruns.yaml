@@ -69,6 +69,14 @@ spec:
                   jobDriver:
                     description: The job driver for the job run.
                     properties:
+                      sparkSqlJobDriver:
+                        description: The job driver for job type.
+                        properties:
+                          entryPoint:
+                            type: string
+                          sparkSqlParameters:
+                            type: string
+                        type: object
                       sparkSubmitJobDriver:
                         description: The information about job driver for Spark submit.
                         properties:
@@ -81,6 +89,15 @@ spec:
                           sparkSubmitParameters:
                             type: string
                         type: object
+                    type: object
+                  jobTemplateID:
+                    description: The job template ID to be used to start the job run.
+                    type: string
+                  jobTemplateParameters:
+                    additionalProperties:
+                      type: string
+                    description: The values of job template parameters to start a
+                      job run.
                     type: object
                   region:
                     description: Region is which region the JobRun will be created.
@@ -174,10 +191,7 @@ spec:
                         type: object
                     type: object
                 required:
-                - executionRoleARN
-                - jobDriver
                 - region
-                - releaseLabel
                 type: object
               providerConfigRef:
                 default:

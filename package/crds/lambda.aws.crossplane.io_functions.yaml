@@ -798,7 +798,8 @@ spec:
                         type: object
                       imageConfig:
                         description: Configuration values that override the container
-                          image Dockerfile settings. See Container settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
+                          image Dockerfile settings. For more information, see Container
+                          image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
                         properties:
                           command:
                             items:
@@ -1058,10 +1059,10 @@ spec:
                       publishers for this function.
                     type: string
                   deadLetterConfig:
-                    description: A dead letter queue configuration that specifies
+                    description: A dead-letter queue configuration that specifies
                       the queue or topic where Lambda sends asynchronous events when
-                      they fail processing. For more information, see Dead Letter
-                      Queues (https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html#dlq).
+                      they fail processing. For more information, see Dead-letter
+                      queues (https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html#invocation-dlq).
                     properties:
                       targetARN:
                         type: string
@@ -1079,9 +1080,9 @@ spec:
                         type: object
                     type: object
                   ephemeralStorage:
-                    description: The size of the function’s /tmp directory in MB.
+                    description: The size of the function's /tmp directory in MB.
                       The default value is 512, but can be any whole number between
-                      512 and 10240 MB.
+                      512 and 10,240 MB.
                     properties:
                       size:
                         format: int64
@@ -1099,11 +1100,11 @@ spec:
                     type: array
                   handler:
                     description: The name of the method within your code that Lambda
-                      calls to execute your function. Handler is required if the deployment
+                      calls to run your function. Handler is required if the deployment
                       package is a .zip file archive. The format includes the file
                       name. It can also include namespaces and other qualifiers, depending
-                      on the runtime. For more information, see Programming Model
-                      (https://docs.aws.amazon.com/lambda/latest/dg/programming-model-v2.html).
+                      on the runtime. For more information, see Lambda programming
+                      model (https://docs.aws.amazon.com/lambda/latest/dg/foundation-progmodel.html).
                     type: string
                   imageConfig:
                     description: Container image configuration values (https://docs.aws.amazon.com/lambda/latest/dg/configuration-images.html#configuration-images-settings)
@@ -1121,10 +1122,9 @@ spec:
                         type: string
                     type: object
                   kmsKeyARN:
-                    description: The ARN of the Amazon Web Services Key Management
-                      Service (KMS) key that's used to encrypt your function's environment
-                      variables. If it's not provided, Lambda uses a default service
-                      key.
+                    description: The ARN of the Key Management Service (KMS) key that's
+                      used to encrypt your function's environment variables. If it's
+                      not provided, Lambda uses a default service key.
                     type: string
                   kmsKeyARNRef:
                     description: KMSKeyARNRef is a reference to a kms key used to
@@ -1209,7 +1209,7 @@ spec:
                       type: string
                     type: array
                   memorySize:
-                    description: The amount of memory available to the function (https://docs.aws.amazon.com/lambda/latest/dg/configuration-memory.html)
+                    description: The amount of memory available to the function (https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#configuration-memory-console)
                       at runtime. Increasing the function memory also increases its
                       CPU allocation. The default value is 128 MB. The value can be
                       any multiple of 1 MB.
@@ -1217,7 +1217,7 @@ spec:
                     type: integer
                   packageType:
                     description: The type of deployment package. Set to Image for
-                      container image and set Zip for ZIP archive.
+                      container image and set to Zip for .zip file archive.
                     type: string
                   publish:
                     description: Set to true to publish the first version of the function
@@ -1309,6 +1309,13 @@ spec:
                       Runtime is required if the deployment package is a .zip file
                       archive.
                     type: string
+                  snapStart:
+                    description: The function's SnapStart (https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
+                      setting.
+                    properties:
+                      applyOn:
+                        type: string
+                    type: object
                   tags:
                     additionalProperties:
                       type: string
@@ -1318,7 +1325,7 @@ spec:
                   timeout:
                     description: The amount of time (in seconds) that Lambda allows
                       a function to run before stopping it. The default is 3 seconds.
-                      The maximum allowed value is 900 seconds. For additional information,
+                      The maximum allowed value is 900 seconds. For more information,
                       see Lambda execution environment (https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html).
                     format: int64
                     type: integer
@@ -1713,7 +1720,8 @@ spec:
                         type: object
                       imageConfig:
                         description: Configuration values that override the container
-                          image Dockerfile settings. See Container settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
+                          image Dockerfile settings. For more information, see Container
+                          image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
                         properties:
                           command:
                             items:

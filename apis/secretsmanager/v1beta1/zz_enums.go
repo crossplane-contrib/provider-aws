@@ -26,6 +26,7 @@ const (
 	FilterNameStringType_tag_key FilterNameStringType = "tag-key"
 	FilterNameStringType_tag_value FilterNameStringType = "tag-value"
 	FilterNameStringType_primary_region FilterNameStringType = "primary-region"
+	FilterNameStringType_owning_service FilterNameStringType = "owning-service"
 	FilterNameStringType_all FilterNameStringType = "all"
 )
 

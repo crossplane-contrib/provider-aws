@@ -66,6 +66,15 @@ func GenerateCreateDatabaseInput(cr *svcapitypes.Database) *svcsdk.CreateDatabas
 	if cr.Spec.ForProvider.CatalogID != nil {
 		res.SetCatalogId(*cr.Spec.ForProvider.CatalogID)
 	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f1 := map[string]*string{}
+		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
+			var f1val string
+			f1val = *f1valiter
+			f1[f1key] = &f1val
+		}
+		res.SetTags(f1)
+	}
 
 	return res
 }

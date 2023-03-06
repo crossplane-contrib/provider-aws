@@ -309,6 +309,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.DomainStatus.EBSOptions.Iops != nil {
 			f13.IOPS = resp.DomainStatus.EBSOptions.Iops
 		}
+		if resp.DomainStatus.EBSOptions.Throughput != nil {
+			f13.Throughput = resp.DomainStatus.EBSOptions.Throughput
+		}
 		if resp.DomainStatus.EBSOptions.VolumeSize != nil {
 			f13.VolumeSize = resp.DomainStatus.EBSOptions.VolumeSize
 		}

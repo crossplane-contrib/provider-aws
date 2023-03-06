@@ -159,6 +159,8 @@ type DBClusterObservation struct {
 	// grant permission for the cluster to access other Amazon Web Services services
 	// on your behalf.
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
+	// Identifies the clone group to which the DB cluster is associated.
+	CloneGroupID *string `json:"cloneGroupID,omitempty"`
 	// Specifies the time when the cluster was created, in Universal Coordinated
 	// Time (UTC).
 	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`

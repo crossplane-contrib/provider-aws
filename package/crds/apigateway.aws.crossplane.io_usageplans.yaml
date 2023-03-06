@@ -166,7 +166,7 @@ spec:
                     description: The description of the usage plan.
                     type: string
                   name:
-                    description: '[Required] The name of the usage plan.'
+                    description: The name of the usage plan.
                     type: string
                   quota:
                     description: The quota of the usage plan.

@@ -15,6 +15,7 @@ package loggroup
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -124,8 +125,9 @@ func (u *updater) isUpToDate(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGr
 		return false, nil
 	}
 
-	tags, err := u.client.ListTagsLogGroup(&svcsdk.ListTagsLogGroupInput{
-		LogGroupName: awsclients.String(meta.GetExternalName(cr)),
+	trimmedArn := trimArnSuffix(*obj.LogGroups[0].Arn)
+	tags, err := u.client.ListTagsForResource(&svcsdk.ListTagsForResourceInput{
+		ResourceArn: &trimmedArn,
 	})
 	if err != nil {
 		return false, errors.Wrap(err, errListTags)
@@ -148,8 +150,9 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		return managed.ExternalUpdate{}, awsclients.Wrap(err, errCreate)
 	}
 
-	tags, err := u.client.ListTagsLogGroup(&svcsdk.ListTagsLogGroupInput{
-		LogGroupName: awsclients.String(meta.GetExternalName(cr)),
+	trimmedArn := trimArnSuffix(*obj.LogGroups[0].Arn)
+	tags, err := u.client.ListTagsForResource(&svcsdk.ListTagsForResourceInput{
+		ResourceArn: &trimmedArn,
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errListTags)
@@ -157,18 +160,18 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
 	if len(add) > 0 {
-		_, err := u.client.TagLogGroupWithContext(ctx, &svcsdk.TagLogGroupInput{
-			LogGroupName: awsclients.String(meta.GetExternalName(cr)),
-			Tags:         add,
+		_, err := u.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
+			ResourceArn: &trimmedArn,
+			Tags:        add,
 		})
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errTagResource)
 		}
 	}
 	if len(remove) > 0 {
-		_, err := u.client.UntagLogGroupWithContext(ctx, &svcsdk.UntagLogGroupInput{
-			LogGroupName: awsclients.String(meta.GetExternalName(cr)),
-			Tags:         remove,
+		_, err := u.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
+			ResourceArn: &trimmedArn,
+			TagKeys:     remove,
 		})
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUntagResource)
@@ -213,4 +216,10 @@ func generateObservation(obj *svcsdk.DescribeLogGroupsOutput) svcapitypes.LogGro
 	}
 
 	return o
+}
+
+// The ARN returned by a describe operation
+// is different from the ARN required for managing tags
+func trimArnSuffix(arn string) string {
+	return strings.TrimSuffix(arn, ":*")
 }

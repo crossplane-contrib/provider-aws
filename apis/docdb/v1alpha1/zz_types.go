@@ -138,6 +138,8 @@ type DBCluster_SDK struct {
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
+	CloneGroupID *string `json:"cloneGroupID,omitempty"`
+
 	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`
 
 	DBClusterARN *string `json:"dbClusterARN,omitempty"`
@@ -232,6 +234,8 @@ type DBInstance_SDK struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+
+	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 

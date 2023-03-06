@@ -638,16 +638,18 @@ spec:
                     type: integer
                   tableStatus:
                     description: "The current state of the table: \n * CREATING -
-                      The table is being created. \n * UPDATING - The table is being
-                      updated. \n * DELETING - The table is being deleted. \n * ACTIVE
-                      - The table is ready for use. \n * INACCESSIBLE_ENCRYPTION_CREDENTIALS
-                      - The KMS key used to encrypt the table in inaccessible. Table
-                      operations may fail due to failure to use the KMS key. DynamoDB
-                      will initiate the table archival process when a table's KMS
-                      key remains inaccessible for more than seven days. \n * ARCHIVING
-                      - The table is being archived. Operations are not allowed until
-                      archival is complete. \n * ARCHIVED - The table has been archived.
-                      See the ArchivalReason for more information."
+                      The table is being created. \n * UPDATING - The table/index
+                      configuration is being updated. The table/index remains available
+                      for data operations when UPDATING. \n * DELETING - The table
+                      is being deleted. \n * ACTIVE - The table is ready for use.
+                      \n * INACCESSIBLE_ENCRYPTION_CREDENTIALS - The KMS key used
+                      to encrypt the table in inaccessible. Table operations may fail
+                      due to failure to use the KMS key. DynamoDB will initiate the
+                      table archival process when a table's KMS key remains inaccessible
+                      for more than seven days. \n * ARCHIVING - The table is being
+                      archived. Operations are not allowed until archival is complete.
+                      \n * ARCHIVED - The table has been archived. See the ArchivalReason
+                      for more information."
                     type: string
                 type: object
               conditions:

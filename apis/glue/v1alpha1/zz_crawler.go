@@ -30,12 +30,12 @@ type CrawlerParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// Crawler configuration information. This versioned JSON string allows users
-	// to specify aspects of a crawler's behavior. For more information, see Configuring
-	// a Crawler (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
+	// to specify aspects of a crawler's behavior. For more information, see Setting
+	// crawler configuration options (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
 	Configuration *string `json:"configuration,omitempty"`
 	// A description of the new crawler.
 	Description *string `json:"description,omitempty"`
-
+	// Specifies Lake Formation configuration settings for the crawler.
 	LakeFormationConfiguration *LakeFormationConfiguration `json:"lakeFormationConfiguration,omitempty"`
 	// Specifies data lineage configuration settings for the crawler.
 	LineageConfiguration *LineageConfiguration `json:"lineageConfiguration,omitempty"`

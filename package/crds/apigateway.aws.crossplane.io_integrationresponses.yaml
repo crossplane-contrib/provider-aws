@@ -66,17 +66,14 @@ spec:
                   contentHandling:
                     description: "Specifies how to handle response payload content
                       type conversions. Supported values are CONVERT_TO_BINARY and
-                      CONVERT_TO_TEXT, with the following behaviors: \n * CONVERT_TO_BINARY:
-                      Converts a response payload from a Base64-encoded string to
-                      the corresponding binary blob. \n * CONVERT_TO_TEXT: Converts
-                      a response payload from a binary blob to a Base64-encoded string.
-                      \n If this property is not defined, the response payload will
-                      be passed through from the integration response to the method
-                      response without modification."
+                      CONVERT_TO_TEXT, with the following behaviors: \n If this property
+                      is not defined, the response payload will be passed through
+                      from the integration response to the method response without
+                      modification."
                     type: string
                   httpMethod:
-                    description: '[Required] Specifies a put integration response
-                      request''s HTTP method.'
+                    description: Specifies a put integration response request's HTTP
+                      method.
                     type: string
                   region:
                     description: Region is which region the IntegrationResponse will
@@ -263,8 +260,8 @@ spec:
                       response.
                     type: string
                   statusCode:
-                    description: '[Required] Specifies the status code that is used
-                      to map the integration response to an existing MethodResponse.'
+                    description: Specifies the status code that is used to map the
+                      integration response to an existing MethodResponse.
                     type: string
                 required:
                 - httpMethod

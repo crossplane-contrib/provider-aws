@@ -62,6 +62,13 @@ const (
 	PersistentAppUI_DISABLED PersistentAppUI = "DISABLED"
 )
 
+type TemplateParameterDataType string
+
+const (
+	TemplateParameterDataType_NUMBER TemplateParameterDataType = "NUMBER"
+	TemplateParameterDataType_STRING TemplateParameterDataType = "STRING"
+)
+
 type VirtualClusterState string
 
 const (

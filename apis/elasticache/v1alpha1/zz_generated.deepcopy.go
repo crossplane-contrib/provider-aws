@@ -1410,6 +1410,11 @@ func (in *ReplicationGroup) DeepCopyInto(out *ReplicationGroup) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AutoMinorVersionUpgrade != nil {
+		in, out := &in.AutoMinorVersionUpgrade, &out.AutoMinorVersionUpgrade
+		*out = new(bool)
+		**out = **in
+	}
 	if in.CacheNodeType != nil {
 		in, out := &in.CacheNodeType, &out.CacheNodeType
 		*out = new(string)

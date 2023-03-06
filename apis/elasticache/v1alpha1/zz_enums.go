@@ -45,6 +45,7 @@ type AuthenticationType string
 const (
 	AuthenticationType_password    AuthenticationType = "password"
 	AuthenticationType_no_password AuthenticationType = "no-password"
+	AuthenticationType_iam         AuthenticationType = "iam"
 )
 
 type AutomaticFailoverStatus string
@@ -77,6 +78,21 @@ const (
 	DestinationType_kinesis_firehose DestinationType = "kinesis-firehose"
 )
 
+type IPDiscovery string
+
+const (
+	IPDiscovery_ipv4 IPDiscovery = "ipv4"
+	IPDiscovery_ipv6 IPDiscovery = "ipv6"
+)
+
+type InputAuthenticationType string
+
+const (
+	InputAuthenticationType_password             InputAuthenticationType = "password"
+	InputAuthenticationType_no_password_required InputAuthenticationType = "no-password-required"
+	InputAuthenticationType_iam                  InputAuthenticationType = "iam"
+)
+
 type LogDeliveryConfigurationStatus string
 
 const (
@@ -106,6 +122,14 @@ type MultiAZStatus string
 const (
 	MultiAZStatus_enabled  MultiAZStatus = "enabled"
 	MultiAZStatus_disabled MultiAZStatus = "disabled"
+)
+
+type NetworkType string
+
+const (
+	NetworkType_ipv4       NetworkType = "ipv4"
+	NetworkType_ipv6       NetworkType = "ipv6"
+	NetworkType_dual_stack NetworkType = "dual_stack"
 )
 
 type NodeUpdateInitiatedBy string
@@ -181,6 +205,13 @@ const (
 	SourceType_replication_group     SourceType = "replication-group"
 	SourceType_user                  SourceType = "user"
 	SourceType_user_group            SourceType = "user-group"
+)
+
+type TransitEncryptionMode string
+
+const (
+	TransitEncryptionMode_preferred TransitEncryptionMode = "preferred"
+	TransitEncryptionMode_required  TransitEncryptionMode = "required"
 )
 
 type UpdateActionStatus string

@@ -476,6 +476,10 @@ spec:
                   region:
                     description: Region is which region the Cluster will be created.
                     type: string
+                  storageMode:
+                    description: This controls storage mode for supported storage
+                      tiers.
+                    type: string
                   tags:
                     additionalProperties:
                       type: string

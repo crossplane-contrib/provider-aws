@@ -31,8 +31,8 @@ type DeploymentParameters struct {
 	Region string `json:"region"`
 	// Enables a cache cluster for the Stage resource specified in the input.
 	CacheClusterEnabled *bool `json:"cacheClusterEnabled,omitempty"`
-	// Specifies the cache cluster size for the Stage resource specified in the
-	// input, if a cache cluster is enabled.
+	// The stage's cache capacity in GB. For more information about choosing a cache
+	// size, see Enabling API caching to enhance responsiveness (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html).
 	CacheClusterSize *string `json:"cacheClusterSize,omitempty"`
 	// The input configuration for the canary deployment when the deployment is
 	// a canary release deployment.

@@ -29,46 +29,64 @@ type DomainParameters struct {
 	// Region is which region the Domain will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// IAM access policy as a JSON-formatted string.
+	// Identity and Access Management (IAM) policy document specifying the access
+	// policies for the new domain.
 	AccessPolicies *string `json:"accessPolicies,omitempty"`
-	// Option to allow references to indices in an HTTP request body. Must be false
-	// when configuring access to individual sub-resources. By default, the value
-	// is true. See Advanced cluster parameters (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-advanced-options)
-	// for more information.
+	// Key-value pairs to specify advanced configuration options. The following
+	// key-value pairs are supported:
+	//
+	//    * "rest.action.multi.allow_explicit_index": "true" | "false" - Note the
+	//    use of a string rather than a boolean. Specifies whether explicit references
+	//    to indexes are allowed inside the body of HTTP requests. If you want to
+	//    configure access policies for domain sub-resources, such as specific indexes
+	//    and domain APIs, you must disable this property. Default is true.
+	//
+	//    * "indices.fielddata.cache.size": "80" - Note the use of a string rather
+	//    than a boolean. Specifies the percentage of heap space allocated to field
+	//    data. Default is unbounded.
+	//
+	//    * "indices.query.bool.max_clause_count": "1024" - Note the use of a string
+	//    rather than a boolean. Specifies the maximum number of clauses allowed
+	//    in a Lucene boolean query. Default is 1,024. Queries with more than the
+	//    permitted number of clauses result in a TooManyClauses error.
+	//
+	//    * "override_main_response_version": "true" | "false" - Note the use of
+	//    a string rather than a boolean. Specifies whether the domain reports its
+	//    version as 7.10 to allow Elasticsearch OSS clients and plugins to continue
+	//    working with it. Default is false when creating a domain and true when
+	//    upgrading a domain.
+	//
+	// For more information, see Advanced cluster parameters (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-advanced-options).
 	AdvancedOptions map[string]*string `json:"advancedOptions,omitempty"`
-	// Specifies advanced security options.
+	// Options for fine-grained access control.
 	AdvancedSecurityOptions *AdvancedSecurityOptionsInput `json:"advancedSecurityOptions,omitempty"`
-	// Specifies Auto-Tune options.
+	// Options for Auto-Tune.
 	AutoTuneOptions *AutoTuneOptionsInput `json:"autoTuneOptions,omitempty"`
-	// Configuration options for a domain. Specifies the instance type and number
-	// of instances in the domain.
+	// Container for the cluster configuration of a domain.
 	ClusterConfig *ClusterConfig `json:"clusterConfig,omitempty"`
-	// Options to specify the Cognito user and identity pools for OpenSearch Dashboards
-	// authentication. For more information, see Configuring Amazon Cognito authentication
-	// for OpenSearch Dashboards (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
+	// Key-value pairs to configure Amazon Cognito authentication. For more information,
+	// see Configuring Amazon Cognito authentication for OpenSearch Dashboards (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
 	CognitoOptions *CognitoOptions `json:"cognitoOptions,omitempty"`
-	// Options to specify configurations that will be applied to the domain endpoint.
+	// Additional options for the domain endpoint, such as whether to require HTTPS
+	// for all traffic.
 	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
-	// Options to enable, disable, and specify the type and size of EBS storage
-	// volumes.
+	// Container for the parameters required to enable EBS-based storage for an
+	// OpenSearch Service domain.
 	EBSOptions *EBSOptions `json:"ebsOptions,omitempty"`
 	// String of format Elasticsearch_X.Y or OpenSearch_X.Y to specify the engine
-	// version for the Amazon OpenSearch Service domain. For example, "OpenSearch_1.0"
-	// or "Elasticsearch_7.9". For more information, see Creating and managing Amazon
-	// OpenSearch Service domains (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
+	// version for the OpenSearch Service domain. For example, OpenSearch_1.0 or
+	// Elasticsearch_7.9. For more information, see Creating and managing Amazon
+	// OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// Map of LogType and LogPublishingOption, each containing options to publish
-	// a given type of OpenSearch log.
+	// Key-value pairs to configure slow log publishing.
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
-	// The name of the Amazon OpenSearch Service domain you're creating. Domain
-	// names are unique across the domains owned by an account within an AWS region.
-	// Domain names must start with a lowercase letter and can contain the following
-	// characters: a-z (lowercase), 0-9, and - (hyphen).
+	// Name of the OpenSearch Service domain to create. Domain names are unique
+	// across the domains owned by an account within an Amazon Web Services Region.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// Node-to-node encryption options.
+	// Enables node-to-node encryption.
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
-	// A list of Tag added during domain creation.
+	// List of tags to add to the domain upon creation.
 	Tags                   []*Tag `json:"tags,omitempty"`
 	CustomDomainParameters `json:",inline"`
 }
@@ -81,59 +99,64 @@ type DomainSpec struct {
 
 // DomainObservation defines the observed state of Domain
 type DomainObservation struct {
-	// The Amazon Resource Name (ARN) of a domain. See IAM identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
-	// in the AWS Identity and Access Management User Guide for more information.
+	// The Amazon Resource Name (ARN) of the domain. For more information, see IAM
+	// identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
+	// in the AWS Identity and Access Management User Guide.
 	ARN *string `json:"arn,omitempty"`
-	// IAM access policy as a JSON-formatted string.
+	// Identity and Access Management (IAM) policy document specifying the access
+	// policies for the domain.
 	AccessPolicies *string `json:"accessPolicies,omitempty"`
-	// The status of the AdvancedOptions.
+	// Key-value pairs that specify advanced configuration options.
 	AdvancedOptions map[string]*string `json:"advancedOptions,omitempty"`
-	// The current status of the domain's advanced security options.
+	// Settings for fine-grained access control.
 	AdvancedSecurityOptions *AdvancedSecurityOptions `json:"advancedSecurityOptions,omitempty"`
-	// The current status of the domain's Auto-Tune options.
+	// Auto-Tune settings for the domain.
 	AutoTuneOptions *AutoTuneOptionsOutput `json:"autoTuneOptions,omitempty"`
-	// Specifies change details of the domain configuration change.
+	// Information about a configuration change happening on the domain.
 	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
-	// The type and number of instances in the domain.
+	// Container for the cluster configuration of the domain.
 	ClusterConfig *ClusterConfig `json:"clusterConfig,omitempty"`
-	// The CognitoOptions for the specified domain. For more information, see Configuring
-	// Amazon Cognito authentication for OpenSearch Dashboards (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
+	// Key-value pairs to configure Amazon Cognito authentication for OpenSearch
+	// Dashboards.
 	CognitoOptions *CognitoOptions `json:"cognitoOptions,omitempty"`
-	// The domain creation status. True if the creation of a domain is complete.
-	// False if domain creation is still in progress.
+	// Creation status of an OpenSearch Service domain. True if domain creation
+	// is complete. False if domain creation is still in progress.
 	Created *bool `json:"created,omitempty"`
-	// The domain deletion status. True if a delete request has been received for
-	// the domain but resource cleanup is still in progress. False if the domain
-	// has not been deleted. Once domain deletion is complete, the status of the
-	// domain is no longer returned.
+	// Deletion status of an OpenSearch Service domain. True if domain deletion
+	// is complete. False if domain deletion is still in progress. Once deletion
+	// is complete, the status of the domain is no longer returned.
 	Deleted *bool `json:"deleted,omitempty"`
-	// The current status of the domain's endpoint options.
+	// Additional options for the domain endpoint, such as whether to require HTTPS
+	// for all traffic.
 	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
-	// The unique identifier for the specified domain.
+	// Unique identifier for the domain.
 	DomainID *string `json:"domainID,omitempty"`
-	// The status of the EncryptionAtRestOptions.
+	// Encryption at rest settings for the domain.
 	EncryptionAtRestOptions *EncryptionAtRestOptions `json:"encryptionAtRestOptions,omitempty"`
-	// The domain endpoint that you use to submit index and search requests.
+	// Domain-specific endpoint used to submit index, search, and data upload requests
+	// to the domain.
 	Endpoint *string `json:"endpoint,omitempty"`
-	// Map containing the domain endpoints used to submit index and search requests.
-	// Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
+	// The key-value pair that exists if the OpenSearch Service domain uses VPC
+	// endpoints.. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
 	Endpoints map[string]*string `json:"endpoints,omitempty"`
-
+	// Version of OpenSearch or Elasticsearch that the domain is running, in the
+	// format Elasticsearch_X.Y or OpenSearch_X.Y.
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// The status of the NodeToNodeEncryptionOptions.
+	// Whether node-to-node encryption is enabled or disabled.
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
-	// The status of the domain configuration. True if Amazon OpenSearch Service
-	// is processing configuration changes. False if the configuration is active.
+	// The status of the domain configuration. True if OpenSearch Service is processing
+	// configuration changes. False if the configuration is active.
 	Processing *bool `json:"processing,omitempty"`
 	// The current status of the domain's service software.
 	ServiceSoftwareOptions *ServiceSoftwareOptions `json:"serviceSoftwareOptions,omitempty"`
-	// The status of the SnapshotOptions.
+	// DEPRECATED. Container for parameters required to configure automated snapshots
+	// of domain indexes.
 	SnapshotOptions *SnapshotOptions `json:"snapshotOptions,omitempty"`
-	// The status of a domain version upgrade. True if Amazon OpenSearch Service
-	// is undergoing a version upgrade. False if the configuration is active.
+	// The status of a domain version upgrade to a new version of OpenSearch or
+	// Elasticsearch. True if OpenSearch Service is in the process of a version
+	// upgrade. False if the configuration is active.
 	UpgradeProcessing *bool `json:"upgradeProcessing,omitempty"`
-	// The VPCOptions for the specified domain. For more information, see Launching
-	// your Amazon OpenSearch Service domains using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
+	// The VPC configuration for the domain.
 	VPCOptions *VPCDerivedInfo `json:"vpcOptions,omitempty"`
 }
 

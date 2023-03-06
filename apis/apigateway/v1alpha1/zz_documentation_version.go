@@ -31,7 +31,7 @@ type DocumentationVersionParameters struct {
 	Region string `json:"region"`
 	// A description about the new documentation snapshot.
 	Description *string `json:"description,omitempty"`
-	// [Required] The version identifier of the new snapshot.
+	// The version identifier of the new snapshot.
 	// +kubebuilder:validation:Required
 	DocumentationVersion *string `json:"documentationVersion"`
 	// The stage name to be associated with the new documentation snapshot.

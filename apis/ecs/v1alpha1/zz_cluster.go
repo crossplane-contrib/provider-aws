@@ -63,6 +63,22 @@ type ClusterParameters struct {
 	// it was created, it can be defined later with the PutClusterCapacityProviders
 	// API operation.
 	DefaultCapacityProviderStrategy []*CapacityProviderStrategyItem `json:"defaultCapacityProviderStrategy,omitempty"`
+	// Use this parameter to set a default Service Connect namespace. After you
+	// set a default Service Connect namespace, any new services with Service Connect
+	// turned on that are created in the cluster are added as client services in
+	// the namespace. This setting only applies to new services that set the enabled
+	// parameter to true in the ServiceConnectConfiguration. You can set the namespace
+	// of each service individually in the ServiceConnectConfiguration to override
+	// this default parameter.
+	//
+	// Tasks that run in a namespace can use short names to connect to services
+	// in the namespace. Tasks can connect to services across all of the clusters
+	// in the namespace. Tasks connect through a managed proxy container that collects
+	// logs and metrics for increased visibility. Only the tasks that Amazon ECS
+	// services create are supported with Service Connect. For more information,
+	// see Service Connect (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	ServiceConnectDefaults *ClusterServiceConnectDefaultsRequest `json:"serviceConnectDefaults,omitempty"`
 	// The setting to use when creating a cluster. This parameter is used to turn
 	// on CloudWatch Container Insights for a cluster. If this value is specified,
 	// it overrides the containerInsights value set with PutAccountSetting or PutAccountSettingDefault.
@@ -108,16 +124,15 @@ type ClusterObservation struct {
 	// You can view these services with ListServices.
 	ActiveServicesCount *int64 `json:"activeServicesCount,omitempty"`
 	// The resources attached to a cluster. When using a capacity provider with
-	// a cluster, the Auto Scaling plan that's created is returned as a cluster
-	// attachment.
+	// a cluster, the capacity provider and associated resources are returned as
+	// cluster attachments.
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// The status of the capacity providers associated with the cluster. The following
 	// are the states that are returned.
 	//
 	// UPDATE_IN_PROGRESS
 	//
-	// The available capacity providers for the cluster are updating. This occurs
-	// when the Auto Scaling plan is provisioning or deprovisioning.
+	// The available capacity providers for the cluster are updating.
 	//
 	// UPDATE_COMPLETE
 	//
@@ -127,10 +142,9 @@ type ClusterObservation struct {
 	//
 	// The capacity provider updates failed.
 	AttachmentsStatus *string `json:"attachmentsStatus,omitempty"`
-	// The Amazon Resource Name (ARN) that identifies the cluster. The ARN contains
-	// the arn:aws:ecs namespace, followed by the Region of the cluster, the Amazon
-	// Web Services account ID of the cluster owner, the cluster namespace, and
-	// then the cluster name. For example, arn:aws:ecs:region:012345678910:cluster/test.
+	// The Amazon Resource Name (ARN) that identifies the cluster. For more information
+	// about the ARN format, see Amazon Resource Name (ARN) (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#ecs-resource-ids)
+	// in the Amazon ECS Developer Guide.
 	ClusterARN *string `json:"clusterARN,omitempty"`
 	// The number of tasks in the cluster that are in the PENDING state.
 	PendingTasksCount *int64 `json:"pendingTasksCount,omitempty"`

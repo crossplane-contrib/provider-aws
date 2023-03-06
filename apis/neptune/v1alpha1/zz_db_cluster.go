@@ -87,6 +87,9 @@ type DBClusterParameters struct {
 	//
 	// Example: 1.0.2.1
 	EngineVersion *string `json:"engineVersion,omitempty"`
+	// The ID of the Neptune global database to which this new DB cluster should
+	// be added.
+	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
 	// The Amazon KMS key identifier for an encrypted DB cluster.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
@@ -160,6 +163,8 @@ type DBClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
+
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `json:"serverlessV2ScalingConfiguration,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
 	// have the same region as the source ARN.

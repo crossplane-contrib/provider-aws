@@ -29,15 +29,24 @@ const (
 type ConnectionErrorCodeType string
 
 const (
-	ConnectionErrorCodeType_INVALID_CREDENTIALS        ConnectionErrorCodeType = "INVALID_CREDENTIALS"
-	ConnectionErrorCodeType_CLUSTER_NOT_FOUND          ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
-	ConnectionErrorCodeType_NETWORK_ERRORS             ConnectionErrorCodeType = "NETWORK_ERRORS"
-	ConnectionErrorCodeType_INTERNAL_ERROR             ConnectionErrorCodeType = "INTERNAL_ERROR"
-	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
-	ConnectionErrorCodeType_USER_LOCKED_OUT            ConnectionErrorCodeType = "USER_LOCKED_OUT"
-	ConnectionErrorCodeType_USER_NOT_FOUND             ConnectionErrorCodeType = "USER_NOT_FOUND"
-	ConnectionErrorCodeType_USER_LOGGED_IN             ConnectionErrorCodeType = "USER_LOGGED_IN"
-	ConnectionErrorCodeType_SUBNET_NOT_FOUND           ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
+	ConnectionErrorCodeType_INVALID_CREDENTIALS                            ConnectionErrorCodeType = "INVALID_CREDENTIALS"
+	ConnectionErrorCodeType_CLUSTER_NOT_FOUND                              ConnectionErrorCodeType = "CLUSTER_NOT_FOUND"
+	ConnectionErrorCodeType_NETWORK_ERRORS                                 ConnectionErrorCodeType = "NETWORK_ERRORS"
+	ConnectionErrorCodeType_INTERNAL_ERROR                                 ConnectionErrorCodeType = "INTERNAL_ERROR"
+	ConnectionErrorCodeType_INSUFFICIENT_CLOUDHSM_HSMS                     ConnectionErrorCodeType = "INSUFFICIENT_CLOUDHSM_HSMS"
+	ConnectionErrorCodeType_USER_LOCKED_OUT                                ConnectionErrorCodeType = "USER_LOCKED_OUT"
+	ConnectionErrorCodeType_USER_NOT_FOUND                                 ConnectionErrorCodeType = "USER_NOT_FOUND"
+	ConnectionErrorCodeType_USER_LOGGED_IN                                 ConnectionErrorCodeType = "USER_LOGGED_IN"
+	ConnectionErrorCodeType_SUBNET_NOT_FOUND                               ConnectionErrorCodeType = "SUBNET_NOT_FOUND"
+	ConnectionErrorCodeType_INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET          ConnectionErrorCodeType = "INSUFFICIENT_FREE_ADDRESSES_IN_SUBNET"
+	ConnectionErrorCodeType_XKS_PROXY_ACCESS_DENIED                        ConnectionErrorCodeType = "XKS_PROXY_ACCESS_DENIED"
+	ConnectionErrorCodeType_XKS_PROXY_NOT_REACHABLE                        ConnectionErrorCodeType = "XKS_PROXY_NOT_REACHABLE"
+	ConnectionErrorCodeType_XKS_VPC_ENDPOINT_SERVICE_NOT_FOUND             ConnectionErrorCodeType = "XKS_VPC_ENDPOINT_SERVICE_NOT_FOUND"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_RESPONSE                     ConnectionErrorCodeType = "XKS_PROXY_INVALID_RESPONSE"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_CONFIGURATION                ConnectionErrorCodeType = "XKS_PROXY_INVALID_CONFIGURATION"
+	ConnectionErrorCodeType_XKS_VPC_ENDPOINT_SERVICE_INVALID_CONFIGURATION ConnectionErrorCodeType = "XKS_VPC_ENDPOINT_SERVICE_INVALID_CONFIGURATION"
+	ConnectionErrorCodeType_XKS_PROXY_TIMED_OUT                            ConnectionErrorCodeType = "XKS_PROXY_TIMED_OUT"
+	ConnectionErrorCodeType_XKS_PROXY_INVALID_TLS_CONFIGURATION            ConnectionErrorCodeType = "XKS_PROXY_INVALID_TLS_CONFIGURATION"
 )
 
 type ConnectionStateType string
@@ -48,6 +57,13 @@ const (
 	ConnectionStateType_FAILED        ConnectionStateType = "FAILED"
 	ConnectionStateType_DISCONNECTED  ConnectionStateType = "DISCONNECTED"
 	ConnectionStateType_DISCONNECTING ConnectionStateType = "DISCONNECTING"
+)
+
+type CustomKeyStoreType string
+
+const (
+	CustomKeyStoreType_AWS_CLOUDHSM       CustomKeyStoreType = "AWS_CLOUDHSM"
+	CustomKeyStoreType_EXTERNAL_KEY_STORE CustomKeyStoreType = "EXTERNAL_KEY_STORE"
 )
 
 type CustomerMasterKeySpec string
@@ -65,6 +81,7 @@ const (
 	CustomerMasterKeySpec_HMAC_256          CustomerMasterKeySpec = "HMAC_256"
 	CustomerMasterKeySpec_HMAC_384          CustomerMasterKeySpec = "HMAC_384"
 	CustomerMasterKeySpec_HMAC_512          CustomerMasterKeySpec = "HMAC_512"
+	CustomerMasterKeySpec_SM2               CustomerMasterKeySpec = "SM2"
 )
 
 type DataKeyPairSpec string
@@ -77,6 +94,7 @@ const (
 	DataKeyPairSpec_ECC_NIST_P384   DataKeyPairSpec = "ECC_NIST_P384"
 	DataKeyPairSpec_ECC_NIST_P521   DataKeyPairSpec = "ECC_NIST_P521"
 	DataKeyPairSpec_ECC_SECG_P256K1 DataKeyPairSpec = "ECC_SECG_P256K1"
+	DataKeyPairSpec_SM2             DataKeyPairSpec = "SM2"
 )
 
 type DataKeySpec string
@@ -92,6 +110,7 @@ const (
 	EncryptionAlgorithmSpec_SYMMETRIC_DEFAULT  EncryptionAlgorithmSpec = "SYMMETRIC_DEFAULT"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_1   EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_1"
 	EncryptionAlgorithmSpec_RSAES_OAEP_SHA_256 EncryptionAlgorithmSpec = "RSAES_OAEP_SHA_256"
+	EncryptionAlgorithmSpec_SM2PKE             EncryptionAlgorithmSpec = "SM2PKE"
 )
 
 type ExpirationModelType string
@@ -144,6 +163,7 @@ const (
 	KeySpec_SDK_HMAC_256          KeySpec_SDK = "HMAC_256"
 	KeySpec_SDK_HMAC_384          KeySpec_SDK = "HMAC_384"
 	KeySpec_SDK_HMAC_512          KeySpec_SDK = "HMAC_512"
+	KeySpec_SDK_SM2               KeySpec_SDK = "SM2"
 )
 
 type KeyState string
@@ -193,9 +213,10 @@ const (
 type OriginType string
 
 const (
-	OriginType_AWS_KMS      OriginType = "AWS_KMS"
-	OriginType_EXTERNAL     OriginType = "EXTERNAL"
-	OriginType_AWS_CLOUDHSM OriginType = "AWS_CLOUDHSM"
+	OriginType_AWS_KMS            OriginType = "AWS_KMS"
+	OriginType_EXTERNAL           OriginType = "EXTERNAL"
+	OriginType_AWS_CLOUDHSM       OriginType = "AWS_CLOUDHSM"
+	OriginType_EXTERNAL_KEY_STORE OriginType = "EXTERNAL_KEY_STORE"
 )
 
 type SigningAlgorithmSpec string
@@ -210,10 +231,18 @@ const (
 	SigningAlgorithmSpec_ECDSA_SHA_256             SigningAlgorithmSpec = "ECDSA_SHA_256"
 	SigningAlgorithmSpec_ECDSA_SHA_384             SigningAlgorithmSpec = "ECDSA_SHA_384"
 	SigningAlgorithmSpec_ECDSA_SHA_512             SigningAlgorithmSpec = "ECDSA_SHA_512"
+	SigningAlgorithmSpec_SM2DSA                    SigningAlgorithmSpec = "SM2DSA"
 )
 
 type WrappingKeySpec string
 
 const (
 	WrappingKeySpec_RSA_2048 WrappingKeySpec = "RSA_2048"
+)
+
+type XksProxyConnectivityType string
+
+const (
+	XksProxyConnectivityType_PUBLIC_ENDPOINT      XksProxyConnectivityType = "PUBLIC_ENDPOINT"
+	XksProxyConnectivityType_VPC_ENDPOINT_SERVICE XksProxyConnectivityType = "VPC_ENDPOINT_SERVICE"
 )

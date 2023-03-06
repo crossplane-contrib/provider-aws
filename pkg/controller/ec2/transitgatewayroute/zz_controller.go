@@ -115,6 +115,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.TransitGatewayAttachments = nil
 	}
+	if resp.Route.TransitGatewayRouteTableAnnouncementId != nil {
+		cr.Status.AtProvider.TransitGatewayRouteTableAnnouncementID = resp.Route.TransitGatewayRouteTableAnnouncementId
+	} else {
+		cr.Status.AtProvider.TransitGatewayRouteTableAnnouncementID = nil
+	}
 	if resp.Route.Type != nil {
 		cr.Status.AtProvider.Type = resp.Route.Type
 	} else {

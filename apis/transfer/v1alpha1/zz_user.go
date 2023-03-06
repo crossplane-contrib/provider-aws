@@ -39,9 +39,8 @@ type UserParameters struct {
 	// You must specify the Entry and Target pair, where Entry shows how the path
 	// is made visible and Target is the actual Amazon S3 or Amazon EFS path. If
 	// you only specify a target, it is displayed as is. You also must ensure that
-	// your Amazon Web Services Identity and Access Management (IAM) role provides
-	// access to paths in Target. This value can only be set when HomeDirectoryType
-	// is set to LOGICAL.
+	// your Identity and Access Management (IAM) role provides access to paths in
+	// Target. This value can be set only when HomeDirectoryType is set to LOGICAL.
 	//
 	// The following is an Entry and Target pair example.
 	//
@@ -55,24 +54,25 @@ type UserParameters struct {
 	//
 	// [ { "Entry": "/", "Target": "/bucket_name/home/mydirectory" } ]
 	HomeDirectoryMappings []*HomeDirectoryMapEntry `json:"homeDirectoryMappings,omitempty"`
-	// The type of landing directory (folder) you want your users' home directory
-	// to be when they log into the server. If you set it to PATH, the user will
+	// The type of landing directory (folder) that you want your users' home directory
+	// to be when they log in to the server. If you set it to PATH, the user will
 	// see the absolute Amazon S3 bucket or EFS paths as is in their file transfer
 	// protocol clients. If you set it LOGICAL, you need to provide mappings in
-	// the HomeDirectoryMappings for how you want to make Amazon S3 or EFS paths
-	// visible to your users.
+	// the HomeDirectoryMappings for how you want to make Amazon S3 or Amazon EFS
+	// paths visible to your users.
 	HomeDirectoryType *string `json:"homeDirectoryType,omitempty"`
-	// A session policy for your user so that you can use the same IAM role across
-	// multiple users. This policy scopes down user access to portions of their
-	// Amazon S3 bucket. Variables that you can use inside this policy include ${Transfer:UserName},
-	// ${Transfer:HomeDirectory}, and ${Transfer:HomeBucket}.
+	// A session policy for your user so that you can use the same Identity and
+	// Access Management (IAM) role across multiple users. This policy scopes down
+	// a user's access to portions of their Amazon S3 bucket. Variables that you
+	// can use inside this policy include ${Transfer:UserName}, ${Transfer:HomeDirectory},
+	// and ${Transfer:HomeBucket}.
 	//
-	// This only applies when the domain of ServerId is S3. EFS does not use session
-	// policies.
+	// This policy applies only when the domain of ServerId is Amazon S3. Amazon
+	// EFS does not use session policies.
 	//
-	// For session policies, Amazon Web Services Transfer Family stores the policy
-	// as a JSON blob, instead of the Amazon Resource Name (ARN) of the policy.
-	// You save the policy as a JSON blob and pass it in the Policy argument.
+	// For session policies, Transfer Family stores the policy as a JSON blob, instead
+	// of the Amazon Resource Name (ARN) of the policy. You save the policy as a
+	// JSON blob and pass it in the Policy argument.
 	//
 	// For an example of a session policy, see Example session policy (https://docs.aws.amazon.com/transfer/latest/userguide/session-policy.html).
 	//
@@ -88,8 +88,7 @@ type UserParameters struct {
 	// The public portion of the Secure Shell (SSH) key used to authenticate the
 	// user to the server.
 	//
-	// Currently, Transfer Family does not accept elliptical curve keys (keys beginning
-	// with ecdsa).
+	// Transfer Family accepts RSA, ECDSA, and ED25519 keys.
 	SshPublicKeyBody *string `json:"sshPublicKeyBody,omitempty"`
 	// Key-value pairs that can be used to group and search for users. Tags are
 	// metadata attached to users for any purpose.
@@ -105,7 +104,7 @@ type UserSpec struct {
 
 // UserObservation defines the observed state of User
 type UserObservation struct {
-	// The ID of the server that the user is attached to.
+	// The identifier of the server that the user is attached to.
 	ServerID *string `json:"serverID,omitempty"`
 	// A unique string that identifies a user account associated with a server.
 	UserName *string `json:"userName,omitempty"`

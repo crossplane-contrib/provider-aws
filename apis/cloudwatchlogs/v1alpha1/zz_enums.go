@@ -18,6 +18,15 @@ limitations under the License.
 
 package v1alpha1
 
+type DataProtectionStatus string
+
+const (
+	DataProtectionStatus_ACTIVATED DataProtectionStatus = "ACTIVATED"
+	DataProtectionStatus_DELETED   DataProtectionStatus = "DELETED"
+	DataProtectionStatus_ARCHIVED  DataProtectionStatus = "ARCHIVED"
+	DataProtectionStatus_DISABLED  DataProtectionStatus = "DISABLED"
+)
+
 type Distribution string
 
 const (

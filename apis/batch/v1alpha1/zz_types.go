@@ -69,12 +69,18 @@ type ComputeEnvironmentDetail struct {
 	ComputeEnvironmentARN *string `json:"computeEnvironmentARN,omitempty"`
 
 	ComputeEnvironmentName *string `json:"computeEnvironmentName,omitempty"`
-	// An object representing an Batch compute resource. For more information, see
-	// Compute environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
+	// An object that represents an Batch compute resource. For more information,
+	// see Compute environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 	// in the Batch User Guide.
 	ComputeResources *ComputeResource `json:"computeResources,omitempty"`
 
+	ContainerOrchestrationType *string `json:"containerOrchestrationType,omitempty"`
+
 	EcsClusterARN *string `json:"ecsClusterARN,omitempty"`
+	// Configuration for the Amazon EKS cluster that supports the Batch compute
+	// environment. The cluster must exist before the compute environment can be
+	// created.
+	EKSConfiguration *EKSConfiguration `json:"eksConfiguration,omitempty"`
 
 	ServiceRole *string `json:"serviceRole,omitempty"`
 
@@ -90,10 +96,12 @@ type ComputeEnvironmentDetail struct {
 
 	UnmanagedvCPUs *int64 `json:"unmanagedvCPUs,omitempty"`
 	// Specifies the infrastructure update policy for the compute environment. For
-	// more information about infrastructure updates, see Infrastructure updates
-	// (https://docs.aws.amazon.com/batch/latest/userguide/infrastructure-updates.html)
+	// more information about infrastructure updates, see Updating compute environments
+	// (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	UpdatePolicy *UpdatePolicy `json:"updatePolicy,omitempty"`
+
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -114,9 +122,9 @@ type ComputeResource struct {
 	EC2KeyPair *string `json:"ec2KeyPair,omitempty"`
 
 	InstanceTypes []*string `json:"instanceTypes,omitempty"`
-	// An object representing a launch template associated with a compute resource.
-	// You must specify either the launch template ID or launch template name in
-	// the request, but not both.
+	// An object that represents a launch template that's associated with a compute
+	// resource. You must specify either the launch template ID or launch template
+	// name in the request, but not both.
 	//
 	// If security groups are specified using both the securityGroupIds parameter
 	// of CreateComputeEnvironment and the launch template, the values in the securityGroupIds
@@ -228,6 +236,8 @@ type Device struct {
 type EC2Configuration struct {
 	ImageIDOverride *string `json:"imageIDOverride,omitempty"`
 
+	ImageKubernetesVersion *string `json:"imageKubernetesVersion,omitempty"`
+
 	ImageType *string `json:"imageType,omitempty"`
 }
 
@@ -243,6 +253,137 @@ type EFSVolumeConfiguration struct {
 	RootDirectory *string `json:"rootDirectory,omitempty"`
 
 	TransitEncryptionPort *int64 `json:"transitEncryptionPort,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSAttemptContainerDetail struct {
+	ExitCode *int64 `json:"exitCode,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSAttemptDetail struct {
+	NodeName *string `json:"nodeName,omitempty"`
+
+	PodName *string `json:"podName,omitempty"`
+
+	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSConfiguration struct {
+	EKSClusterARN *string `json:"eksClusterARN,omitempty"`
+
+	KubernetesNamespace *string `json:"kubernetesNamespace,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainer struct {
+	Args []*string `json:"args,omitempty"`
+
+	Command []*string `json:"command,omitempty"`
+
+	Image *string `json:"image,omitempty"`
+
+	ImagePullPolicy *string `json:"imagePullPolicy,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainerDetail struct {
+	Args []*string `json:"args,omitempty"`
+
+	Command []*string `json:"command,omitempty"`
+
+	ExitCode *int64 `json:"exitCode,omitempty"`
+
+	Image *string `json:"image,omitempty"`
+
+	ImagePullPolicy *string `json:"imagePullPolicy,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainerEnvironmentVariable struct {
+	Name *string `json:"name,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainerOverride struct {
+	Args []*string `json:"args,omitempty"`
+
+	Command []*string `json:"command,omitempty"`
+
+	Image *string `json:"image,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainerSecurityContext struct {
+	Privileged *bool `json:"privileged,omitempty"`
+
+	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty"`
+
+	RunAsNonRoot *bool `json:"runAsNonRoot,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSContainerVolumeMount struct {
+	MountPath *string `json:"mountPath,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	ReadOnly *bool `json:"readOnly,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSEmptyDir struct {
+	Medium *string `json:"medium,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSHostPath struct {
+	Path *string `json:"path,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSPodProperties struct {
+	DNSPolicy *string `json:"dnsPolicy,omitempty"`
+
+	HostNetwork *bool `json:"hostNetwork,omitempty"`
+
+	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSPodPropertiesDetail struct {
+	DNSPolicy *string `json:"dnsPolicy,omitempty"`
+
+	HostNetwork *bool `json:"hostNetwork,omitempty"`
+
+	NodeName *string `json:"nodeName,omitempty"`
+
+	PodName *string `json:"podName,omitempty"`
+
+	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSSecret struct {
+	Optional *bool `json:"optional,omitempty"`
+
+	SecretName *string `json:"secretName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSVolume struct {
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -278,6 +419,10 @@ type JobDependency struct {
 
 // +kubebuilder:skipversion
 type JobDetail struct {
+	IsCancelled *bool `json:"isCancelled,omitempty"`
+
+	IsTerminated *bool `json:"isTerminated,omitempty"`
+
 	JobARN *string `json:"jobARN,omitempty"`
 
 	JobDefinition *string `json:"jobDefinition,omitempty"`

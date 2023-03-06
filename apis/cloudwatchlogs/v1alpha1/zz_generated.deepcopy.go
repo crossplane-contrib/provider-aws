@@ -378,6 +378,11 @@ func (in *LogGroup_SDK) DeepCopyInto(out *LogGroup_SDK) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.DataProtectionStatus != nil {
+		in, out := &in.DataProtectionStatus, &out.DataProtectionStatus
+		*out = new(string)
+		**out = **in
+	}
 	if in.KMSKeyID != nil {
 		in, out := &in.KMSKeyID, &out.KMSKeyID
 		*out = new(string)

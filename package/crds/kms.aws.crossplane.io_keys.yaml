@@ -75,28 +75,23 @@ spec:
                     type: boolean
                   customKeyStoreID:
                     description: "Creates the KMS key in the specified custom key
-                      store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
-                      and the key material in its associated CloudHSM cluster. To
-                      create a KMS key in a custom key store, you must also specify
-                      the Origin parameter with a value of AWS_CLOUDHSM. The CloudHSM
-                      cluster that is associated with the custom key store must have
-                      at least two active HSMs, each in a different Availability Zone
-                      in the Region. \n This parameter is valid only for symmetric
-                      encryption KMS keys in a single Region. You cannot create any
-                      other type of KMS key in a custom key store. \n To find the
-                      ID of a custom key store, use the DescribeCustomKeyStores operation.
-                      \n The response includes the custom key store ID and the ID
-                      of the CloudHSM cluster. \n This operation is part of the Custom
-                      Key Store feature (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
-                      feature in KMS, which combines the convenience and extensive
-                      integration of KMS with the isolation and control of a single-tenant
-                      key store."
+                      store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
+                      The ConnectionState of the custom key store must be CONNECTED.
+                      To find the CustomKeyStoreID and ConnectionState use the DescribeCustomKeyStores
+                      operation. \n This parameter is valid only for symmetric encryption
+                      KMS keys in a single Region. You cannot create any other type
+                      of KMS key in a custom key store. \n When you create a KMS key
+                      in an CloudHSM key store, KMS generates a non-exportable 256-bit
+                      symmetric key in its associated CloudHSM cluster and associates
+                      it with the KMS key. When you create a KMS key in an external
+                      key store, you must use the XksKeyId parameter to specify an
+                      external key that serves as key material for the KMS key."
                     type: string
                   customerMasterKeySpec:
                     description: "Instead, use the KeySpec parameter. \n The KeySpec
                       and CustomerMasterKeySpec parameters work the same way. Only
                       the names differ. We recommend that you use KeySpec parameter
-                      in your code. However, to avoid breaking changes, KMS will support
+                      in your code. However, to avoid breaking changes, KMS supports
                       both parameters."
                     type: string
                   description:
@@ -115,9 +110,11 @@ spec:
                     type: boolean
                   keySpec:
                     description: "Specifies the type of KMS key to create. The default
-                      value, SYMMETRIC_DEFAULT, creates a KMS key with a 256-bit symmetric
-                      key for encryption and decryption. For help choosing a key spec
-                      for your KMS key, see Choosing a KMS key type (https://docs.aws.amazon.com/kms/latest/developerguide/key-types.html#symm-asymm-choose)
+                      value, SYMMETRIC_DEFAULT, creates a KMS key with a 256-bit AES-GCM
+                      key that is used for encryption and decryption, except in China
+                      Regions, where it creates a 128-bit symmetric key that uses
+                      SM4 encryption. For help choosing a key spec for your KMS key,
+                      see Choosing a KMS key type (https://docs.aws.amazon.com/kms/latest/developerguide/key-types.html#symm-asymm-choose)
                       in the Key Management Service Developer Guide . \n The KeySpec
                       determines whether the KMS key contains a symmetric key or an
                       asymmetric key pair. It also determines the algorithms that
@@ -133,13 +130,14 @@ spec:
                       use symmetric encryption KMS keys to protect your data. These
                       services do not support asymmetric KMS keys or HMAC KMS keys.
                       \n KMS supports the following key specs for KMS keys: \n * Symmetric
-                      encryption key (default) SYMMETRIC_DEFAULT (AES-256-GCM) \n
-                      * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
-                      \n * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096 \n
-                      * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256
-                      (secp256r1) ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
-                      \n * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1
-                      (secp256k1), commonly used for cryptocurrencies."
+                      encryption key (default) SYMMETRIC_DEFAULT \n * HMAC keys (symmetric)
+                      HMAC_224 HMAC_256 HMAC_384 HMAC_512 \n * Asymmetric RSA key
+                      pairs RSA_2048 RSA_3072 RSA_4096 \n * Asymmetric NIST-recommended
+                      elliptic curve key pairs ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+                      (secp384r1) ECC_NIST_P521 (secp521r1) \n * Other asymmetric
+                      elliptic curve key pairs ECC_SECG_P256K1 (secp256k1), commonly
+                      used for cryptocurrencies. \n * SM2 key pairs (China Regions
+                      only) SM2"
                     type: string
                   keyUsage:
                     description: "Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
@@ -152,7 +150,8 @@ spec:
                       keys (symmetric), specify GENERATE_VERIFY_MAC. \n * For asymmetric
                       KMS keys with RSA key material, specify ENCRYPT_DECRYPT or SIGN_VERIFY.
                       \n * For asymmetric KMS keys with ECC key material, specify
-                      SIGN_VERIFY."
+                      SIGN_VERIFY. \n * For asymmetric KMS keys with SM2 key material
+                      (China Regions only), specify ENCRYPT_DECRYPT or SIGN_VERIFY."
                     type: string
                   multiRegion:
                     description: "Creates a multi-Region primary key that you can
@@ -180,17 +179,22 @@ spec:
                     description: "The source of the key material for the KMS key.
                       You cannot change the origin after you create the KMS key. The
                       default is AWS_KMS, which means that KMS creates the key material.
-                      \n To create a KMS key with no key material (for imported key
-                      material), set the value to EXTERNAL. For more information about
-                      importing key material into KMS, see Importing Key Material
-                      (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
-                      in the Key Management Service Developer Guide. This value is
-                      valid only for symmetric encryption KMS keys. \n To create a
-                      KMS key in an KMS custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html)
+                      \n To create a KMS key with no key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-create-cmk.html)
+                      (for imported key material), set this value to EXTERNAL. For
+                      more information about importing key material into KMS, see
+                      Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
+                      in the Key Management Service Developer Guide. The EXTERNAL
+                      origin value is valid only for symmetric KMS keys. \n To create
+                      a KMS key in an CloudHSM key store (https://docs.aws.amazon.com/kms/latest/developerguide/create-cmk-keystore.html)
                       and create its key material in the associated CloudHSM cluster,
                       set this value to AWS_CLOUDHSM. You must also use the CustomKeyStoreId
-                      parameter to identify the custom key store. This value is valid
-                      only for symmetric encryption KMS keys."
+                      parameter to identify the CloudHSM key store. The KeySpec value
+                      must be SYMMETRIC_DEFAULT. \n To create a KMS key in an external
+                      key store (https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html),
+                      set this value to EXTERNAL_KEY_STORE. You must also use the
+                      CustomKeyStoreId parameter to identify the external key store
+                      and the XksKeyId parameter to identify the associated external
+                      key. The KeySpec value must be SYMMETRIC_DEFAULT."
                     type: string
                   pendingWindowInDays:
                     description: Specifies how many days the Key is retained when
@@ -233,7 +237,7 @@ spec:
                       parameter to tag the KMS key when it is created. To tag an existing
                       KMS key, use the TagResource operation. \n Tagging or untagging
                       a KMS key can allow or deny permission to the KMS key. For details,
-                      see ABAC in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
+                      see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
                       in the Key Management Service Developer Guide. \n To use this
                       parameter, you must have kms:TagResource (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
                       permission in an IAM policy. \n Each tag consists of a tag key
@@ -254,6 +258,34 @@ spec:
                           type: string
                       type: object
                     type: array
+                  xksKeyID:
+                    description: "Identifies the external key (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key)
+                      that serves as key material for the KMS key in an external key
+                      store (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html).
+                      Specify the ID that the external key store proxy (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-xks-proxy)
+                      uses to refer to the external key. For help, see the documentation
+                      for your external key store proxy. \n This parameter is required
+                      for a KMS key with an Origin value of EXTERNAL_KEY_STORE. It
+                      is not valid for KMS keys with any other Origin value. \n The
+                      external key must be an existing 256-bit AES symmetric encryption
+                      key hosted outside of Amazon Web Services in an external key
+                      manager associated with the external key store specified by
+                      the CustomKeyStoreId parameter. This key must be enabled and
+                      configured to perform encryption and decryption. Each KMS key
+                      in an external key store must use a different external key.
+                      For details, see Requirements for a KMS key in an external key
+                      store (https://docs.aws.amazon.com/create-xks-keys.html#xks-key-requirements)
+                      in the Key Management Service Developer Guide. \n Each KMS key
+                      in an external key store is associated two backing keys. One
+                      is key material that KMS generates. The other is the external
+                      key specified by this parameter. When you use the KMS key in
+                      an external key store to encrypt data, the encryption operation
+                      is performed first by KMS using the KMS key material, and then
+                      by the external key manager using the specified external key,
+                      a process known as double encryption. For details, see Double
+                      encryption (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-double-encryption)
+                      in the Key Management Service Developer Guide."
+                    type: string
                 required:
                 - region
                 type: object
@@ -447,10 +479,10 @@ spec:
                   cloudHsmClusterID:
                     description: The cluster ID of the CloudHSM cluster that contains
                       the key material for the KMS key. When you create a KMS key
-                      in a custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html),
+                      in an CloudHSM custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html),
                       KMS creates the key material for the KMS key in the associated
-                      CloudHSM cluster. This value is present only when the KMS key
-                      is created in a custom key store.
+                      CloudHSM cluster. This field is present only when the KMS key
+                      is created in an CloudHSM key store.
                     type: string
                   creationDate:
                     description: The date and time when the KMS key was created.
@@ -574,6 +606,15 @@ spec:
                       is KEY_MATERIAL_EXPIRES, otherwise this value is omitted.
                     format: date-time
                     type: string
+                  xksKeyConfiguration:
+                    description: "Information about the external key that is associated
+                      with a KMS key in an external key store. \n For more information,
+                      see External key (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key)
+                      in the Key Management Service Developer Guide."
+                    properties:
+                      id:
+                        type: string
+                    type: object
                 type: object
               conditions:
                 description: Conditions of the resource.

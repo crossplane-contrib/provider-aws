@@ -168,14 +168,19 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.AnalyticsConfiguration = nil
 	}
+	if resp.UserPoolClient.AuthSessionValidity != nil {
+		cr.Spec.ForProvider.AuthSessionValidity = resp.UserPoolClient.AuthSessionValidity
+	} else {
+		cr.Spec.ForProvider.AuthSessionValidity = nil
+	}
 	if resp.UserPoolClient.CallbackURLs != nil {
-		f5 := []*string{}
-		for _, f5iter := range resp.UserPoolClient.CallbackURLs {
-			var f5elem string
-			f5elem = *f5iter
-			f5 = append(f5, &f5elem)
+		f6 := []*string{}
+		for _, f6iter := range resp.UserPoolClient.CallbackURLs {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		cr.Spec.ForProvider.CallbackURLs = f5
+		cr.Spec.ForProvider.CallbackURLs = f6
 	} else {
 		cr.Spec.ForProvider.CallbackURLs = nil
 	}
@@ -204,19 +209,24 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.DefaultRedirectURI = nil
 	}
+	if resp.UserPoolClient.EnablePropagateAdditionalUserContextData != nil {
+		cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData = resp.UserPoolClient.EnablePropagateAdditionalUserContextData
+	} else {
+		cr.Spec.ForProvider.EnablePropagateAdditionalUserContextData = nil
+	}
 	if resp.UserPoolClient.EnableTokenRevocation != nil {
 		cr.Spec.ForProvider.EnableTokenRevocation = resp.UserPoolClient.EnableTokenRevocation
 	} else {
 		cr.Spec.ForProvider.EnableTokenRevocation = nil
 	}
 	if resp.UserPoolClient.ExplicitAuthFlows != nil {
-		f12 := []*string{}
-		for _, f12iter := range resp.UserPoolClient.ExplicitAuthFlows {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f14 := []*string{}
+		for _, f14iter := range resp.UserPoolClient.ExplicitAuthFlows {
+			var f14elem string
+			f14elem = *f14iter
+			f14 = append(f14, &f14elem)
 		}
-		cr.Spec.ForProvider.ExplicitAuthFlows = f12
+		cr.Spec.ForProvider.ExplicitAuthFlows = f14
 	} else {
 		cr.Spec.ForProvider.ExplicitAuthFlows = nil
 	}
@@ -231,13 +241,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.LastModifiedDate = nil
 	}
 	if resp.UserPoolClient.LogoutURLs != nil {
-		f15 := []*string{}
-		for _, f15iter := range resp.UserPoolClient.LogoutURLs {
-			var f15elem string
-			f15elem = *f15iter
-			f15 = append(f15, &f15elem)
+		f17 := []*string{}
+		for _, f17iter := range resp.UserPoolClient.LogoutURLs {
+			var f17elem string
+			f17elem = *f17iter
+			f17 = append(f17, &f17elem)
 		}
-		cr.Spec.ForProvider.LogoutURLs = f15
+		cr.Spec.ForProvider.LogoutURLs = f17
 	} else {
 		cr.Spec.ForProvider.LogoutURLs = nil
 	}
@@ -247,13 +257,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.PreventUserExistenceErrors = nil
 	}
 	if resp.UserPoolClient.ReadAttributes != nil {
-		f17 := []*string{}
-		for _, f17iter := range resp.UserPoolClient.ReadAttributes {
-			var f17elem string
-			f17elem = *f17iter
-			f17 = append(f17, &f17elem)
+		f19 := []*string{}
+		for _, f19iter := range resp.UserPoolClient.ReadAttributes {
+			var f19elem string
+			f19elem = *f19iter
+			f19 = append(f19, &f19elem)
 		}
-		cr.Spec.ForProvider.ReadAttributes = f17
+		cr.Spec.ForProvider.ReadAttributes = f19
 	} else {
 		cr.Spec.ForProvider.ReadAttributes = nil
 	}
@@ -263,28 +273,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.RefreshTokenValidity = nil
 	}
 	if resp.UserPoolClient.SupportedIdentityProviders != nil {
-		f19 := []*string{}
-		for _, f19iter := range resp.UserPoolClient.SupportedIdentityProviders {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f21 := []*string{}
+		for _, f21iter := range resp.UserPoolClient.SupportedIdentityProviders {
+			var f21elem string
+			f21elem = *f21iter
+			f21 = append(f21, &f21elem)
 		}
-		cr.Spec.ForProvider.SupportedIdentityProviders = f19
+		cr.Spec.ForProvider.SupportedIdentityProviders = f21
 	} else {
 		cr.Spec.ForProvider.SupportedIdentityProviders = nil
 	}
 	if resp.UserPoolClient.TokenValidityUnits != nil {
-		f20 := &svcapitypes.TokenValidityUnitsType{}
+		f22 := &svcapitypes.TokenValidityUnitsType{}
 		if resp.UserPoolClient.TokenValidityUnits.AccessToken != nil {
-			f20.AccessToken = resp.UserPoolClient.TokenValidityUnits.AccessToken
+			f22.AccessToken = resp.UserPoolClient.TokenValidityUnits.AccessToken
 		}
 		if resp.UserPoolClient.TokenValidityUnits.IdToken != nil {
-			f20.IDToken = resp.UserPoolClient.TokenValidityUnits.IdToken
+			f22.IDToken = resp.UserPoolClient.TokenValidityUnits.IdToken
 		}
 		if resp.UserPoolClient.TokenValidityUnits.RefreshToken != nil {
-			f20.RefreshToken = resp.UserPoolClient.TokenValidityUnits.RefreshToken
+			f22.RefreshToken = resp.UserPoolClient.TokenValidityUnits.RefreshToken
 		}
-		cr.Spec.ForProvider.TokenValidityUnits = f20
+		cr.Spec.ForProvider.TokenValidityUnits = f22
 	} else {
 		cr.Spec.ForProvider.TokenValidityUnits = nil
 	}
@@ -294,13 +304,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.UserPoolID = nil
 	}
 	if resp.UserPoolClient.WriteAttributes != nil {
-		f22 := []*string{}
-		for _, f22iter := range resp.UserPoolClient.WriteAttributes {
-			var f22elem string
-			f22elem = *f22iter
-			f22 = append(f22, &f22elem)
+		f24 := []*string{}
+		for _, f24iter := range resp.UserPoolClient.WriteAttributes {
+			var f24elem string
+			f24elem = *f24iter
+			f24 = append(f24, &f24elem)
 		}
-		cr.Spec.ForProvider.WriteAttributes = f22
+		cr.Spec.ForProvider.WriteAttributes = f24
 	} else {
 		cr.Spec.ForProvider.WriteAttributes = nil
 	}

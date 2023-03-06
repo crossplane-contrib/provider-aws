@@ -142,6 +142,8 @@ type ClusterInfo struct {
 	State *string `json:"state,omitempty"`
 	// Contains information about the state of the Amazon MSK cluster.
 	StateInfo *StateInfo `json:"stateInfo,omitempty"`
+	// Controls storage mode for various supported storage tiers.
+	StorageMode *string `json:"storageMode,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
 
@@ -339,6 +341,8 @@ type MutableClusterInfo struct {
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
 	// JMX and Node monitoring for the MSK cluster.
 	OpenMonitoring *OpenMonitoring `json:"openMonitoring,omitempty"`
+	// Controls storage mode for various supported storage tiers.
+	StorageMode *string `json:"storageMode,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -413,6 +417,8 @@ type Provisioned struct {
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
 	// JMX and Node monitoring for the MSK cluster.
 	OpenMonitoring *OpenMonitoringInfo `json:"openMonitoring,omitempty"`
+	// Controls storage mode for various supported storage tiers.
+	StorageMode *string `json:"storageMode,omitempty"`
 
 	ZookeeperConnectString *string `json:"zookeeperConnectString,omitempty"`
 
@@ -444,6 +450,8 @@ type ProvisionedRequest struct {
 	NumberOfBrokerNodes *int64 `json:"numberOfBrokerNodes,omitempty"`
 	// JMX and Node monitoring for the MSK cluster.
 	OpenMonitoring *OpenMonitoringInfo `json:"openMonitoring,omitempty"`
+	// Controls storage mode for various supported storage tiers.
+	StorageMode *string `json:"storageMode,omitempty"`
 }
 
 // +kubebuilder:skipversion

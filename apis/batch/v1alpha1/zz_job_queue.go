@@ -43,7 +43,7 @@ type JobQueueParameters struct {
 	// If this parameter isn't specified, the job queue uses a first in, first out
 	// (FIFO) scheduling policy. After a job queue is created, you can replace but
 	// can't remove the fair share scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-	// . An example is aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	// . An example is aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
 	SchedulingPolicyARN *string `json:"schedulingPolicyARN,omitempty"`
 	// The tags that you apply to the job queue to help you categorize and organize
 	// your resources. Each tag consists of a key and an optional value. For more
@@ -66,8 +66,8 @@ type JobQueueObservation struct {
 	// The name of the job queue.
 	JobQueueName *string `json:"jobQueueName,omitempty"`
 	// Describes the ability of the queue to accept new jobs. If the job queue state
-	// is ENABLED, it's able to accept jobs. If the job queue state is DISABLED,
-	// new jobs can't be added to the queue, but jobs already in the queue can finish.
+	// is ENABLED, it can accept jobs. If the job queue state is DISABLED, new jobs
+	// can't be added to the queue, but jobs already in the queue can finish.
 	State *string `json:"state,omitempty"`
 	// The status of the job queue (for example, CREATING or VALID).
 	Status *string `json:"status,omitempty"`

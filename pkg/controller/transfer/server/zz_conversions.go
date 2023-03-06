@@ -89,8 +89,20 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 	}
 	if resp.Server.ProtocolDetails != nil {
 		f11 := &svcapitypes.ProtocolDetails{}
+		if resp.Server.ProtocolDetails.As2Transports != nil {
+			f11f0 := []*string{}
+			for _, f11f0iter := range resp.Server.ProtocolDetails.As2Transports {
+				var f11f0elem string
+				f11f0elem = *f11f0iter
+				f11f0 = append(f11f0, &f11f0elem)
+			}
+			f11.As2Transports = f11f0
+		}
 		if resp.Server.ProtocolDetails.PassiveIp != nil {
 			f11.PassiveIP = resp.Server.ProtocolDetails.PassiveIp
+		}
+		if resp.Server.ProtocolDetails.SetStatOption != nil {
+			f11.SetStatOption = resp.Server.ProtocolDetails.SetStatOption
 		}
 		if resp.Server.ProtocolDetails.TlsSessionResumptionMode != nil {
 			f11.TLSSessionResumptionMode = resp.Server.ProtocolDetails.TlsSessionResumptionMode
@@ -138,9 +150,9 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 	}
 	if resp.Server.WorkflowDetails != nil {
 		f18 := &svcapitypes.WorkflowDetails{}
-		if resp.Server.WorkflowDetails.OnUpload != nil {
+		if resp.Server.WorkflowDetails.OnPartialUpload != nil {
 			f18f0 := []*svcapitypes.WorkflowDetail{}
-			for _, f18f0iter := range resp.Server.WorkflowDetails.OnUpload {
+			for _, f18f0iter := range resp.Server.WorkflowDetails.OnPartialUpload {
 				f18f0elem := &svcapitypes.WorkflowDetail{}
 				if f18f0iter.ExecutionRole != nil {
 					f18f0elem.ExecutionRole = f18f0iter.ExecutionRole
@@ -150,7 +162,21 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 				}
 				f18f0 = append(f18f0, f18f0elem)
 			}
-			f18.OnUpload = f18f0
+			f18.OnPartialUpload = f18f0
+		}
+		if resp.Server.WorkflowDetails.OnUpload != nil {
+			f18f1 := []*svcapitypes.WorkflowDetail{}
+			for _, f18f1iter := range resp.Server.WorkflowDetails.OnUpload {
+				f18f1elem := &svcapitypes.WorkflowDetail{}
+				if f18f1iter.ExecutionRole != nil {
+					f18f1elem.ExecutionRole = f18f1iter.ExecutionRole
+				}
+				if f18f1iter.WorkflowId != nil {
+					f18f1elem.WorkflowID = f18f1iter.WorkflowId
+				}
+				f18f1 = append(f18f1, f18f1elem)
+			}
+			f18.OnUpload = f18f1
 		}
 		cr.Spec.ForProvider.WorkflowDetails = f18
 	} else {
@@ -200,8 +226,20 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 	}
 	if cr.Spec.ForProvider.ProtocolDetails != nil {
 		f7 := &svcsdk.ProtocolDetails{}
+		if cr.Spec.ForProvider.ProtocolDetails.As2Transports != nil {
+			f7f0 := []*string{}
+			for _, f7f0iter := range cr.Spec.ForProvider.ProtocolDetails.As2Transports {
+				var f7f0elem string
+				f7f0elem = *f7f0iter
+				f7f0 = append(f7f0, &f7f0elem)
+			}
+			f7.SetAs2Transports(f7f0)
+		}
 		if cr.Spec.ForProvider.ProtocolDetails.PassiveIP != nil {
 			f7.SetPassiveIp(*cr.Spec.ForProvider.ProtocolDetails.PassiveIP)
+		}
+		if cr.Spec.ForProvider.ProtocolDetails.SetStatOption != nil {
+			f7.SetSetStatOption(*cr.Spec.ForProvider.ProtocolDetails.SetStatOption)
 		}
 		if cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode != nil {
 			f7.SetTlsSessionResumptionMode(*cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode)
@@ -236,9 +274,9 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 	}
 	if cr.Spec.ForProvider.WorkflowDetails != nil {
 		f11 := &svcsdk.WorkflowDetails{}
-		if cr.Spec.ForProvider.WorkflowDetails.OnUpload != nil {
+		if cr.Spec.ForProvider.WorkflowDetails.OnPartialUpload != nil {
 			f11f0 := []*svcsdk.WorkflowDetail{}
-			for _, f11f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
+			for _, f11f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnPartialUpload {
 				f11f0elem := &svcsdk.WorkflowDetail{}
 				if f11f0iter.ExecutionRole != nil {
 					f11f0elem.SetExecutionRole(*f11f0iter.ExecutionRole)
@@ -248,7 +286,21 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 				}
 				f11f0 = append(f11f0, f11f0elem)
 			}
-			f11.SetOnUpload(f11f0)
+			f11.SetOnPartialUpload(f11f0)
+		}
+		if cr.Spec.ForProvider.WorkflowDetails.OnUpload != nil {
+			f11f1 := []*svcsdk.WorkflowDetail{}
+			for _, f11f1iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
+				f11f1elem := &svcsdk.WorkflowDetail{}
+				if f11f1iter.ExecutionRole != nil {
+					f11f1elem.SetExecutionRole(*f11f1iter.ExecutionRole)
+				}
+				if f11f1iter.WorkflowID != nil {
+					f11f1elem.SetWorkflowId(*f11f1iter.WorkflowID)
+				}
+				f11f1 = append(f11f1, f11f1elem)
+			}
+			f11.SetOnUpload(f11f1)
 		}
 		res.SetWorkflowDetails(f11)
 	}
@@ -290,8 +342,20 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 	}
 	if cr.Spec.ForProvider.ProtocolDetails != nil {
 		f8 := &svcsdk.ProtocolDetails{}
+		if cr.Spec.ForProvider.ProtocolDetails.As2Transports != nil {
+			f8f0 := []*string{}
+			for _, f8f0iter := range cr.Spec.ForProvider.ProtocolDetails.As2Transports {
+				var f8f0elem string
+				f8f0elem = *f8f0iter
+				f8f0 = append(f8f0, &f8f0elem)
+			}
+			f8.SetAs2Transports(f8f0)
+		}
 		if cr.Spec.ForProvider.ProtocolDetails.PassiveIP != nil {
 			f8.SetPassiveIp(*cr.Spec.ForProvider.ProtocolDetails.PassiveIP)
+		}
+		if cr.Spec.ForProvider.ProtocolDetails.SetStatOption != nil {
+			f8.SetSetStatOption(*cr.Spec.ForProvider.ProtocolDetails.SetStatOption)
 		}
 		if cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode != nil {
 			f8.SetTlsSessionResumptionMode(*cr.Spec.ForProvider.ProtocolDetails.TLSSessionResumptionMode)
@@ -315,9 +379,9 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 	}
 	if cr.Spec.ForProvider.WorkflowDetails != nil {
 		f12 := &svcsdk.WorkflowDetails{}
-		if cr.Spec.ForProvider.WorkflowDetails.OnUpload != nil {
+		if cr.Spec.ForProvider.WorkflowDetails.OnPartialUpload != nil {
 			f12f0 := []*svcsdk.WorkflowDetail{}
-			for _, f12f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
+			for _, f12f0iter := range cr.Spec.ForProvider.WorkflowDetails.OnPartialUpload {
 				f12f0elem := &svcsdk.WorkflowDetail{}
 				if f12f0iter.ExecutionRole != nil {
 					f12f0elem.SetExecutionRole(*f12f0iter.ExecutionRole)
@@ -327,7 +391,21 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 				}
 				f12f0 = append(f12f0, f12f0elem)
 			}
-			f12.SetOnUpload(f12f0)
+			f12.SetOnPartialUpload(f12f0)
+		}
+		if cr.Spec.ForProvider.WorkflowDetails.OnUpload != nil {
+			f12f1 := []*svcsdk.WorkflowDetail{}
+			for _, f12f1iter := range cr.Spec.ForProvider.WorkflowDetails.OnUpload {
+				f12f1elem := &svcsdk.WorkflowDetail{}
+				if f12f1iter.ExecutionRole != nil {
+					f12f1elem.SetExecutionRole(*f12f1iter.ExecutionRole)
+				}
+				if f12f1iter.WorkflowID != nil {
+					f12f1elem.SetWorkflowId(*f12f1iter.WorkflowID)
+				}
+				f12f1 = append(f12f1, f12f1elem)
+			}
+			f12.SetOnUpload(f12f1)
 		}
 		res.SetWorkflowDetails(f12)
 	}

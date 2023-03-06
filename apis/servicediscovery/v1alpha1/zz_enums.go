@@ -28,9 +28,10 @@ const (
 type FilterCondition string
 
 const (
-	FilterCondition_EQ      FilterCondition = "EQ"
-	FilterCondition_IN      FilterCondition = "IN"
-	FilterCondition_BETWEEN FilterCondition = "BETWEEN"
+	FilterCondition_EQ          FilterCondition = "EQ"
+	FilterCondition_IN          FilterCondition = "IN"
+	FilterCondition_BETWEEN     FilterCondition = "BETWEEN"
+	FilterCondition_BEGINS_WITH FilterCondition = "BEGINS_WITH"
 )
 
 type HealthCheckType string
@@ -61,7 +62,9 @@ const (
 type NamespaceFilterName string
 
 const (
-	NamespaceFilterName_TYPE NamespaceFilterName = "TYPE"
+	NamespaceFilterName_TYPE      NamespaceFilterName = "TYPE"
+	NamespaceFilterName_NAME      NamespaceFilterName = "NAME"
+	NamespaceFilterName_HTTP_NAME NamespaceFilterName = "HTTP_NAME"
 )
 
 type NamespaceType string

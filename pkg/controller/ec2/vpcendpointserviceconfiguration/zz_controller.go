@@ -209,19 +209,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			f1.ServiceType = f1f12
 		}
-		if resp.ServiceConfiguration.Tags != nil {
-			f1f13 := []*svcapitypes.Tag{}
-			for _, f1f13iter := range resp.ServiceConfiguration.Tags {
-				f1f13elem := &svcapitypes.Tag{}
-				if f1f13iter.Key != nil {
-					f1f13elem.Key = f1f13iter.Key
-				}
-				if f1f13iter.Value != nil {
-					f1f13elem.Value = f1f13iter.Value
-				}
-				f1f13 = append(f1f13, f1f13elem)
+		if resp.ServiceConfiguration.SupportedIpAddressTypes != nil {
+			f1f13 := []*string{}
+			for _, f1f13iter := range resp.ServiceConfiguration.SupportedIpAddressTypes {
+				var f1f13elem string
+				f1f13elem = *f1f13iter
+				f1f13 = append(f1f13, &f1f13elem)
 			}
-			f1.Tags = f1f13
+			f1.SupportedIPAddressTypes = f1f13
+		}
+		if resp.ServiceConfiguration.Tags != nil {
+			f1f14 := []*svcapitypes.Tag{}
+			for _, f1f14iter := range resp.ServiceConfiguration.Tags {
+				f1f14elem := &svcapitypes.Tag{}
+				if f1f14iter.Key != nil {
+					f1f14elem.Key = f1f14iter.Key
+				}
+				if f1f14iter.Value != nil {
+					f1f14elem.Value = f1f14iter.Value
+				}
+				f1f14 = append(f1f14, f1f14elem)
+			}
+			f1.Tags = f1f14
 		}
 		cr.Status.AtProvider.ServiceConfiguration = f1
 	} else {

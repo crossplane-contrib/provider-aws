@@ -225,6 +225,11 @@ type DBCluster_SDK struct {
 	ReaderEndpoint *string `json:"readerEndpoint,omitempty"`
 
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
+	// Shows the scaling configuration for a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `json:"serverlessV2ScalingConfiguration,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
@@ -246,6 +251,8 @@ type DBEngineVersion struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	ExportableLogTypes []*string `json:"exportableLogTypes,omitempty"`
+
+	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
 
@@ -452,6 +459,32 @@ type Filter struct {
 }
 
 // +kubebuilder:skipversion
+type GlobalCluster struct {
+	DeletionProtection *bool `json:"deletionProtection,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
+
+	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
+
+	GlobalClusterResourceID *string `json:"globalClusterResourceID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type GlobalClusterMember struct {
+	DBClusterARN *string `json:"dbClusterARN,omitempty"`
+
+	IsWriter *bool `json:"isWriter,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type OptionGroupMembership struct {
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
 
@@ -470,9 +503,13 @@ type OrderableDBInstanceOption struct {
 
 	MaxIOPSPerDBInstance *int64 `json:"maxIOPSPerDBInstance,omitempty"`
 
+	MaxIOPSPerGib *float64 `json:"maxIOPSPerGib,omitempty"`
+
 	MaxStorageSize *int64 `json:"maxStorageSize,omitempty"`
 
 	MinIOPSPerDBInstance *int64 `json:"minIOPSPerDBInstance,omitempty"`
+
+	MinIOPSPerGib *float64 `json:"minIOPSPerGib,omitempty"`
 
 	MinStorageSize *int64 `json:"minStorageSize,omitempty"`
 
@@ -483,6 +520,8 @@ type OrderableDBInstanceOption struct {
 	StorageType *string `json:"storageType,omitempty"`
 
 	SupportsEnhancedMonitoring *bool `json:"supportsEnhancedMonitoring,omitempty"`
+
+	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsIAMDatabaseAuthentication *bool `json:"supportsIAMDatabaseAuthentication,omitempty"`
 
@@ -578,6 +617,20 @@ type ResourcePendingMaintenanceActions struct {
 }
 
 // +kubebuilder:skipversion
+type ServerlessV2ScalingConfiguration struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessV2ScalingConfigurationInfo struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Subnet struct {
 	SubnetIdentifier *string `json:"subnetIdentifier,omitempty"`
 
@@ -607,6 +660,8 @@ type UpgradeTarget struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IsMajorVersionUpgrade *bool `json:"isMajorVersionUpgrade,omitempty"`
+
+	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -67,7 +67,7 @@ spec:
                     description: A description about the new documentation snapshot.
                     type: string
                   documentationVersion:
-                    description: '[Required] The version identifier of the new snapshot.'
+                    description: The version identifier of the new snapshot.
                     type: string
                   region:
                     description: Region is which region the DocumentationVersion will

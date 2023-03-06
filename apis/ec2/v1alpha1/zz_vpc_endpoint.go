@@ -29,6 +29,10 @@ type VPCEndpointParameters struct {
 	// Region is which region the VPCEndpoint will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// The DNS options for the endpoint.
+	DNSOptions *DNSOptionsSpecification `json:"dnsOptions,omitempty"`
+	// The IP address type for the endpoint.
+	IPAddressType *string `json:"ipAddressType,omitempty"`
 	// (Interface and gateway endpoints) A policy to attach to the endpoint that
 	// controls access to the service. The policy must be in valid JSON format.
 	// If this parameter is not specified, we attach a default policy that allows
@@ -69,30 +73,30 @@ type VPCEndpointSpec struct {
 
 // VPCEndpointObservation defines the observed state of VPCEndpoint
 type VPCEndpointObservation struct {
-	// The date and time that the VPC endpoint was created.
+	// The date and time that the endpoint was created.
 	CreationTimestamp *metav1.Time `json:"creationTimestamp,omitempty"`
 	// (Interface endpoint) The DNS entries for the endpoint.
 	DNSEntries []*DNSEntry `json:"dnsEntries,omitempty"`
 	// (Interface endpoint) Information about the security groups that are associated
 	// with the network interface.
 	Groups []*SecurityGroupIdentifier `json:"groups,omitempty"`
-	// The last error that occurred for VPC endpoint.
+	// The last error that occurred for endpoint.
 	LastError *LastError `json:"lastError,omitempty"`
 	// (Interface endpoint) One or more network interfaces for the endpoint.
 	NetworkInterfaceIDs []*string `json:"networkInterfaceIDs,omitempty"`
-	// The ID of the Amazon Web Services account that owns the VPC endpoint.
+	// The ID of the Amazon Web Services account that owns the endpoint.
 	OwnerID *string `json:"ownerID,omitempty"`
-	// Indicates whether the VPC endpoint is being managed by its service.
+	// Indicates whether the endpoint is being managed by its service.
 	RequesterManaged *bool `json:"requesterManaged,omitempty"`
 	// (Gateway endpoint) One or more route tables associated with the endpoint.
 	RouteTableIDs []*string `json:"routeTableIDs,omitempty"`
-	// The state of the VPC endpoint.
+	// The state of the endpoint.
 	State *string `json:"state,omitempty"`
-	// (Interface endpoint) One or more subnets in which the endpoint is located.
+	// (Interface endpoint) The subnets for the endpoint.
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
-	// Any tags assigned to the VPC endpoint.
+	// Any tags assigned to the endpoint.
 	Tags []*Tag `json:"tags,omitempty"`
-	// The ID of the VPC endpoint.
+	// The ID of the endpoint.
 	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
 	// The ID of the VPC to which the endpoint is associated.
 	VPCID *string `json:"vpcID,omitempty"`

@@ -3,6 +3,9 @@ ignore:
     - DataCatalog
     - NamedQuery
     - PreparedStatement
+    - Notebook
+    - PresignedNotebook
+    - PresignedNotebookUrl
   field_paths:
     - CreateWorkGroupInput.Name
 resources:

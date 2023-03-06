@@ -34,6 +34,8 @@ type ComputeEnvironmentParameters struct {
 	// see Compute Environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 	// in the Batch User Guide.
 	ComputeResources *ComputeResource `json:"computeResources,omitempty"`
+	// The details for the Amazon EKS cluster that supports the compute environment.
+	EKSConfiguration *EKSConfiguration `json:"eksConfiguration,omitempty"`
 	// The tags that you apply to the compute environment to help you categorize
 	// and organize your resources. Each tag consists of a key and an optional value.
 	// For more information, see Tagging Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
@@ -68,19 +70,19 @@ type ComputeEnvironmentSpec struct {
 type ComputeEnvironmentObservation struct {
 	// The Amazon Resource Name (ARN) of the compute environment.
 	ComputeEnvironmentARN *string `json:"computeEnvironmentARN,omitempty"`
-	// The name of the compute environment. It can be up to 128 letters long. It
-	// can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores
-	// (_).
+	// The name of the compute environment. It can be up to 128 characters long.
+	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
+	// underscores (_).
 	ComputeEnvironmentName *string `json:"computeEnvironmentName,omitempty"`
-	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster used
-	// by the compute environment.
+	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster that
+	// the compute environment uses.
 	EcsClusterARN *string `json:"ecsClusterARN,omitempty"`
 	// The state of the compute environment. The valid values are ENABLED or DISABLED.
 	//
 	// If the state is ENABLED, then the Batch scheduler can attempt to place jobs
 	// from an associated job queue on the compute resources within the environment.
 	// If the compute environment is managed, then it can scale its instances out
-	// or in automatically, based on the job queue demand.
+	// or in automatically based on the job queue demand.
 	//
 	// If the state is DISABLED, then the Batch scheduler doesn't attempt to place
 	// jobs within the environment. Jobs in a STARTING or RUNNING state continue

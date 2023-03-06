@@ -183,9 +183,10 @@ type DomainName_SDK struct {
 	// The endpoint configuration to indicate the types of endpoints an API (RestApi)
 	// or its custom domain name (DomainName) has.
 	EndpointConfiguration *EndpointConfiguration `json:"endpointConfiguration,omitempty"`
-	// If specified, API Gateway performs two-way authentication between the client
+	// The mutual TLS authentication configuration for a custom domain name. If
+	// specified, API Gateway performs two-way authentication between the client
 	// and the server. Clients must present a trusted certificate to access your
-	// custom domain name.
+	// API.
 	MutualTLSAuthentication *MutualTLSAuthentication `json:"mutualTLSAuthentication,omitempty"`
 
 	OwnershipVerificationCertificateARN *string `json:"ownershipVerificationCertificateARN,omitempty"`

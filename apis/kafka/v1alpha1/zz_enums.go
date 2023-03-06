@@ -81,3 +81,10 @@ type NodeType string
 const (
 	NodeType_BROKER NodeType = "BROKER"
 )
+
+type StorageMode string
+
+const (
+	StorageMode_LOCAL  StorageMode = "LOCAL"
+	StorageMode_TIERED StorageMode = "TIERED"
+)

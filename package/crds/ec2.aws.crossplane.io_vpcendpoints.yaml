@@ -61,6 +61,15 @@ spec:
               forProvider:
                 description: VPCEndpointParameters defines the desired state of VPCEndpoint
                 properties:
+                  dnsOptions:
+                    description: The DNS options for the endpoint.
+                    properties:
+                      dnsRecordIPType:
+                        type: string
+                    type: object
+                  ipAddressType:
+                    description: The IP address type for the endpoint.
+                    type: string
                   policyDocument:
                     description: (Interface and gateway endpoints) A policy to attach
                       to the endpoint that controls access to the service. The policy
@@ -624,7 +633,7 @@ spec:
                   VPCEndpoint
                 properties:
                   creationTimestamp:
-                    description: The date and time that the VPC endpoint was created.
+                    description: The date and time that the endpoint was created.
                     format: date-time
                     type: string
                   dnsEntries:
@@ -649,7 +658,7 @@ spec:
                       type: object
                     type: array
                   lastError:
-                    description: The last error that occurred for VPC endpoint.
+                    description: The last error that occurred for endpoint.
                     properties:
                       code:
                         type: string
@@ -664,11 +673,11 @@ spec:
                     type: array
                   ownerID:
                     description: The ID of the Amazon Web Services account that owns
-                      the VPC endpoint.
+                      the endpoint.
                     type: string
                   requesterManaged:
-                    description: Indicates whether the VPC endpoint is being managed
-                      by its service.
+                    description: Indicates whether the endpoint is being managed by
+                      its service.
                     type: boolean
                   routeTableIDs:
                     description: (Gateway endpoint) One or more route tables associated
@@ -677,16 +686,15 @@ spec:
                       type: string
                     type: array
                   state:
-                    description: The state of the VPC endpoint.
+                    description: The state of the endpoint.
                     type: string
                   subnetIDs:
-                    description: (Interface endpoint) One or more subnets in which
-                      the endpoint is located.
+                    description: (Interface endpoint) The subnets for the endpoint.
                     items:
                       type: string
                     type: array
                   tags:
-                    description: Any tags assigned to the VPC endpoint.
+                    description: Any tags assigned to the endpoint.
                     items:
                       properties:
                         key:
@@ -696,7 +704,7 @@ spec:
                       type: object
                     type: array
                   vpcEndpointID:
-                    description: The ID of the VPC endpoint.
+                    description: The ID of the endpoint.
                     type: string
                   vpcID:
                     description: The ID of the VPC to which the endpoint is associated.

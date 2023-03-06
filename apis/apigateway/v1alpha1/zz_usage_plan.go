@@ -31,7 +31,7 @@ type UsagePlanParameters struct {
 	Region string `json:"region"`
 	// The description of the usage plan.
 	Description *string `json:"description,omitempty"`
-	// [Required] The name of the usage plan.
+	// The name of the usage plan.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
 	// The quota of the usage plan.

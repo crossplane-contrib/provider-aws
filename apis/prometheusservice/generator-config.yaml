@@ -1,5 +1,7 @@
 model_name: amp
 ignore:
+  resource_names:
+    - LoggingConfiguration
   field_paths:
     - CreateWorkspaceInput.ClientToken
     - CreateRuleGroupsNamespaceInput.ClientToken

@@ -35,8 +35,7 @@ type GatewayResponseParameters struct {
 	// Response templates of the GatewayResponse as a string-to-string map of key-value
 	// pairs.
 	ResponseTemplates map[string]*string `json:"responseTemplates,omitempty"`
-	// [Required]
-	// The response type of the associated GatewayResponse.
+	// The response type of the associated GatewayResponse
 	// +kubebuilder:validation:Required
 	ResponseType *string `json:"responseType"`
 	// The HTTP status code of the GatewayResponse.

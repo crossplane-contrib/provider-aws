@@ -62,13 +62,13 @@ spec:
                 description: ModelParameters defines the desired state of Model
                 properties:
                   contentType:
-                    description: '[Required] The content-type for the model.'
+                    description: The content-type for the model.
                     type: string
                   description:
                     description: The description of the model.
                     type: string
                   name:
-                    description: '[Required] The name of the model. Must be alphanumeric.'
+                    description: The name of the model. Must be alphanumeric.
                     type: string
                   region:
                     description: Region is which region the Model will be created.
@@ -153,8 +153,7 @@ spec:
                     type: object
                   schema:
                     description: The schema for the model. For application/json models,
-                      this should be JSON schema draft 4 (https://tools.ietf.org/html/draft-zyp-json-schema-04)
-                      model.
+                      this should be JSON schema draft 4 model.
                     type: string
                 required:
                 - contentType

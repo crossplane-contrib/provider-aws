@@ -47,6 +47,20 @@ type AlertManagerDefinitionStatus_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type LoggingConfigurationMetadata struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+	// A workspace ID.
+	Workspace *string `json:"workspace,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LoggingConfigurationStatus struct {
+	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type RuleGroupsNamespaceDescription struct {
 	// An ARN identifying a rule groups namespace.
 	ARN *string `json:"arn,omitempty"`

@@ -29,10 +29,10 @@ type UsagePlanKeyParameters struct {
 	// Region is which region the UsagePlanKey will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// [Required] The identifier of a UsagePlanKey resource for a plan customer.
+	// The identifier of a UsagePlanKey resource for a plan customer.
 	// +kubebuilder:validation:Required
 	KeyID *string `json:"keyID"`
-	// [Required] The type of a UsagePlanKey resource for a plan customer.
+	// The type of a UsagePlanKey resource for a plan customer.
 	// +kubebuilder:validation:Required
 	KeyType                      *string `json:"keyType"`
 	CustomUsagePlanKeyParameters `json:",inline"`

@@ -34,9 +34,9 @@ type EnvironmentParameters struct {
 	// configuration options (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-env-variables.html).
 	AirflowConfigurationOptions map[string]*string `json:"airflowConfigurationOptions,omitempty"`
 	// The Apache Airflow version for your environment. If no value is specified,
-	// defaults to the latest version. Valid values: 1.10.12, 2.0.2. To learn more,
-	// see Apache Airflow versions on Amazon Managed Workflows for Apache Airflow
-	// (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
+	// it defaults to the latest version. Valid values: 1.10.12, 2.0.2, 2.2.2, and
+	// 2.4.3. For more information, see Apache Airflow versions on Amazon Managed
+	// Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 	AirflowVersion *string `json:"airflowVersion,omitempty"`
 	// The relative path to the DAGs folder on your Amazon S3 bucket. For example,
 	// dags. To learn more, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
@@ -79,9 +79,9 @@ type EnvironmentParameters struct {
 	// The number of Apache Airflow schedulers to run in your environment. Valid
 	// values:
 	//
-	//    * v2.0.2 - Accepts between 2 to 5. Defaults to 2.
+	//    * v2 - Accepts between 2 to 5. Defaults to 2.
 	//
-	//    * v1.10.12 - Accepts 1.
+	//    * v1 - Accepts 1.
 	Schedulers *int64 `json:"schedulers,omitempty"`
 	// The key-value tag pairs you want to associate to your environment. For example,
 	// "Environment": "Staging". To learn more, see Tagging Amazon Web Services
