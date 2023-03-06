@@ -118,7 +118,7 @@ spec:
 apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Role
 metadata:
-  name: sqlserver-backup-restore
+  name: rds-role
 spec:
   forProvider:
     assumeRolePolicyDocument: |
