@@ -642,3 +642,37 @@ type CustomDBInstanceRoleAssociationParameters struct {
 	// +optional
 	RoleARNSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
 }
+
+// CustomOptionGroupParameters are custom parameters for the OptionGroup
+type CustomOptionGroupParameters struct {
+	// Option in this list are added to the option group or, if already present,
+	// the specified configuration is used to update the existing configuration.
+	Option []*CustomOptionConfiguration `json:"option,omitempty"`
+
+	// A value that indicates whether to apply the change immediately or during
+	// the next maintenance window for each instance associated with the option
+	// group.
+	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
+}
+
+// CustomOptionConfiguration are custom parameters for the OptionConfiguration
+type CustomOptionConfiguration struct {
+	DBSecurityGroupMemberships []*string `json:"dbSecurityGroupMemberships,omitempty"`
+
+	OptionName *string `json:"optionName,omitempty"`
+
+	OptionSettings []*CustomOptionGroupOptionSetting `json:"optionSettings,omitempty"`
+
+	OptionVersion *string `json:"optionVersion,omitempty"`
+
+	Port *int64 `json:"port,omitempty"`
+
+	VPCSecurityGroupMemberships []*string `json:"vpcSecurityGroupMemberships,omitempty"`
+}
+
+// CustomOptionGroupOptionSetting are custom parameters for the OptionGroupOptionSetting
+type CustomOptionGroupOptionSetting struct {
+	Name *string `json:"name,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}

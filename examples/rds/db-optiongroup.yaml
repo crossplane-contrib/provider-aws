@@ -1,0 +1,22 @@
+---
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: OptionGroup
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    engineName: sqlserver-ee
+    majorEngineVersion: "11.00"
+    optionGroupDescription: example
+    option:
+      - optionName: TDE
+      - optionName: SQLSERVER_BACKUP_RESTORE
+        optionSettings:
+          - name: IAM_ROLE_ARN
+            value: arn:aws:iam::12345678910:role/rds-role
+    tags:
+      - key: optiongroup
+        value: "example-optiongroup"
+  providerConfigRef:
+    name: example
