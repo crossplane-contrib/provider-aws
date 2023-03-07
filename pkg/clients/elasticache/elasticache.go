@@ -40,7 +40,10 @@ import (
 	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
-const errCheckUpToDate = "unable to determine if external resource is up to date"
+const (
+	errCheckUpToDate = "unable to determine if external resource is up to date"
+	errVersionInput  = "unable to parse version number"
+)
 
 // A Client handles CRUD operations for ElastiCache resources.
 type Client interface {
@@ -664,7 +667,7 @@ func IsSubnetGroupUpToDate(p cachev1alpha1.CacheSubnetGroupParameters, sg elasti
 }
 
 // GenerateCreateCacheClusterInput returns Cache Cluster creation input
-func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.CreateCacheClusterInput {
+func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) (*elasticache.CreateCacheClusterInput, error) {
 	c := &elasticache.CreateCacheClusterInput{
 		AZMode:                     elasticachetypes.AZMode(aws.ToString(p.AZMode)),
 		AuthToken:                  p.AZMode,
@@ -674,7 +677,6 @@ func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id 
 		CacheSubnetGroupName:       p.CacheSubnetGroupName,
 		CacheSecurityGroupNames:    p.CacheSecurityGroupNames,
 		Engine:                     p.Engine,
-		EngineVersion:              p.EngineVersion,
 		NotificationTopicArn:       p.NotificationTopicARN,
 		NumCacheNodes:              aws.Int32(p.NumCacheNodes),
 		Port:                       p.Port,
@@ -689,6 +691,16 @@ func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id 
 		SnapshotWindow:             p.SnapshotWindow,
 	}
 
+	if p.EngineVersion != nil {
+		version, err := getVersion(p.EngineVersion)
+		if err != nil {
+			return nil, err
+		}
+		c.EngineVersion = version
+	} else {
+		c.EngineVersion = p.EngineVersion
+	}
+
 	if len(p.Tags) != 0 {
 		c.Tags = make([]elasticachetypes.Tag, len(p.Tags))
 		for i, tag := range p.Tags {
@@ -699,13 +711,13 @@ func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id 
 		}
 	}
 
-	return c
+	return c, nil
 }
 
 // GenerateModifyCacheClusterInput returns ElastiCache Cache Cluster
 // modification input suitable for use with the AWS API.
-func GenerateModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.ModifyCacheClusterInput {
-	return &elasticache.ModifyCacheClusterInput{
+func GenerateModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) (*elasticache.ModifyCacheClusterInput, error) {
+	c := &elasticache.ModifyCacheClusterInput{
 		CacheClusterId:             aws.String(id),
 		AZMode:                     elasticachetypes.AZMode(aws.ToString(p.AZMode)),
 		ApplyImmediately:           aws.ToBool(p.ApplyImmediately),
@@ -724,6 +736,18 @@ func GenerateModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id 
 		SnapshotRetentionLimit:     p.SnapshotRetentionLimit,
 		SnapshotWindow:             p.SnapshotWindow,
 	}
+
+	if p.EngineVersion != nil {
+		version, err := getVersion(p.EngineVersion)
+		if err != nil {
+			return nil, err
+		}
+		c.EngineVersion = version
+	} else {
+		c.EngineVersion = p.EngineVersion
+	}
+
+	return c, nil
 }
 
 // GenerateClusterObservation produces a CacheClusterObservation object out of
@@ -828,5 +852,40 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 	}
 	GenerateCluster(name, *in, desired)
 
+	if desired.EngineVersion != nil {
+		observedVersion := observed.EngineVersion
+		desiredVersion := desired.EngineVersion
+
+		observedVersionSplit := strings.Split(aws.ToString(observedVersion), ".")
+		desiredVersionSplit := strings.Split(aws.ToString(desiredVersion), ".")
+		if observedVersionSplit[0] != desiredVersionSplit[0] {
+			return false, nil
+		}
+		if len(desiredVersionSplit) > 1 {
+			if observedVersionSplit[1] != desiredVersionSplit[1] {
+				return false, nil
+			}
+		}
+		// to ignore in following equal
+		desired.EngineVersion = observed.EngineVersion
+	}
+
 	return cmp.Equal(desired, observed, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(document.NoSerde{})), nil
+}
+
+func getVersion(version *string) (*string, error) {
+	versionSplit := strings.Split(aws.ToString(version), ".")
+	version1, err := strconv.Atoi(versionSplit[0])
+	if err != nil {
+		return nil, errors.Wrap(err, errVersionInput)
+	}
+	versionOut := strconv.Itoa(version1)
+	if len(versionSplit) > 1 {
+		version2, err := strconv.Atoi(versionSplit[1])
+		if err != nil {
+			return nil, errors.Wrap(err, errVersionInput)
+		}
+		versionOut += "." + strconv.Itoa(version2)
+	}
+	return &versionOut, nil
 }

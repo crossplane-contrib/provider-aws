@@ -148,7 +148,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	_, err := e.client.CreateCacheCluster(ctx, elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+	input, err := elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))
+	if err == nil {
+		_, err = e.client.CreateCacheCluster(ctx, input)
+	}
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateCacheCluster)
 }
@@ -164,7 +167,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	_, err := e.client.ModifyCacheCluster(ctx, elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+	clusterInput, err := elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))
+	if err == nil {
+		_, err = e.client.ModifyCacheCluster(ctx, clusterInput)
+	}
+
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyCacheCluster)
 }
 

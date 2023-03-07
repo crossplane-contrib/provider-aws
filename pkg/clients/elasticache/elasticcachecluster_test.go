@@ -158,7 +158,7 @@ func TestGenerateCreateCacheClusterInput(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			r := GenerateCreateCacheClusterInput(tc.in, clusterID)
+			r, _ := GenerateCreateCacheClusterInput(tc.in, clusterID)
 			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
@@ -186,7 +186,7 @@ func TestGenerateModifyCacheClusterInput(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			r := GenerateModifyCacheClusterInput(tc.in, clusterID)
+			r, _ := GenerateModifyCacheClusterInput(tc.in, clusterID)
 			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
