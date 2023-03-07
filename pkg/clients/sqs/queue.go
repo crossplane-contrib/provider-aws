@@ -169,6 +169,13 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 	in.MessageRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.MessageRetentionPeriod, int64Ptr(attributes[v1beta1.AttributeMessageRetentionPeriod]))
 	in.ReceiveMessageWaitTimeSeconds = awsclients.LateInitializeInt64Ptr(in.ReceiveMessageWaitTimeSeconds, int64Ptr(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]))
 	in.VisibilityTimeout = awsclients.LateInitializeInt64Ptr(in.VisibilityTimeout, int64Ptr(attributes[v1beta1.AttributeVisibilityTimeout]))
+
+	in.SqsManagedSseEnabled = nil
+	SqsManagedSseEnabled, err := strconv.ParseBool(attributes[string(attributes[v1beta1.AttributeSqsManagedSseEnabled])])
+	if err == nil && SqsManagedSseEnabled {
+		in.SqsManagedSseEnabled = awsclients.LateInitializeBoolPtr(in.SqsManagedSseEnabled, aws.Bool(SqsManagedSseEnabled))
+	}
+
 	if in.KMSMasterKeyID == nil && attributes[v1beta1.AttributeKmsMasterKeyID] != "" {
 		in.KMSMasterKeyID = aws.String(attributes[v1beta1.AttributeKmsMasterKeyID])
 	}
