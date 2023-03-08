@@ -37,7 +37,7 @@ type CustomClusterParameters struct {
 type CustomConfigurationInfo struct {
 	// ARN of the configuration to use.
 	// +optional
-	// +crossplane:generate:reference:type=Configuration
+	// crossplane:generate:reference:type=Configuration
 	ARN *string `json:"arn,omitempty"`
 
 	// ARNRef is a reference to a Kafka Configuration used to set ARN.

@@ -30,7 +30,6 @@ import (
 func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	var rsp reference.ResolutionResponse
 	var mrsp reference.MultiResolutionResponse
 	var err error
 
@@ -68,24 +67,6 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		}
 		mg.Spec.ForProvider.CustomClusterParameters.CustomBrokerNodeGroupInfo.SecurityGroups = reference.ToPtrValues(mrsp.ResolvedValues)
 		mg.Spec.ForProvider.CustomClusterParameters.CustomBrokerNodeGroupInfo.SecurityGroupRefs = mrsp.ResolvedReferences
-
-	}
-	if mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo != nil {
-		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARN),
-			Extract:      reference.ExternalName(),
-			Reference:    mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARNRef,
-			Selector:     mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARNSelector,
-			To: reference.To{
-				List:    &ConfigurationList{},
-				Managed: &Configuration{},
-			},
-		})
-		if err != nil {
-			return errors.Wrap(err, "mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARN")
-		}
-		mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARN = reference.ToPtrValue(rsp.ResolvedValue)
-		mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARNRef = rsp.ResolvedReference
 
 	}
 

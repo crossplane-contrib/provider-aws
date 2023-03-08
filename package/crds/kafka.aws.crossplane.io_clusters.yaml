@@ -301,7 +301,7 @@ spec:
                       use for the cluster.
                     properties:
                       arn:
-                        description: ARN of the configuration to use.
+                        description: ARN of the configuration to use. crossplane:generate:reference:type=Configuration
                         type: string
                       arnRef:
                         description: ARNRef is a reference to a Kafka Configuration
