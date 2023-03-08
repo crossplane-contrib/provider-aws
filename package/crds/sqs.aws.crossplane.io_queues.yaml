@@ -326,6 +326,11 @@ spec:
                     description: Region is the region you'd like your Queue to be
                       created in.
                     type: string
+                  sseEnabled:
+                    description: Boolean to enable server-side encryption (SSE) of
+                      message content with SQS-owned encryption keys. See Encryption
+                      at rest.
+                    type: boolean
                   tags:
                     additionalProperties:
                       type: string

@@ -42,6 +42,7 @@ const (
 	AttributeContentBasedDeduplication             string = "ContentBasedDeduplication"
 	AttributeKmsMasterKeyID                        string = "KmsMasterKeyId"
 	AttributeKmsDataKeyReusePeriodSeconds          string = "KmsDataKeyReusePeriodSeconds"
+	AttributeSqsManagedSseEnabled                  string = "SqsManagedSseEnabled"
 )
 
 // RedrivePolicy includes the parameters for the dead-letter queue functionality of the source queue.
@@ -174,6 +175,10 @@ type QueueParameters struct {
 	// are treated as duplicates and only one copy of the message is delivered.
 	// +optional
 	ContentBasedDeduplication *bool `json:"contentBasedDeduplication,omitempty"`
+
+	//Boolean to enable server-side encryption (SSE) of
+	//message content with SQS-owned encryption keys. See Encryption at rest.
+	SqsManagedSseEnabled *bool `json:"sseEnabled,omitempty"`
 
 	// Tags add cost allocation tags to the specified Amazon SQS queue.
 	// +optional

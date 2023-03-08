@@ -117,6 +117,9 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	if p.ContentBasedDeduplication != nil {
 		m[v1beta1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication))
 	}
+	if p.SqsManagedSseEnabled != nil {
+		m[v1beta1.AttributeSqsManagedSseEnabled] = strconv.FormatBool(aws.ToBool(p.SqsManagedSseEnabled))
+	}
 	if len(m) == 0 {
 		return nil
 	}
@@ -166,6 +169,13 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 	in.MessageRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.MessageRetentionPeriod, int64Ptr(attributes[v1beta1.AttributeMessageRetentionPeriod]))
 	in.ReceiveMessageWaitTimeSeconds = awsclients.LateInitializeInt64Ptr(in.ReceiveMessageWaitTimeSeconds, int64Ptr(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]))
 	in.VisibilityTimeout = awsclients.LateInitializeInt64Ptr(in.VisibilityTimeout, int64Ptr(attributes[v1beta1.AttributeVisibilityTimeout]))
+
+	in.SqsManagedSseEnabled = nil
+	SqsManagedSseEnabled, err := strconv.ParseBool(attributes[string(attributes[v1beta1.AttributeSqsManagedSseEnabled])])
+	if err == nil && SqsManagedSseEnabled {
+		in.SqsManagedSseEnabled = awsclients.LateInitializeBoolPtr(in.SqsManagedSseEnabled, aws.Bool(SqsManagedSseEnabled))
+	}
+
 	if in.KMSMasterKeyID == nil && attributes[v1beta1.AttributeKmsMasterKeyID] != "" {
 		in.KMSMasterKeyID = aws.String(attributes[v1beta1.AttributeKmsMasterKeyID])
 	}
@@ -209,6 +219,9 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 		return false
 	}
 	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
+		return false
+	}
+	if attributes[v1beta1.AttributeSqsManagedSseEnabled] != "" && strconv.FormatBool(aws.ToBool(p.SqsManagedSseEnabled)) != attributes[v1beta1.AttributeSqsManagedSseEnabled] {
 		return false
 	}
 	if p.RedrivePolicy != nil {
