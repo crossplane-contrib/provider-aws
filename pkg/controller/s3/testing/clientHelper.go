@@ -72,6 +72,17 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		MockDeleteBucketOwnershipControls: func(ctx context.Context, input *awss3.DeleteBucketOwnershipControlsInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOwnershipControlsOutput, error) {
 			return &awss3.DeleteBucketOwnershipControlsOutput{}, nil
 		},
+		MockBucketPolicyClient: fake.MockBucketPolicyClient{
+			MockGetBucketPolicy: func(ctx context.Context, input *awss3.GetBucketPolicyInput, opts []func(*awss3.Options)) (*awss3.GetBucketPolicyOutput, error) {
+				return &awss3.GetBucketPolicyOutput{}, nil
+			},
+			MockPutBucketPolicy: func(ctx context.Context, input *awss3.PutBucketPolicyInput, opts []func(*awss3.Options)) (*awss3.PutBucketPolicyOutput, error) {
+				return &awss3.PutBucketPolicyOutput{}, nil
+			},
+			MockDeleteBucketPolicy: func(ctx context.Context, input *awss3.DeleteBucketPolicyInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketPolicyOutput, error) {
+				return &awss3.DeleteBucketPolicyOutput{}, nil
+			},
+		},
 	}
 	for _, v := range m {
 		v(client)

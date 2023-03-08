@@ -114,6 +114,8 @@ type BucketClient interface {
 	GetBucketOwnershipControls(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
 	PutBucketOwnershipControls(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
 	DeleteBucketOwnershipControls(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
+
+	BucketPolicyClient
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
