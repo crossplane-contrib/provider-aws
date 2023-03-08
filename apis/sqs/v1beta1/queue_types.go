@@ -176,8 +176,8 @@ type QueueParameters struct {
 	// +optional
 	ContentBasedDeduplication *bool `json:"contentBasedDeduplication,omitempty"`
 
-	//Boolean to enable server-side encryption (SSE) of
-	//message content with SQS-owned encryption keys. See Encryption at rest.
+	// Boolean to enable server-side encryption (SSE) of
+	// message content with SQS-owned encryption keys. See Encryption at rest.
 	SqsManagedSseEnabled *bool `json:"sseEnabled,omitempty"`
 
 	// Tags add cost allocation tags to the specified Amazon SQS queue.
