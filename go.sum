@@ -164,8 +164,8 @@ github.com/cncf/xds/go v0.0.0-20211001041855-01bcc9b48dfe/go.mod h1:eXthEFrGJvWH
 github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/crossplane/crossplane-runtime v0.19.0 h1:+NuhkbW3oKnRKcIBTApw34HQ4m2guxZR84m0iNGJGJg=
-github.com/crossplane/crossplane-runtime v0.19.0/go.mod h1:OJQ1NxtQK2ZTRmvtnQPoy8LsXsARTnVydRVDQEgIuz4=
+github.com/crossplane/crossplane-runtime v0.19.2 h1:9qBnhpqKN4x6apF2siaQ6PvgxqBXbGcKmgeD8mSIDO8=
+github.com/crossplane/crossplane-runtime v0.19.2/go.mod h1:OJQ1NxtQK2ZTRmvtnQPoy8LsXsARTnVydRVDQEgIuz4=
 github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e h1:HqLaMji3FRPwEBA5P6twPz0HbE6no0XOnByLU5O1noM=
 github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e/go.mod h1:xFf30hwHd5n0/a0D4ZomId8nxQTTjE0Hc1j4/rWxefc=
 github.com/dave/jennifer v1.4.1 h1:XyqG6cn5RQsTj3qlWQTKlRGAyrTcsk1kUmWdZBzRjDw=
