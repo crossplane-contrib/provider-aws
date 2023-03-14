@@ -223,7 +223,7 @@ EOF
 You can now reference this `ProviderConfig` to provision any `provider-aws`
 resources.
 
-## Using kube2iam
+## Using kube2iam or kiam
 
 This guide assumes that you already have:
 
@@ -233,7 +233,7 @@ This guide assumes that you already have:
 
 Please refer to the previous section for details about these prerequisites.
 
-Let's say the role you created is: `infra/k8s/crossplane`.
+Let's say the role you created is: `k8s-crossplane-example-role`.
 
 ### Steps
 
@@ -243,7 +243,7 @@ Crossplane provides a `ControllerConfig` type that allows you to customize the `
 
 A `ControllerConfig` can be created and referenced by any number of Provider objects that wish to use its configuration.
 
-*Note: the kube2iam annotation must be under `spec.metadata.annotations` that will be added to the AWS provider `Pod`.*
+*Note: the kube2iam/kiam annotation must be under `spec.metadata.annotations` that will be added to the AWS provider `Pod`.*
 
 ```console
 $ cat <<EOF | kubectl apply -f -
@@ -252,15 +252,19 @@ kind: ControllerConfig
 metadata:
   name: aws-config
 spec:
+  env:
+  # AWS region required to resolve service endpoints
+  - name: AWS_REGION
+    value: eu-west-1
   metadata:
     annotations:
-      # kube2iam annotation that will be added to the aws-provider defined in the next section
-      iam.amazonaws.com/role: cdsf/k8s/kube2iam-crossplane-integration
+      # kube2iam/kiam annotation that will be added t o the aws-provider defined in the next section
+      iam.amazonaws.com/role: k8s-crossplane-example-role
   podSecurityContext:
     fsGroup: 2000
 EOF
 ```
-  
+
 2. Deploy the `Provider` and a `ProviderConfig`
 
 The AWS Provider is referencing the `ControllerConfig` we deployed in the previous step.
@@ -283,7 +287,7 @@ metadata:
   name: default
   spec:
   credentials:
-    # Set source to 'InjectedIdentity' to be compliant with kube2iam behavior
+    # Set source to 'InjectedIdentity' to be compliant with kube2iam/kiam behavior
     source: InjectedIdentity
 EOF
 ```
