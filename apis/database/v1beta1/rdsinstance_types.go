@@ -524,35 +524,15 @@ type RDSInstanceParameters struct {
 	// Amazon Aurora
 	// Not applicable. The name for the master user is managed by the DB cluster.
 	// For more information, see CreateDBCluster.
-	// MariaDB
+	//
 	// Constraints:
-	//    * Required for MariaDB.
+	//
 	//    * Must be 1 to 16 letters or numbers.
-	//    * Cannot be a reserved word for the chosen database engine.
-	// Microsoft SQL Server
-	// Constraints:
-	//    * Required for SQL Server.
-	//    * Must be 1 to 128 letters or numbers.
-	//    * The first character must be a letter.
-	//    * Cannot be a reserved word for the chosen database engine.
-	// MySQL
-	// Constraints:
-	//    * Required for MySQL.
-	//    * Must be 1 to 16 letters or numbers.
+	//
 	//    * First character must be a letter.
-	//    * Cannot be a reserved word for the chosen database engine.
-	// Oracle
-	// Constraints:
-	//    * Required for Oracle.
-	//    * Must be 1 to 30 letters or numbers.
-	//    * First character must be a letter.
-	//    * Cannot be a reserved word for the chosen database engine.
-	// PostgreSQL
-	// Constraints:
-	//    * Required for PostgreSQL.
-	//    * Must be 1 to 63 letters or numbers.
-	//    * First character must be a letter.
-	//    * Cannot be a reserved word for the chosen database engine.
+	//
+	//    * Can't be a reserved word for the chosen database engine.
+	//
 	// +immutable
 	// +optional
 	MasterUsername *string `json:"masterUsername,omitempty"`
