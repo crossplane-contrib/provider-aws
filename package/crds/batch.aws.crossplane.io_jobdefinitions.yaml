@@ -575,9 +575,9 @@ spec:
                             items:
                               description: "Secret defines the secret to expose to
                                 your container. Secrets can be exposed to a container
-                                in the following ways: \n * To inject sensitive data
+                                in the following ways: \n - To inject sensitive data
                                 into your containers as environment variables, use
-                                the secrets container definition parameter. \n * To
+                                the secrets container definition parameter. \n - To
                                 reference sensitive information in the log configuration
                                 of a container, use the secretOptions container definition
                                 parameter. \n For more information, see Specifying
@@ -769,9 +769,9 @@ spec:
                         items:
                           description: "Secret defines the secret to expose to your
                             container. Secrets can be exposed to a container in the
-                            following ways: \n * To inject sensitive data into your
+                            following ways: \n - To inject sensitive data into your
                             containers as environment variables, use the secrets container
-                            definition parameter. \n * To reference sensitive information
+                            definition parameter. \n - To reference sensitive information
                             in the log configuration of a container, use the secretOptions
                             container definition parameter. \n For more information,
                             see Specifying sensitive data (https://docs.aws.amazon.com/batch/latest/userguide/specifying-sensitive-data.html)
@@ -1733,10 +1733,10 @@ spec:
                                         description: "Secret defines the secret to
                                           expose to your container. Secrets can be
                                           exposed to a container in the following
-                                          ways: \n * To inject sensitive data into
+                                          ways: \n - To inject sensitive data into
                                           your containers as environment variables,
                                           use the secrets container definition parameter.
-                                          \n * To reference sensitive information
+                                          \n - To reference sensitive information
                                           in the log configuration of a container,
                                           use the secretOptions container definition
                                           parameter. \n For more information, see
@@ -1955,10 +1955,10 @@ spec:
                                   items:
                                     description: "Secret defines the secret to expose
                                       to your container. Secrets can be exposed to
-                                      a container in the following ways: \n * To inject
+                                      a container in the following ways: \n - To inject
                                       sensitive data into your containers as environment
                                       variables, use the secrets container definition
-                                      parameter. \n * To reference sensitive information
+                                      parameter. \n - To reference sensitive information
                                       in the log configuration of a container, use
                                       the secretOptions container definition parameter.
                                       \n For more information, see Specifying sensitive

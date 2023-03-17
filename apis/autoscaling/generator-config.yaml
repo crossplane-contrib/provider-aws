@@ -1,0 +1,178 @@
+ignore:
+  field_paths:
+    - CreateAutoScalingGroupInput.AutoScalingGroupName
+    - DeleteAutoScalingGroupInput.AutoScalingGroupName
+  resource_names:
+    - LaunchConfiguration
+resources:
+  AutoScalingGroup:
+    fields:
+      AutoScalingGroupARN:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.AutoScalingGroupARN
+      AutoScalingGroupName:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.AutoScalingGroupName
+      AvailabilityZones:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.AvailabilityZones
+      CapacityRebalance:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.CapacityRebalance
+      # Add this field when there is a solution for https://github.com/aws-controllers-k8s/community/issues/1372
+      # CreatedTime:
+      #   compare:
+      #     is_ignored: true
+      #   is_read_only: true
+      #   from:
+      #     operation: DescribeAutoScalingGroups
+      #     path: AutoScalingGroups.CreatedTime
+      DefaultCooldown:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.DefaultCooldown
+      DefaultInstanceWarmup:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.DefaultInstanceWarmup
+      DesiredCapacity:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.DesiredCapacity
+      DesiredCapacityType:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.CreatedTime
+
+      EnabledMetrics:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.EnabledMetrics
+      HealthCheckGracePeriod:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.HealthCheckGracePeriod
+      HealthCheckType:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.HealthCheckType
+      Instances:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.Instances
+      LaunchConfigurationName:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.LaunchConfigurationName
+      LaunchTemplate:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.LaunchTemplate
+      LoadBalancerNames:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.LoadBalancerNames
+      MaxInstanceLifetime:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.MaxInstanceLifetime
+      MaxSize:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.MaxSize
+      MinSize:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.MinSize
+      MixedInstancesPolicy:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.MixedInstancesPolicy
+      NewInstancesProtectedFromScaleIn:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.NewInstancesProtectedFromScaleIn
+      PlacementGroup:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.PlacementGroup
+      PredictedCapacity:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.PredictedCapacity
+      ServiceLinkedRoleARN:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.ServiceLinkedRoleARN
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.Status
+      SuspendedProcesses:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.SuspendedProcesses
+      Tags:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.Tags
+      TargetGroupARNs:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.TargetGroupARNs
+      TerminationPolicies:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.TerminationPolicies
+      TrafficSources:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.TrafficSources
+      VPCZoneIdentifier:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.VPCZoneIdentifier
+      WarmPoolConfiguration:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.WarmPoolConfiguration
+      WarmPoolSize:
+        is_read_only: true
+        from:
+          operation: DescribeAutoScalingGroups
+          path: AutoScalingGroups.WarmPoolSize
