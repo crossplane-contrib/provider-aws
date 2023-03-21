@@ -28,7 +28,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.12.0
 	github.com/aws/smithy-go v1.13.3
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
-	github.com/crossplane/crossplane-runtime v0.19.0
+	github.com/crossplane/crossplane-runtime v0.20.0-rc.0.0.20230320143010-c424c4aca5b0
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/go-ini/ini v1.67.0
