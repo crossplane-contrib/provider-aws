@@ -48,6 +48,7 @@ func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.CloudFrontOriginAccessIdentity{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.CloudFrontOriginAccessIdentityGroupVersionKind),

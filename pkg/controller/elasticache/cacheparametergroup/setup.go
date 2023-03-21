@@ -54,6 +54,7 @@ func SetupCacheParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 		Named(name).
 		For(&svcapitypes.CacheParameterGroup{}).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.CacheParameterGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

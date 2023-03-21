@@ -45,6 +45,7 @@ func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) erro
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.DBInstanceRoleAssociation{}).
+		WithEventFilter(cpresource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.DBInstanceRoleAssociationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

@@ -67,6 +67,7 @@ func SetupELB(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&elasticloadbalancingv1alpha1.ELB{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(elasticloadbalancingv1alpha1.ELBGroupVersionKind),

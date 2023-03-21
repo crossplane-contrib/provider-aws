@@ -64,6 +64,7 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 		Named(name).
 		For(&svcapitypes.DBClusterParameterGroup{}).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBClusterParameterGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

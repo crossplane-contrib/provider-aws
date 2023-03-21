@@ -59,6 +59,7 @@ func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 		Named(name).
 		For(&svcapitypes.DBSubnetGroup{}).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

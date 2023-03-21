@@ -50,6 +50,7 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.User{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.UserGroupVersionKind),

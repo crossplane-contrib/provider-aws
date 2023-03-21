@@ -45,6 +45,7 @@ func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.FunctionURLConfig{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.FunctionURLConfigGroupVersionKind),

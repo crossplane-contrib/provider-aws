@@ -61,6 +61,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, o controller.Options)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&v1beta1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.CertificateAuthorityPermissionGroupVersionKind),

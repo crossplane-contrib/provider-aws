@@ -51,6 +51,7 @@ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(cpresource.DesiredStateChanged()).
 		For(&svcapitypes.TransitGatewayRouteTable{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.TransitGatewayRouteTableGroupVersionKind),

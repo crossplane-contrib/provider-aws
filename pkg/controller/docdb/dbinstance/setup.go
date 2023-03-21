@@ -60,6 +60,7 @@ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 		Named(name).
 		For(&svcapitypes.DBInstance{}).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

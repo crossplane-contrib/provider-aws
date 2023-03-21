@@ -43,6 +43,7 @@ func SetupResolverEndpoint(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(cpresource.DesiredStateChanged()).
 		For(&route53resolverv1alpha1.ResolverEndpoint{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(route53resolverv1alpha1.ResolverEndpointGroupVersionKind),
