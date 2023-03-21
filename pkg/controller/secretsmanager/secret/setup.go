@@ -88,6 +88,7 @@ func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.Secret{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.SecretGroupVersionKind),

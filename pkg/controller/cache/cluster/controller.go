@@ -63,6 +63,7 @@ func SetupCacheCluster(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&cachev1alpha1.CacheCluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(cachev1alpha1.CacheClusterGroupVersionKind),

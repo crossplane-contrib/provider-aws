@@ -64,6 +64,7 @@ func SetupGlobalTable(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.GlobalTable{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.GlobalTableGroupVersionKind),

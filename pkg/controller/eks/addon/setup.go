@@ -61,6 +61,7 @@ func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&eksv1alpha1.Addon{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(eksv1alpha1.AddonGroupVersionKind),

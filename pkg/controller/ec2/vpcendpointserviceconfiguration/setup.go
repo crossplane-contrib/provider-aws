@@ -55,6 +55,7 @@ func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(cpresource.DesiredStateChanged()).
 		For(&svcapitypes.VPCEndpointServiceConfiguration{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(svcapitypes.VPCEndpointServiceConfigurationGroupVersionKind),

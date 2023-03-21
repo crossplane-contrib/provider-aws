@@ -65,6 +65,7 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&redshiftv1alpha1.Cluster{}).
 		Complete(managed.NewReconciler(
 			mgr, resource.ManagedKind(redshiftv1alpha1.ClusterGroupVersionKind),

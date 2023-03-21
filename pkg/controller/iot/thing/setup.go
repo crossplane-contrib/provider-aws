@@ -63,6 +63,7 @@ func SetupThing(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&iottypes.Thing{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(iottypes.ThingGroupVersionKind),

@@ -60,6 +60,7 @@ func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		For(&svcapitypes.InstanceProfile{}).
+		WithEventFilter(resource.DesiredStateChanged()).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.InstanceProfileGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),

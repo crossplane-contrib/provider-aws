@@ -48,6 +48,7 @@ func SetupNatGateway(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&v1beta1.NATGateway{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.NATGatewayGroupVersionKind),

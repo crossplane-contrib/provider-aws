@@ -64,6 +64,7 @@ func SetupIdentityProviderConfig(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&manualv1alpha1.IdentityProviderConfig{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(manualv1alpha1.IdentityProviderConfigGroupVersionKind),

@@ -57,6 +57,7 @@ func SetupAuthorizer(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.Authorizer{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.AuthorizerGroupVersionKind),

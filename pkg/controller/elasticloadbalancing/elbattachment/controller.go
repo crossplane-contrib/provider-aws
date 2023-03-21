@@ -62,6 +62,7 @@ func SetupELBAttachment(mgr ctrl.Manager, o controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
+		WithEventFilter(resource.DesiredStateChanged()).
 		For(&elasticloadbalancingv1alpha1.ELBAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(elasticloadbalancingv1alpha1.ELBAttachmentGroupVersionKind),
