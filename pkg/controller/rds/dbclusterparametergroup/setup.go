@@ -122,22 +122,10 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 			break
 		}
 
-		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
-		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
-			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
-		}
 		obj.Parameters[i] = &svcsdk.Parameter{
-			AllowedValues:        v.AllowedValues,
-			ApplyMethod:          v.ApplyMethod,
-			ApplyType:            v.ApplyType,
-			DataType:             v.DataType,
-			Description:          v.Description,
-			IsModifiable:         v.IsModifiable,
-			MinimumEngineVersion: v.MinimumEngineVersion,
-			ParameterName:        v.ParameterName,
-			ParameterValue:       v.ParameterValue,
-			Source:               v.Source,
-			SupportedEngineModes: v.SupportedEngineModes,
+			ApplyMethod:    v.ApplyMethod,
+			ParameterName:  v.ParameterName,
+			ParameterValue: v.ParameterValue,
 		}
 	}
 	return nil
@@ -216,8 +204,8 @@ func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 	return resp.DBEngineVersions[0], nil
 }
 
-func (c *custom) parametersToUpdate(cr *svcapitypes.DBClusterParameterGroup, current []*svcsdk.Parameter) []svcapitypes.Parameter {
-	var parameters []svcapitypes.Parameter
+func (c *custom) parametersToUpdate(cr *svcapitypes.DBClusterParameterGroup, current []*svcsdk.Parameter) []svcapitypes.CustomParameter {
+	var parameters []svcapitypes.CustomParameter
 	observed := make(map[string]svcsdk.Parameter, len(current))
 
 	for _, p := range current {
@@ -233,8 +221,7 @@ func (c *custom) parametersToUpdate(cr *svcapitypes.DBClusterParameterGroup, cur
 			continue
 		}
 
-		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) ||
-			awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod) {
+		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
 			parameters = append(parameters, v)
 		}
 	}

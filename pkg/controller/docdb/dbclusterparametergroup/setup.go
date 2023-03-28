@@ -22,7 +22,6 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -116,7 +115,7 @@ func (e *hooks) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, resp *svcsdk
 		return false, err
 	}
 
-	if !areParemetersEqual(cr.Spec.ForProvider.Parameters, paramsResp.Parameters) {
+	if !areParametersEqual(cr.Spec.ForProvider.Parameters, paramsResp.Parameters) {
 		return false, nil
 	}
 
@@ -145,20 +144,20 @@ func (e *hooks) lateInitialize(cr *svcapitypes.DBClusterParameterGroupParameters
 	return nil
 }
 
-func lateInitializeParameters(in []*svcapitypes.Parameter, from []*svcsdk.Parameter) []*svcapitypes.Parameter {
+func lateInitializeParameters(in []*svcapitypes.CustomParameter, from []*svcsdk.Parameter) []*svcapitypes.CustomParameter {
 	out := in
 	if out == nil {
-		out = []*svcapitypes.Parameter{}
+		out = []*svcapitypes.CustomParameter{}
 	}
 
-	apiParams := make(map[string]*svcapitypes.Parameter, len(out))
+	apiParams := make(map[string]*svcapitypes.CustomParameter, len(out))
 	for _, p := range out {
 		apiParams[awsclient.StringValue(p.ParameterName)] = p
 	}
 
 	for _, sdkP := range from {
 		if _, exists := apiParams[awsclient.StringValue(sdkP.ParameterName)]; !exists {
-			newP := &svcapitypes.Parameter{}
+			newP := &svcapitypes.CustomParameter{}
 			generateAPIParameter(sdkP, newP)
 			out = append(out, newP)
 		}
@@ -209,7 +208,7 @@ func filterList(cr *svcapitypes.DBClusterParameterGroup, list *svcsdk.DescribeDB
 	}
 }
 
-func areParemetersEqual(spec []*svcapitypes.Parameter, current []*svcsdk.Parameter) bool { // nolint:gocyclo
+func areParametersEqual(spec []*svcapitypes.CustomParameter, current []*svcsdk.Parameter) bool { // nolint:gocyclo
 	currentMap := make(map[string]*svcsdk.Parameter, len(current))
 	for _, currentParam := range current {
 		currentMap[awsclient.StringValue(currentParam.ParameterName)] = currentParam
@@ -218,9 +217,8 @@ func areParemetersEqual(spec []*svcapitypes.Parameter, current []*svcsdk.Paramet
 	for _, specParam := range spec {
 		currentParam, exists := currentMap[awsclient.StringValue(specParam.ParameterName)]
 		if !exists || !cmp.Equal(
-			specParam,
-			generateAPIParameter(currentParam, &svcapitypes.Parameter{}),
-			cmpopts.IgnoreFields(svcapitypes.Parameter{}, "Source", "ParameterName"),
+			specParam.ParameterValue,
+			generateAPIParameter(currentParam, &svcapitypes.CustomParameter{}).ParameterValue,
 		) {
 			return false
 		}
@@ -229,37 +227,23 @@ func areParemetersEqual(spec []*svcapitypes.Parameter, current []*svcsdk.Paramet
 	return true
 }
 
-func generateSdkParameters(params []*svcapitypes.Parameter) []*svcsdk.Parameter {
+func generateSdkParameters(params []*svcapitypes.CustomParameter) []*svcsdk.Parameter {
 	sdkParams := make([]*svcsdk.Parameter, len(params))
 	for i, p := range params {
 		sdkParams[i] = &svcsdk.Parameter{
-			AllowedValues:        p.AllowedValues,
-			ApplyMethod:          p.ApplyMethod,
-			ApplyType:            p.ApplyType,
-			DataType:             p.DataType,
-			Description:          p.Description,
-			IsModifiable:         p.IsModifiable,
-			MinimumEngineVersion: p.MinimumEngineVersion,
-			ParameterName:        p.ParameterName,
-			ParameterValue:       p.ParameterValue,
-			Source:               p.Source,
+			ApplyMethod:    p.ApplyMethod,
+			ParameterName:  p.ParameterName,
+			ParameterValue: p.ParameterValue,
 		}
 	}
 
 	return sdkParams
 }
 
-func generateAPIParameter(p *svcsdk.Parameter, o *svcapitypes.Parameter) *svcapitypes.Parameter {
-	o.AllowedValues = p.AllowedValues
+func generateAPIParameter(p *svcsdk.Parameter, o *svcapitypes.CustomParameter) *svcapitypes.CustomParameter {
 	o.ApplyMethod = p.ApplyMethod
-	o.ApplyType = p.ApplyType
-	o.DataType = p.DataType
-	o.Description = p.Description
-	o.IsModifiable = p.IsModifiable
-	o.MinimumEngineVersion = p.MinimumEngineVersion
 	o.ParameterName = p.ParameterName
 	o.ParameterValue = p.ParameterValue
-	o.Source = p.Source
 
 	return o
 }
