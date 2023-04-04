@@ -23,7 +23,6 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/strings/slices"
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
@@ -128,19 +127,6 @@ func (e *PolicyClient) LateInitialize(ctx context.Context, cr *v1beta1.Bucket) e
 	//       inconsistencies between remote and local structures.
 	//       A manual converter needs to be written, pretty much the inverse of
 	//       s3.SerializeBucketPolicyStatement.
-
-	// The only thing that can be done easily is setting the resource field to
-	// the bucket ARN automaitcally since resource policies only apply to the
-	// object they are attached to.
-	bucketARN := cr.Status.AtProvider.ARN
-	if cr.Spec.ForProvider.Policy != nil && bucketARN != "" {
-		for i, statement := range cr.Spec.ForProvider.Policy.Statements {
-			if !slices.Contains(statement.Resource, bucketARN) {
-				statement.Resource = []string{bucketARN}
-				cr.Spec.ForProvider.Policy.Statements[i] = statement
-			}
-		}
-	}
 	return nil
 }
 
