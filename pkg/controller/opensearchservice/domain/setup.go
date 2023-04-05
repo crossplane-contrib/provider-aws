@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/opensearchservice"
@@ -350,270 +351,28 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 
 func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, error) { // nolint:gocyclo
 
-	if aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies) {
+	switch {
+	case aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies),
+		!isMapUpToDate(obj.Spec.ForProvider.AdvancedOptions, out.DomainStatus.AdvancedOptions, []string{"override_main_response_version"}),
+		!isAdvancedSecurityOptionsUpToDate(obj.Spec.ForProvider.AdvancedSecurityOptions, out.DomainStatus.AdvancedSecurityOptions),
+		!isAutoTuneOptionsUpToDate(obj.Spec.ForProvider.AutoTuneOptions, out.DomainStatus.AutoTuneOptions),
+		!isClusterConfigUpToDate(obj.Spec.ForProvider.ClusterConfig, out.DomainStatus.ClusterConfig),
+		!isCognitoOptionsUpToDate(obj.Spec.ForProvider.CognitoOptions, out.DomainStatus.CognitoOptions),
+		!isDomainEndpointOptionsUpToDate(obj.Spec.ForProvider.DomainEndpointOptions, out.DomainStatus.DomainEndpointOptions),
+		aws.StringValue(obj.Spec.ForProvider.Name) != aws.StringValue(out.DomainStatus.DomainName),
+		!isEbsOptionsUpToDate(obj.Spec.ForProvider.EBSOptions, out.DomainStatus.EBSOptions),
+		!isLogPublishingOptionsUpToDate(obj.Spec.ForProvider.LogPublishingOptions, out.DomainStatus.LogPublishingOptions),
+		!isNodeToNodeEncryptionOptionsUpToDate(obj.Spec.ForProvider.NodeToNodeEncryptionOptions, out.DomainStatus.NodeToNodeEncryptionOptions),
+		!isSnapshotOptionsUpToDate(obj.Spec.ForProvider.SnapshotOptions, out.DomainStatus.SnapshotOptions),
+		!isVpcOptionsUpToDate(obj.Spec.ForProvider.VPCOptions, out.DomainStatus.VPCOptions),
+		!isEncryptionAtRestUpToDate(obj.Spec.ForProvider.EncryptionAtRestOptions, out.DomainStatus.EncryptionAtRestOptions):
 		return false, nil
-	}
-	if len(obj.Spec.ForProvider.AdvancedOptions) != len(out.DomainStatus.AdvancedOptions) {
+	case !*out.DomainStatus.Processing && !*out.DomainStatus.UpgradeProcessing && aws.StringValue(obj.Spec.ForProvider.EngineVersion) != aws.StringValue(out.DomainStatus.EngineVersion):
+		// We cant update when processing or already updating so we consider this as up to date for now
 		return false, nil
+	default:
+		return true, nil
 	}
-	for key, value := range obj.Spec.ForProvider.AdvancedOptions {
-		if aws.StringValue(out.DomainStatus.AdvancedOptions[key]) != aws.StringValue(value) {
-			return false, nil
-		}
-	}
-
-	if aws.BoolValue(obj.Spec.ForProvider.AdvancedSecurityOptions.AnonymousAuthEnabled) != aws.BoolValue(out.DomainStatus.AdvancedSecurityOptions.AnonymousAuthEnabled) {
-		return false, nil
-	}
-	if aws.BoolValue(obj.Spec.ForProvider.AdvancedSecurityOptions.Enabled) != aws.BoolValue(out.DomainStatus.AdvancedSecurityOptions.Enabled) {
-		return false, nil
-	}
-	if aws.BoolValue(obj.Spec.ForProvider.AdvancedSecurityOptions.InternalUserDatabaseEnabled) != aws.BoolValue(out.DomainStatus.AdvancedSecurityOptions.InternalUserDatabaseEnabled) {
-		return false, nil
-	}
-
-	if out.DomainStatus.AdvancedSecurityOptions.SAMLOptions != nil {
-		if obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions != nil {
-			if aws.BoolValue(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.Enabled) != aws.BoolValue(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.Enabled) {
-				return false, nil
-			}
-			if out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.Idp != nil {
-				if obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp != nil {
-					if aws.StringValue(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp.EntityID) != aws.StringValue(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.Idp.EntityId) {
-						return false, nil
-					}
-					if aws.StringValue(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp.MetadataContent) != aws.StringValue(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.Idp.MetadataContent) {
-						return false, nil
-					}
-				} else {
-					return false, nil
-				}
-			} else if obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp != nil {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.RolesKey) != aws.StringValue(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.RolesKey) {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.SessionTimeoutMinutes) != aws.Int64Value(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.SessionTimeoutMinutes) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.SubjectKey) != aws.StringValue(out.DomainStatus.AdvancedSecurityOptions.SAMLOptions.SubjectKey) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions != nil {
-		return false, nil
-	}
-
-	if out.DomainStatus.ClusterConfig != nil {
-		if obj.Spec.ForProvider.ClusterConfig != nil {
-			if out.DomainStatus.ClusterConfig.ColdStorageOptions != nil {
-				if obj.Spec.ForProvider.ClusterConfig.ColdStorageOptions != nil {
-					if aws.BoolValue(obj.Spec.ForProvider.ClusterConfig.ColdStorageOptions.Enabled) != aws.BoolValue(out.DomainStatus.ClusterConfig.ColdStorageOptions.Enabled) {
-						return false, nil
-					}
-				}
-			} else if obj.Spec.ForProvider.ClusterConfig.ColdStorageOptions != nil {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.ClusterConfig.DedicatedMasterCount) != aws.Int64Value(out.DomainStatus.ClusterConfig.DedicatedMasterCount) {
-				return false, nil
-			}
-			if aws.BoolValue(obj.Spec.ForProvider.ClusterConfig.DedicatedMasterEnabled) != aws.BoolValue(out.DomainStatus.ClusterConfig.DedicatedMasterEnabled) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.ClusterConfig.DedicatedMasterType) != aws.StringValue(out.DomainStatus.ClusterConfig.DedicatedMasterType) {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.ClusterConfig.InstanceCount) != aws.Int64Value(out.DomainStatus.ClusterConfig.InstanceCount) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.ClusterConfig.InstanceType) != aws.StringValue(out.DomainStatus.ClusterConfig.InstanceType) {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.ClusterConfig.WarmCount) != aws.Int64Value(out.DomainStatus.ClusterConfig.WarmCount) {
-				return false, nil
-			}
-			if aws.BoolValue(obj.Spec.ForProvider.ClusterConfig.WarmEnabled) != aws.BoolValue(out.DomainStatus.ClusterConfig.WarmEnabled) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.ClusterConfig.WarmType) != aws.StringValue(out.DomainStatus.ClusterConfig.WarmType) {
-				return false, nil
-			}
-
-			if out.DomainStatus.ClusterConfig.ZoneAwarenessConfig != nil {
-				if obj.Spec.ForProvider.ClusterConfig.ZoneAwarenessConfig != nil {
-					if aws.Int64Value(obj.Spec.ForProvider.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount) != aws.Int64Value(out.DomainStatus.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount) {
-						return false, nil
-					}
-				}
-			} else if obj.Spec.ForProvider.ClusterConfig.ZoneAwarenessConfig != nil {
-				return false, nil
-			}
-			if aws.BoolValue(obj.Spec.ForProvider.ClusterConfig.ZoneAwarenessEnabled) != aws.BoolValue(out.DomainStatus.ClusterConfig.ZoneAwarenessEnabled) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.ClusterConfig != nil {
-		return false, nil
-	}
-	if out.DomainStatus.CognitoOptions != nil {
-		if obj.Spec.ForProvider.CognitoOptions != nil {
-			if aws.BoolValue(obj.Spec.ForProvider.CognitoOptions.Enabled) != aws.BoolValue(out.DomainStatus.CognitoOptions.Enabled) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.CognitoOptions.IdentityPoolID) != aws.StringValue(out.DomainStatus.CognitoOptions.IdentityPoolId) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.CognitoOptions.RoleARN) != aws.StringValue(out.DomainStatus.CognitoOptions.RoleArn) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.CognitoOptions.UserPoolID) != aws.StringValue(out.DomainStatus.CognitoOptions.UserPoolId) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.DomainEndpointOptions != nil {
-		return false, nil
-	}
-	if out.DomainStatus.DomainEndpointOptions != nil {
-		if obj.Spec.ForProvider.DomainEndpointOptions != nil {
-			if aws.StringValue(obj.Spec.ForProvider.DomainEndpointOptions.CustomEndpoint) != aws.StringValue(out.DomainStatus.DomainEndpointOptions.CustomEndpoint) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.DomainEndpointOptions.CustomEndpointCertificateARN) != aws.StringValue(out.DomainStatus.DomainEndpointOptions.CustomEndpointCertificateArn) {
-				return false, nil
-			}
-			if aws.BoolValue(obj.Spec.ForProvider.DomainEndpointOptions.CustomEndpointEnabled) != aws.BoolValue(out.DomainStatus.DomainEndpointOptions.CustomEndpointEnabled) {
-				return false, nil
-			}
-			if aws.BoolValue(obj.Spec.ForProvider.DomainEndpointOptions.EnforceHTTPS) != aws.BoolValue(out.DomainStatus.DomainEndpointOptions.EnforceHTTPS) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.DomainEndpointOptions.TLSSecurityPolicy) != aws.StringValue(out.DomainStatus.DomainEndpointOptions.TLSSecurityPolicy) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.DomainEndpointOptions != nil {
-		return false, nil
-	}
-	if aws.StringValue(obj.Spec.ForProvider.Name) != aws.StringValue(out.DomainStatus.DomainName) {
-		return false, nil
-	}
-	if out.DomainStatus.EBSOptions != nil {
-		if obj.Spec.ForProvider.EBSOptions != nil {
-			if aws.BoolValue(obj.Spec.ForProvider.EBSOptions.EBSEnabled) != aws.BoolValue(out.DomainStatus.EBSOptions.EBSEnabled) {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.EBSOptions.IOPS) != aws.Int64Value(out.DomainStatus.EBSOptions.Iops) {
-				return false, nil
-			}
-			if aws.Int64Value(obj.Spec.ForProvider.EBSOptions.VolumeSize) != aws.Int64Value(out.DomainStatus.EBSOptions.VolumeSize) {
-				return false, nil
-			}
-			if aws.StringValue(obj.Spec.ForProvider.EBSOptions.VolumeType) != aws.StringValue(out.DomainStatus.EBSOptions.VolumeType) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.EBSOptions != nil {
-		return false, nil
-	}
-
-	if aws.StringValue(obj.Spec.ForProvider.EngineVersion) != aws.StringValue(out.DomainStatus.EngineVersion) {
-		return false, nil
-	}
-
-	if out.DomainStatus.LogPublishingOptions != nil {
-		if obj.Spec.ForProvider.LogPublishingOptions != nil {
-			if len(obj.Spec.ForProvider.LogPublishingOptions) != len(out.DomainStatus.LogPublishingOptions) {
-				return false, nil
-			}
-			for key, value := range obj.Spec.ForProvider.LogPublishingOptions {
-				if aws.StringValue(value.CloudWatchLogsLogGroupARN) != aws.StringValue(out.DomainStatus.LogPublishingOptions[key].CloudWatchLogsLogGroupArn) {
-					return false, nil
-				}
-				if aws.BoolValue(value.Enabled) != aws.BoolValue(out.DomainStatus.LogPublishingOptions[key].Enabled) {
-					return false, nil
-				}
-			}
-
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.LogPublishingOptions != nil {
-		return false, nil
-	}
-
-	if out.DomainStatus.NodeToNodeEncryptionOptions != nil {
-		if obj.Spec.ForProvider.NodeToNodeEncryptionOptions != nil {
-			if aws.BoolValue(obj.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled) != aws.BoolValue(out.DomainStatus.NodeToNodeEncryptionOptions.Enabled) {
-				return false, nil
-			}
-		} else {
-			return false, nil
-		}
-	} else if obj.Spec.ForProvider.NodeToNodeEncryptionOptions != nil {
-		return false, nil
-	}
-
-	if out.DomainStatus.SnapshotOptions != nil {
-		if obj.Spec.ForProvider.SnapshotOptions != nil {
-			if aws.Int64Value(out.DomainStatus.SnapshotOptions.AutomatedSnapshotStartHour) != aws.Int64Value(obj.Spec.ForProvider.SnapshotOptions.AutomatedSnapshotStartHour) {
-				return false, nil
-			}
-		}
-	} else if obj.Spec.ForProvider.SnapshotOptions != nil {
-		return false, nil
-	}
-
-	if out.DomainStatus.VPCOptions != nil {
-		if obj.Spec.ForProvider.VPCOptions != nil {
-			if len(out.DomainStatus.VPCOptions.SecurityGroupIds) != len(obj.Spec.ForProvider.VPCOptions.SecurityGroupIDRefs) {
-				return false, nil
-			}
-			for _, objValue := range obj.Spec.ForProvider.VPCOptions.SecurityGroupIDs {
-				found := false
-				for _, valueOut := range out.DomainStatus.VPCOptions.SecurityGroupIds {
-					if aws.StringValue(objValue) == aws.StringValue(valueOut) {
-						found = true
-						break
-					}
-				}
-				if !found {
-					return false, nil
-				}
-
-			}
-			if len(out.DomainStatus.VPCOptions.SubnetIds) != len(obj.Spec.ForProvider.VPCOptions.SubnetIDs) {
-				return false, nil
-			}
-			for _, objValue := range obj.Spec.ForProvider.VPCOptions.SubnetIDs {
-				found := false
-				for _, valueOut := range out.DomainStatus.VPCOptions.SubnetIds {
-					if aws.StringValue(objValue) == aws.StringValue(valueOut) {
-						found = true
-						break
-					}
-				}
-				if !found {
-					return false, nil
-				}
-			}
-		}
-	} else if obj.Spec.ForProvider.VPCOptions != nil {
-		return false, nil
-	}
-
-	return true, nil
 }
 
 func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomainOutput) error { // nolint:gocyclo
@@ -1027,6 +786,11 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 		}
 	}
 
+	if resp.DomainStatus.EncryptionAtRestOptions != nil && cr.EncryptionAtRestOptions == nil {
+		f20 := &svcapitypes.CustomEncryptionAtRestOptions{}
+		cr.EncryptionAtRestOptions = f20
+	}
+
 	return nil
 }
 
@@ -1039,55 +803,524 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
+
+	stateInput := GenerateDescribeDomainInput(cr)
+	obj, err := e.client.DescribeDomainWithContext(ctx, stateInput)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.New(errDescribe)
+	}
+	needDomainConfigUpdate := false
 	input := svcsdk.UpdateDomainConfigInput{
-		AccessPolicies:  cr.Spec.ForProvider.AccessPolicies,
-		AdvancedOptions: cr.Spec.ForProvider.AdvancedOptions,
-		DomainName:      cr.Spec.ForProvider.Name,
+		DomainName: cr.Spec.ForProvider.Name,
+	}
+	if aws.StringValue(cr.Spec.ForProvider.AccessPolicies) != aws.StringValue(obj.DomainStatus.AccessPolicies) {
+		needDomainConfigUpdate = true
+		input.AccessPolicies = cr.Spec.ForProvider.AccessPolicies
+	}
+	if !isMapUpToDate(cr.Spec.ForProvider.AdvancedOptions, obj.DomainStatus.AdvancedOptions, []string{"override_main_response_version"}) {
+		needDomainConfigUpdate = true
+		input.AdvancedOptions = cr.Spec.ForProvider.AdvancedOptions
+		delete(input.AdvancedOptions, "override_main_response_version") // We need to ignore this
 	}
 
-	delete(input.AdvancedOptions, "override_main_response_version") // We need to ignore this
+	if !isAdvancedSecurityOptionsUpToDate(cr.Spec.ForProvider.AdvancedSecurityOptions, obj.DomainStatus.AdvancedSecurityOptions) {
+		needDomainConfigUpdate = true
+		input.AdvancedSecurityOptions = generateAdvancedSecurityOptionsInput(cr.Spec.ForProvider.AdvancedSecurityOptions)
+	}
 
-	if cr.Spec.ForProvider.AdvancedSecurityOptions != nil {
-		input.AdvancedSecurityOptions = &svcsdk.AdvancedSecurityOptionsInput_{
-			AnonymousAuthEnabled:        cr.Spec.ForProvider.AdvancedSecurityOptions.AnonymousAuthEnabled,
-			Enabled:                     cr.Spec.ForProvider.AdvancedSecurityOptions.Enabled,
-			InternalUserDatabaseEnabled: cr.Spec.ForProvider.AdvancedSecurityOptions.InternalUserDatabaseEnabled,
+	if !isClusterConfigUpToDate(cr.Spec.ForProvider.ClusterConfig, obj.DomainStatus.ClusterConfig) {
+		needDomainConfigUpdate = true
+		input.ClusterConfig = generateClusterConfig(cr.Spec.ForProvider.ClusterConfig)
+	}
+
+	if !isAutoTuneOptionsUpToDate(cr.Spec.ForProvider.AutoTuneOptions, obj.DomainStatus.AutoTuneOptions) {
+		needDomainConfigUpdate = true
+		input.AutoTuneOptions = generateAutotuneOptionsInput(cr.Spec.ForProvider.AutoTuneOptions)
+	}
+
+	if !isCognitoOptionsUpToDate(cr.Spec.ForProvider.CognitoOptions, obj.DomainStatus.CognitoOptions) {
+		needDomainConfigUpdate = true
+		input.CognitoOptions = generateCognitoOptions(cr.Spec.ForProvider.CognitoOptions)
+	}
+
+	if !isDomainEndpointOptionsUpToDate(cr.Spec.ForProvider.DomainEndpointOptions, obj.DomainStatus.DomainEndpointOptions) {
+		needDomainConfigUpdate = true
+		input.DomainEndpointOptions = generateDomainEndpointsOptions(cr.Spec.ForProvider.DomainEndpointOptions)
+	}
+
+	if !isEbsOptionsUpToDate(cr.Spec.ForProvider.EBSOptions, obj.DomainStatus.EBSOptions) {
+		needDomainConfigUpdate = true
+		input.EBSOptions = generateEbsOptions(cr.Spec.ForProvider.EBSOptions)
+	}
+
+	if !isLogPublishingOptionsUpToDate(cr.Spec.ForProvider.LogPublishingOptions, obj.DomainStatus.LogPublishingOptions) {
+		needDomainConfigUpdate = true
+		input.LogPublishingOptions = generateLogPublishingOptions(cr.Spec.ForProvider.LogPublishingOptions)
+	}
+
+	if !isNodeToNodeEncryptionOptionsUpToDate(cr.Spec.ForProvider.NodeToNodeEncryptionOptions, obj.DomainStatus.NodeToNodeEncryptionOptions) {
+		needDomainConfigUpdate = true
+		input.NodeToNodeEncryptionOptions = generateNodeToNodeEncryptionOptions(cr.Spec.ForProvider.NodeToNodeEncryptionOptions)
+	}
+
+	if !isSnapshotOptionsUpToDate(cr.Spec.ForProvider.SnapshotOptions, obj.DomainStatus.SnapshotOptions) {
+		needDomainConfigUpdate = true
+		input.SnapshotOptions = generateSnapshotOptions(cr.Spec.ForProvider.SnapshotOptions)
+	}
+
+	if !isVpcOptionsUpToDate(cr.Spec.ForProvider.VPCOptions, obj.DomainStatus.VPCOptions) {
+		needDomainConfigUpdate = true
+		input.VPCOptions = generateVpcOptions(cr.Spec.ForProvider.VPCOptions)
+	}
+
+	if !isEncryptionAtRestUpToDate(cr.Spec.ForProvider.EncryptionAtRestOptions, obj.DomainStatus.EncryptionAtRestOptions) {
+		needDomainConfigUpdate = true
+		input.EncryptionAtRestOptions = generateEncryptionAtRestOptions(cr.Spec.ForProvider.EncryptionAtRestOptions)
+	}
+
+	if needDomainConfigUpdate {
+		_, err := e.client.UpdateDomainConfigWithContext(ctx, &input)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
 		}
 
-		if cr.Spec.ForProvider.AdvancedSecurityOptions.MasterUserOptions != nil {
-			input.AdvancedSecurityOptions.MasterUserOptions = &svcsdk.MasterUserOptions{
-				MasterUserARN:      cr.Spec.ForProvider.AdvancedSecurityOptions.MasterUserOptions.MasterUserARN,
-				MasterUserName:     cr.Spec.ForProvider.AdvancedSecurityOptions.MasterUserOptions.MasterUserName,
-				MasterUserPassword: cr.Spec.ForProvider.AdvancedSecurityOptions.MasterUserOptions.MasterUserPassword,
+	}
+
+	if !*obj.DomainStatus.Processing && !*obj.DomainStatus.UpgradeProcessing && aws.StringValue(cr.Spec.ForProvider.EngineVersion) != aws.StringValue(obj.DomainStatus.EngineVersion) {
+		// We cant update when processing or already updating so we dont update now
+		upgradeInput := &svcsdk.UpgradeDomainInput{
+			DomainName:    cr.Spec.ForProvider.Name,
+			TargetVersion: cr.Spec.ForProvider.EngineVersion,
+		}
+		//if !isMapUpToDate(cr.Spec.ForProvider.AdvancedOptions, obj.DomainStatus.AdvancedOptions) {
+		if overrideMainResponseVersion, ok := cr.Spec.ForProvider.AdvancedOptions["override_main_response_version"]; ok {
+			upgradeInput.AdvancedOptions = map[string]*string{
+				"override_main_response_version": overrideMainResponseVersion,
+			}
+		}
+		//}
+
+		_, err := e.client.UpgradeDomainWithContext(ctx, upgradeInput)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+
+	}
+
+	return managed.ExternalUpdate{}, nil
+}
+
+func isMapUpToDate(wanted, current map[string]*string, ignore []string) bool {
+	if len(wanted) != len(current) {
+		return false
+	}
+out:
+	for key, value := range wanted {
+		for _, ign := range ignore {
+			if ign == key {
+				continue out
+			}
+		}
+		if aws.StringValue(current[key]) != aws.StringValue(value) {
+			return false
+		}
+	}
+	return true
+}
+
+func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptionsInput, current *svcsdk.AdvancedSecurityOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.BoolValue(wanted.AnonymousAuthEnabled) != aws.BoolValue(current.AnonymousAuthEnabled) {
+			return false
+		}
+		if aws.BoolValue(wanted.Enabled) != aws.BoolValue(current.Enabled) {
+			return false
+		}
+		if aws.BoolValue(wanted.InternalUserDatabaseEnabled) != aws.BoolValue(current.InternalUserDatabaseEnabled) {
+			return false
+		}
+		if wanted.SAMLOptions != nil {
+			if current.SAMLOptions == nil {
+				return false
+			}
+			if aws.BoolValue(wanted.SAMLOptions.Enabled) != aws.BoolValue(current.SAMLOptions.Enabled) {
+				return false
+			}
+			if aws.StringValue(current.SAMLOptions.RolesKey) != aws.StringValue(wanted.SAMLOptions.RolesKey) {
+				return false
+			}
+			if aws.Int64Value(current.SAMLOptions.SessionTimeoutMinutes) != aws.Int64Value(wanted.SAMLOptions.SessionTimeoutMinutes) {
+				return false
+			}
+			if aws.StringValue(current.SAMLOptions.SubjectKey) != aws.StringValue(wanted.SAMLOptions.SubjectKey) {
+				return false
+			}
+			if wanted.SAMLOptions.IDp != nil {
+				if current.SAMLOptions.Idp == nil {
+					return false
+				}
+				if aws.StringValue(wanted.SAMLOptions.IDp.EntityID) != aws.StringValue(current.SAMLOptions.Idp.EntityId) {
+					return false
+				}
+				if aws.StringValue(wanted.SAMLOptions.IDp.MetadataContent) != aws.StringValue(current.SAMLOptions.Idp.MetadataContent) {
+					return false
+				}
+			} else if current.SAMLOptions != nil {
+				return false
+			}
+
+		} else if current.SAMLOptions != nil {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.ClusterConfig) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if wanted.ColdStorageOptions != nil {
+			if current.ColdStorageOptions == nil {
+				return false
+			}
+			if aws.BoolValue(wanted.ColdStorageOptions.Enabled) != aws.BoolValue(current.ColdStorageOptions.Enabled) {
+				return false
+			}
+		} else if current.ColdStorageOptions != nil {
+			return false
+		}
+		if aws.Int64Value(wanted.DedicatedMasterCount) != aws.Int64Value(current.DedicatedMasterCount) {
+			return false
+		}
+		if aws.BoolValue(wanted.DedicatedMasterEnabled) != aws.BoolValue(current.DedicatedMasterEnabled) {
+			return false
+		}
+		if aws.StringValue(wanted.DedicatedMasterType) != aws.StringValue(current.DedicatedMasterType) {
+			return false
+		}
+		if aws.Int64Value(wanted.InstanceCount) != aws.Int64Value(current.InstanceCount) {
+			return false
+		}
+		if aws.StringValue(wanted.InstanceType) != aws.StringValue(current.InstanceType) {
+			return false
+		}
+		if aws.Int64Value(wanted.WarmCount) != aws.Int64Value(current.WarmCount) {
+			return false
+		}
+		if aws.BoolValue(wanted.WarmEnabled) != aws.BoolValue(current.WarmEnabled) {
+			return false
+		}
+		if aws.StringValue(wanted.WarmType) != aws.StringValue(current.WarmType) {
+			return false
+		}
+		if aws.BoolValue(current.ZoneAwarenessEnabled) != aws.BoolValue(current.ZoneAwarenessEnabled) {
+			return false
+		}
+		if wanted.ZoneAwarenessConfig != nil {
+			if current.ZoneAwarenessConfig == nil {
+				return false
+			}
+			if aws.Int64Value(wanted.ZoneAwarenessConfig.AvailabilityZoneCount) != aws.Int64Value(current.ZoneAwarenessConfig.AvailabilityZoneCount) {
+				return false
+			}
+		} else if current.ZoneAwarenessConfig != nil {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isAutoTuneOptionsUpToDate(wanted *svcapitypes.AutoTuneOptionsInput, current *svcsdk.AutoTuneOptionsOutput_) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if wanted.DesiredState != nil {
+			if aws.StringValue(wanted.DesiredState) != aws.StringValue(current.State) {
+				return false
+			}
+		}
+	} else if current != nil {
+		return false
+	}
+
+	return true
+}
+
+func isCognitoOptionsUpToDate(wanted *svcapitypes.CognitoOptions, current *svcsdk.CognitoOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.BoolValue(wanted.Enabled) != aws.BoolValue(current.Enabled) {
+			return false
+		}
+		if aws.StringValue(wanted.IdentityPoolID) != aws.StringValue(current.IdentityPoolId) {
+			return false
+		}
+		if aws.StringValue(wanted.RoleARN) != aws.StringValue(current.RoleArn) {
+			return false
+		}
+		if aws.StringValue(wanted.UserPoolID) != aws.StringValue(current.UserPoolId) {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isDomainEndpointOptionsUpToDate(wanted *svcapitypes.DomainEndpointOptions, current *svcsdk.DomainEndpointOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.StringValue(wanted.CustomEndpoint) != aws.StringValue(current.CustomEndpoint) {
+			return false
+		}
+		if aws.StringValue(wanted.CustomEndpointCertificateARN) != aws.StringValue(current.CustomEndpointCertificateArn) {
+			return false
+		}
+		if aws.BoolValue(wanted.CustomEndpointEnabled) != aws.BoolValue(current.CustomEndpointEnabled) {
+			return false
+		}
+		if aws.BoolValue(wanted.EnforceHTTPS) != aws.BoolValue(current.EnforceHTTPS) {
+			return false
+		}
+		if aws.StringValue(wanted.TLSSecurityPolicy) != aws.StringValue(current.TLSSecurityPolicy) {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func generateAdvancedSecurityOptionsInput(wanted *svcapitypes.AdvancedSecurityOptionsInput) *svcsdk.AdvancedSecurityOptionsInput_ {
+	if wanted != nil {
+		output := &svcsdk.AdvancedSecurityOptionsInput_{
+			AnonymousAuthEnabled:        wanted.AnonymousAuthEnabled,
+			Enabled:                     wanted.Enabled,
+			InternalUserDatabaseEnabled: wanted.InternalUserDatabaseEnabled,
+		}
+
+		if wanted.MasterUserOptions != nil {
+			output.MasterUserOptions = &svcsdk.MasterUserOptions{
+				MasterUserARN:      wanted.MasterUserOptions.MasterUserARN,
+				MasterUserName:     wanted.MasterUserOptions.MasterUserName,
+				MasterUserPassword: wanted.MasterUserOptions.MasterUserPassword,
 			}
 		}
 
-		if cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions != nil {
-			input.AdvancedSecurityOptions.SAMLOptions = &svcsdk.SAMLOptionsInput_{
-				Enabled:               cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.Enabled,
-				MasterBackendRole:     cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.MasterBackendRole,
-				MasterUserName:        cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.MasterUserName,
-				RolesKey:              cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.RolesKey,
-				SessionTimeoutMinutes: cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.SessionTimeoutMinutes,
-				SubjectKey:            cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.SubjectKey,
+		if wanted.SAMLOptions != nil {
+			output.SAMLOptions = &svcsdk.SAMLOptionsInput_{
+				Enabled:               wanted.SAMLOptions.Enabled,
+				MasterBackendRole:     wanted.SAMLOptions.MasterBackendRole,
+				MasterUserName:        wanted.SAMLOptions.MasterUserName,
+				RolesKey:              wanted.SAMLOptions.RolesKey,
+				SessionTimeoutMinutes: wanted.SAMLOptions.SessionTimeoutMinutes,
+				SubjectKey:            wanted.SAMLOptions.SubjectKey,
 			}
 
-			if cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp != nil {
-				input.AdvancedSecurityOptions.SAMLOptions.Idp = &svcsdk.SAMLIdp{
-					EntityId:        cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp.EntityID,
-					MetadataContent: cr.Spec.ForProvider.AdvancedSecurityOptions.SAMLOptions.IDp.MetadataContent,
+			if wanted.SAMLOptions.IDp != nil {
+				output.SAMLOptions.Idp = &svcsdk.SAMLIdp{
+					EntityId:        wanted.SAMLOptions.IDp.EntityID,
+					MetadataContent: wanted.SAMLOptions.IDp.MetadataContent,
 				}
 			}
 		}
+		return output
+	}
+	return nil
+}
+
+func isEbsOptionsUpToDate(wanted *svcapitypes.EBSOptions, current *svcsdk.EBSOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.BoolValue(wanted.EBSEnabled) != aws.BoolValue(current.EBSEnabled) {
+			return false
+		}
+		if aws.Int64Value(wanted.IOPS) != aws.Int64Value(current.Iops) {
+			return false
+		}
+		if aws.Int64Value(wanted.VolumeSize) != aws.Int64Value(current.VolumeSize) {
+			return false
+		}
+		if aws.StringValue(wanted.VolumeType) != aws.StringValue(current.VolumeType) {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isLogPublishingOptionsUpToDate(wanted map[string]*svcapitypes.LogPublishingOption, current map[string]*svcsdk.LogPublishingOption) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if len(wanted) != len(current) {
+			return false
+		}
+		for key, value := range wanted {
+			if aws.StringValue(value.CloudWatchLogsLogGroupARN) != aws.StringValue(current[key].CloudWatchLogsLogGroupArn) {
+				return false
+			}
+			if aws.BoolValue(value.Enabled) != aws.BoolValue(current[key].Enabled) {
+				return false
+			}
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isNodeToNodeEncryptionOptionsUpToDate(wanted *svcapitypes.NodeToNodeEncryptionOptions, current *svcsdk.NodeToNodeEncryptionOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.BoolValue(wanted.Enabled) != aws.BoolValue(current.Enabled) {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isSnapshotOptionsUpToDate(wanted *svcapitypes.SnapshotOptions, current *svcsdk.SnapshotOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.Int64Value(wanted.AutomatedSnapshotStartHour) != aws.Int64Value(current.AutomatedSnapshotStartHour) {
+			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svcsdk.VPCDerivedInfo) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if len(wanted.SecurityGroupIDs) != len(current.SecurityGroupIds) {
+			return false
+		}
+		for _, objValue := range wanted.SecurityGroupIDs {
+			found := false
+			for _, valueOut := range current.SecurityGroupIds {
+				if aws.StringValue(objValue) == aws.StringValue(valueOut) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+		if len(wanted.SubnetIDs) != len(wanted.SubnetIDs) {
+			return false
+		}
+		for _, objValue := range wanted.SubnetIDs {
+			found := false
+			for _, valueOut := range current.SubnetIds {
+				if aws.StringValue(objValue) == aws.StringValue(valueOut) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+func isEncryptionAtRestUpToDate(wanted *svcapitypes.CustomEncryptionAtRestOptions, current *svcsdk.EncryptionAtRestOptions) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if aws.BoolValue(wanted.Enabled) != aws.BoolValue(current.Enabled) {
+			return false
+		}
+		spriltedKey := strings.Split(aws.StringValue(current.KmsKeyId), "/")
+		currentShortKeyId := ""
+		if len(spriltedKey) > 0 {
+			currentShortKeyId = spriltedKey[len(spriltedKey)-1]
+		}
+
+		if aws.StringValue(wanted.KMSKeyID) != currentShortKeyId {
+			return false
+		}
+
+	} else if current != nil {
+		return false
 	}
 
-	if cr.Spec.ForProvider.AutoTuneOptions != nil {
-		input.AutoTuneOptions = &svcsdk.AutoTuneOptions{
-			DesiredState: cr.Spec.ForProvider.AutoTuneOptions.DesiredState,
+	return true
+}
+
+func generateClusterConfig(wanted *svcapitypes.ClusterConfig) *svcsdk.ClusterConfig {
+	if wanted != nil {
+		output := &svcsdk.ClusterConfig{
+			DedicatedMasterCount:   wanted.DedicatedMasterCount,
+			DedicatedMasterEnabled: wanted.DedicatedMasterEnabled,
+			DedicatedMasterType:    wanted.DedicatedMasterType,
+			InstanceCount:          wanted.InstanceCount,
+			InstanceType:           wanted.InstanceType,
+			WarmCount:              wanted.WarmCount,
+			WarmEnabled:            wanted.WarmEnabled,
+			WarmType:               wanted.WarmType,
+			ZoneAwarenessEnabled:   wanted.ZoneAwarenessEnabled,
 		}
-		if cr.Spec.ForProvider.AutoTuneOptions.MaintenanceSchedules != nil {
+
+		if wanted.ColdStorageOptions != nil {
+			output.ColdStorageOptions = &svcsdk.ColdStorageOptions{
+				Enabled: wanted.ColdStorageOptions.Enabled,
+			}
+		}
+		if wanted.ZoneAwarenessConfig != nil {
+			output.ZoneAwarenessConfig = &svcsdk.ZoneAwarenessConfig{
+				AvailabilityZoneCount: wanted.ZoneAwarenessConfig.AvailabilityZoneCount,
+			}
+		}
+		return output
+
+	}
+	return nil
+}
+
+func generateAutotuneOptionsInput(wanted *svcapitypes.AutoTuneOptionsInput) *svcsdk.AutoTuneOptions {
+	if wanted != nil {
+		output := &svcsdk.AutoTuneOptions{
+			DesiredState: wanted.DesiredState,
+		}
+		if wanted.MaintenanceSchedules != nil {
 			msList := []*svcsdk.AutoTuneMaintenanceSchedule{}
-			for _, ms := range cr.Spec.ForProvider.AutoTuneOptions.MaintenanceSchedules {
+			for _, ms := range wanted.MaintenanceSchedules {
 				msNew := &svcsdk.AutoTuneMaintenanceSchedule{
 					CronExpressionForRecurrence: ms.CronExpressionForRecurrence,
 				}
@@ -1102,371 +1335,107 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 				}
 				msList = append(msList, msNew)
 			}
-			input.AutoTuneOptions.MaintenanceSchedules = msList
+			output.MaintenanceSchedules = msList
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.ClusterConfig != nil {
-
-		input.ClusterConfig = &svcsdk.ClusterConfig{
-			DedicatedMasterCount:   cr.Spec.ForProvider.ClusterConfig.DedicatedMasterCount,
-			DedicatedMasterEnabled: cr.Spec.ForProvider.ClusterConfig.DedicatedMasterEnabled,
-			DedicatedMasterType:    cr.Spec.ForProvider.ClusterConfig.DedicatedMasterType,
-			InstanceCount:          cr.Spec.ForProvider.ClusterConfig.InstanceCount,
-			InstanceType:           cr.Spec.ForProvider.ClusterConfig.InstanceType,
-			WarmCount:              cr.Spec.ForProvider.ClusterConfig.WarmCount,
-			WarmEnabled:            cr.Spec.ForProvider.ClusterConfig.WarmEnabled,
-			WarmType:               cr.Spec.ForProvider.ClusterConfig.WarmType,
-			ZoneAwarenessEnabled:   cr.Spec.ForProvider.ClusterConfig.ZoneAwarenessEnabled,
+func generateCognitoOptions(wanted *svcapitypes.CognitoOptions) *svcsdk.CognitoOptions {
+	if wanted != nil {
+		output := &svcsdk.CognitoOptions{
+			Enabled:        wanted.Enabled,
+			IdentityPoolId: wanted.IdentityPoolID,
+			RoleArn:        wanted.RoleARN,
+			UserPoolId:     wanted.UserPoolID,
 		}
-
-		if cr.Spec.ForProvider.ClusterConfig.ColdStorageOptions != nil {
-			input.ClusterConfig.ColdStorageOptions = &svcsdk.ColdStorageOptions{
-				Enabled: cr.Spec.ForProvider.ClusterConfig.ColdStorageOptions.Enabled,
-			}
-		}
-		if cr.Spec.ForProvider.ClusterConfig.ZoneAwarenessConfig != nil {
-			input.ClusterConfig.ZoneAwarenessConfig = &svcsdk.ZoneAwarenessConfig{
-				AvailabilityZoneCount: cr.Spec.ForProvider.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount,
-			}
-		}
-
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.CognitoOptions != nil {
-		input.CognitoOptions = &svcsdk.CognitoOptions{
-			Enabled:        cr.Spec.ForProvider.CognitoOptions.Enabled,
-			IdentityPoolId: cr.Spec.ForProvider.CognitoOptions.IdentityPoolID,
-			RoleArn:        cr.Spec.ForProvider.CognitoOptions.RoleARN,
-			UserPoolId:     cr.Spec.ForProvider.CognitoOptions.UserPoolID,
+func generateDomainEndpointsOptions(wanted *svcapitypes.DomainEndpointOptions) *svcsdk.DomainEndpointOptions {
+	if wanted != nil {
+		output := &svcsdk.DomainEndpointOptions{
+			CustomEndpoint:               wanted.CustomEndpoint,
+			CustomEndpointCertificateArn: wanted.CustomEndpointCertificateARN,
+			CustomEndpointEnabled:        wanted.CustomEndpointEnabled,
+			EnforceHTTPS:                 wanted.EnforceHTTPS,
+			TLSSecurityPolicy:            wanted.TLSSecurityPolicy,
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.DomainEndpointOptions != nil {
-		input.DomainEndpointOptions = &svcsdk.DomainEndpointOptions{
-			CustomEndpoint:               cr.Spec.ForProvider.DomainEndpointOptions.CustomEndpoint,
-			CustomEndpointCertificateArn: cr.Spec.ForProvider.DomainEndpointOptions.CustomEndpointCertificateARN,
-			CustomEndpointEnabled:        cr.Spec.ForProvider.DomainEndpointOptions.CustomEndpointEnabled,
-			EnforceHTTPS:                 cr.Spec.ForProvider.DomainEndpointOptions.EnforceHTTPS,
-			TLSSecurityPolicy:            cr.Spec.ForProvider.DomainEndpointOptions.TLSSecurityPolicy,
+func generateEbsOptions(wanted *svcapitypes.EBSOptions) *svcsdk.EBSOptions {
+	if wanted != nil {
+
+		output := &svcsdk.EBSOptions{
+			EBSEnabled: wanted.EBSEnabled,
+			Iops:       wanted.IOPS,
+			VolumeSize: wanted.VolumeSize,
+			VolumeType: wanted.VolumeType,
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.EBSOptions != nil {
-		input.EBSOptions = &svcsdk.EBSOptions{
-			EBSEnabled: cr.Spec.ForProvider.EBSOptions.EBSEnabled,
-			Iops:       cr.Spec.ForProvider.EBSOptions.IOPS,
-			VolumeSize: cr.Spec.ForProvider.EBSOptions.VolumeSize,
-			VolumeType: cr.Spec.ForProvider.EBSOptions.VolumeType,
-		}
-	}
+func generateLogPublishingOptions(wanted map[string]*svcapitypes.LogPublishingOption) map[string]*svcsdk.LogPublishingOption {
+	if wanted != nil {
+		output := map[string]*svcsdk.LogPublishingOption{}
 
-	if cr.Spec.ForProvider.EncryptionAtRestOptions != nil {
-		input.EncryptionAtRestOptions = &svcsdk.EncryptionAtRestOptions{
-			Enabled:  cr.Spec.ForProvider.EncryptionAtRestOptions.Enabled,
-			KmsKeyId: cr.Spec.ForProvider.EncryptionAtRestOptions.KMSKeyID,
-		}
-	}
-
-	if cr.Spec.ForProvider.LogPublishingOptions != nil {
-		input.LogPublishingOptions = map[string]*svcsdk.LogPublishingOption{}
-
-		for key, value := range cr.Spec.ForProvider.LogPublishingOptions {
-			input.LogPublishingOptions[key] = &svcsdk.LogPublishingOption{
+		for key, value := range wanted {
+			output[key] = &svcsdk.LogPublishingOption{
 				CloudWatchLogsLogGroupArn: value.CloudWatchLogsLogGroupARN,
 				Enabled:                   value.Enabled,
 			}
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.NodeToNodeEncryptionOptions != nil {
-		input.NodeToNodeEncryptionOptions = &svcsdk.NodeToNodeEncryptionOptions{
-			Enabled: cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled,
+func generateNodeToNodeEncryptionOptions(wanted *svcapitypes.NodeToNodeEncryptionOptions) *svcsdk.NodeToNodeEncryptionOptions {
+	if wanted != nil {
+		output := &svcsdk.NodeToNodeEncryptionOptions{
+			Enabled: wanted.Enabled,
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.SnapshotOptions != nil {
-		input.SnapshotOptions = &svcsdk.SnapshotOptions{
-			AutomatedSnapshotStartHour: cr.Spec.ForProvider.SnapshotOptions.AutomatedSnapshotStartHour,
+func generateSnapshotOptions(wanted *svcapitypes.SnapshotOptions) *svcsdk.SnapshotOptions {
+	if wanted != nil {
+		output := &svcsdk.SnapshotOptions{
+			AutomatedSnapshotStartHour: wanted.AutomatedSnapshotStartHour,
 		}
+		return output
 	}
+	return nil
+}
 
-	if cr.Spec.ForProvider.VPCOptions != nil {
-		input.VPCOptions = &svcsdk.VPCOptions{
-			SecurityGroupIds: cr.Spec.ForProvider.VPCOptions.SecurityGroupIDs,
-			SubnetIds:        cr.Spec.ForProvider.VPCOptions.SubnetIDs,
+func generateVpcOptions(wanted *svcapitypes.CustomVPCDerivedInfo) *svcsdk.VPCOptions {
+	if wanted != nil {
+		output := &svcsdk.VPCOptions{
+			SecurityGroupIds: wanted.SecurityGroupIDs,
+			SubnetIds:        wanted.SubnetIDs,
 		}
+		return output
 	}
+	return nil
+}
 
-	resp, err := e.client.UpdateDomainConfigWithContext(ctx, &input)
-	if err != nil {
-		return managed.ExternalUpdate{}, err
+func generateEncryptionAtRestOptions(wanted *svcapitypes.CustomEncryptionAtRestOptions) *svcsdk.EncryptionAtRestOptions {
+	if wanted != nil {
+		output := &svcsdk.EncryptionAtRestOptions{
+			Enabled:  wanted.Enabled,
+			KmsKeyId: wanted.KMSKeyID,
+		}
+		return output
 	}
-
-	if resp.DomainConfig.AccessPolicies != nil && resp.DomainConfig.AccessPolicies.Options != nil {
-		cr.Spec.ForProvider.AccessPolicies = resp.DomainConfig.AccessPolicies.Options
-	} else {
-		cr.Spec.ForProvider.AccessPolicies = nil
-	}
-	if resp.DomainConfig.AdvancedOptions != nil && resp.DomainConfig.AdvancedOptions.Options != nil {
-		f2 := map[string]*string{}
-		for f2key, f2valiter := range resp.DomainConfig.AdvancedOptions.Options {
-			f2val := *f2valiter
-			f2[f2key] = &f2val
-		}
-		cr.Spec.ForProvider.AdvancedOptions = f2
-	} else {
-		cr.Spec.ForProvider.AdvancedOptions = nil
-	}
-	if resp.DomainConfig.AdvancedSecurityOptions != nil && resp.DomainConfig.AdvancedSecurityOptions.Options != nil {
-		f3 := &svcapitypes.AdvancedSecurityOptionsInput{}
-		if resp.DomainConfig.AdvancedSecurityOptions.Options.AnonymousAuthEnabled != nil {
-			f3.AnonymousAuthEnabled = resp.DomainConfig.AdvancedSecurityOptions.Options.AnonymousAuthEnabled
-		}
-		if resp.DomainConfig.AdvancedSecurityOptions.Options.Enabled != nil {
-			f3.Enabled = resp.DomainConfig.AdvancedSecurityOptions.Options.Enabled
-		}
-		if resp.DomainConfig.AdvancedSecurityOptions.Options.InternalUserDatabaseEnabled != nil {
-			f3.InternalUserDatabaseEnabled = resp.DomainConfig.AdvancedSecurityOptions.Options.InternalUserDatabaseEnabled
-		}
-		if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions != nil {
-			f3f4 := &svcapitypes.SAMLOptionsInput{}
-			if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Enabled != nil {
-				f3f4.Enabled = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Enabled
-			}
-			if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Idp != nil {
-				f3f4f1 := &svcapitypes.SAMLIDp{}
-				if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Idp.EntityId != nil {
-					f3f4f1.EntityID = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Idp.EntityId
-				}
-				if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Idp.MetadataContent != nil {
-					f3f4f1.MetadataContent = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.Idp.MetadataContent
-				}
-				f3f4.IDp = f3f4f1
-			}
-			if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.RolesKey != nil {
-				f3f4.RolesKey = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.RolesKey
-			}
-			if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.SessionTimeoutMinutes != nil {
-				f3f4.SessionTimeoutMinutes = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.SessionTimeoutMinutes
-			}
-			if resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.SubjectKey != nil {
-				f3f4.SubjectKey = resp.DomainConfig.AdvancedSecurityOptions.Options.SAMLOptions.SubjectKey
-			}
-			f3.SAMLOptions = f3f4
-		}
-		cr.Spec.ForProvider.AdvancedSecurityOptions = f3
-	} else {
-		cr.Spec.ForProvider.AdvancedSecurityOptions = nil
-	}
-	if resp.DomainConfig.AutoTuneOptions != nil {
-		f4 := &svcapitypes.AutoTuneOptionsInput{}
-		cr.Spec.ForProvider.AutoTuneOptions = f4
-	} else {
-		cr.Spec.ForProvider.AutoTuneOptions = nil
-	}
-	if resp.DomainConfig.ChangeProgressDetails != nil {
-		f5 := &svcapitypes.ChangeProgressDetails{}
-		if resp.DomainConfig.ChangeProgressDetails.ChangeId != nil {
-			f5.ChangeID = resp.DomainConfig.ChangeProgressDetails.ChangeId
-		}
-		if resp.DomainConfig.ChangeProgressDetails.Message != nil {
-			f5.Message = resp.DomainConfig.ChangeProgressDetails.Message
-		}
-		cr.Status.AtProvider.ChangeProgressDetails = f5
-	} else {
-		cr.Status.AtProvider.ChangeProgressDetails = nil
-	}
-	if resp.DomainConfig.ClusterConfig != nil && resp.DomainConfig.ClusterConfig.Options != nil {
-		f6 := &svcapitypes.ClusterConfig{}
-		if resp.DomainConfig.ClusterConfig.Options.ColdStorageOptions != nil {
-			f6f0 := &svcapitypes.ColdStorageOptions{}
-			if resp.DomainConfig.ClusterConfig.Options.ColdStorageOptions.Enabled != nil {
-				f6f0.Enabled = resp.DomainConfig.ClusterConfig.Options.ColdStorageOptions.Enabled
-			}
-			f6.ColdStorageOptions = f6f0
-		}
-		if resp.DomainConfig.ClusterConfig.Options.DedicatedMasterCount != nil {
-			f6.DedicatedMasterCount = resp.DomainConfig.ClusterConfig.Options.DedicatedMasterCount
-		}
-		if resp.DomainConfig.ClusterConfig.Options.DedicatedMasterEnabled != nil {
-			f6.DedicatedMasterEnabled = resp.DomainConfig.ClusterConfig.Options.DedicatedMasterEnabled
-		}
-		if resp.DomainConfig.ClusterConfig.Options.DedicatedMasterType != nil {
-			f6.DedicatedMasterType = resp.DomainConfig.ClusterConfig.Options.DedicatedMasterType
-		}
-		if resp.DomainConfig.ClusterConfig.Options.InstanceCount != nil {
-			f6.InstanceCount = resp.DomainConfig.ClusterConfig.Options.InstanceCount
-		}
-		if resp.DomainConfig.ClusterConfig.Options.InstanceType != nil {
-			f6.InstanceType = resp.DomainConfig.ClusterConfig.Options.InstanceType
-		}
-		if resp.DomainConfig.ClusterConfig.Options.WarmCount != nil {
-			f6.WarmCount = resp.DomainConfig.ClusterConfig.Options.WarmCount
-		}
-		if resp.DomainConfig.ClusterConfig.Options.WarmEnabled != nil {
-			f6.WarmEnabled = resp.DomainConfig.ClusterConfig.Options.WarmEnabled
-		}
-		if resp.DomainConfig.ClusterConfig.Options.WarmType != nil {
-			f6.WarmType = resp.DomainConfig.ClusterConfig.Options.WarmType
-		}
-		if resp.DomainConfig.ClusterConfig.Options.ZoneAwarenessConfig != nil {
-			f6f9 := &svcapitypes.ZoneAwarenessConfig{}
-			if resp.DomainConfig.ClusterConfig.Options.ZoneAwarenessConfig.AvailabilityZoneCount != nil {
-				f6f9.AvailabilityZoneCount = resp.DomainConfig.ClusterConfig.Options.ZoneAwarenessConfig.AvailabilityZoneCount
-			}
-			f6.ZoneAwarenessConfig = f6f9
-		}
-		if resp.DomainConfig.ClusterConfig.Options.ZoneAwarenessEnabled != nil {
-			f6.ZoneAwarenessEnabled = resp.DomainConfig.ClusterConfig.Options.ZoneAwarenessEnabled
-		}
-		cr.Spec.ForProvider.ClusterConfig = f6
-	} else {
-		cr.Spec.ForProvider.ClusterConfig = nil
-	}
-	if resp.DomainConfig.CognitoOptions != nil && resp.DomainConfig.CognitoOptions.Options != nil {
-		f7 := &svcapitypes.CognitoOptions{}
-		if resp.DomainConfig.CognitoOptions.Options.Enabled != nil {
-			f7.Enabled = resp.DomainConfig.CognitoOptions.Options.Enabled
-		}
-		if resp.DomainConfig.CognitoOptions.Options.IdentityPoolId != nil {
-			f7.IdentityPoolID = resp.DomainConfig.CognitoOptions.Options.IdentityPoolId
-		}
-		if resp.DomainConfig.CognitoOptions.Options.RoleArn != nil {
-			f7.RoleARN = resp.DomainConfig.CognitoOptions.Options.RoleArn
-		}
-		if resp.DomainConfig.CognitoOptions.Options.UserPoolId != nil {
-			f7.UserPoolID = resp.DomainConfig.CognitoOptions.Options.UserPoolId
-		}
-		cr.Spec.ForProvider.CognitoOptions = f7
-	} else {
-		cr.Spec.ForProvider.CognitoOptions = nil
-	}
-
-	if resp.DomainConfig.DomainEndpointOptions != nil && resp.DomainConfig.DomainEndpointOptions.Options != nil {
-		f10 := &svcapitypes.DomainEndpointOptions{}
-		if resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpoint != nil {
-			f10.CustomEndpoint = resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpoint
-		}
-		if resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpointCertificateArn != nil {
-			f10.CustomEndpointCertificateARN = resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpointCertificateArn
-		}
-		if resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpointEnabled != nil {
-			f10.CustomEndpointEnabled = resp.DomainConfig.DomainEndpointOptions.Options.CustomEndpointEnabled
-		}
-		if resp.DomainConfig.DomainEndpointOptions.Options.EnforceHTTPS != nil {
-			f10.EnforceHTTPS = resp.DomainConfig.DomainEndpointOptions.Options.EnforceHTTPS
-		}
-		if resp.DomainConfig.DomainEndpointOptions.Options.TLSSecurityPolicy != nil {
-			f10.TLSSecurityPolicy = resp.DomainConfig.DomainEndpointOptions.Options.TLSSecurityPolicy
-		}
-		cr.Spec.ForProvider.DomainEndpointOptions = f10
-	} else {
-		cr.Spec.ForProvider.DomainEndpointOptions = nil
-	}
-	if resp.DomainConfig.EBSOptions != nil && resp.DomainConfig.EBSOptions.Options != nil {
-		f13 := &svcapitypes.EBSOptions{}
-		if resp.DomainConfig.EBSOptions.Options.EBSEnabled != nil {
-			f13.EBSEnabled = resp.DomainConfig.EBSOptions.Options.EBSEnabled
-		}
-		if resp.DomainConfig.EBSOptions.Options.Iops != nil {
-			f13.IOPS = resp.DomainConfig.EBSOptions.Options.Iops
-		}
-		if resp.DomainConfig.EBSOptions.Options.VolumeSize != nil {
-			f13.VolumeSize = resp.DomainConfig.EBSOptions.Options.VolumeSize
-		}
-		if resp.DomainConfig.EBSOptions.Options.VolumeType != nil {
-			f13.VolumeType = resp.DomainConfig.EBSOptions.Options.VolumeType
-		}
-		cr.Spec.ForProvider.EBSOptions = f13
-	} else {
-		cr.Spec.ForProvider.EBSOptions = nil
-	}
-	if resp.DomainConfig.EncryptionAtRestOptions != nil && resp.DomainConfig.EncryptionAtRestOptions.Options != nil {
-		f14 := &svcapitypes.EncryptionAtRestOptions{}
-		if resp.DomainConfig.EncryptionAtRestOptions.Options.Enabled != nil {
-			f14.Enabled = resp.DomainConfig.EncryptionAtRestOptions.Options.Enabled
-		}
-		if resp.DomainConfig.EncryptionAtRestOptions.Options.KmsKeyId != nil {
-			f14.KMSKeyID = resp.DomainConfig.EncryptionAtRestOptions.Options.KmsKeyId
-		}
-		cr.Status.AtProvider.EncryptionAtRestOptions = f14
-	} else {
-		cr.Status.AtProvider.EncryptionAtRestOptions = nil
-	}
-	if resp.DomainConfig.EngineVersion != nil && resp.DomainConfig.EngineVersion.Options != nil {
-		cr.Spec.ForProvider.EngineVersion = resp.DomainConfig.EngineVersion.Options
-	} else {
-		cr.Spec.ForProvider.EngineVersion = nil
-	}
-	if resp.DomainConfig.LogPublishingOptions != nil && resp.DomainConfig.LogPublishingOptions.Options != nil {
-		f18 := map[string]*svcapitypes.LogPublishingOption{}
-		for f18key, f18valiter := range resp.DomainConfig.LogPublishingOptions.Options {
-			f18val := &svcapitypes.LogPublishingOption{}
-			if f18valiter.CloudWatchLogsLogGroupArn != nil {
-				f18val.CloudWatchLogsLogGroupARN = f18valiter.CloudWatchLogsLogGroupArn
-			}
-			if f18valiter.Enabled != nil {
-				f18val.Enabled = f18valiter.Enabled
-			}
-			f18[f18key] = f18val
-		}
-		cr.Spec.ForProvider.LogPublishingOptions = f18
-	} else {
-		cr.Spec.ForProvider.LogPublishingOptions = nil
-	}
-	if resp.DomainConfig.NodeToNodeEncryptionOptions != nil && resp.DomainConfig.NodeToNodeEncryptionOptions.Options != nil {
-		f19 := &svcapitypes.NodeToNodeEncryptionOptions{}
-		if resp.DomainConfig.NodeToNodeEncryptionOptions.Options.Enabled != nil {
-			f19.Enabled = resp.DomainConfig.NodeToNodeEncryptionOptions.Options.Enabled
-		}
-		cr.Spec.ForProvider.NodeToNodeEncryptionOptions = f19
-	} else {
-		cr.Spec.ForProvider.NodeToNodeEncryptionOptions = nil
-	}
-
-	if resp.DomainConfig.SnapshotOptions != nil && resp.DomainConfig.SnapshotOptions.Options != nil {
-		f22 := &svcapitypes.SnapshotOptions{}
-		if resp.DomainConfig.SnapshotOptions.Options.AutomatedSnapshotStartHour != nil {
-			f22.AutomatedSnapshotStartHour = resp.DomainConfig.SnapshotOptions.Options.AutomatedSnapshotStartHour
-		}
-		cr.Status.AtProvider.SnapshotOptions = f22
-	} else {
-		cr.Status.AtProvider.SnapshotOptions = nil
-	}
-
-	if resp.DomainConfig.VPCOptions != nil && resp.DomainConfig.VPCOptions.Options != nil {
-		f24 := &svcapitypes.VPCDerivedInfo{}
-		if resp.DomainConfig.VPCOptions.Options.AvailabilityZones != nil {
-			f24f0 := []*string{}
-			for _, f24f0iter := range resp.DomainConfig.VPCOptions.Options.AvailabilityZones {
-				f24f0elem := *f24f0iter
-				f24f0 = append(f24f0, &f24f0elem)
-			}
-			f24.AvailabilityZones = f24f0
-		}
-		if resp.DomainConfig.VPCOptions.Options.SecurityGroupIds != nil {
-			f24f1 := []*string{}
-			for _, f24f1iter := range resp.DomainConfig.VPCOptions.Options.SecurityGroupIds {
-				f24f1elem := *f24f1iter
-				f24f1 = append(f24f1, &f24f1elem)
-			}
-			f24.SecurityGroupIDs = f24f1
-		}
-		if resp.DomainConfig.VPCOptions.Options.SubnetIds != nil {
-			f24f2 := []*string{}
-			for _, f24f2iter := range resp.DomainConfig.VPCOptions.Options.SubnetIds {
-				f24f2elem := *f24f2iter
-				f24f2 = append(f24f2, &f24f2elem)
-			}
-			f24.SubnetIDs = f24f2
-		}
-		if resp.DomainConfig.VPCOptions.Options.VPCId != nil {
-			f24.VPCID = resp.DomainConfig.VPCOptions.Options.VPCId
-		}
-		cr.Status.AtProvider.VPCOptions = f24
-	} else {
-		cr.Status.AtProvider.VPCOptions = nil
-	}
-	return managed.ExternalUpdate{}, nil
+	return nil
 }
