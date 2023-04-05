@@ -359,7 +359,7 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 		!isClusterConfigUpToDate(obj.Spec.ForProvider.ClusterConfig, out.DomainStatus.ClusterConfig),
 		!isCognitoOptionsUpToDate(obj.Spec.ForProvider.CognitoOptions, out.DomainStatus.CognitoOptions),
 		!isDomainEndpointOptionsUpToDate(obj.Spec.ForProvider.DomainEndpointOptions, out.DomainStatus.DomainEndpointOptions),
-		aws.StringValue(obj.Spec.ForProvider.Name) != aws.StringValue(out.DomainStatus.DomainName),
+		meta.GetExternalName(obj) != aws.StringValue(out.DomainStatus.DomainName),
 		!isEbsOptionsUpToDate(obj.Spec.ForProvider.EBSOptions, out.DomainStatus.EBSOptions),
 		!isLogPublishingOptionsUpToDate(obj.Spec.ForProvider.LogPublishingOptions, out.DomainStatus.LogPublishingOptions),
 		!isNodeToNodeEncryptionOptionsUpToDate(obj.Spec.ForProvider.NodeToNodeEncryptionOptions, out.DomainStatus.NodeToNodeEncryptionOptions),
@@ -682,9 +682,9 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 			cr.DomainEndpointOptions = f10
 		}
 	}
-	if resp.DomainStatus.DomainName != nil && cr.Name == nil {
-		cr.Name = resp.DomainStatus.DomainName
-	}
+	// if resp.DomainStatus.DomainName != nil && cr.Name == nil {
+	// 	cr.Name = resp.DomainStatus.DomainName
+	// }
 	if resp.DomainStatus.EBSOptions != nil {
 		if cr.EBSOptions != nil {
 			if resp.DomainStatus.EBSOptions.EBSEnabled != nil && cr.EBSOptions.EBSEnabled == nil {
@@ -803,8 +803,9 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-
+	domainName := meta.GetExternalName(cr)
 	stateInput := GenerateDescribeDomainInput(cr)
+	stateInput.DomainName = &domainName
 	obj, err := e.client.DescribeDomainWithContext(ctx, stateInput)
 
 	if err != nil {
@@ -812,7 +813,7 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 	}
 	needDomainConfigUpdate := false
 	input := svcsdk.UpdateDomainConfigInput{
-		DomainName: cr.Spec.ForProvider.Name,
+		DomainName: &domainName,
 	}
 	if aws.StringValue(cr.Spec.ForProvider.AccessPolicies) != aws.StringValue(obj.DomainStatus.AccessPolicies) {
 		needDomainConfigUpdate = true
@@ -890,16 +891,14 @@ func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed
 	if !*obj.DomainStatus.Processing && !*obj.DomainStatus.UpgradeProcessing && aws.StringValue(cr.Spec.ForProvider.EngineVersion) != aws.StringValue(obj.DomainStatus.EngineVersion) {
 		// We cant update when processing or already updating so we dont update now
 		upgradeInput := &svcsdk.UpgradeDomainInput{
-			DomainName:    cr.Spec.ForProvider.Name,
+			DomainName:    &domainName,
 			TargetVersion: cr.Spec.ForProvider.EngineVersion,
 		}
-		//if !isMapUpToDate(cr.Spec.ForProvider.AdvancedOptions, obj.DomainStatus.AdvancedOptions) {
 		if overrideMainResponseVersion, ok := cr.Spec.ForProvider.AdvancedOptions["override_main_response_version"]; ok {
 			upgradeInput.AdvancedOptions = map[string]*string{
 				"override_main_response_version": overrideMainResponseVersion,
 			}
 		}
-		//}
 
 		_, err := e.client.UpgradeDomainWithContext(ctx, upgradeInput)
 		if err != nil {
@@ -929,7 +928,7 @@ out:
 	return true
 }
 
-func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptionsInput, current *svcsdk.AdvancedSecurityOptions) bool {
+func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptionsInput, current *svcsdk.AdvancedSecurityOptions) bool { // nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -982,7 +981,7 @@ func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptio
 	return true
 }
 
-func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.ClusterConfig) bool {
+func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.ClusterConfig) bool { // nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -1021,7 +1020,7 @@ func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.
 		if aws.StringValue(wanted.WarmType) != aws.StringValue(current.WarmType) {
 			return false
 		}
-		if aws.BoolValue(current.ZoneAwarenessEnabled) != aws.BoolValue(current.ZoneAwarenessEnabled) {
+		if aws.BoolValue(wanted.ZoneAwarenessEnabled) != aws.BoolValue(current.ZoneAwarenessEnabled) {
 			return false
 		}
 		if wanted.ZoneAwarenessConfig != nil {
@@ -1217,7 +1216,7 @@ func isSnapshotOptionsUpToDate(wanted *svcapitypes.SnapshotOptions, current *svc
 	return true
 }
 
-func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svcsdk.VPCDerivedInfo) bool {
+func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svcsdk.VPCDerivedInfo) bool { // nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -1237,7 +1236,7 @@ func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svc
 				return false
 			}
 		}
-		if len(wanted.SubnetIDs) != len(wanted.SubnetIDs) {
+		if len(wanted.SubnetIDs) != len(current.SubnetIds) {
 			return false
 		}
 		for _, objValue := range wanted.SubnetIDs {
@@ -1267,12 +1266,12 @@ func isEncryptionAtRestUpToDate(wanted *svcapitypes.CustomEncryptionAtRestOption
 			return false
 		}
 		spriltedKey := strings.Split(aws.StringValue(current.KmsKeyId), "/")
-		currentShortKeyId := ""
+		currentShortKeyID := ""
 		if len(spriltedKey) > 0 {
-			currentShortKeyId = spriltedKey[len(spriltedKey)-1]
+			currentShortKeyID = spriltedKey[len(spriltedKey)-1]
 		}
 
-		if aws.StringValue(wanted.KMSKeyID) != currentShortKeyId {
+		if aws.StringValue(wanted.KMSKeyID) != currentShortKeyID {
 			return false
 		}
 

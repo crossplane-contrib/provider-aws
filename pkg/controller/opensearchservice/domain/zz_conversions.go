@@ -34,10 +34,6 @@ import (
 func GenerateDescribeDomainInput(cr *svcapitypes.Domain) *svcsdk.DescribeDomainInput {
 	res := &svcsdk.DescribeDomainInput{}
 
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.Name)
-	}
-
 	return res
 }
 
@@ -227,9 +223,9 @@ func GenerateDomain(resp *svcsdk.DescribeDomainOutput) *svcapitypes.Domain {
 		cr.Status.AtProvider.DomainID = nil
 	}
 	if resp.DomainStatus.DomainName != nil {
-		cr.Spec.ForProvider.Name = resp.DomainStatus.DomainName
+		cr.Status.AtProvider.DomainName = resp.DomainStatus.DomainName
 	} else {
-		cr.Spec.ForProvider.Name = nil
+		cr.Status.AtProvider.DomainName = nil
 	}
 	if resp.DomainStatus.EBSOptions != nil {
 		f13 := &svcapitypes.EBSOptions{}
@@ -584,65 +580,62 @@ func GenerateCreateDomainInput(cr *svcapitypes.Domain) *svcsdk.CreateDomainInput
 		}
 		res.SetDomainEndpointOptions(f6)
 	}
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.Name)
-	}
 	if cr.Spec.ForProvider.EBSOptions != nil {
-		f8 := &svcsdk.EBSOptions{}
+		f7 := &svcsdk.EBSOptions{}
 		if cr.Spec.ForProvider.EBSOptions.EBSEnabled != nil {
-			f8.SetEBSEnabled(*cr.Spec.ForProvider.EBSOptions.EBSEnabled)
+			f7.SetEBSEnabled(*cr.Spec.ForProvider.EBSOptions.EBSEnabled)
 		}
 		if cr.Spec.ForProvider.EBSOptions.IOPS != nil {
-			f8.SetIops(*cr.Spec.ForProvider.EBSOptions.IOPS)
+			f7.SetIops(*cr.Spec.ForProvider.EBSOptions.IOPS)
 		}
 		if cr.Spec.ForProvider.EBSOptions.Throughput != nil {
-			f8.SetThroughput(*cr.Spec.ForProvider.EBSOptions.Throughput)
+			f7.SetThroughput(*cr.Spec.ForProvider.EBSOptions.Throughput)
 		}
 		if cr.Spec.ForProvider.EBSOptions.VolumeSize != nil {
-			f8.SetVolumeSize(*cr.Spec.ForProvider.EBSOptions.VolumeSize)
+			f7.SetVolumeSize(*cr.Spec.ForProvider.EBSOptions.VolumeSize)
 		}
 		if cr.Spec.ForProvider.EBSOptions.VolumeType != nil {
-			f8.SetVolumeType(*cr.Spec.ForProvider.EBSOptions.VolumeType)
+			f7.SetVolumeType(*cr.Spec.ForProvider.EBSOptions.VolumeType)
 		}
-		res.SetEBSOptions(f8)
+		res.SetEBSOptions(f7)
 	}
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
 	if cr.Spec.ForProvider.LogPublishingOptions != nil {
-		f10 := map[string]*svcsdk.LogPublishingOption{}
-		for f10key, f10valiter := range cr.Spec.ForProvider.LogPublishingOptions {
-			f10val := &svcsdk.LogPublishingOption{}
-			if f10valiter.CloudWatchLogsLogGroupARN != nil {
-				f10val.SetCloudWatchLogsLogGroupArn(*f10valiter.CloudWatchLogsLogGroupARN)
+		f9 := map[string]*svcsdk.LogPublishingOption{}
+		for f9key, f9valiter := range cr.Spec.ForProvider.LogPublishingOptions {
+			f9val := &svcsdk.LogPublishingOption{}
+			if f9valiter.CloudWatchLogsLogGroupARN != nil {
+				f9val.SetCloudWatchLogsLogGroupArn(*f9valiter.CloudWatchLogsLogGroupARN)
 			}
-			if f10valiter.Enabled != nil {
-				f10val.SetEnabled(*f10valiter.Enabled)
+			if f9valiter.Enabled != nil {
+				f9val.SetEnabled(*f9valiter.Enabled)
 			}
-			f10[f10key] = f10val
+			f9[f9key] = f9val
 		}
-		res.SetLogPublishingOptions(f10)
+		res.SetLogPublishingOptions(f9)
 	}
 	if cr.Spec.ForProvider.NodeToNodeEncryptionOptions != nil {
-		f11 := &svcsdk.NodeToNodeEncryptionOptions{}
+		f10 := &svcsdk.NodeToNodeEncryptionOptions{}
 		if cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled != nil {
-			f11.SetEnabled(*cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled)
+			f10.SetEnabled(*cr.Spec.ForProvider.NodeToNodeEncryptionOptions.Enabled)
 		}
-		res.SetNodeToNodeEncryptionOptions(f11)
+		res.SetNodeToNodeEncryptionOptions(f10)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f12 := []*svcsdk.Tag{}
-		for _, f12iter := range cr.Spec.ForProvider.Tags {
-			f12elem := &svcsdk.Tag{}
-			if f12iter.Key != nil {
-				f12elem.SetKey(*f12iter.Key)
+		f11 := []*svcsdk.Tag{}
+		for _, f11iter := range cr.Spec.ForProvider.Tags {
+			f11elem := &svcsdk.Tag{}
+			if f11iter.Key != nil {
+				f11elem.SetKey(*f11iter.Key)
 			}
-			if f12iter.Value != nil {
-				f12elem.SetValue(*f12iter.Value)
+			if f11iter.Value != nil {
+				f11elem.SetValue(*f11iter.Value)
 			}
-			f12 = append(f12, f12elem)
+			f11 = append(f11, f11elem)
 		}
-		res.SetTagList(f12)
+		res.SetTagList(f11)
 	}
 
 	return res
@@ -651,10 +644,6 @@ func GenerateCreateDomainInput(cr *svcapitypes.Domain) *svcsdk.CreateDomainInput
 // GenerateDeleteDomainInput returns a deletion input.
 func GenerateDeleteDomainInput(cr *svcapitypes.Domain) *svcsdk.DeleteDomainInput {
 	res := &svcsdk.DeleteDomainInput{}
-
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.Name)
-	}
 
 	return res
 }
