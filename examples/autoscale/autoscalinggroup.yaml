@@ -1,0 +1,69 @@
+# apiVersion: ec2.aws.crossplane.io/v1beta1
+# kind: VPC
+# metadata:
+#   name: sample-vpc
+# spec:
+#   forProvider:
+#     region: us-east-1
+#     cidrBlock: 10.0.0.0/16
+#     enableDnsSupport: true
+#     enableDnsHostNames: true
+#     instanceTenancy: default
+#   providerConfigRef:
+#     name: example
+# ---
+# apiVersion: ec2.aws.crossplane.io/v1beta1
+# kind: Subnet
+# metadata:
+#   name: sample-subnet1
+# spec:
+#   forProvider:
+#     region: us-east-1
+#     availabilityZone: us-east-1b
+#     cidrBlock: 10.0.1.0/24
+#     vpcIdRef:
+#       name: sample-vpc
+#     mapPublicIPOnLaunch: true
+#   providerConfigRef:
+#     name: example
+# ---
+# apiVersion: ec2.aws.crossplane.io/v1alpha1
+# kind: LaunchTemplate
+# metadata:
+#   name: test-crossplane-obj
+# spec:
+#   forProvider:
+#     launchTemplateName: test-crossplane-obj
+#     launchTemplateData:
+#       # resourceTags
+#       tagSpecifications:
+#       - resourceType: volume
+#         tags:
+#         - key: original
+#           value: "1"
+#       keyName: kube
+#     region: us-east-1
+#   providerConfigRef:
+#     name: example
+---
+apiVersion: autoscaling.aws.crossplane.io/v1alpha1
+kind: AutoScalingGroup
+metadata:
+  name: autoscalinggroup-example
+spec:
+  forProvider:
+    # availabilityZones:
+    # - us-east-1a
+    region: us-east-1
+    maxSize: 2
+    minSize: 0
+    desiredCapacity: 1
+    launchTemplate:
+      launchTemplateName: test-crossplane-obj
+      version: "1"
+    tags:
+    - key: name
+      value: example
+    vpcZoneIdentifier: "sample-subnet1"
+  providerConfigRef:
+    name: example
