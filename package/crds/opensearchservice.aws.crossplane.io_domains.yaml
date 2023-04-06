@@ -370,11 +370,6 @@ spec:
                       type: object
                     description: Key-value pairs to configure slow log publishing.
                     type: object
-                  name:
-                    description: Name of the OpenSearch Service domain to create.
-                      Domain names are unique across the domains owned by an account
-                      within an Amazon Web Services Region.
-                    type: string
                   nodeToNodeEncryptionOptions:
                     description: Enables node-to-node encryption.
                     properties:
@@ -582,7 +577,6 @@ spec:
                         type: array
                     type: object
                 required:
-                - name
                 - region
                 type: object
               providerConfigRef:
@@ -917,6 +911,11 @@ spec:
                     type: object
                   domainID:
                     description: Unique identifier for the domain.
+                    type: string
+                  domainName:
+                    description: Name of the domain. Domain names are unique across
+                      all domains owned by the same account within an Amazon Web Services
+                      Region.
                     type: string
                   encryptionAtRestOptions:
                     description: Encryption at rest settings for the domain.

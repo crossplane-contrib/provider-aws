@@ -8,24 +8,21 @@ ignore:
   field_paths:
     # SnapshotOptions is irrelevant for OpenSearch 5.3+
     - CreateDomainInput.SnapshotOptions
-    - CreateDomainInput.Name
+    - CreateDomainInput.DomainName
     - CreateDomainInput.EncryptionAtRestOptions
     - CreateDomainInput.VPCOptions
-    - DeleteDomainInput.Name
+    - DeleteDomainInput.DomainName
+    - DescribeDomainInput.DomainName
+    - DescribeDomainAutoTunesInput.DomainName
+    - DescribeDomainChangeProgressInput.DomainName
+    - DescribeDomainConfigInput.DomainName
 resources:
   Domain:
     renames:
       operations:
         CreateDomain:
           input_fields:
-            DomainName: Name
             TagList: Tags
-        DeleteDomain:
-          input_fields:
-            DomainName: Name
-        DescribeDomain:
-          input_fields:
-            DomainName: Name
     fields:
       ClusterConfig:
         is_read_only: true

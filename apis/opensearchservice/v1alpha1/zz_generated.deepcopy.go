@@ -971,6 +971,11 @@ func (in *DomainObservation) DeepCopyInto(out *DomainObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DomainName != nil {
+		in, out := &in.DomainName, &out.DomainName
+		*out = new(string)
+		**out = **in
+	}
 	if in.EncryptionAtRestOptions != nil {
 		in, out := &in.EncryptionAtRestOptions, &out.EncryptionAtRestOptions
 		*out = new(EncryptionAtRestOptions)
@@ -1135,11 +1140,6 @@ func (in *DomainParameters) DeepCopyInto(out *DomainParameters) {
 			}
 			(*out)[key] = outVal
 		}
-	}
-	if in.Name != nil {
-		in, out := &in.Name, &out.Name
-		*out = new(string)
-		**out = **in
 	}
 	if in.NodeToNodeEncryptionOptions != nil {
 		in, out := &in.NodeToNodeEncryptionOptions, &out.NodeToNodeEncryptionOptions

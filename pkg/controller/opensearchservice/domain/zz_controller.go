@@ -297,9 +297,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DomainID = nil
 	}
 	if resp.DomainStatus.DomainName != nil {
-		cr.Spec.ForProvider.Name = resp.DomainStatus.DomainName
+		cr.Status.AtProvider.DomainName = resp.DomainStatus.DomainName
 	} else {
-		cr.Spec.ForProvider.Name = nil
+		cr.Status.AtProvider.DomainName = nil
 	}
 	if resp.DomainStatus.EBSOptions != nil {
 		f13 := &svcapitypes.EBSOptions{}

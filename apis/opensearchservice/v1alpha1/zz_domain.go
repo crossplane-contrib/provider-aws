@@ -80,10 +80,6 @@ type DomainParameters struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// Key-value pairs to configure slow log publishing.
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
-	// Name of the OpenSearch Service domain to create. Domain names are unique
-	// across the domains owned by an account within an Amazon Web Services Region.
-	// +kubebuilder:validation:Required
-	Name *string `json:"name"`
 	// Enables node-to-node encryption.
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
 	// List of tags to add to the domain upon creation.
@@ -131,6 +127,9 @@ type DomainObservation struct {
 	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
 	// Unique identifier for the domain.
 	DomainID *string `json:"domainID,omitempty"`
+	// Name of the domain. Domain names are unique across all domains owned by the
+	// same account within an Amazon Web Services Region.
+	DomainName *string `json:"domainName,omitempty"`
 	// Encryption at rest settings for the domain.
 	EncryptionAtRestOptions *EncryptionAtRestOptions `json:"encryptionAtRestOptions,omitempty"`
 	// Domain-specific endpoint used to submit index, search, and data upload requests
