@@ -10,12 +10,6 @@ spec:
     parameters:
       - parameterName: tls
         parameterValue: enabled
-        description: "Config to enable/disable TLS"
-        source: system
-        applyType: static
-        dataType: string
-        allowedValues: disabled,enabled
-        isModifiable: true
         applyMethod: pending-reboot
     tags:
       - key: cluster

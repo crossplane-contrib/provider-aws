@@ -105,34 +105,32 @@ spec:
                     description: The description for the DB cluster parameter group.
                     type: string
                   parameters:
-                    description: A list of parameters to associate with this DB cluster
-                      parameter group
+                    description: 'A list of parameters to associate with this DB cluster
+                      parameter group. The fields ApplyMethod, ParameterName and ParameterValue
+                      are required for every parameter. Note: AWS actually only modifies
+                      the ApplyMethod of a parameter, if the ParameterValue changes
+                      too.'
                     items:
+                      description: CustomParameter are custom parameters for the Parameter
                       properties:
-                        allowedValues:
-                          type: string
                         applyMethod:
-                          type: string
-                        applyType:
-                          type: string
-                        dataType:
-                          type: string
-                        description:
-                          type: string
-                        isModifiable:
-                          type: boolean
-                        minimumEngineVersion:
+                          description: The apply method of the parameter. AWS actually
+                            only modifies to value set here, if the parameter value
+                            changes too.
+                          enum:
+                          - immediate
+                          - pending-reboot
                           type: string
                         parameterName:
+                          description: The name of the parameter.
                           type: string
                         parameterValue:
+                          description: The value of the parameter.
                           type: string
-                        source:
-                          type: string
-                        supportedEngineModes:
-                          items:
-                            type: string
-                          type: array
+                      required:
+                      - applyMethod
+                      - parameterName
+                      - parameterValue
                       type: object
                     type: array
                   region:

@@ -23,9 +23,13 @@ import (
 
 // CustomDBParameterGroupParameters are custom parameters for DBParameterGroup
 type CustomDBParameterGroupParameters struct {
-	// A list of parameters to associate with this DB parameter group
+	// A list of parameters to associate with this DB parameter group.
+	// The fields ApplyMethod, ParameterName and ParameterValue are required
+	// for every parameter.
+	// Note: AWS actually only modifies the ApplyMethod of a parameter,
+	// if the ParameterValue changes too.
 	// +optional
-	Parameters []Parameter `json:"parameters,omitempty"`
+	Parameters []CustomParameter `json:"parameters,omitempty"`
 
 	// The DB parameter group family name. A DB parameter group can be associated
 	// with one and only one DB parameter group family, and can be applied only
@@ -93,9 +97,13 @@ type CustomDBParameterGroupParameters struct {
 
 // CustomDBClusterParameterGroupParameters are custom parameters for DBClusterParameterGroup
 type CustomDBClusterParameterGroupParameters struct {
-	// A list of parameters to associate with this DB cluster parameter group
+	// A list of parameters to associate with this DB cluster parameter group.
+	// The fields ApplyMethod, ParameterName and ParameterValue are required
+	// for every parameter.
+	// Note: AWS actually only modifies the ApplyMethod of a parameter,
+	// if the ParameterValue changes too.
 	// +optional
-	Parameters []Parameter `json:"parameters,omitempty"`
+	Parameters []CustomParameter `json:"parameters,omitempty"`
 
 	// The DB cluster parameter group family name. A DB cluster parameter group
 	// can be associated with one and only one DB cluster parameter group family,
@@ -675,4 +683,21 @@ type CustomOptionGroupOptionSetting struct {
 	Name *string `json:"name,omitempty"`
 
 	Value *string `json:"value,omitempty"`
+}
+
+// CustomParameter are custom parameters for the Parameter
+type CustomParameter struct {
+	// The apply method of the parameter.
+	// AWS actually only modifies to value set here, if the parameter value changes too.
+	// +kubebuilder:validation:Enum=immediate;pending-reboot
+	// +kubebuilder:validation:Required
+	ApplyMethod *string `json:"applyMethod"`
+
+	// The name of the parameter.
+	// +kubebuilder:validation:Required
+	ParameterName *string `json:"parameterName"`
+
+	// The value of the parameter.
+	// +kubebuilder:validation:Required
+	ParameterValue *string `json:"parameterValue"`
 }

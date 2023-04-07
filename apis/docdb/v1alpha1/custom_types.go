@@ -71,7 +71,13 @@ type CustomDBSubnetGroupParameters struct {
 
 // CustomDBClusterParameterGroupParameters for DBClusterParameterGroup
 type CustomDBClusterParameterGroupParameters struct {
-	Parameters []*Parameter `json:"parameters,omitempty"`
+	// A list of parameters to associate with this DB parameter group.
+	// The fields ApplyMethod, ParameterName and ParameterValue are required
+	// for every parameter.
+	// Note: AWS actually only modifies the ApplyMethod of a parameter,
+	// if the ParameterValue changes too.
+	// +optional
+	Parameters []*CustomParameter `json:"parameters,omitempty"`
 }
 
 // CustomDBClusterParameters for DBCluster
@@ -150,4 +156,21 @@ type CustomDBClusterParameters struct {
 	VPCSecurityGroupIDsRefs []xpv1.Reference `json:"vpcSecurityGroupIDsRefs,omitempty"`
 	// TODO(haarchri): when resource is bumped to beta we will convert this field to vpcSecurityGroupIdSelector
 	VPCSecurityGroupIDsSelector *xpv1.Selector `json:"vpcSecurityGroupIDsSelector,omitempty"`
+}
+
+// CustomParameter are custom parameters for the Parameter
+type CustomParameter struct {
+	// The apply method of the parameter.
+	// AWS actually only modifies to value set here, if the parameter value changes too.
+	// +kubebuilder:validation:Enum=immediate;pending-reboot
+	// +kubebuilder:validation:Required
+	ApplyMethod *string `json:"applyMethod"`
+
+	// The name of the parameter.
+	// +kubebuilder:validation:Required
+	ParameterName *string `json:"parameterName"`
+
+	// The value of the parameter.
+	// +kubebuilder:validation:Required
+	ParameterValue *string `json:"parameterValue"`
 }

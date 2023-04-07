@@ -115,10 +115,10 @@ func withConditions(value ...xpv1.Condition) docDBModifier {
 	}
 }
 
-func withParameters(values ...*svcapitypes.Parameter) docDBModifier {
+func withParameters(values ...*svcapitypes.CustomParameter) docDBModifier {
 	return func(o *svcapitypes.DBClusterParameterGroup) {
 		if values == nil {
-			o.Spec.ForProvider.Parameters = []*svcapitypes.Parameter{}
+			o.Spec.ForProvider.Parameters = []*svcapitypes.CustomParameter{}
 		} else {
 			o.Spec.ForProvider.Parameters = values
 		}
@@ -250,7 +250,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
@@ -262,7 +262,7 @@ func TestObserve(t *testing.T) {
 					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
@@ -335,7 +335,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
@@ -347,11 +347,11 @@ func TestObserve(t *testing.T) {
 					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testOtherParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -534,7 +534,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -546,7 +546,7 @@ func TestObserve(t *testing.T) {
 					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -745,11 +745,11 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testOtherParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -762,11 +762,11 @@ func TestCreate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withConditions(xpv1.Creating()),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testOtherParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -829,7 +829,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
@@ -842,7 +842,7 @@ func TestCreate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withConditions(xpv1.Creating()),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
@@ -1007,11 +1007,11 @@ func TestUpdate(t *testing.T) {
 					withDBClusterParameterGroupARN(testDBClusterParameterGroupARN),
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testOtherParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
@@ -1028,11 +1028,11 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withConditions(xpv1.Available()),
 					withParameters(
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testParameterName),
 							ParameterValue: awsclient.String(testParameterValue),
 						},
-						&svcapitypes.Parameter{
+						&svcapitypes.CustomParameter{
 							ParameterName:  awsclient.String(testOtherParameterName),
 							ParameterValue: awsclient.String(testOtherParameterValue),
 						},
