@@ -70,14 +70,14 @@ func GenerateJobRun(resp *svcsdk.DescribeJobRunOutput) *svcapitypes.JobRun {
 	if resp.JobRun.JobDriver != nil {
 		f8 := &svcapitypes.JobDriver{}
 		if resp.JobRun.JobDriver.SparkSqlJobDriver != nil {
-			f8f0 := &svcapitypes.SparkSqlJobDriver{}
+			f8f0 := &svcapitypes.SparkSQLJobDriver{}
 			if resp.JobRun.JobDriver.SparkSqlJobDriver.EntryPoint != nil {
 				f8f0.EntryPoint = resp.JobRun.JobDriver.SparkSqlJobDriver.EntryPoint
 			}
 			if resp.JobRun.JobDriver.SparkSqlJobDriver.SparkSqlParameters != nil {
-				f8f0.SparkSqlParameters = resp.JobRun.JobDriver.SparkSqlJobDriver.SparkSqlParameters
+				f8f0.SparkSQLParameters = resp.JobRun.JobDriver.SparkSqlJobDriver.SparkSqlParameters
 			}
-			f8.SparkSqlJobDriver = f8f0
+			f8.SparkSQLJobDriver = f8f0
 		}
 		if resp.JobRun.JobDriver.SparkSubmitJobDriver != nil {
 			f8f1 := &svcapitypes.SparkSubmitJobDriver{}
@@ -151,13 +151,13 @@ func GenerateStartJobRunInput(cr *svcapitypes.JobRun) *svcsdk.StartJobRunInput {
 	}
 	if cr.Spec.ForProvider.JobDriver != nil {
 		f1 := &svcsdk.JobDriver{}
-		if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver != nil {
+		if cr.Spec.ForProvider.JobDriver.SparkSQLJobDriver != nil {
 			f1f0 := &svcsdk.SparkSqlJobDriver{}
-			if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.EntryPoint != nil {
-				f1f0.SetEntryPoint(*cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.EntryPoint)
+			if cr.Spec.ForProvider.JobDriver.SparkSQLJobDriver.EntryPoint != nil {
+				f1f0.SetEntryPoint(*cr.Spec.ForProvider.JobDriver.SparkSQLJobDriver.EntryPoint)
 			}
-			if cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.SparkSqlParameters != nil {
-				f1f0.SetSparkSqlParameters(*cr.Spec.ForProvider.JobDriver.SparkSqlJobDriver.SparkSqlParameters)
+			if cr.Spec.ForProvider.JobDriver.SparkSQLJobDriver.SparkSQLParameters != nil {
+				f1f0.SetSparkSqlParameters(*cr.Spec.ForProvider.JobDriver.SparkSQLJobDriver.SparkSQLParameters)
 			}
 			f1.SetSparkSqlJobDriver(f1f0)
 		}

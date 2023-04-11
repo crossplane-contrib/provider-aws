@@ -919,149 +919,149 @@ const (
 	IAMInstanceProfileAssociationState_disassociated  IAMInstanceProfileAssociationState = "disassociated"
 )
 
+type IPAMAddressHistoryResourceType string
+
+const (
+	IPAMAddressHistoryResourceType_eip               IPAMAddressHistoryResourceType = "eip"
+	IPAMAddressHistoryResourceType_vpc               IPAMAddressHistoryResourceType = "vpc"
+	IPAMAddressHistoryResourceType_subnet            IPAMAddressHistoryResourceType = "subnet"
+	IPAMAddressHistoryResourceType_network_interface IPAMAddressHistoryResourceType = "network-interface"
+	IPAMAddressHistoryResourceType_instance          IPAMAddressHistoryResourceType = "instance"
+)
+
+type IPAMComplianceStatus string
+
+const (
+	IPAMComplianceStatus_compliant    IPAMComplianceStatus = "compliant"
+	IPAMComplianceStatus_noncompliant IPAMComplianceStatus = "noncompliant"
+	IPAMComplianceStatus_unmanaged    IPAMComplianceStatus = "unmanaged"
+	IPAMComplianceStatus_ignored      IPAMComplianceStatus = "ignored"
+)
+
+type IPAMManagementState string
+
+const (
+	IPAMManagementState_managed   IPAMManagementState = "managed"
+	IPAMManagementState_unmanaged IPAMManagementState = "unmanaged"
+	IPAMManagementState_ignored   IPAMManagementState = "ignored"
+)
+
+type IPAMOverlapStatus string
+
+const (
+	IPAMOverlapStatus_overlapping    IPAMOverlapStatus = "overlapping"
+	IPAMOverlapStatus_nonoverlapping IPAMOverlapStatus = "nonoverlapping"
+	IPAMOverlapStatus_ignored        IPAMOverlapStatus = "ignored"
+)
+
+type IPAMPoolAWSService string
+
+const (
+	IPAMPoolAWSService_ec2 IPAMPoolAWSService = "ec2"
+)
+
+type IPAMPoolAllocationResourceType string
+
+const (
+	IPAMPoolAllocationResourceType_ipam_pool            IPAMPoolAllocationResourceType = "ipam-pool"
+	IPAMPoolAllocationResourceType_vpc                  IPAMPoolAllocationResourceType = "vpc"
+	IPAMPoolAllocationResourceType_ec2_public_ipv4_pool IPAMPoolAllocationResourceType = "ec2-public-ipv4-pool"
+	IPAMPoolAllocationResourceType_custom               IPAMPoolAllocationResourceType = "custom"
+)
+
+type IPAMPoolCIDRFailureCode string
+
+const (
+	IPAMPoolCIDRFailureCode_cidr_not_available IPAMPoolCIDRFailureCode = "cidr-not-available"
+)
+
+type IPAMPoolCIDRState string
+
+const (
+	IPAMPoolCIDRState_pending_provision   IPAMPoolCIDRState = "pending-provision"
+	IPAMPoolCIDRState_provisioned         IPAMPoolCIDRState = "provisioned"
+	IPAMPoolCIDRState_failed_provision    IPAMPoolCIDRState = "failed-provision"
+	IPAMPoolCIDRState_pending_deprovision IPAMPoolCIDRState = "pending-deprovision"
+	IPAMPoolCIDRState_deprovisioned       IPAMPoolCIDRState = "deprovisioned"
+	IPAMPoolCIDRState_failed_deprovision  IPAMPoolCIDRState = "failed-deprovision"
+	IPAMPoolCIDRState_pending_import      IPAMPoolCIDRState = "pending-import"
+	IPAMPoolCIDRState_failed_import       IPAMPoolCIDRState = "failed-import"
+)
+
+type IPAMPoolState string
+
+const (
+	IPAMPoolState_create_in_progress  IPAMPoolState = "create-in-progress"
+	IPAMPoolState_create_complete     IPAMPoolState = "create-complete"
+	IPAMPoolState_create_failed       IPAMPoolState = "create-failed"
+	IPAMPoolState_modify_in_progress  IPAMPoolState = "modify-in-progress"
+	IPAMPoolState_modify_complete     IPAMPoolState = "modify-complete"
+	IPAMPoolState_modify_failed       IPAMPoolState = "modify-failed"
+	IPAMPoolState_delete_in_progress  IPAMPoolState = "delete-in-progress"
+	IPAMPoolState_delete_complete     IPAMPoolState = "delete-complete"
+	IPAMPoolState_delete_failed       IPAMPoolState = "delete-failed"
+	IPAMPoolState_isolate_in_progress IPAMPoolState = "isolate-in-progress"
+	IPAMPoolState_isolate_complete    IPAMPoolState = "isolate-complete"
+	IPAMPoolState_restore_in_progress IPAMPoolState = "restore-in-progress"
+)
+
+type IPAMResourceType string
+
+const (
+	IPAMResourceType_vpc              IPAMResourceType = "vpc"
+	IPAMResourceType_subnet           IPAMResourceType = "subnet"
+	IPAMResourceType_eip              IPAMResourceType = "eip"
+	IPAMResourceType_public_ipv4_pool IPAMResourceType = "public-ipv4-pool"
+	IPAMResourceType_ipv6_pool        IPAMResourceType = "ipv6-pool"
+)
+
+type IPAMScopeState string
+
+const (
+	IPAMScopeState_create_in_progress  IPAMScopeState = "create-in-progress"
+	IPAMScopeState_create_complete     IPAMScopeState = "create-complete"
+	IPAMScopeState_create_failed       IPAMScopeState = "create-failed"
+	IPAMScopeState_modify_in_progress  IPAMScopeState = "modify-in-progress"
+	IPAMScopeState_modify_complete     IPAMScopeState = "modify-complete"
+	IPAMScopeState_modify_failed       IPAMScopeState = "modify-failed"
+	IPAMScopeState_delete_in_progress  IPAMScopeState = "delete-in-progress"
+	IPAMScopeState_delete_complete     IPAMScopeState = "delete-complete"
+	IPAMScopeState_delete_failed       IPAMScopeState = "delete-failed"
+	IPAMScopeState_isolate_in_progress IPAMScopeState = "isolate-in-progress"
+	IPAMScopeState_isolate_complete    IPAMScopeState = "isolate-complete"
+	IPAMScopeState_restore_in_progress IPAMScopeState = "restore-in-progress"
+)
+
+type IPAMScopeType string
+
+const (
+	IPAMScopeType_public  IPAMScopeType = "public"
+	IPAMScopeType_private IPAMScopeType = "private"
+)
+
+type IPAMState string
+
+const (
+	IPAMState_create_in_progress  IPAMState = "create-in-progress"
+	IPAMState_create_complete     IPAMState = "create-complete"
+	IPAMState_create_failed       IPAMState = "create-failed"
+	IPAMState_modify_in_progress  IPAMState = "modify-in-progress"
+	IPAMState_modify_complete     IPAMState = "modify-complete"
+	IPAMState_modify_failed       IPAMState = "modify-failed"
+	IPAMState_delete_in_progress  IPAMState = "delete-in-progress"
+	IPAMState_delete_complete     IPAMState = "delete-complete"
+	IPAMState_delete_failed       IPAMState = "delete-failed"
+	IPAMState_isolate_in_progress IPAMState = "isolate-in-progress"
+	IPAMState_isolate_complete    IPAMState = "isolate-complete"
+	IPAMState_restore_in_progress IPAMState = "restore-in-progress"
+)
+
 type IPAddressType string
 
 const (
 	IPAddressType_ipv4      IPAddressType = "ipv4"
 	IPAddressType_dualstack IPAddressType = "dualstack"
 	IPAddressType_ipv6      IPAddressType = "ipv6"
-)
-
-type IPamAddressHistoryResourceType string
-
-const (
-	IPamAddressHistoryResourceType_eip               IPamAddressHistoryResourceType = "eip"
-	IPamAddressHistoryResourceType_vpc               IPamAddressHistoryResourceType = "vpc"
-	IPamAddressHistoryResourceType_subnet            IPamAddressHistoryResourceType = "subnet"
-	IPamAddressHistoryResourceType_network_interface IPamAddressHistoryResourceType = "network-interface"
-	IPamAddressHistoryResourceType_instance          IPamAddressHistoryResourceType = "instance"
-)
-
-type IPamComplianceStatus string
-
-const (
-	IPamComplianceStatus_compliant    IPamComplianceStatus = "compliant"
-	IPamComplianceStatus_noncompliant IPamComplianceStatus = "noncompliant"
-	IPamComplianceStatus_unmanaged    IPamComplianceStatus = "unmanaged"
-	IPamComplianceStatus_ignored      IPamComplianceStatus = "ignored"
-)
-
-type IPamManagementState string
-
-const (
-	IPamManagementState_managed   IPamManagementState = "managed"
-	IPamManagementState_unmanaged IPamManagementState = "unmanaged"
-	IPamManagementState_ignored   IPamManagementState = "ignored"
-)
-
-type IPamOverlapStatus string
-
-const (
-	IPamOverlapStatus_overlapping    IPamOverlapStatus = "overlapping"
-	IPamOverlapStatus_nonoverlapping IPamOverlapStatus = "nonoverlapping"
-	IPamOverlapStatus_ignored        IPamOverlapStatus = "ignored"
-)
-
-type IPamPoolAWSService string
-
-const (
-	IPamPoolAWSService_ec2 IPamPoolAWSService = "ec2"
-)
-
-type IPamPoolAllocationResourceType string
-
-const (
-	IPamPoolAllocationResourceType_ipam_pool            IPamPoolAllocationResourceType = "ipam-pool"
-	IPamPoolAllocationResourceType_vpc                  IPamPoolAllocationResourceType = "vpc"
-	IPamPoolAllocationResourceType_ec2_public_ipv4_pool IPamPoolAllocationResourceType = "ec2-public-ipv4-pool"
-	IPamPoolAllocationResourceType_custom               IPamPoolAllocationResourceType = "custom"
-)
-
-type IPamPoolCIDRFailureCode string
-
-const (
-	IPamPoolCIDRFailureCode_cidr_not_available IPamPoolCIDRFailureCode = "cidr-not-available"
-)
-
-type IPamPoolCIDRState string
-
-const (
-	IPamPoolCIDRState_pending_provision   IPamPoolCIDRState = "pending-provision"
-	IPamPoolCIDRState_provisioned         IPamPoolCIDRState = "provisioned"
-	IPamPoolCIDRState_failed_provision    IPamPoolCIDRState = "failed-provision"
-	IPamPoolCIDRState_pending_deprovision IPamPoolCIDRState = "pending-deprovision"
-	IPamPoolCIDRState_deprovisioned       IPamPoolCIDRState = "deprovisioned"
-	IPamPoolCIDRState_failed_deprovision  IPamPoolCIDRState = "failed-deprovision"
-	IPamPoolCIDRState_pending_import      IPamPoolCIDRState = "pending-import"
-	IPamPoolCIDRState_failed_import       IPamPoolCIDRState = "failed-import"
-)
-
-type IPamPoolState string
-
-const (
-	IPamPoolState_create_in_progress  IPamPoolState = "create-in-progress"
-	IPamPoolState_create_complete     IPamPoolState = "create-complete"
-	IPamPoolState_create_failed       IPamPoolState = "create-failed"
-	IPamPoolState_modify_in_progress  IPamPoolState = "modify-in-progress"
-	IPamPoolState_modify_complete     IPamPoolState = "modify-complete"
-	IPamPoolState_modify_failed       IPamPoolState = "modify-failed"
-	IPamPoolState_delete_in_progress  IPamPoolState = "delete-in-progress"
-	IPamPoolState_delete_complete     IPamPoolState = "delete-complete"
-	IPamPoolState_delete_failed       IPamPoolState = "delete-failed"
-	IPamPoolState_isolate_in_progress IPamPoolState = "isolate-in-progress"
-	IPamPoolState_isolate_complete    IPamPoolState = "isolate-complete"
-	IPamPoolState_restore_in_progress IPamPoolState = "restore-in-progress"
-)
-
-type IPamResourceType string
-
-const (
-	IPamResourceType_vpc              IPamResourceType = "vpc"
-	IPamResourceType_subnet           IPamResourceType = "subnet"
-	IPamResourceType_eip              IPamResourceType = "eip"
-	IPamResourceType_public_ipv4_pool IPamResourceType = "public-ipv4-pool"
-	IPamResourceType_ipv6_pool        IPamResourceType = "ipv6-pool"
-)
-
-type IPamScopeState string
-
-const (
-	IPamScopeState_create_in_progress  IPamScopeState = "create-in-progress"
-	IPamScopeState_create_complete     IPamScopeState = "create-complete"
-	IPamScopeState_create_failed       IPamScopeState = "create-failed"
-	IPamScopeState_modify_in_progress  IPamScopeState = "modify-in-progress"
-	IPamScopeState_modify_complete     IPamScopeState = "modify-complete"
-	IPamScopeState_modify_failed       IPamScopeState = "modify-failed"
-	IPamScopeState_delete_in_progress  IPamScopeState = "delete-in-progress"
-	IPamScopeState_delete_complete     IPamScopeState = "delete-complete"
-	IPamScopeState_delete_failed       IPamScopeState = "delete-failed"
-	IPamScopeState_isolate_in_progress IPamScopeState = "isolate-in-progress"
-	IPamScopeState_isolate_complete    IPamScopeState = "isolate-complete"
-	IPamScopeState_restore_in_progress IPamScopeState = "restore-in-progress"
-)
-
-type IPamScopeType string
-
-const (
-	IPamScopeType_public  IPamScopeType = "public"
-	IPamScopeType_private IPamScopeType = "private"
-)
-
-type IPamState string
-
-const (
-	IPamState_create_in_progress  IPamState = "create-in-progress"
-	IPamState_create_complete     IPamState = "create-complete"
-	IPamState_create_failed       IPamState = "create-failed"
-	IPamState_modify_in_progress  IPamState = "modify-in-progress"
-	IPamState_modify_complete     IPamState = "modify-complete"
-	IPamState_modify_failed       IPamState = "modify-failed"
-	IPamState_delete_in_progress  IPamState = "delete-in-progress"
-	IPamState_delete_complete     IPamState = "delete-complete"
-	IPamState_delete_failed       IPamState = "delete-failed"
-	IPamState_isolate_in_progress IPamState = "isolate-in-progress"
-	IPamState_isolate_complete    IPamState = "isolate-complete"
-	IPamState_restore_in_progress IPamState = "restore-in-progress"
 )
 
 type IPv6SupportValue string
@@ -2664,6 +2664,12 @@ const (
 	SummaryStatus_initializing      SummaryStatus = "initializing"
 )
 
+type TPMSupportValues string
+
+const (
+	TPMSupportValues_v2_0 TPMSupportValues = "v2.0"
+)
+
 type TargetCapacityUnitType string
 
 const (
@@ -2705,12 +2711,6 @@ const (
 	TieringOperationStatus_permanent_restore_in_progress TieringOperationStatus = "permanent-restore-in-progress"
 	TieringOperationStatus_permanent_restore_completed   TieringOperationStatus = "permanent-restore-completed"
 	TieringOperationStatus_permanent_restore_failed      TieringOperationStatus = "permanent-restore-failed"
-)
-
-type TpmSupportValues string
-
-const (
-	TpmSupportValues_v2_0 TpmSupportValues = "v2.0"
 )
 
 type TrafficDirection string

@@ -801,7 +801,7 @@ type NetworkBinding struct {
 // +kubebuilder:skipversion
 type NetworkConfiguration struct {
 	// An object representing the networking details for a task or service.
-	AWSvpcConfiguration *AWSVPCConfiguration `json:"awsvpcConfiguration,omitempty"`
+	AWSVPCConfiguration *AWSVPCConfiguration `json:"awsVPCConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1198,13 +1198,13 @@ type TaskDefinition_SDK struct {
 
 	InferenceAccelerators []*InferenceAccelerator `json:"inferenceAccelerators,omitempty"`
 
-	IPcMode *string `json:"ipcMode,omitempty"`
+	IPCMode *string `json:"ipcMode,omitempty"`
 
 	Memory *string `json:"memory,omitempty"`
 
 	NetworkMode *string `json:"networkMode,omitempty"`
 
-	PidMode *string `json:"pidMode,omitempty"`
+	PIDMode *string `json:"pidMode,omitempty"`
 
 	PlacementConstraints []*TaskDefinitionPlacementConstraint `json:"placementConstraints,omitempty"`
 	// The configuration details for the App Mesh proxy.

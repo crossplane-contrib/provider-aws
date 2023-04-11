@@ -555,7 +555,7 @@ func GenerateTaskDefinition(resp *svcsdk.DescribeTaskDefinitionOutput) *svcapity
 			f1.InferenceAccelerators = f1f7
 		}
 		if resp.TaskDefinition.IpcMode != nil {
-			f1.IPcMode = resp.TaskDefinition.IpcMode
+			f1.IPCMode = resp.TaskDefinition.IpcMode
 		}
 		if resp.TaskDefinition.Memory != nil {
 			f1.Memory = resp.TaskDefinition.Memory
@@ -564,7 +564,7 @@ func GenerateTaskDefinition(resp *svcsdk.DescribeTaskDefinitionOutput) *svcapity
 			f1.NetworkMode = resp.TaskDefinition.NetworkMode
 		}
 		if resp.TaskDefinition.PidMode != nil {
-			f1.PidMode = resp.TaskDefinition.PidMode
+			f1.PIDMode = resp.TaskDefinition.PidMode
 		}
 		if resp.TaskDefinition.PlacementConstraints != nil {
 			f1f12 := []*svcapitypes.TaskDefinitionPlacementConstraint{}
@@ -1248,8 +1248,8 @@ func GenerateRegisterTaskDefinitionInput(cr *svcapitypes.TaskDefinition) *svcsdk
 		}
 		res.SetInferenceAccelerators(f4)
 	}
-	if cr.Spec.ForProvider.IPcMode != nil {
-		res.SetIpcMode(*cr.Spec.ForProvider.IPcMode)
+	if cr.Spec.ForProvider.IPCMode != nil {
+		res.SetIpcMode(*cr.Spec.ForProvider.IPCMode)
 	}
 	if cr.Spec.ForProvider.Memory != nil {
 		res.SetMemory(*cr.Spec.ForProvider.Memory)
@@ -1257,8 +1257,8 @@ func GenerateRegisterTaskDefinitionInput(cr *svcapitypes.TaskDefinition) *svcsdk
 	if cr.Spec.ForProvider.NetworkMode != nil {
 		res.SetNetworkMode(*cr.Spec.ForProvider.NetworkMode)
 	}
-	if cr.Spec.ForProvider.PidMode != nil {
-		res.SetPidMode(*cr.Spec.ForProvider.PidMode)
+	if cr.Spec.ForProvider.PIDMode != nil {
+		res.SetPidMode(*cr.Spec.ForProvider.PIDMode)
 	}
 	if cr.Spec.ForProvider.PlacementConstraints != nil {
 		f9 := []*svcsdk.TaskDefinitionPlacementConstraint{}

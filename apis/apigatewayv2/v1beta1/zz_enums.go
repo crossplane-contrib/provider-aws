@@ -21,17 +21,17 @@ package v1beta1
 type AuthorizationType string
 
 const (
-	AuthorizationType_NONE AuthorizationType = "NONE"
+	AuthorizationType_NONE    AuthorizationType = "NONE"
 	AuthorizationType_AWS_IAM AuthorizationType = "AWS_IAM"
-	AuthorizationType_CUSTOM AuthorizationType = "CUSTOM"
-	AuthorizationType_JWT AuthorizationType = "JWT"
+	AuthorizationType_CUSTOM  AuthorizationType = "CUSTOM"
+	AuthorizationType_JWT     AuthorizationType = "JWT"
 )
 
 type AuthorizerType string
 
 const (
 	AuthorizerType_REQUEST AuthorizerType = "REQUEST"
-	AuthorizerType_JWT AuthorizerType = "JWT"
+	AuthorizerType_JWT     AuthorizerType = "JWT"
 )
 
 type ConnectionType string
@@ -45,23 +45,23 @@ type ContentHandlingStrategy string
 
 const (
 	ContentHandlingStrategy_CONVERT_TO_BINARY ContentHandlingStrategy = "CONVERT_TO_BINARY"
-	ContentHandlingStrategy_CONVERT_TO_TEXT ContentHandlingStrategy = "CONVERT_TO_TEXT"
+	ContentHandlingStrategy_CONVERT_TO_TEXT   ContentHandlingStrategy = "CONVERT_TO_TEXT"
 )
 
 type DeploymentStatus_SDK string
 
 const (
-	DeploymentStatus_SDK_PENDING DeploymentStatus_SDK = "PENDING"
-	DeploymentStatus_SDK_FAILED DeploymentStatus_SDK = "FAILED"
+	DeploymentStatus_SDK_PENDING  DeploymentStatus_SDK = "PENDING"
+	DeploymentStatus_SDK_FAILED   DeploymentStatus_SDK = "FAILED"
 	DeploymentStatus_SDK_DEPLOYED DeploymentStatus_SDK = "DEPLOYED"
 )
 
 type DomainNameStatus_SDK string
 
 const (
-	DomainNameStatus_SDK_AVAILABLE DomainNameStatus_SDK = "AVAILABLE"
-	DomainNameStatus_SDK_UPDATING DomainNameStatus_SDK = "UPDATING"
-	DomainNameStatus_SDK_PENDING_CERTIFICATE_REIMPORT DomainNameStatus_SDK = "PENDING_CERTIFICATE_REIMPORT"
+	DomainNameStatus_SDK_AVAILABLE                      DomainNameStatus_SDK = "AVAILABLE"
+	DomainNameStatus_SDK_UPDATING                       DomainNameStatus_SDK = "UPDATING"
+	DomainNameStatus_SDK_PENDING_CERTIFICATE_REIMPORT   DomainNameStatus_SDK = "PENDING_CERTIFICATE_REIMPORT"
 	DomainNameStatus_SDK_PENDING_OWNERSHIP_VERIFICATION DomainNameStatus_SDK = "PENDING_OWNERSHIP_VERIFICATION"
 )
 
@@ -69,32 +69,32 @@ type EndpointType string
 
 const (
 	EndpointType_REGIONAL EndpointType = "REGIONAL"
-	EndpointType_EDGE EndpointType = "EDGE"
+	EndpointType_EDGE     EndpointType = "EDGE"
 )
 
 type IntegrationType string
 
 const (
-	IntegrationType_AWS IntegrationType = "AWS"
-	IntegrationType_HTTP IntegrationType = "HTTP"
-	IntegrationType_MOCK IntegrationType = "MOCK"
+	IntegrationType_AWS        IntegrationType = "AWS"
+	IntegrationType_HTTP       IntegrationType = "HTTP"
+	IntegrationType_MOCK       IntegrationType = "MOCK"
 	IntegrationType_HTTP_PROXY IntegrationType = "HTTP_PROXY"
-	IntegrationType_AWS_PROXY IntegrationType = "AWS_PROXY"
+	IntegrationType_AWS_PROXY  IntegrationType = "AWS_PROXY"
 )
 
 type LoggingLevel string
 
 const (
 	LoggingLevel_ERROR LoggingLevel = "ERROR"
-	LoggingLevel_INFO LoggingLevel = "INFO"
-	LoggingLevel_OFF LoggingLevel = "OFF"
+	LoggingLevel_INFO  LoggingLevel = "INFO"
+	LoggingLevel_OFF   LoggingLevel = "OFF"
 )
 
 type PassthroughBehavior string
 
 const (
-	PassthroughBehavior_WHEN_NO_MATCH PassthroughBehavior = "WHEN_NO_MATCH"
-	PassthroughBehavior_NEVER PassthroughBehavior = "NEVER"
+	PassthroughBehavior_WHEN_NO_MATCH     PassthroughBehavior = "WHEN_NO_MATCH"
+	PassthroughBehavior_NEVER             PassthroughBehavior = "NEVER"
 	PassthroughBehavior_WHEN_NO_TEMPLATES PassthroughBehavior = "WHEN_NO_TEMPLATES"
 )
 
@@ -102,7 +102,7 @@ type ProtocolType string
 
 const (
 	ProtocolType_WEBSOCKET ProtocolType = "WEBSOCKET"
-	ProtocolType_HTTP ProtocolType = "HTTP"
+	ProtocolType_HTTP      ProtocolType = "HTTP"
 )
 
 type SecurityPolicy string
@@ -115,11 +115,11 @@ const (
 type VPCLinkStatus_SDK string
 
 const (
-	VPCLinkStatus_SDK_PENDING VPCLinkStatus_SDK = "PENDING"
+	VPCLinkStatus_SDK_PENDING   VPCLinkStatus_SDK = "PENDING"
 	VPCLinkStatus_SDK_AVAILABLE VPCLinkStatus_SDK = "AVAILABLE"
-	VPCLinkStatus_SDK_DELETING VPCLinkStatus_SDK = "DELETING"
-	VPCLinkStatus_SDK_FAILED VPCLinkStatus_SDK = "FAILED"
-	VPCLinkStatus_SDK_INACTIVE VPCLinkStatus_SDK = "INACTIVE"
+	VPCLinkStatus_SDK_DELETING  VPCLinkStatus_SDK = "DELETING"
+	VPCLinkStatus_SDK_FAILED    VPCLinkStatus_SDK = "FAILED"
+	VPCLinkStatus_SDK_INACTIVE  VPCLinkStatus_SDK = "INACTIVE"
 )
 
 type VPCLinkVersion string

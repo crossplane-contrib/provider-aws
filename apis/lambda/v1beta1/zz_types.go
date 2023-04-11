@@ -27,69 +27,60 @@ var (
 	_ = &metav1.Time{}
 )
 
-
-
 // +kubebuilder:skipversion
 type AccountLimit struct {
-	
 	CodeSizeUnzipped *int64 `json:"codeSizeUnzipped,omitempty"`
-	
+
 	CodeSizeZipped *int64 `json:"codeSizeZipped,omitempty"`
-	
+
 	TotalCodeSize *int64 `json:"totalCodeSize,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type AccountUsage struct {
-	
 	FunctionCount *int64 `json:"functionCount,omitempty"`
-	
+
 	TotalCodeSize *int64 `json:"totalCodeSize,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type CORS struct {
-	
 	AllowCredentials *bool `json:"allowCredentials,omitempty"`
-	
+
 	AllowHeaders []*string `json:"allowHeaders,omitempty"`
-	
+
 	AllowMethods []*string `json:"allowMethods,omitempty"`
-	
+
 	AllowOrigins []*string `json:"allowOrigins,omitempty"`
-	
+
 	ExposeHeaders []*string `json:"exposeHeaders,omitempty"`
-	
+
 	MaxAge *int64 `json:"maxAge,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type CodeSigningConfig struct {
-	
 	CodeSigningConfigARN *string `json:"codeSigningConfigARN,omitempty"`
-	
+
 	Description *string `json:"description,omitempty"`
-	
+
 	LastModified *string `json:"lastModified,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type DeadLetterConfig struct {
-	
 	TargetARN *string `json:"targetARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type Environment struct {
-	
 	Variables map[string]*string `json:"variables,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type EnvironmentError struct {
-	
 	ErrorCode *string `json:"errorCode,omitempty"`
-	
+
 	Message *string `json:"message,omitempty"`
 }
 
@@ -97,112 +88,107 @@ type EnvironmentError struct {
 type EnvironmentResponse struct {
 	// Error messages for environment variables that couldn't be applied.
 	Error *EnvironmentError `json:"error,omitempty"`
-	
+
 	Variables map[string]*string `json:"variables,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type EphemeralStorage struct {
-	
 	Size *int64 `json:"size,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FileSystemConfig struct {
-	
 	ARN *string `json:"arn,omitempty"`
-	
+
 	LocalMountPath *string `json:"localMountPath,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FunctionCode struct {
-	
 	ImageURI *string `json:"imageURI,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FunctionCodeLocation struct {
-	
 	ImageURI *string `json:"imageURI,omitempty"`
-	
+
 	Location *string `json:"location,omitempty"`
-	
+
 	RepositoryType *string `json:"repositoryType,omitempty"`
-	
+
 	ResolvedImageURI *string `json:"resolvedImageURI,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FunctionConfiguration struct {
-	
 	Architectures []*string `json:"architectures,omitempty"`
-	
+
 	CodeSHA256 *string `json:"codeSHA256,omitempty"`
-	
+
 	CodeSize *int64 `json:"codeSize,omitempty"`
 	// The dead-letter queue (https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html#dlq)
-// for failed asynchronous invocations.
+	// for failed asynchronous invocations.
 	DeadLetterConfig *DeadLetterConfig `json:"deadLetterConfig,omitempty"`
-	
+
 	Description *string `json:"description,omitempty"`
 	// The results of an operation to update or read environment variables. If the
-// operation succeeds, the response contains the environment variables. If it
-// fails, the response contains details about the error.
+	// operation succeeds, the response contains the environment variables. If it
+	// fails, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
 	// The size of the function's /tmp directory in MB. The default value is 512,
-// but it can be any whole number between 512 and 10,240 MB.
+	// but it can be any whole number between 512 and 10,240 MB.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
-	
+
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
-	
+
 	FunctionARN *string `json:"functionARN,omitempty"`
-	
+
 	FunctionName *string `json:"functionName,omitempty"`
-	
+
 	Handler *string `json:"handler,omitempty"`
 	// Response to a GetFunctionConfiguration request.
 	ImageConfigResponse *ImageConfigResponse `json:"imageConfigResponse,omitempty"`
-	
+
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
-	
+
 	LastModified *string `json:"lastModified,omitempty"`
-	
+
 	LastUpdateStatus *string `json:"lastUpdateStatus,omitempty"`
-	
+
 	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
-	
+
 	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
-	
+
 	MasterARN *string `json:"masterARN,omitempty"`
-	
+
 	MemorySize *int64 `json:"memorySize,omitempty"`
-	
+
 	PackageType *string `json:"packageType,omitempty"`
-	
+
 	RevisionID *string `json:"revisionID,omitempty"`
-	
+
 	Role *string `json:"role,omitempty"`
-	
+
 	Runtime *string `json:"runtime,omitempty"`
-	
+
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
-	
+
 	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
 	// The function's SnapStart (https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
-// setting.
+	// setting.
 	SnapStart *SnapStartResponse `json:"snapStart,omitempty"`
-	
+
 	State *string `json:"state,omitempty"`
-	
+
 	StateReason *string `json:"stateReason,omitempty"`
-	
+
 	StateReasonCode *string `json:"stateReasonCode,omitempty"`
-	
+
 	Timeout *int64 `json:"timeout,omitempty"`
 	// The function's X-Ray tracing configuration.
 	TracingConfig *TracingConfigResponse `json:"tracingConfig,omitempty"`
-	
+
 	Version *string `json:"version,omitempty"`
 	// The VPC security groups and subnets that are attached to a Lambda function.
 	VPCConfig *VPCConfigResponse `json:"vpcConfig,omitempty"`
@@ -210,44 +196,40 @@ type FunctionConfiguration struct {
 
 // +kubebuilder:skipversion
 type FunctionEventInvokeConfig struct {
-	
 	FunctionARN *string `json:"functionARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type FunctionURLConfig_SDK struct {
-	
 	AuthType *string `json:"authType,omitempty"`
 	// The cross-origin resource sharing (CORS) (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-// settings for your Lambda function URL. Use CORS to grant access to your function
-// URL from any origin. You can also use CORS to control access for specific
-// HTTP headers and methods in requests to your function URL.
+	// settings for your Lambda function URL. Use CORS to grant access to your function
+	// URL from any origin. You can also use CORS to control access for specific
+	// HTTP headers and methods in requests to your function URL.
 	CORS *CORS `json:"cors,omitempty"`
-	
+
 	CreationTime *string `json:"creationTime,omitempty"`
-	
+
 	FunctionARN *string `json:"functionARN,omitempty"`
-	
+
 	FunctionURL *string `json:"functionURL,omitempty"`
-	
+
 	LastModifiedTime *string `json:"lastModifiedTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ImageConfig struct {
-	
 	Command []*string `json:"command,omitempty"`
-	
+
 	EntryPoint []*string `json:"entryPoint,omitempty"`
-	
+
 	WorkingDirectory *string `json:"workingDirectory,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ImageConfigError struct {
-	
 	ErrorCode *string `json:"errorCode,omitempty"`
-	
+
 	Message *string `json:"message,omitempty"`
 }
 
@@ -256,102 +238,91 @@ type ImageConfigResponse struct {
 	// Error response to GetFunctionConfiguration.
 	Error *ImageConfigError `json:"error,omitempty"`
 	// Configuration values that override the container image Dockerfile settings.
-// For more information, see Container image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
+	// For more information, see Container image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type Layer struct {
-	
 	ARN *string `json:"arn,omitempty"`
-	
+
 	CodeSize *int64 `json:"codeSize,omitempty"`
-	
+
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
-	
+
 	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LayerVersionContentOutput struct {
-	
 	CodeSHA256 *string `json:"codeSHA256,omitempty"`
-	
+
 	CodeSize *int64 `json:"codeSize,omitempty"`
-	
+
 	Location *string `json:"location,omitempty"`
-	
+
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
-	
+
 	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type LayerVersionsListItem struct {
-	
 	CreatedDate *string `json:"createdDate,omitempty"`
-	
+
 	Description *string `json:"description,omitempty"`
-	
+
 	LayerVersionARN *string `json:"layerVersionARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ProvisionedConcurrencyConfigListItem struct {
-	
 	FunctionARN *string `json:"functionARN,omitempty"`
-	
+
 	LastModified *string `json:"lastModified,omitempty"`
-	
+
 	StatusReason *string `json:"statusReason,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type PutFunctionConcurrencyOutput struct {
-	
 	ReservedConcurrentExecutions *int64 `json:"reservedConcurrentExecutions,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SnapStart struct {
-	
 	ApplyOn *string `json:"applyOn,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SnapStartResponse struct {
-	
 	ApplyOn *string `json:"applyOn,omitempty"`
-	
+
 	OptimizationStatus *string `json:"optimizationStatus,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TracingConfig struct {
-	
 	Mode *string `json:"mode,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TracingConfigResponse struct {
-	
 	Mode *string `json:"mode,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type VPCConfig struct {
-	
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
-	
+
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type VPCConfigResponse struct {
-	
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
-	
+
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
-	
+
 	VPCID *string `json:"vpcID,omitempty"`
 }

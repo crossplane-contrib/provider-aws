@@ -29,44 +29,42 @@ type VPCLinkParameters struct {
 	// Region is which region the VPCLink will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	
-	 // +kubebuilder:validation:Required
+
+	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	
-	 Tags map[string]*string `json:"tags,omitempty"` 
+
+	Tags                    map[string]*string `json:"tags,omitempty"`
 	CustomVPCLinkParameters `json:",inline"`
 }
 
 // VPCLinkSpec defines the desired state of VPCLink
 type VPCLinkSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider VPCLinkParameters `json:"forProvider"`
+	ForProvider       VPCLinkParameters `json:"forProvider"`
 }
 
 // VPCLinkObservation defines the observed state of VPCLink
 type VPCLinkObservation struct {
-	
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	
+
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
-	
+
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
-	
+
 	VPCLinkID *string `json:"vpcLinkID,omitempty"`
-	
+
 	VPCLinkStatus *string `json:"vpcLinkStatus,omitempty"`
-	
+
 	VPCLinkStatusMessage *string `json:"vpcLinkStatusMessage,omitempty"`
-	
+
 	VPCLinkVersion *string `json:"vpcLinkVersion,omitempty"`
 }
 
 // VPCLinkStatus defines the observed state of VPCLink.
 type VPCLinkStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider VPCLinkObservation `json:"atProvider,omitempty"`
+	AtProvider          VPCLinkObservation `json:"atProvider,omitempty"`
 }
-
 
 // +kubebuilder:object:root=true
 
@@ -74,14 +72,15 @@ type VPCLinkStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type VPCLink struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec   VPCLinkSpec   `json:"spec"`
-	Status VPCLinkStatus `json:"status,omitempty"`
+	Spec              VPCLinkSpec   `json:"spec"`
+	Status            VPCLinkStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -90,7 +89,7 @@ type VPCLink struct {
 type VPCLinkList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items []VPCLink `json:"items"`
+	Items           []VPCLink `json:"items"`
 }
 
 // Repository type metadata.
@@ -104,4 +103,3 @@ var (
 func init() {
 	SchemeBuilder.Register(&VPCLink{}, &VPCLinkList{})
 }
-

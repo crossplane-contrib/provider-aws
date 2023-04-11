@@ -83,7 +83,7 @@ func postObserve(_ context.Context, cr *svcapitypes.ComputeEnvironment, resp *sv
 		return managed.ExternalObservation{}, err
 	}
 
-	cr.Status.AtProvider.EcsClusterARN = resp.ComputeEnvironments[0].EcsClusterArn
+	cr.Status.AtProvider.ECSClusterARN = resp.ComputeEnvironments[0].EcsClusterArn
 
 	switch awsclients.StringValue(resp.ComputeEnvironments[0].Status) {
 	case svcsdk.CEStatusCreating:

@@ -260,7 +260,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						}
 						f6elemf6f0.Subnets = f6elemf6f0f2
 					}
-					f6elemf6.AWSvpcConfiguration = f6elemf6f0
+					f6elemf6.AWSVPCConfiguration = f6elemf6f0
 				}
 				f6elem.NetworkConfiguration = f6elemf6
 			}
@@ -473,7 +473,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				}
 				f14f0.Subnets = f14f0f2
 			}
-			f14.AWSvpcConfiguration = f14f0
+			f14.AWSVPCConfiguration = f14f0
 		}
 		cr.Status.AtProvider.NetworkConfiguration = f14
 	} else {
@@ -688,7 +688,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 						}
 						f30elemf8f0.Subnets = f30elemf8f0f2
 					}
-					f30elemf8.AWSvpcConfiguration = f30elemf8f0
+					f30elemf8.AWSVPCConfiguration = f30elemf8f0
 				}
 				f30elem.NetworkConfiguration = f30elemf8
 			}

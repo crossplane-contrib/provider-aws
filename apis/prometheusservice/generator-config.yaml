@@ -1,4 +1,5 @@
-model_name: amp
+sdk_names:
+  model_name: amp
 ignore:
   resource_names:
     - LoggingConfiguration

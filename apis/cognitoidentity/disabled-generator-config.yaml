@@ -1,6 +1,6 @@
 # Disabled due to issue https://github.com/aws-controllers-k8s/community/issues/1294
-
-model_name: cognito-identity
+sdk_names:
+  model_name: cognito-identity
 ignore:
   field_paths:
     - CreateIdentityPoolInput.OpenIdConnectProviderARNs

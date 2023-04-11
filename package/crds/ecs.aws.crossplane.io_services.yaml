@@ -29,6 +29,9 @@ spec:
     - jsonPath: .metadata.annotations.crossplane\.io/external-name
       name: EXTERNAL-NAME
       type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -1237,7 +1240,7 @@ spec:
                           description: An object representing the network configuration
                             for a task or service.
                           properties:
-                            awsvpcConfiguration:
+                            awsVPCConfiguration:
                               description: An object representing the networking details
                                 for a task or service.
                               properties:
@@ -1416,7 +1419,7 @@ spec:
                       tasks that receive their own elastic network interface by using
                       the awsvpc networking mode.
                     properties:
-                      awsvpcConfiguration:
+                      awsVPCConfiguration:
                         description: An object representing the networking details
                           for a task or service.
                         properties:
@@ -1528,7 +1531,7 @@ spec:
                           description: An object representing the network configuration
                             for a task or service.
                           properties:
-                            awsvpcConfiguration:
+                            awsVPCConfiguration:
                               description: An object representing the networking details
                                 for a task or service.
                               properties:

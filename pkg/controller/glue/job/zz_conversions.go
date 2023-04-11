@@ -2108,9 +2108,9 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 					f1valf48.OutputSchemas = f1valf48f2
 				}
 				if f1valiter.SparkSQL.SqlAliases != nil {
-					f1valf48f3 := []*svcapitypes.SqlAlias{}
+					f1valf48f3 := []*svcapitypes.SQLAlias{}
 					for _, f1valf48f3iter := range f1valiter.SparkSQL.SqlAliases {
-						f1valf48f3elem := &svcapitypes.SqlAlias{}
+						f1valf48f3elem := &svcapitypes.SQLAlias{}
 						if f1valf48f3iter.Alias != nil {
 							f1valf48f3elem.Alias = f1valf48f3iter.Alias
 						}
@@ -2119,10 +2119,10 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 						}
 						f1valf48f3 = append(f1valf48f3, f1valf48f3elem)
 					}
-					f1valf48.SqlAliases = f1valf48f3
+					f1valf48.SQLAliases = f1valf48f3
 				}
 				if f1valiter.SparkSQL.SqlQuery != nil {
-					f1valf48.SqlQuery = f1valiter.SparkSQL.SqlQuery
+					f1valf48.SQLQuery = f1valiter.SparkSQL.SqlQuery
 				}
 				f1val.SparkSQL = f1valf48
 			}
@@ -4422,9 +4422,9 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 					}
 					f1valf48.SetOutputSchemas(f1valf48f2)
 				}
-				if f1valiter.SparkSQL.SqlAliases != nil {
+				if f1valiter.SparkSQL.SQLAliases != nil {
 					f1valf48f3 := []*svcsdk.SqlAlias{}
-					for _, f1valf48f3iter := range f1valiter.SparkSQL.SqlAliases {
+					for _, f1valf48f3iter := range f1valiter.SparkSQL.SQLAliases {
 						f1valf48f3elem := &svcsdk.SqlAlias{}
 						if f1valf48f3iter.Alias != nil {
 							f1valf48f3elem.SetAlias(*f1valf48f3iter.Alias)
@@ -4436,8 +4436,8 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 					}
 					f1valf48.SetSqlAliases(f1valf48f3)
 				}
-				if f1valiter.SparkSQL.SqlQuery != nil {
-					f1valf48.SetSqlQuery(*f1valiter.SparkSQL.SqlQuery)
+				if f1valiter.SparkSQL.SQLQuery != nil {
+					f1valf48.SetSqlQuery(*f1valiter.SparkSQL.SQLQuery)
 				}
 				f1val.SetSparkSQL(f1valf48)
 			}

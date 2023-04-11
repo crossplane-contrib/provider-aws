@@ -1,4 +1,5 @@
-model_name: elasticloadbalancingv2
+sdk_names:
+  model_name: elasticloadbalancingv2
 ignore:
   field_paths:
     - CreateListenerInput.LoadBalancerArn

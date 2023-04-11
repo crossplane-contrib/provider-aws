@@ -76,7 +76,7 @@ type ComputeEnvironmentDetail struct {
 
 	ContainerOrchestrationType *string `json:"containerOrchestrationType,omitempty"`
 
-	EcsClusterARN *string `json:"ecsClusterARN,omitempty"`
+	ECSClusterARN *string `json:"ecsClusterARN,omitempty"`
 	// Configuration for the Amazon EKS cluster that supports the Batch compute
 	// environment. The cluster must exist before the compute environment can be
 	// created.

@@ -83,7 +83,7 @@ type Endpoint struct {
 // +kubebuilder:skipversion
 type JobDriver struct {
 	// The job driver for job type.
-	SparkSqlJobDriver *SparkSqlJobDriver `json:"sparkSqlJobDriver,omitempty"`
+	SparkSQLJobDriver *SparkSQLJobDriver `json:"sparkSQLJobDriver,omitempty"`
 	// The information about job driver for Spark submit.
 	SparkSubmitJobDriver *SparkSubmitJobDriver `json:"sparkSubmitJobDriver,omitempty"`
 }
@@ -150,10 +150,10 @@ type ParametricCloudWatchMonitoringConfiguration struct {
 }
 
 // +kubebuilder:skipversion
-type SparkSqlJobDriver struct {
+type SparkSQLJobDriver struct {
 	EntryPoint *string `json:"entryPoint,omitempty"`
 
-	SparkSqlParameters *string `json:"sparkSqlParameters,omitempty"`
+	SparkSQLParameters *string `json:"sparkSQLParameters,omitempty"`
 }
 
 // +kubebuilder:skipversion
