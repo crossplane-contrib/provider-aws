@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/autoscaling"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
 )
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
