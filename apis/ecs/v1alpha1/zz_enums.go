@@ -207,12 +207,12 @@ const (
 	HealthStatus_UNKNOWN   HealthStatus = "UNKNOWN"
 )
 
-type IPcMode string
+type IPCMode string
 
 const (
-	IPcMode_host IPcMode = "host"
-	IPcMode_task IPcMode = "task"
-	IPcMode_none IPcMode = "none"
+	IPCMode_host IPCMode = "host"
+	IPCMode_task IPCMode = "task"
+	IPCMode_none IPCMode = "none"
 )
 
 type InstanceHealthCheckState string
@@ -293,11 +293,11 @@ const (
 	OSFamily_LINUX                    OSFamily = "LINUX"
 )
 
-type PidMode string
+type PIDMode string
 
 const (
-	PidMode_host PidMode = "host"
-	PidMode_task PidMode = "task"
+	PIDMode_host PIDMode = "host"
+	PIDMode_task PIDMode = "task"
 )
 
 type PlacementConstraintType string

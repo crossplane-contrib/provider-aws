@@ -1,4 +1,5 @@
-model_name: cognito-idp
+sdk_names:
+  model_name: cognito-idp
 ignore:
   resource_names:
     - UserImportJob

@@ -1,4 +1,5 @@
-model_name: opensearch
+sdk_names:
+  model_name: opensearch
 ignore:
   resource_names:
     - Package

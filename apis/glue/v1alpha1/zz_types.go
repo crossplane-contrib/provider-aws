@@ -2085,6 +2085,13 @@ type S3Target struct {
 }
 
 // +kubebuilder:skipversion
+type SQLAlias struct {
+	Alias *string `json:"alias,omitempty"`
+
+	From *string `json:"from,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Schedule struct {
 	ScheduleExpression *string `json:"scheduleExpression,omitempty"`
 
@@ -2235,9 +2242,9 @@ type SparkSQL struct {
 
 	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
 
-	SqlAliases []*SqlAlias `json:"sqlAliases,omitempty"`
+	SQLAliases []*SQLAlias `json:"sqlAliases,omitempty"`
 
-	SqlQuery *string `json:"sqlQuery,omitempty"`
+	SQLQuery *string `json:"sqlQuery,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2260,13 +2267,6 @@ type SplitFields struct {
 	Name *string `json:"name,omitempty"`
 
 	Paths [][]*string `json:"paths,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type SqlAlias struct {
-	Alias *string `json:"alias,omitempty"`
-
-	From *string `json:"from,omitempty"`
 }
 
 // +kubebuilder:skipversion

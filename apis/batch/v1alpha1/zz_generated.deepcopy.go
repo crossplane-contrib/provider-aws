@@ -206,8 +206,8 @@ func (in *ComputeEnvironmentDetail) DeepCopyInto(out *ComputeEnvironmentDetail) 
 		*out = new(string)
 		**out = **in
 	}
-	if in.EcsClusterARN != nil {
-		in, out := &in.EcsClusterARN, &out.EcsClusterARN
+	if in.ECSClusterARN != nil {
+		in, out := &in.ECSClusterARN, &out.ECSClusterARN
 		*out = new(string)
 		**out = **in
 	}
@@ -328,8 +328,8 @@ func (in *ComputeEnvironmentObservation) DeepCopyInto(out *ComputeEnvironmentObs
 		*out = new(string)
 		**out = **in
 	}
-	if in.EcsClusterARN != nil {
-		in, out := &in.EcsClusterARN, &out.EcsClusterARN
+	if in.ECSClusterARN != nil {
+		in, out := &in.ECSClusterARN, &out.ECSClusterARN
 		*out = new(string)
 		**out = **in
 	}

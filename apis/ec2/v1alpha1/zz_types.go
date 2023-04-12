@@ -80,7 +80,7 @@ type ActiveInstance struct {
 }
 
 // +kubebuilder:skipversion
-type AddIPamOperatingRegion struct {
+type AddIPAMOperatingRegion struct {
 	RegionName *string `json:"regionName,omitempty"`
 }
 
@@ -1782,26 +1782,10 @@ type IKEVersionsRequestListValue struct {
 }
 
 // +kubebuilder:skipversion
-type IPPermission struct {
-	FromPort *int64 `json:"fromPort,omitempty"`
-
-	IPProtocol *string `json:"ipProtocol,omitempty"`
-
-	ToPort *int64 `json:"toPort,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type IPRange struct {
-	CIDRIP *string `json:"cidrIP,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type IPam struct {
+type IPAM struct {
 	Description *string `json:"description,omitempty"`
 
-	IPamRegion *string `json:"ipamRegion,omitempty"`
+	IPAMRegion *string `json:"ipamRegion,omitempty"`
 
 	OwnerID *string `json:"ownerID,omitempty"`
 
@@ -1811,7 +1795,7 @@ type IPam struct {
 }
 
 // +kubebuilder:skipversion
-type IPamAddressHistoryRecord struct {
+type IPAMAddressHistoryRecord struct {
 	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
 
 	ResourceID *string `json:"resourceID,omitempty"`
@@ -1830,24 +1814,24 @@ type IPamAddressHistoryRecord struct {
 }
 
 // +kubebuilder:skipversion
-type IPamCIDRAuthorizationContext struct {
+type IPAMCIDRAuthorizationContext struct {
 	Message *string `json:"message,omitempty"`
 
 	Signature *string `json:"signature,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type IPamOperatingRegion struct {
+type IPAMOperatingRegion struct {
 	RegionName *string `json:"regionName,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type IPamPool struct {
+type IPAMPool struct {
 	AutoImport *bool `json:"autoImport,omitempty"`
 
 	Description *string `json:"description,omitempty"`
 
-	IPamRegion *string `json:"ipamRegion,omitempty"`
+	IPAMRegion *string `json:"ipamRegion,omitempty"`
 
 	Locale *string `json:"locale,omitempty"`
 
@@ -1863,7 +1847,7 @@ type IPamPool struct {
 }
 
 // +kubebuilder:skipversion
-type IPamPoolAllocation struct {
+type IPAMPoolAllocation struct {
 	CIDR *string `json:"cidr,omitempty"`
 
 	Description *string `json:"description,omitempty"`
@@ -1876,17 +1860,17 @@ type IPamPoolAllocation struct {
 }
 
 // +kubebuilder:skipversion
-type IPamPoolCIDR struct {
+type IPAMPoolCIDR struct {
 	CIDR *string `json:"cidr,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type IPamPoolCIDRFailureReason struct {
+type IPAMPoolCIDRFailureReason struct {
 	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type IPamResourceCIDR struct {
+type IPAMResourceCIDR struct {
 	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
 
 	ResourceID *string `json:"resourceID,omitempty"`
@@ -1901,17 +1885,17 @@ type IPamResourceCIDR struct {
 }
 
 // +kubebuilder:skipversion
-type IPamResourceTag struct {
+type IPAMResourceTag struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type IPamScope struct {
+type IPAMScope struct {
 	Description *string `json:"description,omitempty"`
 
-	IPamRegion *string `json:"ipamRegion,omitempty"`
+	IPAMRegion *string `json:"ipamRegion,omitempty"`
 
 	IsDefault *bool `json:"isDefault,omitempty"`
 
@@ -1920,6 +1904,22 @@ type IPamScope struct {
 	PoolCount *int64 `json:"poolCount,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPPermission struct {
+	FromPort *int64 `json:"fromPort,omitempty"`
+
+	IPProtocol *string `json:"ipProtocol,omitempty"`
+
+	ToPort *int64 `json:"toPort,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPRange struct {
+	CIDRIP *string `json:"cidrIP,omitempty"`
+
+	Description *string `json:"description,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -4057,7 +4057,7 @@ type RegisterInstanceTagAttributeRequest struct {
 }
 
 // +kubebuilder:skipversion
-type RemoveIPamOperatingRegion struct {
+type RemoveIPAMOperatingRegion struct {
 	RegionName *string `json:"regionName,omitempty"`
 }
 
@@ -4084,7 +4084,7 @@ type ReplaceRootVolumeTask struct {
 }
 
 // +kubebuilder:skipversion
-type RequestIPamResourceTag struct {
+type RequestIPAMResourceTag struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`

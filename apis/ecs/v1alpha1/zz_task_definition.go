@@ -120,7 +120,7 @@ type TaskDefinitionParameters struct {
 	//    will apply to all containers within a task.
 	//
 	// This parameter is not supported for Windows containers or tasks run on Fargate.
-	IPcMode *string `json:"ipcMode,omitempty"`
+	IPCMode *string `json:"ipcMode,omitempty"`
 	// The amount of memory (in MiB) used by the task. It can be expressed as an
 	// integer using MiB (for example ,1024) or as a string using GB (for example,
 	// 1GB or 1 GB) in a task definition. String values are converted to an integer
@@ -206,7 +206,7 @@ type TaskDefinitionParameters struct {
 	// (https://docs.docker.com/engine/security/security/).
 	//
 	// This parameter is not supported for Windows containers or tasks run on Fargate.
-	PidMode *string `json:"pidMode,omitempty"`
+	PIDMode *string `json:"pidMode,omitempty"`
 	// An array of placement constraint objects to use for the task. You can specify
 	// a maximum of 10 constraints for each task. This limit includes constraints
 	// in the task definition and those specified at runtime.
@@ -286,6 +286,7 @@ type TaskDefinitionStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

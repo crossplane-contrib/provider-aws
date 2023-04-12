@@ -7,7 +7,7 @@ PROJECT_REPO := github.com/crossplane-contrib/$(PROJECT_NAME)
 PLATFORMS ?= linux_amd64 linux_arm64
 
 CODE_GENERATOR_REPO ?= https://github.com/aws-controllers-k8s/code-generator.git
-CODE_GENERATOR_COMMIT ?= 6acf40fe3e3cfd97b799ef7cbf1e89e01c3db8f7
+CODE_GENERATOR_COMMIT ?= 29d348db5c9cb6e58843d9792b470fc6c7dd65f4
 GENERATED_SERVICES ?= $(shell find ./apis -type f -name generator-config.yaml | cut -d/ -f 3 | tr '\n' ' ')
 
 # kind-related versions

@@ -188,7 +188,7 @@ func GenerateService(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Service {
 							}
 							f6elemf6f0.Subnets = f6elemf6f0f2
 						}
-						f6elemf6.AWSvpcConfiguration = f6elemf6f0
+						f6elemf6.AWSVPCConfiguration = f6elemf6f0
 					}
 					f6elem.NetworkConfiguration = f6elemf6
 				}
@@ -401,7 +401,7 @@ func GenerateService(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Service {
 					}
 					f14f0.Subnets = f14f0f2
 				}
-				f14.AWSvpcConfiguration = f14f0
+				f14.AWSVPCConfiguration = f14f0
 			}
 			cr.Status.AtProvider.NetworkConfiguration = f14
 		} else {
@@ -616,7 +616,7 @@ func GenerateService(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Service {
 							}
 							f30elemf8f0.Subnets = f30elemf8f0f2
 						}
-						f30elemf8.AWSvpcConfiguration = f30elemf8f0
+						f30elemf8.AWSVPCConfiguration = f30elemf8f0
 					}
 					f30elem.NetworkConfiguration = f30elemf8
 				}
@@ -1041,23 +1041,23 @@ func GenerateUpdateServiceInput(cr *svcapitypes.Service) *svcsdk.UpdateServiceIn
 	}
 	if cr.Status.AtProvider.NetworkConfiguration != nil {
 		f9 := &svcsdk.NetworkConfiguration{}
-		if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration != nil {
+		if cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration != nil {
 			f9f0 := &svcsdk.AwsVpcConfiguration{}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP != nil {
-				f9f0.SetAssignPublicIp(*cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP)
+			if cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.AssignPublicIP != nil {
+				f9f0.SetAssignPublicIp(*cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.AssignPublicIP)
 			}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups != nil {
+			if cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.SecurityGroups != nil {
 				f9f0f1 := []*string{}
-				for _, f9f0f1iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.SecurityGroups {
+				for _, f9f0f1iter := range cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.SecurityGroups {
 					var f9f0f1elem string
 					f9f0f1elem = *f9f0f1iter
 					f9f0f1 = append(f9f0f1, &f9f0f1elem)
 				}
 				f9f0.SetSecurityGroups(f9f0f1)
 			}
-			if cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets != nil {
+			if cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.Subnets != nil {
 				f9f0f2 := []*string{}
-				for _, f9f0f2iter := range cr.Status.AtProvider.NetworkConfiguration.AWSvpcConfiguration.Subnets {
+				for _, f9f0f2iter := range cr.Status.AtProvider.NetworkConfiguration.AWSVPCConfiguration.Subnets {
 					var f9f0f2elem string
 					f9f0f2elem = *f9f0f2iter
 					f9f0f2 = append(f9f0f2, &f9f0f2elem)

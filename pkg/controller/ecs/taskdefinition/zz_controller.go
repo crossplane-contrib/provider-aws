@@ -629,7 +629,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f1.InferenceAccelerators = f1f7
 		}
 		if resp.TaskDefinition.IpcMode != nil {
-			f1.IPcMode = resp.TaskDefinition.IpcMode
+			f1.IPCMode = resp.TaskDefinition.IpcMode
 		}
 		if resp.TaskDefinition.Memory != nil {
 			f1.Memory = resp.TaskDefinition.Memory
@@ -638,7 +638,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f1.NetworkMode = resp.TaskDefinition.NetworkMode
 		}
 		if resp.TaskDefinition.PidMode != nil {
-			f1.PidMode = resp.TaskDefinition.PidMode
+			f1.PIDMode = resp.TaskDefinition.PidMode
 		}
 		if resp.TaskDefinition.PlacementConstraints != nil {
 			f1f12 := []*svcapitypes.TaskDefinitionPlacementConstraint{}

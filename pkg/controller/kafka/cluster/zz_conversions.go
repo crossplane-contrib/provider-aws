@@ -47,7 +47,7 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 	if resp.ClusterInfo.ClientAuthentication != nil {
 		f2 := &svcapitypes.ClientAuthentication{}
 		if resp.ClusterInfo.ClientAuthentication.Sasl != nil {
-			f2f0 := &svcapitypes.Sasl{}
+			f2f0 := &svcapitypes.SASL{}
 			if resp.ClusterInfo.ClientAuthentication.Sasl.Iam != nil {
 				f2f0f0 := &svcapitypes.IAM{}
 				if resp.ClusterInfo.ClientAuthentication.Sasl.Iam.Enabled != nil {
@@ -56,13 +56,13 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 				f2f0.IAM = f2f0f0
 			}
 			if resp.ClusterInfo.ClientAuthentication.Sasl.Scram != nil {
-				f2f0f1 := &svcapitypes.Scram{}
+				f2f0f1 := &svcapitypes.SCRAM{}
 				if resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled != nil {
 					f2f0f1.Enabled = resp.ClusterInfo.ClientAuthentication.Sasl.Scram.Enabled
 				}
-				f2f0.Scram = f2f0f1
+				f2f0.SCRAM = f2f0f1
 			}
-			f2.Sasl = f2f0
+			f2.SASL = f2f0
 		}
 		if resp.ClusterInfo.ClientAuthentication.Tls != nil {
 			f2f1 := &svcapitypes.TLS{}
@@ -232,19 +232,19 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 
 	if cr.Spec.ForProvider.ClientAuthentication != nil {
 		f0 := &svcsdk.ClientAuthentication{}
-		if cr.Spec.ForProvider.ClientAuthentication.Sasl != nil {
+		if cr.Spec.ForProvider.ClientAuthentication.SASL != nil {
 			f0f0 := &svcsdk.Sasl{}
-			if cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM != nil {
+			if cr.Spec.ForProvider.ClientAuthentication.SASL.IAM != nil {
 				f0f0f0 := &svcsdk.Iam{}
-				if cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM.Enabled != nil {
-					f0f0f0.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Sasl.IAM.Enabled)
+				if cr.Spec.ForProvider.ClientAuthentication.SASL.IAM.Enabled != nil {
+					f0f0f0.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.SASL.IAM.Enabled)
 				}
 				f0f0.SetIam(f0f0f0)
 			}
-			if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram != nil {
+			if cr.Spec.ForProvider.ClientAuthentication.SASL.SCRAM != nil {
 				f0f0f1 := &svcsdk.Scram{}
-				if cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled != nil {
-					f0f0f1.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.Sasl.Scram.Enabled)
+				if cr.Spec.ForProvider.ClientAuthentication.SASL.SCRAM.Enabled != nil {
+					f0f0f1.SetEnabled(*cr.Spec.ForProvider.ClientAuthentication.SASL.SCRAM.Enabled)
 				}
 				f0f0.SetScram(f0f0f1)
 			}

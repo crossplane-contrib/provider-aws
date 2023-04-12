@@ -76,7 +76,7 @@ type ComputeEnvironmentObservation struct {
 	ComputeEnvironmentName *string `json:"computeEnvironmentName,omitempty"`
 	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster that
 	// the compute environment uses.
-	EcsClusterARN *string `json:"ecsClusterARN,omitempty"`
+	ECSClusterARN *string `json:"ecsClusterARN,omitempty"`
 	// The state of the compute environment. The valid values are ENABLED or DISABLED.
 	//
 	// If the state is ENABLED, then the Batch scheduler can attempt to place jobs
@@ -106,6 +106,7 @@ type ComputeEnvironmentStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
