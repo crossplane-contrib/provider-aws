@@ -19,7 +19,6 @@ package instanceprofile
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/iam"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/iam/iamiface"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -115,11 +114,8 @@ func (u *updater) preDelete(ctx context.Context, cr *svcapitypes.InstanceProfile
 	}
 
 	_, err := u.client.RemoveRoleFromInstanceProfileWithContext(ctx, input)
-	if awsErr, ok := err.(awserr.Error); ok {
-		// If the role no longer exists, then we have already deleted the role from the instance profile.
-		if awsErr.Code() == svcsdk.ErrCodeNoSuchEntityException {
-			return false, nil
-		}
+	if IsNotFound(err) {
+		return false, nil
 	}
 
 	return false, err
