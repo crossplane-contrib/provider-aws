@@ -80,7 +80,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 
 	route, err := e.findRouteByDestination(ctx, cr)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil // nolint:nilerr
 	}
 
 	if awsclients.StringValue(route.State) == svcsdk.RouteStateActive {

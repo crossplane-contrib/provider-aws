@@ -26,7 +26,7 @@ func normalizePolicy(p *string) (*string, error) {
 }
 
 type wrapper struct {
-	Data string
+	Data string `json:"data,omitempty"`
 }
 
 func policyEscapedStringToMap(p *string) (map[string]interface{}, error) {

@@ -139,7 +139,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		awsec2types.VpcAttributeNameEnableDnsSupport,
 		awsec2types.VpcAttributeNameEnableDnsHostnames,
 	} {
-		r, err := e.client.DescribeVpcAttribute(context.Background(), &awsec2.DescribeVpcAttributeInput{
+		r, err := e.client.DescribeVpcAttribute(ctx, &awsec2.DescribeVpcAttributeInput{
 			VpcId:     aws.String(meta.GetExternalName(cr)),
 			Attribute: input,
 		})

@@ -348,7 +348,7 @@ func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
 		minor, err := strconv.ParseInt(parts[1], 10, 64)
 		// if not a digit (i.e. .x, ignore)
 		if err != nil {
-			return p, nil
+			return p, nil // nolint:nilerr
 		}
 		p.Minor = aws.Int64(minor)
 	}
@@ -356,7 +356,7 @@ func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
 	if len(parts) > 2 {
 		patch, err := strconv.ParseInt(parts[2], 10, 64)
 		if err != nil {
-			return p, nil
+			return p, nil // nolint:nilerr
 		}
 		p.Patch = aws.Int64(patch)
 	}
