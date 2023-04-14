@@ -56,7 +56,7 @@ func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion
 
 	unescapedPolicy, err := url.QueryUnescape(aws.ToString(policy.Document))
 	if err != nil {
-		return false, nil
+		return false, nil // nolint:nilerr
 	}
 
 	compactPolicy, err := awsclients.CompactAndEscapeJSON(unescapedPolicy)

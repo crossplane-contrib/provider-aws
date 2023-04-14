@@ -1,4 +1,4 @@
-package v1alpha1
+package v1beta1
 
 // CustomAutoScalingGroupParameters includes the custom fields of AutoScalingGroup.
 type CustomAutoScalingGroupParameters struct{}

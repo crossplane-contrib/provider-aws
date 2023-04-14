@@ -94,7 +94,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 
 	transitGatewayRoute, err := e.findRouteByDestination(ctx, cr)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil // nolint:nilerr
 	}
 
 	switch aws.StringValue(transitGatewayRoute.State) {

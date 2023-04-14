@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 

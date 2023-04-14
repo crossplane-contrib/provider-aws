@@ -16,7 +16,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1alpha1"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"

@@ -98,7 +98,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// If err is not nil, the sgr does not exist
 	if err != nil {
-		return managed.ExternalObservation{
+		return managed.ExternalObservation{ // nolint:nilerr
 			ResourceExists: false,
 		}, nil
 	}
