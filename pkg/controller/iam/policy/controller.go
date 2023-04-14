@@ -59,6 +59,11 @@ const (
 	errUntag            = "cannot untag policy"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.PolicyGroupKind
+}
+
 // SetupPolicy adds a controller that reconciles IAM Policy.
 func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.PolicyGroupKind)

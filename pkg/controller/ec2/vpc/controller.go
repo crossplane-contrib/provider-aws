@@ -58,6 +58,11 @@ const (
 	errDelete              = "failed to delete the VPC resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.VPCGroupKind
+}
+
 // SetupVPC adds a controller that reconciles VPCs.
 func SetupVPC(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.VPCGroupKind)

@@ -62,6 +62,11 @@ const (
 	errGetPasswordSecretFailed            = "cannot get password secret"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.RDSInstanceGroupKind
+}
+
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
 func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)

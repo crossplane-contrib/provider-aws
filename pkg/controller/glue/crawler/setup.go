@@ -51,6 +51,11 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-crawler-arn"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.CrawlerGroupKind
+}
+
 // SetupCrawler adds a controller that reconciles Crawler.
 func SetupCrawler(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.CrawlerGroupKind)

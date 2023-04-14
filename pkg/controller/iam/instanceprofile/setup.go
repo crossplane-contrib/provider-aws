@@ -37,6 +37,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.InstanceProfileGroupKind
+}
+
 // SetupInstanceProfile adds a controller that reconciles InstanceProfile.
 func SetupInstanceProfile(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.InstanceProfileGroupKind)

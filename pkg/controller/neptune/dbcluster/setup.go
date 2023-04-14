@@ -45,9 +45,14 @@ const (
 	statusUpdating  dbClusterStatus = "updating"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBClusterGroupKind
+}
+
 // SetupDBCluster adds a controller that reconciles DB Cluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBClusterKind)
+	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.lateInitialize = lateInitialize

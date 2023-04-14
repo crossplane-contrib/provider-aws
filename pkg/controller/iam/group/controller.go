@@ -51,6 +51,11 @@ const (
 	errKubeUpdateFailed = "cannot late initialize IAM Group"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.GroupGroupKind
+}
+
 // SetupGroup adds a controller that reconciles Groups.
 func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.GroupGroupKind)

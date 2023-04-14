@@ -45,9 +45,14 @@ const (
 	errKubeUpdateFailed = "cannot update DocDBSubnetGroup custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBSubnetGroupGroupKind
+}
+
 // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
 func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBSubnetGroupKind)
+	name := managed.ControllerName(svcapitypes.DBSubnetGroupGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

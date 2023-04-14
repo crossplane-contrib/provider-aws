@@ -41,6 +41,11 @@ const (
 	errComputeEnvironmentARN = "missing or incorrect ARN for ComputeEnvironment"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.JobQueueGroupKind
+}
+
 // SetupJobQueue adds a controller that reconciles a JobQueue.
 func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.JobQueueGroupKind)

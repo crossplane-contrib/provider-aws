@@ -50,6 +50,11 @@ const (
 	errDetach = "failed to detach the policy to group"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.GroupPolicyAttachmentGroupKind
+}
+
 // SetupGroupPolicyAttachment adds a controller that reconciles
 // GroupPolicyAttachments.
 func SetupGroupPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {

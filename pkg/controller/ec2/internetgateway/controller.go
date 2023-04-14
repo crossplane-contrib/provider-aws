@@ -55,6 +55,11 @@ const (
 	errCreateTags          = "failed to create tags for the InternetGateway resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.InternetGatewayGroupKind
+}
+
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
 func SetupInternetGateway(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.InternetGatewayGroupKind)

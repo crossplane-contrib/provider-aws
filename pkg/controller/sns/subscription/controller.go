@@ -50,6 +50,11 @@ const (
 	errUpdate              = "failed to update the SNS Subscription"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.SubscriptionGroupKind
+}
+
 // SetupSubscription adds a controller than reconciles Subscription
 func SetupSubscription(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.SubscriptionGroupKind)

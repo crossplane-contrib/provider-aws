@@ -98,6 +98,46 @@ The generated controller needs to be registered with the main controller manager
 of the provider. Create a file called `pkg/controller/<serviceid>/<managedResource>/setup.go` and
 add the setup function like the following:
 ```golang
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
@@ -217,6 +257,11 @@ in generation and then inject the value of our annotation in its place in the SD
 Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)

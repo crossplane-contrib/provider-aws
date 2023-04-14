@@ -56,6 +56,11 @@ const (
 	errStatusUpdate  = "cannot update status of Address custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.AddressGroupKind
+}
+
 // SetupAddress adds a controller that reconciles Address.
 func SetupAddress(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.AddressGroupKind)

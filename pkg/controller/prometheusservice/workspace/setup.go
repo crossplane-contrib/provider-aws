@@ -29,6 +29,11 @@ const (
 	errKubeUpdateFailed = "cannot update Workspace custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.WorkspaceGroupKind
+}
+
 // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
 func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.WorkspaceGroupKind)

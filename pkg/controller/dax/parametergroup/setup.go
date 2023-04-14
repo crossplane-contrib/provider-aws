@@ -20,6 +20,11 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.ParameterGroupGroupKind
+}
+
 // SetupParameterGroup adds a controller that reconciles ParameterGroup.
 func SetupParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ParameterGroupGroupKind)

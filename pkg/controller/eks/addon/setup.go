@@ -46,6 +46,11 @@ const (
 	errUntagResource    = "cannot untag resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return eksv1alpha1.AddonGroupKind
+}
+
 // SetupAddon adds a controller that reconciles Clusters.
 func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(eksv1alpha1.AddonGroupKind)

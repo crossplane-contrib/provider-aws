@@ -34,6 +34,11 @@ const (
 	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBParameterGroupGroupKind
+}
+
 // SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
 func SetupDBParameterGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)

@@ -53,9 +53,14 @@ const (
 	errDescribeJobDefinition   = "cannot describe Batch JobDefinition"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.JobDefinitionGroupKind
+}
+
 // SetupJobDefinition adds a controller that reconciles JobDefinitions.
 func SetupJobDefinition(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobDefinitionKind)
+	name := managed.ControllerName(svcapitypes.JobDefinitionGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

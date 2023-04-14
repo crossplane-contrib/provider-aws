@@ -46,6 +46,11 @@ type deleter struct {
 	client ec2iface.EC2API
 }
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.FlowLogGroupKind
+}
+
 // SetupFlowLog adds a controller that reconciles FlowLog
 func SetupFlowLog(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.FlowLogGroupKind)

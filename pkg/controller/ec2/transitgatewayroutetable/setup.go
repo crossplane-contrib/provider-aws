@@ -29,6 +29,11 @@ const (
 	errKubeUpdateFailed = "cannot update TransitGateway"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.RouteGroupKind
+}
+
 // SetupTransitGatewayRouteTable adds a controller that reconciles TransitGatewayRouteTable.
 func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RouteGroupKind)

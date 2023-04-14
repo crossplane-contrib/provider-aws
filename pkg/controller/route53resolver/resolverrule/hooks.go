@@ -21,6 +21,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return route53resolverv1alpha1.ResolverRuleGroupKind
+}
+
 // SetupResolverRule adds a controller that reconciles ResolverRule
 func SetupResolverRule(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(route53resolverv1alpha1.ResolverRuleGroupKind)

@@ -29,6 +29,11 @@ const (
 	errKubeUpdateFailed = "cannot update TransitGatewayAttachment"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.TransitGatewayVPCAttachmentGroupKind
+}
+
 // SetupTransitGatewayVPCAttachment adds a controller that reconciles TransitGatewayVPCAttachment.
 func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.TransitGatewayVPCAttachmentGroupKind)

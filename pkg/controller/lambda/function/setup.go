@@ -37,6 +37,11 @@ const (
 	repositoryTypeS3  = "S3"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.FunctionGroupKind
+}
+
 // SetupFunction adds a controller that reconciles Function.
 func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.FunctionGroupKind)

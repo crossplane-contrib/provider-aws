@@ -24,6 +24,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.AlertManagerDefinitionGroupKind
+}
+
 // SetupAlertManagerDefinition adds a controller that reconciles AlertManagerDefinition.
 func SetupAlertManagerDefinition(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.AlertManagerDefinitionGroupKind)

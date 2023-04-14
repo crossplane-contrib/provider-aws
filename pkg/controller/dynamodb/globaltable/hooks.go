@@ -40,6 +40,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.GlobalTableGroupKind
+}
+
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
 func SetupGlobalTable(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)

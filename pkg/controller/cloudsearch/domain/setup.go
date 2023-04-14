@@ -47,6 +47,11 @@ const (
 	infoConditionProcessing = "currently processing"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DomainGroupKind
+}
+
 // SetupDomain adds a controller that reconciles CloudSearch domains.
 func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DomainGroupKind)

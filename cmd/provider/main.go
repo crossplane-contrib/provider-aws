@@ -18,6 +18,8 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
@@ -41,6 +43,10 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+)
+
+const (
+	crdFilterEnv = "CRD_FILTER"
 )
 
 func main() {
@@ -86,6 +92,7 @@ func main() {
 		LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
 		LeaseDuration:              func() *time.Duration { d := 60 * time.Second; return &d }(),
 		RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),
+		MetricsBindAddress:         "0",
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS APIs to scheme")
@@ -117,7 +124,9 @@ func main() {
 		})), "cannot create default store config")
 	}
 
-	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
+	filterObj := loadFilteredCRDsFromEnv()
+
+	kingpin.FatalIfError(controller.Setup(mgr, filterObj, o), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 
 }
@@ -127,4 +136,30 @@ func UseISO8601() zap.Opts {
 	return func(o *zap.Options) {
 		o.TimeEncoder = zapcore.ISO8601TimeEncoder
 	}
+}
+
+// Loads a list of included and excluded crds from env
+func loadFilteredCRDsFromEnv() controller.FilterArgument {
+	crdFilter := os.Getenv(crdFilterEnv)
+
+	filterObj := controller.FilterArgument{}
+	if crdFilter != "" {
+		encodedFilterObj := controller.FilterArgument{}
+		err := json.Unmarshal([]byte(crdFilter), &encodedFilterObj)
+		if err != nil {
+			os.Exit(1)
+		}
+
+		// regex values in include and exclude values are base64 encoded
+		for _, incl := range encodedFilterObj.IncludeCrds {
+			value, _ := base64.StdEncoding.DecodeString(incl)
+			filterObj.IncludeCrds = append(filterObj.IncludeCrds, string(value))
+		}
+		for _, excl := range encodedFilterObj.ExcludeCrds {
+			value, _ := base64.StdEncoding.DecodeString(excl)
+			filterObj.ExcludeCrds = append(filterObj.ExcludeCrds, string(value))
+		}
+
+	}
+	return filterObj
 }

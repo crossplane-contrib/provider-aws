@@ -46,6 +46,11 @@ const (
 	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBInstanceGroupKind
+}
+
 // SetupDBInstance adds a controller that reconciles a DBInstance.
 func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)

@@ -26,6 +26,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.BrokerGroupKind
+}
+
 // SetupBroker adds a controller that reconciles Broker.
 func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.BrokerGroupKind)

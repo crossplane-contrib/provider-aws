@@ -56,6 +56,11 @@ const (
 	errKubeUpdateFailed = "cannot late initialize IAM User"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.UserGroupKind
+}
+
 // SetupUser adds a controller that reconciles Users.
 func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.UserGroupKind)

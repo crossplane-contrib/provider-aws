@@ -35,6 +35,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StreamGroupKind
+}
+
 // SetupStream adds a controller that reconciles Stream.
 func SetupStream(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StreamGroupKind)

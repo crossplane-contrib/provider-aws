@@ -40,6 +40,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return iottypes.ThingGroupKind
+}
+
 // SetupThing adds a controller that reconciles Thing.
 func SetupThing(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(iottypes.ThingGroupKind)

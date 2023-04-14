@@ -20,6 +20,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.MountTargetGroupKind
+}
+
 // SetupMountTarget adds a controller that reconciles MountTarget.
 func SetupMountTarget(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.MountTargetGroupKind)

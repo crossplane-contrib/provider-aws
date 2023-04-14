@@ -32,6 +32,11 @@ const (
 	errUntagResource    = "cannot untag resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.EnvironmentGroupKind
+}
+
 // SetupEnvironment adds a controller that reconciles Environment.
 func SetupEnvironment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.EnvironmentGroupKind)

@@ -26,6 +26,11 @@ const (
 	errMultipleItems = "retrieved multiple RouteTables for the given routeTableId"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.RouteGroupKind
+}
+
 // SetupRoute adds a controller that reconciles Route.
 func SetupRoute(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RouteGroupKind)

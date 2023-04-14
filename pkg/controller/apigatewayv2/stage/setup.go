@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StageGroupKind
+}
+
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)

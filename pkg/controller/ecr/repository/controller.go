@@ -60,6 +60,11 @@ const (
 	errPatchCreationFailed = "cannot create a patch object"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.RepositoryGroupKind
+}
+
 // SetupRepository adds a controller that reconciles ECR.
 func SetupRepository(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.RepositoryGroupKind)

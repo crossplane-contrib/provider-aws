@@ -50,6 +50,11 @@ const (
 	errDelete        = "failed to deregister instance from the ELB"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return elasticloadbalancingv1alpha1.ELBAttachmentGroupKind
+}
+
 // SetupELBAttachment adds a controller that reconciles ELBAttachmets.
 func SetupELBAttachment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBAttachmentGroupKind)

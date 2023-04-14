@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DeploymentGroupKind
+}
+
 // SetupDeployment adds a controller that reconciles Deployment.
 func SetupDeployment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)

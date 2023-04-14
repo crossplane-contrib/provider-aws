@@ -40,9 +40,14 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.CacheParameterGroupGroupKind
+}
+
 // SetupCacheParameterGroup adds a controller that reconciles a CacheParameterGroup.
 func SetupCacheParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.CacheParameterGroupKind)
+	name := managed.ControllerName(svcapitypes.CacheParameterGroupGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

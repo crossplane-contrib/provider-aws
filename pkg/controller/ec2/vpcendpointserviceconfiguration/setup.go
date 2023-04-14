@@ -30,6 +30,11 @@ const (
 	errKubeUpdateFailed = "cannot update VPCEndpointServiceConfiguration"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.VPCEndpointServiceConfigurationGroupKind
+}
+
 // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
 func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCEndpointServiceConfigurationGroupKind)

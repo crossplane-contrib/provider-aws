@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.PolicyGroupKind
+}
+
 // SetupPolicy adds a controller that reconciles Policy.
 func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.PolicyGroupKind)

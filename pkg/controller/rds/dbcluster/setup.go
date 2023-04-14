@@ -45,6 +45,11 @@ type updater struct {
 	client svcsdkapi.RDSAPI
 }
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBClusterGroupKind
+}
+
 // SetupDBCluster adds a controller that reconciles DbCluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)

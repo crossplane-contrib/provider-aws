@@ -33,6 +33,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.UserGroupKind
+}
+
 // SetupUser adds a controller that reconciles User.
 func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.UserGroupKind)

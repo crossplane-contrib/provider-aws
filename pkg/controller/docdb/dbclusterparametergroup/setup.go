@@ -49,9 +49,14 @@ const (
 	errDescribeParameters         = "cannot describe parameters for DBClusterParameterGroup"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBClusterParameterGroupGroupKind
+}
+
 // SetupDBClusterParameterGroup adds a controller that reconciles a DBClusterParameterGroup.
 func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupKind)
+	name := managed.ControllerName(svcapitypes.DBClusterParameterGroupGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

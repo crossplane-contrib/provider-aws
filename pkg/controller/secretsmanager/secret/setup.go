@@ -64,6 +64,11 @@ const (
 	errOnlyOneSecretRef     = "only one of binarySecretRef or stringSecretRef must be set"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.SecretGroupKind
+}
+
 // SetupSecret adds a controller that reconciles a Secret.
 func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.SecretGroupKind)

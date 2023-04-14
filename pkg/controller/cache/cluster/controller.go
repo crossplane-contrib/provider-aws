@@ -51,6 +51,11 @@ const (
 	errDeleteCacheCluster   = "cannot delete Cache Cluster"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return cachev1alpha1.CacheClusterGroupKind
+}
+
 // SetupCacheCluster adds a controller that reconciles CacheCluster.
 func SetupCacheCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(cachev1alpha1.CacheClusterGroupKind)

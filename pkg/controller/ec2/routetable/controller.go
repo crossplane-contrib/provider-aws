@@ -61,6 +61,11 @@ const (
 	errDeleteTags         = "failed to delete tags for the RouteTable resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.RouteTableGroupKind
+}
+
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.RouteTableGroupKind)

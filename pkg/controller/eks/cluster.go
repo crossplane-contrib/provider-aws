@@ -55,6 +55,11 @@ const (
 	errUpToDateFailed      = "cannot check whether object is up-to-date"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.ClusterGroupKind
+}
+
 // SetupCluster adds a controller that reconciles Clusters.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.ClusterGroupKind)

@@ -49,6 +49,11 @@ const (
 	errDelete           = "failed to delete the ACMPCA resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.CertificateAuthorityPermissionGroupKind
+}
+
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
 func SetupCertificateAuthorityPermission(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.CertificateAuthorityPermissionGroupKind)

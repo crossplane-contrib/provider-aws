@@ -52,9 +52,14 @@ const (
 	errAddTagsFailed  = "cannot add tags to EKS identity provider config"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return manualv1alpha1.IdentityProviderConfigGroupKind
+}
+
 // SetupIdentityProviderConfig adds a controller that reconciles IdentityProviderConfigs.
 func SetupIdentityProviderConfig(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.IdentityProviderConfigKind)
+	name := managed.ControllerName(manualv1alpha1.IdentityProviderConfigGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

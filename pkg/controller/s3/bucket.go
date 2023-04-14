@@ -53,6 +53,11 @@ const (
 	errKubeUpdateFailed = "cannot update S3 custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.BucketGroupKind
+}
+
 // SetupBucket adds a controller that reconciles Buckets.
 func SetupBucket(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.BucketGroupKind)

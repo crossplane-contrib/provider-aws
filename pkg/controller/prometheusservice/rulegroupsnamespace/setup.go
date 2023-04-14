@@ -31,6 +31,11 @@ const (
 	errKubeUpdateFailed       = "cannot update RuleGroupsNamespace custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.RuleGroupsNamespaceGroupKind
+}
+
 // SetupRuleGroupsNamespace adds a controller that reconciles RuleGroupsNamespace.
 func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RuleGroupsNamespaceGroupKind)

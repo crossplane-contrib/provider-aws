@@ -63,6 +63,11 @@ const (
 	errDeleteTags       = "failed to delete tags for the Security Group resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.SecurityGroupGroupKind
+}
+
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
 func SetupSecurityGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.SecurityGroupGroupKind)

@@ -52,6 +52,11 @@ const (
 	errGet    = "failed to get the Hosted Zone resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return route53v1alpha1.HostedZoneGroupKind
+}
+
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
 func SetupHostedZone(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(route53v1alpha1.HostedZoneGroupKind)

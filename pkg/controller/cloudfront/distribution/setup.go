@@ -46,6 +46,11 @@ const (
 	stateDeployed = "Deployed"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DistributionGroupKind
+}
+
 // SetupDistribution adds a controller that reconciles Distribution.
 func SetupDistribution(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DistributionGroupKind)

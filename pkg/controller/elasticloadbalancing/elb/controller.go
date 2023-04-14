@@ -55,6 +55,11 @@ const (
 	errUpToDate      = "cannot check if the resource is up to date"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return elasticloadbalancingv1alpha1.ELBGroupKind
+}
+
 // SetupELB adds a controller that reconciles ELBs.
 func SetupELB(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(elasticloadbalancingv1alpha1.ELBGroupKind)

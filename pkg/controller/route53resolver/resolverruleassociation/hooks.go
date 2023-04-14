@@ -46,6 +46,11 @@ const (
 	errGet              = "failed to get the AssociatedResolverRule"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return manualv1alpha1.ResolverRuleAssociationGroupKind
+}
+
 // SetupResolverRuleAssociation adds a controller that reconciles ResolverRuleAssociation
 func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(manualv1alpha1.ResolverRuleAssociationGroupKind)

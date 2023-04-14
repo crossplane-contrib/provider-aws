@@ -44,6 +44,11 @@ const (
 	errCreateSameIdentifier = "cannot create Glue Database. Combine permissions for same principals under one createTableDefaultPermissions entry"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DatabaseGroupKind
+}
+
 // SetupDatabase adds a controller that reconciles Database.
 func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DatabaseGroupKind)

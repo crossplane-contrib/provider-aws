@@ -52,6 +52,11 @@ const (
 	errRemove    = "failed to remove the user to group"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.GroupUserMembershipGroupKind
+}
+
 // SetupGroupUserMembership adds a controller that reconciles
 // GroupUserMemberships.
 func SetupGroupUserMembership(mgr ctrl.Manager, o controller.Options) error {

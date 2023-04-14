@@ -48,6 +48,11 @@ const (
 	errDetach = "failed to detach the policy to user"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.UserPolicyAttachmentGroupKind
+}
+
 // SetupUserPolicyAttachment adds a controller that reconciles
 // UserPolicyAttachments.
 func SetupUserPolicyAttachment(mgr ctrl.Manager, o controller.Options) error {

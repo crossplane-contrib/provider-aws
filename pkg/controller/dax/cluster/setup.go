@@ -18,6 +18,11 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.ClusterGroupKind
+}
+
 // SetupCluster adds a controller that reconciles Cluster.
 func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)

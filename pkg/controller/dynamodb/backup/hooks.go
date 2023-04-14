@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.BackupGroupKind
+}
+
 // SetupBackup adds a controller that reconciles Backup.
 func SetupBackup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.BackupGroupKind)

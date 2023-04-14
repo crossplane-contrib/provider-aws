@@ -39,6 +39,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.PublicDNSNamespaceGroupKind
+}
+
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
 func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)

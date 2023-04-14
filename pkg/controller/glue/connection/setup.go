@@ -50,6 +50,11 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-connection-arn"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.ConnectionGroupKind
+}
+
 // SetupConnection adds a controller that reconciles Connection.
 func SetupConnection(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ConnectionGroupKind)

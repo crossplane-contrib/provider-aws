@@ -23,6 +23,11 @@ import (
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.FunctionURLConfigGroupKind
+}
+
 // SetupFunctionURL adds a controller that reconciles FunctionURLConfig.
 func SetupFunctionURL(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.FunctionURLConfigGroupKind)

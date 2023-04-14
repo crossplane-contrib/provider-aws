@@ -37,6 +37,11 @@ import (
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.ResourceGroupKind
+}
+
 // SetupResource adds a controller that reconciles Resource.
 func SetupResource(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ResourceGroupKind)

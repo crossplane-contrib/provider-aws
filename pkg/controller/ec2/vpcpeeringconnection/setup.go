@@ -31,6 +31,11 @@ const (
 	errKubeUpdateFailed = "cannot update VPCPeeringConnection"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.VPCPeeringConnectionGroupKind
+}
+
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
 func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCPeeringConnectionGroupKind)

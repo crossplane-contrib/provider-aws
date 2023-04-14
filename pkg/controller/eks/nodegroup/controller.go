@@ -53,9 +53,14 @@ const (
 	errDescribeFailed      = "cannot describe EKS node group"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return manualv1alpha1.NodeGroupGroupKind
+}
+
 // SetupNodeGroup adds a controller that reconciles NodeGroups.
 func SetupNodeGroup(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.NodeGroupKind)
+	name := managed.ControllerName(manualv1alpha1.NodeGroupGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

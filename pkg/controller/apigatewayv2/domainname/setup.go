@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DomainNameGroupKind
+}
+
 // SetupDomainName adds a controller that reconciles DomainName.
 func SetupDomainName(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DomainNameGroupKind)

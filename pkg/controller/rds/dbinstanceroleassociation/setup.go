@@ -25,6 +25,11 @@ const (
 	errDescribeAssoc = "failed to describe DBInstance for DBInstanceRoleAssociation"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBInstanceRoleAssociationGroupKind
+}
+
 // SetupDBInstanceRoleAssociation adds a controller that reconciles DBInstanceRoleAssociation.
 func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBInstanceRoleAssociationGroupKind)

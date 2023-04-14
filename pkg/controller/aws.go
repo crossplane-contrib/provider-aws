@@ -17,6 +17,9 @@ limitations under the License.
 package controller
 
 import (
+	"regexp"
+	"strings"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -184,173 +187,707 @@ import (
 	transferuser "github.com/crossplane-contrib/provider-aws/pkg/controller/transfer/user"
 )
 
+type ReconileDefinition struct {
+	Type  func() string
+	Setup func(ctrl.Manager, controller.Options) error
+}
+
+type FilterArgument struct {
+	IncludeCrds []string `json:"includeCrds"`
+	ExcludeCrds []string `json:"excludeCrds"`
+}
+
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, o controller.Options) error {
-	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		cache.SetupReplicationGroup,
-		cachesubnetgroup.SetupCacheSubnetGroup,
-		cacheparametergroup.SetupCacheParameterGroup,
-		cluster.SetupCacheCluster,
-		database.SetupRDSInstance,
-		daxcluster.SetupCluster,
-		daxparametergroup.SetupParameterGroup,
-		daxsubnetgroup.SetupSubnetGroup,
-		domain.SetupDomain,
-		docdbinstance.SetupDBInstance,
-		docdbcluster.SetupDBCluster,
-		docdbclusterparametergroup.SetupDBClusterParameterGroup,
-		docdbsubnetgroup.SetupDBSubnetGroup,
-		ecscluster.SetupCluster,
-		ecsservice.SetupService,
-		ecstask.SetupTaskDefinition,
-		eks.SetupCluster,
-		eksaddon.SetupAddon,
-		identityproviderconfig.SetupIdentityProviderConfig,
-		instanceprofile.SetupInstanceProfile,
-		elb.SetupELB,
-		elbattachment.SetupELBAttachment,
-		nodegroup.SetupNodeGroup,
-		s3.SetupBucket,
-		bucketpolicy.SetupBucketPolicy,
-		accesskey.SetupAccessKey,
-		user.SetupUser,
-		group.SetupGroup,
-		policy.SetupPolicy,
-		role.SetupRole,
-		groupusermembership.SetupGroupUserMembership,
-		userpolicyattachment.SetupUserPolicyAttachment,
-		grouppolicyattachment.SetupGroupPolicyAttachment,
-		rolepolicyattachment.SetupRolePolicyAttachment,
-		vpc.SetupVPC,
-		subnet.SetupSubnet,
-		securitygroup.SetupSecurityGroup,
-		securitygrouprule.SetupSecurityGroupRule,
-		internetgateway.SetupInternetGateway,
-		launchtemplate.SetupLaunchTemplate,
-		launchtemplateversion.SetupLaunchTemplateVersion,
-		natgateway.SetupNatGateway,
-		routetable.SetupRouteTable,
-		dbsubnetgroup.SetupDBSubnetGroup,
-		certificateauthority.SetupCertificateAuthority,
-		certificateauthoritypermission.SetupCertificateAuthorityPermission,
-		acm.SetupCertificate,
-		resourcerecordset.SetupResourceRecordSet,
-		hostedzone.SetupHostedZone,
-		secret.SetupSecret,
-		topic.SetupSNSTopic,
-		subscription.SetupSubscription,
-		queue.SetupQueue,
-		redshift.SetupCluster,
-		address.SetupAddress,
-		repository.SetupRepository,
-		repositorypolicy.SetupRepositoryPolicy,
-		lifecyclepolicy.SetupLifecyclePolicy,
-		api.SetupAPI,
-		stage.SetupStage,
-		route.SetupRoute,
-		authorizer.SetupAuthorizer,
-		integration.SetupIntegration,
-		deployment.SetupDeployment,
-		domainname.SetupDomainName,
-		integrationresponse.SetupIntegrationResponse,
-		model.SetupModel,
-		apimapping.SetupAPIMapping,
-		routeresponse.SetupRouteResponse,
-		vpclink.SetupVPCLink,
-		fargateprofile.SetupFargateProfile,
-		activity.SetupActivity,
-		statemachine.SetupStateMachine,
-		table.SetupTable,
-		backup.SetupBackup,
-		globaltable.SetupGlobalTable,
-		key.SetupKey,
-		alias.SetupAlias,
-		accesspoint.SetupAccessPoint,
-		filesystem.SetupFileSystem,
-		dbcluster.SetupDBCluster,
-		dbclusterparametergroup.SetupDBClusterParameterGroup,
-		dbinstance.SetupDBInstance,
-		dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
-		dbparametergroup.SetupDBParameterGroup,
-		globalcluster.SetupGlobalCluster,
-		vpccidrblock.SetupVPCCIDRBlock,
-		privatednsnamespace.SetupPrivateDNSNamespace,
-		publicdnsnamespace.SetupPublicDNSNamespace,
-		httpnamespace.SetupHTTPNamespace,
-		lambdafunction.SetupFunction,
-		lambdapermission.SetupPermission,
-		lambdaurlconfig.SetupFunctionURL,
-		openidconnectprovider.SetupOpenIDConnectProvider,
-		distribution.SetupDistribution,
-		cachepolicy.SetupCachePolicy,
-		cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
-		cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
-		resolverendpoint.SetupResolverEndpoint,
-		resolverrule.SetupResolverRule,
-		vpcpeeringconnection.SetupVPCPeeringConnection,
-		vpcendpoint.SetupVPCEndpoint,
-		kafkacluster.SetupCluster,
-		efsmounttarget.SetupMountTarget,
-		transferserver.SetupServer,
-		transferuser.SetupUser,
-		instance.SetupInstance,
-		gluejob.SetupJob,
-		gluesecurityconfiguration.SetupSecurityConfiguration,
-		glueconnection.SetupConnection,
-		glueDatabase.SetupDatabase,
-		gluecrawler.SetupCrawler,
-		glueclassifier.SetupClassifier,
-		mqbroker.SetupBroker,
-		mquser.SetupUser,
-		mwaaenvironment.SetupEnvironment,
-		cwloggroup.SetupLogGroup,
-		volume.SetupVolume,
-		transitgateway.SetupTransitGateway,
-		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
-		thing.SetupThing,
-		iotpolicy.SetupPolicy,
-		ec2route.SetupRoute,
-		athenaworkgroup.SetupWorkGroup,
-		resourceshare.SetupResourceShare,
-		kafkaconfiguration.SetupConfiguration,
-		listener.SetupListener,
-		loadbalancer.SetupLoadBalancer,
-		targetgroup.SetupTargetGroup,
-		target.SetupTarget,
-		transitgatewayroute.SetupTransitGatewayRoute,
-		transitgatewayroutetable.SetupTransitGatewayRouteTable,
-		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
-		kinesisstream.SetupStream,
-		resolverruleassociation.SetupResolverRuleAssociation,
-		cognitouserpool.SetupUserPool,
-		cognitouserpooldomain.SetupUserPoolDomain,
-		cognitogroup.SetupGroup,
-		cognitouserpoolclient.SetupUserPoolClient,
-		cognitoidentityprovider.SetupIdentityProvider,
-		cognitoresourceserver.SetupResourceServer,
-		cognitogroupusermembership.SetupGroupUserMembership,
-		neptunecluster.SetupDBCluster,
-		topic.SetupSNSTopic,
-		subscription.SetupSubscription,
-		prometheusserviceworkspace.SetupWorkspace,
-		prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
-		prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,
-		resource.SetupResource,
-		restapi.SetupRestAPI,
-		method.SetupMethod,
-		cognitoidentitypool.SetupIdentityPool,
-		flowlog.SetupFlowLog,
-		opensearchdomain.SetupDomain,
-		computeenvironment.SetupComputeEnvironment,
-		jobqueue.SetupJobQueue,
-		jobdefinition.SetupJobDefinition,
-		batchjob.SetupJob,
-		emrcontainersjobrun.SetupJobRun,
-		emrcontainersvirtualcluster.SetupVirtualCluster,
-		optiongroup.SetupOptionGroup,
-		autoscalinggroup.SetupAutoScalingGroup,
-	} {
+func Setup(mgr ctrl.Manager, filterCRDs FilterArgument, o controller.Options) error {
+
+	// List all controllers with ther managesKind and setup function
+	allResources := []ReconileDefinition{
+		{
+			Type:  cache.ManagesKind,
+			Setup: cache.SetupReplicationGroup,
+		},
+		{
+			Type:  cachesubnetgroup.ManagesKind,
+			Setup: cachesubnetgroup.SetupCacheSubnetGroup,
+		},
+		{
+			Type:  cacheparametergroup.ManagesKind,
+			Setup: cacheparametergroup.SetupCacheParameterGroup,
+		},
+		{
+			Type:  cluster.ManagesKind,
+			Setup: cluster.SetupCacheCluster,
+		},
+		{
+			Type:  database.ManagesKind,
+			Setup: database.SetupRDSInstance,
+		},
+		{
+			Type:  daxcluster.ManagesKind,
+			Setup: daxcluster.SetupCluster,
+		},
+		{
+			Type:  daxparametergroup.ManagesKind,
+			Setup: daxparametergroup.SetupParameterGroup,
+		},
+		{
+			Type:  daxsubnetgroup.ManagesKind,
+			Setup: daxsubnetgroup.SetupSubnetGroup,
+		},
+		{
+			Type:  domain.ManagesKind,
+			Setup: domain.SetupDomain,
+		},
+		{
+			Type:  docdbinstance.ManagesKind,
+			Setup: docdbinstance.SetupDBInstance,
+		},
+		{
+			Type:  docdbcluster.ManagesKind,
+			Setup: docdbcluster.SetupDBCluster,
+		},
+		{
+			Type:  docdbclusterparametergroup.ManagesKind,
+			Setup: docdbclusterparametergroup.SetupDBClusterParameterGroup,
+		},
+		{
+			Type:  docdbsubnetgroup.ManagesKind,
+			Setup: docdbsubnetgroup.SetupDBSubnetGroup,
+		},
+		{
+			Type:  ecscluster.ManagesKind,
+			Setup: ecscluster.SetupCluster,
+		},
+		{
+			Type:  ecsservice.ManagesKind,
+			Setup: ecsservice.SetupService,
+		},
+		{
+			Type:  ecstask.ManagesKind,
+			Setup: ecstask.SetupTaskDefinition,
+		},
+		{
+			Type:  eks.ManagesKind,
+			Setup: eks.SetupCluster,
+		},
+		{
+			Type:  eksaddon.ManagesKind,
+			Setup: eksaddon.SetupAddon,
+		},
+		{
+			Type:  identityproviderconfig.ManagesKind,
+			Setup: identityproviderconfig.SetupIdentityProviderConfig,
+		},
+		{
+			Type:  instanceprofile.ManagesKind,
+			Setup: instanceprofile.SetupInstanceProfile,
+		},
+		{
+			Type:  elb.ManagesKind,
+			Setup: elb.SetupELB,
+		},
+		{
+			Type:  elbattachment.ManagesKind,
+			Setup: elbattachment.SetupELBAttachment,
+		},
+		{
+			Type:  nodegroup.ManagesKind,
+			Setup: nodegroup.SetupNodeGroup,
+		},
+		{
+			Type:  s3.ManagesKind,
+			Setup: s3.SetupBucket,
+		},
+		{
+			Type:  bucketpolicy.ManagesKind,
+			Setup: bucketpolicy.SetupBucketPolicy,
+		},
+		{
+			Type:  accesskey.ManagesKind,
+			Setup: accesskey.SetupAccessKey,
+		},
+		{
+			Type:  user.ManagesKind,
+			Setup: user.SetupUser,
+		},
+		{
+			Type:  group.ManagesKind,
+			Setup: group.SetupGroup,
+		},
+		{
+			Type:  policy.ManagesKind,
+			Setup: policy.SetupPolicy,
+		},
+		{
+			Type:  role.ManagesKind,
+			Setup: role.SetupRole,
+		},
+		{
+			Type:  groupusermembership.ManagesKind,
+			Setup: groupusermembership.SetupGroupUserMembership,
+		},
+		{
+			Type:  userpolicyattachment.ManagesKind,
+			Setup: userpolicyattachment.SetupUserPolicyAttachment,
+		},
+		{
+			Type:  grouppolicyattachment.ManagesKind,
+			Setup: grouppolicyattachment.SetupGroupPolicyAttachment,
+		},
+		{
+			Type:  rolepolicyattachment.ManagesKind,
+			Setup: rolepolicyattachment.SetupRolePolicyAttachment,
+		},
+		{
+			Type:  vpc.ManagesKind,
+			Setup: vpc.SetupVPC,
+		},
+		{
+			Type:  subnet.ManagesKind,
+			Setup: subnet.SetupSubnet,
+		},
+		{
+			Type:  securitygroup.ManagesKind,
+			Setup: securitygroup.SetupSecurityGroup,
+		},
+		{
+			Type:  securitygrouprule.ManagesKind,
+			Setup: securitygrouprule.SetupSecurityGroupRule,
+		},
+		{
+			Type:  internetgateway.ManagesKind,
+			Setup: internetgateway.SetupInternetGateway,
+		},
+		{
+			Type:  launchtemplate.ManagesKind,
+			Setup: launchtemplate.SetupLaunchTemplate,
+		},
+		{
+			Type:  launchtemplateversion.ManagesKind,
+			Setup: launchtemplateversion.SetupLaunchTemplateVersion,
+		},
+		{
+			Type:  natgateway.ManagesKind,
+			Setup: natgateway.SetupNatGateway,
+		},
+		{
+			Type:  routetable.ManagesKind,
+			Setup: routetable.SetupRouteTable,
+		},
+		{
+			Type:  dbsubnetgroup.ManagesKind,
+			Setup: dbsubnetgroup.SetupDBSubnetGroup,
+		},
+		{
+			Type:  certificateauthority.ManagesKind,
+			Setup: certificateauthority.SetupCertificateAuthority,
+		},
+		{
+			Type:  certificateauthoritypermission.ManagesKind,
+			Setup: certificateauthoritypermission.SetupCertificateAuthorityPermission,
+		},
+		{
+			Type:  acm.ManagesKind,
+			Setup: acm.SetupCertificate,
+		},
+		{
+			Type:  resourcerecordset.ManagesKind,
+			Setup: resourcerecordset.SetupResourceRecordSet,
+		},
+		{
+			Type:  hostedzone.ManagesKind,
+			Setup: hostedzone.SetupHostedZone,
+		},
+		{
+			Type:  secret.ManagesKind,
+			Setup: secret.SetupSecret,
+		},
+		{
+			Type:  topic.ManagesKind,
+			Setup: topic.SetupSNSTopic,
+		},
+		{
+			Type:  subscription.ManagesKind,
+			Setup: subscription.SetupSubscription,
+		},
+		{
+			Type:  queue.ManagesKind,
+			Setup: queue.SetupQueue,
+		},
+		{
+			Type:  redshift.ManagesKind,
+			Setup: redshift.SetupCluster,
+		},
+		{
+			Type:  address.ManagesKind,
+			Setup: address.SetupAddress,
+		},
+		{
+			Type:  repository.ManagesKind,
+			Setup: repository.SetupRepository,
+		},
+		{
+			Type:  repositorypolicy.ManagesKind,
+			Setup: repositorypolicy.SetupRepositoryPolicy,
+		},
+		{
+			Type:  lifecyclepolicy.ManagesKind,
+			Setup: lifecyclepolicy.SetupLifecyclePolicy,
+		},
+		{
+			Type:  api.ManagesKind,
+			Setup: api.SetupAPI,
+		},
+		{
+			Type:  stage.ManagesKind,
+			Setup: stage.SetupStage,
+		},
+		{
+			Type:  route.ManagesKind,
+			Setup: route.SetupRoute,
+		},
+		{
+			Type:  authorizer.ManagesKind,
+			Setup: authorizer.SetupAuthorizer,
+		},
+		{
+			Type:  integration.ManagesKind,
+			Setup: integration.SetupIntegration,
+		},
+		{
+			Type:  deployment.ManagesKind,
+			Setup: deployment.SetupDeployment,
+		},
+		{
+			Type:  domainname.ManagesKind,
+			Setup: domainname.SetupDomainName,
+		},
+		{
+			Type:  integrationresponse.ManagesKind,
+			Setup: integrationresponse.SetupIntegrationResponse,
+		},
+		{
+			Type:  model.ManagesKind,
+			Setup: model.SetupModel,
+		},
+		{
+			Type:  apimapping.ManagesKind,
+			Setup: apimapping.SetupAPIMapping,
+		},
+		{
+			Type:  routeresponse.ManagesKind,
+			Setup: routeresponse.SetupRouteResponse,
+		},
+		{
+			Type:  vpclink.ManagesKind,
+			Setup: vpclink.SetupVPCLink,
+		},
+		{
+			Type:  fargateprofile.ManagesKind,
+			Setup: fargateprofile.SetupFargateProfile,
+		},
+		{
+			Type:  activity.ManagesKind,
+			Setup: activity.SetupActivity,
+		},
+		{
+			Type:  statemachine.ManagesKind,
+			Setup: statemachine.SetupStateMachine,
+		},
+		{
+			Type:  table.ManagesKind,
+			Setup: table.SetupTable,
+		},
+		{
+			Type:  backup.ManagesKind,
+			Setup: backup.SetupBackup,
+		},
+		{
+			Type:  globaltable.ManagesKind,
+			Setup: globaltable.SetupGlobalTable,
+		},
+		{
+			Type:  key.ManagesKind,
+			Setup: key.SetupKey,
+		},
+		{
+			Type:  alias.ManagesKind,
+			Setup: alias.SetupAlias,
+		},
+		{
+			Type:  accesspoint.ManagesKind,
+			Setup: accesspoint.SetupAccessPoint,
+		},
+		{
+			Type:  filesystem.ManagesKind,
+			Setup: filesystem.SetupFileSystem,
+		},
+		{
+			Type:  dbcluster.ManagesKind,
+			Setup: dbcluster.SetupDBCluster,
+		},
+		{
+			Type:  dbclusterparametergroup.ManagesKind,
+			Setup: dbclusterparametergroup.SetupDBClusterParameterGroup,
+		},
+		{
+			Type:  dbinstance.ManagesKind,
+			Setup: dbinstance.SetupDBInstance,
+		},
+		{
+			Type:  dbinstanceroleassociation.ManagesKind,
+			Setup: dbinstanceroleassociation.SetupDBInstanceRoleAssociation,
+		},
+		{
+			Type:  dbparametergroup.ManagesKind,
+			Setup: dbparametergroup.SetupDBParameterGroup,
+		},
+		{
+			Type:  globalcluster.ManagesKind,
+			Setup: globalcluster.SetupGlobalCluster,
+		},
+		{
+			Type:  vpccidrblock.ManagesKind,
+			Setup: vpccidrblock.SetupVPCCIDRBlock,
+		},
+		{
+			Type:  privatednsnamespace.ManagesKind,
+			Setup: privatednsnamespace.SetupPrivateDNSNamespace,
+		},
+		{
+			Type:  publicdnsnamespace.ManagesKind,
+			Setup: publicdnsnamespace.SetupPublicDNSNamespace,
+		},
+		{
+			Type:  httpnamespace.ManagesKind,
+			Setup: httpnamespace.SetupHTTPNamespace,
+		},
+		{
+			Type:  lambdafunction.ManagesKind,
+			Setup: lambdafunction.SetupFunction,
+		},
+		{
+			Type:  lambdapermission.ManagesKind,
+			Setup: lambdapermission.SetupPermission,
+		},
+		{
+			Type:  lambdaurlconfig.ManagesKind,
+			Setup: lambdaurlconfig.SetupFunctionURL,
+		},
+		{
+			Type:  openidconnectprovider.ManagesKind,
+			Setup: openidconnectprovider.SetupOpenIDConnectProvider,
+		},
+		{
+			Type:  distribution.ManagesKind,
+			Setup: distribution.SetupDistribution,
+		},
+		{
+			Type:  cachepolicy.ManagesKind,
+			Setup: cachepolicy.SetupCachePolicy,
+		},
+		{
+			Type:  cloudfrontorginaccessidentity.ManagesKind,
+			Setup: cloudfrontorginaccessidentity.SetupCloudFrontOriginAccessIdentity,
+		},
+		{
+			Type:  cloudfrontresponseheaderspolicy.ManagesKind,
+			Setup: cloudfrontresponseheaderspolicy.SetupResponseHeadersPolicy,
+		},
+		{
+			Type:  resolverendpoint.ManagesKind,
+			Setup: resolverendpoint.SetupResolverEndpoint,
+		},
+		{
+			Type:  resolverrule.ManagesKind,
+			Setup: resolverrule.SetupResolverRule,
+		},
+		{
+			Type:  vpcpeeringconnection.ManagesKind,
+			Setup: vpcpeeringconnection.SetupVPCPeeringConnection,
+		},
+		{
+			Type:  vpcendpoint.ManagesKind,
+			Setup: vpcendpoint.SetupVPCEndpoint,
+		},
+		{
+			Type:  kafkacluster.ManagesKind,
+			Setup: kafkacluster.SetupCluster,
+		},
+		{
+			Type:  efsmounttarget.ManagesKind,
+			Setup: efsmounttarget.SetupMountTarget,
+		},
+		{
+			Type:  transferserver.ManagesKind,
+			Setup: transferserver.SetupServer,
+		},
+		{
+			Type:  transferuser.ManagesKind,
+			Setup: transferuser.SetupUser,
+		},
+		{
+			Type:  instance.ManagesKind,
+			Setup: instance.SetupInstance,
+		},
+		{
+			Type:  gluejob.ManagesKind,
+			Setup: gluejob.SetupJob,
+		},
+		{
+			Type:  gluesecurityconfiguration.ManagesKind,
+			Setup: gluesecurityconfiguration.SetupSecurityConfiguration,
+		},
+		{
+			Type:  glueconnection.ManagesKind,
+			Setup: glueconnection.SetupConnection,
+		},
+		{
+			Type:  glueDatabase.ManagesKind,
+			Setup: glueDatabase.SetupDatabase,
+		},
+		{
+			Type:  gluecrawler.ManagesKind,
+			Setup: gluecrawler.SetupCrawler,
+		},
+		{
+			Type:  glueclassifier.ManagesKind,
+			Setup: glueclassifier.SetupClassifier,
+		},
+		{
+			Type:  mqbroker.ManagesKind,
+			Setup: mqbroker.SetupBroker,
+		},
+		{
+			Type:  mquser.ManagesKind,
+			Setup: mquser.SetupUser,
+		},
+		{
+			Type:  mwaaenvironment.ManagesKind,
+			Setup: mwaaenvironment.SetupEnvironment,
+		},
+		{
+			Type:  cwloggroup.ManagesKind,
+			Setup: cwloggroup.SetupLogGroup,
+		},
+		{
+			Type:  volume.ManagesKind,
+			Setup: volume.SetupVolume,
+		},
+		{
+			Type:  transitgateway.ManagesKind,
+			Setup: transitgateway.SetupTransitGateway,
+		},
+		{
+			Type:  transitgatewayvpcattachment.ManagesKind,
+			Setup: transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
+		},
+		{
+			Type:  thing.ManagesKind,
+			Setup: thing.SetupThing,
+		},
+		{
+			Type:  iotpolicy.ManagesKind,
+			Setup: iotpolicy.SetupPolicy,
+		},
+		{
+			Type:  ec2route.ManagesKind,
+			Setup: ec2route.SetupRoute,
+		},
+		{
+			Type:  athenaworkgroup.ManagesKind,
+			Setup: athenaworkgroup.SetupWorkGroup,
+		},
+		{
+			Type:  resourceshare.ManagesKind,
+			Setup: resourceshare.SetupResourceShare,
+		},
+		{
+			Type:  kafkaconfiguration.ManagesKind,
+			Setup: kafkaconfiguration.SetupConfiguration,
+		},
+		{
+			Type:  listener.ManagesKind,
+			Setup: listener.SetupListener,
+		},
+		{
+			Type:  loadbalancer.ManagesKind,
+			Setup: loadbalancer.SetupLoadBalancer,
+		},
+		{
+			Type:  targetgroup.ManagesKind,
+			Setup: targetgroup.SetupTargetGroup,
+		},
+		{
+			Type:  target.ManagesKind,
+			Setup: target.SetupTarget,
+		},
+		{
+			Type:  transitgatewayroute.ManagesKind,
+			Setup: transitgatewayroute.SetupTransitGatewayRoute,
+		},
+		{
+			Type:  transitgatewayroutetable.ManagesKind,
+			Setup: transitgatewayroutetable.SetupTransitGatewayRouteTable,
+		},
+		{
+			Type:  vpcendpointserviceconfiguration.ManagesKind,
+			Setup: vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
+		},
+		{
+			Type:  kinesisstream.ManagesKind,
+			Setup: kinesisstream.SetupStream,
+		},
+		{
+			Type:  resolverruleassociation.ManagesKind,
+			Setup: resolverruleassociation.SetupResolverRuleAssociation,
+		},
+		{
+			Type:  cognitouserpool.ManagesKind,
+			Setup: cognitouserpool.SetupUserPool,
+		},
+		{
+			Type:  cognitouserpooldomain.ManagesKind,
+			Setup: cognitouserpooldomain.SetupUserPoolDomain,
+		},
+		{
+			Type:  cognitogroup.ManagesKind,
+			Setup: cognitogroup.SetupGroup,
+		},
+		{
+			Type:  cognitouserpoolclient.ManagesKind,
+			Setup: cognitouserpoolclient.SetupUserPoolClient,
+		},
+		{
+			Type:  cognitoidentityprovider.ManagesKind,
+			Setup: cognitoidentityprovider.SetupIdentityProvider,
+		},
+		{
+			Type:  cognitoresourceserver.ManagesKind,
+			Setup: cognitoresourceserver.SetupResourceServer,
+		},
+		{
+			Type:  cognitogroupusermembership.ManagesKind,
+			Setup: cognitogroupusermembership.SetupGroupUserMembership,
+		},
+		{
+			Type:  neptunecluster.ManagesKind,
+			Setup: neptunecluster.SetupDBCluster,
+		},
+		{
+			Type:  topic.ManagesKind,
+			Setup: topic.SetupSNSTopic,
+		},
+		{
+			Type:  subscription.ManagesKind,
+			Setup: subscription.SetupSubscription,
+		},
+		{
+			Type:  prometheusserviceworkspace.ManagesKind,
+			Setup: prometheusserviceworkspace.SetupWorkspace,
+		},
+		{
+			Type:  prometheusservicerulegroupnamespace.ManagesKind,
+			Setup: prometheusservicerulegroupnamespace.SetupRuleGroupsNamespace,
+		},
+		{
+			Type:  prometheusservicealertmanagerdefinition.ManagesKind,
+			Setup: prometheusservicealertmanagerdefinition.SetupAlertManagerDefinition,
+		},
+		{
+			Type:  resource.ManagesKind,
+			Setup: resource.SetupResource,
+		},
+		{
+			Type:  restapi.ManagesKind,
+			Setup: restapi.SetupRestAPI,
+		},
+		{
+			Type:  method.ManagesKind,
+			Setup: method.SetupMethod,
+		},
+		{
+			Type:  cognitoidentitypool.ManagesKind,
+			Setup: cognitoidentitypool.SetupIdentityPool,
+		},
+		{
+			Type:  flowlog.ManagesKind,
+			Setup: flowlog.SetupFlowLog,
+		},
+		{
+			Type:  opensearchdomain.ManagesKind,
+			Setup: opensearchdomain.SetupDomain,
+		},
+		{
+			Type:  computeenvironment.ManagesKind,
+			Setup: computeenvironment.SetupComputeEnvironment,
+		},
+		{
+			Type:  jobqueue.ManagesKind,
+			Setup: jobqueue.SetupJobQueue,
+		},
+		{
+			Type:  jobdefinition.ManagesKind,
+			Setup: jobdefinition.SetupJobDefinition,
+		},
+		{
+			Type:  batchjob.ManagesKind,
+			Setup: batchjob.SetupJob,
+		},
+		{
+			Type:  emrcontainersjobrun.ManagesKind,
+			Setup: emrcontainersjobrun.SetupJobRun,
+		},
+		{
+			Type:  emrcontainersvirtualcluster.ManagesKind,
+			Setup: emrcontainersvirtualcluster.SetupVirtualCluster,
+		},
+		{
+			Type:  optiongroup.ManagesKind,
+			Setup: optiongroup.SetupOptionGroup,
+		},
+		{
+			Type:  autoscalinggroup.ManagesKind,
+			Setup: autoscalinggroup.SetupAutoScalingGroup,
+		},
+	}
+
+	exclude := filterCRDs.ExcludeCrds
+	include := filterCRDs.IncludeCrds
+	var appliedReconciler []func(ctrl.Manager, controller.Options) error
+
+objectLoop:
+	for _, obj := range allResources {
+
+		// get the group and kind the controller manages
+		managedKind := strings.ToLower(obj.Type())
+
+		// include if matches entries in include list
+		for _, includeReg := range include {
+			matchedInclude, _ := regexp.MatchString(strings.ToLower(includeReg), managedKind)
+
+			if matchedInclude {
+				appliedReconciler = append(appliedReconciler, obj.Setup)
+				continue objectLoop
+			}
+		}
+
+		// exclude if matches entry in exclude list
+		for _, excludeReg := range exclude {
+			matchedExclude, _ := regexp.MatchString(strings.ToLower(excludeReg), managedKind)
+
+			if matchedExclude {
+				continue objectLoop
+			}
+		}
+
+		// include if not expecially excluded
+		appliedReconciler = append(appliedReconciler, obj.Setup)
+	}
+
+	// setup the filtered list of controllers
+	for _, setup := range appliedReconciler {
 		if err := setup(mgr, o); err != nil {
 			return err
 		}

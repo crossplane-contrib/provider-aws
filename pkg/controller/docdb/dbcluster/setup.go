@@ -54,9 +54,14 @@ const (
 	errSaveSecretFailed        = "failed to save generated password to Kubernetes secret"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.DBClusterGroupKind
+}
+
 // SetupDBCluster adds a controller that reconciles a DBCluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.DBClusterKind)
+	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
 	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

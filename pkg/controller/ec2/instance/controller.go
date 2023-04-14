@@ -56,6 +56,11 @@ const (
 	errDelete                   = "failed to delete the Instance resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.InstanceGroupKind
+}
+
 // SetupInstance adds a controller that reconciles Instances.
 func SetupInstance(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.InstanceGroupKind)

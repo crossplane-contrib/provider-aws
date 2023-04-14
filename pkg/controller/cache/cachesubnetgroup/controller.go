@@ -49,6 +49,11 @@ const (
 	errDeleteSubnetGroup   = "cannot delete Subnet Group"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return cachev1alpha1.CacheSubnetGroupGroupKind
+}
+
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
 func SetupCacheSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(cachev1alpha1.CacheSubnetGroupGroupKind)

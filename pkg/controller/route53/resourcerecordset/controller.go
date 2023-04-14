@@ -51,6 +51,11 @@ const (
 	errState            = "failed to determine resource state"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return route53v1alpha1.ResourceRecordSetGroupKind
+}
+
 // SetupResourceRecordSet adds a controller that reconciles ResourceRecordSets.
 func SetupResourceRecordSet(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(route53v1alpha1.ResourceRecordSetGroupKind)

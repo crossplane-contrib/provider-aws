@@ -50,6 +50,11 @@ const (
 	annotationARN     = "crossplane.io/external-aws-glue-job-arn"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.JobGroupKind
+}
+
 // SetupJob adds a controller that reconciles Job.
 func SetupJob(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.JobGroupKind)

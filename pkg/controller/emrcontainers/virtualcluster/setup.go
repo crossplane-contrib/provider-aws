@@ -31,6 +31,11 @@ const (
 	errTag            = "cannot add tags"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.VirtualClusterGroupKind
+}
+
 // SetupVirtualCluster adds a controller that reconciles VirtualCluster.
 func SetupVirtualCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VirtualClusterGroupKind)

@@ -61,6 +61,11 @@ const (
 	errKubeUpdateFailed = "cannot update OpenIDConnectProvider instance custom resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.OpenIDConnectProviderGroupKind
+}
+
 // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
 func SetupOpenIDConnectProvider(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.OpenIDConnectProviderGroupKind)

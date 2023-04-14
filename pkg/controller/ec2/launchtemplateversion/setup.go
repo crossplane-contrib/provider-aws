@@ -21,6 +21,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.LaunchTemplateVersionGroupKind
+}
+
 // SetupLaunchTemplateVersion adds a controller that reconciles LaunchTemplateVersion.
 func SetupLaunchTemplateVersion(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.LaunchTemplateVersionGroupKind)

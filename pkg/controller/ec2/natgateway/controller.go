@@ -36,6 +36,11 @@ const (
 	errDeleteTags       = "failed to delete tags for NATGateway resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.NATGatewayGroupKind
+}
+
 // SetupNatGateway adds a controller that reconciles NatGateways.
 func SetupNatGateway(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.NATGatewayGroupKind)

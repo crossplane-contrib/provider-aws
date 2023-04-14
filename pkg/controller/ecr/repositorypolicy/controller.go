@@ -48,6 +48,11 @@ const (
 	errDelete = "failed to delete the repository resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.RepositoryPolicyGroupKind
+}
+
 // SetupRepositoryPolicy adds a controller that reconciles ECR.
 func SetupRepositoryPolicy(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.RepositoryPolicyGroupKind)

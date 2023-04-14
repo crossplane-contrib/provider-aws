@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.StateMachineGroupKind
+}
+
 // SetupStateMachine adds a controller that reconciles StateMachine.
 func SetupStateMachine(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)

@@ -57,6 +57,11 @@ const (
 	errDeleteTags    = "failed to delete tags for the Subnet resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.SubnetGroupKind
+}
+
 // SetupSubnet adds a controller that reconciles Subnets.
 func SetupSubnet(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.SubnetGroupKind)

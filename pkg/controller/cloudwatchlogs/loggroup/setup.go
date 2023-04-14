@@ -42,6 +42,11 @@ const (
 	errUntagResource = "cannot untag resource"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.LogGroupGroupKind
+}
+
 // SetupLogGroup adds a controller that reconciles LogGroup.
 func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.LogGroupGroupKind)

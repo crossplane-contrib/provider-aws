@@ -43,6 +43,11 @@ const (
 	errConflictingFields   = "fields conflicting! Please only use one of them or both with the same value"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.UserPoolGroupKind
+}
+
 // SetupUserPool adds a controller that reconciles UserPool.
 func SetupUserPool(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.UserPoolGroupKind)

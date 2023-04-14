@@ -50,6 +50,11 @@ const (
 	errNotSpecified     = "failed to format bucketPolicy, no rawPolicy or policy specified"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1alpha3.BucketPolicyGroupKind
+}
+
 // SetupBucketPolicy adds a controller that reconciles
 // BucketPolicies.
 func SetupBucketPolicy(mgr ctrl.Manager, o controller.Options) error {

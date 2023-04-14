@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.RouteResponseGroupKind
+}
+
 // SetupRouteResponse adds a controller that reconciles RouteResponse.
 func SetupRouteResponse(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.RouteResponseGroupKind)

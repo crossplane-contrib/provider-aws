@@ -62,6 +62,11 @@ const (
 	errReplicationGroupCacheClusterMaximum = "maximum of 5 replicas are allowed"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.ReplicationGroupGroupKind
+}
+
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
 func SetupReplicationGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.ReplicationGroupGroupKind)

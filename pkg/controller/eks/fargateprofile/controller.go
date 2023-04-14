@@ -50,9 +50,14 @@ const (
 	errDescribeFailed       = "cannot describe EKS fargate profile"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.FargateProfileGroupKind
+}
+
 // SetupFargateProfile adds a controller that reconciles FargateProfiles.
 func SetupFargateProfile(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.FargateProfileKind)
+	name := managed.ControllerName(v1beta1.FargateProfileGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

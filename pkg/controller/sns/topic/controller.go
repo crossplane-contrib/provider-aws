@@ -50,6 +50,11 @@ const (
 	errUpdate           = "failed to update the SNS Topic"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.TopicGroupKind
+}
+
 // SetupSNSTopic adds a controller that reconciles Topic.
 func SetupSNSTopic(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.TopicGroupKind)

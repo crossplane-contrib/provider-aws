@@ -19,6 +19,11 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.LifecyclePolicyGroupKind
+}
+
 // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
 func SetupLifecyclePolicy(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.LifecyclePolicyGroupKind)

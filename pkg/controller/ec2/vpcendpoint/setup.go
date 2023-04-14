@@ -27,6 +27,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.VPCEndpointGroupKind
+}
+
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
 func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)

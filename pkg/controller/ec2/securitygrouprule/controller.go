@@ -33,9 +33,14 @@ const (
 	egressType          = "egress"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return manualv1alpha1.SecurityGroupRuleGroupKind
+}
+
 // SetupSecurityGroupRule adds a controller that reconciles SecurityGroupRules.
 func SetupSecurityGroupRule(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.SecurityGroupRuleKind)
+	name := managed.ControllerName(manualv1alpha1.SecurityGroupRuleGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

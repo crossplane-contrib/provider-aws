@@ -47,6 +47,11 @@ const (
 	errDetach           = "failed to detach the policy to role"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.RolePolicyAttachmentGroupKind
+}
+
 // SetupRolePolicyAttachment adds a controller that reconciles
 // RolePolicyAttachments.
 func SetupRolePolicyAttachment(mgr ctrl.Manager, o controller.Options) error {

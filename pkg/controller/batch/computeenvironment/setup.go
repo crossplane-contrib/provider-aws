@@ -35,6 +35,11 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.ComputeEnvironmentGroupKind
+}
+
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
 func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ComputeEnvironmentGroupKind)

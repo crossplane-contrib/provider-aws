@@ -20,6 +20,11 @@ import (
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.MethodGroupKind
+}
+
 // SetupMethod adds a controller that reconciles Method.
 func SetupMethod(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.MethodGroupKind)

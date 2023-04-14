@@ -57,6 +57,11 @@ const (
 	errRemoveTagsFailed = "failed to remove tags for Certificate"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.CertificateGroupKind
+}
+
 // SetupCertificate adds a controller that reconciles Certificates.
 func SetupCertificate(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.CertificateGroupKind)

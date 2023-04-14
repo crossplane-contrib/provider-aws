@@ -47,9 +47,14 @@ const (
 	errDescribeTargetHealthFailed      = "failed to describe target health"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return manualv1alpha1.TargetGroupKind
+}
+
 // SetupTarget adds a controller that reconciles Targets.
 func SetupTarget(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(manualv1alpha1.TargetKind)
+	name := managed.ControllerName(manualv1alpha1.TargetGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {

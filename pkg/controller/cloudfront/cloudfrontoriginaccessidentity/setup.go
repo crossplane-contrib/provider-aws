@@ -36,6 +36,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.CloudFrontOriginAccessIdentityGroupKind
+}
+
 // SetupCloudFrontOriginAccessIdentity adds a controller that reconciles CloudFrontOriginAccessIdentity .
 func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.CloudFrontOriginAccessIdentityGroupKind)

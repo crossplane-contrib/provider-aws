@@ -20,6 +20,11 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.LoadBalancerGroupKind
+}
+
 // SetupLoadBalancer adds a controller that reconciles LoadBalancer.
 func SetupLoadBalancer(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.LoadBalancerGroupKind)

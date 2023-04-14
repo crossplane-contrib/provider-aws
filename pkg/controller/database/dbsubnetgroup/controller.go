@@ -56,6 +56,11 @@ const (
 	errNotOne           = "expected exactly one DBSubnetGroup"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return v1beta1.DBSubnetGroupGroupKind
+}
+
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
 func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)

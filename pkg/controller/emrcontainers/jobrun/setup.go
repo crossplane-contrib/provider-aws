@@ -25,9 +25,14 @@ const (
 	firstObserveJobRunID = "0000000000000000000"
 )
 
+// ManagesKind returns the kind this controller manages
+func ManagesKind() string {
+	return svcapitypes.JobRunGroupKind
+}
+
 // SetupJobRun adds a controller that reconciles JobRun.
 func SetupJobRun(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.JobRunKind)
+	name := managed.ControllerName(svcapitypes.JobRunGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preCreate = preCreate
