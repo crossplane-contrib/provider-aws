@@ -140,6 +140,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	case awsec2types.VpcCidrBlockStateCodeAssociating:
 		cr.SetConditions(xpv1.Creating())
 	case awsec2types.VpcCidrBlockStateCodeDisassociated:
+		if meta.WasDeleted(mgd) {
+			return managed.ExternalObservation{
+				ResourceExists:   false,
+				ResourceUpToDate: false,
+			}, nil
+		}
 		cr.Status.SetConditions(xpv1.Deleting())
 	case awsec2types.VpcCidrBlockStateCodeDisassociating:
 		cr.Status.SetConditions(xpv1.Deleting())
