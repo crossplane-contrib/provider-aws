@@ -36,7 +36,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -45,6 +44,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/password"
 )
 
 const (
@@ -52,6 +52,7 @@ const (
 	errKubeUpdateFailed        = "cannot update DBCluster instance custom resource"
 	errGetPasswordSecretFailed = "cannot get password secret"
 	errSaveSecretFailed        = "failed to save generated password to Kubernetes secret"
+	errValidatePassword        = "cannot validate password"
 )
 
 // SetupDBCluster adds a controller that reconciles a DBCluster.
@@ -196,6 +197,9 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *s
 		return err
 	}
 	if pwchanged {
+		if err := password.ValidatePassword(cr.Spec.ForProvider.MasterUserPaswordConstraints, pw); err != nil {
+			return errors.Wrap(err, errValidatePassword)
+		}
 		obj.MasterUserPassword = aws.String(pw)
 	}
 	return nil
@@ -217,13 +221,15 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *s
 		return err
 	}
 	if pw == "" && aws.BoolValue(&cr.Spec.ForProvider.AutogeneratePassword) {
-		pw, err = password.Generate()
+		pw, err = password.GeneratePasswordFromConstraints(cr.Spec.ForProvider.MasterUserPaswordConstraints)
 		if err != nil {
 			return errors.Wrap(err, "unable to generate a password")
 		}
 		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
 			return errors.Wrap(err, errSaveSecretFailed)
 		}
+	} else if err := password.ValidatePassword(cr.Spec.ForProvider.MasterUserPaswordConstraints, pw); err != nil {
+		return errors.Wrap(err, errValidatePassword)
 	}
 
 	obj.MasterUserPassword = awsclient.String(pw)

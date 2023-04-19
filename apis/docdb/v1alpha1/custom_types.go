@@ -18,6 +18,8 @@ package v1alpha1
 
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 )
 
 // RDS instance states.
@@ -140,6 +142,10 @@ type CustomDBClusterParameters struct {
 	//
 	// Constraints: Must contain from 8 to 100 characters.
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef,omitempty"`
+
+	// MasterUserPaswordConstraints specifies additional constraints
+	// that apply to the password referenced by MasterUserPasswordSecretRef.
+	MasterUserPaswordConstraints *common.PasswordConstraints `json:"masterUserPaswordConstraints,omitempty"`
 
 	DBSubnetGroupNameRef      *xpv1.Reference `json:"dbSubnetGroupNameRef,omitempty"`
 	DBSubnetGroupNameSelector *xpv1.Selector  `json:"dbSubnetGroupNameSelector,omitempty"`

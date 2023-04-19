@@ -670,9 +670,8 @@ func TestCreate(t *testing.T) {
 				},
 				kube: &test.MockClient{
 					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
-						switch o := obj.(type) {
-						case *corev1.Secret:
-							o.Data = map[string][]byte{
+						if sec, ok := obj.(*corev1.Secret); ok {
+							sec.Data = map[string][]byte{
 								"password": []byte("passw0rd"),
 							}
 						}

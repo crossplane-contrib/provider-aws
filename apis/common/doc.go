@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package contains common structs that are used in other API packages.
+// Package common contains common structs that are used in other API packages.
 // +kubebuilder:object:generate=true
 package common
