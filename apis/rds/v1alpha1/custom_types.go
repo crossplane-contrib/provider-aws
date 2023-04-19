@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -203,6 +204,10 @@ type CustomDBClusterParameters struct {
 	//
 	// Constraints: Must contain from 8 to 41 characters. Required.
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
+
+	// MasterUserPaswordConstraints specifies additional constraints
+	// that apply to the password referenced by MasterUserPasswordSecretRef.
+	MasterUserPaswordConstraints *common.PasswordConstraints `json:"masterUserPaswordConstraints,omitempty"`
 
 	// A list of VPC security groups that the DB cluster will belong to.
 	//
@@ -524,6 +529,10 @@ type CustomDBInstanceParameters struct {
 	// Constraints: Must contain from 8 to 41 characters.
 	// +optional
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef,omitempty"`
+
+	// MasterUserPaswordConstraints specifies additional constraints
+	// that apply to the password referenced by MasterUserPasswordSecretRef.
+	MasterUserPaswordConstraints *common.PasswordConstraints `json:"masterUserPaswordConstraints,omitempty"`
 
 	// MonitoringRoleARNRef is a reference to an IAMRole used to set
 	// MonitoringRoleARN.

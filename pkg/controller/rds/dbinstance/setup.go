@@ -24,7 +24,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -33,6 +32,7 @@ import (
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/password"
 )
 
 // error constants
@@ -49,6 +49,7 @@ const (
 	errPointInTimeRestoreFailed = "cannot restore DB instance from point in time"
 	errUnknownRestoreSource     = "unknown DB Instance restore source"
 	statusDeleting              = "deleting"
+	errValidatePassword         = "cannot validate password"
 )
 
 // SetupDBInstance adds a controller that reconciles DBInstance
@@ -105,13 +106,15 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
 	if pw == "" && cr.Spec.ForProvider.AutogeneratePassword {
-		pw, err = password.Generate()
+		pw, err = password.GeneratePasswordFromConstraints(cr.Spec.ForProvider.MasterUserPaswordConstraints)
 		if err != nil {
 			return errors.Wrap(err, "unable to generate a password")
 		}
 		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
 			return errors.Wrap(err, errSaveSecretFailed)
 		}
+	} else if err := password.ValidatePassword(cr.Spec.ForProvider.MasterUserPaswordConstraints, pw); err != nil {
+		return errors.Wrap(err, errValidatePassword)
 	}
 	obj.MasterUserPassword = aws.String(pw)
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
@@ -183,6 +186,9 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		return err
 	}
 	if pwchanged {
+		if err := password.ValidatePassword(cr.Spec.ForProvider.MasterUserPaswordConstraints, pw); err != nil {
+			return errors.Wrap(err, errValidatePassword)
+		}
 		obj.MasterUserPassword = aws.String(pw)
 	}
 

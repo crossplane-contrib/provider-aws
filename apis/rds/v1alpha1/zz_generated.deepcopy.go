@@ -22,6 +22,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -475,6 +476,11 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 		*out = new(v1.SecretKeySelector)
 		**out = **in
 	}
+	if in.MasterUserPaswordConstraints != nil {
+		in, out := &in.MasterUserPaswordConstraints, &out.MasterUserPaswordConstraints
+		*out = new(common.PasswordConstraints)
+		**out = **in
+	}
 	if in.VPCSecurityGroupIDs != nil {
 		in, out := &in.VPCSecurityGroupIDs, &out.VPCSecurityGroupIDs
 		*out = make([]string, len(*in))
@@ -600,6 +606,11 @@ func (in *CustomDBInstanceParameters) DeepCopyInto(out *CustomDBInstanceParamete
 	if in.MasterUserPasswordSecretRef != nil {
 		in, out := &in.MasterUserPasswordSecretRef, &out.MasterUserPasswordSecretRef
 		*out = new(v1.SecretKeySelector)
+		**out = **in
+	}
+	if in.MasterUserPaswordConstraints != nil {
+		in, out := &in.MasterUserPaswordConstraints, &out.MasterUserPaswordConstraints
+		*out = new(common.PasswordConstraints)
 		**out = **in
 	}
 	if in.MonitoringRoleARNRef != nil {

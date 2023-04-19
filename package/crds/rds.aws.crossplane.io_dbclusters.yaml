@@ -700,6 +700,47 @@ spec:
                     - name
                     - namespace
                     type: object
+                  masterUserPaswordConstraints:
+                    description: MasterUserPaswordConstraints specifies additional
+                      constraints that apply to the password referenced by MasterUserPasswordSecretRef.
+                    properties:
+                      maximumLength:
+                        description: MaxLength specifies the maximum length of the
+                          password.
+                        minimum: 1
+                        type: integer
+                      minDigits:
+                        description: MinDigits specifies the minimal number of digits.
+                        minimum: 0
+                        type: integer
+                      minLowerCaseLetters:
+                        description: MinLowerCaseLetters specifies the minimal number
+                          of lower case letters.
+                        minimum: 0
+                        type: integer
+                      minSpecialCharacters:
+                        description: MinSpecialCharacters specifies the minimal number
+                          of special characters.
+                        minimum: 0
+                        type: integer
+                      minUpperCaseLetters:
+                        description: MinUpperCaseLetters specifies the minimal number
+                          of upper case letters.
+                        minimum: 0
+                        type: integer
+                      minimumLength:
+                        description: MinLength specifies the minimum length of the
+                          password.
+                        minimum: 1
+                        type: integer
+                    required:
+                    - maximumLength
+                    - minDigits
+                    - minLowerCaseLetters
+                    - minSpecialCharacters
+                    - minUpperCaseLetters
+                    - minimumLength
+                    type: object
                   masterUserSecretKMSKeyID:
                     description: "The Amazon Web Services KMS key identifier to encrypt
                       a secret that is automatically generated and managed in Amazon
