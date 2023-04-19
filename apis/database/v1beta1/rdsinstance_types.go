@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 )
 
 // SQL database engines.
@@ -543,6 +545,10 @@ type RDSInstanceParameters struct {
 	// +optional
 	// +immutable
 	MasterPasswordSecretRef *xpv1.SecretKeySelector `json:"masterPasswordSecretRef,omitempty"`
+
+	// MasterPasswordConstraints specify constraints and restrictions for the
+	// master user password referenced in MasterPasswordSecretRef.
+	MasterPasswordConstraints *common.PasswordConstraints `json:"masterPasswordConstraints,omitempty"`
 
 	// The upper limit to which Amazon RDS can automatically scale the storage of
 	// the DB instance.

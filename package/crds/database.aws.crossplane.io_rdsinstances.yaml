@@ -516,6 +516,47 @@ spec:
                     description: 'LicenseModel information for this DB instance. Valid
                       values: license-included | bring-your-own-license | general-public-license'
                     type: string
+                  masterPasswordConstraints:
+                    description: MasterPasswordConstraints specify constraints and
+                      restrictions for the master user password referenced in MasterPasswordSecretRef.
+                    properties:
+                      maximumLength:
+                        description: MaxLength specifies the maximum length of the
+                          password.
+                        minimum: 1
+                        type: integer
+                      minDigits:
+                        description: MinDigits specifies the minimal number of digits.
+                        minimum: 0
+                        type: integer
+                      minLowerCaseLetters:
+                        description: MinLowerCaseLetters specifies the minimal number
+                          of lower case letters.
+                        minimum: 0
+                        type: integer
+                      minSpecialCharacters:
+                        description: MinSpecialCharacters specifies the minimal number
+                          of special characters.
+                        minimum: 0
+                        type: integer
+                      minUpperCaseLetters:
+                        description: MinUpperCaseLetters specifies the minimal number
+                          of upper case letters.
+                        minimum: 0
+                        type: integer
+                      minimumLength:
+                        description: MinLength specifies the minimum length of the
+                          password.
+                        minimum: 1
+                        type: integer
+                    required:
+                    - maximumLength
+                    - minDigits
+                    - minLowerCaseLetters
+                    - minSpecialCharacters
+                    - minUpperCaseLetters
+                    - minimumLength
+                    type: object
                   masterPasswordSecretRef:
                     description: MasterPasswordSecretRef references the secret that
                       contains the password used in the creation of this RDS instance.

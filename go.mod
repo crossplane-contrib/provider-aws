@@ -32,6 +32,8 @@ require (
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/go-ini/ini v1.67.0
+	github.com/go-passwd/randomstring v1.0.1-0.20180910073241-71b18f2e6804
+	github.com/go-passwd/validator v0.0.0-20180902184246-0b4c967e436b
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.9
 	github.com/mattbaird/jsonpatch v0.0.0-20200820163806-098863c1fc24
@@ -44,6 +46,7 @@ require (
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.1
+	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448
 	sigs.k8s.io/controller-runtime v0.14.1
 	sigs.k8s.io/controller-tools v0.11.1
 	sigs.k8s.io/yaml v1.3.0
@@ -153,7 +156,6 @@ require (
 	k8s.io/component-base v0.26.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
-	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )

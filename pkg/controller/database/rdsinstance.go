@@ -33,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -42,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/password"
 )
 
 const (
@@ -60,6 +60,7 @@ const (
 	errPatchCreationFailed                = "cannot create a patch object"
 	errUpToDateFailed                     = "cannot check whether object is up-to-date"
 	errGetPasswordSecretFailed            = "cannot get password secret"
+	errValidatePassword                   = "cannot validate password"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -169,9 +170,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 	if pw == "" {
-		pw, err = password.Generate()
+		pw, err = password.GeneratePasswordFromConstraints(cr.Spec.ForProvider.MasterPasswordConstraints)
 		if err != nil {
 			return managed.ExternalCreation{}, err
+		}
+	} else {
+		if err := password.ValidatePassword(cr.Spec.ForProvider.MasterPasswordConstraints, pw); err != nil {
+			return managed.ExternalCreation{}, errors.Wrap(err, errValidatePassword)
 		}
 	}
 
@@ -253,6 +258,9 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, err
 	}
 	if changed {
+		if err := password.ValidatePassword(cr.Spec.ForProvider.MasterPasswordConstraints, pwd); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errValidatePassword)
+		}
 		conn = managed.ConnectionDetails{
 			xpv1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
 		}

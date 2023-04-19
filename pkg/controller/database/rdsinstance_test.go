@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
@@ -112,6 +113,18 @@ type rdsModifier func(*v1beta1.RDSInstance)
 
 func withMasterUsername(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
+}
+
+func withMasterPasswordSecretRef(ref *xpv1.SecretKeySelector) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = ref }
+}
+
+func withMasterPasswordConstraints(c *common.PasswordConstraints) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordConstraints = c }
+}
+
+func withWriteConnectionSecretToRef(c *xpv1.SecretReference) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.WriteConnectionSecretToReference = c }
 }
 
 func withBackupConfiguration(backup *v1beta1.RestoreBackupConfiguration) rdsModifier {
@@ -648,6 +661,66 @@ func TestCreate(t *testing.T) {
 				},
 			},
 		},
+		"FailedInvalidPasswordConstraints": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockCreate: func(ctx context.Context, input *awsrds.CreateDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.CreateDBInstanceOutput, error) {
+						return &awsrds.CreateDBInstanceOutput{}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						switch o := obj.(type) {
+						case *corev1.Secret:
+							o.Data = map[string][]byte{
+								"password": []byte("passw0rd"),
+							}
+						}
+						return nil
+					}),
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withMasterPasswordSecretRef(&xpv1.SecretKeySelector{
+						SecretReference: xpv1.SecretReference{
+							Name:      "abc",
+							Namespace: "test",
+						},
+						Key: "password",
+					}),
+					withMasterPasswordConstraints(&common.PasswordConstraints{
+						MinUpperCaseLetters:  1,
+						MinLowerCaseLetters:  1,
+						MinDigits:            1,
+						MinSpecialCharacters: 1,
+						MinLength:            10,
+					}),
+				),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withMasterPasswordSecretRef(&xpv1.SecretKeySelector{
+						SecretReference: xpv1.SecretReference{
+							Name:      "abc",
+							Namespace: "test",
+						},
+						Key: "password",
+					}),
+					withMasterPasswordConstraints(&common.PasswordConstraints{
+						MinUpperCaseLetters:  1,
+						MinLowerCaseLetters:  1,
+						MinDigits:            1,
+						MinSpecialCharacters: 1,
+						MinLength:            10,
+					}),
+					withConditions(
+						xpv1.Creating(),
+					),
+				),
+				err: errors.Wrap(errors.New("Password length must be not lower that 10 chars"), errValidatePassword),
+			},
+		},
 		"FailedWhileGettingSecret": {
 			args: args{
 				kube: &test.MockClient{
@@ -830,6 +903,79 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr:  instance(),
 				err: awsclient.Wrap(errBoom, errModifyFailed),
+			},
+		},
+		"FailedModifyInvalidPasswordConstraints": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{}},
+						}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+						switch o := obj.(type) {
+						case *corev1.Secret:
+							if key.Name != "abc" {
+								break
+							}
+							o.Data = map[string][]byte{
+								"password": []byte("passw0rd"),
+							}
+						}
+						return nil
+					},
+				},
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withMasterPasswordSecretRef(&xpv1.SecretKeySelector{
+						SecretReference: xpv1.SecretReference{
+							Name:      "abc",
+							Namespace: "test",
+						},
+						Key: "password",
+					}),
+					withMasterPasswordConstraints(&common.PasswordConstraints{
+						MinUpperCaseLetters:  1,
+						MinLowerCaseLetters:  1,
+						MinDigits:            1,
+						MinSpecialCharacters: 1,
+						MinLength:            10,
+					}),
+					withWriteConnectionSecretToRef(&xpv1.SecretReference{
+						Name:      "out",
+						Namespace: "test",
+					}),
+				),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withMasterPasswordSecretRef(&xpv1.SecretKeySelector{
+						SecretReference: xpv1.SecretReference{
+							Name:      "abc",
+							Namespace: "test",
+						},
+						Key: "password",
+					}),
+					withMasterPasswordConstraints(&common.PasswordConstraints{
+						MinUpperCaseLetters:  1,
+						MinLowerCaseLetters:  1,
+						MinDigits:            1,
+						MinSpecialCharacters: 1,
+						MinLength:            10,
+					}),
+					withWriteConnectionSecretToRef(&xpv1.SecretReference{
+						Name:      "out",
+						Namespace: "test",
+					}),
+				),
+				err: errors.Wrap(errors.New("Password length must be not lower that 10 chars"), errValidatePassword),
 			},
 		},
 		"FailedAddTags": {

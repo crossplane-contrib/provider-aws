@@ -22,6 +22,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/crossplane-contrib/provider-aws/apis/common"
 	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -682,6 +683,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.MasterPasswordSecretRef != nil {
 		in, out := &in.MasterPasswordSecretRef, &out.MasterPasswordSecretRef
 		*out = new(v1.SecretKeySelector)
+		**out = **in
+	}
+	if in.MasterPasswordConstraints != nil {
+		in, out := &in.MasterPasswordConstraints, &out.MasterPasswordConstraints
+		*out = new(common.PasswordConstraints)
 		**out = **in
 	}
 	if in.MaxAllocatedStorage != nil {
