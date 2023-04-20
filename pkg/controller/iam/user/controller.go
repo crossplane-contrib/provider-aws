@@ -148,9 +148,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// check permissions boundary
 	boundaryArn := ""
 	if observed.User.PermissionsBoundary != nil {
-		boundaryArn =  *observed.User.PermissionsBoundary.PermissionsBoundaryArn
+		boundaryArn = *observed.User.PermissionsBoundary.PermissionsBoundaryArn
 	}
-	isBoundaryUpdated := 
+	isBoundaryUpdated :=
 		aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == aws.ToString(&boundaryArn)
 
 	return managed.ExternalObservation{
@@ -182,9 +182,8 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	username := aws.String(meta.GetExternalName(cr))
 	observed, err := e.client.GetUser(ctx, &awsiam.GetUserInput{
-		UserName: username,
+		UserName: aws.String(meta.GetExternalName(cr)),
 	})
 
 	if err != nil {
@@ -192,55 +191,20 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// take care of changes to path (only call if necessary)
-	if aws.ToString(observed.User.Path) != aws.ToString(cr.Spec.ForProvider.Path) {
-		_, err = e.client.UpdateUser(ctx, &awsiam.UpdateUserInput{
-			NewPath:  cr.Spec.ForProvider.Path,
-			UserName: username,
-		})
-
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-		}
+	msg, err := e.updateUser(ctx, observed, cr)
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, msg)
 	}
 
 	// take care of changes to PermissionBoundary (only call if necessary)
-	boundaryArn := ""
-	if observed.User.PermissionsBoundary != nil {
-		boundaryArn =  *observed.User.PermissionsBoundary.PermissionsBoundaryArn
-	}
-	if aws.ToString(&boundaryArn) != aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) {
-		_, err = e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
-			PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
-			UserName:            username,
-		})
-
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-		}
+	msg, err = e.updatePermissionsBoundary(ctx, observed, cr)
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, msg)
 	}
 
 	// take care of changes to Tags
-	add, remove, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observed.User.Tags)
-
-	if len(add) > 0 {
-		if _, err := e.client.TagUser(ctx, &awsiam.TagUserInput{
-			UserName: aws.String(meta.GetExternalName(cr)),
-			Tags:     add,
-		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
-		}
-	}
-
-	if len(remove) > 0 {
-		if _, err := e.client.UntagUser(ctx, &awsiam.UntagUserInput{
-			TagKeys:  remove,
-			UserName: aws.String(meta.GetExternalName(cr)),
-		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUntag)
-		}
-	}
-
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	msg, err = e.updateTags(ctx, observed, cr)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, msg)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -289,4 +253,58 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
+}
+
+func (e *external) updateUser(ctx context.Context, observed *awsiam.GetUserOutput, cr *v1beta1.User) (string, error) {
+	if aws.ToString(observed.User.Path) != aws.ToString(cr.Spec.ForProvider.Path) {
+		_, err := e.client.UpdateUser(ctx, &awsiam.UpdateUserInput{
+			NewPath:  cr.Spec.ForProvider.Path,
+			UserName: aws.String(meta.GetExternalName(cr)),
+		})
+
+		return errUpdate, err
+	}
+
+	return "", nil
+}
+
+func (e *external) updatePermissionsBoundary(ctx context.Context, observed *awsiam.GetUserOutput, cr *v1beta1.User) (string, error) {
+	boundaryArn := ""
+	if observed.User.PermissionsBoundary != nil {
+		boundaryArn = *observed.User.PermissionsBoundary.PermissionsBoundaryArn
+	}
+	if aws.ToString(&boundaryArn) != aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) {
+		_, err := e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
+			PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
+			UserName:            aws.String(meta.GetExternalName(cr)),
+		})
+
+		return errUpdate, err
+	}
+
+	return "", nil
+}
+
+func (e *external) updateTags(ctx context.Context, observed *awsiam.GetUserOutput, cr *v1beta1.User) (string, error) {
+	add, remove, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observed.User.Tags)
+
+	if len(add) > 0 {
+		if _, err := e.client.TagUser(ctx, &awsiam.TagUserInput{
+			UserName: aws.String(meta.GetExternalName(cr)),
+			Tags:     add,
+		}); err != nil {
+			return errTag, err
+		}
+	}
+
+	if len(remove) > 0 {
+		if _, err := e.client.UntagUser(ctx, &awsiam.UntagUserInput{
+			TagKeys:  remove,
+			UserName: aws.String(meta.GetExternalName(cr)),
+		}); err != nil {
+			return errUntag, err
+		}
+	}
+
+	return "", nil
 }
