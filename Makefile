@@ -46,7 +46,7 @@ GO111MODULE = on
 # ====================================================================================
 # Setup Kubernetes tools
 
-UP_VERSION = v0.13.0
+UP_VERSION = v0.16.1
 UP_CHANNEL = stable
 UPTEST_VERSION = v0.5.0
 
