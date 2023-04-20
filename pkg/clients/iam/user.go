@@ -17,6 +17,7 @@ type UserClient interface {
 	CreateUser(ctx context.Context, input *iam.CreateUserInput, opts ...func(*iam.Options)) (*iam.CreateUserOutput, error)
 	DeleteUser(ctx context.Context, input *iam.DeleteUserInput, opts ...func(*iam.Options)) (*iam.DeleteUserOutput, error)
 	UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error)
+	PutUserPermissionsBoundary(ctx context.Context, params *iam.PutUserPermissionsBoundaryInput, optFns ...func(*iam.Options)) (*iam.PutUserPermissionsBoundaryOutput, error)
 	TagUser(ctx context.Context, params *iam.TagUserInput, opts ...func(*iam.Options)) (*iam.TagUserOutput, error)
 	UntagUser(ctx context.Context, params *iam.UntagUserInput, opts ...func(*iam.Options)) (*iam.UntagUserOutput, error)
 }
@@ -43,4 +44,20 @@ func LateInitializeUser(in *v1beta1.UserParameters, user *iamtypes.User) {
 			in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
 		}
 	}
+}
+
+// IsUserUpToDate checks whether there is a change in any of the modifiable fields in user.
+func IsUserUpToDate(in v1beta1.UserParameters, observed iamtypes.User) (bool, string, error) {
+	if aws.ToString(in.Path) != aws.ToString(observed.Path) {
+		return false, "paths differ", nil
+	}
+
+	if observed.PermissionsBoundary == nil {
+		if aws.ToString(in.PermissionsBoundary) != "" {
+			return false, "permission boundary needs set", nil
+		}
+		return true, "", nil
+	}
+
+	return aws.ToString(in.PermissionsBoundary) == aws.ToString(observed.PermissionsBoundary.PermissionsBoundaryArn), "permission boundary", nil
 }

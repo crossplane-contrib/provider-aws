@@ -108,6 +108,18 @@ func withGroupVersionKind() userModifier {
 	}
 }
 
+func withPath(path *string) userModifier {
+	return func(r *v1beta1.User) {
+		r.Spec.ForProvider.Path = path
+	}
+}
+
+func withBoundary(boundary *string) userModifier {
+	return func(r *v1beta1.User) {
+		r.Spec.ForProvider.PermissionsBoundary = boundary
+	}
+}
+
 func user(m ...userModifier) *v1beta1.User {
 	cr := &v1beta1.User{}
 	for _, f := range m {
@@ -190,6 +202,31 @@ func TestObserve(t *testing.T) {
 				cr: user(withExternalName(userName),
 					withConditions(xpv1.Available()),
 					withTags(map[string]string{"k1": "v2"})),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"DifferentBoundary": {
+			args: args{
+				iam: &fake.MockUserClient{
+					MockGetUser: func(ctx context.Context, input *awsiam.GetUserInput, opts []func(*awsiam.Options)) (*awsiam.GetUserOutput, error) {
+						return &awsiam.GetUserOutput{
+							User: &awsiamtypes.User{
+								PermissionsBoundary: &awsiamtypes.AttachedPermissionsBoundary{
+									PermissionsBoundaryArn: aws.String("old"),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: user(withExternalName(userName), withBoundary(aws.String("new"))),
+			},
+			want: want{
+				cr: user(withExternalName(userName),
+					withConditions(xpv1.Available()),
+					withBoundary(aws.String("new"))),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -331,11 +368,16 @@ func TestUpdate(t *testing.T) {
 					MockUpdateUser: func(ctx context.Context, input *awsiam.UpdateUserInput, opts []func(*awsiam.Options)) (*awsiam.UpdateUserOutput, error) {
 						return nil, errBoom
 					},
+					MockGetUser: func(ctx context.Context, input *awsiam.GetUserInput, opts []func(*awsiam.Options)) (*awsiam.GetUserOutput, error) {
+						return &awsiam.GetUserOutput{
+							User: &awsiamtypes.User{},
+						}, nil
+					},
 				},
-				cr: user(withExternalName(userName)),
+				cr: user(withExternalName(userName), withPath(aws.String("foo"))),
 			},
 			want: want{
-				cr:  user(withExternalName(userName)),
+				cr:  user(withExternalName(userName), withPath(aws.String("foo"))),
 				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
