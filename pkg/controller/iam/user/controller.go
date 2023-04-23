@@ -270,14 +270,22 @@ func (e *external) updateUser(ctx context.Context, observed *awsiam.GetUserOutpu
 
 func (e *external) updatePermissionsBoundary(ctx context.Context, observed *awsiam.GetUserOutput, cr *v1beta1.User) (string, error) {
 	boundaryArn := ""
+	var err error
+
 	if observed.User.PermissionsBoundary != nil {
 		boundaryArn = *observed.User.PermissionsBoundary.PermissionsBoundaryArn
 	}
 	if aws.ToString(&boundaryArn) != aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) {
-		_, err := e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
-			PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
-			UserName:            aws.String(meta.GetExternalName(cr)),
-		})
+		if aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == "" {
+			_, err = e.client.DeleteUserPermissionsBoundary(ctx, &awsiam.DeleteUserPermissionsBoundaryInput{
+				UserName: aws.String(meta.GetExternalName(cr)),
+			})
+		} else {
+			_, err = e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
+				PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
+				UserName:            aws.String(meta.GetExternalName(cr)),
+			})
+		}
 
 		return errUpdate, err
 	}

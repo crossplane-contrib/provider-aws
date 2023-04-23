@@ -29,13 +29,15 @@ var _ clientset.RoleClient = (*MockRoleClient)(nil)
 
 // MockRoleClient is a type that implements all the methods for RoleClient interface
 type MockRoleClient struct {
-	MockGetRole                func(ctx context.Context, input *iam.GetRoleInput, opts []func(*iam.Options)) (*iam.GetRoleOutput, error)
-	MockCreateRole             func(ctx context.Context, input *iam.CreateRoleInput, opts []func(*iam.Options)) (*iam.CreateRoleOutput, error)
-	MockDeleteRole             func(ctx context.Context, input *iam.DeleteRoleInput, opts []func(*iam.Options)) (*iam.DeleteRoleOutput, error)
-	MockUpdateRole             func(ctx context.Context, input *iam.UpdateRoleInput, opts []func(*iam.Options)) (*iam.UpdateRoleOutput, error)
-	MockUpdateAssumeRolePolicy func(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts []func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
-	MockTagRole                func(ctx context.Context, input *iam.TagRoleInput, opts []func(*iam.Options)) (*iam.TagRoleOutput, error)
-	MockUntagRole              func(ctx context.Context, input *iam.UntagRoleInput, opts []func(*iam.Options)) (*iam.UntagRoleOutput, error)
+	MockGetRole                       func(ctx context.Context, input *iam.GetRoleInput, opts []func(*iam.Options)) (*iam.GetRoleOutput, error)
+	MockCreateRole                    func(ctx context.Context, input *iam.CreateRoleInput, opts []func(*iam.Options)) (*iam.CreateRoleOutput, error)
+	MockDeleteRole                    func(ctx context.Context, input *iam.DeleteRoleInput, opts []func(*iam.Options)) (*iam.DeleteRoleOutput, error)
+	MockUpdateRole                    func(ctx context.Context, input *iam.UpdateRoleInput, opts []func(*iam.Options)) (*iam.UpdateRoleOutput, error)
+	MockPutRolePermissionsBoundary    func(ctx context.Context, input *iam.PutRolePermissionsBoundaryInput, opts []func(*iam.Options)) (*iam.PutRolePermissionsBoundaryOutput, error)
+	MockDeleteRolePermissionsBoundary func(ctx context.Context, input *iam.DeleteRolePermissionsBoundaryInput, opts []func(*iam.Options)) (*iam.DeleteRolePermissionsBoundaryOutput, error)
+	MockUpdateAssumeRolePolicy        func(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts []func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
+	MockTagRole                       func(ctx context.Context, input *iam.TagRoleInput, opts []func(*iam.Options)) (*iam.TagRoleOutput, error)
+	MockUntagRole                     func(ctx context.Context, input *iam.UntagRoleInput, opts []func(*iam.Options)) (*iam.UntagRoleOutput, error)
 }
 
 // GetRole mocks GetRole method
@@ -56,6 +58,16 @@ func (m *MockRoleClient) DeleteRole(ctx context.Context, input *iam.DeleteRoleIn
 // UpdateRole mocks UpdateRole method
 func (m *MockRoleClient) UpdateRole(ctx context.Context, input *iam.UpdateRoleInput, opts ...func(*iam.Options)) (*iam.UpdateRoleOutput, error) {
 	return m.MockUpdateRole(ctx, input, opts)
+}
+
+// PutRolePermissionsBoundary mocks PutRolePermissionsBoundary method
+func (m *MockRoleClient) PutRolePermissionsBoundary(ctx context.Context, input *iam.PutRolePermissionsBoundaryInput, opts ...func(*iam.Options)) (*iam.PutRolePermissionsBoundaryOutput, error) {
+	return m.MockPutRolePermissionsBoundary(ctx, input, opts)
+}
+
+// DeleteRolePermissionsBoundary mocks DeleteRolePermissionsBoundary method
+func (m *MockRoleClient) DeleteRolePermissionsBoundary(ctx context.Context, input *iam.DeleteRolePermissionsBoundaryInput, opts ...func(*iam.Options)) (*iam.DeleteRolePermissionsBoundaryOutput, error) {
+	return m.MockDeleteRolePermissionsBoundary(ctx, input, opts)
 }
 
 // UpdateAssumeRolePolicy mocks UpdateAssumeRolePolicy method
