@@ -104,6 +104,19 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBParameterGroup
 		return err
 	}
 
+	// The update call will not handle any removed parameters, this ensures
+	// any removed parameters will be reset to default values
+	parametersToReset := c.parametersToReset(cr, currentParameters)
+	if len(parametersToReset) > 0 {
+		if _, err := c.client.ResetDBParameterGroupWithContext(ctx, &svcsdk.ResetDBParameterGroupInput{
+			DBParameterGroupName: obj.DBParameterGroupName,
+			ResetAllParameters:   awsclients.Bool(false),
+			Parameters:           parametersToReset,
+		}); err != nil {
+			return err
+		}
+	}
+
 	// Only 20 parameters are allowed per update request
 	// this ensures we will only include parameters that require an update.
 	// Any additional parameters will be handled during the next reconciliation.
@@ -150,7 +163,7 @@ func (c *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.Descri
 		return false, err
 	}
 
-	if len(c.parametersToUpdate(cr, results)) != 0 {
+	if len(c.parametersToUpdate(cr, results)) != 0 || len(c.parametersToReset(cr, results)) != 0 {
 		return false, nil
 	}
 
@@ -222,6 +235,31 @@ func (c *custom) parametersToUpdate(cr *svcapitypes.DBParameterGroup, current []
 
 		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
 			parameters = append(parameters, v)
+		}
+	}
+
+	return parameters
+}
+
+func (c *custom) parametersToReset(cr *svcapitypes.DBParameterGroup, current []*svcsdk.Parameter) []*svcsdk.Parameter {
+	var parameters []*svcsdk.Parameter
+	set := make(map[string]svcapitypes.CustomParameter, len(cr.Spec.ForProvider.Parameters))
+
+	for _, p := range cr.Spec.ForProvider.Parameters {
+		set[awsclients.StringValue(p.ParameterName)] = p
+	}
+
+	for _, v := range current {
+		if awsclients.StringValue(v.Source) != "user" {
+			// The describe operation lists all possible parameters
+			// and their values, we only want to reset the parameter if
+			// it's been changed from the default
+			continue
+		}
+
+		if _, exists := set[awsclients.StringValue(v.ParameterName)]; !exists {
+			parameter := *v
+			parameters = append(parameters, &parameter)
 		}
 	}
 
