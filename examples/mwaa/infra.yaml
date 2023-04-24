@@ -39,7 +39,7 @@ metadata:
 spec:
   deletionPolicy: Delete
   forProvider:
-    acl: private
+    objectOwnership: BucketOwnerEnforced
     locationConstraint: us-east-1
     paymentConfiguration:
       payer: BucketOwner
