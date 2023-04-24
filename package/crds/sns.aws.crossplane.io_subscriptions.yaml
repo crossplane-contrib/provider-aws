@@ -84,6 +84,9 @@ spec:
                       receive only a subset of messages, rather than receiving every
                       message published to the topic.
                     type: string
+                  filterPolicyScope:
+                    description: FilterPolicyScope can be MessageAttributes or MessageBody
+                    type: string
                   protocol:
                     description: The subscription's protocol.
                     type: string

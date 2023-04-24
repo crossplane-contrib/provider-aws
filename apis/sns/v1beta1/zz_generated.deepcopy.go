@@ -138,6 +138,11 @@ func (in *SubscriptionParameters) DeepCopyInto(out *SubscriptionParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.FilterPolicyScope != nil {
+		in, out := &in.FilterPolicyScope, &out.FilterPolicyScope
+		*out = new(string)
+		**out = **in
+	}
 	if in.RawMessageDelivery != nil {
 		in, out := &in.RawMessageDelivery, &out.RawMessageDelivery
 		*out = new(string)

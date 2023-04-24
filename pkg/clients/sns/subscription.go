@@ -38,6 +38,8 @@ const (
 	SubscriptionDeliveryPolicy = "DeliveryPolicy"
 	// SubscriptionFilterPolicy is FilterPolicy of SNS Subscription
 	SubscriptionFilterPolicy = "FilterPolicy"
+	// SubscriptionFilterPolicyScope is FilterPolicyScope of SNS Subscription
+	SubscriptionFilterPolicyScope = "FilterPolicyScope"
 	// SubscriptionRawMessageDelivery is RawMessageDelivery of SNS Subscription
 	SubscriptionRawMessageDelivery = "RawMessageDelivery"
 	// SubscriptionRedrivePolicy is RedrivePolicy of SNS Subscription
@@ -105,6 +107,7 @@ func GenerateSubscriptionObservation(attr map[string]string) v1beta1.Subscriptio
 func LateInitializeSubscription(in *v1beta1.SubscriptionParameters, subAttributes map[string]string) {
 	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, awsclients.String(subAttributes[SubscriptionDeliveryPolicy]))
 	in.FilterPolicy = awsclients.LateInitializeStringPtr(in.FilterPolicy, awsclients.String(subAttributes[SubscriptionFilterPolicy]))
+	in.FilterPolicyScope = awsclients.LateInitializeStringPtr(in.FilterPolicyScope, awsclients.String(subAttributes[SubscriptionFilterPolicyScope]))
 	in.RawMessageDelivery = awsclients.LateInitializeStringPtr(in.RawMessageDelivery, awsclients.String(subAttributes[SubscriptionRawMessageDelivery]))
 	in.RedrivePolicy = awsclients.LateInitializeStringPtr(in.RedrivePolicy, awsclients.String(subAttributes[SubscriptionRedrivePolicy]))
 }
@@ -114,6 +117,7 @@ func getSubAttributes(p v1beta1.SubscriptionParameters) map[string]string {
 	return map[string]string{
 		SubscriptionDeliveryPolicy:     aws.ToString(p.DeliveryPolicy),
 		SubscriptionFilterPolicy:       aws.ToString(p.FilterPolicy),
+		SubscriptionFilterPolicyScope:  aws.ToString(p.FilterPolicyScope),
 		SubscriptionRawMessageDelivery: aws.ToString(p.RawMessageDelivery),
 		SubscriptionRedrivePolicy:      aws.ToString(p.RedrivePolicy),
 	}
@@ -137,6 +141,7 @@ func GetChangedSubAttributes(p v1beta1.SubscriptionParameters, attrs map[string]
 func IsSNSSubscriptionAttributesUpToDate(p v1beta1.SubscriptionParameters, subAttributes map[string]string) bool {
 	return aws.ToString(p.DeliveryPolicy) == subAttributes[SubscriptionDeliveryPolicy] &&
 		aws.ToString(p.FilterPolicy) == subAttributes[SubscriptionFilterPolicy] &&
+		aws.ToString(p.FilterPolicyScope) == subAttributes[SubscriptionFilterPolicyScope] &&
 		aws.ToString(p.RawMessageDelivery) == subAttributes[SubscriptionRawMessageDelivery] &&
 		aws.ToString(p.RedrivePolicy) == subAttributes[SubscriptionRedrivePolicy]
 }
