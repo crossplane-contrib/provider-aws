@@ -8,7 +8,7 @@ metadata:
     crossplane.io/external-name: crossplane-example-bucket
 spec:
   forProvider:
-    acl: private
+    objectOwnership: BucketOwnerEnforced
     locationConstraint: us-east-1
     publicAccessBlockConfiguration:
       blockPublicPolicy: true
