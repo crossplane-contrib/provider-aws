@@ -63,6 +63,30 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 				status: Updated,
 			},
 		},
+		"NotFoundDisabled": {
+			args: args{
+				cr: &v1beta1.Bucket{
+					Spec: v1beta1.BucketSpec{
+						ForProvider: v1beta1.BucketParameters{
+							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
+								BlockPublicAcls:       awsclient.Bool(false),
+								IgnorePublicAcls:      awsclient.Bool(false),
+								BlockPublicPolicy:     awsclient.Bool(false),
+								RestrictPublicBuckets: awsclient.Bool(false),
+							},
+						},
+					},
+				},
+				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{}, &smithy.GenericAPIError{Code: clients3.PublicAccessBlockNotFoundErrCode}
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+			},
+		},
 		"NeedsUpdate": {
 			args: args{
 				cr: &v1beta1.Bucket{
@@ -84,6 +108,32 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
+			},
+		},
+		"NeedsDeletion": {
+			args: args{
+				cr: &v1beta1.Bucket{
+					Spec: v1beta1.BucketSpec{
+						ForProvider: v1beta1.BucketParameters{
+							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
+								BlockPublicAcls:       awsclient.Bool(false),
+								IgnorePublicAcls:      awsclient.Bool(false),
+								BlockPublicPolicy:     awsclient.Bool(false),
+								RestrictPublicBuckets: awsclient.Bool(false),
+							},
+						},
+					},
+				},
+				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
+							BlockPublicAcls: true,
+						}}, nil
+					},
+				}),
+			},
+			want: want{
+				status: NeedsDeletion,
 			},
 		},
 		"NeedsUpdateMissingField": {
