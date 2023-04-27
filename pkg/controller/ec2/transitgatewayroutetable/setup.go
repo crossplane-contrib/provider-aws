@@ -48,19 +48,29 @@ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
 	}
 
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithConnectionPublishers(cps...),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		cpresource.ManagedKind(svcapitypes.TransitGatewayRouteTableGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(cpresource.DesiredStateChanged()).
 		For(&svcapitypes.TransitGatewayRouteTable{}).
-		Complete(managed.NewReconciler(mgr,
-			cpresource.ManagedKind(svcapitypes.TransitGatewayRouteTableGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-			managed.WithConnectionPublishers(cps...)))
+		Complete(r)
 }
 
 func filterList(cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DescribeTransitGatewayRouteTablesOutput) *svcsdk.DescribeTransitGatewayRouteTablesOutput {

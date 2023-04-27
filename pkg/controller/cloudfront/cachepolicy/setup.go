@@ -45,31 +45,41 @@ func SetupCachePolicy(mgr ctrl.Manager, o controller.Options) error {
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
 	}
 
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithExternalConnecter(&connector{
+			kube: mgr.GetClient(),
+			opts: []option{
+				func(e *external) {
+					e.preObserve = preObserve
+					e.postObserve = postObserve
+					e.postCreate = postCreate
+					e.lateInitialize = lateInitialize
+					e.preUpdate = preUpdate
+					e.isUpToDate = isUpToDate
+					e.preDelete = preDelete
+				},
+			},
+		}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithConnectionPublishers(cps...),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(svcapitypes.CachePolicyGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.CachePolicy{}).
-		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.CachePolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{
-				kube: mgr.GetClient(),
-				opts: []option{
-					func(e *external) {
-						e.preObserve = preObserve
-						e.postObserve = postObserve
-						e.postCreate = postCreate
-						e.lateInitialize = lateInitialize
-						e.preUpdate = preUpdate
-						e.isUpToDate = isUpToDate
-						e.preDelete = preDelete
-					},
-				},
-			}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-			managed.WithConnectionPublishers(cps...)))
+		Complete(r)
 }
 
 func postCreate(_ context.Context, cp *svcapitypes.CachePolicy, cpo *svcsdk.CreateCachePolicyOutput,

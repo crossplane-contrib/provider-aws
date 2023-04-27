@@ -17,6 +17,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
@@ -33,17 +34,28 @@ func SetupLifecyclePolicy(mgr ctrl.Manager, o controller.Options) error {
 			e.update = u.update
 		},
 	}
+
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(svcapitypes.LifecyclePolicyGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.LifecyclePolicy{}).
-		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.LifecyclePolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+		Complete(r)
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.LifecyclePolicy, obj *svcsdk.GetLifecyclePolicyInput) error {

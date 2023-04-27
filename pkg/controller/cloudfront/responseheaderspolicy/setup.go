@@ -46,34 +46,44 @@ func SetupResponseHeadersPolicy(mgr ctrl.Manager, o controller.Options) error {
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
 	}
 
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithExternalConnecter(&connector{
+			kube: mgr.GetClient(),
+			opts: []option{
+				func(e *external) {
+					e.preCreate = preCreate
+					e.postCreate = postCreate
+					e.lateInitialize = lateInitialize
+					e.preObserve = preObserve
+					e.postObserve = postObserve
+					e.isUpToDate = isUpToDate
+					e.preUpdate = preUpdate
+					e.postUpdate = postUpdate
+					d := &deleter{external: e}
+					e.preDelete = d.preDelete
+				},
+			},
+		}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithConnectionPublishers(cps...),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(svcapitypes.ResponseHeadersPolicyGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.ResponseHeadersPolicy{}).
-		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.ResponseHeadersPolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{
-				kube: mgr.GetClient(),
-				opts: []option{
-					func(e *external) {
-						e.preCreate = preCreate
-						e.postCreate = postCreate
-						e.lateInitialize = lateInitialize
-						e.preObserve = preObserve
-						e.postObserve = postObserve
-						e.isUpToDate = isUpToDate
-						e.preUpdate = preUpdate
-						e.postUpdate = postUpdate
-						d := &deleter{external: e}
-						e.preDelete = d.preDelete
-					},
-				},
-			}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-			managed.WithConnectionPublishers(cps...)))
+		Complete(r)
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, crhpi *svcsdk.CreateResponseHeadersPolicyInput) error {

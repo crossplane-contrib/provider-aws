@@ -13,6 +13,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
@@ -28,18 +29,29 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 			e.postCreate = postCreate
 		},
 	}
+
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithInitializers(),
+		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(svcapitypes.AccessPointGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.AccessPoint{}).
-		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.AccessPointGroupVersionKind),
-			managed.WithInitializers(),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+		Complete(r)
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.DescribeAccessPointsInput) error {
