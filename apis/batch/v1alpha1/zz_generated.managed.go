@@ -30,6 +30,11 @@ func (mg *ComputeEnvironment) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this ComputeEnvironment.
+func (mg *ComputeEnvironment) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this ComputeEnvironment.
 func (mg *ComputeEnvironment) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *ComputeEnvironment) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this ComputeEnvironment.
 func (mg *ComputeEnvironment) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this ComputeEnvironment.
+func (mg *ComputeEnvironment) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this ComputeEnvironment.
@@ -96,6 +106,11 @@ func (mg *JobQueue) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this JobQueue.
+func (mg *JobQueue) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this JobQueue.
 func (mg *JobQueue) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -127,6 +142,11 @@ func (mg *JobQueue) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this JobQueue.
 func (mg *JobQueue) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this JobQueue.
+func (mg *JobQueue) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this JobQueue.

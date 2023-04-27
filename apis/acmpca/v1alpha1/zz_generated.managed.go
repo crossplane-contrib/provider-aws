@@ -30,6 +30,11 @@ func (mg *CertificateAuthority) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this CertificateAuthority.
+func (mg *CertificateAuthority) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this CertificateAuthority.
 func (mg *CertificateAuthority) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *CertificateAuthority) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this CertificateAuthority.
 func (mg *CertificateAuthority) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this CertificateAuthority.
+func (mg *CertificateAuthority) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this CertificateAuthority.
@@ -96,6 +106,11 @@ func (mg *CertificateAuthorityPermission) GetDeletionPolicy() xpv1.DeletionPolic
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this CertificateAuthorityPermission.
 func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -127,6 +142,11 @@ func (mg *CertificateAuthorityPermission) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this CertificateAuthorityPermission.
 func (mg *CertificateAuthorityPermission) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this CertificateAuthorityPermission.

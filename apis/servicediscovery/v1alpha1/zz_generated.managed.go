@@ -30,6 +30,11 @@ func (mg *HTTPNamespace) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this HTTPNamespace.
+func (mg *HTTPNamespace) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this HTTPNamespace.
 func (mg *HTTPNamespace) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *HTTPNamespace) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this HTTPNamespace.
 func (mg *HTTPNamespace) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this HTTPNamespace.
+func (mg *HTTPNamespace) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this HTTPNamespace.
@@ -96,6 +106,11 @@ func (mg *PrivateDNSNamespace) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this PrivateDNSNamespace.
+func (mg *PrivateDNSNamespace) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this PrivateDNSNamespace.
 func (mg *PrivateDNSNamespace) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -127,6 +142,11 @@ func (mg *PrivateDNSNamespace) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this PrivateDNSNamespace.
 func (mg *PrivateDNSNamespace) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this PrivateDNSNamespace.
+func (mg *PrivateDNSNamespace) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this PrivateDNSNamespace.
@@ -162,6 +182,11 @@ func (mg *PublicDNSNamespace) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this PublicDNSNamespace.
+func (mg *PublicDNSNamespace) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this PublicDNSNamespace.
 func (mg *PublicDNSNamespace) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -193,6 +218,11 @@ func (mg *PublicDNSNamespace) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this PublicDNSNamespace.
 func (mg *PublicDNSNamespace) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this PublicDNSNamespace.
+func (mg *PublicDNSNamespace) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this PublicDNSNamespace.

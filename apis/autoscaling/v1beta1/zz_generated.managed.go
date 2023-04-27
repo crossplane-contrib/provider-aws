@@ -30,6 +30,11 @@ func (mg *AutoScalingGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this AutoScalingGroup.
+func (mg *AutoScalingGroup) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this AutoScalingGroup.
 func (mg *AutoScalingGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *AutoScalingGroup) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this AutoScalingGroup.
 func (mg *AutoScalingGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this AutoScalingGroup.
+func (mg *AutoScalingGroup) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this AutoScalingGroup.

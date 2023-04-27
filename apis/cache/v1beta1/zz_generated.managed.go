@@ -30,6 +30,11 @@ func (mg *ReplicationGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicy of this ReplicationGroup.
+func (mg *ReplicationGroup) GetManagementPolicy() xpv1.ManagementPolicy {
+	return mg.Spec.ManagementPolicy
+}
+
 // GetProviderConfigReference of this ReplicationGroup.
 func (mg *ReplicationGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *ReplicationGroup) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this ReplicationGroup.
 func (mg *ReplicationGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicy of this ReplicationGroup.
+func (mg *ReplicationGroup) SetManagementPolicy(r xpv1.ManagementPolicy) {
+	mg.Spec.ManagementPolicy = r
 }
 
 // SetProviderConfigReference of this ReplicationGroup.
