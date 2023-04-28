@@ -59,6 +59,10 @@ type SubscriptionParameters struct {
 	// +optional
 	FilterPolicy *string `json:"filterPolicy,omitempty"`
 
+	//  FilterPolicyScope can be MessageAttributes or MessageBody
+	// +optional
+	FilterPolicyScope *string `json:"filterPolicyScope,omitempty"`
+
 	//  When set to true, enables raw message delivery
 	//  to Amazon SQS or HTTP/S endpoints. This eliminates the need for the endpoints
 	//  to process JSON formatting, which is otherwise created for Amazon SNS
