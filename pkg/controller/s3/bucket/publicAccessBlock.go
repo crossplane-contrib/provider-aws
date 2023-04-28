@@ -47,28 +47,46 @@ func NewPublicAccessBlockClient(client s3.BucketClient) *PublicAccessBlockClient
 	return &PublicAccessBlockClient{client: client}
 }
 
+func isDisabledPublicAccessBlock(cr *v1beta1.Bucket) bool {
+	return cr.Spec.ForProvider.PublicAccessBlockConfiguration != nil &&
+		!awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls) &&
+		!awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy) &&
+		!awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets) &&
+		!awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls)
+}
+
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetPublicAccessBlock(ctx, &awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))})
-	if s3.PublicAccessBlockConfigurationNotFound(err) && cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
+	if s3.PublicAccessBlockConfigurationNotFound(err) && (cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil || isDisabledPublicAccessBlock(cr)) {
 		return Updated, nil
+	}
+	if err == nil && isDisabledPublicAccessBlock(cr) {
+		return NeedsDeletion, nil
 	}
 	if err != nil {
 		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
+	if !isPublicAccessBlockUpToDate(cr, external) {
+		return NeedsUpdate, nil
+	}
+	return Updated, nil
+}
+
+func isPublicAccessBlockUpToDate(cr *v1beta1.Bucket, external *awss3.GetPublicAccessBlockOutput) bool {
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration != nil {
 		switch {
 		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls) != external.PublicAccessBlockConfiguration.BlockPublicAcls:
-			return NeedsUpdate, nil
+			return false
 		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy) != external.PublicAccessBlockConfiguration.BlockPublicPolicy:
-			return NeedsUpdate, nil
+			return false
 		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets) != external.PublicAccessBlockConfiguration.RestrictPublicBuckets:
-			return NeedsUpdate, nil
+			return false
 		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls) != external.PublicAccessBlockConfiguration.IgnorePublicAcls:
-			return NeedsUpdate, nil
+			return false
 		}
 	}
-	return Updated, nil
+	return true
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
