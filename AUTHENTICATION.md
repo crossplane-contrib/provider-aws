@@ -88,7 +88,7 @@ kind: Provider
 metadata:
   name: provider-aws
 spec:
-  package: crossplane/provider-aws:v${VERSION}
+  package: xpkg.upbound.io/crossplane-contrib/provider-aws:v${VERSION}
   controllerConfigRef:
     name: aws-config
 EOF
