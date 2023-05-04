@@ -357,7 +357,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	// This could be matured a bit more for specific statuses, such as not allowing storage changes
 	// when the status is "storage-optimization"
 	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
-	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" {
+	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" || status == "deleting" {
 		return true, nil
 	}
 
@@ -412,6 +412,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "RestoreFrom"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "VPCSecurityGroupIDs"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged {
