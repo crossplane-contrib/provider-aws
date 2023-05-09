@@ -51,6 +51,13 @@ const (
 	statusDeleting              = "deleting"
 )
 
+// thresholds
+const (
+	// minimum allocated storage in GiB required
+	// to provision IOPS and throughput
+	minStorageProvisionedThroughput = 400
+)
+
 // SetupDBInstance adds a controller that reconciles DBInstance
 func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
@@ -254,7 +261,15 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	// if the instance belongs to a cluster, these fields should not be lateinit,
 	// to allow the user to manage these via the cluster
 	if in.DBClusterIdentifier == nil {
-		in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
+		// Decreasing AllocatedStorage is not a supported operation.
+		// If we have set MaxAllocatedStorage then storage autoscaling is enabled and
+		// this value will be automatically increased.
+		if aws.Int64Value(in.AllocatedStorage) < aws.Int64Value(db.AllocatedStorage) {
+			in.AllocatedStorage = db.AllocatedStorage
+		} else {
+			in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
+		}
+
 		in.BackupRetentionPeriod = aws.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
 		in.CopyTagsToSnapshot = aws.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
 		in.DeletionProtection = aws.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
@@ -290,13 +305,28 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.CharacterSetName = aws.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
 	in.DBName = aws.LateInitializeStringPtr(in.DBName, db.DBName)
 	in.EnablePerformanceInsights = aws.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
-	in.IOPS = aws.LateInitializeInt64Ptr(in.IOPS, db.Iops)
+
+	// We cannot set IOPS for instances with less than 400GiB storage
+	if aws.Int64Value(in.AllocatedStorage) >= minStorageProvisionedThroughput {
+		in.IOPS = aws.LateInitializeInt64Ptr(in.IOPS, db.Iops)
+	}
+
 	kmsKey := handleKmsKey(in.KMSKeyID, db.KmsKeyId)
 	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
 	in.LicenseModel = aws.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+
+	// If AllocatedStorage and MaxAllocatedStorage are the same value, storage autoscaling
+	// is disabled. We should not continually try and reconcile.
 	in.MaxAllocatedStorage = aws.LateInitializeInt64Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
-	in.StorageThroughput = aws.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
+	if aws.Int64Value(in.AllocatedStorage) == aws.Int64Value(in.MaxAllocatedStorage) {
+		in.MaxAllocatedStorage = db.MaxAllocatedStorage
+	}
+
+	// We cannot set StorageThroughput for instances with less than 400GiB storage
+	if aws.Int64Value(in.AllocatedStorage) >= minStorageProvisionedThroughput {
+		in.StorageThroughput = aws.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
+	}
 
 	if aws.Int64Value(db.MonitoringInterval) > 0 {
 		in.MonitoringInterval = aws.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
