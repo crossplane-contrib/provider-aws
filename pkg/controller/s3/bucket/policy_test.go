@@ -69,12 +69,13 @@ func TestPolicyObserve(t *testing.T) {
 				Principal: &common.BucketPrincipal{
 					AllowAnon: true,
 				},
-				Action:   []string{"s3:GetBucket"},
-				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
+				Action:   []string{"s3:GetObject"},
+				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com/*"},
 			},
 		},
 	}
 
+	testPolicyRawShuffled := "{\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:ListBucket\",\"Principal\":\"*\",\"Resource\":\"arn:aws:s3:::test.s3.crossplane.com\"}],\"Version\":\"2012-10-17\"}"
 	testPolicyRaw := makeRawPolicy(testPolicy)
 	testPolicyOtherRaw := makeRawPolicy(testPolicyOther)
 
@@ -195,6 +196,24 @@ func TestPolicyObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsDeletion,
+				err:    nil,
+			},
+		},
+		"NoUpdateExistsWithshuffledPolicy": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithPolicy(testPolicy)),
+				cl: NewPolicyClient(fake.MockBucketClient{
+					MockBucketPolicyClient: fake.MockBucketPolicyClient{
+						MockGetBucketPolicy: func(ctx context.Context, input *s3.GetBucketPolicyInput, opts []func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+							return &s3.GetBucketPolicyOutput{
+								Policy: &testPolicyRawShuffled,
+							}, nil
+						},
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
 				err:    nil,
 			},
 		},

@@ -27,6 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 )
@@ -73,10 +74,34 @@ func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (Resourc
 	if policy == nil && resp.Policy != nil && getBucketPolicyDeletionPolicy(cr) == v1beta1.BucketPolicyDeletionPolicyIfNull {
 		return NeedsDeletion, nil
 	}
-	if cmp.Equal(policy, resp.Policy) {
+
+	if EqualsJSON(aws.StringValue(policy), aws.StringValue(resp.Policy)) {
 		return Updated, nil
 	}
+
 	return NeedsUpdate, nil
+}
+
+// JSONNormalize bring JsonStrings to an []byte
+func JSONNormalize(jStr string) *string {
+	var iface any
+	err := json.Unmarshal([]byte(jStr), &iface)
+	if err != nil {
+		return &jStr
+	}
+
+	jRaw, err := json.Marshal(iface)
+	if err != nil {
+		return &jStr
+	}
+	return aws.String(string(jRaw))
+}
+
+// EqualsJSON whether two JSON structs are equal
+func EqualsJSON(a, b string) bool {
+	pa := JSONNormalize(a)
+	pb := JSONNormalize(b)
+	return cmp.Equal(pa, pb)
 }
 
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
