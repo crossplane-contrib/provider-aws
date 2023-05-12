@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
@@ -69,12 +68,13 @@ func TestPolicyObserve(t *testing.T) {
 				Principal: &common.BucketPrincipal{
 					AllowAnon: true,
 				},
-				Action:   []string{"s3:GetBucket"},
-				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
+				Action:   []string{"s3:GetObject"},
+				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com/*"},
 			},
 		},
 	}
 
+	testPolicyRawShuffled := "{\n                    \"Version\": \"2012-10-17\",\n                    \"Statement\": [\n                      {\n                        \"Sid\": \"Policy1\",\n                        \"Effect\": \"Allow\",\n                        \"Action\": [\n                          \"s3:List*\",\n                          \"s3:GetLifecycleConfiguration\",\n                          \"s3:PutLifecycleConfiguration\"\n                        ],\n                        \"Resource\": [\n                          \"arn:aws:s3:::%s\"\n                        ]\n                      },\n                      {\n                        \"Sid\": \"Policy2\",\n                        \"Effect\": \"Allow\",\n                        \"Action\": [\n                          \"s3:GetObject*\",\n                          \"s3:AbortMultipartUpload\",\n                          \"s3:DeleteObject*\",\n                          \"s3:PutObject*\"\n                        ],\n                        \"Resource\": [\n                          \"arn:aws:s3:::%s/*\"\n                        ]\n                      }\n                    ]\n                  }"
 	testPolicyRaw := makeRawPolicy(testPolicy)
 	testPolicyOtherRaw := makeRawPolicy(testPolicyOther)
 
@@ -195,6 +195,24 @@ func TestPolicyObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsDeletion,
+				err:    nil,
+			},
+		},
+		"NoUpdateExistsWithshuffledPolicy": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithPolicy(testPolicy)),
+				cl: NewPolicyClient(fake.MockBucketClient{
+					MockBucketPolicyClient: fake.MockBucketPolicyClient{
+						MockGetBucketPolicy: func(ctx context.Context, input *s3.GetBucketPolicyInput, opts []func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+							return &s3.GetBucketPolicyOutput{
+								Policy: &testPolicyRawShuffled,
+							}, nil
+						},
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
 				err:    nil,
 			},
 		},
