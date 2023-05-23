@@ -544,8 +544,9 @@ spec:
                       see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
                       in the Amazon RDS User Guide. \n PostgreSQL \n For information,
                       see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
-                      in the Amazon RDS User Guide. \n Valid for: Aurora DB clusters
-                      and Multi-AZ DB clusters"
+                      in the Amazon RDS User Guide. \n Note: Downgrades are not allowed
+                      by AWS and attempts to set a lower version will be ignored.
+                      \n Valid for: Aurora DB clusters and Multi-AZ DB clusters"
                     type: string
                   finalDBSnapshotIdentifier:
                     description: "The DB cluster snapshot identifier of the new DB
@@ -1483,6 +1484,9 @@ spec:
                   endpoint:
                     description: Specifies the connection endpoint for the primary
                       instance of the DB cluster.
+                    type: string
+                  engineVersion:
+                    description: Indicates the database engine version.
                     type: string
                   globalWriteForwardingRequested:
                     description: Specifies whether you have requested to enable write

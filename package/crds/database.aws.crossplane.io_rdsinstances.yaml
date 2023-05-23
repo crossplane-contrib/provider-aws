@@ -458,7 +458,7 @@ spec:
                       Engine is a required field'
                     type: string
                   engineVersion:
-                    description: EngineVersion is the version number of the database
+                    description: "EngineVersion is the version number of the database
                       engine to use. For a list of valid engine versions, call DescribeDBEngineVersions.
                       The following are the database engines and links to information
                       about the major and minor versions that are available with Amazon
@@ -475,7 +475,8 @@ spec:
                       Release Notes (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.PatchComposition.html)
                       in the Amazon RDS User Guide. PostgreSQL See Supported PostgreSQL
                       Database Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions)
-                      in the Amazon RDS User Guide.
+                      in the Amazon RDS User Guide. \n Note: Downgrades are not allowed
+                      by AWS and attempts to set a lower version will be ignored."
                     type: string
                   finalDBSnapshotIdentifier:
                     description: 'The DBSnapshotIdentifier of the new DBSnapshot created
@@ -1531,6 +1532,9 @@ spec:
                           is listening on.
                         type: integer
                     type: object
+                  engineVersion:
+                    description: Indicates the database engine version.
+                    type: string
                   enhancedMonitoringResourceArn:
                     description: EnhancedMonitoringResourceArn is the Amazon Resource
                       Name (ARN) of the Amazon CloudWatch Logs log stream that receives

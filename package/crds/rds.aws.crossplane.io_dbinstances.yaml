@@ -719,7 +719,8 @@ spec:
                       see Oracle Database Engine Release Notes (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.PatchComposition.html)
                       in the Amazon RDS User Guide. \n PostgreSQL \n For information,
                       see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
-                      in the Amazon RDS User Guide."
+                      in the Amazon RDS User Guide. \n Note: Downgrades are not allowed
+                      by AWS and attempts to set a lower version will be ignored."
                     type: string
                   finalDBSnapshotIdentifier:
                     description: "The DB instance snapshot identifier of the new DB
@@ -1774,6 +1775,9 @@ spec:
                         format: int64
                         type: integer
                     type: object
+                  engineVersion:
+                    description: Indicates the database engine version.
+                    type: string
                   enhancedMonitoringResourceARN:
                     description: The Amazon Resource Name (ARN) of the Amazon CloudWatch
                       Logs log stream that receives the Enhanced Monitoring metrics

@@ -20,6 +20,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -180,6 +181,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 		}
 	}
 
+	obj.EngineVersion = cr.Spec.ForProvider.EngineVersion
 	return nil
 }
 
@@ -645,7 +647,14 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBCl
 	// If EngineVersion is not set, AWS sets a default value,
 	// so we do not try to update in this case
 	if cr.Spec.ForProvider.EngineVersion != nil {
-		return aws.StringValue(cr.Spec.ForProvider.EngineVersion) == aws.StringValue(out.DBClusters[0].EngineVersion)
+		if out.DBClusters[0].EngineVersion == nil {
+			return false
+		}
+
+		// Upgrade is only necessary if the spec version is higher.
+		// Downgrades are not possible in AWS.
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBClusters[0].EngineVersion)
+		return c <= 0
 	}
 	return true
 }

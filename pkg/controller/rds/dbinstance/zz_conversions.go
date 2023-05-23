@@ -380,9 +380,9 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Spec.ForProvider.Engine = nil
 		}
 		if elem.EngineVersion != nil {
-			cr.Spec.ForProvider.EngineVersion = elem.EngineVersion
+			cr.Status.AtProvider.EngineVersion = elem.EngineVersion
 		} else {
-			cr.Spec.ForProvider.EngineVersion = nil
+			cr.Status.AtProvider.EngineVersion = nil
 		}
 		if elem.EnhancedMonitoringResourceArn != nil {
 			cr.Status.AtProvider.EnhancedMonitoringResourceARN = elem.EnhancedMonitoringResourceArn
@@ -851,9 +851,6 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 	if cr.Spec.ForProvider.Engine != nil {
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
 	}
-	if cr.Spec.ForProvider.EngineVersion != nil {
-		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
-	}
 	if cr.Spec.ForProvider.IOPS != nil {
 		res.SetIops(*cr.Spec.ForProvider.IOPS)
 	}
@@ -909,18 +906,18 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
 	if cr.Spec.ForProvider.ProcessorFeatures != nil {
-		f41 := []*svcsdk.ProcessorFeature{}
-		for _, f41iter := range cr.Spec.ForProvider.ProcessorFeatures {
-			f41elem := &svcsdk.ProcessorFeature{}
-			if f41iter.Name != nil {
-				f41elem.SetName(*f41iter.Name)
+		f40 := []*svcsdk.ProcessorFeature{}
+		for _, f40iter := range cr.Spec.ForProvider.ProcessorFeatures {
+			f40elem := &svcsdk.ProcessorFeature{}
+			if f40iter.Name != nil {
+				f40elem.SetName(*f40iter.Name)
 			}
-			if f41iter.Value != nil {
-				f41elem.SetValue(*f41iter.Value)
+			if f40iter.Value != nil {
+				f40elem.SetValue(*f40iter.Value)
 			}
-			f41 = append(f41, f41elem)
+			f40 = append(f40, f40elem)
 		}
-		res.SetProcessorFeatures(f41)
+		res.SetProcessorFeatures(f40)
 	}
 	if cr.Spec.ForProvider.PromotionTier != nil {
 		res.SetPromotionTier(*cr.Spec.ForProvider.PromotionTier)
@@ -938,18 +935,18 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f47 := []*svcsdk.Tag{}
-		for _, f47iter := range cr.Spec.ForProvider.Tags {
-			f47elem := &svcsdk.Tag{}
-			if f47iter.Key != nil {
-				f47elem.SetKey(*f47iter.Key)
+		f46 := []*svcsdk.Tag{}
+		for _, f46iter := range cr.Spec.ForProvider.Tags {
+			f46elem := &svcsdk.Tag{}
+			if f46iter.Key != nil {
+				f46elem.SetKey(*f46iter.Key)
 			}
-			if f47iter.Value != nil {
-				f47elem.SetValue(*f47iter.Value)
+			if f46iter.Value != nil {
+				f46elem.SetValue(*f46iter.Value)
 			}
-			f47 = append(f47, f47elem)
+			f46 = append(f46, f46elem)
 		}
-		res.SetTags(f47)
+		res.SetTags(f46)
 	}
 	if cr.Spec.ForProvider.TDECredentialARN != nil {
 		res.SetTdeCredentialArn(*cr.Spec.ForProvider.TDECredentialARN)
@@ -1016,9 +1013,6 @@ func GenerateModifyDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.ModifyDBI
 	if cr.Spec.ForProvider.EnablePerformanceInsights != nil {
 		res.SetEnablePerformanceInsights(*cr.Spec.ForProvider.EnablePerformanceInsights)
 	}
-	if cr.Spec.ForProvider.EngineVersion != nil {
-		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
-	}
 	if cr.Spec.ForProvider.IOPS != nil {
 		res.SetIops(*cr.Spec.ForProvider.IOPS)
 	}
@@ -1062,18 +1056,18 @@ func GenerateModifyDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.ModifyDBI
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
 	if cr.Spec.ForProvider.ProcessorFeatures != nil {
-		f36 := []*svcsdk.ProcessorFeature{}
-		for _, f36iter := range cr.Spec.ForProvider.ProcessorFeatures {
-			f36elem := &svcsdk.ProcessorFeature{}
-			if f36iter.Name != nil {
-				f36elem.SetName(*f36iter.Name)
+		f35 := []*svcsdk.ProcessorFeature{}
+		for _, f35iter := range cr.Spec.ForProvider.ProcessorFeatures {
+			f35elem := &svcsdk.ProcessorFeature{}
+			if f35iter.Name != nil {
+				f35elem.SetName(*f35iter.Name)
 			}
-			if f36iter.Value != nil {
-				f36elem.SetValue(*f36iter.Value)
+			if f35iter.Value != nil {
+				f35elem.SetValue(*f35iter.Value)
 			}
-			f36 = append(f36, f36elem)
+			f35 = append(f35, f35elem)
 		}
-		res.SetProcessorFeatures(f36)
+		res.SetProcessorFeatures(f35)
 	}
 	if cr.Spec.ForProvider.PromotionTier != nil {
 		res.SetPromotionTier(*cr.Spec.ForProvider.PromotionTier)

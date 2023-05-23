@@ -40,6 +40,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 )
 
 const (
@@ -669,6 +670,7 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Region"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "DeleteAutomatedBackups"),
@@ -677,13 +679,31 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 	)
 
-	if diff == "" && !pwdChanged {
+	engineVersionChanged := !isEngineVersionUpToDate(r, db)
+
+	if diff == "" && !pwdChanged && !engineVersionChanged {
 		return true, "", nil
 	}
 
 	diff = "Found observed difference in rds\n" + diff
 
 	return false, diff, nil
+}
+
+func isEngineVersionUpToDate(cr *v1beta1.RDSInstance, db rdstypes.DBInstance) bool {
+	// If EngineVersion is not set, AWS sets a default value,
+	// so we do not try to update in this case
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		if db.EngineVersion == nil {
+			return false
+		}
+
+		// Upgrade is only necessary if the spec version is higher.
+		// Downgrades are not possible in AWS.
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *db.EngineVersion)
+		return c <= 0
+	}
+	return true
 }
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not

@@ -452,9 +452,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.Engine = nil
 	}
 	if resp.DBInstance.EngineVersion != nil {
-		cr.Spec.ForProvider.EngineVersion = resp.DBInstance.EngineVersion
+		cr.Status.AtProvider.EngineVersion = resp.DBInstance.EngineVersion
 	} else {
-		cr.Spec.ForProvider.EngineVersion = nil
+		cr.Status.AtProvider.EngineVersion = nil
 	}
 	if resp.DBInstance.EnhancedMonitoringResourceArn != nil {
 		cr.Status.AtProvider.EnhancedMonitoringResourceARN = resp.DBInstance.EnhancedMonitoringResourceArn
