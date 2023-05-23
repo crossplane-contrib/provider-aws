@@ -437,6 +437,71 @@ spec:
                   region:
                     description: Region is which region the DBCluster will be created.
                     type: string
+                  restoreFrom:
+                    description: RestoreFrom specifies the details of the backup to
+                      restore when creating a new DBCluster.
+                    properties:
+                      pointInTime:
+                        description: PointInTime specifies the details of the point
+                          in time restore.
+                        properties:
+                          restoreTime:
+                            description: 'RestoreTime is the date and time (UTC) to
+                              restore from. Must be before the latest restorable time
+                              for the DB instance. Can''t be specified if the useLatestRestorableTime
+                              parameter is enabled. Example: 2011-09-07T23:45:00Z'
+                            format: date-time
+                            type: string
+                          restoreType:
+                            description: "The type of restore to be performed. You
+                              can specify one of the following values: \n * full-copy
+                              - The new DB cluster is restored as a full copy of the
+                              source DB cluster. \n * copy-on-write - The new DB cluster
+                              is restored as a clone of the source DB cluster. \n
+                              Constraints: You can't specify copy-on-write if the
+                              engine version of the source DB cluster is earlier than
+                              1.11. \n If you don't specify a RestoreType value, then
+                              the new DB cluster is restored as a full copy of the
+                              source DB cluster. \n Valid for: Aurora DB clusters
+                              and Multi-AZ DB clusters"
+                            enum:
+                            - full-copy
+                            - copy-on-write
+                            type: string
+                          sourceDBClusterIdentifier:
+                            description: 'SourceDBClusterIdentifier specifies the
+                              identifier of the source DB cluster from which to restore.
+                              Constraints: Must match the identifier of an existing
+                              DB instance.'
+                            type: string
+                          useLatestRestorableTime:
+                            description: UseLatestRestorableTime indicates that the
+                              DB instance is restored from the latest backup Can't
+                              be specified if the restoreTime parameter is provided.
+                            type: boolean
+                        type: object
+                      snapshot:
+                        description: Snapshot specifies the details of the snapshot
+                          to restore from.
+                        properties:
+                          snapshotIdentifier:
+                            description: SnapshotIdentifier is the identifier of the
+                              snapshot to restore.
+                            type: string
+                        required:
+                        - snapshotIdentifier
+                        type: object
+                      source:
+                        description: Source is the type of the backup to restore when
+                          creating a new  DBCluster or DBInstance. Snapshot and PointInTime
+                          are supported.
+                        enum:
+                        - Snapshot
+                        - PointInTime
+                        type: string
+                    required:
+                    - source
+                    type: object
                   skipFinalSnapshot:
                     description: "Determines whether a final cluster snapshot is created
                       before the cluster is deleted. If true is specified, no cluster

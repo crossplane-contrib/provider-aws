@@ -26,6 +26,7 @@ import (
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -304,6 +305,24 @@ func withSkipFinalSnapshot(value bool) docDBModifier {
 func withFinalDBSnapshotIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		o.Spec.ForProvider.FinalDBSnapshotIdentifier = awsclient.String(value)
+	}
+}
+
+func withRestoreFromSnapshot(v *svcapitypes.RestoreSnapshotConfiguration) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.Spec.ForProvider.RestoreFrom = &svcapitypes.RestoreDBClusterBackupConfiguration{
+			Snapshot: v,
+			Source:   svcapitypes.RestoreSourceSnapshot,
+		}
+	}
+}
+
+func withRestoreToPointInTime(v *svcapitypes.RestorePointInTimeConfiguration) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.Spec.ForProvider.RestoreFrom = &svcapitypes.RestoreDBClusterBackupConfiguration{
+			PointInTime: v,
+			Source:      svcapitypes.RestoreSourcePointInTime,
+		}
 	}
 }
 
@@ -1988,6 +2007,461 @@ func TestCreate(t *testing.T) {
 					),
 				},
 				docdb: fake.MockDocDBClientCall{
+					CreateDBClusterWithContext: []*fake.CallCreateDBClusterWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.CreateDBClusterInput{
+								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
+								AvailabilityZones: toStringPtrArray(
+									testAvailabilityZone,
+									testOtherAvailabilityZone,
+								),
+								BackupRetentionPeriod:       awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
+								DBSubnetGroupName:           awsclient.String(testDBSubnetGroupName),
+								DeletionProtection:          awsclient.Bool(true),
+								EnableCloudwatchLogsExports: toStringPtrArray(
+									testCloudWatchLog,
+									testOtherCloudWatchLog,
+								),
+								Engine:                     awsclient.String(testEngine),
+								EngineVersion:              awsclient.String(testEngineVersion),
+								KmsKeyId:                   awsclient.String(testKMSKeyID),
+								MasterUsername:             awsclient.String(testMasterUserName),
+								MasterUserPassword:         awsclient.String(testMasterUserPassword),
+								Port:                       awsclient.Int64(testPort),
+								PreSignedUrl:               awsclient.String(testPresignedURL),
+								PreferredBackupWindow:      awsclient.String(testPreferredBackupWindow),
+								PreferredMaintenanceWindow: awsclient.String(testPreferredMaintenanceWindow),
+								StorageEncrypted:           awsclient.Bool(true),
+								VpcSecurityGroupIds: toStringPtrArray(
+									testVpcSecurityGroup,
+									testOtherVpcSecurityGroup,
+								),
+								Tags: []*docdb.Tag{
+									{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"SuccessfulRestoreFromSnapshot": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+						s := obj.(*v1.Secret)
+						s.Data = map[string][]byte{
+							testMasterPasswordSecretKey: []byte(testMasterUserPassword),
+						}
+						return nil
+					},
+				},
+				docdb: &fake.MockDocDBClient{
+					MockRestoreDBClusterFromSnapshotWithContext: func(c context.Context, cdpgi *docdb.RestoreDBClusterFromSnapshotInput, o []request.Option) (*docdb.RestoreDBClusterFromSnapshotOutput, error) {
+						return &docdb.RestoreDBClusterFromSnapshotOutput{
+							DBCluster: &docdb.DBCluster{
+								AvailabilityZones: []*string{
+									&testAvailabilityZone,
+									&testOtherAvailabilityZone,
+								},
+								BackupRetentionPeriod:      awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
+								DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+								DBClusterArn:               awsclient.String(testDBClusterArn),
+								DeletionProtection:         awsclient.Bool(true),
+								Endpoint:                   awsclient.String(testEndpoint),
+								Engine:                     &testEngine,
+								EngineVersion:              &testEngineVersion,
+								KmsKeyId:                   &testKMSKeyID,
+								MasterUsername:             &testMasterUserName,
+								ReaderEndpoint:             awsclient.String(testReaderEndpoint),
+								Port:                       awsclient.Int64(testPort),
+								PreferredBackupWindow:      &testPreferredBackupWindow,
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								StorageEncrypted:           awsclient.Bool(true),
+							},
+						}, nil
+					},
+					MockCreateDBClusterWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterInput, o []request.Option) (*docdb.CreateDBClusterOutput, error) {
+						return &docdb.CreateDBClusterOutput{
+							DBCluster: &docdb.DBCluster{
+								AvailabilityZones: []*string{
+									&testAvailabilityZone,
+									&testOtherAvailabilityZone,
+								},
+								BackupRetentionPeriod:      awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
+								DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+								DBClusterArn:               awsclient.String(testDBClusterArn),
+								DeletionProtection:         awsclient.Bool(true),
+								Endpoint:                   awsclient.String(testEndpoint),
+								Engine:                     &testEngine,
+								EngineVersion:              &testEngineVersion,
+								KmsKeyId:                   &testKMSKeyID,
+								MasterUsername:             &testMasterUserName,
+								ReaderEndpoint:             awsclient.String(testReaderEndpoint),
+								Port:                       awsclient.Int64(testPort),
+								PreferredBackupWindow:      &testPreferredBackupWindow,
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								StorageEncrypted:           awsclient.Bool(true),
+							},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withDeletionProtection(true),
+					withEnableCloudWatchLogsExports(
+						testCloudWatchLog,
+						testOtherCloudWatchLog,
+					),
+					withEngine(testEngine),
+					withEngineVersion(testEngineVersion),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+						&svcapitypes.Tag{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
+					withRestoreFromSnapshot(&svcapitypes.RestoreSnapshotConfiguration{
+						SnapshotIdentifier: "abcd",
+					}),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Creating()),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withStatusDBClusterArn(testDBClusterArn),
+					withDeletionProtection(true),
+					withEnableCloudWatchLogsExports(
+						testCloudWatchLog,
+						testOtherCloudWatchLog,
+					),
+					withEngine(testEngine),
+					withEngineVersion(testEngineVersion),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+						&svcapitypes.Tag{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+					withEndpoint(testEndpoint),
+					withReaderEndpoint(testReaderEndpoint),
+					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
+					withStatusDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withRestoreFromSnapshot(&svcapitypes.RestoreSnapshotConfiguration{
+						SnapshotIdentifier: "abcd",
+					}),
+				),
+				result: managed.ExternalCreation{
+					ConnectionDetails: generateConnectionDetails(
+						testMasterUserName,
+						testMasterUserPassword,
+						testReaderEndpoint,
+						testEndpoint,
+						testPort,
+					),
+				},
+				docdb: fake.MockDocDBClientCall{
+					RestoreDBClusterFromSnapshotWithContext: []*fake.CallRestoreDBClusterFromSnapshotWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.RestoreDBClusterFromSnapshotInput{
+								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
+								AvailabilityZones: toStringPtrArray(
+									testAvailabilityZone,
+									testOtherAvailabilityZone,
+								),
+								DBSubnetGroupName:  awsclient.String(testDBSubnetGroupName),
+								DeletionProtection: awsclient.Bool(true),
+								EnableCloudwatchLogsExports: toStringPtrArray(
+									testCloudWatchLog,
+									testOtherCloudWatchLog,
+								),
+								Engine:        awsclient.String(testEngine),
+								EngineVersion: awsclient.String(testEngineVersion),
+								KmsKeyId:      awsclient.String(testKMSKeyID),
+								Port:          awsclient.Int64(testPort),
+								VpcSecurityGroupIds: toStringPtrArray(
+									testVpcSecurityGroup,
+									testOtherVpcSecurityGroup,
+								),
+								Tags: []*docdb.Tag{
+									{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+								},
+								SnapshotIdentifier: pointer.String("abcd"),
+							},
+						},
+					},
+					CreateDBClusterWithContext: []*fake.CallCreateDBClusterWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.CreateDBClusterInput{
+								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
+								AvailabilityZones: toStringPtrArray(
+									testAvailabilityZone,
+									testOtherAvailabilityZone,
+								),
+								BackupRetentionPeriod:       awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
+								DBSubnetGroupName:           awsclient.String(testDBSubnetGroupName),
+								DeletionProtection:          awsclient.Bool(true),
+								EnableCloudwatchLogsExports: toStringPtrArray(
+									testCloudWatchLog,
+									testOtherCloudWatchLog,
+								),
+								Engine:                     awsclient.String(testEngine),
+								EngineVersion:              awsclient.String(testEngineVersion),
+								KmsKeyId:                   awsclient.String(testKMSKeyID),
+								MasterUsername:             awsclient.String(testMasterUserName),
+								MasterUserPassword:         awsclient.String(testMasterUserPassword),
+								Port:                       awsclient.Int64(testPort),
+								PreSignedUrl:               awsclient.String(testPresignedURL),
+								PreferredBackupWindow:      awsclient.String(testPreferredBackupWindow),
+								PreferredMaintenanceWindow: awsclient.String(testPreferredMaintenanceWindow),
+								StorageEncrypted:           awsclient.Bool(true),
+								VpcSecurityGroupIds: toStringPtrArray(
+									testVpcSecurityGroup,
+									testOtherVpcSecurityGroup,
+								),
+								Tags: []*docdb.Tag{
+									{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"SuccessfulRestoreFromPointInTime": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+						s := obj.(*v1.Secret)
+						s.Data = map[string][]byte{
+							testMasterPasswordSecretKey: []byte(testMasterUserPassword),
+						}
+						return nil
+					},
+				},
+				docdb: &fake.MockDocDBClient{
+					MockRestoreDBClusterToPointInTimeWithContext: func(c context.Context, cdpgi *docdb.RestoreDBClusterToPointInTimeInput, o []request.Option) (*docdb.RestoreDBClusterToPointInTimeOutput, error) {
+						return &docdb.RestoreDBClusterToPointInTimeOutput{
+							DBCluster: &docdb.DBCluster{
+								AvailabilityZones: []*string{
+									&testAvailabilityZone,
+									&testOtherAvailabilityZone,
+								},
+								BackupRetentionPeriod:      awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
+								DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+								DBClusterArn:               awsclient.String(testDBClusterArn),
+								DeletionProtection:         awsclient.Bool(true),
+								Endpoint:                   awsclient.String(testEndpoint),
+								Engine:                     &testEngine,
+								EngineVersion:              &testEngineVersion,
+								KmsKeyId:                   &testKMSKeyID,
+								MasterUsername:             &testMasterUserName,
+								ReaderEndpoint:             awsclient.String(testReaderEndpoint),
+								Port:                       awsclient.Int64(testPort),
+								PreferredBackupWindow:      &testPreferredBackupWindow,
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								StorageEncrypted:           awsclient.Bool(true),
+							},
+						}, nil
+					},
+					MockCreateDBClusterWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterInput, o []request.Option) (*docdb.CreateDBClusterOutput, error) {
+						return &docdb.CreateDBClusterOutput{
+							DBCluster: &docdb.DBCluster{
+								AvailabilityZones: []*string{
+									&testAvailabilityZone,
+									&testOtherAvailabilityZone,
+								},
+								BackupRetentionPeriod:      awsclient.Int64(testBackupRetentionPeriod),
+								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
+								DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+								DBClusterArn:               awsclient.String(testDBClusterArn),
+								DeletionProtection:         awsclient.Bool(true),
+								Endpoint:                   awsclient.String(testEndpoint),
+								Engine:                     &testEngine,
+								EngineVersion:              &testEngineVersion,
+								KmsKeyId:                   &testKMSKeyID,
+								MasterUsername:             &testMasterUserName,
+								ReaderEndpoint:             awsclient.String(testReaderEndpoint),
+								Port:                       awsclient.Int64(testPort),
+								PreferredBackupWindow:      &testPreferredBackupWindow,
+								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
+								StorageEncrypted:           awsclient.Bool(true),
+							},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withDeletionProtection(true),
+					withEnableCloudWatchLogsExports(
+						testCloudWatchLog,
+						testOtherCloudWatchLog,
+					),
+					withEngine(testEngine),
+					withEngineVersion(testEngineVersion),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+						&svcapitypes.Tag{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
+					withRestoreToPointInTime(&svcapitypes.RestorePointInTimeConfiguration{
+						RestoreTime:               &metav1.Time{Time: timeNow},
+						UseLatestRestorableTime:   pointer.Bool(true),
+						SourceDBClusterIdentifier: "abcd",
+						RestoreType:               pointer.String("full-copy"),
+					}),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Creating()),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withStatusDBClusterArn(testDBClusterArn),
+					withDeletionProtection(true),
+					withEnableCloudWatchLogsExports(
+						testCloudWatchLog,
+						testOtherCloudWatchLog,
+					),
+					withEngine(testEngine),
+					withEngineVersion(testEngineVersion),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+						&svcapitypes.Tag{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+					withEndpoint(testEndpoint),
+					withReaderEndpoint(testReaderEndpoint),
+					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
+					withStatusDBClusterParameterGroupName(testDBClusterParameterGroupName),
+					withRestoreToPointInTime(&svcapitypes.RestorePointInTimeConfiguration{
+						RestoreTime:               &metav1.Time{Time: timeNow},
+						UseLatestRestorableTime:   pointer.Bool(true),
+						SourceDBClusterIdentifier: "abcd",
+						RestoreType:               pointer.String("full-copy"),
+					}),
+				),
+				result: managed.ExternalCreation{
+					ConnectionDetails: generateConnectionDetails(
+						testMasterUserName,
+						testMasterUserPassword,
+						testReaderEndpoint,
+						testEndpoint,
+						testPort,
+					),
+				},
+				docdb: fake.MockDocDBClientCall{
+					RestoreDBClusterToPointInTimeWithContext: []*fake.CallRestoreDBClusterToPointInTimeWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.RestoreDBClusterToPointInTimeInput{
+								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
+								DBSubnetGroupName:   awsclient.String(testDBSubnetGroupName),
+								DeletionProtection:  awsclient.Bool(true),
+								EnableCloudwatchLogsExports: toStringPtrArray(
+									testCloudWatchLog,
+									testOtherCloudWatchLog,
+								),
+								KmsKeyId: awsclient.String(testKMSKeyID),
+								Port:     awsclient.Int64(testPort),
+								VpcSecurityGroupIds: toStringPtrArray(
+									testVpcSecurityGroup,
+									testOtherVpcSecurityGroup,
+								),
+								Tags: []*docdb.Tag{
+									{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
+									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
+								},
+								RestoreToTime:             &timeNow,
+								UseLatestRestorableTime:   pointer.Bool(true),
+								SourceDBClusterIdentifier: pointer.String("abcd"),
+								RestoreType:               pointer.String("full-copy"),
+							},
+						},
+					},
 					CreateDBClusterWithContext: []*fake.CallCreateDBClusterWithContext{
 						{
 							Ctx: context.Background(),
