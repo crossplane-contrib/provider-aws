@@ -162,6 +162,10 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 }
 
 func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
+	if meta.WasDeleted(cr) {
+		return true, nil // There is no need to check for updates when we want to delete.
+	}
+
 	cluster := resp.DBClusters[0]
 
 	ctx := context.Background()
