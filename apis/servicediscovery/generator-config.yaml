@@ -6,5 +6,5 @@ ignore:
     - CreateHttpNamespaceInput.CreatorRequestId
     - CreatePrivateDnsNamespaceInput.CreatorRequestId
     - CreatePublicDnsNamespaceInput.CreatorRequestId
-  resource_names:
-    - Service
+  #resource_names:
+  #  - Service
