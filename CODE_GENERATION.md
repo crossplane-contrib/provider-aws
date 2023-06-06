@@ -15,6 +15,14 @@ behavior of the AWS API.
 
 This guide shows how to get a new resource support up and running step by step.
 
+## Git Submodules
+
+First of all, you need to sync and update the submodules. This operation is required to `make` tasks work properly
+
+```console
+make submodules
+```
+
 ## Code generation
 
 AWS groups their resources under _services_ and the code generator works on
