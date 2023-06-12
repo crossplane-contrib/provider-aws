@@ -20,10 +20,12 @@ import (
 	"context"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -86,6 +88,8 @@ var (
 	testErrModifyDBClusterFailed    = "ModifyDBCluster failed"
 	testErrBoom                     = "boom"
 	testErrGetSecret                = "testErrGetSecret"
+
+	timeNow = time.Now()
 )
 
 type args struct {
@@ -116,6 +120,12 @@ func withExternalName(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		meta.SetExternalName(o, value)
 
+	}
+}
+
+func withDeletionTimestamp(v *metav1.Time) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.SetDeletionTimestamp(v)
 	}
 }
 
@@ -1690,6 +1700,61 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_Deleted_should_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier:        awsclient.String(testDBClusterIdentifier),
+									Status:                     awsclient.String(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredMaintenanceWindow: awsclient.String(testPreferredMaintenanceWindow),
+								},
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
+						return &docdb.ListTagsForResourceOutput{
+							TagList: []*docdb.Tag{},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withDeletionTimestamp(&metav1.Time{Time: timeNow}),
+					withExternalName(testDBClusterIdentifier),
+					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withVpcSecurityGroupIds(),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withDeletionTimestamp(&metav1.Time{Time: timeNow}),
+					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: awsclient.String(testDBClusterIdentifier),
+							},
 						},
 					},
 				},
