@@ -1,0 +1,19 @@
+apiVersion: servicediscovery.aws.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  name: example-sd-service
+spec:
+  forProvider:
+    region: us-east-1
+    description: service example
+    name: crossplane-sd-service-test
+    namespaceID: example-privatednsnamespace
+    dnsConfig:
+      dnsRecords:
+        - tTL: 300
+          type_: A
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example

@@ -12,7 +12,24 @@ import (
 const AnnotationKeyOperationID = CRDGroup + "/operation-id"
 
 // CustomServiceParameters are custom parameters for Services.
-type CustomServiceParameters struct{}
+type CustomServiceParameters struct {
+
+	// +optional
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1.PrivateDNSNamespace
+	// +crossplane:generate:reference:refFieldName=ServiceNameRef
+	// +crossplane:generate:reference:selectorFieldName=ServiceNameSelector
+	ServiceName *string `json:"serviceName,omitempty"`
+
+	// ServiceNameRef is a reference to a service used to set
+	// the ServiceName.
+	// +optional
+	ServiceNameRef *xpv1.Reference `json:"serviceNameRef,omitempty"`
+
+	// ServiceNameSelector selects references to service used
+	// to set the ServiceName.
+	// +optional
+	ServiceNameSelector *xpv1.Selector `json:"serviceNameSelector,omitempty"`
+}
 
 // CustomPrivateDNSNamespaceParameters are custom parameters for PrivateDNSNamespaces.
 type CustomPrivateDNSNamespaceParameters struct {

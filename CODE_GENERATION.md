@@ -15,6 +15,10 @@ behavior of the AWS API.
 
 This guide shows how to get a new resource support up and running step by step.
 
+## Git Submodules
+
+First of all you need to sync and update the submodules. This operation is need to `make` works well
+
 ## Code generation
 
 AWS groups their resources under _services_ and the code generator works on
@@ -303,6 +307,19 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk
   return obs, nil
 }
 ```
+
+### Not Found
+
+For deleting CRs to work as desired, you should check the `awsErr.Code()` in `zz_convertions.go` and change the "UNKNOWN" to expected Exception
+
+```golang
+// IsNotFound returns whether the given error is of type NotFound or not.
+func IsNotFound(err error) bool {
+	awsErr, ok := err.(awserr.Error)
+	return ok && awsErr.Code() == "NotFoundException"
+}
+```
+
 
 ## Custom Parts for Beta Quality
 
