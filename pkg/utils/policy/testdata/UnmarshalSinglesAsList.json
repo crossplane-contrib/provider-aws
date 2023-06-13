@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": {
+        "Sid": "AllowPutObjectS3ServerAccessLogsPolicy",
+        "Principal": {
+            "Service": "logging.s3.amazonaws.com",
+            "Federated": "cognito-identity.amazonaws.com",
+            "AWS": "123456789012"
+        },
+        "Effect": "Allow",
+        "Action": "s3:PutObject",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET-logs\/*",
+        "Condition": {
+            "StringEquals": {
+                "aws:SourceAccount": "111111111111"
+            },
+            "ArnLike": {
+                "aws:SourceArn": "arn:aws:s3:::EXAMPLE-SOURCE-BUCKET"
+            }
+        }
+    }
+}
