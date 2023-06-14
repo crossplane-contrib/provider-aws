@@ -48,7 +48,6 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 			e.postObserve = postObserve
 			e.postCreate = postCreate
 			e.preUpdate = preUpdate
-			e.postDelete = postDelete
 			e.isUpToDate = isUpToDate
 		},
 	}
@@ -97,16 +96,28 @@ func preUpdate(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.UpdateSer
 		obj.Service = &svcsdk.ServiceChange{}
 	}
 	obj.Service.Description = cr.Spec.ForProvider.Description
-	obj.Service.DnsConfig = &svcsdk.DnsConfigChange{}
-	newDnsConfig := []*svcsdk.DnsRecord{}
-	for _, specDnsRecord := range cr.Spec.ForProvider.DNSConfig.DNSRecords {
-		newDnsConfig = append(newDnsConfig, &svcsdk.DnsRecord{TTL: specDnsRecord.TTL, Type: specDnsRecord.Type})
-	}
-	obj.Service.DnsConfig.DnsRecords = newDnsConfig
-	return nil
-}
 
-func postDelete(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.DeleteServiceOutput, err error) error {
+	if cr.Spec.ForProvider.DNSConfig != nil {
+		obj.Service.DnsConfig = &svcsdk.DnsConfigChange{}
+		newDnsConfig := []*svcsdk.DnsRecord{}
+		for _, specDnsRecord := range cr.Spec.ForProvider.DNSConfig.DNSRecords {
+			newDnsConfig = append(newDnsConfig, &svcsdk.DnsRecord{TTL: specDnsRecord.TTL, Type: specDnsRecord.Type})
+		}
+		obj.Service.DnsConfig.DnsRecords = newDnsConfig
+	} else {
+		cr.Spec.ForProvider.DNSConfig = nil
+	}
+
+	if cr.Spec.ForProvider.HealthCheckConfig != nil {
+		if obj.Service.HealthCheckConfig == nil {
+			obj.Service.HealthCheckConfig = &svcsdk.HealthCheckConfig{}
+		}
+		obj.Service.HealthCheckConfig.Type = cr.Spec.ForProvider.HealthCheckConfig.Type
+		obj.Service.HealthCheckConfig.ResourcePath = cr.Spec.ForProvider.HealthCheckConfig.ResourcePath
+		obj.Service.HealthCheckConfig.FailureThreshold = cr.Spec.ForProvider.HealthCheckConfig.FailureThreshold
+	} else {
+		obj.Service.HealthCheckConfig = nil
+	}
 
 	return nil
 }
@@ -137,18 +148,38 @@ func isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, e
 		return false, nil
 	}
 
+	if !isEqualHealthCheckConfig(resp.Service.HealthCheckConfig, cr.Spec.ForProvider.HealthCheckConfig) {
+		return false, nil
+	}
+
 	return true, nil
 }
 
-func isEqualDnsRecords(p1 []*svcsdk.DnsRecord, p2 []*svcapitypes.DNSRecord) bool {
+func isEqualHealthCheckConfig(outHealthCheck *svcsdk.HealthCheckConfig, crHealthCheck *svcapitypes.HealthCheckConfig) bool {
+	if outHealthCheck == nil && crHealthCheck == nil {
+		return true
+	}
 
-	if len(p1) != len(p2) {
+	if (outHealthCheck == nil && crHealthCheck != nil) || (crHealthCheck == nil && outHealthCheck != nil) {
+		return false
+	}
+
+	if *outHealthCheck.Type != *crHealthCheck.Type || *outHealthCheck.ResourcePath != *crHealthCheck.ResourcePath || *outHealthCheck.FailureThreshold != *crHealthCheck.FailureThreshold {
+		return false
+	}
+
+	return true
+}
+
+func isEqualDnsRecords(outDnsRecords []*svcsdk.DnsRecord, crDnsRecords []*svcapitypes.DNSRecord) bool {
+
+	if len(outDnsRecords) != len(crDnsRecords) {
 		return false
 	}
 
 	equals := false
-	for _, outDnsRecord := range p1 {
-		for _, crDnsRecord := range p2 {
+	for _, outDnsRecord := range outDnsRecords {
+		for _, crDnsRecord := range crDnsRecords {
 			if *outDnsRecord.TTL == *crDnsRecord.TTL && *outDnsRecord.Type == *crDnsRecord.Type {
 				equals = true
 				break
