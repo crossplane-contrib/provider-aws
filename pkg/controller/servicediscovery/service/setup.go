@@ -32,10 +32,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SetupService adds a controller that reconciles Service.
