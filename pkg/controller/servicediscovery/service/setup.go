@@ -72,7 +72,7 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithConnectionPublishers(cps...)))
 }
 
-func getIdFromCR(cr *svcapitypes.Service) (*string, error) {
+func getIDFromCR(cr *svcapitypes.Service) (*string, error) {
 	arn := strings.SplitN(meta.GetExternalName(cr), "/", 2)
 	if len(arn) != 2 {
 		return nil, errors.New("external name has to be in the ARN format")
@@ -82,7 +82,7 @@ func getIdFromCR(cr *svcapitypes.Service) (*string, error) {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.GetServiceInput) error {
-	id, err := getIdFromCR(cr)
+	id, err := getIDFromCR(cr)
 	if err != nil {
 		return err
 	}
@@ -99,11 +99,11 @@ func preUpdate(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.UpdateSer
 
 	if cr.Spec.ForProvider.DNSConfig != nil {
 		obj.Service.DnsConfig = &svcsdk.DnsConfigChange{}
-		newDnsConfig := []*svcsdk.DnsRecord{}
-		for _, specDnsRecord := range cr.Spec.ForProvider.DNSConfig.DNSRecords {
-			newDnsConfig = append(newDnsConfig, &svcsdk.DnsRecord{TTL: specDnsRecord.TTL, Type: specDnsRecord.Type})
+		newDNSConfig := []*svcsdk.DnsRecord{}
+		for _, specDNSRecord := range cr.Spec.ForProvider.DNSConfig.DNSRecords {
+			newDNSConfig = append(newDNSConfig, &svcsdk.DnsRecord{TTL: specDNSRecord.TTL, Type: specDNSRecord.Type})
 		}
-		obj.Service.DnsConfig.DnsRecords = newDnsConfig
+		obj.Service.DnsConfig.DnsRecords = newDNSConfig
 	} else {
 		cr.Spec.ForProvider.DNSConfig = nil
 	}
@@ -144,7 +144,7 @@ func isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, e
 		return false, nil
 	}
 
-	if !isEqualDnsRecords(resp.Service.DnsConfig.DnsRecords, cr.Spec.ForProvider.DNSConfig.DNSRecords) {
+	if !isEqualDNSRecords(resp.Service.DnsConfig.DnsRecords, cr.Spec.ForProvider.DNSConfig.DNSRecords) {
 		return false, nil
 	}
 
@@ -171,16 +171,16 @@ func isEqualHealthCheckConfig(outHealthCheck *svcsdk.HealthCheckConfig, crHealth
 	return true
 }
 
-func isEqualDnsRecords(outDnsRecords []*svcsdk.DnsRecord, crDnsRecords []*svcapitypes.DNSRecord) bool {
+func isEqualDNSRecords(outDNSRecords []*svcsdk.DnsRecord, crDNSRecords []*svcapitypes.DNSRecord) bool {
 
-	if len(outDnsRecords) != len(crDnsRecords) {
+	if len(outDNSRecords) != len(crDNSRecords) {
 		return false
 	}
 
 	equals := false
-	for _, outDnsRecord := range outDnsRecords {
-		for _, crDnsRecord := range crDnsRecords {
-			if *outDnsRecord.TTL == *crDnsRecord.TTL && *outDnsRecord.Type == *crDnsRecord.Type {
+	for _, outDNSRecord := range outDNSRecords {
+		for _, crDNSRecord := range crDNSRecords {
+			if *outDNSRecord.TTL == *crDNSRecord.TTL && *outDNSRecord.Type == *crDNSRecord.Type {
 				equals = true
 				break
 			}
