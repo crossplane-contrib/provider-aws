@@ -205,8 +205,8 @@ func isEqualDNSRecords(outDNSRecords []*svcsdk.DnsRecord, crDNSRecords []*svcapi
 		return false
 	}
 
-	equals := false
 	for _, outDNSRecord := range outDNSRecords {
+		equals := false
 		for _, crDNSRecord := range crDNSRecords {
 			if *outDNSRecord.TTL == *crDNSRecord.TTL && *outDNSRecord.Type == *crDNSRecord.Type {
 				equals = true
@@ -216,7 +216,6 @@ func isEqualDNSRecords(outDNSRecords []*svcsdk.DnsRecord, crDNSRecords []*svcapi
 		if !equals {
 			return false
 		}
-		equals = false
 	}
 
 	return true
