@@ -20,8 +20,6 @@ import (
 	"context"
 	"strings"
 
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -29,13 +27,18 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
+	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	clientsvcdk "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -44,11 +47,13 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ServiceGroupKind)
 	opts := []option{
 		func(e *external) {
+			hL := &hooks{client: e.client}
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.postCreate = postCreate
 			e.preUpdate = preUpdate
-			e.isUpToDate = isUpToDate
+			e.postUpdate = hL.postUpdate
+			e.isUpToDate = hL.isUpToDate
 		},
 	}
 
@@ -70,6 +75,10 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 			managed.WithConnectionPublishers(cps...)))
+}
+
+type hooks struct {
+	client clientsvcdk.Client
 }
 
 func getIDFromCR(cr *svcapitypes.Service) (*string, error) {
@@ -122,6 +131,16 @@ func preUpdate(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.UpdateSer
 	return nil
 }
 
+func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.UpdateServiceOutput, cre managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return cre, err
+	}
+	cr.Status.SetConditions(xpv1.Available())
+
+	// Update Tags
+	return cre, updateTagsForResource(e.client, cr)
+}
+
 func postCreate(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.CreateServiceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
@@ -139,7 +158,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.GetSer
 	return obs, nil
 }
 
-func isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, error) {
+func (e *hooks) isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, error) {
 	if *resp.Service.Description != *cr.Spec.ForProvider.Description {
 		return false, nil
 	}
@@ -149,6 +168,15 @@ func isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, e
 	}
 
 	if !isEqualHealthCheckConfig(resp.Service.HealthCheckConfig, cr.Spec.ForProvider.HealthCheckConfig) {
+		return false, nil
+	}
+
+	tagsUpToDate, err := commonnamespace.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.ARN)
+	if err != nil {
+		return false, err
+	}
+
+	if !tagsUpToDate {
 		return false, nil
 	}
 
@@ -192,4 +220,32 @@ func isEqualDNSRecords(outDNSRecords []*svcsdk.DnsRecord, crDNSRecords []*svcapi
 	}
 
 	return true
+}
+
+func updateTagsForResource(client servicediscoveryiface.ServiceDiscoveryAPI, cr *svcapitypes.Service) error {
+
+	current, err := commonnamespace.ListTagsForResource(client, cr.Status.AtProvider.ARN)
+	if err != nil {
+		return err
+	}
+
+	add, remove := commonnamespace.DiffTags(cr.Spec.ForProvider.Tags, current)
+	if len(remove) != 0 {
+		if _, err := client.UntagResource(&svcsdk.UntagResourceInput{
+			ResourceARN: cr.Status.AtProvider.ARN,
+			TagKeys:     remove,
+		}); err != nil {
+			return errors.Wrap(err, "cannot remove tags")
+		}
+	}
+	if len(add) != 0 {
+		if _, err := client.TagResource(&svcsdk.TagResourceInput{
+			ResourceARN: cr.Status.AtProvider.ARN,
+			Tags:        add,
+		}); err != nil {
+			return errors.Wrap(err, "cannot create tags")
+		}
+	}
+
+	return nil
 }
