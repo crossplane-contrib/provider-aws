@@ -28,7 +28,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	// svcsdk "github.com/aws/aws-sdk-go-v2/service/servicediscovery"
@@ -130,16 +129,36 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.GetSer
 }
 
 func isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, error) {
-
 	if *resp.Service.Description != *cr.Spec.ForProvider.Description {
 		return false, nil
 	}
 
-	//TODO: not working
-	dnsRecordsDiff := cmp.Equal(resp.Service.DnsConfig.DnsRecords, cr.Spec.ForProvider.DNSConfig.DNSRecords)
-	if !dnsRecordsDiff {
+	if !isEqualDnsRecords(resp.Service.DnsConfig.DnsRecords, cr.Spec.ForProvider.DNSConfig.DNSRecords) {
 		return false, nil
 	}
 
 	return true, nil
+}
+
+func isEqualDnsRecords(p1 []*svcsdk.DnsRecord, p2 []*svcapitypes.DNSRecord) bool {
+
+	if len(p1) != len(p2) {
+		return false
+	}
+
+	equals := false
+	for _, outDnsRecord := range p1 {
+		for _, crDnsRecord := range p2 {
+			if *outDnsRecord.TTL == *crDnsRecord.TTL && *outDnsRecord.Type == *crDnsRecord.Type {
+				equals = true
+				break
+			}
+		}
+		if !equals {
+			return false
+		}
+		equals = false
+	}
+
+	return true
 }
