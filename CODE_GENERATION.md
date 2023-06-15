@@ -312,19 +312,6 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk
 }
 ```
 
-### Not Found
-
-For deleting CRs to work as desired, you should check the `awsErr.Code()` in `zz_convertions.go` and change the "UNKNOWN" to expected Exception
-
-```golang
-// IsNotFound returns whether the given error is of type NotFound or not.
-func IsNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "NotFoundException"
-}
-```
-
-
 ## Custom Parts for Beta Quality
 
 The earlier section is sufficient to get a controller into a working state. But
