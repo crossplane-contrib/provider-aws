@@ -8,3 +8,10 @@ ignore:
     - CreatePublicDnsNamespaceInput.CreatorRequestId
   #resource_names:
   #  - Service
+
+resources:
+  Service:
+    exceptions:
+      errors:
+        404:
+          code: ServiceNotFound
