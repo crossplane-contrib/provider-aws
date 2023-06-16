@@ -491,25 +491,25 @@ func isClientAuthenticationUpToDate(wanted *svcapitypes.ClientAuthentication, cu
 			return false
 		}
 
-		if wanted.Sasl != nil {
+		if wanted.SASL != nil {
 			if current.Sasl == nil {
 				return false
 			}
-			if wanted.Sasl.IAM != nil {
+			if wanted.SASL.IAM != nil {
 				if current.Sasl.Iam == nil {
 					return false
 				}
-				if aws.BoolValue(wanted.Sasl.IAM.Enabled) != aws.BoolValue(current.Sasl.Iam.Enabled) {
+				if aws.BoolValue(wanted.SASL.IAM.Enabled) != aws.BoolValue(current.Sasl.Iam.Enabled) {
 					return false
 				}
 			} else if current.Sasl.Iam != nil {
 				return false
 			}
-			if wanted.Sasl.Scram != nil {
+			if wanted.SASL.SCRAM != nil {
 				if current.Sasl.Scram == nil {
 					return false
 				}
-				if aws.BoolValue(wanted.Sasl.Scram.Enabled) != aws.BoolValue(current.Sasl.Scram.Enabled) {
+				if aws.BoolValue(wanted.SASL.SCRAM.Enabled) != aws.BoolValue(current.Sasl.Scram.Enabled) {
 					return false
 				}
 			} else if current.Sasl.Scram != nil {
@@ -825,19 +825,19 @@ func generateClientAuthentication(wanted *svcapitypes.ClientAuthentication) *svc
 
 	if wanted != nil {
 		output := &svcsdk.ClientAuthentication{}
-		if wanted.Sasl != nil {
+		if wanted.SASL != nil {
 			sasl := &svcsdk.Sasl{}
-			if wanted.Sasl.IAM != nil {
+			if wanted.SASL.IAM != nil {
 				iam := &svcsdk.Iam{}
-				if wanted.Sasl.IAM.Enabled != nil {
+				if wanted.SASL.IAM.Enabled != nil {
 					iam.Enabled = wanted.TLS.Enabled
 				}
 				sasl.Iam = iam
 			}
-			if wanted.Sasl.Scram != nil {
+			if wanted.SASL.SCRAM != nil {
 				scram := &svcsdk.Scram{}
-				if wanted.Sasl.Scram.Enabled != nil {
-					scram.Enabled = wanted.Sasl.Scram.Enabled
+				if wanted.SASL.SCRAM.Enabled != nil {
+					scram.Enabled = wanted.SASL.SCRAM.Enabled
 				}
 				sasl.Scram = scram
 			}
