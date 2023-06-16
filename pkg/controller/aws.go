@@ -175,6 +175,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	servicediscoveryservice "github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/service"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sns/subscription"
@@ -350,6 +351,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		emrcontainersvirtualcluster.SetupVirtualCluster,
 		optiongroup.SetupOptionGroup,
 		autoscalinggroup.SetupAutoScalingGroup,
+		servicediscoveryservice.SetupService,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

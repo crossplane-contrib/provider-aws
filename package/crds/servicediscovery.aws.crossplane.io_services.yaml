@@ -1,0 +1,495 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.1
+  creationTimestamp: null
+  name: services.servicediscovery.aws.crossplane.io
+spec:
+  group: servicediscovery.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Service
+    listKind: ServiceList
+    plural: services
+    singular: service
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Service is the Schema for the Services API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ServiceSpec defines the desired state of Service
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: ServiceParameters defines the desired state of Service
+                properties:
+                  creatorRequestID:
+                    description: A unique string that identifies the request and that
+                      allows failed CreateService requests to be retried without the
+                      risk of running the operation twice. CreatorRequestId can be
+                      any unique string (for example, a date/timestamp).
+                    type: string
+                  description:
+                    description: A description for the service.
+                    type: string
+                  dnsConfig:
+                    description: A complex type that contains information about the
+                      Amazon Route 53 records that you want Cloud Map to create when
+                      you register an instance.
+                    properties:
+                      dnsRecords:
+                        items:
+                          properties:
+                            tTL:
+                              format: int64
+                              type: integer
+                            type_:
+                              type: string
+                          type: object
+                        type: array
+                      namespaceID:
+                        type: string
+                      routingPolicy:
+                        type: string
+                    type: object
+                  healthCheckConfig:
+                    description: "Public DNS and HTTP namespaces only. A complex type
+                      that contains settings for an optional Route 53 health check.
+                      If you specify settings for a health check, Cloud Map associates
+                      the health check with all the Route 53 DNS records that you
+                      specify in DnsConfig. \n If you specify a health check configuration,
+                      you can specify either HealthCheckCustomConfig or HealthCheckConfig
+                      but not both. \n For information about the charges for health
+                      checks, see Cloud Map Pricing (http://aws.amazon.com/cloud-map/pricing/)."
+                    properties:
+                      failureThreshold:
+                        format: int64
+                        type: integer
+                      resourcePath:
+                        type: string
+                      type_:
+                        type: string
+                    type: object
+                  healthCheckCustomConfig:
+                    description: "A complex type that contains information about an
+                      optional custom health check. \n If you specify a health check
+                      configuration, you can specify either HealthCheckCustomConfig
+                      or HealthCheckConfig but not both. \n You can't add, update,
+                      or delete a HealthCheckCustomConfig configuration from an existing
+                      service."
+                    properties:
+                      failureThreshold:
+                        format: int64
+                        type: integer
+                    type: object
+                  name:
+                    description: "The name that you want to assign to the service.
+                      \n Do not include sensitive information in the name if the namespace
+                      is discoverable by public DNS queries. \n If you want Cloud
+                      Map to create an SRV record when you register an instance and
+                      you're using a system that requires a specific SRV format, such
+                      as HAProxy (http://www.haproxy.org/), specify the following
+                      for Name: \n * Start the name with an underscore (_), such as
+                      _exampleservice. \n * End the name with ._protocol, such as
+                      ._tcp. \n When you register an instance, Cloud Map creates an
+                      SRV record and assigns a name to the record by concatenating
+                      the service name and the namespace name (for example, \n _exampleservice._tcp.example.com).
+                      \n For services that are accessible by DNS queries, you can't
+                      create multiple services with names that differ only by case
+                      (such as EXAMPLE and example). Otherwise, these services have
+                      the same DNS name and can't be distinguished. However, if you
+                      use a namespace that's only accessible by API calls, then you
+                      can create services that with names that differ only by case."
+                    type: string
+                  namespaceID:
+                    description: The ID of the namespace that you want to use to create
+                      the service. The namespace ID must be specified, but it can
+                      be specified either here or in the DnsConfig object.
+                    type: string
+                  region:
+                    description: Region is which region the Service will be created.
+                    type: string
+                  serviceName:
+                    type: string
+                  serviceNameRef:
+                    description: ServiceNameRef is a reference to a service used to
+                      set the ServiceName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  serviceNameSelector:
+                    description: ServiceNameSelector selects references to service
+                      used to set the ServiceName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  tags:
+                    description: The tags to add to the service. Each tag consists
+                      of a key and an optional value that you define. Tags keys can
+                      be up to 128 characters in length, and tag values can be up
+                      to 256 characters in length.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  type_:
+                    description: If present, specifies that the service instances
+                      are only discoverable using the DiscoverInstances API operation.
+                      No DNS records is registered for the service instances. The
+                      only valid value is HTTP.
+                    type: string
+                required:
+                - name
+                - region
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: ServiceStatus defines the observed state of Service.
+            properties:
+              atProvider:
+                description: ServiceObservation defines the observed state of Service
+                properties:
+                  arn:
+                    description: The Amazon Resource Name (ARN) that Cloud Map assigns
+                      to the service when you create it.
+                    type: string
+                  createDate:
+                    description: The date and time that the service was created, in
+                      Unix format and Coordinated Universal Time (UTC). The value
+                      of CreateDate is accurate to milliseconds. For example, the
+                      value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087
+                      AM.
+                    format: date-time
+                    type: string
+                  id:
+                    description: The ID that Cloud Map assigned to the service when
+                      you created it.
+                    type: string
+                  instanceCount:
+                    description: The number of instances that are currently associated
+                      with the service. Instances that were previously associated
+                      with the service but that are deleted aren't included in the
+                      count. The count might not reflect pending registrations and
+                      deregistrations.
+                    format: int64
+                    type: integer
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
