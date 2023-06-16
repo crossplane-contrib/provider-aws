@@ -382,9 +382,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.EngineMode = nil
 	}
 	if resp.DBCluster.EngineVersion != nil {
-		cr.Spec.ForProvider.EngineVersion = resp.DBCluster.EngineVersion
+		cr.Status.AtProvider.EngineVersion = resp.DBCluster.EngineVersion
 	} else {
-		cr.Spec.ForProvider.EngineVersion = nil
+		cr.Status.AtProvider.EngineVersion = nil
 	}
 	if resp.DBCluster.GlobalWriteForwardingRequested != nil {
 		cr.Status.AtProvider.GlobalWriteForwardingRequested = resp.DBCluster.GlobalWriteForwardingRequested

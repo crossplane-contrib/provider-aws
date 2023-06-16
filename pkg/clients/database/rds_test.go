@@ -33,6 +33,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -342,6 +343,66 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 			want: false,
+		},
+		"EngineVersionUpgrade": {
+			args: args{
+				db: rdstypes.DBInstance{
+					EngineVersion: pointer.String("12.3"),
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							EngineVersion: pointer.String("12.7"),
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		"EngineVersionUpgradeMajorVersion": {
+			args: args{
+				db: rdstypes.DBInstance{
+					EngineVersion: pointer.String("12.3"),
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							EngineVersion: pointer.String("13.7"),
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		"EngineVersionMajorVersionOnly": {
+			args: args{
+				db: rdstypes.DBInstance{
+					EngineVersion: pointer.String("12.3"),
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							EngineVersion: pointer.String("12"),
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"EngineVersionDowngrade": {
+			args: args{
+				db: rdstypes.DBInstance{
+					EngineVersion: pointer.String("12.3"),
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							EngineVersion: pointer.String("12.1"),
+						},
+					},
+				},
+			},
+			want: true,
 		},
 	}
 

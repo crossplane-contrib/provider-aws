@@ -481,6 +481,9 @@ type RDSInstanceParameters struct {
 	// See Supported PostgreSQL Database Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions)
 	// in the Amazon RDS User Guide.
 	// +optional
+	//
+	// Note: Downgrades are not allowed by AWS and attempts to set a lower version
+	// will be ignored.
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// RestoreFrom specifies the details of the backup to restore when creating a new RDS instance. (If the RDS instance already exists, this property will be ignored.)
@@ -1165,6 +1168,9 @@ type RDSInstanceObservation struct {
 
 	// Endpoint specifies the connection endpoint.
 	Endpoint Endpoint `json:"endpoint,omitempty"`
+
+	// Indicates the database engine version.
+	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// EnhancedMonitoringResourceArn is the Amazon Resource Name (ARN) of the
 	// Amazon CloudWatch Logs log stream that receives the Enhanced Monitoring

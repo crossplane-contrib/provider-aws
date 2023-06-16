@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -377,20 +378,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
-	wantedVersion := aws.StringValue(cr.Spec.ForProvider.EngineVersion)
-	currentVersion := aws.StringValue(db.EngineVersion)
-
-	versionChanged := wantedVersion != "" && wantedVersion != currentVersion
-
-	if versionChanged && aws.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) {
-		wantedMaiorList := strings.Split(wantedVersion, ".")
-		wantedMaior := wantedMaiorList[0]
-		currentMaiorList := strings.Split(currentVersion, ".")
-		currentMaior := currentMaiorList[0]
-
-		versionChanged = wantedMaior != currentMaior
-
-	}
+	versionChanged := !isEngineVersionUpToDate(cr, out)
 
 	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
 
@@ -436,6 +424,22 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	log.Println(diff)
 
 	return false, nil
+}
+
+func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) bool {
+	// If EngineVersion is not set, AWS sets a default value,
+	// so we do not try to update in this case
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		if out.DBInstances[0].EngineVersion == nil {
+			return false
+		}
+
+		// Upgrade is only necessary if the spec version is higher.
+		// Downgrades are not possible in AWS.
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBInstances[0].EngineVersion)
+		return c <= 0
+	}
+	return true
 }
 
 func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBInstanceParameters) (*svcapitypes.DBInstanceParameters, error) {

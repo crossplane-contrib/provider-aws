@@ -206,7 +206,9 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							EngineVersion: nil,
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: nil,
+							},
 						},
 					},
 				},
@@ -227,7 +229,9 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							EngineVersion: nil,
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: nil,
+							},
 						},
 					},
 				},
@@ -248,7 +252,55 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							EngineVersion: ptr("12.3"),
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: ptr("12.3"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							EngineVersion: ptr("12.3"), // some AWS "default" value
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"IdenticalMajorVersionOnly": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: ptr("12"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							EngineVersion: ptr("12.3"), // some AWS "default" value
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"IdenticalAtDowngrade": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: ptr("12.1"),
+							},
 						},
 					},
 				},
@@ -269,7 +321,9 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							EngineVersion: ptr("13.0"),
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								EngineVersion: ptr("13"),
+							},
 						},
 					},
 				},

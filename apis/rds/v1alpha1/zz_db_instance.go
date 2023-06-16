@@ -508,57 +508,6 @@ type DBInstanceParameters struct {
 	//    * sqlserver-web
 	// +kubebuilder:validation:Required
 	Engine *string `json:"engine"`
-	// The version number of the database engine to use.
-	//
-	// For a list of valid engine versions, use the DescribeDBEngineVersions operation.
-	//
-	// The following are the database engines and links to information about the
-	// major and minor versions that are available with Amazon RDS. Not every database
-	// engine is available for every Amazon Web Services Region.
-	//
-	// Amazon Aurora
-	//
-	// Not applicable. The version number of the database engine to be used by the
-	// DB instance is managed by the DB cluster.
-	//
-	// Amazon RDS Custom for Oracle
-	//
-	// A custom engine version (CEV) that you have previously created. This setting
-	// is required for RDS Custom for Oracle. The CEV name has the following format:
-	// 19.customized_string. A valid CEV name is 19.my_cev1. For more information,
-	// see Creating an RDS Custom for Oracle DB instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-creating.html#custom-creating.create)
-	// in the Amazon RDS User Guide.
-	//
-	// Amazon RDS Custom for SQL Server
-	//
-	// See RDS Custom for SQL Server general requirements (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-reqs-limits-MS.html)
-	// in the Amazon RDS User Guide.
-	//
-	// MariaDB
-	//
-	// For information, see MariaDB on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MariaDB.html#MariaDB.Concepts.VersionMgmt)
-	// in the Amazon RDS User Guide.
-	//
-	// Microsoft SQL Server
-	//
-	// For information, see Microsoft SQL Server Versions on Amazon RDS (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport)
-	// in the Amazon RDS User Guide.
-	//
-	// MySQL
-	//
-	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
-	// in the Amazon RDS User Guide.
-	//
-	// Oracle
-	//
-	// For information, see Oracle Database Engine Release Notes (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.PatchComposition.html)
-	// in the Amazon RDS User Guide.
-	//
-	// PostgreSQL
-	//
-	// For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
-	// in the Amazon RDS User Guide.
-	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for the DB instance. For information about valid IOPS
 	// values, see Amazon RDS DB instance storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html)
@@ -1055,6 +1004,8 @@ type DBInstanceObservation struct {
 	//
 	// The endpoint might not be shown for instances whose status is creating.
 	Endpoint *Endpoint `json:"endpoint,omitempty"`
+	// Indicates the database engine version.
+	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The Amazon Resource Name (ARN) of the Amazon CloudWatch Logs log stream that
 	// receives the Enhanced Monitoring metrics data for the DB instance.
 	EnhancedMonitoringResourceARN *string `json:"enhancedMonitoringResourceARN,omitempty"`
