@@ -34,6 +34,8 @@ ignore:
     - ModifyDBClusterInput.MasterUserPassword
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
+    - CreateDBClusterInput.EngineVersion
+    - ModifyDBClusterInput.EngineVersion
     - DBCluster.PendingModifiedValues
     - DescribeDBInstancesInput.DBInstanceIndentifier
     - CreateDBInstanceInput.DBInstanceIdentifier
@@ -46,6 +48,8 @@ ignore:
     - CreateDBInstanceInput.DBSecurityGroups
     - ModifyDBInstanceInput.DBSecurityGroups
     - ModifyDBInstanceInput.DBSubnetGroupName # this is immutable
+    - CreateDBInstanceInput.EngineVersion
+    - ModifyDBInstanceInput.EngineVersion
     - CreateDBParameterGroupInput.DBParameterGroupName
     - CreateDBParameterGroupInput.DBParameterGroupFamily
     - DeleteDBParameterGroupInput.DBParameterGroupName

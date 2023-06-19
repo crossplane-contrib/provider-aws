@@ -48,10 +48,12 @@ import (
 )
 
 const (
-	errNotDBCluster            = "managed resource is not a DB Cluster custom resource"
-	errKubeUpdateFailed        = "cannot update DBCluster instance custom resource"
-	errGetPasswordSecretFailed = "cannot get password secret"
-	errSaveSecretFailed        = "failed to save generated password to Kubernetes secret"
+	errNotDBCluster             = "managed resource is not a DB Cluster custom resource"
+	errKubeUpdateFailed         = "cannot update DBCluster instance custom resource"
+	errGetPasswordSecretFailed  = "cannot get password secret"
+	errSaveSecretFailed         = "failed to save generated password to Kubernetes secret"
+	errRestore                  = "cannot restore DBCluster in AWS"
+	errUnknownRestoreFromSource = "unknown restoreFrom source"
 )
 
 // SetupDBCluster adds a controller that reconciles a DBCluster.
@@ -213,7 +215,7 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBCluster, resp *s
 	return upd, svcutils.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, resp.DBCluster.DBClusterArn)
 }
 
-func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error {
+func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { //nolint:gocyclo
 	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
 
 	pw, _, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
@@ -231,6 +233,28 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *s
 	}
 
 	obj.MasterUserPassword = awsclient.String(pw)
+	if cr.Spec.ForProvider.RestoreFrom != nil {
+		switch cr.Spec.ForProvider.RestoreFrom.Source {
+		case svcapitypes.RestoreSourceSnapshot:
+			input := generateRestoreDBClusterFromSnapshotInput(cr)
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		case svcapitypes.RestoreSourcePointInTime:
+			input := generateRestoreDBClusterToPointInTimeInput(cr)
+			input.DBClusterIdentifier = obj.DBClusterIdentifier
+			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
+
+			if _, err = e.client.RestoreDBClusterToPointInTimeWithContext(ctx, input); err != nil {
+				return errors.Wrap(err, errRestore)
+			}
+		default:
+			return errors.New(errUnknownRestoreFromSource)
+		}
+	}
 	return nil
 }
 
@@ -251,6 +275,89 @@ func (e *hooks) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 	cre.ConnectionDetails[xpv1.ResourceCredentialsSecretUserKey] = []byte(awsclient.StringValue(cr.Spec.ForProvider.MasterUsername))
 	// Tags are added during update
 	return cre, nil
+}
+
+func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { // nolint:gocyclo
+	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
+
+	if cr.Spec.ForProvider.AvailabilityZones != nil {
+		res.SetAvailabilityZones(cr.Spec.ForProvider.AvailabilityZones)
+	}
+
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+
+	if cr.Spec.ForProvider.Engine != nil {
+		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
+	}
+
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+	}
+
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+
+	if cr.Spec.ForProvider.RestoreFrom != nil && cr.Spec.ForProvider.RestoreFrom.Snapshot != nil {
+		res.SetSnapshotIdentifier(cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
+	}
+
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
+}
+
+func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput { // nolint:gocyclo
+	p := cr.Spec.ForProvider
+	res := &svcsdk.RestoreDBClusterToPointInTimeInput{
+		DBSubnetGroupName:           p.DBSubnetGroupName,
+		DeletionProtection:          p.DeletionProtection,
+		EnableCloudwatchLogsExports: p.EnableCloudwatchLogsExports,
+		KmsKeyId:                    p.KMSKeyID,
+		Port:                        p.Port,
+		UseLatestRestorableTime:     p.RestoreFrom.PointInTime.UseLatestRestorableTime,
+		VpcSecurityGroupIds:         p.VPCSecurityGroupIDs,
+	}
+	if p.RestoreFrom != nil {
+		if p.RestoreFrom.PointInTime != nil {
+			if p.RestoreFrom.PointInTime.RestoreTime != nil {
+				res.SetRestoreToTime(p.RestoreFrom.PointInTime.RestoreTime.Time)
+			}
+			res.RestoreType = p.RestoreFrom.PointInTime.RestoreType
+			res.SourceDBClusterIdentifier = &p.RestoreFrom.PointInTime.SourceDBClusterIdentifier
+		}
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, tag := range cr.Spec.ForProvider.Tags {
+			tags = append(tags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+
+		res.SetTags(tags)
+	}
+
+	return res
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterInput) (bool, error) {

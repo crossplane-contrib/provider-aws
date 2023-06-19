@@ -154,7 +154,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errPolicyVersion)
 	}
 
-	update, err := iam.IsPolicyUpToDate(cr.Spec.ForProvider, *versionRsp.PolicyVersion)
+	update, diff, err := iam.IsPolicyUpToDate(cr.Spec.ForProvider, *versionRsp.PolicyVersion)
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDate)
@@ -169,6 +169,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: update && areRolesUpdated,
+		Diff:             diff,
 	}, nil
 }
 

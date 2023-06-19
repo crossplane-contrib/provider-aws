@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -371,7 +372,7 @@ func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte
 			stscreds.NewWebIdentityRoleProvider(
 				stsclient,
 				StringValue(roleArn),
-				stscreds.IdentityTokenFile("/var/run/secrets/eks.amazonaws.com/serviceaccount/token"),
+				stscreds.IdentityTokenFile(getWebidentityTokenFilePath()),
 				webIdentityRoleOptions,
 			)),
 		),
@@ -380,6 +381,15 @@ func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte
 		return nil, errors.Wrap(err, "failed to load assumed role AWS config")
 	}
 	return &cnf, err
+}
+
+const webIdentityTokenFileDefaultPath = "/var/run/secrets/eks.amazonaws.com/serviceaccount/token"
+
+func getWebidentityTokenFilePath() string {
+	if path := os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"); path != "" {
+		return path
+	}
+	return webIdentityTokenFileDefaultPath
 }
 
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.

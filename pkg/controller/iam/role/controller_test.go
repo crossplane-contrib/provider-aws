@@ -44,6 +44,7 @@ var (
 	// an arbitrary managed resource
 	unexpectedItem resource.Managed
 	roleName       = "some arbitrary name"
+	arn            = "some arn"
 	description    = "some description"
 	policy         = `{
 		"Version": "2012-10-17",
@@ -74,6 +75,10 @@ func withConditions(c ...xpv1.Condition) roleModifier {
 
 func withRoleName(s *string) roleModifier {
 	return func(r *v1beta1.Role) { meta.SetExternalName(r, *s) }
+}
+
+func withArn(s string) roleModifier {
+	return func(r *v1beta1.Role) { r.Status.AtProvider.ARN = s }
 }
 
 func withPolicy() roleModifier {
@@ -136,7 +141,9 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
 						return &awsiam.GetRoleOutput{
-							Role: &awsiamtypes.Role{},
+							Role: &awsiamtypes.Role{
+								Arn: awsclient.String(arn),
+							},
 						}, nil
 					},
 				},
@@ -145,10 +152,14 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: role(
 					withRoleName(&roleName),
+					withArn(arn),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						"arn": []byte(arn),
+					},
 				},
 			},
 		},

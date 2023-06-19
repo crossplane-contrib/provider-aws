@@ -277,56 +277,6 @@ type DBClusterParameters struct {
 	//
 	// Valid for: Aurora DB clusters only
 	EngineMode *string `json:"engineMode,omitempty"`
-	// The version number of the database engine to use.
-	//
-	// To list all of the available engine versions for MySQL 5.6-compatible Aurora,
-	// use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for MySQL 5.7-compatible and
-	// MySQL 8.0-compatible Aurora, use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for Aurora PostgreSQL, use the
-	// following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora-postgresql --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for RDS for MySQL, use the following
-	// command:
-	//
-	// aws rds describe-db-engine-versions --engine mysql --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for RDS for PostgreSQL, use
-	// the following command:
-	//
-	// aws rds describe-db-engine-versions --engine postgres --query "DBEngineVersions[].EngineVersion"
-	//
-	// Aurora MySQL
-	//
-	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
-	// in the Amazon Aurora User Guide.
-	//
-	// Aurora PostgreSQL
-	//
-	// For information, see Amazon Aurora PostgreSQL releases and engine versions
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.20180305.html)
-	// in the Amazon Aurora User Guide.
-	//
-	// MySQL
-	//
-	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
-	// in the Amazon RDS User Guide.
-	//
-	// PostgreSQL
-	//
-	// For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
-	// in the Amazon RDS User Guide.
-	//
-	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
-	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The global cluster ID of an Aurora cluster that becomes the primary cluster
 	// in the new global database cluster.
 	//
@@ -754,6 +704,8 @@ type DBClusterObservation struct {
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
 	// Specifies the connection endpoint for the primary instance of the DB cluster.
 	Endpoint *string `json:"endpoint,omitempty"`
+	// Indicates the database engine version.
+	EngineVersion *string `json:"engineVersion,omitempty"`
 	// Specifies whether you have requested to enable write forwarding for a secondary
 	// cluster in an Aurora global database. Because write forwarding takes time
 	// to enable, check the value of GlobalWriteForwardingStatus to confirm that

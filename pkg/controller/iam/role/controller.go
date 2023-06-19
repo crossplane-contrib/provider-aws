@@ -137,7 +137,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
-		Diff:             diff,
+		ConnectionDetails: managed.ConnectionDetails{
+			"arn": []byte(cr.Status.AtProvider.ARN),
+		},
+		Diff: diff,
 	}, nil
 }
 
