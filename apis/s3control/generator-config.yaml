@@ -1,0 +1,22 @@
+ignore:
+  resource_names:
+    - AccessPointForObjectLambda
+    - Bucket
+    - Job
+    - MultiRegionAccessPoint
+  field_paths:
+    - CreateAccessPointInput.Name
+
+resources:
+  CreateAccessPointInput:
+    fields:
+      Region:
+        is_immutable: true
+  AccessPoint:
+    fields:
+      Region:
+        is_immutable: true
+    exceptions:
+      errors:
+        404:
+          code: NoSuchAccessPoint
