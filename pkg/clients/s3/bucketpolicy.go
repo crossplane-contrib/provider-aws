@@ -18,14 +18,25 @@ package s3
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go"
+	"github.com/google/go-cmp/cmp"
+	errors2 "github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
+)
+
+const (
+	policyFormatFailed  = "cannot format policy"
+	policyParseSpec     = "cannot parse spec policy"
+	policyParseExternal = "cannot parse external policy"
 )
 
 // BucketPolicyClient is the external client used for S3BucketPolicy Custom Resource
@@ -50,6 +61,42 @@ func IsErrorPolicyNotFound(err error) bool {
 func IsErrorBucketNotFound(err error) bool {
 	var awsErr smithy.APIError
 	return errors.As(err, &awsErr) && awsErr.ErrorCode() == "NoSuchBucket"
+}
+
+// DiffParsedPolicies compares two parsed policy strings, `spec` and `external`,
+// and returns the differences as a string.
+// It formats and parses the policies, handling any errors
+func DiffParsedPolicies(spec *common.BucketPolicyBody, external *string) (string, error) {
+	specRaw, err := FormatPolicy(spec)
+	if err != nil {
+		return "", errors2.Wrap(err, policyFormatFailed)
+	}
+	specParsed, err := policyutils.ParsePolicyString(awsclient.StringValue(specRaw))
+	if err != nil {
+		return "", errors2.Wrap(err, policyParseSpec)
+	}
+	externalParsed, err := policyutils.ParsePolicyString(awsclient.StringValue(external))
+	if err != nil {
+		return "", errors2.Wrap(err, policyParseExternal)
+	}
+	return cmp.Diff(specParsed, externalParsed), nil
+}
+
+// FormatPolicy parses and formats the BucketPolicyBody struct
+func FormatPolicy(policy *common.BucketPolicyBody) (*string, error) {
+	if policy == nil {
+		return nil, nil
+	}
+	body, err := Serialize(policy.DeepCopy())
+	if err != nil {
+		return nil, err
+	}
+	byteData, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	str := string(byteData)
+	return &str, nil
 }
 
 // Serialize is the custom marshaller for the BucketPolicyParameters
