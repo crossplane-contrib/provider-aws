@@ -18,6 +18,7 @@ package policy
 
 import (
 	"context"
+	"net/url"
 
 	"testing"
 
@@ -61,7 +62,8 @@ var (
 		  }
 		]
 	  }`
-	boolFalse = false
+	documentURLEscaped = url.QueryEscape(document)
+	boolFalse          = false
 
 	errBoom = errors.New("boom")
 
@@ -188,6 +190,39 @@ func TestObserve(t *testing.T) {
 						return &awsiam.GetPolicyVersionOutput{
 							PolicyVersion: &awsiamtypes.PolicyVersion{
 								Document: &document,
+							},
+						}, nil
+					},
+				},
+				cr: policy(withSpec(v1beta1.PolicyParameters{
+					Document: document,
+					Name:     name,
+				}), withExternalName(policyArn)),
+			},
+			want: want{
+				cr: policy(withSpec(v1beta1.PolicyParameters{
+					Document: document,
+					Name:     name,
+				}), withExternalName(policyArn),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"SuccessfulURLEscapedPolicy": {
+			args: args{
+				iam: &fake.MockPolicyClient{
+					MockGetPolicy: func(ctx context.Context, input *awsiam.GetPolicyInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyOutput, error) {
+						return &awsiam.GetPolicyOutput{
+							Policy: &awsiamtypes.Policy{},
+						}, nil
+					},
+					MockGetPolicyVersion: func(ctx context.Context, input *awsiam.GetPolicyVersionInput, opts []func(*awsiam.Options)) (*awsiam.GetPolicyVersionOutput, error) {
+						return &awsiam.GetPolicyVersionOutput{
+							PolicyVersion: &awsiamtypes.PolicyVersion{
+								Document: &documentURLEscaped,
 							},
 						}, nil
 					},
