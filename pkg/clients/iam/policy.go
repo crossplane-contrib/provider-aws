@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 
@@ -49,7 +50,11 @@ func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion
 		return false, "", nil
 	}
 
-	externpolicy, err := policyutils.ParsePolicyString(externalPolicyRaw)
+	unescapedPolicy, err := url.QueryUnescape(aws.ToString(policy.Document))
+	if err != nil {
+		return false, "", err
+	}
+	externpolicy, err := policyutils.ParsePolicyString(unescapedPolicy)
 	if err != nil {
 		return false, "", err
 	}
