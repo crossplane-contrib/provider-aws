@@ -29,6 +29,8 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/google/go-cmp/cmp"
+
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (
@@ -92,6 +94,12 @@ func withAttrDisplayName(s *string) topicAttrModifier {
 func withAttrFifoTopic(b *bool) topicAttrModifier {
 	return func(attr *map[string]string) {
 		(*attr)[string(TopicFifoTopic)] = strconv.FormatBool(*b)
+	}
+}
+
+func withAttrPolicy(s *string) topicAttrModifier {
+	return func(attr *map[string]string) {
+		(*attr)[string(TopicPolicy)] = *s
 	}
 }
 
@@ -190,7 +198,6 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 }
 
 func TestGetChangedAttributes(t *testing.T) {
-
 	type args struct {
 		p    v1beta1.TopicParameters
 		attr *map[string]string
@@ -330,11 +337,57 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 			},
 			want: false,
 		},
+		"NoUpdateExistsWithshuffledPolicy": {
+			args: args{
+				attr: topicAttributes(
+					withAttrPolicy(awsclients.String(`{
+						"Version": "2012-10-17",
+						"Statement": [
+							{
+								"Sid": "PublishToTopic",
+								"Effect": "Allow",
+								"Principal": {
+									"AWS": "arn:aws:iam::*****:role/my-role"
+								},
+								"Action": [
+									"SNS:Publish",
+									"SNS:GetTopicAttributes"
+								],
+								"Resource": "arn:aws:sns:eu-west-1:******:my-queue"
+							}
+						]
+					}`)),
+				),
+				p: v1beta1.TopicParameters{
+					Policy: awsclients.String(`{
+						"Statement": [
+							{
+								"Sid": "PublishToTopic",
+								"Effect": "Allow",
+								"Principal": {
+									"AWS": "arn:aws:iam::*****:role/my-role"
+								},
+								"Action": [
+									"SNS:Publish",
+									"SNS:GetTopicAttributes"
+								],
+								"Resource": "arn:aws:sns:eu-west-1:******:my-queue"
+							}
+						],
+						"Version": "2012-10-17"
+					}`),
+				},
+			},
+			want: false,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := IsSNSTopicUpToDate(tc.args.p, *tc.args.attr)
+			got, err := IsSNSTopicUpToDate(tc.args.p, *tc.args.attr)
+			if err != nil {
+				t.Error(err)
+			}
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Topic : -want, +got:\n%s", diff)
 			}
