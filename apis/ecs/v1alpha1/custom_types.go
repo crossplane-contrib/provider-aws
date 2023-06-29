@@ -96,6 +96,10 @@ type CustomServiceParameters struct {
 	ClusterRef      *xpv1.Reference `json:"clusterRef,omitempty"`
 	ClusterSelector *xpv1.Selector  `json:"clusterSelector,omitempty"`
 
+	// Force Service to be deleted, even with task Running or Pending
+	// +optional
+	ForceDeletion bool `json:"forceDeletion,omitempty"`
+
 	// A load balancer object representing the load balancers to use with your service.
 	// For more information, see Service Load Balancing (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html)
 	// in the Amazon Elastic Container Service Developer Guide.
