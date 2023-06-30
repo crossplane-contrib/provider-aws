@@ -216,7 +216,10 @@ func lateInitialize(in *svcapitypes.AutoScalingGroupParameters, asg *svcsdk.Desc
 	in.CapacityRebalance = awsclients.LateInitializeBoolPtr(in.CapacityRebalance, obs.CapacityRebalance)
 	in.DefaultCooldown = awsclients.LateInitializeInt64Ptr(in.DefaultCooldown, obs.DefaultCooldown)
 	in.DefaultInstanceWarmup = awsclients.LateInitializeInt64Ptr(in.DefaultInstanceWarmup, obs.DefaultInstanceWarmup)
-	in.DesiredCapacity = awsclients.LateInitializeInt64Ptr(in.DesiredCapacity, obs.DesiredCapacity)
+	// if desiredCapacity is not set, don't update the value
+	if in.DesiredCapacity != nil {
+		in.DesiredCapacity = awsclients.LateInitializeInt64Ptr(in.DesiredCapacity, obs.DesiredCapacity)
+	}
 	in.DesiredCapacityType = awsclients.LateInitializeStringPtr(in.DesiredCapacityType, obs.DesiredCapacityType)
 	in.HealthCheckGracePeriod = awsclients.LateInitializeInt64Ptr(in.HealthCheckGracePeriod, obs.HealthCheckGracePeriod)
 	in.HealthCheckType = awsclients.LateInitializeStringPtr(in.HealthCheckType, obs.HealthCheckType)
