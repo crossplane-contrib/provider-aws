@@ -5,5 +5,10 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
+    tags:
+      - key: "customKey"
+        value: "customValue"
+      - key: "Name" # special tagKey "Name" to name filesystem in AWS
+        value: "DisplayNameInAWS"
   providerConfigRef:
     name: example
