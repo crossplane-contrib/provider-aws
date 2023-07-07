@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"github.com/google/go-cmp/cmp"
 
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 // PolicyClient is the external client used for Policy Custom Resource
@@ -44,29 +44,25 @@ func NewSTSClient(cfg aws.Config) STSClient {
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
-	// The AWS API returns Policy Document as an escaped string.
-	// Due to differences in the methods to escape a string, the comparison result between
-	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).
-	// Escaping with a common method and then comparing is a safe way.
-
-	if *policy.Document == "" || in.Document == "" {
-		return false, nil
+func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion) (bool, string, error) {
+	externalPolicyRaw := awsclients.StringValue(policy.Document)
+	if externalPolicyRaw == "" || in.Document == "" {
+		return false, "", nil
 	}
 
 	unescapedPolicy, err := url.QueryUnescape(aws.ToString(policy.Document))
 	if err != nil {
-		return false, nil // nolint:nilerr
+		return false, "", err
+	}
+	externpolicy, err := policyutils.ParsePolicyString(unescapedPolicy)
+	if err != nil {
+		return false, "", err
+	}
+	specPolicy, err := policyutils.ParsePolicyString(in.Document)
+	if err != nil {
+		return false, "", err
 	}
 
-	compactPolicy, err := awsclients.CompactAndEscapeJSON(unescapedPolicy)
-	if err != nil {
-		return false, err
-	}
-	compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(in.Document)
-	if err != nil {
-		return false, err
-	}
-
-	return cmp.Equal(compactPolicy, compactSpecPolicy), nil
+	areEqual, diff := policyutils.ArePoliciesEqal(&specPolicy, &externpolicy)
+	return areEqual, diff, nil
 }

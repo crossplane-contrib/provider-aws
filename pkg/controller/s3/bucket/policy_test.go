@@ -25,6 +25,7 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/pointer"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
@@ -69,12 +70,134 @@ func TestPolicyObserve(t *testing.T) {
 				Principal: &common.BucketPrincipal{
 					AllowAnon: true,
 				},
-				Action:   []string{"s3:GetBucket"},
-				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
+				Action:   []string{"s3:GetObject"},
+				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com/*"},
 			},
 		},
 	}
 
+	var testPolicyIssue1771 = &common.BucketPolicyBody{
+		Version: "2012-10-17",
+		Statements: []common.BucketPolicyStatement{
+			{
+				Action: []string{
+					"s3:PutObject",
+				},
+				Condition: []common.Condition{
+					{
+						OperatorKey: "StringNotEquals",
+						Conditions: []common.ConditionPair{
+							{
+								ConditionKey: "s3:x-amz-server-side-encryption",
+								ConditionListValue: []string{
+									"AES256",
+									"aws:kms",
+								},
+							},
+						},
+					},
+				},
+				Effect: "Deny",
+				Principal: &common.BucketPrincipal{
+					AllowAnon: true,
+				},
+				Resource: []string{
+					"arn:aws:s3:::test-bucket-xxxx/*",
+				},
+				SID: awsclient.String("DenyIncorrectEncryptionHeader"),
+			},
+			{
+				Action: []string{
+					"s3:PutObject",
+				},
+				Condition: []common.Condition{
+					{
+						OperatorKey: "Null",
+						Conditions: []common.ConditionPair{
+							{
+								ConditionKey:          "s3:x-amz-server-side-encryption",
+								ConditionBooleanValue: awsclient.Bool(true),
+							},
+						},
+					},
+				},
+				Effect: "Deny",
+				Principal: &common.BucketPrincipal{
+					AllowAnon: true,
+				},
+				Resource: []string{
+					"arn:aws:s3:::test-bucket-xxxx/*",
+				},
+				SID: awsclient.String("DenyUnEncryptedObjectUploads"),
+			},
+			{
+				Action: []string{
+					"s3:GetBucketLocation",
+					"s3:GetBucketVersioning",
+					"s3:GetLifecycleConfiguration",
+					"s3:GetObject",
+					"s3:GetObjectAcl",
+					"s3:GetObjectVersion",
+					"s3:GetObjectTagging",
+					"s3:GetObjectRetention",
+					"s3:PutObject",
+					"s3:PutObjectAcl",
+					"s3:DeleteObject",
+					"s3:ListBucket",
+					"s3:ListBucketVersions",
+				},
+				Condition: []common.Condition{
+					{
+						OperatorKey: "StringEquals",
+						Conditions: []common.ConditionPair{
+							{
+								ConditionKey:         "aws:PrincipalAccount",
+								ConditionStringValue: awsclient.String("123456789012"),
+							},
+						},
+					},
+				},
+				Effect: "Allow",
+				Principal: &common.BucketPrincipal{
+					AllowAnon: true,
+				},
+				Resource: []string{
+					"arn:aws:s3:::test-bucket-xxxx",
+					"arn:aws:s3:::test-bucket-xxxx/*",
+				},
+				SID: awsclient.String("AllowTenantReadWrite"),
+			},
+			{
+				Action: []string{
+					"s3:*",
+				},
+				Condition: []common.Condition{
+					{
+						OperatorKey: "Bool",
+						Conditions: []common.ConditionPair{
+							{
+								ConditionKey:          "aws:SecureTransport",
+								ConditionBooleanValue: pointer.Bool(false),
+							},
+						},
+					},
+				},
+				Effect: "Deny",
+				Principal: &common.BucketPrincipal{
+					AllowAnon: true,
+				},
+				Resource: []string{
+					"arn:aws:s3:::test-bucket-xxxx",
+					"arn:aws:s3:::test-bucket-xxxx/*",
+				},
+				SID: awsclient.String("AllowSSLRequestsOnly"),
+			},
+		},
+	}
+
+	testPolicyIssue1771External := "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"DenyIncorrectEncryptionHeader\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::test-bucket-xxxx/*\",\"Condition\":{\"StringNotEquals\":{\"s3:x-amz-server-side-encryption\":[\"AES256\",\"aws:kms\"]}}},{\"Sid\":\"DenyUnEncryptedObjectUploads\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::test-bucket-xxxx/*\",\"Condition\":{\"Null\":{\"s3:x-amz-server-side-encryption\":\"true\"}}},{\"Sid\":\"AllowTenantReadWrite\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":[\"s3:GetBucketLocation\",\"s3:GetBucketVersioning\",\"s3:GetLifecycleConfiguration\",\"s3:GetObject\",\"s3:GetObjectAcl\",\"s3:GetObjectVersion\",\"s3:GetObjectTagging\",\"s3:GetObjectRetention\",\"s3:PutObject\",\"s3:PutObjectAcl\",\"s3:DeleteObject\",\"s3:ListBucket\",\"s3:ListBucketVersions\"],\"Resource\":[\"arn:aws:s3:::test-bucket-xxxx\",\"arn:aws:s3:::test-bucket-xxxx/*\"],\"Condition\":{\"StringEquals\":{\"aws:PrincipalAccount\":\"123456789012\"}}},{\"Sid\":\"AllowSSLRequestsOnly\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:*\",\"Resource\":[\"arn:aws:s3:::test-bucket-xxxx\",\"arn:aws:s3:::test-bucket-xxxx/*\"],\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}}]}"
+
+	testPolicyRawShuffled := "{\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:ListBucket\",\"Principal\":\"*\",\"Resource\":\"arn:aws:s3:::test.s3.crossplane.com\"}],\"Version\":\"2012-10-17\"}"
 	testPolicyRaw := makeRawPolicy(testPolicy)
 	testPolicyOtherRaw := makeRawPolicy(testPolicyOther)
 
@@ -196,6 +319,41 @@ func TestPolicyObserve(t *testing.T) {
 			want: want{
 				status: NeedsDeletion,
 				err:    nil,
+			},
+		},
+		"NoUpdateExistsWithshuffledPolicy": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithPolicy(testPolicy)),
+				cl: NewPolicyClient(fake.MockBucketClient{
+					MockBucketPolicyClient: fake.MockBucketPolicyClient{
+						MockGetBucketPolicy: func(ctx context.Context, input *s3.GetBucketPolicyInput, opts []func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+							return &s3.GetBucketPolicyOutput{
+								Policy: &testPolicyRawShuffled,
+							}, nil
+						},
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+				err:    nil,
+			},
+		},
+		"TestIssue1771Updated": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithPolicy(testPolicyIssue1771)),
+				cl: NewPolicyClient(fake.MockBucketClient{
+					MockBucketPolicyClient: fake.MockBucketPolicyClient{
+						MockGetBucketPolicy: func(ctx context.Context, input *s3.GetBucketPolicyInput, opts []func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+							return &s3.GetBucketPolicyOutput{
+								Policy: &testPolicyIssue1771External,
+							}, nil
+						},
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
 			},
 		},
 	}

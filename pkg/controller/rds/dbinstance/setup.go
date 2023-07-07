@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -295,6 +296,8 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
 	in.LicenseModel = aws.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
 	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+	in.MaxAllocatedStorage = aws.LateInitializeInt64Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
+	in.StorageThroughput = aws.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
 
 	if aws.Int64Value(db.MonitoringInterval) > 0 {
 		in.MonitoringInterval = aws.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
@@ -355,7 +358,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	// This could be matured a bit more for specific statuses, such as not allowing storage changes
 	// when the status is "storage-optimization"
 	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
-	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" {
+	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" || status == "deleting" {
 		return true, nil
 	}
 
@@ -375,20 +378,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return false, err
 	}
 
-	wantedVersion := aws.StringValue(cr.Spec.ForProvider.EngineVersion)
-	currentVersion := aws.StringValue(db.EngineVersion)
-
-	versionChanged := wantedVersion != "" && wantedVersion != currentVersion
-
-	if versionChanged && aws.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) {
-		wantedMaiorList := strings.Split(wantedVersion, ".")
-		wantedMaior := wantedMaiorList[0]
-		currentMaiorList := strings.Split(currentVersion, ".")
-		currentMaior := currentMaiorList[0]
-
-		versionChanged = wantedMaior != currentMaior
-
-	}
+	versionChanged := !isEngineVersionUpToDate(cr, out)
 
 	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
 
@@ -410,6 +400,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "RestoreFrom"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "VPCSecurityGroupIDs"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged {
@@ -433,6 +424,22 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	log.Println(diff)
 
 	return false, nil
+}
+
+func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) bool {
+	// If EngineVersion is not set, AWS sets a default value,
+	// so we do not try to update in this case
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		if out.DBInstances[0].EngineVersion == nil {
+			return false
+		}
+
+		// Upgrade is only necessary if the spec version is higher.
+		// Downgrades are not possible in AWS.
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBInstances[0].EngineVersion)
+		return c <= 0
+	}
+	return true
 }
 
 func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBInstanceParameters) (*svcapitypes.DBInstanceParameters, error) {

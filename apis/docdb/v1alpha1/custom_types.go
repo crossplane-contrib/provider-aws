@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // RDS instance states.
@@ -156,6 +157,81 @@ type CustomDBClusterParameters struct {
 	VPCSecurityGroupIDsRefs []xpv1.Reference `json:"vpcSecurityGroupIDsRefs,omitempty"`
 	// TODO(haarchri): when resource is bumped to beta we will convert this field to vpcSecurityGroupIdSelector
 	VPCSecurityGroupIDsSelector *xpv1.Selector `json:"vpcSecurityGroupIDsSelector,omitempty"`
+
+	// RestoreFrom specifies the details of the backup to restore when creating a new DBCluster.
+	// +optional
+	RestoreFrom *RestoreDBClusterBackupConfiguration `json:"restoreFrom,omitempty"`
+}
+
+// RestoreSnapshotConfiguration defines the details of the snapshot to restore from.
+type RestoreSnapshotConfiguration struct {
+	// SnapshotIdentifier is the identifier of the snapshot to restore.
+	SnapshotIdentifier string `json:"snapshotIdentifier"`
+}
+
+// RestorePointInTimeConfiguration defines the details of the time to restore from
+type RestorePointInTimeConfiguration struct {
+	// RestoreTime is the date and time (UTC) to restore from.
+	// Must be before the latest restorable time for the DB instance.
+	// Can't be specified if the useLatestRestorableTime parameter is enabled.
+	// Example: 2011-09-07T23:45:00Z
+	// +optional
+	RestoreTime *metav1.Time `json:"restoreTime,omitempty"`
+
+	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
+	// Can't be specified if the restoreTime parameter is provided.
+	// +optional
+	UseLatestRestorableTime *bool `json:"useLatestRestorableTime,omitempty"`
+
+	// SourceDBClusterIdentifier specifies the identifier of the source DB cluster from which to restore. Constraints:
+	// Must match the identifier of an existing DB instance.
+	// +optional
+	SourceDBClusterIdentifier string `json:"sourceDBClusterIdentifier"`
+
+	// The type of restore to be performed. You can specify one of the following
+	// values:
+	//
+	//    * full-copy - The new DB cluster is restored as a full copy of the source
+	//    DB cluster.
+	//
+	//    * copy-on-write - The new DB cluster is restored as a clone of the source
+	//    DB cluster.
+	//
+	// Constraints: You can't specify copy-on-write if the engine version of the
+	// source DB cluster is earlier than 1.11.
+	//
+	// If you don't specify a RestoreType value, then the new DB cluster is restored
+	// as a full copy of the source DB cluster.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
+	// +optional
+	// +kubebuilder:validation:Enum=full-copy;copy-on-write
+	RestoreType *string `json:"restoreType,omitempty"`
+}
+
+// RestoreSource specifies the data source for a DocumentDB restore.
+type RestoreSource string
+
+// RestoreSource values
+const (
+	RestoreSourceSnapshot    = "Snapshot"
+	RestoreSourcePointInTime = "PointInTime"
+)
+
+// RestoreDBClusterBackupConfiguration defines the backup to restore a new DBCluster from.
+type RestoreDBClusterBackupConfiguration struct {
+	// Snapshot specifies the details of the snapshot to restore from.
+	// +optional
+	Snapshot *RestoreSnapshotConfiguration `json:"snapshot,omitempty"`
+
+	// PointInTime specifies the details of the point in time restore.
+	// +optional
+	PointInTime *RestorePointInTimeConfiguration `json:"pointInTime,omitempty"`
+
+	// Source is the type of the backup to restore when creating a new  DBCluster or DBInstance.
+	// Snapshot and PointInTime are supported.
+	// +kubebuilder:validation:Enum=Snapshot;PointInTime
+	Source RestoreSource `json:"source"`
 }
 
 // CustomParameter are custom parameters for the Parameter

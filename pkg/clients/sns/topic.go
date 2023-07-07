@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
@@ -152,18 +153,46 @@ func GenerateTopicObservation(attr map[string]string) v1beta1.TopicObservation {
 }
 
 // IsSNSTopicUpToDate checks if object is up to date
-func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) bool {
+func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) (bool, error) {
 	fifoTopic, _ := strconv.ParseBool(attr[string(TopicFifoTopic)])
+
+	policyChanged, err := IsSNSPolicyChanged(p, attr)
+	if err != nil {
+		return false, err
+	}
 
 	return aws.ToString(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
 		aws.ToString(p.DisplayName) == attr[string(TopicDisplayName)] &&
 		aws.ToString(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
 		aws.ToBool(p.FifoTopic) == fifoTopic &&
-		aws.ToString(p.Policy) == attr[string(TopicPolicy)]
+		!policyChanged, nil
+}
+
+// IsSNSPolicyChanged determines whether a SNS topic policy needs to be updated
+func IsSNSPolicyChanged(p v1beta1.TopicParameters, attr map[string]string) (bool, error) {
+	currPolicyStr := attr[string(TopicPolicy)]
+	specPolicyStr := awsclients.StringValue(p.Policy)
+
+	if currPolicyStr == specPolicyStr {
+		return false, nil
+	}
+
+	currPolicy, err := policyutils.ParsePolicyString(attr[string(TopicPolicy)])
+	if err != nil {
+		return false, err
+	}
+
+	specPolicy, err := policyutils.ParsePolicyString(awsclients.StringValue(p.Policy))
+	if err != nil {
+		return false, err
+	}
+
+	equalPolicies, _ := policyutils.ArePoliciesEqal(&currPolicy, &specPolicy)
+
+	return equalPolicies, nil
 }
 
 func getTopicAttributes(p v1beta1.TopicParameters) map[string]string {
-
 	topicAttr := make(map[string]string)
 
 	topicAttr[string(TopicDeliveryPolicy)] = aws.ToString(p.DeliveryPolicy)

@@ -180,6 +180,60 @@ type CustomDBClusterParameters struct {
 	// +optional
 	AutogeneratePassword bool `json:"autogeneratePassword,omitempty"`
 
+	// The version number of the database engine to use.
+	//
+	// To list all of the available engine versions for MySQL 5.6-compatible Aurora,
+	// use the following command:
+	//
+	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
+	//
+	// To list all of the available engine versions for MySQL 5.7-compatible and
+	// MySQL 8.0-compatible Aurora, use the following command:
+	//
+	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+	//
+	// To list all of the available engine versions for Aurora PostgreSQL, use the
+	// following command:
+	//
+	// aws rds describe-db-engine-versions --engine aurora-postgresql --query "DBEngineVersions[].EngineVersion"
+	//
+	// To list all of the available engine versions for RDS for MySQL, use the following
+	// command:
+	//
+	// aws rds describe-db-engine-versions --engine mysql --query "DBEngineVersions[].EngineVersion"
+	//
+	// To list all of the available engine versions for RDS for PostgreSQL, use
+	// the following command:
+	//
+	// aws rds describe-db-engine-versions --engine postgres --query "DBEngineVersions[].EngineVersion"
+	//
+	// Aurora MySQL
+	//
+	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+	// in the Amazon Aurora User Guide.
+	//
+	// Aurora PostgreSQL
+	//
+	// For information, see Amazon Aurora PostgreSQL releases and engine versions
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.20180305.html)
+	// in the Amazon Aurora User Guide.
+	//
+	// MySQL
+	//
+	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+	// in the Amazon RDS User Guide.
+	//
+	// PostgreSQL
+	//
+	// For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
+	// in the Amazon RDS User Guide.
+	//
+	// Note: Downgrades are not allowed by AWS and attempts to set a lower version
+	// will be ignored.
+	//
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
 	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
 	// DomainIAMRoleName.
 	// +optional
@@ -201,8 +255,14 @@ type CustomDBClusterParameters struct {
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except "/", """, or "@".
 	//
-	// Constraints: Must contain from 8 to 41 characters. Required.
-	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef"`
+	// This parameter will be required in the following scenarios:
+	// - The first cluster for a global Aurora cluster
+	// - Any cluster as long as it doesn't belong to a global Aurora cluster
+	//
+	// This parameter is required for creation of a primary cluster. However, it is not required when attaching a secondary regional cluster to an existing global cluster.
+	//
+	// Constraints: Must contain from 8 to 41 characters.
+	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef,omitempty"`
 
 	// A list of VPC security groups that the DB cluster will belong to.
 	//
@@ -500,6 +560,61 @@ type CustomDBInstanceParameters struct {
 	// +optional
 	// +immutable
 	DomainIAMRoleNameSelector *xpv1.Selector `json:"domainIAMRoleNameSelector,omitempty"`
+
+	// The version number of the database engine to use.
+	//
+	// For a list of valid engine versions, use the DescribeDBEngineVersions operation.
+	//
+	// The following are the database engines and links to information about the
+	// major and minor versions that are available with Amazon RDS. Not every database
+	// engine is available for every Amazon Web Services Region.
+	//
+	// Amazon Aurora
+	//
+	// Not applicable. The version number of the database engine to be used by the
+	// DB instance is managed by the DB cluster.
+	//
+	// Amazon RDS Custom for Oracle
+	//
+	// A custom engine version (CEV) that you have previously created. This setting
+	// is required for RDS Custom for Oracle. The CEV name has the following format:
+	// 19.customized_string. A valid CEV name is 19.my_cev1. For more information,
+	// see Creating an RDS Custom for Oracle DB instance (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-creating.html#custom-creating.create)
+	// in the Amazon RDS User Guide.
+	//
+	// Amazon RDS Custom for SQL Server
+	//
+	// See RDS Custom for SQL Server general requirements (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-reqs-limits-MS.html)
+	// in the Amazon RDS User Guide.
+	//
+	// MariaDB
+	//
+	// For information, see MariaDB on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MariaDB.html#MariaDB.Concepts.VersionMgmt)
+	// in the Amazon RDS User Guide.
+	//
+	// Microsoft SQL Server
+	//
+	// For information, see Microsoft SQL Server Versions on Amazon RDS (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport)
+	// in the Amazon RDS User Guide.
+	//
+	// MySQL
+	//
+	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+	// in the Amazon RDS User Guide.
+	//
+	// Oracle
+	//
+	// For information, see Oracle Database Engine Release Notes (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.PatchComposition.html)
+	// in the Amazon RDS User Guide.
+	//
+	// PostgreSQL
+	//
+	// For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
+	// in the Amazon RDS User Guide.
+	//
+	// Note: Downgrades are not allowed by AWS and attempts to set a lower version
+	// will be ignored.
+	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// The DB instance snapshot identifier of the new DB instance snapshot created
 	// when SkipFinalSnapshot is disabled.

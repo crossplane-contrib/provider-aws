@@ -29,13 +29,16 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 const (
-	policyGetFailed    = "cannot get bucket policy"
-	policyFormatFailed = "cannot format bucket policy"
-	policyPutFailed    = "cannot put bucket policy"
-	policyDeleteFailed = "cannot delete bucket policy"
+	policyGetFailed     = "cannot get bucket policy"
+	policyFormatFailed  = "cannot format bucket policy"
+	policyParseSpec     = "cannot parse spec policy"
+	policyPutFailed     = "cannot put bucket policy"
+	policyDeleteFailed  = "cannot delete bucket policy"
+	policyParseExternal = "cannot parse external policy"
 )
 
 // PolicyClient is the client for API methods and reconciling the PublicAccessBlock
@@ -49,7 +52,7 @@ func NewPolicyClient(client s3.BucketPolicyClient) *PolicyClient {
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
+func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
 	resp, err := e.client.GetBucketPolicy(ctx, &awss3.GetBucketPolicyInput{
 		Bucket: awsclient.String(meta.GetExternalName(cr)),
 	})
@@ -62,21 +65,35 @@ func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (Resourc
 		}
 		return NeedsUpdate, errors.Wrap(err, policyGetFailed)
 	}
-	policy, err := e.formatBucketPolicy(cr)
-	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, policyFormatFailed)
-	}
 
 	// To ensure backwards compatbility with the previous behaviour
 	// (Bucket + BucketPolicy).
 	// Only delete the policy on AWS if the user has specified to do so.
-	if policy == nil && resp.Policy != nil && getBucketPolicyDeletionPolicy(cr) == v1beta1.BucketPolicyDeletionPolicyIfNull {
-		return NeedsDeletion, nil
-	}
-	if cmp.Equal(policy, resp.Policy) {
+	if cr.Spec.ForProvider.Policy == nil {
+		if resp.Policy != nil && getBucketPolicyDeletionPolicy(cr) == v1beta1.BucketPolicyDeletionPolicyIfNull {
+			return NeedsDeletion, nil
+		}
 		return Updated, nil
 	}
-	return NeedsUpdate, nil
+
+	specPolicyRaw, err := e.formatBucketPolicy(cr)
+	if err != nil {
+		return NeedsUpdate, errors.Wrap(err, policyFormatFailed)
+	}
+	specPolicy, err := policyutils.ParsePolicyString(awsclient.StringValue(specPolicyRaw))
+	if err != nil {
+		return NeedsUpdate, errors.Wrap(err, policyParseSpec)
+	}
+	curPolicy, err := policyutils.ParsePolicyString(awsclient.StringValue(resp.Policy))
+	if err != nil {
+		return NeedsUpdate, errors.Wrap(err, policyParseExternal)
+	}
+
+	diff := cmp.Diff(specPolicy, curPolicy)
+	if diff != "" {
+		return NeedsUpdate, nil
+	}
+	return Updated, nil
 }
 
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct

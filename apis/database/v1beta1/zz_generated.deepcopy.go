@@ -509,6 +509,11 @@ func (in *RDSInstanceObservation) DeepCopyInto(out *RDSInstanceObservation) {
 		*out = (*in).DeepCopy()
 	}
 	out.Endpoint = in.Endpoint
+	if in.EngineVersion != nil {
+		in, out := &in.EngineVersion, &out.EngineVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.LatestRestorableTime != nil {
 		in, out := &in.LatestRestorableTime, &out.LatestRestorableTime
 		*out = (*in).DeepCopy()
