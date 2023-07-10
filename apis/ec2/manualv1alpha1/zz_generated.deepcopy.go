@@ -184,6 +184,11 @@ func (in *EBSBlockDevice) DeepCopyInto(out *EBSBlockDevice) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.Throughput != nil {
+		in, out := &in.Throughput, &out.Throughput
+		*out = new(int32)
+		**out = **in
+	}
 	if in.KmsKeyID != nil {
 		in, out := &in.KmsKeyID, &out.KmsKeyID
 		*out = new(string)
