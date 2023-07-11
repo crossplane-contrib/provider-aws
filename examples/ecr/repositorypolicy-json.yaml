@@ -1,17 +1,16 @@
 apiVersion: ecr.aws.crossplane.io/v1beta1
 kind: RepositoryPolicy
 metadata:
-  name: example
-  labels:
-    region: us-east-1
+  name: example-raw
 spec:
   forProvider:
-    region: us-east-1
+    region: eu-central-1
     repositoryName: example
     rawPolicy:  |
       {
         "Statement": [
           {
+            "Sid": "",
             "Action":"ecr:DescribeImages",
             "Effect":"Allow",
             "Principal":"*",
