@@ -11,8 +11,6 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,13 +34,13 @@ import (
 
 // error constants
 const (
-	errSaveSecretFailed         = "failed to save generated password to Kubernetes secret"
 	errUpdateTags               = "cannot update tags"
 	errRestore                  = "cannot restore DBCluster in AWS"
 	errUnknownRestoreFromSource = "unknown restoreFrom source"
 )
 
-type updater struct {
+type custom struct {
+	kube   client.Client
 	client svcsdkapi.RDSAPI
 }
 
@@ -51,15 +49,15 @@ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.preObserve = preObserve
 			c := &custom{client: e.client, kube: e.kube}
+			e.preObserve = preObserve
 			e.postObserve = c.postObserve
-			e.isUpToDate = isUpToDate
-			e.preUpdate = preUpdate
-			u := &updater{client: e.client}
-			e.postUpdate = u.postUpdate
+			e.isUpToDate = c.isUpToDate
+			e.preUpdate = c.preUpdate
+			e.postUpdate = c.postUpdate
 			e.preCreate = c.preCreate
 			e.preDelete = preDelete
+			e.postDelete = c.postDelete
 			e.filterList = filterList
 		},
 	}
@@ -115,32 +113,37 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(aws.Int64Value(cr.Spec.ForProvider.Port), 10)),
 		"readerEndpoint":                          []byte(aws.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
 	}
-	pw, _, _ := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if pw != "" {
-		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+
+	if aws.Int64Value(cr.Spec.ForProvider.Port) > 0 {
+		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(aws.Int64Value(cr.Spec.ForProvider.Port), 10))
 	}
+
+	pw, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
+	if err != nil {
+		return obs, errors.Wrap(err, dbinstance.ErrGetCachedPassword)
+	}
+	obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 
 	return obs, nil
 }
 
-type custom struct {
-	kube   client.Client
-	client svcsdkapi.RDSAPI
-}
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) (err error) { // nolint:gocyclo
+	restoreFrom := cr.Spec.ForProvider.RestoreFrom
+	autogenerate := cr.Spec.ForProvider.AutogeneratePassword
+	masterUserPasswordSecretRef := cr.Spec.ForProvider.MasterUserPasswordSecretRef
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { // nolint:gocyclo
-	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if resource.IgnoreNotFound(err) != nil {
-		return errors.Wrap(err, "cannot get password from the given secret")
-	}
-	if pw == "" && aws.BoolValue(&cr.Spec.ForProvider.AutogeneratePassword) {
+	var pw string
+	switch {
+	case masterUserPasswordSecretRef == nil && !autogenerate && restoreFrom == nil:
+		return errors.New(dbinstance.ErrNoMasterUserPasswordSecretRefNorAutogenerateNoRestore)
+	case masterUserPasswordSecretRef == nil && autogenerate:
 		pw, err = password.Generate()
-		if err != nil {
-			return errors.Wrap(err, "unable to generate a password")
-		}
-		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
-			return errors.Wrap(err, errSaveSecretFailed)
-		}
+	case masterUserPasswordSecretRef != nil && autogenerate,
+		masterUserPasswordSecretRef != nil && !autogenerate:
+		pw, err = dbinstance.GetSecretValue(ctx, e.kube, masterUserPasswordSecretRef)
+	}
+	if err != nil {
+		return errors.Wrap(err, dbinstance.ErrNoRetrievePasswordOrGenerate)
 	}
 
 	obj.MasterUserPassword = aws.String(pw)
@@ -150,8 +153,11 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 		obj.VpcSecurityGroupIds[i] = aws.String(v)
 	}
 
-	if cr.Spec.ForProvider.RestoreFrom != nil {
-		switch *cr.Spec.ForProvider.RestoreFrom.Source {
+	passwordRestoreInfo := map[string]string{dbinstance.PasswordCacheKey: pw}
+	if restoreFrom != nil {
+		passwordRestoreInfo[dbinstance.RestoreFlagCacheKay] = string(dbinstance.RestoreStateRestored)
+
+		switch *restoreFrom.Source {
 		case "S3":
 			input := generateRestoreDBClusterFromS3Input(cr)
 			input.MasterUserPassword = obj.MasterUserPassword
@@ -183,6 +189,10 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	}
 
 	obj.EngineVersion = cr.Spec.ForProvider.EngineVersion
+
+	if _, err = dbinstance.Cache(ctx, e.kube, cr, passwordRestoreInfo); err != nil {
+		return errors.Wrap(err, dbinstance.ErrCachePassword)
+	}
 	return nil
 }
 
@@ -533,10 +543,22 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	return res
 }
 
-func isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
+func (e *custom) isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
+	// (PocketMobsters): Creating a context here is a temporary thing until a future
+	// update drops for aws-controllers-k8s/code-generator
+	ctx := context.TODO()
+
 	status := aws.StringValue(out.DBClusters[0].Status)
 	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
 		return true, nil
+	}
+
+	passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
+	if err != nil {
+		return false, errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
+	}
+	if !passwordUpToDate {
+		return false, nil
 	}
 
 	if aws.BoolValue(cr.Spec.ForProvider.EnableIAMDatabaseAuthentication) != aws.BoolValue(out.DBClusters[0].IAMDatabaseAuthenticationEnabled) {
@@ -709,9 +731,15 @@ func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.Descr
 	return cmp.Equal(desiredIDs, actualIDs)
 }
 
-func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
+func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
 	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
+
+	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
+	if err != nil {
+		return errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
+	}
+	obj.MasterUserPassword = aws.String(desiredPassword)
 
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
@@ -734,9 +762,28 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyD
 }
 
 // nolint:gocyclo
-func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	if err != nil {
 		return upd, err
+	}
+
+	if meta.WasDeleted(cr) {
+		// (schroeder-paul): if we are in the deleting state (which can take a while) we do not need to do
+		// any of the following, so we return here.
+		return upd, nil
+	}
+
+	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
+	if err != nil {
+		return upd, errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
+	}
+
+	_, err = dbinstance.Cache(ctx, e.kube, cr, map[string]string{
+		dbinstance.PasswordCacheKey:    desiredPassword,
+		dbinstance.RestoreFlagCacheKay: "", // reset restore flag
+	})
+	if err != nil {
+		return upd, errors.Wrap(err, dbinstance.ErrCachePassword)
 	}
 
 	input := GenerateDescribeDBClustersInput(cr)
@@ -744,7 +791,7 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 	// and the function is generated by ack-generate, so we manually need to set the
 	// DBClusterIdentifier
 	input.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
-	resp, err := u.client.DescribeDBClustersWithContext(ctx, input)
+	resp, err := e.client.DescribeDBClustersWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalUpdate{}, aws.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
@@ -764,7 +811,7 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 			modifyInput.AllowMajorVersionUpgrade = cr.Spec.ForProvider.AllowMajorVersionUpgrade
 		}
 
-		if _, err = u.client.ModifyDBClusterWithContext(ctx, modifyInput); err != nil {
+		if _, err = e.client.ModifyDBClusterWithContext(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
@@ -773,7 +820,7 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, tags)
 
 	if len(add) > 0 || len(remove) > 0 {
-		err := u.updateTags(ctx, cr, add, remove)
+		err := e.updateTags(ctx, cr, add, remove)
 		if err != nil {
 			return managed.ExternalUpdate{}, err
 		}
@@ -792,13 +839,21 @@ func (u *updater) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj
 
 func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterInput) (bool, error) {
 	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
-
 	obj.SkipFinalSnapshot = aws.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
 
 	if !cr.Spec.ForProvider.SkipFinalSnapshot {
 		obj.FinalDBSnapshotIdentifier = aws.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
 	}
+
 	return false, nil
+}
+
+func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterOutput, err error) error {
+	if err != nil {
+		return err
+	}
+
+	return dbinstance.DeleteCache(ctx, e.kube, cr)
 }
 
 func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput) *svcsdk.DescribeDBClustersOutput {
@@ -811,24 +866,6 @@ func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput)
 		}
 	}
 	return resp
-}
-
-func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBCluster, pw string) error {
-	if cr.Spec.ForProvider.MasterUserPasswordSecretRef == nil {
-		return errors.New("no MasterUserPasswordSecretRef given, unable to store password")
-	}
-	patcher := resource.NewAPIPatchingApplicator(e.kube)
-	ref := cr.Spec.ForProvider.MasterUserPasswordSecretRef
-	sc := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ref.Name,
-			Namespace: ref.Namespace,
-		},
-		Data: map[string][]byte{
-			ref.Key: []byte(pw),
-		},
-	}
-	return patcher.Apply(ctx, sc)
 }
 
 // DiffTags returns tags that should be added or removed.
@@ -854,7 +891,7 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 	return
 }
 
-func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addTags []*svcsdk.Tag, removeTags []*string) error {
+func (e *custom) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addTags []*svcsdk.Tag, removeTags []*string) error {
 
 	arn := cr.Status.AtProvider.DBClusterARN
 	if arn != nil {
@@ -864,7 +901,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, add
 				TagKeys:      removeTags,
 			}
 
-			_, err := u.client.RemoveTagsFromResourceWithContext(ctx, inputR)
+			_, err := e.client.RemoveTagsFromResourceWithContext(ctx, inputR)
 			if err != nil {
 				return errors.New(errUpdateTags)
 			}
@@ -875,7 +912,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, add
 				Tags:         addTags,
 			}
 
-			_, err := u.client.AddTagsToResourceWithContext(ctx, inputC)
+			_, err := e.client.AddTagsToResourceWithContext(ctx, inputC)
 			if err != nil {
 				return errors.New(errUpdateTags)
 			}

@@ -14,8 +14,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,18 +36,21 @@ import (
 
 // error constants
 const (
-	errSaveSecretFailed = "failed to save generated password to Kubernetes secret"
-)
-
-// time formats
-const (
-	maintenanceWindowFormat     = "Mon:15:04"
-	backupWindowFormat          = "15:04"
 	errS3RestoreFailed          = "cannot restore DB instance from S3 backup"
 	errSnapshotRestoreFailed    = "cannot restore DB instance from snapshot"
 	errPointInTimeRestoreFailed = "cannot restore DB instance from point in time"
 	errUnknownRestoreSource     = "unknown DB Instance restore source"
-	statusDeleting              = "deleting"
+)
+
+// time formats
+const (
+	maintenanceWindowFormat = "Mon:15:04"
+	backupWindowFormat      = "15:04"
+)
+
+// other
+const (
+	statusDeleting = "deleting"
 )
 
 // SetupDBInstance adds a controller that reconciles DBInstance
@@ -64,6 +65,7 @@ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 			e.postObserve = c.postObserve
 			e.preCreate = c.preCreate
 			e.preDelete = c.preDelete
+			e.postDelete = c.postDelete
 			e.filterList = filterList
 			e.preUpdate = c.preUpdate
 			e.postUpdate = c.postUpdate
@@ -100,20 +102,28 @@ func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.Descr
 	return nil
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error { // nolint:gocyclo
-	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if resource.IgnoreNotFound(err) != nil {
-		return errors.Wrap(err, "cannot get password from the given secret")
-	}
-	if pw == "" && cr.Spec.ForProvider.AutogeneratePassword {
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) (err error) { // nolint:gocyclo
+	restoreFrom := cr.Spec.ForProvider.RestoreFrom
+	autogenerate := cr.Spec.ForProvider.AutogeneratePassword
+	masterUserPasswordSecretRef := cr.Spec.ForProvider.MasterUserPasswordSecretRef
+	clusterIdentifier := cr.Spec.ForProvider.DBClusterIdentifier
+
+	var pw string
+	switch {
+	case clusterIdentifier != nil:
+		break
+	case masterUserPasswordSecretRef == nil && restoreFrom == nil && !autogenerate:
+		return errors.New(dbinstance.ErrNoMasterUserPasswordSecretRefNorAutogenerateNoRestore)
+	case masterUserPasswordSecretRef == nil && autogenerate:
 		pw, err = password.Generate()
-		if err != nil {
-			return errors.Wrap(err, "unable to generate a password")
-		}
-		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
-			return errors.Wrap(err, errSaveSecretFailed)
-		}
+	case masterUserPasswordSecretRef != nil && autogenerate,
+		masterUserPasswordSecretRef != nil && !autogenerate:
+		pw, err = dbinstance.GetSecretValue(ctx, e.kube, masterUserPasswordSecretRef)
 	}
+	if err != nil {
+		return errors.Wrap(err, dbinstance.ErrNoRetrievePasswordOrGenerate)
+	}
+
 	obj.MasterUserPassword = aws.String(pw)
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	if len(cr.Spec.ForProvider.VPCSecurityGroupIDs) > 0 {
@@ -128,8 +138,12 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 			obj.DBSecurityGroups[i] = aws.String(v)
 		}
 	}
-	if cr.Spec.ForProvider.RestoreFrom != nil {
-		switch *cr.Spec.ForProvider.RestoreFrom.Source {
+
+	passwordRestoreInfo := map[string]string{dbinstance.PasswordCacheKey: pw}
+	if restoreFrom != nil {
+		passwordRestoreInfo[dbinstance.RestoreFlagCacheKay] = string(dbinstance.RestoreStateRestored)
+
+		switch *restoreFrom.Source {
 		case "S3":
 			_, err := e.client.RestoreDBInstanceFromS3WithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 			if err != nil {
@@ -148,47 +162,55 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 			}
 		default:
 			return errors.New(errUnknownRestoreSource)
-
 		}
 	}
+
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		obj.EngineVersion = cr.Spec.ForProvider.EngineVersion
 	}
+
+	if _, err = dbinstance.Cache(ctx, e.kube, cr, passwordRestoreInfo); err != nil {
+		return errors.Wrap(err, dbinstance.ErrCachePassword)
+	}
+
 	return nil
 }
 
-func (e *custom) assembleConnectionDetails(ctx context.Context, cr *svcapitypes.DBInstance) (managed.ConnectionDetails, error) {
-	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey: []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
+func (e *custom) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DBInstance, details managed.ConnectionDetails) (managed.ConnectionDetails, error) {
+	if details == nil {
+		details = managed.ConnectionDetails{}
 	}
-	pw, _, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+
+	details[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
+
+	pw, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
-		return managed.ConnectionDetails{}, errors.Wrap(err, "cannot get password from the given secret")
+		return details, errors.Wrap(err, dbinstance.ErrGetCachedPassword)
 	}
-	if pw != "" {
-		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	details[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+
+	if cr.Status.AtProvider.Endpoint == nil {
+		return details, nil
 	}
-	if cr.Status.AtProvider.Endpoint != nil {
-		if aws.StringValue(cr.Status.AtProvider.Endpoint.Address) != "" {
-			conn[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.StringValue(cr.Status.AtProvider.Endpoint.Address))
-		}
-		if aws.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
-			conn[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Endpoint.Port, 10))
-		}
+	if aws.StringValue(cr.Status.AtProvider.Endpoint.Address) != "" {
+		details[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.StringValue(cr.Status.AtProvider.Endpoint.Address))
 	}
-	return conn, nil
+	if aws.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
+		details[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Endpoint.Port, 10))
+	}
+
+	return details, nil
 }
 
-func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
+func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) {
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
-	pw, pwchanged, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+
+	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
-		return err
+		return errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
 	}
-	if pwchanged {
-		obj.MasterUserPassword = aws.String(pw)
-	}
+	obj.MasterUserPassword = aws.String(desiredPassword)
 
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
@@ -200,17 +222,32 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return nil
 }
 
-func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.ModifyDBInstanceOutput, _ managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.ModifyDBInstanceOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	if err != nil {
-		return managed.ExternalUpdate{}, err
+		return upd, err
 	}
-	conn, err := e.assembleConnectionDetails(ctx, cr)
+
+	if meta.WasDeleted(cr) {
+		// (schroeder-paul): if we are in the deleting state (which can take a while) we do not need to do
+		// any of the following, so we return here.
+		return upd, nil
+	}
+
+	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
-		return managed.ExternalUpdate{}, err
+		return upd, errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
 	}
-	return managed.ExternalUpdate{
-		ConnectionDetails: conn,
-	}, nil
+
+	_, err = dbinstance.Cache(ctx, e.kube, cr, map[string]string{
+		dbinstance.PasswordCacheKey:    desiredPassword,
+		dbinstance.RestoreFlagCacheKay: "", // reset restore flag
+	})
+	if err != nil {
+		return upd, errors.Wrap(err, dbinstance.ErrCachePassword)
+	}
+
+	upd.ConnectionDetails, err = e.updateConnectionDetails(ctx, cr, upd.ConnectionDetails)
+	return upd, err
 }
 
 func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
@@ -226,9 +263,17 @@ func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return false, nil
 }
 
+func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceOutput, err error) error {
+	if err != nil {
+		return err
+	}
+
+	return dbinstance.DeleteCache(ctx, e.kube, cr)
+}
+
 func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
-		return managed.ExternalObservation{}, err
+		return obs, err
 	}
 
 	switch aws.StringValue(resp.DBInstances[0].DBInstanceStatus) {
@@ -244,8 +289,8 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Instance is " + aws.StringValue(resp.DBInstances[0].DBInstanceStatus)))
 	}
 
-	obs.ConnectionDetails, _ = e.assembleConnectionDetails(ctx, cr)
-	return obs, nil
+	obs.ConnectionDetails, err = e.updateConnectionDetails(ctx, cr, obs.ConnectionDetails)
+	return obs, err
 }
 
 func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDBInstancesOutput) error { // nolint:gocyclo
@@ -338,12 +383,13 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) { // nolint:gocyclo
+func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, err error) { // nolint:gocyclo
 	// (PocketMobsters): Creating a context here is a temporary thing until a future
 	// update drops for aws-controllers-k8s/code-generator
-	ctx := context.Background()
+	ctx := context.TODO()
 
 	db := out.DBInstances[0]
+
 	patch, err := createPatch(out, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
@@ -359,12 +405,15 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		return true, nil
 	}
 
-	_, pwChanged, err := dbinstance.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
+	}
+	if !passwordUpToDate {
+		return false, nil
 	}
 
-	// (PocketMobsters): AWS reformats our preferred time windows for backups and maintenance
+	// (PocketMobsters): AWS reformats our preferred time windows for backups and maintenance,
 	// so we can't rely on automatic equality checks for them
 	maintenanceWindowChanged, err := compareTimeRanges(maintenanceWindowFormat, cr.Spec.ForProvider.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	if err != nil {
@@ -378,9 +427,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	versionChanged := !isEngineVersionUpToDate(cr, out)
 
 	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
-
 	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
-
 	optionGroupChanged := !isOptionGroupUpToDate(cr, db)
 
 	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
@@ -403,7 +450,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged {
 		return true, nil
 	}
 
@@ -571,24 +618,6 @@ func filterList(cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesOutpu
 		}
 	}
 	return resp
-}
-
-func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBInstance, pw string) error {
-	if cr.Spec.ForProvider.MasterUserPasswordSecretRef == nil {
-		return errors.New("no MasterUserPasswordSecretRef given, unable to store password")
-	}
-	patcher := resource.NewAPIPatchingApplicator(e.kube)
-	ref := cr.Spec.ForProvider.MasterUserPasswordSecretRef
-	sc := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ref.Name,
-			Namespace: ref.Namespace,
-		},
-		Data: map[string][]byte{
-			ref.Key: []byte(pw),
-		},
-	}
-	return patcher.Apply(ctx, sc)
 }
 
 func handleKmsKey(inKey *string, dbKey *string) *string {
