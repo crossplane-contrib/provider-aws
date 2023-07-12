@@ -1,6 +1,6 @@
 # Upgrade from v0.32.x to v0.33.x
 
-There are deprecated resources in `v0.33.0` that were removed. 
+There are deprecated resources in `v0.33.0` that were removed.
 `SNS` esources were used to be represented in `notification.aws.crossplane.io`
 but now they are moved to `sns.aws.crossplane.io`, their versions got upgraded
 to `v1beta1` and `SNS` prefix is dropped from their name.
@@ -113,7 +113,7 @@ spec:
   resourceRefs:
   - apiVersion: notification.aws.crossplane.io/v1alpha1 # <--- change this to the new group, sns.aws.crossplane.io/v1beta1
     kind: SNSSubscription # <--- change type to the new name, i.e. Subscription in this case.
-    name: platform-ref-aws-cluster-mwx8t-5j9hv # <--- make sure there is a resource with this name whose kind 
+    name: platform-ref-aws-cluster-mwx8t-5j9hv # <--- make sure there is a resource with this name whose kind
   # Make the changes described above for every entry in this array.
   writeConnectionSecretToRef:
   ...

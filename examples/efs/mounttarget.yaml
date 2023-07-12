@@ -5,7 +5,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    fileSystemIDRef: 
+    fileSystemIDRef:
       name: example
     subnetIDRef:
       name: sample-subnet1

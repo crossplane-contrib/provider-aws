@@ -10,7 +10,7 @@ spec:
     shardCount: 4
     retentionPeriodHours: 48
     enhancedMetrics:
-      - shardLevelMetrics: 
+      - shardLevelMetrics:
           - IncomingBytes
           - OutgoingBytes 
     kmsKeyARNRef: 

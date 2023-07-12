@@ -14,7 +14,7 @@ spec:
       securityGroupRefs:
         - name: sample-cluster-sg
       instanceType: kafka.t3.small
-      storageInfo: 
+      storageInfo:
         ebsStorageInfo:
           volumeSize: 1
     kafkaVersion: 2.6.1

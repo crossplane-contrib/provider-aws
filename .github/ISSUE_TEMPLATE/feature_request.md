@@ -20,5 +20,5 @@ implement it sensibly.
 
 ### How could Crossplane help solve your problem?
 <!--
-Let us know how you think Crossplane could help with your use case. 
+Let us know how you think Crossplane could help with your use case.
 -->

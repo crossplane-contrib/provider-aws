@@ -13,7 +13,7 @@ spec:
       name: example-ec2-jobqueue
     nodeOverrides:
       nodePropertyOverrides:
-        - containerOverrides: 
+        - containerOverrides:
             command: ["echo","Thanks world"]
           targetNodes: "0:"
     parameters:
@@ -22,7 +22,7 @@ spec:
     propagateTags: true
     retryStrategy:
       attempts: 2
-    tags: 
+    tags:
       job : "my-job"
       other: "bla"
   providerConfigRef:

@@ -7,7 +7,7 @@ spec:
     region: us-east-1
     kafkaVersions:
       - 2.6.1
-    properties: 
+    properties:
       - auto.create.topics.enable=false
       - default.replication.factor=3
       - min.insync.replicas=2

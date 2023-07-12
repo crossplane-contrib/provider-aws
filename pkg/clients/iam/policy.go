@@ -2,8 +2,9 @@ package iam
 
 import (
 	"context"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 	"net/url"
+
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 

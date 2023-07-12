@@ -342,7 +342,7 @@ spec:
       - key: Project
         value: Crossplane
       - key: Department
-        value: Infrastructure   
+        value: Infrastructure
     transitiveTagKeys: [ "Project", "Department"]
   credentials:
     source: InjectedIdentity
@@ -352,15 +352,15 @@ EOF
 ## Using `assumeRoleWithWebIdentity`
 
 `provider-aws` will be configured to connect to the aws account in `RoleARN` and request
-a session for `RoleARN` using it's `InjectedIdentity` 
+a session for `RoleARN` using it's `InjectedIdentity`
 
-This is most useful when "sts chaining" (see [Using `assumeRole`](#using-assumerole)) 
+This is most useful when "sts chaining" (see [Using `assumeRole`](#using-assumerole))
 is not allowed between accounts or when cross account IRSA is more suitable.
 
 IRSA will need to be configured between the account hosting the `RoleARN` being targeted and the
-K8s cluster hosting the provider pod. 
+K8s cluster hosting the provider pod.
 
-The following steps follow on to the initial configuration from 
+The following steps follow on to the initial configuration from
 [Using IAM Roles for `ServiceAccounts`](#using-iam-roles-for-serviceaccounts)
 Please see that section for more info on the initial setup of IRSA.
 

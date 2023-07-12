@@ -25,7 +25,7 @@
 # apiVersion: iam.aws.crossplane.io/v1beta1
 # kind: Policy
 # metadata:
-#   name: flowlogs-policy  
+#   name: flowlogs-policy
 # spec:
 #   forProvider:
 #     name: flowlogs-policy
@@ -52,11 +52,11 @@
 # apiVersion: iam.aws.crossplane.io/v1beta1
 # kind: RolePolicyAttachment
 # metadata:
-#   name: flowlogs-policy-attachement 
+#   name: flowlogs-policy-attachement
 # spec:
 #   forProvider:
 #     policyArnRef:
-#       name: flowlogs-policy 
+#       name: flowlogs-policy
 #     roleNameRef:
 #       name: flowlogs-role
 #   providerConfigRef:
@@ -88,7 +88,7 @@ spec:
     cloudWatchLogDestinationRef:
       name: sample-loggroup
     vpcId: vpc-0123456789
-    tags: 
+    tags:
       - key: Name
         value: example
   providerConfigRef:
@@ -109,7 +109,7 @@ spec:
     destinationOptions:
       fileFormat: parquet
       perHourPartition: true
-    tags: 
+    tags:
       - key: Name
         value: example
   providerConfigRef:

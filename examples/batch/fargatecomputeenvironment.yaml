@@ -9,11 +9,11 @@ spec:
     desiredState: ENABLED
     ## Defined in examples/ec2
     subnetIdRefs: # apply internetgateway + routetable too (=>public subnet)
-      - name: sample-subnet1  
+      - name: sample-subnet1
    ## Defined in examples/batch
     securityGroupIdRefs:
       - name: batch-ce-sg
-    tags: 
+    tags:
       ce : "my-fargate-ce"
       other: "bla"
     computeResources:

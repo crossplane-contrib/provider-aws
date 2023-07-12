@@ -7,14 +7,14 @@ spec:
     region: us-east-1
     jobDefinitionType: multinode
     nodeProperties:
-      mainNode: 0 
+      mainNode: 0
       numNodes: 1
       nodeRangeProperties:
         - targetNodes: "0:"
           container:
             command: ["echo","hello world"]
             ## Defined in examples/batch
-            executionRoleARNRef: 
+            executionRoleARNRef:
               name: ecs-task-execution-role
             image: "public.ecr.aws/amazonlinux/amazonlinux:latest"
             instanceType: "m4.large"
@@ -33,7 +33,7 @@ spec:
                     - "async"
                   size: 111
             mountPoints:
-              - containerPath: "/home/cpath" 
+              - containerPath: "/home/cpath"
                 readOnly: true
                 sourceVolume: "hostvolumeName"
             privileged: true
@@ -58,7 +58,7 @@ spec:
           "onExitCode": "3242"
           "onReason": "didnotWork"
           "onStatusReason": "invalidSTHorso"
-    tags: 
+    tags:
       jd : "my-jobdefinition-ec2-multinode"
       other: "bla"
   providerConfigRef:

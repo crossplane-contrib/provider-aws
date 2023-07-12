@@ -3,8 +3,9 @@ package iam
 import (
 	"context"
 	"encoding/json"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 	"net/url"
+
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 
 	"github.com/aws/smithy-go/document"
 

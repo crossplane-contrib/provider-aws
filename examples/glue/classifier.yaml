@@ -26,7 +26,7 @@ spec:
       header:
         - "head1"
         - "BIGHEAD"
-      disableValueTrimming: true 
+      disableValueTrimming: true
       allowSingleColumn: false
   providerConfigRef:
     name: example
@@ -38,7 +38,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    jsonClassifier: 
+    jsonClassifier:
       jsonPath: "[<timestamp>]"
   providerConfigRef:
     name: example
@@ -50,7 +50,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    grokClassifier: 
+    grokClassifier:
       classification: "timestamp"
       grokPattern: "%{MY_TIMESTAMP}"
       customPatterns: "MY_TIMESTAMP (%{USERNAME:test}[,]%{YEAR:year}[-]%{MONTHNUM:mm}[-]%{MONTHDAY:dd} %{TIME:time})"

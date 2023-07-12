@@ -1,5 +1,5 @@
 ## General IAMRole/Policy for Glue Job/Crawler
-## more policies nedded, depending on which databases are accessed and how 
+## more policies nedded, depending on which databases are accessed and how
 apiVersion: iam.aws.crossplane.io/v1beta1
 kind: Role
 metadata:
@@ -51,7 +51,7 @@ spec:
                       "ec2:DescribeVpcEndpoints",
                       "ec2:DescribeRouteTables",
                       "ec2:CreateNetworkInterface",
-                      "ec2:DeleteNetworkInterface",				
+                      "ec2:DeleteNetworkInterface",
                       "ec2:DescribeNetworkInterfaces",
                       "ec2:DescribeSecurityGroups",
                       "ec2:DescribeSubnets",
@@ -59,7 +59,7 @@ spec:
                       "iam:ListRolePolicies",
                       "iam:GetRole",
                       "iam:GetRolePolicy",
-                      "cloudwatch:PutMetricData"                
+                      "cloudwatch:PutMetricData"
                   ],
                   "Resource": [
                       "*"
@@ -80,7 +80,7 @@ spec:
                   "Action": [
                       "s3:GetObject",
                       "s3:PutObject",
-                      "s3:DeleteObject"				
+                      "s3:DeleteObject"
                   ],
                   "Resource": [
                       "arn:aws:s3:::aws-glue-*/*",
@@ -103,7 +103,7 @@ spec:
                       "logs:CreateLogGroup",
                       "logs:CreateLogStream",
                       "logs:PutLogEvents",
-                      "logs:AssociateKmsKey"                
+                      "logs:AssociateKmsKey"
                   ],
                   "Resource": [
                       "arn:aws:logs:*:*:/aws-glue/*"

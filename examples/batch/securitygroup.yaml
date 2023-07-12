@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: us-east-1
     vpcIdRef:
-      name: sample-vpc  
+      name: sample-vpc
     groupName: my-batch-ce-sg
     description: "for fargate ComputeEnvironment with public subnet, able to pull the public container image"
     egress: # 5. https://aws.amazon.com/premiumsupport/knowledge-center/ecs-pull-container-api-error-ecr/

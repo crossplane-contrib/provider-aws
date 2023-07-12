@@ -86,4 +86,3 @@ spec:
       name: glue-role
   providerConfigRef:
     name: example
-  

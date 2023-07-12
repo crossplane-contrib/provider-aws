@@ -1,5 +1,5 @@
-# Note: The users API apply only ActiveMQ brokers. 
-#       Making changes to a user does not apply the changes to the user immediately. 
+# Note: The users API apply only ActiveMQ brokers.
+#       Making changes to a user does not apply the changes to the user immediately.
 #       To apply your changes, you must wait for the next maintenance window or reboot the broker.
 # https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/amazon-mq-broker-configuration-lifecycle.html
 apiVersion: mq.aws.crossplane.io/v1alpha1

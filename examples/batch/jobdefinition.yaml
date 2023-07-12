@@ -9,9 +9,9 @@ spec:
     containerProperties:
       command: ["echo","hello world"]
       ## Defined in examples/batch
-      executionRoleARNRef: 
+      executionRoleARNRef:
         name: ecs-task-execution-role
-      fargatePlatformConfiguration: 
+      fargatePlatformConfiguration:
         platformVersion: "1.4.0"
       image: "public.ecr.aws/amazonlinux/amazonlinux:latest"
       ## Defined in examples/batch
@@ -20,7 +20,7 @@ spec:
       logConfiguration:
         logDriver: awslogs
       networkConfiguration:
-        assignPublicIp: "ENABLED" # needed when the fargate-CE works in public subnets 
+        assignPublicIp: "ENABLED" # needed when the fargate-CE works in public subnets
       readonlyRootFilesystem: true
       resourceRequirements:
         - resourceType: VCPU
@@ -28,7 +28,7 @@ spec:
         - resourceType: MEMORY
           value: "4096"
       volumes:
-        - efsVolumeConfiguration: 
+        - efsVolumeConfiguration:
             authorizationConfig:
               ## Defined in examples/efs
               accessPointIdRef:
@@ -39,7 +39,7 @@ spec:
             rootDirectory: "/"
             transitEncryption: ENABLED
           name: "efsvolumeName"
-    platformCapabilities: 
+    platformCapabilities:
      - "FARGATE"
     propagateTags: true
     retryStrategy:
@@ -51,7 +51,7 @@ spec:
           "onStatusReason": "invalidSTHorso"
     timeout:
       attemptDurationSeconds: 70
-    tags: 
+    tags:
       jd : "my-jobdefinition-fargate"
       other: "bla"
   providerConfigRef:

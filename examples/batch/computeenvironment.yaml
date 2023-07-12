@@ -9,7 +9,7 @@ spec:
     ## Defined in examples/batch/
     serviceRoleARNRef:
       name: batch-role
-    tags: 
+    tags:
       ce: "my-unmanaged-ce"
   providerConfigRef:
     name: example

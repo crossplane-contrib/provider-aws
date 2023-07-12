@@ -11,7 +11,7 @@ spec:
     type: "ingress"
     securityGroupIdRef:
       name: sample-cluster-sg
-    cidrBlock: "123.12.0.0/16" 
+    cidrBlock: "123.12.0.0/16"
     description: "sample-sgr description"
   providerConfigRef:
     name: example

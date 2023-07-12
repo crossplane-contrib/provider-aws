@@ -3,8 +3,8 @@ operations:
     resource_name: LifecyclePolicy
     operation_type:
     - Create
-# code-generation with two operations will create two functions with the same name in zz_conversions.go 
-#    - Update 
+# code-generation with two operations will create two functions with the same name in zz_conversions.go
+#    - Update
   DeleteLifecyclePolicy:
     resource_name: LifecyclePolicy
     operation_type: Delete

@@ -15,7 +15,7 @@ spec:
     ## Defined in examples/batch
     instanceRoleRef:
       name: ecsinstance-role-profile
-    tags: 
+    tags:
       ce: "my-ec2-ce"
       other: "blaa"
     # for EC2 and EC2Spot: If the original allocation strategy is BEST_FIT,

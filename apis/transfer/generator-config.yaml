@@ -22,4 +22,4 @@ resources:
     exceptions:
       errors:
         404:
-          code: ResourceNotFoundException    
+          code: ResourceNotFoundException

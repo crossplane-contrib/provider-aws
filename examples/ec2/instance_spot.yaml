@@ -1,5 +1,5 @@
 
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernate-spot-instances.html 
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernate-spot-instances.html
 apiVersion: ec2.aws.crossplane.io/v1alpha1
 kind: Instance
 metadata:

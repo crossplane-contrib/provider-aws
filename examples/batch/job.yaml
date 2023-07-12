@@ -16,7 +16,7 @@ spec:
     propagateTags: true
     retryStrategy:
       attempts: 2
-    tags: 
+    tags:
       job : "my-job"
       other: "bla"
   providerConfigRef:

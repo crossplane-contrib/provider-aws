@@ -68,9 +68,9 @@ resources:
         from:
           operation: GetConnection
           path: Connection.CreationTime
-        # set: # makes ACK ignore the field in zz_conversion.go GenerateConnection (did not import metav1...), so it needs to be set manually 
+        # set: # makes ACK ignore the field in zz_conversion.go GenerateConnection (did not import metav1...), so it needs to be set manually
         #   - methode: ReadOne
-        #     ignore: true  ##worksaroundfix not needed as long as metav1 is imported(&used) in setup.go, it gets correctly imported in zz_conversion.go too 
+        #     ignore: true  ##worksaroundfix not needed as long as metav1 is imported(&used) in setup.go, it gets correctly imported in zz_conversion.go too
       LastUpdatedBy:
         is_read_only: true
         from:
@@ -107,7 +107,7 @@ resources:
       Schedule:
         set:
           - methode: ReadOne
-            from: Schedule.ScheduleExpression # works now, with solved issue (https://github.com/aws-controllers-k8s/community/issues/1078) 
+            from: Schedule.ScheduleExpression # works now, with solved issue (https://github.com/aws-controllers-k8s/community/issues/1078)
       CrawlElapsedTime:
         is_read_only: true
         from:

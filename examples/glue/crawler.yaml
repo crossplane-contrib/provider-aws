@@ -13,7 +13,7 @@ spec:
     classifierRefs:
       - name: glue-classifier-csv
     ## Defined in examples/glue
-    crawlerSecurityConfigurationRef: 
+    crawlerSecurityConfigurationRef:
       name: glue-securityconfiguration
     ## Defined in examples/glue
     databaseNameRef:
@@ -30,20 +30,20 @@ spec:
           scanRate: 1.1
       jdbcTargets:
         ## Defined in examples/glue/connection.yaml
-        - connectionNameRef: 
+        - connectionNameRef:
             name: "glue-connection-jdbc"
-          exclusions: 
+          exclusions:
             - "myFolder2/*"
             - "*.{csv,avro}"
       mongoDBTargets:
         ## Defined in examples/glue/connection.yaml
-        - connectionNameRef: 
+        - connectionNameRef:
             name: "glue-connection-mongodb"
           path: "dbName/collectionName"
           scanAll: false
       s3Targets:
         ## Defined in examples/glue/connection.yaml
-        - connectionNameRef: 
+        - connectionNameRef:
             name: "glue-connection-network"
           path: s3://bucket/prefix/object
           ## Both defined in examples/sqs/queue.yaml
@@ -57,6 +57,6 @@ spec:
           sampleSize: 123
     tags:
       glue: "crawler"
-      spider: "speedy"  
+      spider: "speedy"
   providerConfigRef:
     name: example

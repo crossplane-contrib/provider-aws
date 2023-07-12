@@ -91,17 +91,17 @@ spec:
                   "Action": "airflow:PublishMetrics",
                   "Resource": "arn:aws:airflow:us-east-1:<sample-account>:environment/sample-environment"
               },
-              { 
+              {
                   "Effect": "Deny",
                   "Action": "s3:ListAllMyBuckets",
                   "Resource": [
                       "arn:aws:s3:::sample-environment-bucket-123",
                       "arn:aws:s3:::sample-environment-bucket-123/*"
                   ]
-              }, 
-              { 
+              },
+              {
                   "Effect": "Allow",
-                  "Action": [ 
+                  "Action": [
                       "s3:GetObject*",
                       "s3:GetBucket*",
                       "s3:List*"

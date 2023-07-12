@@ -9,7 +9,7 @@ spec:
     ## Defined in examples/glue/gluerole.yaml
     roleRef:
       name: glue-role
-    command: 
+    command:
       name: "glueetl"
       pythonVersion: "3"
       scriptLocation: "s3://aws-glue-crossplane-us-east-1/scripts/sparketljob1.py"

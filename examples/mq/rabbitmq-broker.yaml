@@ -15,7 +15,7 @@ spec:
       - name: sample-subnet1
     securityGroupIdRefs:
       - name: sample-cluster-sg
-    users: 
+    users:
       # To manage broker users, please use the RabbitMQ web console, or the management API
       - username: rabbitmq-admin
         consoleAccess: true

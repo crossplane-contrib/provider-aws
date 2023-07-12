@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: us-east-1
     cidrBlock: 100.64.0.0/16
-    vpcIdRef: 
+    vpcIdRef:
       name:  sample-vpc
   providerConfigRef:
     name: example

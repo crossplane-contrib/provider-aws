@@ -16,7 +16,7 @@ spec:
       - name: sample-subnet1
     securityGroupIdRefs:
       - name: sample-cluster-sg
-    users: 
+    users:
       - username: activemq-admin
         consoleAccess: true
         passwordSecretRef:

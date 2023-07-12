@@ -11,7 +11,7 @@ spec:
     # "Only one of the aliasAttributes or usernameAttributes can be set in a User pool."
     # if aliasAttributes used, seems to add these additionally to username as sign-in options.
     # In contrast using usernameAttributes seems to replace username as sign-in option!
-    aliasAttributes: 
+    aliasAttributes:
       - email
       - phone_number
       - preferred_username

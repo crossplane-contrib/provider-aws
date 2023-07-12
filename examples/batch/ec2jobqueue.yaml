@@ -7,11 +7,11 @@ spec:
     region: us-east-1
     computeEnvironmentOrder:
     ## Defined in examples/batch
-      - computeEnvironmentRef: 
+      - computeEnvironmentRef:
           name: example-managed-ec2-computeenvironment
         order: 1
     priority: 1
-    tags: 
+    tags:
       jq : "my-jobqueue"
       other: "bla"
   providerConfigRef:
