@@ -151,6 +151,9 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 
 		}
 	}
+	if cr.Spec.ForProvider.EngineVersion != nil {
+		obj.EngineVersion = cr.Spec.ForProvider.EngineVersion
+	}
 	return nil
 }
 
