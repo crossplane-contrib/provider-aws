@@ -42,6 +42,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 const (
@@ -54,31 +55,20 @@ const (
 	errGetResourcePolicy    = "cannot get resource policy"
 	errPutResourcePolicy    = "cannot put resource policy"
 	errDeleteResourcePolicy = "cannot delete resource policy"
-	errInvalidSpecPolicy    = "spec policy is invalid"
-	errInvalidCurrentPolicy = "current policy is invalid"
 	errParseSecretValue     = "cannot parse AWS secret value"
 	errGetAWSSecretValue    = "cannot get AWS secret value"
 	errCreateK8sSecret      = "canoot create secret in K8s"
 	errNoAWSValue           = "neither SecretString nor SecretBinary field is filled in the returned object"
 	errNoSecretRef          = "neither binarySecretRef nor stringSecretRef is given"
 	errOnlyOneSecretRef     = "only one of binarySecretRef or stringSecretRef must be set"
+	errParseSpecPolicy      = "cannot parse spec policy"
+	errParseExternalPolicy  = "cannot parse external policy"
 )
 
 // SetupSecret adds a controller that reconciles a Secret.
 func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.SecretGroupKind)
-	opts := []option{
-		func(e *external) {
-			e.preObserve = preObserve
-			e.postObserve = postObserve
-			h := &hooks{client: e.client, kube: e.kube}
-			e.lateInitialize = h.lateInitialize
-			e.isUpToDate = h.isUpToDate
-			e.preUpdate = h.preUpdate
-			e.preCreate = h.preCreate
-			e.preDelete = preDelete
-		},
-	}
+	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
@@ -99,6 +89,17 @@ func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 			managed.WithConnectionPublishers(cps...)))
+}
+
+func setupExternal(e *external) {
+	e.preObserve = preObserve
+	e.postObserve = postObserve
+	h := &hooks{client: e.client, kube: e.kube}
+	e.lateInitialize = h.lateInitialize
+	e.isUpToDate = h.isUpToDate
+	e.preUpdate = h.preUpdate
+	e.preCreate = h.preCreate
+	e.preDelete = preDelete
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Secret, obj *svcsdk.DescribeSecretInput) error {
@@ -229,6 +230,9 @@ func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOu
 		return false, nil
 	}
 
+	// TODO(muvaf): We need isUpToDate to have context.
+	ctx := context.TODO()
+
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, nil
@@ -244,33 +248,42 @@ func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOu
 		return false, nil
 	}
 
-	// TODO(muvaf): We need isUpToDate to have context.
-	ctx := context.TODO()
+	isPolicyUpToDate, err := e.isPolicyUpToDate(ctx, cr)
+	if err != nil {
+		return false, err
+	}
+	if !isPolicyUpToDate {
+		return false, nil
+	}
 
-	// Compare secret resource policies
-	pol, err := e.client.GetResourcePolicyWithContext(ctx, &svcsdk.GetResourcePolicyInput{
+	return e.isPayloadUpToDate(ctx, cr)
+}
+
+func (e *hooks) isPolicyUpToDate(ctx context.Context, cr *svcapitypes.Secret) (bool, error) {
+	res, err := e.client.GetResourcePolicyWithContext(ctx, &svcsdk.GetResourcePolicyInput{
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, errors.Wrap(err, errGetResourcePolicy)
 	}
-	if pol.ResourcePolicy != nil && cr.Spec.ForProvider.ResourcePolicy != nil {
-		compactCurrentPolicy, err := awsclients.CompactAndEscapeJSON(awsclients.StringValue(pol.ResourcePolicy))
-		if err != nil {
-			return false, errors.Wrap(err, errInvalidCurrentPolicy)
-		}
-		compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(awsclients.StringValue(cr.Spec.ForProvider.ResourcePolicy))
-		if err != nil {
-			return false, errors.Wrap(err, errInvalidSpecPolicy)
-		}
-		if compactCurrentPolicy != compactSpecPolicy {
-			return false, nil
-		}
-	} else if !(pol.ResourcePolicy == nil && cr.Spec.ForProvider.ResourcePolicy == nil) {
-		return false, nil
+
+	if res.ResourcePolicy == nil || cr.Spec.ForProvider.ResourcePolicy == nil {
+		return res.ResourcePolicy == cr.Spec.ForProvider.ResourcePolicy, nil
 	}
 
-	// Compare secret values
+	specPol, err := policyutils.ParsePolicyString(*cr.Spec.ForProvider.ResourcePolicy)
+	if err != nil {
+		return false, errors.Wrap(err, errParseSpecPolicy)
+	}
+	curPol, err := policyutils.ParsePolicyString(*res.ResourcePolicy)
+	if err != nil {
+		return false, errors.Wrap(err, errParseExternalPolicy)
+	}
+	areEqal, _ := policyutils.ArePoliciesEqal(&specPol, &curPol)
+	return areEqal, nil
+}
+
+func (e *hooks) isPayloadUpToDate(ctx context.Context, cr *svcapitypes.Secret) (bool, error) {
 	s, err := e.client.GetSecretValueWithContext(ctx, &svcsdk.GetSecretValueInput{
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
