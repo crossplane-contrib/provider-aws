@@ -378,7 +378,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName), withPath(aws.String("foo"))),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdateUser),
 			},
 		},
 		"GetUserError": {

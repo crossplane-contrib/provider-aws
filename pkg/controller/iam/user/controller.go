@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -45,13 +46,15 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an IAM User resource"
 
-	errGet    = "cannot get IAM User"
-	errCreate = "cannot create the IAM User resource"
-	errDelete = "cannot delete the IAM User resource"
-	errUpdate = "cannot update the IAM User resource"
-	errSDK    = "empty IAM User received from IAM API"
-	errTag    = "cannot tag the IAM User resource"
-	errUntag  = "cannot remove tags from the IAM User resource"
+	errGet                           = "cannot get IAM User"
+	errCreate                        = "cannot create the IAM User resource"
+	errDelete                        = "cannot delete the IAM User resource"
+	errUpdateUser                    = "cannot update the IAM User resource"
+	errPutUserPermissionsBoundary    = "cannot update the IAM User permission boundary"
+	errDeleteUserPermissionsBoundary = "cannot delete the IAM User permission boundary"
+	errSDK                           = "empty IAM User received from IAM API"
+	errTag                           = "cannot tag the IAM User resource"
+	errUntag                         = "cannot remove tags from the IAM User resource"
 
 	errKubeUpdateFailed = "cannot late initialize IAM User"
 )
@@ -135,27 +138,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		UserID: aws.ToString(user.UserId),
 	}
 
-	// check path
-	isPathUpdated := aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path)
-
-	// check tags
-	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
-	for _, v := range cr.Spec.ForProvider.Tags {
-		crTagMap[v.Key] = v.Value
-	}
-	_, _, areTagsUpdated := iam.DiffIAMTags(crTagMap, observed.User.Tags)
-
-	// check permissions boundary
-	boundaryArn := ""
-	if observed.User.PermissionsBoundary != nil {
-		boundaryArn = *observed.User.PermissionsBoundary.PermissionsBoundaryArn
-	}
-	isBoundaryUpdated :=
-		aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == aws.ToString(&boundaryArn)
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: isPathUpdated && areTagsUpdated && isBoundaryUpdated,
+		ResourceUpToDate: isUpToDate(cr, &user),
 	}, nil
 }
 
@@ -262,7 +247,7 @@ func (e *external) updateUser(ctx context.Context, observed *awsiam.GetUserOutpu
 			UserName: aws.String(meta.GetExternalName(cr)),
 		})
 
-		return awsclient.Wrap(err, errUpdate)
+		return awsclient.Wrap(err, errUpdateUser)
 	}
 
 	return nil
@@ -276,18 +261,22 @@ func (e *external) updatePermissionsBoundary(ctx context.Context, observed *awsi
 		boundaryArn = *observed.User.PermissionsBoundary.PermissionsBoundaryArn
 	}
 	if aws.ToString(&boundaryArn) != aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) {
+		// is this a delete?
 		if aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == "" {
 			_, err = e.client.DeleteUserPermissionsBoundary(ctx, &awsiam.DeleteUserPermissionsBoundaryInput{
 				UserName: aws.String(meta.GetExternalName(cr)),
 			})
-		} else {
-			_, err = e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
-				PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
-				UserName:            aws.String(meta.GetExternalName(cr)),
-			})
+
+			return awsclient.Wrap(err, errDeleteUserPermissionsBoundary)
 		}
 
-		return awsclient.Wrap(err, errUpdate)
+		// must be an update
+		_, err = e.client.PutUserPermissionsBoundary(ctx, &awsiam.PutUserPermissionsBoundaryInput{
+			PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
+			UserName:            aws.String(meta.GetExternalName(cr)),
+		})
+
+		return awsclient.Wrap(err, errPutUserPermissionsBoundary)
 	}
 
 	return nil
@@ -315,4 +304,26 @@ func (e *external) updateTags(ctx context.Context, observed *awsiam.GetUserOutpu
 	}
 
 	return nil
+}
+
+func isUpToDate(cr *v1beta1.User, user *types.User) bool {
+	// check path
+	isPathUpdated := aws.ToString(cr.Spec.ForProvider.Path) == aws.ToString(user.Path)
+
+	// check tags
+	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
+	for _, v := range cr.Spec.ForProvider.Tags {
+		crTagMap[v.Key] = v.Value
+	}
+	_, _, areTagsUpdated := iam.DiffIAMTags(crTagMap, user.Tags)
+
+	// check permissions boundary
+	boundaryArn := ""
+	if user.PermissionsBoundary != nil {
+		boundaryArn = *user.PermissionsBoundary.PermissionsBoundaryArn
+	}
+	isBoundaryUpdated :=
+		aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == aws.ToString(&boundaryArn)
+
+	return isPathUpdated && areTagsUpdated && isBoundaryUpdated
 }
