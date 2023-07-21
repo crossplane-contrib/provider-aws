@@ -267,12 +267,6 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 		in.StorageEncrypted = aws.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
 		in.StorageType = aws.LateInitializeStringPtr(in.StorageType, db.StorageType)
 		in.EngineVersion = aws.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
-		// When version 5.6 is chosen, AWS creates 5.6.41 and that's totally valid.
-		// But we detect as if we need to update it all the time. Here, we assign
-		// the actual full version to our spec to avoid unnecessary update signals.
-		if strings.HasPrefix(aws.StringValue(db.EngineVersion), aws.StringValue(in.EngineVersion)) {
-			in.EngineVersion = db.EngineVersion
-		}
 		if in.DBParameterGroupName == nil {
 			for i := range db.DBParameterGroups {
 				if db.DBParameterGroups[i].DBParameterGroupName != nil {
