@@ -8,3 +8,6 @@ spec:
     name: example
   forProvider:
     name: crossplane.io
+    tags:
+      key1: value1
+      key2: value2

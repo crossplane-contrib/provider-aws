@@ -18,11 +18,11 @@ package hostedzone
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -50,6 +50,9 @@ const (
 	errDelete = "failed to delete the Hosted Zone resource"
 	errUpdate = "failed to update the Hosted Zone resource"
 	errGet    = "failed to get the Hosted Zone resource"
+
+	errListTags   = "cannot list tags"
+	errUpdateTags = "cannot update tags"
 )
 
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
@@ -94,6 +97,9 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	kube   client.Client
 	client hostedzone.Client
+
+	tagsToAdd    []route53types.Tag
+	tagsToRemove []string
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -108,12 +114,27 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
+	hostedZoneID := aws.String(hostedzone.GetHostedZoneID(cr))
 	res, err := e.client.GetHostedZone(ctx, &route53.GetHostedZoneInput{
-		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
+		Id: hostedZoneID,
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
 	}
+
+	resTags, err := e.client.ListTagsForResource(ctx, &route53.ListTagsForResourceInput{
+		ResourceId:   hostedZoneID,
+		ResourceType: route53types.TagResourceTypeHostedzone,
+	})
+	if err != nil {
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errListTags)
+	}
+	if resTags.ResourceTagSet == nil {
+		resTags.ResourceTagSet = &route53types.ResourceTagSet{}
+	}
+
+	var areTagsUpToDate bool
+	e.tagsToAdd, e.tagsToRemove, areTagsUpToDate = hostedzone.AreTagsUpToDate(cr.Spec.ForProvider.Tags, resTags.ResourceTagSet.Tags)
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	hostedzone.LateInitialize(&cr.Spec.ForProvider, res)
@@ -122,7 +143,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        hostedzone.IsUpToDate(cr.Spec.ForProvider, *res.HostedZone),
+		ResourceUpToDate:        hostedzone.IsUpToDate(cr.Spec.ForProvider, *res.HostedZone) && areTagsUpToDate,
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
@@ -151,11 +172,28 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
+	hostedZoneID := hostedzone.GetHostedZoneID(cr)
 	_, err := e.client.UpdateHostedZoneComment(ctx,
-		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
+		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, hostedZoneID),
 	)
+	if err != nil {
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	}
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	// Update tags if necessary
+	if len(e.tagsToAdd) > 0 || len(e.tagsToRemove) > 0 {
+		_, err := e.client.ChangeTagsForResource(ctx, &route53.ChangeTagsForResourceInput{
+			ResourceId:    &hostedZoneID,
+			ResourceType:  route53types.TagResourceTypeHostedzone,
+			AddTags:       e.tagsToAdd,
+			RemoveTagKeys: e.tagsToRemove,
+		})
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
+		}
+	}
+
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -167,7 +205,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteHostedZone(ctx, &route53.DeleteHostedZoneInput{
-		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
+		Id: aws.String(hostedzone.GetHostedZoneID(cr)),
 	})
 
 	return awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)

@@ -19,10 +19,12 @@ package hostedzone
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -37,11 +39,18 @@ type Client interface {
 	DeleteHostedZone(ctx context.Context, input *route53.DeleteHostedZoneInput, opts ...func(*route53.Options)) (*route53.DeleteHostedZoneOutput, error)
 	GetHostedZone(ctx context.Context, input *route53.GetHostedZoneInput, opts ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
 	UpdateHostedZoneComment(ctx context.Context, input *route53.UpdateHostedZoneCommentInput, opts ...func(*route53.Options)) (*route53.UpdateHostedZoneCommentOutput, error)
+	ListTagsForResource(ctx context.Context, params *route53.ListTagsForResourceInput, opts ...func(*route53.Options)) (*route53.ListTagsForResourceOutput, error)
+	ChangeTagsForResource(ctx context.Context, params *route53.ChangeTagsForResourceInput, optFns ...func(*route53.Options)) (*route53.ChangeTagsForResourceOutput, error)
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
 func NewClient(cfg aws.Config) Client {
 	return route53.NewFromConfig(cfg)
+}
+
+// GetHostedZoneID for cr.
+func GetHostedZoneID(cr *v1alpha1.HostedZone) string {
+	return fmt.Sprintf("%s%s", IDPrefix, meta.GetExternalName(cr))
 }
 
 // IsNotFound returns true if the error code indicates that the requested Zone was not found
@@ -61,6 +70,23 @@ func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53types.HostedZone)
 		o = awsclients.StringValue(obs.Config.Comment)
 	}
 	return s == o
+}
+
+// AreTagsUpToDate checks whether the given spec and observed tags are the same.
+func AreTagsUpToDate(spec map[string]string, obs []route53types.Tag) ([]route53types.Tag, []string, bool) {
+	obsMap := make(map[string]string, len(obs))
+	for _, t := range obs {
+		obsMap[awsclients.StringValue(t.Key)] = awsclients.StringValue(t.Value)
+	}
+	added, removed := awsclients.DiffTags(spec, obsMap)
+	addedTags := make([]route53types.Tag, 0, len(added))
+	for k, v := range added {
+		addedTags = append(addedTags, route53types.Tag{
+			Key:   awsclients.String(k),
+			Value: awsclients.String(v),
+		})
+	}
+	return addedTags, removed, len(addedTags) == 0 && len(removed) == 0
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.HostedZoneParameters with
