@@ -45,6 +45,8 @@ type AttributeDefinition struct {
 
 // +kubebuilder:skipversion
 type AutoScalingSettingsDescription struct {
+	AutoScalingDisabled *bool `json:"autoScalingDisabled,omitempty"`
+
 	AutoScalingRoleARN *string `json:"autoScalingRoleARN,omitempty"`
 
 	MaximumUnits *int64 `json:"maximumUnits,omitempty"`
@@ -54,9 +56,21 @@ type AutoScalingSettingsDescription struct {
 
 // +kubebuilder:skipversion
 type AutoScalingSettingsUpdate struct {
+	AutoScalingDisabled *bool `json:"autoScalingDisabled,omitempty"`
+
 	MaximumUnits *int64 `json:"maximumUnits,omitempty"`
 
 	MinimumUnits *int64 `json:"minimumUnits,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AutoScalingTargetTrackingScalingPolicyConfigurationDescription struct {
+	DisableScaleIn *bool `json:"disableScaleIn,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AutoScalingTargetTrackingScalingPolicyConfigurationUpdate struct {
+	DisableScaleIn *bool `json:"disableScaleIn,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -206,6 +220,11 @@ type Endpoint struct {
 	Address *string `json:"address,omitempty"`
 
 	CachePeriodInMinutes *int64 `json:"cachePeriodInMinutes,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ExpectedAttributeValue struct {
+	Exists *bool `json:"exists,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -397,6 +416,11 @@ type PointInTimeRecoveryDescription struct {
 	EarliestRestorableDateTime *metav1.Time `json:"earliestRestorableDateTime,omitempty"`
 
 	LatestRestorableDateTime *metav1.Time `json:"latestRestorableDateTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PointInTimeRecoverySpecification struct {
+	PointInTimeRecoveryEnabled *bool `json:"pointInTimeRecoveryEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion

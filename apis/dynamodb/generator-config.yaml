@@ -6,6 +6,11 @@ ignore:
     - CreateGlobalTableInput.GlobalTableName
 resources:
   Table:
+    fields:
+      PointInTimeRecoveryEnabled:
+        from:
+          operation: UpdateContinuousBackups
+          path: PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled
     exceptions:
       errors:
         404:
