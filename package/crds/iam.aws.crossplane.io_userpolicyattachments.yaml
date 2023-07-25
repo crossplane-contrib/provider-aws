@@ -38,7 +38,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An UserPolicyAttachment is a managed resource that represents
+        description: A UserPolicyAttachment is a managed resource that represents
           an AWS IAM User policy attachment.
         properties:
           apiVersion:
@@ -54,8 +54,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: An UserPolicyAttachmentSpec defines the desired state of
-              an UserPolicyAttachment.
+            description: A UserPolicyAttachmentSpec defines the desired state of an
+              UserPolicyAttachment.
             properties:
               deletionPolicy:
                 default: Delete
@@ -75,7 +75,7 @@ spec:
                       IAM policy you want to attach.
                     type: string
                   policyArnRef:
-                    description: PolicyARNRef references an Policy to retrieve its
+                    description: PolicyARNRef references a Policy to retrieve its
                       Policy ARN.
                     properties:
                       name:
@@ -110,7 +110,7 @@ spec:
                     - name
                     type: object
                   policyArnSelector:
-                    description: PolicyARNSelector selects a reference to an Policy
+                    description: PolicyARNSelector selects a reference to a Policy
                       to retrieve its Policy ARN
                     properties:
                       matchControllerRef:
@@ -400,8 +400,8 @@ spec:
             - forProvider
             type: object
           status:
-            description: An UserPolicyAttachmentStatus represents the observed state
-              of an UserPolicyAttachment.
+            description: A UserPolicyAttachmentStatus represents the observed state
+              of a UserPolicyAttachment.
             properties:
               atProvider:
                 description: UserPolicyAttachmentObservation keeps the state for the

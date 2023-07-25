@@ -32,11 +32,11 @@ type GroupPolicyAttachmentParameters struct {
 	// +crossplane:generate:reference:extractor=PolicyARN()
 	PolicyARN string `json:"policyArn,omitempty"`
 
-	// PolicyARNRef references an Policy to retrieve its Policy ARN.
+	// PolicyARNRef references a Policy to retrieve its Policy ARN.
 	// +optional
 	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
-	// PolicyARNSelector selects a reference to an Policy to retrieve its
+	// PolicyARNSelector selects a reference to a Policy to retrieve its
 	// Policy ARN
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
@@ -55,7 +55,7 @@ type GroupPolicyAttachmentParameters struct {
 	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 }
 
-// An GroupPolicyAttachmentSpec defines the desired state of an
+// A GroupPolicyAttachmentSpec defines the desired state of a
 // GroupPolicyAttachment.
 type GroupPolicyAttachmentSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
@@ -69,7 +69,7 @@ type GroupPolicyAttachmentObservation struct {
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An GroupPolicyAttachmentStatus represents the observed state of an
+// A GroupPolicyAttachmentStatus represents the observed state of a
 // GroupPolicyAttachment.
 type GroupPolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
@@ -78,7 +78,7 @@ type GroupPolicyAttachmentStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An GroupPolicyAttachment is a managed resource that represents an AWS IAM
+// A GroupPolicyAttachment is a managed resource that represents an AWS IAM
 // Group policy attachment.
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"

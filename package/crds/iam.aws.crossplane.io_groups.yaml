@@ -38,8 +38,8 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An Group is a managed resource that represents an AWS IAM Group.
-          An User is a managed resource that represents an AWS IAM User.
+        description: A Group is a managed resource that represents an AWS IAM Group.
+          A User is a managed resource that represents an AWS IAM User.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -54,7 +54,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: An GroupSpec defines the desired state of an IAM Group.
+            description: A GroupSpec defines the desired state of an IAM Group.
             properties:
               deletionPolicy:
                 default: Delete
@@ -243,7 +243,7 @@ spec:
                 type: object
             type: object
           status:
-            description: An GroupStatus represents the observed state of an IAM Group.
+            description: A GroupStatus represents the observed state of an IAM Group.
             properties:
               atProvider:
                 description: GroupObservation keeps the state for the external resource

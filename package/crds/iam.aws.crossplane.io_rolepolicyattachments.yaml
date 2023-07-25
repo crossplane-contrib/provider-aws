@@ -38,7 +38,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An RolePolicyAttachment is a managed resource that represents
+        description: A RolePolicyAttachment is a managed resource that represents
           an AWS IAM Role policy attachment.
         properties:
           apiVersion:
@@ -54,8 +54,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: An RolePolicyAttachmentSpec defines the desired state of
-              an RolePolicyAttachment.
+            description: A RolePolicyAttachmentSpec defines the desired state of an
+              RolePolicyAttachment.
             properties:
               deletionPolicy:
                 default: Delete
@@ -75,7 +75,7 @@ spec:
                       IAM policy you want to attach.
                     type: string
                   policyArnRef:
-                    description: PolicyARNRef references an Policy to retrieve its
+                    description: PolicyARNRef references a Policy to retrieve its
                       Policy ARN.
                     properties:
                       name:
@@ -110,7 +110,7 @@ spec:
                     - name
                     type: object
                   policyArnSelector:
-                    description: PolicyARNSelector selects a reference to an Policy
+                    description: PolicyARNSelector selects a reference to a Policy
                       to retrieve its Policy ARN
                     properties:
                       matchControllerRef:
@@ -153,7 +153,7 @@ spec:
                     description: RoleName presents the name of the IAM role.
                     type: string
                   roleNameRef:
-                    description: RoleNameRef references an Role to retrieve its Name
+                    description: RoleNameRef references a Role to retrieve its Name
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -187,7 +187,7 @@ spec:
                     - name
                     type: object
                   roleNameSelector:
-                    description: RoleNameSelector selects a reference to an Role to
+                    description: RoleNameSelector selects a reference to a Role to
                       retrieve its Name
                     properties:
                       matchControllerRef:
@@ -399,7 +399,7 @@ spec:
             - forProvider
             type: object
           status:
-            description: An RolePolicyAttachmentStatus represents the observed state
+            description: A RolePolicyAttachmentStatus represents the observed state
               of an RolePolicyAttachment.
             properties:
               atProvider:

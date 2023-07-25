@@ -32,11 +32,11 @@ type UserPolicyAttachmentParameters struct {
 	// +crossplane:generate:reference:extractor=PolicyARN()
 	PolicyARN string `json:"policyArn,omitempty"`
 
-	// PolicyARNRef references an Policy to retrieve its Policy ARN.
+	// PolicyARNRef references a Policy to retrieve its Policy ARN.
 	// +optional
 	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
-	// PolicyARNSelector selects a reference to an Policy to retrieve its
+	// PolicyARNSelector selects a reference to a Policy to retrieve its
 	// Policy ARN
 	// +optional
 	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
@@ -55,7 +55,7 @@ type UserPolicyAttachmentParameters struct {
 	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
-// An UserPolicyAttachmentSpec defines the desired state of an
+// A UserPolicyAttachmentSpec defines the desired state of an
 // UserPolicyAttachment.
 type UserPolicyAttachmentSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
@@ -69,8 +69,7 @@ type UserPolicyAttachmentObservation struct {
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An UserPolicyAttachmentStatus represents the observed state of an
-// UserPolicyAttachment.
+// A UserPolicyAttachmentStatus represents the observed state of a UserPolicyAttachment.
 type UserPolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          UserPolicyAttachmentObservation `json:"atProvider,omitempty"`
@@ -78,7 +77,7 @@ type UserPolicyAttachmentStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An UserPolicyAttachment is a managed resource that represents an AWS IAM
+// A UserPolicyAttachment is a managed resource that represents an AWS IAM
 // User policy attachment.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
