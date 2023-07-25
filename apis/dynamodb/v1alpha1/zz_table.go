@@ -125,6 +125,9 @@ type TableParameters struct {
 	//    the same attribute into two different indexes, this counts as two distinct
 	//    attributes when determining the total.
 	LocalSecondaryIndexes []*LocalSecondaryIndex `json:"localSecondaryIndexes,omitempty"`
+	// Indicates whether point in time recovery is enabled (true) or disabled (false)
+	// on the table.
+	PointInTimeRecoveryEnabled *bool `json:"pointInTimeRecoveryEnabled,omitempty"`
 	// Represents the provisioned throughput settings for a specified table or index.
 	// The settings can be modified using the UpdateTable operation.
 	//

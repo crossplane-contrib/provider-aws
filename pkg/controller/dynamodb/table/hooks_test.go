@@ -105,7 +105,7 @@ func TestCreatePatch(t *testing.T) {
 	}
 }
 
-func TestIsUpToDate(t *testing.T) {
+func TestIsCoreResourceUpToDate(t *testing.T) {
 	type args struct {
 		t svcsdk.DescribeTableOutput
 		p v1alpha1.Table
@@ -174,11 +174,82 @@ func TestIsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := isUpToDate(&tc.args.p, &tc.args.t)
+			got, err := isCoreResourceUpToDate(&tc.args.p, &tc.args.t)
 			if diff := cmp.Diff(tc.want.result, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.err, err); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsPitrUpToDate(t *testing.T) {
+	type args struct {
+		t              svcapitypes.Table
+		pitrStatusBool bool
+	}
+
+	type want struct {
+		result bool
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"SameFields": {
+			args: args{
+				t: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							PointInTimeRecoveryEnabled: aws.Bool(true),
+						},
+					},
+				},
+				pitrStatusBool: true,
+			},
+			want: want{
+				result: true,
+			},
+		},
+		"DifferentFields": {
+			args: args{
+				t: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							PointInTimeRecoveryEnabled: aws.Bool(false),
+						},
+					},
+				},
+				pitrStatusBool: true,
+			},
+			want: want{
+				result: false,
+			},
+		},
+		"UnsetButTrueInAws": {
+			args: args{
+				t: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							PointInTimeRecoveryEnabled: nil,
+						},
+					},
+				},
+				pitrStatusBool: true,
+			},
+			want: want{
+				result: false,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := isPitrUpToDate(&tc.args.t, tc.args.pitrStatusBool)
+			if diff := cmp.Diff(tc.want.result, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

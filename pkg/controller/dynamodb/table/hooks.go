@@ -26,6 +26,7 @@ import (
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -54,9 +55,10 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 			e.preDelete = preDelete
 			e.postDelete = postDelete
 			e.lateInitialize = lateInitialize
-			e.isUpToDate = isUpToDate
 			u := &updateClient{client: e.client}
 			e.preUpdate = u.preUpdate
+			e.isUpToDate = u.isUpToDate
+			e.postUpdate = u.postUpdate
 		},
 	}
 
@@ -83,8 +85,38 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithConnectionPublishers(cps...)))
 }
 
+func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.UpdateTableOutput, _ managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
+	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
+		TableName: aws.String(cr.Name),
+	})
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+	pitrStatus := cbresult.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus
+	pitrStatusBool := pitrStatusToBool(pitrStatus)
+
+	if !isPitrUpToDate(cr, pitrStatusBool) {
+		pitrSpecEnabled := pointer.BoolDeref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
+
+		pitrInput := &svcsdk.UpdateContinuousBackupsInput{
+			TableName: aws.String(cr.Name),
+			PointInTimeRecoverySpecification: (&svcsdk.PointInTimeRecoverySpecification{
+				PointInTimeRecoveryEnabled: &pitrSpecEnabled,
+			}),
+		}
+
+		_, err := e.client.UpdateContinuousBackups(pitrInput)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+	}
+
+	return managed.ExternalUpdate{}, nil
+}
+
 func preObserve(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DescribeTableInput) error {
 	obj.TableName = aws.String(meta.GetExternalName(cr))
+
 	return nil
 }
 func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) error {
@@ -324,20 +356,9 @@ func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 	return patch, nil
 }
 
-func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
-	// A table that's currently creating, deleting, or updating can't be
-	// updated, so we temporarily consider it to be up-to-date no matter
-	// what.
-	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
-	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING), string(svcapitypes.TableStatus_SDK_DELETING):
-		return true, nil
-	}
-
-	// Similarly, a table that's currently updating its SSE status can't be
-	// updated, so we temporarily consider it to be up-to-date.
-	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
-		return true, nil
-	}
+func isCoreResourceUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+	// As continuous backup configuration lives in anoterh api, we extract the part of the isUpToDate logic
+	// which is concerned about the actual table-endpoint into a separate function in order to make it testable
 
 	patch, err := createPatch(resp, &cr.Spec.ForProvider)
 	if err != nil {
@@ -368,7 +389,59 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, 
 	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
 		return false, nil
 	}
+
 	return true, nil
+}
+
+func isPitrUpToDate(cr *svcapitypes.Table, pitrStatusBool bool) bool {
+	// it is not up to date when either point in time recovery is set and the state doesn't match the one on aws
+	// or it is unset and it is enabled on aws
+	return !((cr.Spec.ForProvider.PointInTimeRecoveryEnabled != nil && *cr.Spec.ForProvider.PointInTimeRecoveryEnabled != pitrStatusBool) ||
+		(cr.Spec.ForProvider.PointInTimeRecoveryEnabled == nil && pitrStatusBool))
+}
+
+func (e *updateClient) isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+	// A table that's currently creating, deleting, or updating can't be
+	// updated, so we temporarily consider it to be up-to-date no matter
+	// what.
+	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING), string(svcapitypes.TableStatus_SDK_DELETING):
+		return true, nil
+	}
+
+	// Similarly, a table that's currently updating its SSE status can't be
+	// updated, so we temporarily consider it to be up-to-date.
+	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
+		return true, nil
+	}
+
+	coreUpToDate, err := isCoreResourceUpToDate(cr, resp)
+	if err != nil {
+		return false, err
+	}
+	if !coreUpToDate {
+		return false, nil
+	}
+
+	// point in time recovery status
+	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
+		TableName: aws.String(cr.Name),
+	})
+	if err != nil {
+		return false, err
+	}
+	pitrStatus := cbresult.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus
+	pitrStatusBool := pitrStatusToBool(pitrStatus)
+
+	if !isPitrUpToDate(cr, pitrStatusBool) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func pitrStatusToBool(pitrStatus *string) bool {
+	return pointer.StringDeref(pitrStatus, "") == string(svcapitypes.PointInTimeRecoveryStatus_ENABLED)
 }
 
 type updateClient struct {
