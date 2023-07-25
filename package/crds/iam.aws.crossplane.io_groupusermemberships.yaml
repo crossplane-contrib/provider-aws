@@ -38,8 +38,8 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An GroupUserMembership is a managed resource that represents
-          an AWS IAM User group membership.
+        description: A GroupUserMembership is a managed resource that represents an
+          AWS IAM User group membership.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -54,7 +54,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: An GroupUserMembershipSpec defines the desired state of an
+            description: A GroupUserMembershipSpec defines the desired state of an
               GroupUserMembership.
             properties:
               deletionPolicy:
@@ -75,7 +75,7 @@ spec:
                       the IAM group you want to add User to.
                     type: string
                   groupNameRef:
-                    description: GroupNameRef references to an Group to retrieve its
+                    description: GroupNameRef references to a Group to retrieve its
                       groupName
                     properties:
                       name:
@@ -110,7 +110,7 @@ spec:
                     - name
                     type: object
                   groupNameSelector:
-                    description: GroupNameSelector selects a reference to an Group
+                    description: GroupNameSelector selects a reference to a Group
                       to retrieve its groupName
                     properties:
                       matchControllerRef:
@@ -153,7 +153,7 @@ spec:
                     description: UserName presents the name of the User.
                     type: string
                   userNameRef:
-                    description: UserNameRef references to an User to retrieve its
+                    description: UserNameRef references to a User to retrieve its
                       userName
                     properties:
                       name:
@@ -188,7 +188,7 @@ spec:
                     - name
                     type: object
                   userNameSelector:
-                    description: UserNameSelector selects a reference to an User to
+                    description: UserNameSelector selects a reference to a User to
                       retrieve its userName
                     properties:
                       matchControllerRef:
@@ -400,8 +400,8 @@ spec:
             - forProvider
             type: object
           status:
-            description: An GroupUserMembershipStatus represents the observed state
-              of an GroupUserMembership.
+            description: A GroupUserMembershipStatus represents the observed state
+              of a GroupUserMembership.
             properties:
               atProvider:
                 description: GroupUserMembershipObservation keeps the state for the

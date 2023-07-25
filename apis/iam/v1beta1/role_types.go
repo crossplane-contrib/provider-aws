@@ -82,7 +82,7 @@ type RoleParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// An RoleSpec defines the desired state of an Role.
+// A RoleSpec defines the desired state of a Role.
 type RoleSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       RoleParameters `json:"forProvider"`
@@ -101,7 +101,7 @@ type RoleExternalStatus struct {
 	RoleID string `json:"roleID"`
 }
 
-// An RoleStatus represents the observed state of an Role.
+// A RoleStatus represents the observed state of a Role.
 type RoleStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          RoleExternalStatus `json:"atProvider,omitempty"`
@@ -109,7 +109,7 @@ type RoleStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An Role is a managed resource that represents an AWS IAM Role.
+// A Role is a managed resource that represents an AWS IAM Role.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"

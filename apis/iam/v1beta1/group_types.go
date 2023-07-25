@@ -29,7 +29,7 @@ type GroupParameters struct {
 	Path *string `json:"path,omitempty"`
 }
 
-// An GroupSpec defines the desired state of an IAM Group.
+// A GroupSpec defines the desired state of an IAM Group.
 type GroupSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       GroupParameters `json:"forProvider,omitempty"`
@@ -44,7 +44,7 @@ type GroupObservation struct {
 	GroupID string `json:"groupId,omitempty"`
 }
 
-// An GroupStatus represents the observed state of an IAM Group.
+// A GroupStatus represents the observed state of an IAM Group.
 type GroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          GroupObservation `json:"atProvider,omitempty"`
@@ -52,8 +52,8 @@ type GroupStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An Group is a managed resource that represents an AWS IAM Group.
-// An User is a managed resource that represents an AWS IAM User.
+// A Group is a managed resource that represents an AWS IAM Group.
+// A User is a managed resource that represents an AWS IAM User.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.groupId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

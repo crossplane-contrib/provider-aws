@@ -31,12 +31,12 @@ type GroupUserMembershipParameters struct {
 	// +crossplane:generate:reference:type=Group
 	GroupName string `json:"groupName,omitempty"`
 
-	// GroupNameRef references to an Group to retrieve its groupName
+	// GroupNameRef references to a Group to retrieve its groupName
 	// +optional
 	// +immutable
 	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
-	// GroupNameSelector selects a reference to an Group to retrieve its groupName
+	// GroupNameSelector selects a reference to a Group to retrieve its groupName
 	// +optional
 	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 
@@ -45,17 +45,17 @@ type GroupUserMembershipParameters struct {
 	// +crossplane:generate:reference:type=User
 	UserName string `json:"userName,omitempty"`
 
-	// UserNameRef references to an User to retrieve its userName
+	// UserNameRef references to a User to retrieve its userName
 	// +optional
 	// +immutable
 	UserNameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
-	// UserNameSelector selects a reference to an User to retrieve its userName
+	// UserNameSelector selects a reference to a User to retrieve its userName
 	// +optional
 	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
-// An GroupUserMembershipSpec defines the desired state of an
+// A GroupUserMembershipSpec defines the desired state of an
 // GroupUserMembership.
 type GroupUserMembershipSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
@@ -69,8 +69,7 @@ type GroupUserMembershipObservation struct {
 	AttachedGroupARN string `json:"attachedGroupArn"`
 }
 
-// An GroupUserMembershipStatus represents the observed state of an
-// GroupUserMembership.
+// A GroupUserMembershipStatus represents the observed state of a GroupUserMembership.
 type GroupUserMembershipStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          GroupUserMembershipObservation `json:"atProvider,omitempty"`
@@ -78,7 +77,7 @@ type GroupUserMembershipStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An GroupUserMembership is a managed resource that represents an AWS IAM
+// A GroupUserMembership is a managed resource that represents an AWS IAM
 // User group membership.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"

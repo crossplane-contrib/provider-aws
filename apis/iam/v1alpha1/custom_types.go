@@ -9,7 +9,7 @@ type CustomInstanceProfileParameters struct {
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1.Role
 	Role *string `json:"role,omitempty"`
 
-	// RoleRef is a reference to an Role
+	// RoleRef is a reference to a Role
 	// +optional
 	RoleRef *xpv1.Reference `json:"roleRef,omitempty"`
 

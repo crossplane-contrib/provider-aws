@@ -37,7 +37,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: An Role is a managed resource that represents an AWS IAM Role.
+        description: A Role is a managed resource that represents an AWS IAM Role.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -52,7 +52,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: An RoleSpec defines the desired state of an Role.
+            description: A RoleSpec defines the desired state of a Role.
             properties:
               deletionPolicy:
                 default: Delete
@@ -296,7 +296,7 @@ spec:
             - forProvider
             type: object
           status:
-            description: An RoleStatus represents the observed state of an Role.
+            description: A RoleStatus represents the observed state of a Role.
             properties:
               atProvider:
                 description: RoleExternalStatus keeps the state for the external resource

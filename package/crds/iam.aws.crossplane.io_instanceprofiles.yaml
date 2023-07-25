@@ -82,7 +82,7 @@ spec:
                     description: Role is the ID for the Role to add to Instance Profile.
                     type: string
                   roleRef:
-                    description: RoleRef is a reference to an Role
+                    description: RoleRef is a reference to a Role
                     properties:
                       name:
                         description: Name of the referenced object.
