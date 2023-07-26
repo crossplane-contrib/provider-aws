@@ -701,6 +701,27 @@ spec:
                             - ipv6Address
                             type: object
                           type: array
+                        ipv6PrefixCount:
+                          description: The number of IPv6 delegated prefixes to be
+                            automatically assigned to the network interface. You cannot
+                            use this option if you use the Ipv6Prefix option.
+                          format: int32
+                          type: integer
+                        ipv6Prefixes:
+                          description: One or more IPv6 delegated prefixes to be assigned
+                            to the network interface. You cannot use this option if
+                            you use the Ipv6PrefixCount option.
+                          items:
+                            description: Ipv6PrefixSpecificationRequest describes
+                              the IPv4 prefix option for a network interface.
+                            properties:
+                              ipv6Prefix:
+                                description: The IPv6 prefix.
+                                type: string
+                            required:
+                            - ipv6Prefix
+                            type: object
+                          type: array
                         networkInterfaceId:
                           description: "The ID of the network interface. \n If you
                             are creating a Spot Fleet, omit this parameter because

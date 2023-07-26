@@ -57,6 +57,7 @@ const (
 	interfaceType         = "intType"
 	ipOwnerID             = "ipOwnerId"
 	ipv6Address           = "ipv6Address"
+	ipv6Prefix            = "ipv6Prefix"
 	kernelID              = "kernelId"
 	keyName               = "keyName"
 	launchTemplateID      = "launchTemplateId"
@@ -668,6 +669,12 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 								IPv6Address: aws.String(ipv6Address),
 							},
 						},
+						Ipv6PrefixCount: aws.Int32(1),
+						Ipv6Prefixes: []manualv1alpha1.Ipv6PrefixSpecificationRequest{
+							{
+								Ipv6Prefix: ipv6Prefix,
+							},
+						},
 						NetworkInterfaceID: aws.String(networkInterfaceID),
 						PrivateIPAddress:   aws.String(privateIPAddress),
 						PrivateIPAddresses: []manualv1alpha1.PrivateIPAddressSpecification{
@@ -813,6 +820,10 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 								Ipv6Address: aws.String(ipv6Address),
 							},
 						},
+						Ipv6PrefixCount: aws.Int32(1),
+						Ipv6Prefixes: []types.Ipv6PrefixSpecificationRequest{{
+							Ipv6Prefix: aws.String(ipv6Prefix),
+						}},
 						NetworkInterfaceId: aws.String(networkInterfaceID),
 						PrivateIpAddress:   aws.String(privateIPAddress),
 						PrivateIpAddresses: []types.PrivateIpAddressSpecification{
