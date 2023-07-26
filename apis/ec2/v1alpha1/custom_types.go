@@ -96,6 +96,10 @@ type CustomLaunchTemplateVersionParameters struct {
 
 // CustomVolumeParameters contains the additional fields for VolumeParameters.
 type CustomVolumeParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags map[string]string `json:"tags,omitempty"`
+
 	// The identifier of the AWS Key Management Service (AWS KMS) customer master
 	// key (CMK) to use for Amazon EBS encryption. If this parameter is not specified,
 	// your AWS managed CMK for EBS is used. If KmsKeyId is specified, the encrypted
@@ -335,6 +339,10 @@ type CustomRouteParameters struct {
 
 // CustomVPCEndpointParameters are custom parameters for VPCEndpoint
 type CustomVPCEndpointParameters struct {
+	// Metadata tagging key value pairs
+	// +optional
+	Tags map[string]string `json:"tags,omitempty"`
+
 	// The ID of the VPC. You must specify this parameter in the request.
 	// +optional
 	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1.VPC

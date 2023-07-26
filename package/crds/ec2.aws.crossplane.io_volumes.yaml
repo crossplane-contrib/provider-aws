@@ -229,6 +229,11 @@ spec:
                           type: array
                       type: object
                     type: array
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: Metadata tagging key value pairs
+                    type: object
                   throughput:
                     description: "The throughput to provision for a volume, with a
                       maximum of 1,000 MiB/s. \n This parameter is valid only for
