@@ -176,6 +176,9 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
 	servicediscoveryservice "github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/service"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/configurationset"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/emailidentity"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/emailtemplate"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sns/subscription"
@@ -352,6 +355,9 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		optiongroup.SetupOptionGroup,
 		autoscalinggroup.SetupAutoScalingGroup,
 		servicediscoveryservice.SetupService,
+		configurationset.SetupConfigurationSet,
+		emailidentity.SetupEmailIdentity,
+		emailtemplate.SetupEmailTemplate,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

@@ -1,0 +1,29 @@
+apiVersion: sesv2.aws.crossplane.io/v1alpha1
+kind: ConfigurationSet
+metadata:
+  name: example-configset
+  annotations:
+    crossplane.io/external-name: example-configset-name
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    deliveryOptions:
+      tlsPolicy: OPTIONAL #REQUIRE|OPTIONAL
+    region: us-east-1
+    reputationOptions:
+      reputationMetricsEnabled: true
+    sendingOptions:
+      sendingEnabled: true
+    suppressionOptions:
+      suppressedReasons:
+      - BOUNCE
+      - COMPLAINT
+    tags:
+    - key: mykey1
+      value: myvalue1
+    - key: mykey1
+      value: myvalue2
+    trackingOptions:
+      customRedirectDomain: subdomain.mydomain
+  providerConfigRef:
+    name: example

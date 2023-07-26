@@ -84,6 +84,7 @@ import (
 	secretsmanagerv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/secretsmanager/v1alpha1"
 	secretsmanagerv1beta1 "github.com/crossplane-contrib/provider-aws/apis/secretsmanager/v1beta1"
 	servicediscoveryv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
+	sesv2v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	sfnv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/sfn/v1alpha1"
 	snsv1beta1 "github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	sqsv1beta1 "github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
@@ -117,6 +118,7 @@ func init() {
 		secretsmanagerv1alpha1.SchemeBuilder.AddToScheme,
 		secretsmanagerv1beta1.SchemeBuilder.AddToScheme,
 		servicediscoveryv1alpha1.SchemeBuilder.AddToScheme,
+		sesv2v1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
 		acmpcav1beta1.SchemeBuilder.AddToScheme,
 		eksv1alpha1.SchemeBuilder.AddToScheme,
