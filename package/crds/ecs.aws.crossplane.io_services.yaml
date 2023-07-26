@@ -240,6 +240,10 @@ spec:
                       is enabled for the service. If true, this enables execute command
                       functionality on all containers in the service tasks.
                     type: boolean
+                  forceDeletion:
+                    description: Force Service to be deleted, even with task Running
+                      or Pending
+                    type: boolean
                   healthCheckGracePeriodSeconds:
                     description: "The period of time, in seconds, that the Amazon
                       ECS service scheduler ignores unhealthy Elastic Load Balancing

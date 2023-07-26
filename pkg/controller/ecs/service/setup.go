@@ -99,13 +99,8 @@ func preCreate(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.CreateSer
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.DeleteServiceInput) (bool, error) {
-	if aws.StringValue(cr.Spec.ForProvider.SchedulingStrategy) == svcsdk.SchedulingStrategyReplica {
-		if aws.Int64Value(cr.Status.AtProvider.RunningCount) > 0 || aws.Int64Value(cr.Status.AtProvider.PendingCount) > 0 {
-			// Force deletion of services even if they are not scaled down.
-			obj.SetForce(true)
-		}
-	}
 
+	obj.SetForce(cr.Spec.ForProvider.ForceDeletion)
 	obj.Cluster = cr.Spec.ForProvider.Cluster
 	obj.SetService(meta.GetExternalName(cr))
 
