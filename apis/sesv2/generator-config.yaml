@@ -1,0 +1,30 @@
+ignore:
+  field_paths:
+    - CreateEmailIdentityInput.ConfigurationSetName
+    - CreateEmailIdentityInput.DkimSigningAttributes.DomainSigningPrivateKey
+    - CreateEmailTemplateInput.TemplateName
+    - DeleteEmailTemplateInput.TemplateName
+    - CreateConfigurationSetInput.ConfigurationSetName
+    - DeleteConfigurationSetInput.ConfigurationSetName
+    - BlacklistEntry.ListingTime
+    - ContactList.LastUpdatedTimestamp
+    - Contact.LastUpdatedTimestamp
+    - CustomVerificationEmailTemplateMetadata.TemplateName
+    - CustomVerificationEmailTemplateMetadata.TemplateSubject
+    - DailyVolume.StartDate
+    - DeliverabilityTestReport.CreateDate
+    - DomainDeliverabilityCampaign.FirstSeenDateTime
+    - DomainDeliverabilityCampaign.FromAddress
+    - DomainDeliverabilityCampaign.LastSeenDateTime
+    - DomainDeliverabilityTrackingOption.SubscriptionStartDate
+    - ImportJobSummary.CreatedTimestamp
+    - ReputationOptions.LastFreshStart #Issue during pkg conversion - undeclared name: metav1
+  resource_names:
+    - Contact
+    - ContactList
+    - CustomVerificationEmailTemplate #Dependency on EmailTemplate
+    - DeliverabilityTestReport #Not offered in AWS Web Console, alternatively view from Reputation metrics dashboard
+    - DedicatedIpPool #Trigger manual flow through AWS Support for service limit increase is needed
+    - EmailIdentityPolicy #Issue during pkg conversion - executing "sdk_find_read_many"
+    - ImportJob
+    - ConfigurationSetEventDestination #Remove until PR fix in code-generator

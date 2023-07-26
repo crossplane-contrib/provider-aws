@@ -1,0 +1,39 @@
+apiVersion: sesv2.aws.crossplane.io/v1alpha1
+kind: EmailIdentity
+metadata:
+  name: example-domain
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    configurationSetNameRef:
+      name: example-configset
+    configurationSetNameSelector:
+      matchLabels:
+        mykey: myvalue
+    domainSigningPrivateKeySecretRef: #recommended way to store private key
+      namespace: crossplane-system
+      name: example-secret
+      key: clientKey
+    dkimSigningAttributes:
+      domainSigningSelector: subdomain #Without suffix ._domainkey.mydomain
+    mailFromAttributes:
+      behaviorOnMxFailure: USE_DEFAULT_VALUE #USE_DEFAULT_VALUE | REJECT_MESSAGE
+      mailFromDomain: subdomain.mydomain
+    emailIdentity: mydomain
+    region: us-east-1
+    tags:
+    - key: mykey1
+      value: myvalue1
+    - key: mykey1
+      value: myvalue2
+  providerConfigRef:
+    name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-secret
+  namespace: crossplane-system
+type: Opaque
+data:
+  clientKey: #base64_encoded_pk
