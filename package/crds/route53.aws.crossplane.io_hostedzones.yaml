@@ -103,6 +103,11 @@ spec:
                       Route 53, change the name servers for your domain to the set
                       of NameServers that CreateHostedHostedZone returns in DelegationSet."
                     type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: Tags for this hosted zone.
+                    type: object
                   vpc:
                     description: "(Private hosted zones only) A complex type that
                       contains information about the Amazon VPC that you're associating

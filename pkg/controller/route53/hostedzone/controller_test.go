@@ -26,6 +26,7 @@ import (
 	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
 	awsroute53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -84,6 +85,12 @@ func withStatus(id string, rr int64) zoneModifier {
 				ResourceRecordSetCount: rr,
 			},
 		}
+	}
+}
+
+func withSpec(s v1alpha1.HostedZoneParameters) zoneModifier {
+	return func(r *v1alpha1.HostedZone) {
+		r.Spec.ForProvider = s
 	}
 }
 
@@ -149,19 +156,137 @@ func TestObserve(t *testing.T) {
 							VPCs: make([]awsroute53types.VPC, 0),
 						}, nil
 					},
+					MockListTagsForResource: func(ctx context.Context, params *awsroute53.ListTagsForResourceInput, opts []func(*awsroute53.Options)) (*awsroute53.ListTagsForResourceOutput, error) {
+						return &awsroute53.ListTagsForResourceOutput{
+							ResourceTagSet: &awsroute53types.ResourceTagSet{
+								Tags: []awsroute53types.Tag{
+									{
+										Key:   aws.String("foo"),
+										Value: aws.String("bar"),
+									},
+									{
+										Key:   aws.String("hello"),
+										Value: aws.String("world"),
+									},
+								},
+							},
+						}, nil
+					},
 				},
 				cr: instance(
 					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
-					withStatus(id, rrCount)),
+					withStatus(id, rrCount),
+					withSpec(v1alpha1.HostedZoneParameters{
+						Tags: map[string]string{
+							"foo":   "bar",
+							"hello": "world",
+						},
+						Config: &v1alpha1.Config{
+							Comment:     c,
+							PrivateZone: &b,
+						},
+					}),
+				),
 			},
 			want: want{
 				cr: instance(
 					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount),
-					withConditions(xpv1.Available())),
+					withConditions(xpv1.Available()),
+					withSpec(v1alpha1.HostedZoneParameters{
+						Tags: map[string]string{
+							"foo":   "bar",
+							"hello": "world",
+						},
+						Config: &v1alpha1.Config{
+							Comment:     c,
+							PrivateZone: &b,
+						},
+					}),
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+				},
+			},
+		},
+		"DiffTags": {
+			args: args{
+				kube: &test.MockClient{
+					MockStatusUpdate: test.NewMockSubResourceUpdateFn(nil),
+				},
+				route53: &fake.MockHostedZoneClient{
+					MockGetHostedZone: func(ctx context.Context, input *awsroute53.GetHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.GetHostedZoneOutput, error) {
+						return &awsroute53.GetHostedZoneOutput{
+							DelegationSet: &awsroute53types.DelegationSet{
+								NameServers: []string{
+									"ns-2048.awsdns-64.com",
+									"ns-2049.awsdns-65.net",
+									"ns-2050.awsdns-66.org",
+									"ns-2051.awsdns-67.co.uk",
+								},
+							},
+							HostedZone: &awsroute53types.HostedZone{
+								CallerReference:        &uuid,
+								Id:                     &id,
+								ResourceRecordSetCount: &rrCount,
+								Config: &awsroute53types.HostedZoneConfig{
+									Comment:     c,
+									PrivateZone: b,
+								},
+							},
+							VPCs: make([]awsroute53types.VPC, 0),
+						}, nil
+					},
+					MockListTagsForResource: func(ctx context.Context, params *awsroute53.ListTagsForResourceInput, opts []func(*awsroute53.Options)) (*awsroute53.ListTagsForResourceOutput, error) {
+						return &awsroute53.ListTagsForResourceOutput{
+							ResourceTagSet: &awsroute53types.ResourceTagSet{
+								Tags: []awsroute53types.Tag{
+									{
+										Key:   aws.String("foo"),
+										Value: aws.String("bar"),
+									},
+									{
+										Key:   aws.String("hello"),
+										Value: aws.String("world"),
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
+					withStatus(id, rrCount),
+					withSpec(v1alpha1.HostedZoneParameters{
+						Tags: map[string]string{
+							"hello": "world",
+						},
+						Config: &v1alpha1.Config{
+							Comment:     c,
+							PrivateZone: &b,
+						},
+					}),
+				),
+			},
+			want: want{
+				cr: instance(
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
+					withStatus(id, rrCount),
+					withConditions(xpv1.Available()),
+					withSpec(v1alpha1.HostedZoneParameters{
+						Tags: map[string]string{
+							"hello": "world",
+						},
+						Config: &v1alpha1.Config{
+							Comment:     c,
+							PrivateZone: &b,
+						},
+					}),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
 				},
 			},
 		},
@@ -301,6 +426,12 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	type args struct {
+		route53      hostedzone.Client
+		cr           resource.Managed
+		tagsToAdd    []awsroute53types.Tag
+		tagsToRemove []string
+	}
 
 	type want struct {
 		cr     resource.Managed
@@ -328,13 +459,48 @@ func TestUpdate(t *testing.T) {
 							},
 						}, nil
 					},
+					MockChangeTagsForResource: func(ctx context.Context, params *awsroute53.ChangeTagsForResourceInput, optFns []func(*awsroute53.Options)) (*awsroute53.ChangeTagsForResourceOutput, error) {
+						expected := &awsroute53.ChangeTagsForResourceInput{
+							ResourceType: awsroute53types.TagResourceTypeHostedzone,
+							AddTags: []awsroute53types.Tag{
+								{
+									Key:   aws.String("foo"),
+									Value: aws.String("bar"),
+								},
+								{
+									Key:   aws.String("hello"),
+									Value: aws.String("world"),
+								},
+							},
+							RemoveTagKeys: []string{
+								"hello",
+							},
+						}
+						if diff := cmp.Diff(expected, params, cmpopts.IgnoreFields("ResourceID")); diff != "" {
+							return nil, errors.Errorf("unexpected params: %s", diff)
+						}
+						return nil, nil
+					},
 				},
-				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
-					withComment("New Comment")),
+				cr: instance(
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
+					withComment("New Comment"),
+				),
+				tagsToAdd: []awsroute53types.Tag{
+					{
+						Key:   aws.String("foo"),
+						Value: aws.String("bar"),
+					},
+				},
+				tagsToRemove: []string{
+					"hello",
+				},
 			},
 			want: want{
-				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
-					withComment("New Comment")),
+				cr: instance(
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
+					withComment("New Comment"),
+				),
 			},
 		},
 		"InValidInput": {

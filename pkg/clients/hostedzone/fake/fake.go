@@ -28,6 +28,8 @@ type MockHostedZoneClient struct {
 	MockDeleteHostedZone        func(ctx context.Context, input *route53.DeleteHostedZoneInput, opts []func(*route53.Options)) (*route53.DeleteHostedZoneOutput, error)
 	MockGetHostedZone           func(ctx context.Context, input *route53.GetHostedZoneInput, opts []func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
 	MockUpdateHostedZoneComment func(ctx context.Context, input *route53.UpdateHostedZoneCommentInput, opts []func(*route53.Options)) (*route53.UpdateHostedZoneCommentOutput, error)
+	MockListTagsForResource     func(ctx context.Context, params *route53.ListTagsForResourceInput, opts []func(*route53.Options)) (*route53.ListTagsForResourceOutput, error)
+	MockChangeTagsForResource   func(ctx context.Context, params *route53.ChangeTagsForResourceInput, optFns []func(*route53.Options)) (*route53.ChangeTagsForResourceOutput, error)
 }
 
 // GetHostedZone mocks GetHostedZone method
@@ -48,4 +50,14 @@ func (m *MockHostedZoneClient) UpdateHostedZoneComment(ctx context.Context, inpu
 // DeleteHostedZone mocks DeleteHostedZone method
 func (m *MockHostedZoneClient) DeleteHostedZone(ctx context.Context, input *route53.DeleteHostedZoneInput, opts ...func(*route53.Options)) (*route53.DeleteHostedZoneOutput, error) {
 	return m.MockDeleteHostedZone(ctx, input, opts)
+}
+
+// ListTagsForResource mocks ListTagsForResource method
+func (m *MockHostedZoneClient) ListTagsForResource(ctx context.Context, input *route53.ListTagsForResourceInput, opts ...func(*route53.Options)) (*route53.ListTagsForResourceOutput, error) {
+	return m.MockListTagsForResource(ctx, input, opts)
+}
+
+// ChangeTagsForResource mocks ChangeTagsForResource method
+func (m *MockHostedZoneClient) ChangeTagsForResource(ctx context.Context, input *route53.ChangeTagsForResourceInput, opts ...func(*route53.Options)) (*route53.ChangeTagsForResourceOutput, error) {
+	return m.MockChangeTagsForResource(ctx, input, opts)
 }

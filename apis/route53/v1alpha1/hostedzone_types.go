@@ -89,6 +89,10 @@ type HostedZoneParameters struct {
 	// +immutable
 	// +optional
 	VPC *VPC `json:"vpc,omitempty"`
+
+	// Tags for this hosted zone.
+	// +optional
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 // Config represents the configuration of a Hosted Zone.
