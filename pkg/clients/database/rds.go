@@ -677,11 +677,14 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "ApplyModificationsImmediately"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "OptionGroupName"),
 	)
 
 	engineVersionChanged := !isEngineVersionUpToDate(r, db)
 
-	if diff == "" && !pwdChanged && !engineVersionChanged {
+	optionGroupChanged := !isOptionGroupUpToDate(r, db)
+
+	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged {
 		return true, "", nil
 	}
 
@@ -702,6 +705,33 @@ func isEngineVersionUpToDate(cr *v1beta1.RDSInstance, db rdstypes.DBInstance) bo
 		// Downgrades are not possible in AWS.
 		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *db.EngineVersion)
 		return c <= 0
+	}
+	return true
+}
+
+func isOptionGroupUpToDate(cr *v1beta1.RDSInstance, db rdstypes.DBInstance) bool {
+	// If OptionGroupName is not set, AWS sets a default OptionGroup,
+	// so we do not try to update in this case
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		for _, group := range db.OptionGroupMemberships {
+			if group.OptionGroupName != nil && (awsclients.StringValue(group.OptionGroupName) == awsclients.StringValue(cr.Spec.ForProvider.OptionGroupName)) {
+
+				switch awsclients.StringValue(group.Status) {
+				case "pending-maintenance-apply":
+					// If ApplyModificationsImmediately was turned on after the OptionGroup change was requested,
+					// we can make a new Modify request
+					if awsclients.BoolValue(cr.Spec.ForProvider.ApplyModificationsImmediately) {
+						return false
+					}
+					return true
+				case "pending-maintenance-removal":
+					return false
+				default: // "in-sync", "applying", "pending-apply", "pending-removal", "removing", "failed"
+					return true
+				}
+			}
+		}
+		return false
 	}
 	return true
 }

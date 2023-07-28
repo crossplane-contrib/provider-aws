@@ -381,6 +381,8 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 
 	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
 
+	optionGroupChanged := !isOptionGroupUpToDate(cr, db)
+
 	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
@@ -394,13 +396,14 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AutogeneratePassword"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredMaintenanceWindow"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "PreferredBackupWindow"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "OptionGroupName"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "ApplyImmediately"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "RestoreFrom"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "VPCSecurityGroupIDs"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !pwChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged {
 		return true, nil
 	}
 
@@ -435,6 +438,33 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBI
 		// Downgrades are not possible in AWS.
 		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBInstances[0].EngineVersion)
 		return c <= 0
+	}
+	return true
+}
+
+func isOptionGroupUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) bool {
+	// If OptionGroupName is not set, AWS sets a default OptionGroup,
+	// so we do not try to update in this case
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		for _, group := range out.OptionGroupMemberships {
+			if group.OptionGroupName != nil && (aws.StringValue(group.OptionGroupName) == aws.StringValue(cr.Spec.ForProvider.OptionGroupName)) {
+
+				switch aws.StringValue(group.Status) {
+				case "pending-maintenance-apply":
+					// If ApplyImmediately was turned on after the OptionGroup change was requested,
+					// we can make a new Modify request
+					if aws.BoolValue(cr.Spec.ForProvider.ApplyImmediately) {
+						return false
+					}
+					return true
+				case "pending-maintenance-removal":
+					return false
+				default: // "in-sync", "applying", "pending-apply", "pending-removal", "removing", "failed"
+					return true
+				}
+			}
+		}
+		return false
 	}
 	return true
 }
