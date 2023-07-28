@@ -239,6 +239,15 @@ spec:
                             snapshotId:
                               description: The ID of the snapshot.
                               type: string
+                            throughput:
+                              description: "The throughput that the volume supports,
+                                in MiB/s. \n Constraints: Up to 1,000MiB/s for gp3
+                                volumes. \n Condition: This parameter is optional
+                                and only used to create gp3 volumes; it is not used
+                                in requests to create gp2, st1, sc1, io1, or standard
+                                volumes."
+                              format: int32
+                              type: integer
                             volumeSize:
                               description: "The size of the volume, in GiB. \n Default:
                                 If you're creating the volume from a snapshot and

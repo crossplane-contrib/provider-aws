@@ -172,6 +172,14 @@ type EBSBlockDevice struct {
 	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
 	IOps *int32 `json:"iops,omitempty"`
 
+	// The throughput that the volume supports, in MiB/s.
+	//
+	// Constraints: Up to 1,000MiB/s for gp3 volumes.
+	//
+	// Condition: This parameter is optional and only used to create gp3 volumes;
+	// it is not used in requests to create gp2, st1, sc1, io1, or standard volumes.
+	Throughput *int32 `json:"throughput,omitempty"`
+
 	// Identifier (key ID, key alias, ID ARN, or alias ARN) for a customer managed
 	// CMK under which the EBS volume is encrypted.
 	//

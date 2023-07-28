@@ -225,6 +225,7 @@ func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping
 					DeleteOnTermination: bm.EBS.DeleteOnTermination,
 					Encrypted:           bm.EBS.Encrypted,
 					Iops:                bm.EBS.IOps,
+					Throughput:          bm.EBS.Throughput,
 					KmsKeyId:            bm.EBS.KmsKeyID,
 					SnapshotId:          bm.EBS.SnapshotID,
 					VolumeSize:          bm.EBS.VolumeSize,
