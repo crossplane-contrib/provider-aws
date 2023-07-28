@@ -33,6 +33,8 @@ type RoleClient interface {
 	CreateRole(ctx context.Context, input *iam.CreateRoleInput, opts ...func(*iam.Options)) (*iam.CreateRoleOutput, error)
 	DeleteRole(ctx context.Context, input *iam.DeleteRoleInput, opts ...func(*iam.Options)) (*iam.DeleteRoleOutput, error)
 	UpdateRole(ctx context.Context, input *iam.UpdateRoleInput, opts ...func(*iam.Options)) (*iam.UpdateRoleOutput, error)
+	PutRolePermissionsBoundary(ctx context.Context, params *iam.PutRolePermissionsBoundaryInput, optFns ...func(*iam.Options)) (*iam.PutRolePermissionsBoundaryOutput, error)
+	DeleteRolePermissionsBoundary(ctx context.Context, params *iam.DeleteRolePermissionsBoundaryInput, optFns ...func(*iam.Options)) (*iam.DeleteRolePermissionsBoundaryOutput, error)
 	UpdateAssumeRolePolicy(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts ...func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
 	TagRole(ctx context.Context, input *iam.TagRoleInput, opts ...func(*iam.Options)) (*iam.TagRoleOutput, error)
 	UntagRole(ctx context.Context, input *iam.UntagRoleInput, opts ...func(*iam.Options)) (*iam.UntagRoleOutput, error)
@@ -89,6 +91,11 @@ func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 	role.Description = in.Description
 	role.MaxSessionDuration = in.MaxSessionDuration
 	role.Path = in.Path
+	if in.PermissionsBoundary != nil {
+		role.PermissionsBoundary = &iamtypes.AttachedPermissionsBoundary{
+			PermissionsBoundaryArn: in.PermissionsBoundary,
+		}
+	}
 
 	if len(in.Tags) != 0 {
 		role.Tags = make([]iamtypes.Tag, len(in.Tags))

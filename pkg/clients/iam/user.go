@@ -17,6 +17,8 @@ type UserClient interface {
 	CreateUser(ctx context.Context, input *iam.CreateUserInput, opts ...func(*iam.Options)) (*iam.CreateUserOutput, error)
 	DeleteUser(ctx context.Context, input *iam.DeleteUserInput, opts ...func(*iam.Options)) (*iam.DeleteUserOutput, error)
 	UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error)
+	PutUserPermissionsBoundary(ctx context.Context, params *iam.PutUserPermissionsBoundaryInput, optFns ...func(*iam.Options)) (*iam.PutUserPermissionsBoundaryOutput, error)
+	DeleteUserPermissionsBoundary(ctx context.Context, params *iam.DeleteUserPermissionsBoundaryInput, optFns ...func(*iam.Options)) (*iam.DeleteUserPermissionsBoundaryOutput, error)
 	TagUser(ctx context.Context, params *iam.TagUserInput, opts ...func(*iam.Options)) (*iam.TagUserOutput, error)
 	UntagUser(ctx context.Context, params *iam.UntagUserInput, opts ...func(*iam.Options)) (*iam.UntagUserOutput, error)
 }

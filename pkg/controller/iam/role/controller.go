@@ -213,6 +213,27 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
+	boundaryArn := ""
+	if observed.Role.PermissionsBoundary != nil {
+		boundaryArn = *observed.Role.PermissionsBoundary.PermissionsBoundaryArn
+	}
+	if aws.ToString(&boundaryArn) != aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) {
+		if aws.ToString(cr.Spec.ForProvider.PermissionsBoundary) == "" {
+			_, err = e.client.DeleteRolePermissionsBoundary(ctx, &awsiam.DeleteRolePermissionsBoundaryInput{
+				RoleName: aws.String(meta.GetExternalName(cr)),
+			})
+		} else {
+			_, err = e.client.PutRolePermissionsBoundary(ctx, &awsiam.PutRolePermissionsBoundaryInput{
+				PermissionsBoundary: cr.Spec.ForProvider.PermissionsBoundary,
+				RoleName:            aws.String(meta.GetExternalName(cr)),
+			})
+		}
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		}
+	}
+
 	if patch.AssumeRolePolicyDocument != "" {
 		_, err = e.client.UpdateAssumeRolePolicy(ctx, &awsiam.UpdateAssumeRolePolicyInput{
 			PolicyDocument: &cr.Spec.ForProvider.AssumeRolePolicyDocument,

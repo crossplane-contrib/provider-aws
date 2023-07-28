@@ -35,13 +35,15 @@ type MockUserInput struct {
 
 // MockUserClient is a type that implements all the methods for RoleClient interface
 type MockUserClient struct {
-	MockUserInput  MockUserInput
-	MockGetUser    func(ctx context.Context, input *iam.GetUserInput, opts []func(*iam.Options)) (*iam.GetUserOutput, error)
-	MockCreateUser func(ctx context.Context, input *iam.CreateUserInput, opts []func(*iam.Options)) (*iam.CreateUserOutput, error)
-	MockDeleteUser func(ctx context.Context, input *iam.DeleteUserInput, opts []func(*iam.Options)) (*iam.DeleteUserOutput, error)
-	MockUpdateUser func(ctx context.Context, input *iam.UpdateUserInput, opts []func(*iam.Options)) (*iam.UpdateUserOutput, error)
-	MockTagUser    func(ctx context.Context, input *iam.TagUserInput, opt []func(*iam.Options)) (*iam.TagUserOutput, error)
-	MockUntagUser  func(ctx context.Context, input *iam.UntagUserInput, opts []func(*iam.Options)) (*iam.UntagUserOutput, error)
+	MockUserInput                     MockUserInput
+	MockGetUser                       func(ctx context.Context, input *iam.GetUserInput, opts []func(*iam.Options)) (*iam.GetUserOutput, error)
+	MockCreateUser                    func(ctx context.Context, input *iam.CreateUserInput, opts []func(*iam.Options)) (*iam.CreateUserOutput, error)
+	MockDeleteUser                    func(ctx context.Context, input *iam.DeleteUserInput, opts []func(*iam.Options)) (*iam.DeleteUserOutput, error)
+	MockUpdateUser                    func(ctx context.Context, input *iam.UpdateUserInput, opts []func(*iam.Options)) (*iam.UpdateUserOutput, error)
+	MockPutUserPermissionsBoundary    func(ctx context.Context, input *iam.PutUserPermissionsBoundaryInput, opts []func(*iam.Options)) (*iam.PutUserPermissionsBoundaryOutput, error)
+	MockDeleteUserPermissionsBoundary func(ctx context.Context, input *iam.DeleteUserPermissionsBoundaryInput, opts []func(*iam.Options)) (*iam.DeleteUserPermissionsBoundaryOutput, error)
+	MockTagUser                       func(ctx context.Context, input *iam.TagUserInput, opt []func(*iam.Options)) (*iam.TagUserOutput, error)
+	MockUntagUser                     func(ctx context.Context, input *iam.UntagUserInput, opts []func(*iam.Options)) (*iam.UntagUserOutput, error)
 }
 
 // GetUser mocks GetUser method
@@ -62,6 +64,16 @@ func (m *MockUserClient) DeleteUser(ctx context.Context, input *iam.DeleteUserIn
 // UpdateUser mocks UpdateUser method
 func (m *MockUserClient) UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error) {
 	return m.MockUpdateUser(ctx, input, opts)
+}
+
+// PutUserPermissionsBoundary mocks PutUserPermissionsBoundary method
+func (m *MockUserClient) PutUserPermissionsBoundary(ctx context.Context, input *iam.PutUserPermissionsBoundaryInput, opts ...func(*iam.Options)) (*iam.PutUserPermissionsBoundaryOutput, error) {
+	return m.MockPutUserPermissionsBoundary(ctx, input, opts)
+}
+
+// DeleteUserPermissionsBoundary mocks DeleteUserPermissionsBoundary method
+func (m *MockUserClient) DeleteUserPermissionsBoundary(ctx context.Context, input *iam.DeleteUserPermissionsBoundaryInput, opts ...func(*iam.Options)) (*iam.DeleteUserPermissionsBoundaryOutput, error) {
+	return m.MockDeleteUserPermissionsBoundary(ctx, input, opts)
 }
 
 // TagUser mocks TagUser method
