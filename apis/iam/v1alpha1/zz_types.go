@@ -114,6 +114,8 @@ type Group struct {
 
 	GroupID *string `json:"groupID,omitempty"`
 
+	GroupName *string `json:"groupName,omitempty"`
+
 	Path *string `json:"path,omitempty"`
 }
 
@@ -129,6 +131,8 @@ type GroupDetail struct {
 	CreateDate *metav1.Time `json:"createDate,omitempty"`
 
 	GroupID *string `json:"groupID,omitempty"`
+
+	GroupName *string `json:"groupName,omitempty"`
 
 	Path *string `json:"path,omitempty"`
 }
@@ -260,6 +264,8 @@ type PolicyGrantingServiceAccess struct {
 // +kubebuilder:skipversion
 type PolicyGroup struct {
 	GroupID *string `json:"groupID,omitempty"`
+
+	GroupName *string `json:"groupName,omitempty"`
 }
 
 // +kubebuilder:skipversion

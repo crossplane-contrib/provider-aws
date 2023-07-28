@@ -10,10 +10,15 @@ ignore:
     - PolicyVersion
     - Role
     - SAMLProvider
-    - ServiceLinkedRole
     - ServiceSpecificCredential
     - User
     - VirtualMFADevice
   field_paths:
     - CreateInstanceProfileInput.InstanceProfileName
     - DeleteInstanceProfileInput.InstanceProfileName
+resources:
+  ServiceLinkedRole:
+    exceptions:
+      errors:
+        404:
+          code: NoSuchEntity

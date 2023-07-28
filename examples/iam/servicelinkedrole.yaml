@@ -1,0 +1,22 @@
+---
+apiVersion: iam.aws.crossplane.io/v1alpha1
+kind: ServiceLinkedRole
+metadata:
+  name: slr-elasticbeanstalk
+spec:
+  forProvider:
+    awsServiceName: elasticbeanstalk.amazonaws.com
+  providerConfigRef:
+    name: example
+---
+apiVersion: iam.aws.crossplane.io/v1alpha1
+kind: ServiceLinkedRole
+metadata:
+  annotations:
+    crossplane.io/external-name: AWSServiceRoleForRDS
+  name: slr-rds
+spec:
+  forProvider:
+    awsServiceName: rds.amazonaws.com
+  providerConfigRef:
+    name: example

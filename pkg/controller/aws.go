@@ -135,6 +135,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/policy"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/role"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/rolepolicyattachment"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/servicelinkedrole"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/user"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/userpolicyattachment"
 	iotpolicy "github.com/crossplane-contrib/provider-aws/pkg/controller/iot/policy"
@@ -356,6 +357,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		autoscalinggroup.SetupAutoScalingGroup,
 		servicediscoveryservice.SetupService,
 		configurationset.SetupConfigurationSet,
+		servicelinkedrole.SetupServiceLinkedRole,
 		emailidentity.SetupEmailIdentity,
 		emailtemplate.SetupEmailTemplate,
 	} {
