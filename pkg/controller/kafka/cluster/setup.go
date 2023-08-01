@@ -334,7 +334,9 @@ func isLoggingInfoUpToDate(wanted *svcapitypes.LoggingInfo, current *svcsdk.Logg
 					return false
 				}
 			} else if current.BrokerLogs.Firehose != nil {
-				return false
+				if aws.BoolValue(current.BrokerLogs.Firehose.Enabled) {
+					return false
+				}
 			}
 
 			if wanted.BrokerLogs.S3 != nil {
@@ -354,7 +356,9 @@ func isLoggingInfoUpToDate(wanted *svcapitypes.LoggingInfo, current *svcsdk.Logg
 					return false
 				}
 			} else if current.BrokerLogs.S3 != nil {
-				return false
+				if aws.BoolValue(current.BrokerLogs.S3.Enabled) {
+					return false
+				}
 			}
 		} else if current.BrokerLogs != nil {
 			return false
