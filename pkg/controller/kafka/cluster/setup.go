@@ -754,11 +754,6 @@ func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.Ex
 
 			if !encryptionUpToDate {
 				input.EncryptionInfo = generateEncryptionInfo(wanted.EncryptionInfo)
-
-				input.EncryptionInfo.EncryptionAtRest = nil // "Updating encryption-at-rest settings on your cluster is not currently supported."
-				if input.EncryptionInfo.EncryptionInTransit != nil {
-					input.EncryptionInfo.EncryptionInTransit.InCluster = nil // "Updating the inter-broker encryption setting on your cluster is not currently supported."
-				}
 			}
 
 			_, err := u.client.UpdateSecurityWithContext(ctx, input)
