@@ -87,7 +87,7 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 
 func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.UpdateTableOutput, _ managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
 	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
-		TableName: aws.String(cr.Name),
+		TableName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -99,7 +99,7 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 		pitrSpecEnabled := pointer.BoolDeref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
 
 		pitrInput := &svcsdk.UpdateContinuousBackupsInput{
-			TableName: aws.String(cr.Name),
+			TableName: aws.String(meta.GetExternalName(cr)),
 			PointInTimeRecoverySpecification: (&svcsdk.PointInTimeRecoverySpecification{
 				PointInTimeRecoveryEnabled: &pitrSpecEnabled,
 			}),
@@ -425,7 +425,7 @@ func (e *updateClient) isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTa
 
 	// point in time recovery status
 	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
-		TableName: aws.String(cr.Name),
+		TableName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, err
