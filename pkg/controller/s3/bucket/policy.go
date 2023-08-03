@@ -18,10 +18,8 @@ package bucket
 
 import (
 	"context"
-	"encoding/json"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -29,16 +27,13 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
-	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 const (
-	policyGetFailed     = "cannot get bucket policy"
-	policyFormatFailed  = "cannot format bucket policy"
-	policyParseSpec     = "cannot parse spec policy"
-	policyPutFailed     = "cannot put bucket policy"
-	policyDeleteFailed  = "cannot delete bucket policy"
-	policyParseExternal = "cannot parse external policy"
+	policyGetFailed    = "cannot get bucket policy"
+	policyFormatFailed = "cannot format bucket policy"
+	policyPutFailed    = "cannot put bucket policy"
+	policyDeleteFailed = "cannot delete bucket policy"
 )
 
 // PolicyClient is the client for API methods and reconciling the PublicAccessBlock
@@ -76,42 +71,11 @@ func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (Resourc
 		return Updated, nil
 	}
 
-	specPolicyRaw, err := e.formatBucketPolicy(cr)
-	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, policyFormatFailed)
-	}
-	specPolicy, err := policyutils.ParsePolicyString(awsclient.StringValue(specPolicyRaw))
-	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, policyParseSpec)
-	}
-	curPolicy, err := policyutils.ParsePolicyString(awsclient.StringValue(resp.Policy))
-	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, policyParseExternal)
-	}
-
-	diff := cmp.Diff(specPolicy, curPolicy)
-	if diff != "" {
-		return NeedsUpdate, nil
+	diff, err := s3.DiffParsedPolicies(cr.Spec.ForProvider.Policy, resp.Policy)
+	if diff != "" || err != nil {
+		return NeedsUpdate, err
 	}
 	return Updated, nil
-}
-
-// formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
-func (e *PolicyClient) formatBucketPolicy(cr *v1beta1.Bucket) (*string, error) {
-	if cr.Spec.ForProvider.Policy == nil {
-		return nil, nil
-	}
-	c := cr.DeepCopy()
-	body, err := s3.Serialize(c.Spec.ForProvider.Policy)
-	if err != nil {
-		return nil, err
-	}
-	byteData, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	str := string(byteData)
-	return &str, nil
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
@@ -119,7 +83,7 @@ func (e *PolicyClient) CreateOrUpdate(ctx context.Context, cr *v1beta1.Bucket) e
 	if cr.Spec.ForProvider.Policy == nil {
 		return nil
 	}
-	policy, err := e.formatBucketPolicy(cr)
+	policy, err := s3.FormatPolicy(cr.Spec.ForProvider.Policy)
 	if err != nil {
 		return errors.Wrap(err, policyFormatFailed)
 	}

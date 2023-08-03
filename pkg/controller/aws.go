@@ -172,6 +172,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53resolver/resolverruleassociation"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3/bucketpolicy"
+	s3control "github.com/crossplane-contrib/provider-aws/pkg/controller/s3control/accesspoint"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/secretsmanager/secret"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
@@ -355,6 +356,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		emrcontainersvirtualcluster.SetupVirtualCluster,
 		optiongroup.SetupOptionGroup,
 		autoscalinggroup.SetupAutoScalingGroup,
+		s3control.SetupAccessPoint,
 		servicediscoveryservice.SetupService,
 		configurationset.SetupConfigurationSet,
 		servicelinkedrole.SetupServiceLinkedRole,
