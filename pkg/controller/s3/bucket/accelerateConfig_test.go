@@ -25,7 +25,6 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -38,8 +37,6 @@ const (
 	enabled   = "Enabled"
 	suspended = "Suspended"
 )
-
-var errBoom = errors.New("boom")
 
 var _ SubresourceClient = &AccelerateConfigurationClient{}
 

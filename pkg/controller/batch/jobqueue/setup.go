@@ -33,7 +33,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/batch/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch"
+	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 

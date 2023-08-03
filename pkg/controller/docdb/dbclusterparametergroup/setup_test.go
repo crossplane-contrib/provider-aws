@@ -35,7 +35,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
-	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
+	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 )
 
 const (
