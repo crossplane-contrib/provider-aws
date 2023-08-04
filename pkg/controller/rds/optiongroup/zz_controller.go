@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateOptionGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -326,7 +327,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput) *svcsdk.DescribeOptionGroupsOutput
 	lateInitialize func(*svcapitypes.OptionGroupParameters, *svcsdk.DescribeOptionGroupsOutput) error
-	isUpToDate     func(*svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.OptionGroup, *svcsdk.CreateOptionGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.OptionGroup, *svcsdk.CreateOptionGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.OptionGroup, *svcsdk.DeleteOptionGroupInput) (bool, error)
@@ -348,8 +349,8 @@ func nopFilterList(_ *svcapitypes.OptionGroup, list *svcsdk.DescribeOptionGroups
 func nopLateInitialize(*svcapitypes.OptionGroupParameters, *svcsdk.DescribeOptionGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.OptionGroup, *svcsdk.DescribeOptionGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.OptionGroup, *svcsdk.CreateOptionGroupInput) error {

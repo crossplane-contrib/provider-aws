@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateCrawler(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -177,7 +178,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Crawler, *svcsdk.GetCrawlerInput) error
 	postObserve    func(context.Context, *svcapitypes.Crawler, *svcsdk.GetCrawlerOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.CrawlerParameters, *svcsdk.GetCrawlerOutput) error
-	isUpToDate     func(*svcapitypes.Crawler, *svcsdk.GetCrawlerOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Crawler, *svcsdk.GetCrawlerOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Crawler, *svcsdk.CreateCrawlerInput) error
 	postCreate     func(context.Context, *svcapitypes.Crawler, *svcsdk.CreateCrawlerOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Crawler, *svcsdk.DeleteCrawlerInput) (bool, error)
@@ -196,8 +197,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Crawler, _ *svcsdk.GetCraw
 func nopLateInitialize(*svcapitypes.CrawlerParameters, *svcsdk.GetCrawlerOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Crawler, *svcsdk.GetCrawlerOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Crawler, *svcsdk.GetCrawlerOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Crawler, *svcsdk.CreateCrawlerInput) error {

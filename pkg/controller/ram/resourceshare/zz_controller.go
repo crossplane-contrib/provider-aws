@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateResourceShare(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -237,7 +238,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput) *svcsdk.GetResourceSharesOutput
 	lateInitialize func(*svcapitypes.ResourceShareParameters, *svcsdk.GetResourceSharesOutput) error
-	isUpToDate     func(*svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.ResourceShare, *svcsdk.CreateResourceShareInput) error
 	postCreate     func(context.Context, *svcapitypes.ResourceShare, *svcsdk.CreateResourceShareOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.ResourceShare, *svcsdk.DeleteResourceShareInput) (bool, error)
@@ -259,8 +260,8 @@ func nopFilterList(_ *svcapitypes.ResourceShare, list *svcsdk.GetResourceSharesO
 func nopLateInitialize(*svcapitypes.ResourceShareParameters, *svcsdk.GetResourceSharesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.ResourceShare, *svcsdk.GetResourceSharesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.ResourceShare, *svcsdk.CreateResourceShareInput) error {

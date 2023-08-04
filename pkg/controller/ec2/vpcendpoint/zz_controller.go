@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateVPCEndpoint(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -333,7 +334,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput) *svcsdk.DescribeVpcEndpointsOutput
 	lateInitialize func(*svcapitypes.VPCEndpointParameters, *svcsdk.DescribeVpcEndpointsOutput) error
-	isUpToDate     func(*svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.CreateVpcEndpointInput) error
 	postCreate     func(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.CreateVpcEndpointOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	delete         func(context.Context, cpresource.Managed) error
@@ -354,8 +355,8 @@ func nopFilterList(_ *svcapitypes.VPCEndpoint, list *svcsdk.DescribeVpcEndpoints
 func nopLateInitialize(*svcapitypes.VPCEndpointParameters, *svcsdk.DescribeVpcEndpointsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.DescribeVpcEndpointsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.VPCEndpoint, *svcsdk.CreateVpcEndpointInput) error {

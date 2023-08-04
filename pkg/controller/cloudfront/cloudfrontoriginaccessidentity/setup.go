@@ -124,6 +124,7 @@ func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity
 	return false, nil
 }
 
-func isUpToDate(cp *svcapitypes.CloudFrontOriginAccessIdentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
-	return cmp.Equal(cp.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment), nil
+func isUpToDate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, gpo *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, string, error) {
+	diff := cmp.Diff(cp.Spec.ForProvider.CloudFrontOriginAccessIdentityConfig.Comment, gpo.CloudFrontOriginAccessIdentity.CloudFrontOriginAccessIdentityConfig.Comment)
+	return diff == "", diff, nil
 }

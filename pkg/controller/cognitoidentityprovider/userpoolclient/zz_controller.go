@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateUserPoolClient(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -378,7 +379,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientInput) error
 	postObserve    func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.UserPoolClientParameters, *svcsdk.DescribeUserPoolClientOutput) error
-	isUpToDate     func(*svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.CreateUserPoolClientInput) error
 	postCreate     func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.CreateUserPoolClientOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.UserPoolClient, *svcsdk.DeleteUserPoolClientInput) (bool, error)
@@ -397,8 +398,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.UserPoolClient, _ *svcsdk.
 func nopLateInitialize(*svcapitypes.UserPoolClientParameters, *svcsdk.DescribeUserPoolClientOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.UserPoolClient, *svcsdk.DescribeUserPoolClientOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.UserPoolClient, *svcsdk.CreateUserPoolClientInput) error {

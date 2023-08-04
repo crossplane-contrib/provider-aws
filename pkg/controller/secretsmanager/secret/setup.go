@@ -235,38 +235,36 @@ func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValue
 	return payload, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, string, error) { // nolint:gocyclo
 	if meta.WasDeleted(cr) {
-		return false, nil
+		return false, "", nil
 	}
-
-	// TODO(muvaf): We need isUpToDate to have context.
-	ctx := context.TODO()
 
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
-		return true, nil
+		return true, "", nil
 	}
 	if awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Description) {
-		return false, nil
+		return false, "", nil
 	}
 	if awsclients.StringValue(cr.Spec.ForProvider.KMSKeyID) != awsclients.StringValue(resp.KmsKeyId) {
-		return false, nil
+		return false, "", nil
 	}
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, resp.Tags)
 	if len(add) != 0 && len(remove) != 0 {
-		return false, nil
+		return false, "", nil
 	}
 
 	isPolicyUpToDate, err := e.isPolicyUpToDate(ctx, cr)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	if !isPolicyUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
-	return e.isPayloadUpToDate(ctx, cr)
+	isPayloadUpToDate, err := e.isPayloadUpToDate(ctx, cr)
+	return isPayloadUpToDate, "", err
 }
 
 func (e *hooks) isPolicyUpToDate(ctx context.Context, cr *svcapitypes.Secret) (bool, error) {

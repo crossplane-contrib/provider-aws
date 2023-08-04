@@ -123,21 +123,21 @@ func postObserve(ctx context.Context, cr *svcapitypes.Connection, obj *svcsdk.Ge
 	return obs, nil
 }
 
-func (h *hooks) isUpToDate(cr *svcapitypes.Connection, resp *svcsdk.GetConnectionOutput) (bool, error) {
+func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *svcsdk.GetConnectionOutput) (bool, string, error) {
 
 	// no checks needed if user deletes the resource
 	// ensures that an error (e.g. missing ARN) here does not prevent deletion
 	if meta.WasDeleted(cr) {
-		return true, nil
+		return true, "", nil
 	}
 
 	currentParams := customGenerateConnection(resp).Spec.ForProvider
 
-	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
+	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.ConnectionParameters{}, "Region", "Tags", "CatalogID")) {
+		cmpopts.IgnoreFields(svcapitypes.ConnectionParameters{}, "Region", "Tags", "CatalogID")); diff != "" {
 
-		return false, nil
+		return false, diff, nil
 	}
 	// CatalogID is updatable (and is given to UpdateConnectionInput),
 	// however the field seems not to be readable through the API for an isUpToDate-check
@@ -145,9 +145,10 @@ func (h *hooks) isUpToDate(cr *svcapitypes.Connection, resp *svcsdk.GetConnectio
 	// retrieve ARN and check if Tags need update
 	arn, err := h.getARN(cr)
 	if err != nil {
-		return true, err
+		return true, "", err
 	}
-	return svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	return areTagsUpToDate, "", err
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.UpdateConnectionInput) error {

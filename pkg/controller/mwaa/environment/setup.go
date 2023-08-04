@@ -202,19 +202,20 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.Environment, ob
 	return managed.ExternalUpdate{}, nil
 }
 
-func isUpToDate(cr *svcapitypes.Environment, obj *svcsdk.GetEnvironmentOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Environment, obj *svcsdk.GetEnvironmentOutput) (bool, string, error) {
 	if obj.Environment == nil {
-		return false, nil
+		return false, "", nil
 	}
 
 	env := generateEnvironment(obj)
-	return cmp.Equal(
+	diff := cmp.Diff(
 		cr.Spec.ForProvider,
 		env.Spec.ForProvider,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.EnvironmentParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.CustomEnvironmentParameters{}, "KMSKey"),
-	), nil
+	)
+	return diff == "", diff, nil
 }
 
 func lateInitialize(spec *svcapitypes.EnvironmentParameters, obj *svcsdk.GetEnvironmentOutput) error {

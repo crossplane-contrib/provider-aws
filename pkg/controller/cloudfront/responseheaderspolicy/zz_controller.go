@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateResponseHeadersPolicy(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -398,7 +399,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyInput) error
 	postObserve    func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ResponseHeadersPolicyParameters, *svcsdk.GetResponseHeadersPolicyOutput) error
-	isUpToDate     func(*svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.CreateResponseHeadersPolicyInput) error
 	postCreate     func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.CreateResponseHeadersPolicyOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.DeleteResponseHeadersPolicyInput) (bool, error)
@@ -417,8 +418,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.ResponseHeadersPolicy, _ *
 func nopLateInitialize(*svcapitypes.ResponseHeadersPolicyParameters, *svcsdk.GetResponseHeadersPolicyOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.GetResponseHeadersPolicyOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.ResponseHeadersPolicy, *svcsdk.CreateResponseHeadersPolicyInput) error {

@@ -17,6 +17,7 @@ limitations under the License.
 package thing
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/iot"
@@ -93,7 +94,7 @@ func TestIsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			o, err := isUpToDate(tc.args.cr, &tc.args.resp)
+			o, _, err := isUpToDate(context.Background(), tc.args.cr, &tc.args.resp)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)

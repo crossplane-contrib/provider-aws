@@ -132,7 +132,7 @@ func lateInitialize(spec *svcapitypes.DatabaseParameters, resp *svcsdk.GetDataba
 	return nil
 }
 
-func isUpToDate(cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool, string, error) {
 
 	currentParams := customGenerateDatabase(resp).Spec.ForProvider
 
@@ -143,7 +143,7 @@ func isUpToDate(cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool,
 			// will also partly catch edgecase when user made 2+ entries for same principal (which AWS combines to one entry)
 			// this will ensure no panic error, but open an endless update-loop until user fixes the edgecase in specs
 			// -> error message for user info is thrown in (pre)create and (pre)update
-			return false, nil
+			return false, "", nil
 		}
 
 		// sorting both just to be safe
@@ -161,14 +161,14 @@ func isUpToDate(cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool,
 
 			// to avoid panic
 			if prins.Principal == nil {
-				return false, errors.New(errUpdateNoPrincipal)
+				return false, "", errors.New(errUpdateNoPrincipal)
 			}
 			// check if this entry is uptodate
 			if awsclients.StringValue(prins.Principal.DataLakePrincipalIdentifier) != awsclients.StringValue(currPrins.Principal.DataLakePrincipalIdentifier) {
 				// both should be sorted the same way, so if we land here that would mean that
 				// at least one entry has been added to spec and one has been removed from spec
 				// or aka one entry was simply changed /"updated"
-				return false, nil
+				return false, "", nil
 			}
 
 			sortOpts := cmpopts.SortSlices(func(a, b *string) bool {
@@ -176,17 +176,18 @@ func isUpToDate(cr *svcapitypes.Database, resp *svcsdk.GetDatabaseOutput) (bool,
 			})
 
 			// check if the permissions of this entry are uptodate
-			if !cmp.Equal(prins.Permissions, currPrins.Permissions, sortOpts, cmpopts.EquateEmpty()) {
-				return false, nil
+			if diff := cmp.Diff(prins.Permissions, currPrins.Permissions, sortOpts, cmpopts.EquateEmpty()); diff != "" {
+				return false, diff, nil
 			}
 		}
 	}
 
-	return cmp.Equal(cr.Spec.ForProvider, currentParams,
+	diff := cmp.Diff(cr.Spec.ForProvider, currentParams,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DatabaseParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.CustomDatabaseInput{}, "CreateTableDefaultPermissions"),
-		cmpopts.EquateEmpty()), nil
+		cmpopts.EquateEmpty())
+	return diff == "", diff, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDatabaseInput) error {

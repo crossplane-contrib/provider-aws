@@ -125,7 +125,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.GetC
 // potential defaults e.g.  csvClassifier.DisableValueTrimming <-> true
 // csvClassifier.QuoteSymbol <-> Double-Quote (") | csvClassifier.Delimiter <-> Comma (,)
 
-func isUpToDate(cr *svcapitypes.Classifier, resp *svcsdk.GetClassifierOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Classifier, resp *svcsdk.GetClassifierOutput) (bool, string, error) {
 
 	currentParams := customGenerateClassifier(resp).Spec.ForProvider
 
@@ -134,13 +134,14 @@ func isUpToDate(cr *svcapitypes.Classifier, resp *svcsdk.GetClassifierOutput) (b
 		if awsclients.StringValue(cr.Spec.ForProvider.CustomGrokClassifier.CustomPatterns) !=
 			awsclients.StringValue(resp.Classifier.GrokClassifier.CustomPatterns) {
 
-			return false, nil
+			return false, "", nil
 		}
 	}
 
-	return cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
+	diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreFields(svcapitypes.ClassifierParameters{}, "Region"),
-		cmpopts.IgnoreFields(svcapitypes.CustomCreateGrokClassifierRequest{}, "CustomPatterns")), nil
+		cmpopts.IgnoreFields(svcapitypes.CustomCreateGrokClassifierRequest{}, "CustomPatterns"))
+	return diff == "", diff, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.UpdateClassifierInput) error {

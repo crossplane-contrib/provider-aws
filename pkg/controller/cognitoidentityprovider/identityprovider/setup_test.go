@@ -232,7 +232,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			e := &custom{resolver: tc.args.resolver, kube: nil}
 			// Act
-			result, err := e.isUpToDate(tc.args.cr, tc.args.resp)
+			result, _, err := e.isUpToDate(context.Background(), tc.args.cr, tc.args.resp)
 
 			// Assert
 			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {

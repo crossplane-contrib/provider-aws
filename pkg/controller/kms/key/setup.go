@@ -289,17 +289,17 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 	return nil
 }
 
-func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, error) { // nolint:gocyclo
+func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput) (bool, string, error) { // nolint:gocyclo
 	// Description
 	if obj.KeyMetadata.Description != nil &&
 		cr.Spec.ForProvider.Description != nil &&
 		awsclients.StringValue(obj.KeyMetadata.Description) != awsclients.StringValue(cr.Spec.ForProvider.Description) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Enabled
 	if !isUpToDateEnableDisable(cr) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// KeyPolicy
@@ -308,10 +308,10 @@ func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput
 		PolicyName: awsclients.String("default"),
 	})
 	if err != nil {
-		return false, awsclients.Wrap(err, "cannot get key policy")
+		return false, "", awsclients.Wrap(err, "cannot get key policy")
 	}
 	if awsclients.StringValue(cr.Spec.ForProvider.Policy) != awsclients.StringValue(resPolicy.Policy) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// EnableKeyRotation
@@ -319,10 +319,10 @@ func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput
 		KeyId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, awsclients.Wrap(err, "cannot get key rotation status")
+		return false, "", awsclients.Wrap(err, "cannot get key rotation status")
 	}
 	if awsclients.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) != awsclients.BoolValue(resRotation.KeyRotationEnabled) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Tags
@@ -330,10 +330,10 @@ func (o *observer) isUpToDate(cr *svcapitypes.Key, obj *svcsdk.DescribeKeyOutput
 		KeyId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, awsclients.Wrap(err, "cannot list tags")
+		return false, "", awsclients.Wrap(err, "cannot list tags")
 	}
 	addTags, removeTags := diffTags(cr.Spec.ForProvider.Tags, resTags.Tags)
-	return len(addTags) == 0 && len(removeTags) == 0, nil
+	return len(addTags) == 0 && len(removeTags) == 0, "", nil
 }
 
 // returns which AWS Tags exist in the resource tags and which are outdated and should be removed

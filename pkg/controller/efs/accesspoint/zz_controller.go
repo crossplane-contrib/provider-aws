@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAccessPoint(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -269,7 +270,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput) *svcsdk.DescribeAccessPointsOutput
 	lateInitialize func(*svcapitypes.AccessPointParameters, *svcsdk.DescribeAccessPointsOutput) error
-	isUpToDate     func(*svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.AccessPoint, *svcsdk.CreateAccessPointInput) error
 	postCreate     func(context.Context, *svcapitypes.AccessPoint, *svcsdk.CreateAccessPointOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.AccessPoint, *svcsdk.DeleteAccessPointInput) (bool, error)
@@ -290,8 +291,8 @@ func nopFilterList(_ *svcapitypes.AccessPoint, list *svcsdk.DescribeAccessPoints
 func nopLateInitialize(*svcapitypes.AccessPointParameters, *svcsdk.DescribeAccessPointsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.AccessPoint, *svcsdk.DescribeAccessPointsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.AccessPoint, *svcsdk.CreateAccessPointInput) error {

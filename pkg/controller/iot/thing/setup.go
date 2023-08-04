@@ -121,14 +121,15 @@ func preDelete(_ context.Context, cr *svcapitypes.Thing, obj *svcsdk.DeleteThing
 	return false, nil
 }
 
-func isUpToDate(cr *svcapitypes.Thing, resp *svcsdk.DescribeThingOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Thing, resp *svcsdk.DescribeThingOutput) (bool, string, error) {
 	patch, err := createPatch(resp, &cr.Spec.ForProvider)
 
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
-	return cmp.Equal(&svcapitypes.ThingParameters{}, patch), nil
+	diff := cmp.Diff(&svcapitypes.ThingParameters{}, patch)
+	return diff == "", diff, nil
 }
 
 func createPatch(in *svcsdk.DescribeThingOutput, target *svcapitypes.ThingParameters) (*svcapitypes.ThingParameters, error) {

@@ -215,8 +215,8 @@ func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.
 	return false
 }
 
-func (e *custom) isUpToDate(_ *svcapitypes.VPCPeeringConnection, _ *svcsdk.DescribeVpcPeeringConnectionsOutput) (bool, error) {
-	return true, nil
+func (e *custom) isUpToDate(_ context.Context, _ *svcapitypes.VPCPeeringConnection, _ *svcsdk.DescribeVpcPeeringConnectionsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionInput) error {

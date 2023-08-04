@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateCacheParameterGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -209,7 +210,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput) *svcsdk.DescribeCacheParameterGroupsOutput
 	lateInitialize func(*svcapitypes.CacheParameterGroupParameters, *svcsdk.DescribeCacheParameterGroupsOutput) error
-	isUpToDate     func(*svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.CreateCacheParameterGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.CreateCacheParameterGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.DeleteCacheParameterGroupInput) (bool, error)
@@ -231,8 +232,8 @@ func nopFilterList(_ *svcapitypes.CacheParameterGroup, list *svcsdk.DescribeCach
 func nopLateInitialize(*svcapitypes.CacheParameterGroupParameters, *svcsdk.DescribeCacheParameterGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.DescribeCacheParameterGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.CacheParameterGroup, *svcsdk.CreateCacheParameterGroupInput) error {

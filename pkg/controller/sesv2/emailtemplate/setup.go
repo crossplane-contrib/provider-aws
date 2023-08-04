@@ -61,23 +61,23 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func isUpToDate(cr *svcapitypes.EmailTemplate, resp *svcsdk.GetEmailTemplateOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.GetEmailTemplateOutput) (bool, string, error) {
 	if meta.WasDeleted(cr) {
-		return true, nil // There is no need to check for updates when we want to delete.
+		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
 
 	if cr.Spec.ForProvider.TemplateContent != nil && resp.TemplateContent != nil {
 		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.HTML) != awsclient.StringValue(resp.TemplateContent.Html) {
-			return false, nil
+			return false, "", nil
 		}
 		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.Subject) != awsclient.StringValue(resp.TemplateContent.Subject) {
-			return false, nil
+			return false, "", nil
 		}
 		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.Text) != awsclient.StringValue(resp.TemplateContent.Text) {
-			return false, nil
+			return false, "", nil
 		}
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.GetEmailTemplateInput) error {

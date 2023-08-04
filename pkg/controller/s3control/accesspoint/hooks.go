@@ -39,12 +39,12 @@ func newHooks(api svcsdkapi.S3ControlAPI) *hooks {
 	return &hooks{policyClient: &policyClient{client: api}}
 }
 
-func (h *hooks) isUpToDate(point *svcapitypes.AccessPoint, _ *svcsdk.GetAccessPointOutput) (bool, error) {
+func (h *hooks) isUpToDate(_ context.Context, point *svcapitypes.AccessPoint, _ *svcsdk.GetAccessPointOutput) (bool, string, error) {
 	obs, err := h.policyClient.observe(point)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
-	return obs == updated, nil
+	return obs == updated, "", nil
 }
 
 func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

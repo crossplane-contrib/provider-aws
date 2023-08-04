@@ -162,19 +162,20 @@ func lateInitialize(cr *svcapitypes.ResourceParameters, cur *svcsdk.Resource) er
 	return nil
 }
 
-func isUpToDate(cr *svcapitypes.Resource, cur *svcsdk.Resource) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Resource, cur *svcsdk.Resource) (bool, string, error) {
 	patchJSON, err := aws.CreateJSONPatch(cr.Spec.ForProvider, cur)
 	if err != nil {
-		return true, errors.Wrap(err, "error checking up to date")
+		return true, "", errors.Wrap(err, "error checking up to date")
 	}
 
 	patch := &svcapitypes.ResourceParameters{}
 	if err := json.Unmarshal(patchJSON, &patch); err != nil {
-		return true, errors.Wrap(err, "error checking up to date")
+		return true, "", errors.Wrap(err, "error checking up to date")
 	}
 
-	return cmp.Equal(&svcapitypes.ResourceParameters{}, patch,
+	diff := cmp.Diff(&svcapitypes.ResourceParameters{}, patch,
 		cmpopts.IgnoreTypes([]xpv1.Reference{}, []xpv1.Selector{}),
 		cmpopts.IgnoreFields(svcapitypes.ResourceParameters{}, "Region"),
-	), nil
+	)
+	return diff == "", diff, nil
 }

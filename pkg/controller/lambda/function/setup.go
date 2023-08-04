@@ -139,7 +139,7 @@ func preDelete(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.DeleteFu
 }
 
 // nolint:gocyclo
-func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, string, error) {
 
 	// Compare CODE
 	// GetFunctionOutput returns
@@ -151,29 +151,29 @@ func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, 
 	// It is partially possible for code supplied via FunctionCode.ImageUri
 
 	if !isUpToDateCodeImage(cr, obj) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Compare CONFIGURATION
 	if aws.StringValue(cr.Spec.ForProvider.Description) != aws.StringValue(obj.Configuration.Description) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateEnvironment(cr, obj) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Connection settings for an Amazon EFS file system.
 	if !isUpToDateFileSystemConfigs(cr, obj) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.StringValue(cr.Spec.ForProvider.Handler) != aws.StringValue(obj.Configuration.Handler) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.StringValue(cr.Spec.ForProvider.KMSKeyARN) != aws.StringValue(obj.Configuration.KMSKeyArn) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// The function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
@@ -184,32 +184,32 @@ func isUpToDate(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, 
 
 	// set default
 	if aws.Int64Value(cr.Spec.ForProvider.MemorySize) != aws.Int64Value(obj.Configuration.MemorySize) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.StringValue(cr.Spec.ForProvider.Role) != aws.StringValue(obj.Configuration.Role) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.StringValue(cr.Spec.ForProvider.Runtime) != aws.StringValue(obj.Configuration.Runtime) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.Int64Value(cr.Spec.ForProvider.Timeout) != aws.Int64Value(obj.Configuration.Timeout) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// This should never be nil.  We set this in LateInit as aws will initialize a default value
 	if aws.StringValue(cr.Spec.ForProvider.TracingConfig.Mode) != aws.StringValue(obj.Configuration.TracingConfig.Mode) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateSecurityGroupIDs(cr, obj) {
-		return false, nil
+		return false, "", nil
 	}
 
 	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
-	return len(addTags) == 0 && len(removeTags) == 0, nil
+	return len(addTags) == 0 && len(removeTags) == 0, "", nil
 
 }
 

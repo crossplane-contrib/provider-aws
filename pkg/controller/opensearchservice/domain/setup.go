@@ -359,7 +359,7 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 	return o
 }
 
-func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, error) { // nolint:gocyclo
+func isUpToDate(_ context.Context, obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, string, error) { // nolint:gocyclo
 
 	switch {
 	case aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies),
@@ -376,12 +376,12 @@ func isUpToDate(obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool
 		!isSnapshotOptionsUpToDate(obj.Spec.ForProvider.SnapshotOptions, out.DomainStatus.SnapshotOptions),
 		!isVpcOptionsUpToDate(obj.Spec.ForProvider.VPCOptions, out.DomainStatus.VPCOptions),
 		!isEncryptionAtRestUpToDate(obj.Spec.ForProvider.EncryptionAtRestOptions, out.DomainStatus.EncryptionAtRestOptions):
-		return false, nil
+		return false, "", nil
 	case !*out.DomainStatus.Processing && !*out.DomainStatus.UpgradeProcessing && aws.StringValue(obj.Spec.ForProvider.EngineVersion) != aws.StringValue(out.DomainStatus.EngineVersion):
 		// We cant update when processing or already updating so we consider this as up to date for now
-		return false, nil
+		return false, "", nil
 	default:
-		return true, nil
+		return true, "", nil
 	}
 }
 

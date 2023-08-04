@@ -125,19 +125,19 @@ func postObserve(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp
 	return obs, nil
 }
 
-func isUpToDate(cr *svcapitypes.AlertManagerDefinition, resp *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, string, error) {
 	// An AlertManager Definition that's currently creating, deleting, or updating can't be
 	// updated, so we temporarily consider it to be up-to-date no matter
 	// what.
 	switch aws.StringValue(cr.Status.AtProvider.StatusCode) {
 	case string(svcapitypes.AlertManagerDefinitionStatusCode_CREATING), string(svcapitypes.AlertManagerDefinitionStatusCode_UPDATING), string(svcapitypes.AlertManagerDefinitionStatusCode_DELETING):
-		return true, nil
+		return true, "", nil
 	}
 
 	if cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.AlertManagerDefinition.Data); cmp != 0 {
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 type updateClient struct {

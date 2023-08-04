@@ -108,28 +108,29 @@ func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj 
 	return nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, resp *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, error) {
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, resp *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, string, error) {
 	group := resp.DBClusterParameterGroups[0]
 
 	if awsclient.StringValue(cr.Spec.ForProvider.DBParameterGroupFamily) != awsclient.StringValue(group.DBParameterGroupFamily) {
-		return false, errors.New(errModifyFamily)
+		return false, "", errors.New(errModifyFamily)
 	}
 
 	if awsclient.StringValue(cr.Spec.ForProvider.Description) != awsclient.StringValue(group.Description) {
-		return false, errors.New(errModifyDescription)
+		return false, "", errors.New(errModifyDescription)
 	}
 
 	paramsReq := &svcsdk.DescribeDBClusterParametersInput{DBClusterParameterGroupName: group.DBClusterParameterGroupName}
-	paramsResp, err := e.client.DescribeDBClusterParameters(paramsReq)
+	paramsResp, err := e.client.DescribeDBClusterParametersWithContext(ctx, paramsReq)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	if !areParametersEqual(cr.Spec.ForProvider.Parameters, paramsResp.Parameters) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, group.DBClusterParameterGroupArn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, group.DBClusterParameterGroupArn)
+	return areTagsUpToDate, "", err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DescribeDBClusterParameterGroupsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -144,8 +145,10 @@ func postObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *
 func (e *hooks) lateInitialize(cr *svcapitypes.DBClusterParameterGroupParameters, resp *svcsdk.DescribeDBClusterParameterGroupsOutput) error {
 	group := resp.DBClusterParameterGroups[0]
 
+	// TODO: Add context to lateInitialize
+	ctx := context.TODO()
 	paramsReq := &svcsdk.DescribeDBClusterParametersInput{DBClusterParameterGroupName: group.DBClusterParameterGroupName}
-	paramsResp, err := e.client.DescribeDBClusterParameters(paramsReq)
+	paramsResp, err := e.client.DescribeDBClusterParametersWithContext(ctx, paramsReq)
 	if err != nil {
 		return errors.Wrap(err, errDescribeParameters)
 	}

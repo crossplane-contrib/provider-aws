@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateBackup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -205,7 +206,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupInput) error
 	postObserve    func(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error
-	isUpToDate     func(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error
 	postCreate     func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) (bool, error)
@@ -223,8 +224,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.Describe
 func nopLateInitialize(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error {

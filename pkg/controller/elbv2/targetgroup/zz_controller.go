@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateTargetGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -261,7 +262,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput) *svcsdk.DescribeTargetGroupsOutput
 	lateInitialize func(*svcapitypes.TargetGroupParameters, *svcsdk.DescribeTargetGroupsOutput) error
-	isUpToDate     func(*svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.TargetGroup, *svcsdk.CreateTargetGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.TargetGroup, *svcsdk.CreateTargetGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.TargetGroup, *svcsdk.DeleteTargetGroupInput) (bool, error)
@@ -283,8 +284,8 @@ func nopFilterList(_ *svcapitypes.TargetGroup, list *svcsdk.DescribeTargetGroups
 func nopLateInitialize(*svcapitypes.TargetGroupParameters, *svcsdk.DescribeTargetGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.TargetGroup, *svcsdk.DescribeTargetGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.TargetGroup, *svcsdk.CreateTargetGroupInput) error {

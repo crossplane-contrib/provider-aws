@@ -167,7 +167,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{},
 						}, nil
@@ -201,13 +201,15 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
 						},
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -233,7 +235,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
@@ -282,13 +284,15 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
 						},
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -314,7 +318,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
@@ -372,13 +376,15 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
 						},
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -405,7 +411,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{},
 						}, nil
@@ -440,8 +446,9 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -463,7 +470,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{},
 						}, nil
@@ -498,8 +505,9 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -520,7 +528,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
@@ -566,13 +574,15 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
 						},
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},
@@ -625,7 +635,7 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
-					MockDescribeDBClusterParameters: func(ddpi *docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error) {
+					MockDescribeDBClusterParametersWithContext: func(ctx context.Context, ddpi *docdb.DescribeDBClusterParametersInput, o []request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
 						return &docdb.DescribeDBClusterParametersOutput{}, errors.New(testErrDescribeDBClusterParametersFailed)
 					},
 				},
@@ -651,8 +661,9 @@ func TestObserve(t *testing.T) {
 							},
 						},
 					},
-					DescribeDBClusterParameters: []*fake.CallDescribeDBClusterParameters{
+					DescribeDBClusterParametersWithContext: []*fake.CallDescribeDBClusterParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
 								DBClusterParameterGroupName: awsclient.String(testDBClusterParameterGroupName),
 							},

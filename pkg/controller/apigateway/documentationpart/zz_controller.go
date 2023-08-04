@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDocumentationPart(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -209,7 +210,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.GetDocumentationPartInput) error
 	postObserve    func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.DocumentationPart, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.DocumentationPartParameters, *svcsdk.DocumentationPart) error
-	isUpToDate     func(*svcapitypes.DocumentationPart, *svcsdk.DocumentationPart) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.DocumentationPart) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.CreateDocumentationPartInput) error
 	postCreate     func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.DocumentationPart, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DocumentationPart, *svcsdk.DeleteDocumentationPartInput) (bool, error)
@@ -228,8 +229,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.DocumentationPart, _ *svcs
 func nopLateInitialize(*svcapitypes.DocumentationPartParameters, *svcsdk.DocumentationPart) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.DocumentationPart, *svcsdk.DocumentationPart) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.DocumentationPart, *svcsdk.DocumentationPart) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.DocumentationPart, *svcsdk.CreateDocumentationPartInput) error {

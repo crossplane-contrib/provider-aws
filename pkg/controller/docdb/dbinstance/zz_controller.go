@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDBInstance(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -463,7 +464,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput) *svcsdk.DescribeDBInstancesOutput
 	lateInitialize func(*svcapitypes.DBInstanceParameters, *svcsdk.DescribeDBInstancesOutput) error
-	isUpToDate     func(*svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.DBInstance, *svcsdk.CreateDBInstanceInput) error
 	postCreate     func(context.Context, *svcapitypes.DBInstance, *svcsdk.CreateDBInstanceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DBInstance, *svcsdk.DeleteDBInstanceInput) (bool, error)
@@ -485,8 +486,8 @@ func nopFilterList(_ *svcapitypes.DBInstance, list *svcsdk.DescribeDBInstancesOu
 func nopLateInitialize(*svcapitypes.DBInstanceParameters, *svcsdk.DescribeDBInstancesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.DBInstance, *svcsdk.DescribeDBInstancesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.DBInstance, *svcsdk.CreateDBInstanceInput) error {

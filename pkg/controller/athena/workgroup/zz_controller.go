@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateWorkGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -177,7 +178,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.WorkGroup, *svcsdk.GetWorkGroupInput) error
 	postObserve    func(context.Context, *svcapitypes.WorkGroup, *svcsdk.GetWorkGroupOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.WorkGroupParameters, *svcsdk.GetWorkGroupOutput) error
-	isUpToDate     func(*svcapitypes.WorkGroup, *svcsdk.GetWorkGroupOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.WorkGroup, *svcsdk.GetWorkGroupOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.WorkGroup, *svcsdk.CreateWorkGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.WorkGroup, *svcsdk.CreateWorkGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.WorkGroup, *svcsdk.DeleteWorkGroupInput) (bool, error)
@@ -196,8 +197,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.WorkGroup, _ *svcsdk.GetWo
 func nopLateInitialize(*svcapitypes.WorkGroupParameters, *svcsdk.GetWorkGroupOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.WorkGroup, *svcsdk.GetWorkGroupOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.WorkGroup, *svcsdk.GetWorkGroupOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.WorkGroup, *svcsdk.CreateWorkGroupInput) error {

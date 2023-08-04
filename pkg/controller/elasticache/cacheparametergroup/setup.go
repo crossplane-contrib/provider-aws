@@ -104,9 +104,7 @@ func postObserve(_ context.Context, cr *svcapitypes.CacheParameterGroup, resp *s
 	return obs, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.CacheParameterGroup, resp *svcsdk.DescribeCacheParameterGroupsOutput) (bool, error) {
-	ctx := context.TODO()
-
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.CacheParameterGroup, resp *svcsdk.DescribeCacheParameterGroupsOutput) (bool, string, error) {
 	input := &svcsdk.DescribeCacheParametersInput{
 		CacheParameterGroupName: awsclient.String(meta.GetExternalName(cr)),
 	}
@@ -116,7 +114,7 @@ func (e *hooks) isUpToDate(cr *svcapitypes.CacheParameterGroup, resp *svcsdk.Des
 		return !lastPage
 	})
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	var observed []svcapitypes.ParameterNameValue
@@ -133,8 +131,7 @@ func (e *hooks) isUpToDate(cr *svcapitypes.CacheParameterGroup, resp *svcsdk.Des
 		return awsclient.StringValue(a.ParameterName) < awsclient.StringValue(b.ParameterName)
 	}))
 
-	// TODO: We should be able to return the diff to crossplane-runtime here
-	return diff == "", nil
+	return diff == "", diff, nil
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.CacheParameterGroup, obj *svcsdk.ModifyCacheParameterGroupInput) error {

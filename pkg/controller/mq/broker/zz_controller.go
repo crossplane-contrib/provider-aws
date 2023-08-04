@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateBroker(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -188,7 +189,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Broker, *svcsdk.DescribeBrokerInput) error
 	postObserve    func(context.Context, *svcapitypes.Broker, *svcsdk.DescribeBrokerResponse, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.BrokerParameters, *svcsdk.DescribeBrokerResponse) error
-	isUpToDate     func(*svcapitypes.Broker, *svcsdk.DescribeBrokerResponse) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Broker, *svcsdk.DescribeBrokerResponse) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Broker, *svcsdk.CreateBrokerRequest) error
 	postCreate     func(context.Context, *svcapitypes.Broker, *svcsdk.CreateBrokerResponse, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Broker, *svcsdk.DeleteBrokerInput) (bool, error)
@@ -207,8 +208,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Broker, _ *svcsdk.Describe
 func nopLateInitialize(*svcapitypes.BrokerParameters, *svcsdk.DescribeBrokerResponse) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Broker, *svcsdk.DescribeBrokerResponse) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Broker, *svcsdk.DescribeBrokerResponse) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Broker, *svcsdk.CreateBrokerRequest) error {

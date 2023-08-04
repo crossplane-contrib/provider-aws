@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateJob(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -183,7 +184,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Job, *svcsdk.GetJobInput) error
 	postObserve    func(context.Context, *svcapitypes.Job, *svcsdk.GetJobOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.JobParameters, *svcsdk.GetJobOutput) error
-	isUpToDate     func(*svcapitypes.Job, *svcsdk.GetJobOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Job, *svcsdk.GetJobOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Job, *svcsdk.CreateJobInput) error
 	postCreate     func(context.Context, *svcapitypes.Job, *svcsdk.CreateJobOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Job, *svcsdk.DeleteJobInput) (bool, error)
@@ -202,8 +203,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Job, _ *svcsdk.GetJobOutpu
 func nopLateInitialize(*svcapitypes.JobParameters, *svcsdk.GetJobOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Job, *svcsdk.GetJobOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Job, *svcsdk.GetJobOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Job, *svcsdk.CreateJobInput) error {

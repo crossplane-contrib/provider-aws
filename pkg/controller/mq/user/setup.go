@@ -184,15 +184,13 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcs
 	return managed.ExternalUpdate{ConnectionDetails: conn}, nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserResponse) (bool, error) {
-	ctx := context.Background()
-
+func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserResponse) (bool, string, error) {
 	if obj.Pending != nil {
-		return true, nil
+		return true, "", nil
 	}
 	_, pwChanged, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
-	return !pwChanged, nil
+	return !pwChanged, "", nil
 }

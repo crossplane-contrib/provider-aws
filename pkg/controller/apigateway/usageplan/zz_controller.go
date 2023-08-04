@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateUsagePlan(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -266,7 +267,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.UsagePlan, *svcsdk.GetUsagePlanInput) error
 	postObserve    func(context.Context, *svcapitypes.UsagePlan, *svcsdk.UsagePlan, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.UsagePlanParameters, *svcsdk.UsagePlan) error
-	isUpToDate     func(*svcapitypes.UsagePlan, *svcsdk.UsagePlan) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.UsagePlan, *svcsdk.UsagePlan) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.UsagePlan, *svcsdk.CreateUsagePlanInput) error
 	postCreate     func(context.Context, *svcapitypes.UsagePlan, *svcsdk.UsagePlan, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.UsagePlan, *svcsdk.DeleteUsagePlanInput) (bool, error)
@@ -285,8 +286,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.UsagePlan, _ *svcsdk.Usage
 func nopLateInitialize(*svcapitypes.UsagePlanParameters, *svcsdk.UsagePlan) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.UsagePlan, *svcsdk.UsagePlan) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.UsagePlan, *svcsdk.UsagePlan) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.UsagePlan, *svcsdk.CreateUsagePlanInput) error {

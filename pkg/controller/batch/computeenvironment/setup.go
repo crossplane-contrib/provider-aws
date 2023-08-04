@@ -230,7 +230,7 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironmen
 
 }
 
-func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeEnvironmentsOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeEnvironmentsOutput) (bool, string, error) {
 
 	status := awsclients.StringValue(cr.Status.AtProvider.Status)
 	ce := obj.ComputeEnvironments[0]
@@ -238,7 +238,7 @@ func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeE
 
 	// Skip when updating, deleting or creating
 	if status == svcsdk.CEStatusUpdating || status == svcsdk.CEStatusDeleting || status == svcsdk.CEStatusCreating {
-		return true, nil
+		return true, "", nil
 	}
 
 	currentParams := GenerateComputeEnvironment(obj).Spec.ForProvider
@@ -248,7 +248,7 @@ func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeE
 		switch {
 		case !cmp.Equal(spec.SubnetIDs, ce.ComputeResources.Subnets),
 			!cmp.Equal(spec.SecurityGroupIDs, ce.ComputeResources.SecurityGroupIds):
-			return false, nil
+			return false, "", nil
 		}
 
 		// fields that can be updated for CE only with Allocation
@@ -262,7 +262,7 @@ func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeE
 			case !cmp.Equal(spec.ComputeResources, currentParams.ComputeResources, cmpopts.EquateEmpty()),
 				awsclients.StringValue(spec.InstanceRole) != awsclients.StringValue(ce.ComputeResources.InstanceRole),
 				!areUpdatePolicyEqual(spec.UpdatePolicy, ce.UpdatePolicy):
-				return false, nil
+				return false, "", nil
 			}
 
 		}
@@ -277,10 +277,10 @@ func isUpToDate(cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeE
 				"UpdatePolicy", "UpdateToLatestImageVersion", "SubnetIDs", "SecurityGroupIDs", "ServiceRoleARN", "DesiredState"),
 			cmpopts.IgnoreFields(svcapitypes.ComputeResource{}, "AllocationStrategy", "BidPercentage", "EC2Configuration", "EC2KeyPair",
 				"InstanceTypes", "LaunchTemplate", "PlacementGroup", "Tags", "Type")):
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func areUpdatePolicyEqual(spec *svcapitypes.UpdatePolicy, current *svcsdk.UpdatePolicy) bool {

@@ -126,7 +126,7 @@ func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Des
 	return obs, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput) (bool, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput) (bool, string, error) { // nolint:gocyclo
 	instance := resp.DBInstances[0]
 
 	switch {
@@ -135,10 +135,11 @@ func (e *hooks) isUpToDate(cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBIn
 		awsclient.StringValue(cr.Spec.ForProvider.DBInstanceClass) != awsclient.StringValue(instance.DBInstanceClass),
 		awsclient.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != awsclient.StringValue(instance.PreferredMaintenanceWindow),
 		awsclient.Int64Value(cr.Spec.ForProvider.PromotionTier) != awsclient.Int64Value(instance.PromotionTier):
-		return false, nil
+		return false, "", nil
 	}
 
-	return svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, instance.DBInstanceArn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, instance.DBInstanceArn)
+	return areTagsUpToDate, "", err
 }
 
 func lateInitialize(cr *svcapitypes.DBInstanceParameters, resp *svcsdk.DescribeDBInstancesOutput) error {

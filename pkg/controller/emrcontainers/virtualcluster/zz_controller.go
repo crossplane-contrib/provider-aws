@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateVirtualCluster(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -184,7 +185,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterInput) error
 	postObserve    func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.VirtualClusterParameters, *svcsdk.DescribeVirtualClusterOutput) error
-	isUpToDate     func(*svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.CreateVirtualClusterInput) error
 	postCreate     func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.CreateVirtualClusterOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.VirtualCluster, *svcsdk.DeleteVirtualClusterInput) (bool, error)
@@ -202,8 +203,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.VirtualCluster, _ *svcsdk.
 func nopLateInitialize(*svcapitypes.VirtualClusterParameters, *svcsdk.DescribeVirtualClusterOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.VirtualCluster, *svcsdk.DescribeVirtualClusterOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.VirtualCluster, *svcsdk.CreateVirtualClusterInput) error {

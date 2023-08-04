@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDocumentationVersion(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -194,7 +195,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.GetDocumentationVersionInput) error
 	postObserve    func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.DocumentationVersionParameters, *svcsdk.DocumentationVersion) error
-	isUpToDate     func(*svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.CreateDocumentationVersionInput) error
 	postCreate     func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.DeleteDocumentationVersionInput) (bool, error)
@@ -213,8 +214,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.DocumentationVersion, _ *s
 func nopLateInitialize(*svcapitypes.DocumentationVersionParameters, *svcsdk.DocumentationVersion) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.DocumentationVersion) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.DocumentationVersion, *svcsdk.CreateDocumentationVersionInput) error {

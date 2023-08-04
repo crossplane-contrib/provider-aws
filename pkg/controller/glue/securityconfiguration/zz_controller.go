@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateSecurityConfiguration(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -180,7 +181,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationInput) error
 	postObserve    func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.SecurityConfigurationParameters, *svcsdk.GetSecurityConfigurationOutput) error
-	isUpToDate     func(*svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.CreateSecurityConfigurationInput) error
 	postCreate     func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.CreateSecurityConfigurationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.DeleteSecurityConfigurationInput) (bool, error)
@@ -198,8 +199,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.SecurityConfiguration, _ *
 func nopLateInitialize(*svcapitypes.SecurityConfigurationParameters, *svcsdk.GetSecurityConfigurationOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.GetSecurityConfigurationOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.SecurityConfiguration, *svcsdk.CreateSecurityConfigurationInput) error {

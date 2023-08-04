@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateRequestValidator(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -198,7 +199,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.RequestValidator, *svcsdk.GetRequestValidatorInput) error
 	postObserve    func(context.Context, *svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.RequestValidatorParameters, *svcsdk.UpdateRequestValidatorOutput) error
-	isUpToDate     func(*svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.RequestValidator, *svcsdk.CreateRequestValidatorInput) error
 	postCreate     func(context.Context, *svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.RequestValidator, *svcsdk.DeleteRequestValidatorInput) (bool, error)
@@ -217,8 +218,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.RequestValidator, _ *svcsd
 func nopLateInitialize(*svcapitypes.RequestValidatorParameters, *svcsdk.UpdateRequestValidatorOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.RequestValidator, *svcsdk.UpdateRequestValidatorOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.RequestValidator, *svcsdk.CreateRequestValidatorInput) error {

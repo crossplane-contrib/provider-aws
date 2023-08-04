@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateActivity(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -180,7 +181,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Activity, *svcsdk.DescribeActivityInput) error
 	postObserve    func(context.Context, *svcapitypes.Activity, *svcsdk.DescribeActivityOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ActivityParameters, *svcsdk.DescribeActivityOutput) error
-	isUpToDate     func(*svcapitypes.Activity, *svcsdk.DescribeActivityOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Activity, *svcsdk.DescribeActivityOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Activity, *svcsdk.CreateActivityInput) error
 	postCreate     func(context.Context, *svcapitypes.Activity, *svcsdk.CreateActivityOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Activity, *svcsdk.DeleteActivityInput) (bool, error)
@@ -198,8 +199,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Activity, _ *svcsdk.Descri
 func nopLateInitialize(*svcapitypes.ActivityParameters, *svcsdk.DescribeActivityOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Activity, *svcsdk.DescribeActivityOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Activity, *svcsdk.DescribeActivityOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Activity, *svcsdk.CreateActivityInput) error {

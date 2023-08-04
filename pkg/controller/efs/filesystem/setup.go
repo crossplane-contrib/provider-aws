@@ -66,13 +66,13 @@ func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
 		Complete(r)
 }
 
-func isUpToDate(cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, string, error) {
 	for _, res := range obj.FileSystems {
 		if awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(aws.Float64Value(res.ProvisionedThroughputInMibps)) {
-			return false, nil
+			return false, "", nil
 		}
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsInput) error {

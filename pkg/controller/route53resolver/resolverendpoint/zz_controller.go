@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateResolverEndpoint(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -244,7 +245,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointInput) error
 	postObserve    func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ResolverEndpointParameters, *svcsdk.GetResolverEndpointOutput) error
-	isUpToDate     func(*svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.CreateResolverEndpointInput) error
 	postCreate     func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.CreateResolverEndpointOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.DeleteResolverEndpointInput) (bool, error)
@@ -263,8 +264,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.ResolverEndpoint, _ *svcsd
 func nopLateInitialize(*svcapitypes.ResolverEndpointParameters, *svcsdk.GetResolverEndpointOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.GetResolverEndpointOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.ResolverEndpoint, *svcsdk.CreateResolverEndpointInput) error {

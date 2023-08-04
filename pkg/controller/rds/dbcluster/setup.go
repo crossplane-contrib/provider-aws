@@ -553,79 +553,75 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	return res
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
-	// (PocketMobsters): Creating a context here is a temporary thing until a future
-	// update drops for aws-controllers-k8s/code-generator
-	ctx := context.TODO()
-
+func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { // nolint:gocyclo
 	status := aws.StringValue(out.DBClusters[0].Status)
 	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
-		return true, nil
+		return true, "", nil
 	}
 
 	passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
 	if err != nil {
-		return false, errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
+		return false, "", errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
 	}
 	if !passwordUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.BoolValue(cr.Spec.ForProvider.EnableIAMDatabaseAuthentication) != aws.BoolValue(out.DBClusters[0].IAMDatabaseAuthenticationEnabled) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isPreferredMaintenanceWindowUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isPreferredBackupWindowUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.Int64Value(cr.Spec.ForProvider.BacktrackWindow) != aws.Int64Value(out.DBClusters[0].BacktrackWindow) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isBackupRetentionPeriodUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.BoolValue(cr.Spec.ForProvider.CopyTagsToSnapshot) != aws.BoolValue(out.DBClusters[0].CopyTagsToSnapshot) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if aws.BoolValue(cr.Spec.ForProvider.DeletionProtection) != aws.BoolValue(out.DBClusters[0].DeletionProtection) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isEngineVersionUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isPortUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !areVPCSecurityGroupIDsUpToDate(cr, out) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil &&
 		aws.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != aws.StringValue(out.DBClusters[0].DBClusterParameterGroup) {
-		return false, nil
+		return false, "", nil
 	}
 
 	isScalingConfigurationUpToDate, err := isScalingConfigurationUpToDate(cr.Spec.ForProvider.ScalingConfiguration, out.DBClusters[0].ScalingConfigurationInfo)
 	if !isScalingConfigurationUpToDate {
-		return false, err
+		return false, "", err
 	}
 
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, out.DBClusters[0].TagList)
 	if len(add) > 0 || len(remove) > 0 {
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func isPreferredMaintenanceWindowUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {

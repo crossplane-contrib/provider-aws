@@ -81,23 +81,23 @@ type hooks struct {
 	kube   client.Client
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailIdentityOutput) (bool, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailIdentityOutput) (bool, string, error) { // nolint:gocyclo
 	if meta.WasDeleted(cr) {
-		return true, nil // There is no need to check for updates when we want to delete.
+		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
 
 	if awsclient.StringValue(cr.Spec.ForProvider.ConfigurationSetName) != awsclient.StringValue(resp.ConfigurationSetName) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Checks if MailFromAttributes Object are up to date
 	if cr.Spec.ForProvider.MailFromAttributes != nil && resp.MailFromAttributes != nil {
 		// BehaviorOnMxFailure Response by default return "USE_DEFAULT_VALUE"
 		if awsclient.StringValue(cr.Spec.ForProvider.MailFromAttributes.BehaviorOnMxFailure) != awsclient.StringValue(resp.MailFromAttributes.BehaviorOnMxFailure) {
-			return false, nil
+			return false, "", nil
 		}
 		if awsclient.StringValue(cr.Spec.ForProvider.MailFromAttributes.MailFromDomain) != awsclient.StringValue(resp.MailFromAttributes.MailFromDomain) {
-			return false, nil
+			return false, "", nil
 		}
 	}
 
@@ -107,18 +107,19 @@ func (e *hooks) isUpToDate(cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailI
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && resp.DkimAttributes.NextSigningKeyLength != nil {
 		// EasyDKIM mode - Update NextSigningKeyLength or Toggle mode if cr value is empty
 		if awsclient.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength) != awsclient.StringValue(resp.DkimAttributes.NextSigningKeyLength) {
-			return false, nil
+			return false, "", nil
 		}
 	}
 
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && len(resp.DkimAttributes.Tokens) == 1 {
 		// BYODKIM mode - Update DkimSigningAttributes domain or Toggle mode if cr value is empty
 		if awsclient.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector) != awsclient.StringValue(resp.DkimAttributes.Tokens[0]) {
-			return false, nil
+			return false, "", nil
 		}
 	}
 
-	return svcutils.AreTagsUpToDate(cr.Spec.ForProvider.Tags, resp.Tags)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(cr.Spec.ForProvider.Tags, resp.Tags)
+	return areTagsUpToDate, "", err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailIdentityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

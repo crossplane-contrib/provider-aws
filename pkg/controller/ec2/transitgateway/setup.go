@@ -105,8 +105,8 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.
 	return obs, nil
 }
 
-func isUpToDate(cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatewaysOutput) (bool, error) {
-	return true, nil
+func isUpToDate(_ context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.DescribeTransitGatewaysOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func postCreate(ctx context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.CreateTransitGatewayOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

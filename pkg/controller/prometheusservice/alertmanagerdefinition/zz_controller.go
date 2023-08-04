@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAlertManagerDefinition(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -179,7 +180,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionInput) error
 	postObserve    func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.AlertManagerDefinitionParameters, *svcsdk.DescribeAlertManagerDefinitionOutput) error
-	isUpToDate     func(*svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.CreateAlertManagerDefinitionInput) error
 	postCreate     func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.CreateAlertManagerDefinitionOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.DeleteAlertManagerDefinitionInput) (bool, error)
@@ -197,8 +198,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.AlertManagerDefinition, _ 
 func nopLateInitialize(*svcapitypes.AlertManagerDefinitionParameters, *svcsdk.DescribeAlertManagerDefinitionOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.DescribeAlertManagerDefinitionOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.AlertManagerDefinition, *svcsdk.CreateAlertManagerDefinitionInput) error {

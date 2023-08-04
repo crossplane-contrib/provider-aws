@@ -410,44 +410,44 @@ func isPitrUpToDate(cr *svcapitypes.Table, pitrStatusBool bool) bool {
 		(cr.Spec.ForProvider.PointInTimeRecoveryEnabled == nil && pitrStatusBool))
 }
 
-func (e *updateClient) isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, string, error) {
 	// A table that's currently creating, deleting, or updating can't be
 	// updated, so we temporarily consider it to be up-to-date no matter
 	// what.
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING), string(svcapitypes.TableStatus_SDK_DELETING):
-		return true, nil
+		return true, "", nil
 	}
 
 	// Similarly, a table that's currently updating its SSE status can't be
 	// updated, so we temporarily consider it to be up-to-date.
 	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
-		return true, nil
+		return true, "", nil
 	}
 
 	coreUpToDate, err := isCoreResourceUpToDate(cr, resp)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	if !coreUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
 	// point in time recovery status
-	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
+	cbresult, err := e.client.DescribeContinuousBackupsWithContext(ctx, &svcsdk.DescribeContinuousBackupsInput{
 		TableName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	pitrStatus := cbresult.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus
 	pitrStatusBool := pitrStatusToBool(pitrStatus)
 
 	if !isPitrUpToDate(cr, pitrStatusBool) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func pitrStatusToBool(pitrStatus *string) bool {

@@ -141,7 +141,7 @@ func TestObserve(t *testing.T) {
 							},
 						}}, nil
 					},
-					MockDescribeParameters: func(input *dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error) {
+					MockDescribeParametersWithContext: func(ctx context.Context, input *dax.DescribeParametersInput, o []request.Option) (*dax.DescribeParametersOutput, error) {
 						return &dax.DescribeParametersOutput{
 							Parameters: []*dax.Parameter{{
 								ParameterName:  awsclient.String(testParameterName),
@@ -178,8 +178,9 @@ func TestObserve(t *testing.T) {
 							Opts: nil,
 						},
 					},
-					DescribeParameters: []*fake.CallDescribeParameters{
+					DescribeParametersWithContext: []*fake.CallDescribeParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &dax.DescribeParametersInput{
 								MaxResults:         awsclient.Int64(100),
 								ParameterGroupName: awsclient.String(testParameterGroupName),
@@ -200,7 +201,7 @@ func TestObserve(t *testing.T) {
 							},
 						}}, nil
 					},
-					MockDescribeParameters: func(input *dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error) {
+					MockDescribeParametersWithContext: func(ctx context.Context, input *dax.DescribeParametersInput, o []request.Option) (*dax.DescribeParametersOutput, error) {
 						return &dax.DescribeParametersOutput{
 							Parameters: []*dax.Parameter{{
 								ParameterName:  awsclient.String(testParameterName),
@@ -237,8 +238,9 @@ func TestObserve(t *testing.T) {
 							Opts: nil,
 						},
 					},
-					DescribeParameters: []*fake.CallDescribeParameters{
+					DescribeParametersWithContext: []*fake.CallDescribeParametersWithContext{
 						{
+							Ctx: context.Background(),
 							I: &dax.DescribeParametersInput{
 								MaxResults:         awsclient.Int64(100),
 								ParameterGroupName: awsclient.String(testParameterGroupName),

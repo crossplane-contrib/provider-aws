@@ -393,28 +393,29 @@ func getCanonicalName(parent, child string) string {
 }
 
 // IsUpToDate checks whether the actual state is up-to-date with the given desired state
-func IsUpToDate(actual, desired interface{}, opts ...LateInitOption) (bool, error) {
+func IsUpToDate(actual, desired interface{}, opts ...LateInitOption) (bool, string, error) {
 	valDesired := reflect.ValueOf(desired)
 	if valDesired.Kind() != reflect.Ptr {
-		return false, errors.Errorf("desired must be of pointer kind, got: %s", valDesired.Kind().String())
+		return false, "", errors.Errorf("desired must be of pointer kind, got: %s", valDesired.Kind().String())
 	}
 	newDesired := func() interface{} {
 		return reflect.New(reflect.TypeOf(valDesired.Elem().Interface())).Interface()
 	}
 	actualConfig := newDesired()
 	if _, err := LateInitializeFromResponse("", actualConfig, actual, opts...); err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	jsonPatch, err := awsclients.CreateJSONPatch(actualConfig, desired)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	patch := newDesired()
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
-		return false, err
+		return false, "", err
 	}
-	return cmp.Equal(newDesired(), patch, cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{})), nil
+	diff := cmp.Diff(newDesired(), patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}))
+	return diff == "", diff, nil
 }

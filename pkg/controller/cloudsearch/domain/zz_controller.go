@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDomain(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -255,7 +256,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.Domain, *svcsdk.DescribeDomainsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.Domain, *svcsdk.DescribeDomainsOutput) *svcsdk.DescribeDomainsOutput
 	lateInitialize func(*svcapitypes.DomainParameters, *svcsdk.DescribeDomainsOutput) error
-	isUpToDate     func(*svcapitypes.Domain, *svcsdk.DescribeDomainsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Domain, *svcsdk.DescribeDomainsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Domain, *svcsdk.CreateDomainInput) error
 	postCreate     func(context.Context, *svcapitypes.Domain, *svcsdk.CreateDomainOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Domain, *svcsdk.DeleteDomainInput) (bool, error)
@@ -276,8 +277,8 @@ func nopFilterList(_ *svcapitypes.Domain, list *svcsdk.DescribeDomainsOutput) *s
 func nopLateInitialize(*svcapitypes.DomainParameters, *svcsdk.DescribeDomainsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Domain, *svcsdk.DescribeDomainsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Domain, *svcsdk.DescribeDomainsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Domain, *svcsdk.CreateDomainInput) error {

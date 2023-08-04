@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateParameterGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -194,7 +195,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput) *svcsdk.DescribeParameterGroupsOutput
 	lateInitialize func(*svcapitypes.ParameterGroupParameters, *svcsdk.DescribeParameterGroupsOutput) error
-	isUpToDate     func(*svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.ParameterGroup, *svcsdk.CreateParameterGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.ParameterGroup, *svcsdk.CreateParameterGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.ParameterGroup, *svcsdk.DeleteParameterGroupInput) (bool, error)
@@ -216,8 +217,8 @@ func nopFilterList(_ *svcapitypes.ParameterGroup, list *svcsdk.DescribeParameter
 func nopLateInitialize(*svcapitypes.ParameterGroupParameters, *svcsdk.DescribeParameterGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.ParameterGroup, *svcsdk.DescribeParameterGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.ParameterGroup, *svcsdk.CreateParameterGroupInput) error {

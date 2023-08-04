@@ -158,29 +158,29 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.GetSer
 	return obs, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, error) {
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.GetServiceOutput) (bool, string, error) {
 	if *resp.Service.Description != *cr.Spec.ForProvider.Description {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isEqualDNSRecords(resp.Service.DnsConfig.DnsRecords, cr.Spec.ForProvider.DNSConfig.DNSRecords) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isEqualHealthCheckConfig(resp.Service.HealthCheckConfig, cr.Spec.ForProvider.HealthCheckConfig) {
-		return false, nil
+		return false, "", nil
 	}
 
 	tagsUpToDate, err := commonnamespace.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.ARN)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	if !tagsUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func isEqualHealthCheckConfig(outHealthCheck *svcsdk.HealthCheckConfig, crHealthCheck *svcapitypes.HealthCheckConfig) bool {

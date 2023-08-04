@@ -82,32 +82,33 @@ type hooks struct {
 	ConfigurationSetObservation *svcsdk.GetConfigurationSetOutput
 }
 
-func isUpToDate(cr *svcapitypes.ConfigurationSet, resp *svcsdk.GetConfigurationSetOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.ConfigurationSet, resp *svcsdk.GetConfigurationSetOutput) (bool, string, error) {
 	if meta.WasDeleted(cr) {
-		return true, nil // There is no need to check for updates when we want to delete.
+		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
 
 	if !isUpToDateDeliveryOptions(cr, resp) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateReputationOptions(cr, resp) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateSendingOptions(cr, resp) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateSuppressionOptions(cr, resp) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if !isUpToDateTrackingOptions(cr, resp) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return svcutils.AreTagsUpToDate(cr.Spec.ForProvider.Tags, resp.Tags)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(cr.Spec.ForProvider.Tags, resp.Tags)
+	return areTagsUpToDate, "", err
 }
 
 // isUpToDateDeliveryOptions checks if DeliveryOptions Object are up to date

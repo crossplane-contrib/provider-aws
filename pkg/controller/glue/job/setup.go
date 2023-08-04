@@ -150,27 +150,28 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 	return nil
 }
 
-func (h *hooks) isUpToDate(cr *svcapitypes.Job, resp *svcsdk.GetJobOutput) (bool, error) {
+func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Job, resp *svcsdk.GetJobOutput) (bool, string, error) {
 	// no checks needed if user deletes the resource
 	// ensures that an error (e.g. missing ARN) here does not prevent deletion
 	if meta.WasDeleted(cr) {
-		return true, nil
+		return true, "", nil
 	}
 
 	currentParams := customGenerateJob(resp).Spec.ForProvider
 
-	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
+	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.JobParameters{}, "Region", "AllocatedCapacity", "Tags")) {
-		return false, nil
+		cmpopts.IgnoreFields(svcapitypes.JobParameters{}, "Region", "AllocatedCapacity", "Tags")); diff != "" {
+		return false, diff, nil
 	}
 
 	// retrieve ARN and check if Tags need update
 	arn, err := h.getARN(cr)
 	if err != nil {
-		return true, err
+		return true, "", err
 	}
-	return svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	return areTagsUpToDate, "", err
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.UpdateJobInput) error {

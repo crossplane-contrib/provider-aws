@@ -195,11 +195,11 @@ func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawler
 	return nil
 }
 
-func (h *hooks) isUpToDate(cr *svcapitypes.Crawler, resp *svcsdk.GetCrawlerOutput) (bool, error) {
+func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svcsdk.GetCrawlerOutput) (bool, string, error) {
 	// no checks needed if user deletes the resource
 	// ensures that an error (e.g. missing ARN) here does not prevent deletion
 	if meta.WasDeleted(cr) {
-		return true, nil
+		return true, "", nil
 	}
 
 	currentParams := customGenerateCrawler(resp).Spec.ForProvider
@@ -207,7 +207,7 @@ func (h *hooks) isUpToDate(cr *svcapitypes.Crawler, resp *svcsdk.GetCrawlerOutpu
 	// separate check bc: 1.lowercase handling 2.field Schedule has different input/output shapes (see generator-config.yaml)
 	if !strings.EqualFold(awsclients.StringValue(cr.Spec.ForProvider.Schedule), awsclients.StringValue(currentParams.Schedule)) {
 
-		return false, nil
+		return false, "", nil
 	}
 
 	// user can provide either ARN or name for role; AWS API gives role name back
@@ -217,26 +217,27 @@ func (h *hooks) isUpToDate(cr *svcapitypes.Crawler, resp *svcsdk.GetCrawlerOutpu
 		roleName := strings.TrimPrefix(roleARN.Resource, "role/")
 		if !strings.EqualFold(roleName, currentParams.Role) {
 
-			return false, nil
+			return false, "", nil
 		}
-	} else if !cmp.Equal(cr.Spec.ForProvider.Role, currentParams.Role) {
+	} else if diff := cmp.Diff(cr.Spec.ForProvider.Role, currentParams.Role); diff != "" {
 
-		return false, nil
+		return false, diff, nil
 	}
 
-	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
+	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.CrawlerParameters{}, "Region", "Schedule", "Role", "Tags")) {
+		cmpopts.IgnoreFields(svcapitypes.CrawlerParameters{}, "Region", "Schedule", "Role", "Tags")); diff != "" {
 
-		return false, nil
+		return false, diff, nil
 	}
 
 	// retrieve ARN and check if Tags need update
 	arn, err := h.getARN(cr)
 	if err != nil {
-		return true, err
+		return true, "", err
 	}
-	return svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(h.client, cr.Spec.ForProvider.Tags, arn)
+	return areTagsUpToDate, "", err
 }
 
 // nolint:gocyclo

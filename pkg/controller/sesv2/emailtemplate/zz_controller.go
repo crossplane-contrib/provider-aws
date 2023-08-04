@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateEmailTemplate(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -177,7 +178,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateInput) error
 	postObserve    func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.EmailTemplateParameters, *svcsdk.GetEmailTemplateOutput) error
-	isUpToDate     func(*svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.CreateEmailTemplateInput) error
 	postCreate     func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.CreateEmailTemplateOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.EmailTemplate, *svcsdk.DeleteEmailTemplateInput) (bool, error)
@@ -196,8 +197,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.EmailTemplate, _ *svcsdk.G
 func nopLateInitialize(*svcapitypes.EmailTemplateParameters, *svcsdk.GetEmailTemplateOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.EmailTemplate, *svcsdk.GetEmailTemplateOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.EmailTemplate, *svcsdk.CreateEmailTemplateInput) error {

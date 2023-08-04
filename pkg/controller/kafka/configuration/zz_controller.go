@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateConfiguration(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -214,7 +215,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Configuration, *svcsdk.DescribeConfigurationInput) error
 	postObserve    func(context.Context, *svcapitypes.Configuration, *svcsdk.DescribeConfigurationOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ConfigurationParameters, *svcsdk.DescribeConfigurationOutput) error
-	isUpToDate     func(*svcapitypes.Configuration, *svcsdk.DescribeConfigurationOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Configuration, *svcsdk.DescribeConfigurationOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Configuration, *svcsdk.CreateConfigurationInput) error
 	postCreate     func(context.Context, *svcapitypes.Configuration, *svcsdk.CreateConfigurationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Configuration, *svcsdk.DeleteConfigurationInput) (bool, error)
@@ -233,8 +234,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Configuration, _ *svcsdk.D
 func nopLateInitialize(*svcapitypes.ConfigurationParameters, *svcsdk.DescribeConfigurationOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Configuration, *svcsdk.DescribeConfigurationOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Configuration, *svcsdk.DescribeConfigurationOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Configuration, *svcsdk.CreateConfigurationInput) error {

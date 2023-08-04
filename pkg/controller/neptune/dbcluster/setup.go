@@ -189,39 +189,39 @@ func lateInitialize(in *svcapitypes.DBClusterParameters, out *svcsdk.DescribeDBC
 }
 
 // nolint:gocyclo
-func isUpToDate(cr *svcapitypes.DBCluster, output *svcsdk.DescribeDBClustersOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.DBCluster, output *svcsdk.DescribeDBClustersOutput) (bool, string, error) {
 	in := cr.Spec.ForProvider
 	out := output.DBClusters[0]
 
 	if aws.Int64Value(in.BackupRetentionPeriod) != aws.Int64Value(out.BackupRetentionPeriod) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.StringValue(in.DBClusterParameterGroupName) != aws.StringValue(out.DBClusterParameterGroup) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.BoolValue(in.DeletionProtection) != aws.BoolValue(out.DeletionProtection) {
-		return false, nil
+		return false, "", nil
 	}
 	if !cmp.Equal(in.EnableCloudwatchLogsExports, out.EnabledCloudwatchLogsExports) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.StringValue(in.EngineVersion) != aws.StringValue(out.EngineVersion) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.BoolValue(in.EnableIAMDatabaseAuthentication) != aws.BoolValue(out.IAMDatabaseAuthenticationEnabled) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.Int64Value(in.Port) != aws.Int64Value(out.Port) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.StringValue(in.PreferredBackupWindow) != aws.StringValue(out.PreferredBackupWindow) {
-		return false, nil
+		return false, "", nil
 	}
 	if aws.StringValue(in.PreferredMaintenanceWindow) != aws.StringValue(out.PreferredMaintenanceWindow) {
-		return false, nil
+		return false, "", nil
 	}
 	if len(in.VPCSecurityGroupIDs) != len(out.VpcSecurityGroups) {
-		return true, nil
+		return false, "", nil
 	}
 
 	vcpArr := make([]*string, len(in.VPCSecurityGroupIDs))
@@ -229,10 +229,10 @@ func isUpToDate(cr *svcapitypes.DBCluster, output *svcsdk.DescribeDBClustersOutp
 		vcpArr[i] = out.VpcSecurityGroups[i].VpcSecurityGroupId
 	}
 	if !cmp.Equal(in.VPCSecurityGroupIDs, vcpArr) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

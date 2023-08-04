@@ -126,7 +126,7 @@ func lateInitialize(in *svcapitypes.CachePolicyParameters, gpo *svcsdk.GetCacheP
 	return err
 }
 
-func isUpToDate(cp *svcapitypes.CachePolicy, gpo *svcsdk.GetCachePolicyOutput) (bool, error) {
+func isUpToDate(_ context.Context, cp *svcapitypes.CachePolicy, gpo *svcsdk.GetCachePolicyOutput) (bool, string, error) {
 	return cloudfront.IsUpToDate(gpo.CachePolicy.CachePolicyConfig, cp.Spec.ForProvider.CachePolicyConfig,
 		mappingOptions...)
 }

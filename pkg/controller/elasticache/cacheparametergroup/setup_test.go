@@ -17,6 +17,7 @@ limitations under the License.
 package cacheparametergroup
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -176,7 +177,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			opts := []option{setupExternal}
 			e := newExternal(nil, tc.args.elasticache, opts)
-			upToDate, err := e.isUpToDate(tc.args.cr, tc.args.resp)
+			upToDate, _, err := e.isUpToDate(context.Background(), tc.args.cr, tc.args.resp)
 
 			if diff := cmp.Diff(tc.want.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)

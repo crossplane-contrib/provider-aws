@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateResourceServer(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -209,7 +210,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerInput) error
 	postObserve    func(context.Context, *svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ResourceServerParameters, *svcsdk.DescribeResourceServerOutput) error
-	isUpToDate     func(*svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.ResourceServer, *svcsdk.CreateResourceServerInput) error
 	postCreate     func(context.Context, *svcapitypes.ResourceServer, *svcsdk.CreateResourceServerOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.ResourceServer, *svcsdk.DeleteResourceServerInput) (bool, error)
@@ -228,8 +229,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.ResourceServer, _ *svcsdk.
 func nopLateInitialize(*svcapitypes.ResourceServerParameters, *svcsdk.DescribeResourceServerOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.ResourceServer, *svcsdk.DescribeResourceServerOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.ResourceServer, *svcsdk.CreateResourceServerInput) error {

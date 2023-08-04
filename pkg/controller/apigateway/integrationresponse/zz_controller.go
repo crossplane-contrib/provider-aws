@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateIntegrationResponse(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -215,7 +216,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.GetIntegrationResponseInput) error
 	postObserve    func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.IntegrationResponseParameters, *svcsdk.IntegrationResponse) error
-	isUpToDate     func(*svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.PutIntegrationResponseInput) error
 	postCreate     func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.DeleteIntegrationResponseInput) (bool, error)
@@ -234,8 +235,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.IntegrationResponse, _ *sv
 func nopLateInitialize(*svcapitypes.IntegrationResponseParameters, *svcsdk.IntegrationResponse) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.IntegrationResponse) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.IntegrationResponse, *svcsdk.PutIntegrationResponseInput) error {

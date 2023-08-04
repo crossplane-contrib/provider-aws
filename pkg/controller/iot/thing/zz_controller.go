@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateThing(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -188,7 +189,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Thing, *svcsdk.DescribeThingInput) error
 	postObserve    func(context.Context, *svcapitypes.Thing, *svcsdk.DescribeThingOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ThingParameters, *svcsdk.DescribeThingOutput) error
-	isUpToDate     func(*svcapitypes.Thing, *svcsdk.DescribeThingOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Thing, *svcsdk.DescribeThingOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Thing, *svcsdk.CreateThingInput) error
 	postCreate     func(context.Context, *svcapitypes.Thing, *svcsdk.CreateThingOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Thing, *svcsdk.DeleteThingInput) (bool, error)
@@ -207,8 +208,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Thing, _ *svcsdk.DescribeT
 func nopLateInitialize(*svcapitypes.ThingParameters, *svcsdk.DescribeThingOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Thing, *svcsdk.DescribeThingOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Thing, *svcsdk.DescribeThingOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Thing, *svcsdk.CreateThingInput) error {

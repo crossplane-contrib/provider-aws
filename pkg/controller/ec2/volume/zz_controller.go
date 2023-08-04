@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateVolume(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -299,7 +300,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.Volume, *svcsdk.DescribeVolumesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.Volume, *svcsdk.DescribeVolumesOutput) *svcsdk.DescribeVolumesOutput
 	lateInitialize func(*svcapitypes.VolumeParameters, *svcsdk.DescribeVolumesOutput) error
-	isUpToDate     func(*svcapitypes.Volume, *svcsdk.DescribeVolumesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Volume, *svcsdk.DescribeVolumesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Volume, *svcsdk.CreateVolumeInput) error
 	postCreate     func(context.Context, *svcapitypes.Volume, *svcsdk.Volume, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Volume, *svcsdk.DeleteVolumeInput) (bool, error)
@@ -321,8 +322,8 @@ func nopFilterList(_ *svcapitypes.Volume, list *svcsdk.DescribeVolumesOutput) *s
 func nopLateInitialize(*svcapitypes.VolumeParameters, *svcsdk.DescribeVolumesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Volume, *svcsdk.DescribeVolumesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Volume, *svcsdk.DescribeVolumesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Volume, *svcsdk.CreateVolumeInput) error {

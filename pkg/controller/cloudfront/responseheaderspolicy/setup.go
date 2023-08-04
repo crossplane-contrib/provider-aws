@@ -200,7 +200,7 @@ func lateInitialize(in *svcapitypes.ResponseHeadersPolicyParameters, grhpo *svcs
 	return err
 }
 
-func isUpToDate(rhp *svcapitypes.ResponseHeadersPolicy, grhpo *svcsdk.GetResponseHeadersPolicyOutput) (bool, error) {
+func isUpToDate(_ context.Context, rhp *svcapitypes.ResponseHeadersPolicy, grhpo *svcsdk.GetResponseHeadersPolicyOutput) (bool, string, error) {
 	return cloudfront.IsUpToDate(grhpo.ResponseHeadersPolicy, rhp.Spec.ForProvider.ResponseHeadersPolicyConfig,
 		mappingOptions...)
 }

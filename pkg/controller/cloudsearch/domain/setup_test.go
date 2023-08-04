@@ -366,7 +366,7 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			}
 
-			result, err := h.isUpToDate(&svcapitypes.Domain{
+			result, _, err := h.isUpToDate(context.Background(), &svcapitypes.Domain{
 				Spec: svcapitypes.DomainSpec{
 					ForProvider: svcapitypes.DomainParameters{
 						DomainName: &domainName,

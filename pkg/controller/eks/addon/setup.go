@@ -136,16 +136,16 @@ func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddo
 	return nil
 }
 
-func (h *hooks) isUpToDate(cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) {
+func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, string, error) {
 	switch {
 	case resp.Addon == nil,
 		cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion),
 		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
-		return false, nil
+		return false, "", nil
 	}
 
 	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
-	return len(add) == 0 && len(remove) == 0, nil
+	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
 func preUpdate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.UpdateAddonInput) error {

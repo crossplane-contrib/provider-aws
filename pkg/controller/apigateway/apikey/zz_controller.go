@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAPIKey(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -241,7 +242,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.APIKey, *svcsdk.GetApiKeyInput) error
 	postObserve    func(context.Context, *svcapitypes.APIKey, *svcsdk.ApiKey, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.APIKeyParameters, *svcsdk.ApiKey) error
-	isUpToDate     func(*svcapitypes.APIKey, *svcsdk.ApiKey) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.APIKey, *svcsdk.ApiKey) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.APIKey, *svcsdk.CreateApiKeyInput) error
 	postCreate     func(context.Context, *svcapitypes.APIKey, *svcsdk.ApiKey, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.APIKey, *svcsdk.DeleteApiKeyInput) (bool, error)
@@ -260,8 +261,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.APIKey, _ *svcsdk.ApiKey, 
 func nopLateInitialize(*svcapitypes.APIKeyParameters, *svcsdk.ApiKey) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.APIKey, *svcsdk.ApiKey) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.APIKey, *svcsdk.ApiKey) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.APIKey, *svcsdk.CreateApiKeyInput) error {

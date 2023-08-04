@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateTransitGatewayVPCAttachment(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -257,7 +258,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput
 	lateInitialize func(*svcapitypes.TransitGatewayVPCAttachmentParameters, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) error
-	isUpToDate     func(*svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.CreateTransitGatewayVpcAttachmentInput) error
 	postCreate     func(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.CreateTransitGatewayVpcAttachmentOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DeleteTransitGatewayVpcAttachmentInput) (bool, error)
@@ -279,8 +280,8 @@ func nopFilterList(_ *svcapitypes.TransitGatewayVPCAttachment, list *svcsdk.Desc
 func nopLateInitialize(*svcapitypes.TransitGatewayVPCAttachmentParameters, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.DescribeTransitGatewayVpcAttachmentsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.TransitGatewayVPCAttachment, *svcsdk.CreateTransitGatewayVpcAttachmentInput) error {

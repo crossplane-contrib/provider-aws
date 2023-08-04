@@ -139,13 +139,11 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.IdentityProvider
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.IdentityProvider, resp *svcsdk.DescribeIdentityProviderOutput) (bool, error) {
+func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.IdentityProvider, resp *svcsdk.DescribeIdentityProviderOutput) (bool, string, error) {
 	provider := resp.IdentityProvider
-
-	ctx := context.Background()
 	p, err := e.resolver.GetProviderDetails(ctx, e.kube, &cr.Spec.ForProvider.ProviderDetailsSecretRef)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	providerDetails := p
 
@@ -153,9 +151,9 @@ func (e *custom) isUpToDate(cr *svcapitypes.IdentityProvider, resp *svcsdk.Descr
 	case !reflect.DeepEqual(cr.Spec.ForProvider.AttributeMapping, provider.AttributeMapping),
 		cr.Spec.ForProvider.IDpIdentifiers != nil && !reflect.DeepEqual(cr.Spec.ForProvider.IDpIdentifiers, provider.IdpIdentifiers),
 		!reflect.DeepEqual(providerDetails, provider.ProviderDetails):
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func lateInitialize(cr *svcapitypes.IdentityProviderParameters, current *svcsdk.DescribeIdentityProviderOutput) error {

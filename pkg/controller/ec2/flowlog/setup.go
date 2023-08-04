@@ -204,25 +204,25 @@ func postCreate(ctx context.Context, cr *svcapitypes.FlowLog, obj *svcsdk.Create
 	return cre, nil
 }
 
-func (u *updater) isUpToDate(cr *svcapitypes.FlowLog, obj *svcsdk.DescribeFlowLogsOutput) (bool, error) {
+func (u *updater) isUpToDate(ctx context.Context, cr *svcapitypes.FlowLog, obj *svcsdk.DescribeFlowLogsOutput) (bool, string, error) {
 
 	input := GenerateDescribeFlowLogsInput(cr)
-	resp, err := u.client.DescribeFlowLogs(input)
+	resp, err := u.client.DescribeFlowLogsWithContext(ctx, input)
 	if err != nil {
-		return false, errors.Wrap(err, errDescribe)
+		return false, "", errors.Wrap(err, errDescribe)
 	}
 
 	resp = filterList(cr, resp)
 
 	if len(resp.FlowLogs) == 0 {
-		return false, errors.New(errDescribe)
+		return false, "", errors.New(errDescribe)
 	}
 
 	tags := resp.FlowLogs[0].Tags
 
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, tags)
 
-	return len(add) == 0 && len(remove) == 0, nil
+	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
 func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
