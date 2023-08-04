@@ -117,7 +117,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.R
 
 	for _, route := range response.RouteTables[0].Routes {
 		if awsclients.StringValue(route.Origin) == svcsdk.RouteOriginCreateRoute {
-			if awsclients.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
+			if ec2.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
 				return route, nil
 			}
 		}
