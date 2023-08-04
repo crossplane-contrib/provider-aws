@@ -30,9 +30,9 @@ func (mg *CachePolicy) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this CachePolicy.
-func (mg *CachePolicy) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this CachePolicy.
+func (mg *CachePolicy) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CachePolicy.
@@ -68,9 +68,9 @@ func (mg *CachePolicy) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this CachePolicy.
-func (mg *CachePolicy) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this CachePolicy.
+func (mg *CachePolicy) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CachePolicy.
@@ -106,9 +106,9 @@ func (mg *CloudFrontOriginAccessIdentity) GetDeletionPolicy() xpv1.DeletionPolic
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this CloudFrontOriginAccessIdentity.
-func (mg *CloudFrontOriginAccessIdentity) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CloudFrontOriginAccessIdentity.
@@ -144,9 +144,9 @@ func (mg *CloudFrontOriginAccessIdentity) SetDeletionPolicy(r xpv1.DeletionPolic
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this CloudFrontOriginAccessIdentity.
-func (mg *CloudFrontOriginAccessIdentity) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this CloudFrontOriginAccessIdentity.
+func (mg *CloudFrontOriginAccessIdentity) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CloudFrontOriginAccessIdentity.
@@ -182,9 +182,9 @@ func (mg *Distribution) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this Distribution.
-func (mg *Distribution) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this Distribution.
+func (mg *Distribution) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this Distribution.
@@ -220,9 +220,9 @@ func (mg *Distribution) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this Distribution.
-func (mg *Distribution) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this Distribution.
+func (mg *Distribution) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this Distribution.
@@ -258,9 +258,9 @@ func (mg *ResponseHeadersPolicy) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this ResponseHeadersPolicy.
-func (mg *ResponseHeadersPolicy) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this ResponseHeadersPolicy.
+func (mg *ResponseHeadersPolicy) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this ResponseHeadersPolicy.
@@ -296,9 +296,9 @@ func (mg *ResponseHeadersPolicy) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this ResponseHeadersPolicy.
-func (mg *ResponseHeadersPolicy) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this ResponseHeadersPolicy.
+func (mg *ResponseHeadersPolicy) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this ResponseHeadersPolicy.

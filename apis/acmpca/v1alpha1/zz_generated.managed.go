@@ -30,9 +30,9 @@ func (mg *CertificateAuthority) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this CertificateAuthority.
-func (mg *CertificateAuthority) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this CertificateAuthority.
+func (mg *CertificateAuthority) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CertificateAuthority.
@@ -68,9 +68,9 @@ func (mg *CertificateAuthority) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this CertificateAuthority.
-func (mg *CertificateAuthority) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this CertificateAuthority.
+func (mg *CertificateAuthority) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CertificateAuthority.
@@ -106,9 +106,9 @@ func (mg *CertificateAuthorityPermission) GetDeletionPolicy() xpv1.DeletionPolic
 	return mg.Spec.DeletionPolicy
 }
 
-// GetManagementPolicy of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetManagementPolicy() xpv1.ManagementPolicy {
-	return mg.Spec.ManagementPolicy
+// GetManagementPolicies of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CertificateAuthorityPermission.
@@ -144,9 +144,9 @@ func (mg *CertificateAuthorityPermission) SetDeletionPolicy(r xpv1.DeletionPolic
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetManagementPolicy of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetManagementPolicy(r xpv1.ManagementPolicy) {
-	mg.Spec.ManagementPolicy = r
+// SetManagementPolicies of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CertificateAuthorityPermission.
