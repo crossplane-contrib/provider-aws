@@ -30,6 +30,11 @@ func (mg *CacheCluster) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this CacheCluster.
+func (mg *CacheCluster) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this CacheCluster.
 func (mg *CacheCluster) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *CacheCluster) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this CacheCluster.
 func (mg *CacheCluster) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this CacheCluster.
+func (mg *CacheCluster) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CacheCluster.
@@ -96,6 +106,11 @@ func (mg *CacheSubnetGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this CacheSubnetGroup.
 func (mg *CacheSubnetGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -127,6 +142,11 @@ func (mg *CacheSubnetGroup) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this CacheSubnetGroup.
 func (mg *CacheSubnetGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CacheSubnetGroup.

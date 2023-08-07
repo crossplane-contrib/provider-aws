@@ -30,6 +30,11 @@ func (mg *ResolverRuleAssociation) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this ResolverRuleAssociation.
 func (mg *ResolverRuleAssociation) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *ResolverRuleAssociation) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this ResolverRuleAssociation.
 func (mg *ResolverRuleAssociation) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this ResolverRuleAssociation.

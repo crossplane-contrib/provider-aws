@@ -30,6 +30,11 @@ func (mg *CacheParameterGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this CacheParameterGroup.
+func (mg *CacheParameterGroup) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this CacheParameterGroup.
 func (mg *CacheParameterGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *CacheParameterGroup) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this CacheParameterGroup.
 func (mg *CacheParameterGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this CacheParameterGroup.
+func (mg *CacheParameterGroup) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CacheParameterGroup.

@@ -30,6 +30,11 @@ func (mg *HostedZone) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this HostedZone.
+func (mg *HostedZone) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this HostedZone.
 func (mg *HostedZone) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *HostedZone) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this HostedZone.
 func (mg *HostedZone) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this HostedZone.
+func (mg *HostedZone) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this HostedZone.
@@ -96,6 +106,11 @@ func (mg *ResourceRecordSet) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this ResourceRecordSet.
+func (mg *ResourceRecordSet) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this ResourceRecordSet.
 func (mg *ResourceRecordSet) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -127,6 +142,11 @@ func (mg *ResourceRecordSet) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this ResourceRecordSet.
 func (mg *ResourceRecordSet) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this ResourceRecordSet.
+func (mg *ResourceRecordSet) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this ResourceRecordSet.

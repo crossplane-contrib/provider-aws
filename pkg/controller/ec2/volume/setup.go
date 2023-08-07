@@ -15,12 +15,9 @@ package volume
 
 import (
 	"context"
-	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -34,10 +31,6 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-)
-
-const (
-	errKubeUpdateFailed = "cannot update Volume"
 )
 
 // SetupVolume adds a controller that reconciles Volume.
@@ -57,22 +50,29 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
 	}
 
+	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithPollInterval(o.PollInterval),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithConnectionPublishers(cps...),
+	}
+
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
+	}
+
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(svcapitypes.VolumeGroupVersionKind),
+		reconcilerOpts...)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.Volume{}).
-		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.VolumeGroupVersionKind),
-			managed.WithInitializers(
-				managed.NewDefaultProviderConfig(mgr.GetClient()),
-				&tagger{kube: mgr.GetClient()},
-			),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithPollInterval(o.PollInterval),
-			managed.WithLogger(o.Logger.WithValues("controller", name)),
-			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-			managed.WithConnectionPublishers(cps...)))
+		Complete(r)
 }
 
 func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcsdk.DescribeVolumesOutput {
@@ -121,40 +121,4 @@ func postObserve(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.Describe
 		"volumeID": []byte(awsclients.StringValue(obj.Volumes[0].VolumeId)),
 	}
 	return obs, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.Volume)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var volumeTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if awsclients.StringValue(tagSpecification.ResourceType) == "volume" {
-			volumeTags = *tagSpecification
-		}
-	}
-
-	tagMap := cr.Spec.ForProvider.Tags
-	tagMap["Name"] = cr.Name
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	volumeTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	volumeTags.ResourceType = awsclients.String("volume")
-	i := 0
-	for k, v := range tagMap {
-		volumeTags.Tags[i] = &svcapitypes.Tag{Key: awsclients.String(k), Value: awsclients.String(v)}
-		i++
-	}
-	sort.Slice(volumeTags.Tags, func(i, j int) bool {
-		return awsclients.StringValue(volumeTags.Tags[i].Key) < awsclients.StringValue(volumeTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&volumeTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

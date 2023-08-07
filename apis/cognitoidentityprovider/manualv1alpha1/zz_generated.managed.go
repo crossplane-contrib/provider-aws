@@ -30,6 +30,11 @@ func (mg *GroupUserMembership) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
+// GetManagementPolicies of this GroupUserMembership.
+func (mg *GroupUserMembership) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
 // GetProviderConfigReference of this GroupUserMembership.
 func (mg *GroupUserMembership) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
@@ -61,6 +66,11 @@ func (mg *GroupUserMembership) SetConditions(c ...xpv1.Condition) {
 // SetDeletionPolicy of this GroupUserMembership.
 func (mg *GroupUserMembership) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this GroupUserMembership.
+func (mg *GroupUserMembership) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this GroupUserMembership.
