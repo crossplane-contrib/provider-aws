@@ -167,22 +167,6 @@ spec:
                       engines, Amazon Aurora Not applicable. The character set is
                       managed by the DB cluster. For more information, see CreateDBCluster.
                     type: string
-                  cloudwatchLogsExportConfiguration:
-                    description: CloudwatchLogsExportConfiguration is the configuration
-                      setting for the log types to be enabled for export to CloudWatch
-                      Logs for a specific DB instance.
-                    properties:
-                      disableLogTypes:
-                        description: DisableLogTypes is the list of log types to disable.
-                        items:
-                          type: string
-                        type: array
-                      enableLogTypes:
-                        description: EnableLogTypes is the list of log types to enable.
-                        items:
-                          type: string
-                        type: array
-                    type: object
                   copyTagsToSnapshot:
                     description: CopyTagsToSnapshot should be true to copy all tags
                       from the DB instance to snapshots of the DB instance, and otherwise
@@ -1516,6 +1500,15 @@ spec:
                             etc).
                           type: string
                       type: object
+                    type: array
+                  enabledCloudwatchLogsExports:
+                    description: A list of log types that this DB instance is configured
+                      to export to CloudWatch Logs. Log types vary by DB engine. For
+                      information about the log types for each DB engine, see Amazon
+                      RDS Database Log Files (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html)
+                      in the Amazon RDS User Guide.
+                    items:
+                      type: string
                     type: array
                   endpoint:
                     description: Endpoint specifies the connection endpoint.

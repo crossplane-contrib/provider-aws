@@ -359,7 +359,7 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 }
 
 // GenerateModifyDBInstanceInput from RDSInstanceSpec
-func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters) *rds.ModifyDBInstanceInput {
+func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) *rds.ModifyDBInstanceInput {
 	// NOTE(muvaf): MasterUserPassword is not used here. So, password is set once
 	// and kept that way.
 	// NOTE(muvaf): Change of DBInstanceIdentifier is supported by AWS but
@@ -411,12 +411,11 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 			}
 		}
 	}
-	if p.CloudwatchLogsExportConfiguration != nil {
-		m.CloudwatchLogsExportConfiguration = &rdstypes.CloudwatchLogsExportConfiguration{
-			DisableLogTypes: p.CloudwatchLogsExportConfiguration.DisableLogTypes,
-			EnableLogTypes:  p.CloudwatchLogsExportConfiguration.EnableLogTypes,
-		}
-	}
+
+	m.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
+		p.EnableCloudwatchLogsExports,
+		db.EnabledCloudwatchLogsExports)
+
 	return m
 }
 
@@ -431,6 +430,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
 		DBInstancePort:                        int(db.DbInstancePort),
 		DBResourceID:                          aws.ToString(db.DbiResourceId),
+		EnabledCloudwatchLogsExports:          db.EnabledCloudwatchLogsExports,
 		EnhancedMonitoringResourceArn:         aws.ToString(db.EnhancedMonitoringResourceArn),
 		PerformanceInsightsEnabled:            aws.ToBool(db.PerformanceInsightsEnabled),
 		ReadReplicaDBClusterIdentifiers:       db.ReadReplicaDBClusterIdentifiers,
@@ -621,9 +621,6 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	if aws.ToString(in.DBSubnetGroupName) == "" && db.DBSubnetGroup != nil {
 		in.DBSubnetGroupName = db.DBSubnetGroup.DBSubnetGroupName
 	}
-	if len(in.EnableCloudwatchLogsExports) == 0 && len(db.EnabledCloudwatchLogsExports) != 0 {
-		in.EnableCloudwatchLogsExports = db.EnabledCloudwatchLogsExports
-	}
 	if len(in.ProcessorFeatures) == 0 && len(db.ProcessorFeatures) != 0 {
 		in.ProcessorFeatures = make([]v1beta1.ProcessorFeature, len(db.ProcessorFeatures))
 		for i, val := range db.ProcessorFeatures {
@@ -678,13 +675,21 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "OptionGroupName"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "EnableCloudwatchLogsExports"),
 	)
 
 	engineVersionChanged := !isEngineVersionUpToDate(r, db)
 
 	optionGroupChanged := !isOptionGroupUpToDate(r, db)
 
-	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged {
+	cloudwatchLogsExportChanged := false
+	// only check CloudwatchLogsExports if there are no pending cloudwatchlogs exports (ignores the apply immediately setting)
+	// (to avoid: "api error InvalidParameterCombination: You cannot configure CloudWatch Logs while a previous configuration is in progress.")
+	if db.PendingModifiedValues != nil && db.PendingModifiedValues.PendingCloudwatchLogsExports == nil {
+		cloudwatchLogsExportChanged = !areSameElements(r.Spec.ForProvider.EnableCloudwatchLogsExports, db.EnabledCloudwatchLogsExports)
+	}
+
+	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged && !cloudwatchLogsExportChanged {
 		return true, "", nil
 	}
 
@@ -779,4 +784,53 @@ func GetConnectionDetails(in v1beta1.RDSInstance) managed.ConnectionDetails {
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.Endpoint.Address),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(in.Status.AtProvider.Endpoint.Port)),
 	}
+}
+
+func generateCloudWatchExportConfiguration(spec, current []string) *rdstypes.CloudwatchLogsExportConfiguration {
+	toEnable := []string{}
+	toDisable := []string{}
+
+	currentMap := make(map[string]struct{}, len(current))
+	for _, currentID := range current {
+		currentMap[currentID] = struct{}{}
+	}
+
+	specMap := make(map[string]struct{}, len(spec))
+	for _, specID := range spec {
+		specMap[specID] = struct{}{}
+
+		if _, exists := currentMap[specID]; !exists {
+			toEnable = append(toEnable, specID)
+		}
+	}
+
+	for _, currentID := range current {
+		if _, exists := specMap[currentID]; !exists {
+			toDisable = append(toDisable, currentID)
+		}
+	}
+
+	return &rdstypes.CloudwatchLogsExportConfiguration{
+		EnableLogTypes:  toEnable,
+		DisableLogTypes: toDisable,
+	}
+}
+
+func areSameElements(a1, a2 []string) bool {
+	if len(a1) != len(a2) {
+		return false
+	}
+
+	m2 := make(map[string]struct{}, len(a2))
+	for _, s2 := range a2 {
+		m2[s2] = struct{}{}
+	}
+
+	for _, s1 := range a1 {
+		if _, exists := m2[s1]; !exists {
+			return false
+		}
+	}
+
+	return true
 }
