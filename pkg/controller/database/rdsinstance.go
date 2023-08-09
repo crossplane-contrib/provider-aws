@@ -255,7 +255,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
+	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch, &rsp.DBInstances[0])
 	var conn managed.ConnectionDetails
 
 	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)

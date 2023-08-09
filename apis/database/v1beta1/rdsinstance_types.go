@@ -57,24 +57,6 @@ type ProcessorFeature struct {
 	Value string `json:"value"`
 }
 
-// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
-// Logs for a specific DB instance or DB cluster.
-// The EnableLogTypes and DisableLogTypes arrays determine which logs will be
-// exported (or not exported) to CloudWatch Logs. The values within these arrays
-// depend on the DB engine being used. For more information, see Publishing
-// Database Logs to Amazon CloudWatch Logs  (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-// in the Amazon RDS User Guide.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/CloudwatchLogsExportConfiguration
-type CloudwatchLogsExportConfiguration struct {
-	// DisableLogTypes is the list of log types to disable.
-	// +immutable
-	DisableLogTypes []string `json:"disableLogTypes,omitempty"`
-
-	// EnableLogTypes is the list of log types to enable.
-	// +immutable
-	EnableLogTypes []string `json:"enableLogTypes,omitempty"`
-}
-
 // ScalingConfiguration contains the scaling configuration of an Aurora Serverless DB cluster.
 // For more information, see Using Amazon Aurora Serverless (http://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 // in the Amazon Aurora User Guide.
@@ -413,7 +395,6 @@ type RDSInstanceParameters struct {
 	// Logs. The values in the list depend on the DB engine being used. For more
 	// information, see Publishing Database Logs to Amazon CloudWatch Logs  (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
 	// in the Amazon Relational Database Service User Guide.
-	// +immutable
 	// +optional
 	EnableCloudwatchLogsExports []string `json:"enableCloudwatchLogsExports,omitempty"`
 
@@ -793,12 +774,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	ApplyModificationsImmediately *bool `json:"applyModificationsImmediately,omitempty"`
 
-	// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
-	// Logs for a specific DB instance.
-	// +immutable
-	// +optional
-	CloudwatchLogsExportConfiguration *CloudwatchLogsExportConfiguration `json:"cloudwatchLogsExportConfiguration,omitempty"`
-
 	// DBParameterGroupName is the name of the DB parameter group to associate with this DB instance. If
 	// this argument is omitted, the default DBParameterGroup for the specified
 	// engine is used.
@@ -1165,6 +1140,13 @@ type RDSInstanceObservation struct {
 
 	// InstanceCreateTime provides the date and time the DB instance was created.
 	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
+
+	// A list of log types that this DB instance is configured to export to CloudWatch
+	// Logs. Log types vary by DB engine. For information about the log types for each
+	// DB engine, see Amazon RDS Database Log Files
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html) in
+	// the Amazon RDS User Guide.
+	EnabledCloudwatchLogsExports []string `json:"enabledCloudwatchLogsExports,omitempty"`
 
 	// Endpoint specifies the connection endpoint.
 	Endpoint Endpoint `json:"endpoint,omitempty"`
