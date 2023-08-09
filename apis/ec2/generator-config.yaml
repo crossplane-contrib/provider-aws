@@ -1,7 +1,6 @@
 ignore:
   resource_names:
     - AccountAttribute
-    - CapacityReservation
     - CapacityReservationFleet
     - CarrierGateway
     - ClientVpnEndpoint
@@ -145,6 +144,13 @@ ignore:
     - CreateFlowLogsInput.DryRun
     - DeleteFlowLogsInput.FlowLogIds
     - DeleteFlowLogsInput.DryRun
+    - CreateCapacityReservationInput.DryRun
+    - CreateCapacityReservationInput.ClientToken
+    - CreateCapacityReservationInput.
+    - DescribeCapacityReservationsInput.DryRun
+    - DescribeCapacityReservationsInput.ClientToken
+    - ModifyCapacityReservationInput.DryRun
+    - ModifyCapacityReservationInput.ClientToken
 resources:
   Volume:
     exceptions:

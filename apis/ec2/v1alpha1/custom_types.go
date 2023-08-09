@@ -596,3 +596,7 @@ type CustomFlowLogParameters struct {
 	// +optional
 	S3BucketSubfolder *string `json:"s3BucketSubfolder,omitempty"`
 }
+
+// CustomCapacityReservationParameters includes the custom fields of Stage.
+type CustomCapacityReservationParameters struct {
+}

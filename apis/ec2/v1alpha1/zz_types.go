@@ -435,40 +435,9 @@ type CancelledSpotInstanceRequest struct {
 
 // +kubebuilder:skipversion
 type CapacityAllocation struct {
+	AllocationType *string `json:"allocationType,omitempty"`
+
 	Count *int64 `json:"count,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type CapacityReservation struct {
-	AvailabilityZone *string `json:"availabilityZone,omitempty"`
-
-	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
-
-	AvailableInstanceCount *int64 `json:"availableInstanceCount,omitempty"`
-
-	CapacityReservationARN *string `json:"capacityReservationARN,omitempty"`
-
-	CapacityReservationFleetID *string `json:"capacityReservationFleetID,omitempty"`
-
-	CapacityReservationID *string `json:"capacityReservationID,omitempty"`
-
-	CreateDate *metav1.Time `json:"createDate,omitempty"`
-
-	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
-
-	EndDate *metav1.Time `json:"endDate,omitempty"`
-
-	EphemeralStorage *bool `json:"ephemeralStorage,omitempty"`
-
-	InstanceType *string `json:"instanceType,omitempty"`
-
-	OwnerID *string `json:"ownerID,omitempty"`
-
-	StartDate *metav1.Time `json:"startDate,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
-
-	TotalInstanceCount *int64 `json:"totalInstanceCount,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -521,6 +490,55 @@ type CapacityReservationTargetResponse struct {
 	CapacityReservationID *string `json:"capacityReservationID,omitempty"`
 
 	CapacityReservationResourceGroupARN *string `json:"capacityReservationResourceGroupARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CapacityReservation_SDK struct {
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
+	AvailableInstanceCount *int64 `json:"availableInstanceCount,omitempty"`
+
+	CapacityAllocations []*CapacityAllocation `json:"capacityAllocations,omitempty"`
+
+	CapacityReservationARN *string `json:"capacityReservationARN,omitempty"`
+
+	CapacityReservationFleetID *string `json:"capacityReservationFleetID,omitempty"`
+
+	CapacityReservationID *string `json:"capacityReservationID,omitempty"`
+
+	CreateDate *metav1.Time `json:"createDate,omitempty"`
+
+	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+
+	EndDate *metav1.Time `json:"endDate,omitempty"`
+
+	EndDateType *string `json:"endDateType,omitempty"`
+
+	EphemeralStorage *bool `json:"ephemeralStorage,omitempty"`
+
+	InstanceMatchCriteria *string `json:"instanceMatchCriteria,omitempty"`
+
+	InstancePlatform *string `json:"instancePlatform,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	OutpostARN *string `json:"outpostARN,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PlacementGroupARN *string `json:"placementGroupARN,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	Tenancy *string `json:"tenancy,omitempty"`
+
+	TotalInstanceCount *int64 `json:"totalInstanceCount,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1450,6 +1468,8 @@ type FleetCapacityReservation struct {
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
 	FulfilledCapacity *float64 `json:"fulfilledCapacity,omitempty"`
+
+	InstancePlatform *string `json:"instancePlatform,omitempty"`
 
 	InstanceType *string `json:"instanceType,omitempty"`
 
@@ -4218,6 +4238,8 @@ type ReservationFleetInstanceSpecification struct {
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
 
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+
+	InstancePlatform *string `json:"instancePlatform,omitempty"`
 
 	InstanceType *string `json:"instanceType,omitempty"`
 }

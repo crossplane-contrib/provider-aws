@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/address"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/capacityreservation"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/flowlog"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/instance"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/internetgateway"
@@ -72,5 +73,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		vpcendpoint.SetupVPCEndpoint,
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
+		capacityreservation.SetupCapacityReservation,
 	)
 }

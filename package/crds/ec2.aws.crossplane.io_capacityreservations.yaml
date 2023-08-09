@@ -1,0 +1,505 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.12.1
+  name: capacityreservations.ec2.aws.crossplane.io
+spec:
+  group: ec2.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: CapacityReservation
+    listKind: CapacityReservationList
+    plural: capacityreservations
+    singular: capacityreservation
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CapacityReservation is the Schema for the CapacityReservations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CapacityReservationSpec defines the desired state of CapacityReservation
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: 'DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource. This field is planned to be deprecated
+                  in favor of the ManagementPolicies field in a future release. Currently,
+                  both could be set independently and non-default values would be
+                  honored if the feature flag is enabled. See the design doc for more
+                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: CapacityReservationParameters defines the desired state
+                  of CapacityReservation
+                properties:
+                  availabilityZone:
+                    description: The Availability Zone in which to create the Capacity
+                      Reservation.
+                    type: string
+                  availabilityZoneID:
+                    description: The ID of the Availability Zone in which to create
+                      the Capacity Reservation.
+                    type: string
+                  ebsOptimized:
+                    description: Indicates whether the Capacity Reservation supports
+                      EBS-optimized instances. This optimization provides dedicated
+                      throughput to Amazon EBS and an optimized configuration stack
+                      to provide optimal I/O performance. This optimization isn't
+                      available with all instance types. Additional usage charges
+                      apply when using an EBS- optimized instance.
+                    type: boolean
+                  endDate:
+                    description: "The date and time at which the Capacity Reservation
+                      expires. When a Capacity Reservation expires, the reserved capacity
+                      is released and you can no longer launch instances into it.
+                      The Capacity Reservation's state changes to expired when it
+                      reaches its end date and time. \n You must provide an EndDate
+                      value if EndDateType is limited. Omit EndDate if EndDateType
+                      is unlimited. \n If the EndDateType is limited, the Capacity
+                      Reservation is cancelled within an hour from the specified time.
+                      For example, if you specify 5/31/2019, 13:30:55, the Capacity
+                      Reservation is guaranteed to end between 13:30:55 and 14:30:55
+                      on 5/31/2019."
+                    format: date-time
+                    type: string
+                  endDateType:
+                    description: "Indicates the way in which the Capacity Reservation
+                      ends. A Capacity Reservation can have one of the following end
+                      types: \n * unlimited - The Capacity Reservation remains active
+                      until you explicitly cancel it. Do not provide an EndDate if
+                      the EndDateType is unlimited. \n * limited - The Capacity Reservation
+                      expires automatically at a specified date and time. You must
+                      provide an EndDate value if the EndDateType value is limited."
+                    type: string
+                  ephemeralStorage:
+                    description: Deprecated.
+                    type: boolean
+                  instanceCount:
+                    description: "The number of instances for which to reserve capacity.
+                      \n Valid range: 1 - 1000"
+                    format: int64
+                    type: integer
+                  instanceMatchCriteria:
+                    description: "Indicates the type of instance launches that the
+                      Capacity Reservation accepts. The options include: \n * open
+                      - The Capacity Reservation automatically matches all instances
+                      that have matching attributes (instance type, platform, and
+                      Availability Zone). Instances that have matching attributes
+                      run in the Capacity Reservation automatically without specifying
+                      any additional parameters. \n * targeted - The Capacity Reservation
+                      only accepts instances that have matching attributes (instance
+                      type, platform, and Availability Zone), and explicitly target
+                      the Capacity Reservation. This ensures that only permitted instances
+                      can use the reserved capacity. \n Default: open"
+                    type: string
+                  instancePlatform:
+                    description: The type of operating system for which to reserve
+                      capacity.
+                    type: string
+                  instanceType:
+                    description: The instance type for which to reserve capacity.
+                      For more information, see Instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
+                      in the Amazon EC2 User Guide.
+                    type: string
+                  outpostARN:
+                    description: The Amazon Resource Name (ARN) of the Outpost on
+                      which to create the Capacity Reservation.
+                    type: string
+                  placementGroupARN:
+                    description: The Amazon Resource Name (ARN) of the cluster placement
+                      group in which to create the Capacity Reservation. For more
+                      information, see Capacity Reservations for cluster placement
+                      groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/cr-cpg.html)
+                      in the Amazon EC2 User Guide.
+                    type: string
+                  region:
+                    description: Region is which region the CapacityReservation will
+                      be created.
+                    type: string
+                  tagSpecifications:
+                    description: The tags to apply to the Capacity Reservation during
+                      launch.
+                    items:
+                      properties:
+                        resourceType:
+                          type: string
+                        tags:
+                          items:
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                  tenancy:
+                    description: "Indicates the tenancy of the Capacity Reservation.
+                      A Capacity Reservation can have one of the following tenancy
+                      settings: \n * default - The Capacity Reservation is created
+                      on hardware that is shared with other Amazon Web Services accounts.
+                      \n * dedicated - The Capacity Reservation is created on single-tenant
+                      hardware that is dedicated to a single Amazon Web Services account."
+                    type: string
+                required:
+                - instanceCount
+                - instancePlatform
+                - instanceType
+                - region
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: 'THIS IS AN ALPHA FIELD. Do not use it in production.
+                  It is not honored unless the relevant Crossplane feature flag is
+                  enabled, and may be changed or removed without notice. ManagementPolicies
+                  specify the array of actions Crossplane is allowed to take on the
+                  managed and external resources. This field is planned to replace
+                  the DeletionPolicy field in a future release. Currently, both could
+                  be set independently and non-default values would be honored if
+                  the feature flag is enabled. If both are custom, the DeletionPolicy
+                  field will be ignored. See the design doc for more information:
+                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                items:
+                  description: A ManagementAction represents an action that the Crossplane
+                    controllers can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: CapacityReservationStatus defines the observed state of CapacityReservation.
+            properties:
+              atProvider:
+                description: CapacityReservationObservation defines the observed state
+                  of CapacityReservation
+                properties:
+                  availableInstanceCount:
+                    description: The remaining capacity. Indicates the number of instances
+                      that can be launched in the Capacity Reservation.
+                    format: int64
+                    type: integer
+                  capacityAllocations:
+                    description: Information about instance capacity usage.
+                    items:
+                      properties:
+                        allocationType:
+                          type: string
+                        count:
+                          format: int64
+                          type: integer
+                      type: object
+                    type: array
+                  capacityReservationARN:
+                    description: The Amazon Resource Name (ARN) of the Capacity Reservation.
+                    type: string
+                  capacityReservationFleetID:
+                    description: The ID of the Capacity Reservation Fleet to which
+                      the Capacity Reservation belongs. Only valid for Capacity Reservations
+                      that were created by a Capacity Reservation Fleet.
+                    type: string
+                  capacityReservationID:
+                    description: The ID of the Capacity Reservation.
+                    type: string
+                  createDate:
+                    description: The date and time at which the Capacity Reservation
+                      was created.
+                    format: date-time
+                    type: string
+                  ownerID:
+                    description: The ID of the Amazon Web Services account that owns
+                      the Capacity Reservation.
+                    type: string
+                  startDate:
+                    description: The date and time at which the Capacity Reservation
+                      was started.
+                    format: date-time
+                    type: string
+                  state:
+                    description: "The current state of the Capacity Reservation. A
+                      Capacity Reservation can be in one of the following states:
+                      \n * active - The Capacity Reservation is active and the capacity
+                      is available for your use. \n * expired - The Capacity Reservation
+                      expired automatically at the date and time specified in your
+                      request. The reserved capacity is no longer available for your
+                      use. \n * cancelled - The Capacity Reservation was cancelled.
+                      The reserved capacity is no longer available for your use. \n
+                      * pending - The Capacity Reservation request was successful
+                      but the capacity provisioning is still pending. \n * failed
+                      - The Capacity Reservation request has failed. A request might
+                      fail due to invalid request parameters, capacity constraints,
+                      or instance limit constraints. Failed requests are retained
+                      for 60 minutes."
+                    type: string
+                  tags:
+                    description: Any tags assigned to the Capacity Reservation.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  totalInstanceCount:
+                    description: The total number of instances for which the Capacity
+                      Reservation reserves capacity.
+                    format: int64
+                    type: integer
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
