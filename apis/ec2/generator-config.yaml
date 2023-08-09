@@ -146,7 +146,6 @@ ignore:
     - DeleteFlowLogsInput.DryRun
     - CreateCapacityReservationInput.DryRun
     - CreateCapacityReservationInput.ClientToken
-    - CreateCapacityReservationInput.
     - DescribeCapacityReservationsInput.DryRun
     - DescribeCapacityReservationsInput.ClientToken
     - ModifyCapacityReservationInput.DryRun
