@@ -225,7 +225,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if len(patch.Tags) != 0 {
 		// tagging the RouteTable
-		addTags, removeTags := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), table.Tags)
+		addTags, removeTags := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), table.Tags)
 		if len(addTags) > 0 {
 			if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 				Resources: []string{meta.GetExternalName(cr)},

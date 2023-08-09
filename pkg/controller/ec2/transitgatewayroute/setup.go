@@ -150,7 +150,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.T
 			continue
 		}
 
-		if awsclients.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
+		if ec2.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
 			return route, nil
 		}
 	}

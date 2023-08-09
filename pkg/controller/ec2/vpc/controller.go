@@ -260,7 +260,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	add, remove := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), vpc.Tags)
+	add, remove := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), vpc.Tags)
 	if len(remove) > 0 {
 		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
