@@ -13,9 +13,12 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
+	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awsClient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
 	capacityReservationTesting "github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/capacityreservation/testing"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 var (
@@ -64,7 +67,8 @@ func TestObserve(t *testing.T) {
 				err: awsClient.Wrap(errBoom, errDescribe),
 			},
 		},
-		{name: "ResourceDoesNotExist",
+		{
+			name: "ResourceDoesNotExist",
 			args: args{
 				client: &fake.MockCapacityResourceClient{
 					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{},
@@ -76,23 +80,65 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{},
 			},
 		},
-		//{name: "ValidInput",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//		},
-		//		cr: s3controlTesting.AccessPoint(),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithConditions(xpv1.Available()),
-		//		),
-		//		result: managed.ExternalObservation{
-		//			ResourceExists:   true,
-		//			ResourceUpToDate: true,
-		//		},
-		//	},
-		//},
+		{
+			name: "UpToDate",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{CapacityReservations: []*ec2.CapacityReservation{
+						&ec2.CapacityReservation{
+							CapacityReservationArn: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStateActive),
+						},
+					}},
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							CapacityReservationARN: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStateActive),
+						},
+					),
+					capacityReservationTesting.WithConditions(xpv1.Available()),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		{
+			name: "NotUpToDate",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{CapacityReservations: []*ec2.CapacityReservation{
+						&ec2.CapacityReservation{
+							CapacityReservationArn: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStateActive),
+							TotalInstanceCount:     aws.Int64(2),
+						},
+					}},
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							CapacityReservationARN: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStateActive),
+						},
+					),
+					capacityReservationTesting.WithConditions(xpv1.Available()),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 		//{name: "ValidInputWithPolicy",
 		//	args: args{
 		//		client: &fake.MockS3ControlClient{

@@ -1,6 +1,7 @@
 package testing
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
@@ -8,6 +9,15 @@ import (
 
 // CapacityReservationModifier is a function which modifies the CapacityReservation for testing
 type CapacityReservationModifier func(bucket *svcapitypes.CapacityReservation)
+
+// WithConditions sets the Conditions for an CapacityReservation
+func WithConditions(c ...xpv1.Condition) CapacityReservationModifier {
+	return func(r *svcapitypes.CapacityReservation) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func WithStatus(s svcapitypes.CapacityReservationObservation) CapacityReservationModifier {
+	return func(r *svcapitypes.CapacityReservation) { r.Status.AtProvider = s }
+}
 
 // CapacityReservation creates a CapacityReservation for use in testing
 func CapacityReservation(m ...CapacityReservationModifier) *svcapitypes.CapacityReservation {
@@ -22,6 +32,7 @@ func CapacityReservation(m ...CapacityReservationModifier) *svcapitypes.Capacity
 	for _, f := range m {
 		f(cr)
 	}
+	//TODO this should be an ARN to be more plausible
 	meta.SetExternalName(cr, "test.capacityReservation.name")
 	return cr
 }

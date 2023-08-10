@@ -92,7 +92,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateCapacityReservation(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, err := e.isUpToDate(cr, resp.CapacityReservations[0])
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
@@ -279,7 +279,6 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	return e.delete(ctx, mg)
-
 }
 
 type option func(*external)
@@ -312,7 +311,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.DescribeCapacityReservationsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.CapacityReservation, *svcsdk.DescribeCapacityReservationsOutput) *svcsdk.DescribeCapacityReservationsOutput
 	lateInitialize func(*svcapitypes.CapacityReservationParameters, *svcsdk.DescribeCapacityReservationsOutput) error
-	isUpToDate     func(*svcapitypes.CapacityReservation, *svcsdk.DescribeCapacityReservationsOutput) (bool, error)
+	isUpToDate     func(*svcapitypes.CapacityReservation, *svcsdk.CapacityReservation) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.CreateCapacityReservationInput) error
 	postCreate     func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.CreateCapacityReservationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	delete         func(context.Context, cpresource.Managed) error
@@ -333,7 +332,7 @@ func nopFilterList(_ *svcapitypes.CapacityReservation, list *svcsdk.DescribeCapa
 func nopLateInitialize(*svcapitypes.CapacityReservationParameters, *svcsdk.DescribeCapacityReservationsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.CapacityReservation, *svcsdk.DescribeCapacityReservationsOutput) (bool, error) {
+func alwaysUpToDate(*svcapitypes.CapacityReservation, *svcsdk.CapacityReservation) (bool, error) {
 	return true, nil
 }
 

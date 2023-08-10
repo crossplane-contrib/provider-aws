@@ -2,6 +2,7 @@ package capacityreservation
 
 import (
 	"context"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -47,8 +48,31 @@ func createOptions() []option {
 		func(e *external) {
 			e.postObserve = postObserve
 			e.postCreate = postCreate
+			e.filterList = filterList
+			e.isUpToDate = isUpToDate
 		},
 	}
+}
+
+func filterList(cr *svcapitypes.CapacityReservation, list *svcsdk.DescribeCapacityReservationsOutput) *svcsdk.DescribeCapacityReservationsOutput {
+	if len(list.CapacityReservations) == 0 {
+		return list
+	}
+	capacityReservations := []*svcsdk.CapacityReservation{}
+	for _, c := range list.CapacityReservations {
+		if aws.StringValue(c.CapacityReservationArn) == meta.GetExternalName(cr) {
+			capacityReservations = append(capacityReservations, c)
+		}
+	}
+	list.CapacityReservations = capacityReservations
+	return list
+}
+
+func isUpToDate(cr *svcapitypes.CapacityReservation, c *svcsdk.CapacityReservation) (bool, error) {
+	// Tried the approach with setting tags on the AWS resource like flowlogs it does, but this feels like a really bad solution
+	// values outside the tags could change and we wouldn't notice...
+	// therefore going with approach from s3control/accesspoint seems more reasonable, although they also seem to just compare policy fields
+	return true, nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.CapacityReservation, resp *svcsdk.CreateCapacityReservationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
@@ -63,16 +87,17 @@ func postObserve(_ context.Context, cr *svcapitypes.CapacityReservation, resp *s
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+
 	switch *resp.CapacityReservations[0].State {
-	case string("active"):
+	case svcsdk.CapacityReservationStateActive:
 		cr.SetConditions(xpv1.Available())
-	case string("expired"):
+	case svcsdk.CapacityReservationStateExpired:
 		cr.SetConditions(xpv1.Unavailable())
-	case string("cancelled"):
+	case svcsdk.CapacityReservationStateCancelled:
 		cr.SetConditions(xpv1.Unavailable())
-	case string("pending"):
+	case svcsdk.CapacityReservationStatePending:
 		cr.SetConditions(xpv1.Creating())
-	case string("failed"):
+	case svcsdk.CapacityReservationStateFailed:
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
