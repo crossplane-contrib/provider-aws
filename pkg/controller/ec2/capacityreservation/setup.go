@@ -4,10 +4,10 @@ import (
 	"context"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -21,6 +21,8 @@ import (
 func SetupCapacityReservation(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.CapacityReservationGroupKind)
 
+	opts := createOptions()
+
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
 		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), v1alpha1.StoreConfigGroupVersionKind))
@@ -33,11 +35,20 @@ func SetupCapacityReservation(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.CapacityReservation{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.CapacityReservationGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 			managed.WithConnectionPublishers(cps...)))
+}
+
+func createOptions() []option {
+	return []option{
+		func(e *external) {
+			e.postObserve = postObserve
+			e.postCreate = postCreate
+		},
+	}
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.CapacityReservation, resp *svcsdk.CreateCapacityReservationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
@@ -52,7 +63,7 @@ func postObserve(_ context.Context, cr *svcapitypes.CapacityReservation, resp *s
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	switch(*resp.CapacityReservations[0].State) {
+	switch *resp.CapacityReservations[0].State {
 	case string("active"):
 		cr.SetConditions(xpv1.Available())
 	case string("expired"):
