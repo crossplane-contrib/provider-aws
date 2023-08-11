@@ -36,6 +36,8 @@ limitations under the License.
 package apis
 
 import (
+	_ "github.com/aws-controllers-k8s/code-generator/cmd/ack-generate" //nolint:typecheck
+
 	_ "github.com/golang/mock/mockgen"                  //nolint:typecheck
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen" //nolint:typecheck
 
