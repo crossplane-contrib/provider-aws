@@ -156,7 +156,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // n
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
-	cfg.EndpointResolverWithOptions = awsEndpointResolverAdaptorWithOptions(func(service, region string, options interface{}) (aws.Endpoint, error) {
+	cfg.EndpointResolverWithOptions = awsEndpointResolverAdaptorWithOptions(func(service, region string, options interface{}) (aws.Endpoint, error) { // nolint
 		fullURL := ""
 		switch pc.Spec.Endpoint.URL.Type {
 		case URLConfigTypeStatic:
