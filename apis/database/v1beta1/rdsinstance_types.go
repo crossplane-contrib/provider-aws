@@ -57,6 +57,24 @@ type ProcessorFeature struct {
 	Value string `json:"value"`
 }
 
+// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
+// Logs for a specific DB instance or DB cluster.
+// The EnableLogTypes and DisableLogTypes arrays determine which logs will be
+// exported (or not exported) to CloudWatch Logs. The values within these arrays
+// depend on the DB engine being used. For more information, see Publishing
+// Database Logs to Amazon CloudWatch Logs  (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+// in the Amazon RDS User Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/CloudwatchLogsExportConfiguration
+type CloudwatchLogsExportConfiguration struct {
+	// DisableLogTypes is the list of log types to disable.
+	// +immutable
+	DisableLogTypes []string `json:"disableLogTypes,omitempty"`
+
+	// EnableLogTypes is the list of log types to enable.
+	// +immutable
+	EnableLogTypes []string `json:"enableLogTypes,omitempty"`
+} // TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
+
 // ScalingConfiguration contains the scaling configuration of an Aurora Serverless DB cluster.
 // For more information, see Using Amazon Aurora Serverless (http://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 // in the Amazon Aurora User Guide.
@@ -773,6 +791,14 @@ type RDSInstanceParameters struct {
 	// Default: false
 	// +optional
 	ApplyModificationsImmediately *bool `json:"applyModificationsImmediately,omitempty"`
+
+	// Deprecated: This field will be removed. Use `enableCloudwatchLogsExports` instead.
+	// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
+	// Logs for a specific DB instance.
+	// +immutable
+	// +optional
+	CloudwatchLogsExportConfiguration *CloudwatchLogsExportConfiguration `json:"cloudwatchLogsExportConfiguration,omitempty"`
+	// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
 
 	// DBParameterGroupName is the name of the DB parameter group to associate with this DB instance. If
 	// this argument is omitted, the default DBParameterGroup for the specified

@@ -651,6 +651,11 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 			}
 		}
 	}
+	// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
+	// nolint:staticcheck
+	if len(in.EnableCloudwatchLogsExports) == 0 && in.CloudwatchLogsExportConfiguration != nil {
+		in.EnableCloudwatchLogsExports = in.CloudwatchLogsExportConfiguration.EnableLogTypes
+	}
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
@@ -676,6 +681,8 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "OptionGroupName"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "EnableCloudwatchLogsExports"),
+		// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "CloudwatchLogsExportConfiguration"),
 	)
 
 	engineVersionChanged := !isEngineVersionUpToDate(r, db)
