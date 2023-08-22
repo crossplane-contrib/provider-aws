@@ -133,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resTags, err := e.client.ListTagsForResource(ctx, &route53.ListTagsForResourceInput{
-		ResourceId:   hostedZoneID,
+		ResourceId:   aws.String(meta.GetExternalName(cr)), // id w/o prefix
 		ResourceType: route53types.TagResourceTypeHostedzone,
 	})
 	if err != nil {
@@ -192,12 +192,21 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	// Update tags if necessary
 	if len(e.tagsToAdd) > 0 || len(e.tagsToRemove) > 0 {
-		_, err := e.client.ChangeTagsForResource(ctx, &route53.ChangeTagsForResourceInput{
-			ResourceId:    &hostedZoneID,
-			ResourceType:  route53types.TagResourceTypeHostedzone,
-			AddTags:       e.tagsToAdd,
-			RemoveTagKeys: e.tagsToRemove,
-		})
+
+		changeTagsInput := &route53.ChangeTagsForResourceInput{
+			ResourceId:   aws.String(meta.GetExternalName(cr)), // id w/o prefix
+			ResourceType: route53types.TagResourceTypeHostedzone,
+		}
+
+		// AWS throws error when provided AddTags or RemoveTagKeys are empty lists
+		if len(e.tagsToAdd) > 0 {
+			changeTagsInput.AddTags = e.tagsToAdd
+		}
+		if len(e.tagsToRemove) > 0 {
+			changeTagsInput.RemoveTagKeys = e.tagsToRemove
+		}
+
+		_, err := e.client.ChangeTagsForResource(ctx, changeTagsInput)
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
 		}
