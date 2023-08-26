@@ -1,0 +1,28 @@
+ignore:
+  field_paths:
+    - "CreateAcceleratorInput.IdempotencyToken"
+    - "CreateListenerInput.AcceleratorArn"
+    - "CreateListenerInput.IdempotencyToken"
+    - "CreateEndpointGroupInput.ListenerArn"
+    - "CreateEndpointGroupInput.IdempotencyToken"
+  resource_names:
+    - "CustomRoutingAccelerator"
+    - "CustomRoutingEndpointGroup"
+    - "CustomRoutingListener"
+
+resources:
+  Accelerator:
+    exceptions:
+      errors:
+        404:
+          code: AcceleratorNotFoundException
+  Listener:
+    exceptions:
+      errors:
+        404:
+          code: ListenerNotFoundException
+  EndpointGroup:
+    exceptions:
+      errors:
+        404:
+          code: EndpointGroupNotFoundException
