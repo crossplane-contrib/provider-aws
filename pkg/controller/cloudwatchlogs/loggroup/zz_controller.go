@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateLogGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -174,7 +175,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput) *svcsdk.DescribeLogGroupsOutput
 	lateInitialize func(*svcapitypes.LogGroupParameters, *svcsdk.DescribeLogGroupsOutput) error
-	isUpToDate     func(*svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.LogGroup, *svcsdk.CreateLogGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.LogGroup, *svcsdk.CreateLogGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.LogGroup, *svcsdk.DeleteLogGroupInput) (bool, error)
@@ -195,8 +196,8 @@ func nopFilterList(_ *svcapitypes.LogGroup, list *svcsdk.DescribeLogGroupsOutput
 func nopLateInitialize(*svcapitypes.LogGroupParameters, *svcsdk.DescribeLogGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.LogGroup, *svcsdk.DescribeLogGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.LogGroup, *svcsdk.CreateLogGroupInput) error {

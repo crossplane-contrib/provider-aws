@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateEmailIdentity(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -213,7 +214,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityInput) error
 	postObserve    func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.EmailIdentityParameters, *svcsdk.GetEmailIdentityOutput) error
-	isUpToDate     func(*svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.CreateEmailIdentityInput) error
 	postCreate     func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.CreateEmailIdentityOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.EmailIdentity, *svcsdk.DeleteEmailIdentityInput) (bool, error)
@@ -231,8 +232,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.EmailIdentity, _ *svcsdk.G
 func nopLateInitialize(*svcapitypes.EmailIdentityParameters, *svcsdk.GetEmailIdentityOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.EmailIdentity, *svcsdk.GetEmailIdentityOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.EmailIdentity, *svcsdk.CreateEmailIdentityInput) error {

@@ -112,12 +112,12 @@ func preDelete(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.De
 	return false, nil
 }
 
-func (c *custom) isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.DescribeParameterGroupsOutput) (bool, error) {
+func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.ParameterGroup, output *svcsdk.DescribeParameterGroupsOutput) (bool, string, error) {
 	in := cr.Spec.ForProvider
 	out := output.ParameterGroups[0]
 
 	if !cmp.Equal(in.Description, out.Description) {
-		return false, nil
+		return false, "", nil
 	}
 
 	input := &svcsdk.DescribeParametersInput{
@@ -125,9 +125,9 @@ func (c *custom) isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.Descr
 		MaxResults:         awsclients.Int64(100),
 	}
 
-	results, err := c.client.DescribeParameters(input)
+	results, err := c.client.DescribeParametersWithContext(ctx, input)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	observed := make(map[string]svcsdk.Parameter, len(results.Parameters))
 
@@ -138,14 +138,14 @@ func (c *custom) isUpToDate(cr *svcapitypes.ParameterGroup, output *svcsdk.Descr
 	for _, v := range cr.Spec.ForProvider.ParameterNameValues {
 		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
 		if !ok {
-			return false, nil
+			return false, "", nil
 		}
 
 		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
-			return false, nil
+			return false, "", nil
 		}
 
 	}
-	return true, err
+	return true, "", err
 
 }

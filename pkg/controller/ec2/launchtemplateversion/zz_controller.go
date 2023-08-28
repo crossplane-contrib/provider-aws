@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateLaunchTemplateVersion(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -826,7 +827,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput) *svcsdk.DescribeLaunchTemplateVersionsOutput
 	lateInitialize func(*svcapitypes.LaunchTemplateVersionParameters, *svcsdk.DescribeLaunchTemplateVersionsOutput) error
-	isUpToDate     func(*svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.CreateLaunchTemplateVersionInput) error
 	postCreate     func(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.CreateLaunchTemplateVersionOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	delete         func(context.Context, cpresource.Managed) error
@@ -846,8 +847,8 @@ func nopFilterList(_ *svcapitypes.LaunchTemplateVersion, list *svcsdk.DescribeLa
 func nopLateInitialize(*svcapitypes.LaunchTemplateVersionParameters, *svcsdk.DescribeLaunchTemplateVersionsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.DescribeLaunchTemplateVersionsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.LaunchTemplateVersion, *svcsdk.CreateLaunchTemplateVersionInput) error {

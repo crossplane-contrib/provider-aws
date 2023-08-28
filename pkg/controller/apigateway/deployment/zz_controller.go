@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDeployment(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -214,7 +215,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Deployment, *svcsdk.GetDeploymentInput) error
 	postObserve    func(context.Context, *svcapitypes.Deployment, *svcsdk.Deployment, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.DeploymentParameters, *svcsdk.Deployment) error
-	isUpToDate     func(*svcapitypes.Deployment, *svcsdk.Deployment) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Deployment, *svcsdk.Deployment) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Deployment, *svcsdk.CreateDeploymentInput) error
 	postCreate     func(context.Context, *svcapitypes.Deployment, *svcsdk.Deployment, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Deployment, *svcsdk.DeleteDeploymentInput) (bool, error)
@@ -233,8 +234,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Deployment, _ *svcsdk.Depl
 func nopLateInitialize(*svcapitypes.DeploymentParameters, *svcsdk.Deployment) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Deployment, *svcsdk.Deployment) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Deployment, *svcsdk.Deployment) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Deployment, *svcsdk.CreateDeploymentInput) error {

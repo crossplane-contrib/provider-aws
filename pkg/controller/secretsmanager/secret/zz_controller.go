@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateSecret(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -209,7 +210,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretInput) error
 	postObserve    func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.SecretParameters, *svcsdk.DescribeSecretOutput) error
-	isUpToDate     func(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error
 	postCreate     func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Secret, *svcsdk.DeleteSecretInput) (bool, error)
@@ -228,8 +229,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Secret, _ *svcsdk.Describe
 func nopLateInitialize(*svcapitypes.SecretParameters, *svcsdk.DescribeSecretOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error {

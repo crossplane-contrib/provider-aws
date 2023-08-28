@@ -127,39 +127,39 @@ func lateInitialize(in *svcapitypes.ClusterParameters, out *svcsdk.DescribeClust
 	return nil
 }
 
-func isUpToDate(cr *svcapitypes.Cluster, output *svcsdk.DescribeClustersOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Cluster, output *svcsdk.DescribeClustersOutput) (bool, string, error) {
 	in := cr.Spec.ForProvider
 	out := output.Clusters[0]
 
 	notUpToDate := isNotUpToDate(in, out)
 
 	if notUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
 	parameterGroupNotEqualNotNil := isUpToDateParameterGroup(in, out)
 
 	if parameterGroupNotEqualNotNil {
-		return false, nil
+		return false, "", nil
 	}
 
 	notificationTopicArnNotEqualNotNil := isUpToDateNotificationTopicArn(in, out)
 
 	if notificationTopicArnNotEqualNotNil {
-		return false, nil
+		return false, "", nil
 	}
 
 	outSecurityGroupIds := getOutSecurityIds(out)
 	if !cmp.Equal(in.SecurityGroupIDs, outSecurityGroupIds) {
-		return false, nil
+		return false, "", nil
 	}
 
 	outAvailabilityZones := getOutAvailabilityZones(out)
 	if !cmp.Equal(in.AvailabilityZones, outAvailabilityZones) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func isNotUpToDate(in svcapitypes.ClusterParameters, out *svcsdk.Cluster) (unequal bool) {

@@ -46,7 +46,8 @@ type MockDaxClient struct {
 	MockDescribeParameterGroups            func(*dax.DescribeParameterGroupsInput) (*dax.DescribeParameterGroupsOutput, error)
 	MockDescribeParameterGroupsWithContext func(context.Context, *dax.DescribeParameterGroupsInput, []request.Option) (*dax.DescribeParameterGroupsOutput, error)
 
-	MockDescribeParameters func(*dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error)
+	MockDescribeParameters            func(*dax.DescribeParametersInput) (*dax.DescribeParametersOutput, error)
+	MockDescribeParametersWithContext func(context.Context, *dax.DescribeParametersInput, []request.Option) (*dax.DescribeParametersOutput, error)
 
 	MockDescribeSubnetGroups            func(*dax.DescribeSubnetGroupsInput) (*dax.DescribeSubnetGroupsOutput, error)
 	MockDescribeSubnetGroupsWithContext func(context.Context, *dax.DescribeSubnetGroupsInput, []request.Option) (*dax.DescribeSubnetGroupsOutput, error)
@@ -123,6 +124,20 @@ func (m *MockDaxClient) DescribeParameters(i *dax.DescribeParametersInput) (*dax
 	m.Called.DescribeParameters = append(m.Called.DescribeParameters, &CallDescribeParameters{I: i})
 
 	return m.MockDescribeParameters(i)
+}
+
+// CallDescribeParametersWithContext to log calls
+type CallDescribeParametersWithContext struct {
+	Ctx  context.Context
+	I    *dax.DescribeParametersInput
+	Opts []request.Option
+}
+
+// DescribeParametersWithContext mocks DescribeParametersWithContext method
+func (m *MockDaxClient) DescribeParametersWithContext(ctx context.Context, i *dax.DescribeParametersInput, opts ...request.Option) (*dax.DescribeParametersOutput, error) {
+	m.Called.DescribeParametersWithContext = append(m.Called.DescribeParametersWithContext, &CallDescribeParametersWithContext{Ctx: ctx, I: i})
+
+	return m.MockDescribeParametersWithContext(ctx, i, opts)
 }
 
 // CallCreateParameterGroupWithContext to log calls
@@ -316,6 +331,7 @@ type MockDaxClientCall struct {
 	DescribeParameterGroupsWithContext []*CallDescribeParameterGroupsWithContext
 	DescribeParameterGroups            []*CallDescribeParameterGroups
 	DescribeParameters                 []*CallDescribeParameters
+	DescribeParametersWithContext      []*CallDescribeParametersWithContext
 	CreateParameterGroupWithContext    []*CallCreateParameterGroupWithContext
 	DeleteParameterGroupWithContext    []*CallDeleteParameterGroupWithContext
 

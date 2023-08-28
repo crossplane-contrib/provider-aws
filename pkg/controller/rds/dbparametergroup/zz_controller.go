@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDBParameterGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -204,7 +205,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput) *svcsdk.DescribeDBParameterGroupsOutput
 	lateInitialize func(*svcapitypes.DBParameterGroupParameters, *svcsdk.DescribeDBParameterGroupsOutput) error
-	isUpToDate     func(*svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.CreateDBParameterGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.CreateDBParameterGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.DeleteDBParameterGroupInput) (bool, error)
@@ -226,8 +227,8 @@ func nopFilterList(_ *svcapitypes.DBParameterGroup, list *svcsdk.DescribeDBParam
 func nopLateInitialize(*svcapitypes.DBParameterGroupParameters, *svcsdk.DescribeDBParameterGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.DescribeDBParameterGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.DBParameterGroup, *svcsdk.CreateDBParameterGroupInput) error {

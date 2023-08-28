@@ -166,19 +166,17 @@ func lateInitialize(spec *svcapitypes.DBClusterParameterGroupParameters, current
 	return nil
 }
 
-func (c *custom) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, error) {
-	// TODO(armsnyder): We need isUpToDate to have context.
-	ctx := context.TODO()
+func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, string, error) {
 	results, err := c.getCurrentDBClusterParameters(ctx, cr)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	if len(c.parametersToUpdate(cr, results)) != 0 || len(c.parametersToReset(cr, results)) != 0 {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, err
+	return true, "", err
 }
 
 func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) ([]*svcsdk.Parameter, error) {

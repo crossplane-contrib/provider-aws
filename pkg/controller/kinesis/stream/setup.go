@@ -132,26 +132,26 @@ type updater struct {
 	client svcsdkapi.KinesisAPI
 }
 
-func (u *updater) isUpToDate(cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamOutput) (bool, error) { // nolint:gocyclo
+func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamOutput) (bool, string, error) { // nolint:gocyclo
 
 	// ResourceInUseException: Stream example-stream not ACTIVE, instead in state CREATING
 	if awsclients.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		// filter activeShards
 		number, err := u.ActiveShards(cr)
 		if err != nil {
-			return false, err
+			return false, "", err
 		}
 
 		if awsclients.Int64Value(cr.Spec.ForProvider.ShardCount) != number {
-			return false, nil
+			return false, "", nil
 		}
 
 		if awsclients.Int64Value(cr.Spec.ForProvider.RetentionPeriodHours) != awsclients.Int64Value(obj.StreamDescription.RetentionPeriodHours) {
-			return false, nil
+			return false, "", nil
 		}
 
 		if awsclients.StringValue(cr.Spec.ForProvider.KMSKeyARN) != awsclients.StringValue(obj.StreamDescription.KeyId) {
-			return false, nil
+			return false, "", nil
 		}
 
 		// Prevent an out of range panic when enhanced metrics
@@ -162,23 +162,23 @@ func (u *updater) isUpToDate(cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamO
 
 		createKey, deleteKey := DifferenceShardLevelMetrics(cr.Spec.ForProvider.EnhancedMetrics[0].ShardLevelMetrics, obj.StreamDescription.EnhancedMonitoring[0].ShardLevelMetrics)
 		if len(createKey) != 0 || len(deleteKey) != 0 {
-			return false, nil
+			return false, "", nil
 		}
 
 		objTags, err := u.ListTags(cr)
 		if err != nil &&
 			objTags == nil {
-			return false, err
+			return false, "", err
 		}
 		addTags, removeTags := DiffTags(cr.Spec.ForProvider.Tags, objTags.Tags)
 
 		if len(addTags) != 0 || len(removeTags) != 0 {
-			return false, nil
+			return false, "", nil
 		}
 
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo

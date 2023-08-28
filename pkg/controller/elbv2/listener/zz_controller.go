@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateListener(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -406,7 +407,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.Listener, *svcsdk.DescribeListenersOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.Listener, *svcsdk.DescribeListenersOutput) *svcsdk.DescribeListenersOutput
 	lateInitialize func(*svcapitypes.ListenerParameters, *svcsdk.DescribeListenersOutput) error
-	isUpToDate     func(*svcapitypes.Listener, *svcsdk.DescribeListenersOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Listener, *svcsdk.DescribeListenersOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Listener, *svcsdk.CreateListenerInput) error
 	postCreate     func(context.Context, *svcapitypes.Listener, *svcsdk.CreateListenerOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Listener, *svcsdk.DeleteListenerInput) (bool, error)
@@ -428,8 +429,8 @@ func nopFilterList(_ *svcapitypes.Listener, list *svcsdk.DescribeListenersOutput
 func nopLateInitialize(*svcapitypes.ListenerParameters, *svcsdk.DescribeListenersOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Listener, *svcsdk.DescribeListenersOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Listener, *svcsdk.DescribeListenersOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Listener, *svcsdk.CreateListenerInput) error {

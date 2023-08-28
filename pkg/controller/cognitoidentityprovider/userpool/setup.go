@@ -147,7 +147,7 @@ func postCreate(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.CreateU
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.UserPool, resp *svcsdk.DescribeUserPoolOutput) (bool, error) {
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.UserPool, resp *svcsdk.DescribeUserPoolOutput) (bool, string, error) {
 	pool := resp.UserPool
 	spec := cr.Spec.ForProvider
 
@@ -165,17 +165,18 @@ func (e *hooks) isUpToDate(cr *svcapitypes.UserPool, resp *svcsdk.DescribeUserPo
 		!areUserPoolAddOnsEqual(spec.UserPoolAddOns, pool.UserPoolAddOns),
 		!areVerificationMessageTemplateEqual(spec.VerificationMessageTemplate, pool.VerificationMessageTemplate),
 		!reflect.DeepEqual(spec.UserPoolTags, pool.UserPoolTags):
-		return false, nil
+		return false, "", nil
 	}
 
 	// check the conflicting fields for isUpToDate + conflicts
 	fieldsUpToDate, err := conflictingFieldsEqual(spec, pool)
 	if err != nil || !fieldsUpToDate {
-		return false, err
+		return false, "", err
 	}
 
 	// check MFA stuff
-	return e.areMFAConfigEqual(cr)
+	mfaEqual, err := e.areMFAConfigEqual(cr)
+	return mfaEqual, "", err
 }
 
 func areAccountRecoverySettingEqual(spec *svcapitypes.AccountRecoverySettingType, current *svcsdk.AccountRecoverySettingType) bool {

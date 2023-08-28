@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateMethodResponse(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -205,7 +206,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.GetMethodResponseInput) error
 	postObserve    func(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.MethodResponseParameters, *svcsdk.MethodResponse) error
-	isUpToDate     func(*svcapitypes.MethodResponse, *svcsdk.MethodResponse) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.MethodResponse, *svcsdk.PutMethodResponseInput) error
 	postCreate     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.MethodResponse, *svcsdk.DeleteMethodResponseInput) (bool, error)
@@ -224,8 +225,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.MethodResponse, _ *svcsdk.
 func nopLateInitialize(*svcapitypes.MethodResponseParameters, *svcsdk.MethodResponse) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.MethodResponse, *svcsdk.MethodResponse) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.MethodResponse, *svcsdk.PutMethodResponseInput) error {

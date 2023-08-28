@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateService(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -842,7 +843,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Service, *svcsdk.DescribeServicesInput) error
 	postObserve    func(context.Context, *svcapitypes.Service, *svcsdk.DescribeServicesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ServiceParameters, *svcsdk.DescribeServicesOutput) error
-	isUpToDate     func(*svcapitypes.Service, *svcsdk.DescribeServicesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Service, *svcsdk.DescribeServicesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Service, *svcsdk.CreateServiceInput) error
 	postCreate     func(context.Context, *svcapitypes.Service, *svcsdk.CreateServiceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Service, *svcsdk.DeleteServiceInput) (bool, error)
@@ -861,8 +862,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Service, _ *svcsdk.Describ
 func nopLateInitialize(*svcapitypes.ServiceParameters, *svcsdk.DescribeServicesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Service, *svcsdk.DescribeServicesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Service, *svcsdk.DescribeServicesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Service, *svcsdk.CreateServiceInput) error {

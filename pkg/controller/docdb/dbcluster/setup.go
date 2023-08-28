@@ -173,17 +173,16 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, string, error) { // nolint:gocyclo
 	if meta.WasDeleted(cr) {
-		return true, nil // There is no need to check for updates when we want to delete.
+		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
 
 	cluster := resp.DBClusters[0]
 
-	ctx := context.Background()
 	_, pwChanged, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil || pwChanged {
-		return false, err
+		return false, "", err
 	}
 
 	switch {
@@ -194,10 +193,11 @@ func (e *hooks) isUpToDate(cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClu
 		awsclient.Int64Value(cr.Spec.ForProvider.Port) != awsclient.Int64Value(cluster.Port),
 		awsclient.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) != awsclient.StringValue(cluster.PreferredBackupWindow),
 		awsclient.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != awsclient.StringValue(cluster.PreferredMaintenanceWindow):
-		return false, nil
+		return false, "", nil
 	}
 
-	return svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cluster.DBClusterArn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cluster.DBClusterArn)
+	return areTagsUpToDate, "", err
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {

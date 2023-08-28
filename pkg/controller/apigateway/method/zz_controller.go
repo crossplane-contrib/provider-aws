@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateMethod(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -241,7 +242,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Method, *svcsdk.GetMethodInput) error
 	postObserve    func(context.Context, *svcapitypes.Method, *svcsdk.Method, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.MethodParameters, *svcsdk.Method) error
-	isUpToDate     func(*svcapitypes.Method, *svcsdk.Method) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Method, *svcsdk.Method) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Method, *svcsdk.PutMethodInput) error
 	postCreate     func(context.Context, *svcapitypes.Method, *svcsdk.Method, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Method, *svcsdk.DeleteMethodInput) (bool, error)
@@ -260,8 +261,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Method, _ *svcsdk.Method, 
 func nopLateInitialize(*svcapitypes.MethodParameters, *svcsdk.Method) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Method, *svcsdk.Method) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Method, *svcsdk.Method) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Method, *svcsdk.PutMethodInput) error {

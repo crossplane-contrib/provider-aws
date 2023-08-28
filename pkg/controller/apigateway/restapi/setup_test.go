@@ -374,7 +374,7 @@ func TestIsUpToDate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			// Act
-			result, err := isUpToDate(tc.args.cr, tc.args.obj)
+			result, _, err := isUpToDate(context.Background(), tc.args.cr, tc.args.obj)
 			if err != nil {
 				panic(err)
 			}

@@ -142,7 +142,7 @@ func postUpdate(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.U
 	}, nil
 }
 
-func isUpToDate(cr *svcapitypes.UserPoolClient, resp *svcsdk.DescribeUserPoolClientOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.UserPoolClient, resp *svcsdk.DescribeUserPoolClientOutput) (bool, string, error) {
 	client := resp.UserPoolClient
 
 	switch {
@@ -162,9 +162,9 @@ func isUpToDate(cr *svcapitypes.UserPoolClient, resp *svcsdk.DescribeUserPoolCli
 		!reflect.DeepEqual(cr.Spec.ForProvider.SupportedIdentityProviders, client.SupportedIdentityProviders),
 		!areTokenValidityUnitsEqual(cr.Spec.ForProvider.TokenValidityUnits, client.TokenValidityUnits),
 		!reflect.DeepEqual(cr.Spec.ForProvider.WriteAttributes, client.WriteAttributes):
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func areAnalyticsConfigurationEqual(spec *svcapitypes.AnalyticsConfigurationType, current *svcsdk.AnalyticsConfigurationType) bool {

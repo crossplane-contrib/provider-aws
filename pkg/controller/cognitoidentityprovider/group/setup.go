@@ -114,11 +114,11 @@ func preUpdate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.UpdateGroup
 	return nil
 }
 
-func isUpToDate(cr *svcapitypes.Group, resp *svcsdk.GetGroupOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Group, resp *svcsdk.GetGroupOutput) (bool, string, error) {
 	switch {
 	case awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Group.Description),
 		awsclients.Int64Value(cr.Spec.ForProvider.Precedence) != awsclients.Int64Value(resp.Group.Precedence):
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }

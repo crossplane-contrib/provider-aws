@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateMountTarget(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -225,7 +226,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput) *svcsdk.DescribeMountTargetsOutput
 	lateInitialize func(*svcapitypes.MountTargetParameters, *svcsdk.DescribeMountTargetsOutput) error
-	isUpToDate     func(*svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.MountTarget, *svcsdk.CreateMountTargetInput) error
 	postCreate     func(context.Context, *svcapitypes.MountTarget, *svcsdk.MountTargetDescription, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.MountTarget, *svcsdk.DeleteMountTargetInput) (bool, error)
@@ -246,8 +247,8 @@ func nopFilterList(_ *svcapitypes.MountTarget, list *svcsdk.DescribeMountTargets
 func nopLateInitialize(*svcapitypes.MountTargetParameters, *svcsdk.DescribeMountTargetsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.MountTarget, *svcsdk.DescribeMountTargetsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.MountTarget, *svcsdk.CreateMountTargetInput) error {

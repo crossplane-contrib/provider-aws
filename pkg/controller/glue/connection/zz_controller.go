@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateConnection(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -177,7 +178,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Connection, *svcsdk.GetConnectionInput) error
 	postObserve    func(context.Context, *svcapitypes.Connection, *svcsdk.GetConnectionOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ConnectionParameters, *svcsdk.GetConnectionOutput) error
-	isUpToDate     func(*svcapitypes.Connection, *svcsdk.GetConnectionOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Connection, *svcsdk.GetConnectionOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Connection, *svcsdk.CreateConnectionInput) error
 	postCreate     func(context.Context, *svcapitypes.Connection, *svcsdk.CreateConnectionOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Connection, *svcsdk.DeleteConnectionInput) (bool, error)
@@ -196,8 +197,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Connection, _ *svcsdk.GetC
 func nopLateInitialize(*svcapitypes.ConnectionParameters, *svcsdk.GetConnectionOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Connection, *svcsdk.GetConnectionOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Connection, *svcsdk.GetConnectionOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Connection, *svcsdk.CreateConnectionInput) error {

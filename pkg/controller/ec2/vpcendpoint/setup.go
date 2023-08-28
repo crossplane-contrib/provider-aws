@@ -143,21 +143,21 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.De
 }
 
 // isUpToDate checks for the following mutable fields for the VPCEndpoint in upstream AWS
-func isUpToDate(cr *svcapitypes.VPCEndpoint, obj *svcsdk.DescribeVpcEndpointsOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.DescribeVpcEndpointsOutput) (bool, string, error) {
 	// Check subnets
 	if !listCompareStringPtrIsSame(obj.VpcEndpoints[0].SubnetIds, cr.Spec.ForProvider.SubnetIDs) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Check Route Tables
 	if !listCompareStringPtrIsSame(obj.VpcEndpoints[0].RouteTableIds, cr.Spec.ForProvider.RouteTableIDs) {
-		return false, nil
+		return false, "", nil
 	}
 
 	// Check Security Groups
 	upstreamSGs := obj.VpcEndpoints[0].Groups
 	if len(upstreamSGs) != len(cr.Spec.ForProvider.SecurityGroupIDs) {
-		return false, nil
+		return false, "", nil
 	}
 
 sgCompare:
@@ -168,7 +168,7 @@ sgCompare:
 			}
 		}
 		// declaredSG not found in upstream AWS
-		return false, nil
+		return false, "", nil
 	}
 
 	// Check policyDocument
@@ -179,9 +179,9 @@ sgCompare:
 
 	// If no declared policy, we expect the result to be equivalent to the default policy
 	if aws.StringValue(declaredPolicy) == "" {
-		return awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyEndpoint) || awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyGateway), nil
+		return awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyEndpoint) || awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyGateway), "", nil
 	}
-	return awsclients.IsPolicyUpToDate(upstreamPolicy, declaredPolicy), nil
+	return awsclients.IsPolicyUpToDate(upstreamPolicy, declaredPolicy), "", nil
 }
 
 // preUpdate adds the mutable fields into the update request input

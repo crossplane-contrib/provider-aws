@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateJobQueue(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -194,7 +195,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput) *svcsdk.DescribeJobQueuesOutput
 	lateInitialize func(*svcapitypes.JobQueueParameters, *svcsdk.DescribeJobQueuesOutput) error
-	isUpToDate     func(*svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.JobQueue, *svcsdk.CreateJobQueueInput) error
 	postCreate     func(context.Context, *svcapitypes.JobQueue, *svcsdk.CreateJobQueueOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.JobQueue, *svcsdk.DeleteJobQueueInput) (bool, error)
@@ -216,8 +217,8 @@ func nopFilterList(_ *svcapitypes.JobQueue, list *svcsdk.DescribeJobQueuesOutput
 func nopLateInitialize(*svcapitypes.JobQueueParameters, *svcsdk.DescribeJobQueuesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.JobQueue, *svcsdk.DescribeJobQueuesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.JobQueue, *svcsdk.CreateJobQueueInput) error {

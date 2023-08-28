@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateEnvironment(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -183,7 +184,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Environment, *svcsdk.GetEnvironmentInput) error
 	postObserve    func(context.Context, *svcapitypes.Environment, *svcsdk.GetEnvironmentOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.EnvironmentParameters, *svcsdk.GetEnvironmentOutput) error
-	isUpToDate     func(*svcapitypes.Environment, *svcsdk.GetEnvironmentOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Environment, *svcsdk.GetEnvironmentOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Environment, *svcsdk.CreateEnvironmentInput) error
 	postCreate     func(context.Context, *svcapitypes.Environment, *svcsdk.CreateEnvironmentOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Environment, *svcsdk.DeleteEnvironmentInput) (bool, error)
@@ -202,8 +203,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Environment, _ *svcsdk.Get
 func nopLateInitialize(*svcapitypes.EnvironmentParameters, *svcsdk.GetEnvironmentOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Environment, *svcsdk.GetEnvironmentOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Environment, *svcsdk.GetEnvironmentOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Environment, *svcsdk.CreateEnvironmentInput) error {

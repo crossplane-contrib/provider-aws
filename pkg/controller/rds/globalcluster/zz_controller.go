@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateGlobalCluster(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -272,7 +273,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput) *svcsdk.DescribeGlobalClustersOutput
 	lateInitialize func(*svcapitypes.GlobalClusterParameters, *svcsdk.DescribeGlobalClustersOutput) error
-	isUpToDate     func(*svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.GlobalCluster, *svcsdk.CreateGlobalClusterInput) error
 	postCreate     func(context.Context, *svcapitypes.GlobalCluster, *svcsdk.CreateGlobalClusterOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.GlobalCluster, *svcsdk.DeleteGlobalClusterInput) (bool, error)
@@ -294,8 +295,8 @@ func nopFilterList(_ *svcapitypes.GlobalCluster, list *svcsdk.DescribeGlobalClus
 func nopLateInitialize(*svcapitypes.GlobalClusterParameters, *svcsdk.DescribeGlobalClustersOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.GlobalCluster, *svcsdk.DescribeGlobalClustersOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.GlobalCluster, *svcsdk.CreateGlobalClusterInput) error {

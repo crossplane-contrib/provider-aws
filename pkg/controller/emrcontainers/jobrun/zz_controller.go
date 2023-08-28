@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateJobRun(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -189,7 +190,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.JobRun, *svcsdk.DescribeJobRunInput) error
 	postObserve    func(context.Context, *svcapitypes.JobRun, *svcsdk.DescribeJobRunOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.JobRunParameters, *svcsdk.DescribeJobRunOutput) error
-	isUpToDate     func(*svcapitypes.JobRun, *svcsdk.DescribeJobRunOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.JobRun, *svcsdk.DescribeJobRunOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.JobRun, *svcsdk.StartJobRunInput) error
 	postCreate     func(context.Context, *svcapitypes.JobRun, *svcsdk.StartJobRunOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.JobRun, *svcsdk.CancelJobRunInput) (bool, error)
@@ -207,8 +208,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.JobRun, _ *svcsdk.Describe
 func nopLateInitialize(*svcapitypes.JobRunParameters, *svcsdk.DescribeJobRunOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.JobRun, *svcsdk.DescribeJobRunOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.JobRun, *svcsdk.DescribeJobRunOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.JobRun, *svcsdk.StartJobRunInput) error {

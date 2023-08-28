@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAutoScalingGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -183,7 +184,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput) *svcsdk.DescribeAutoScalingGroupsOutput
 	lateInitialize func(*svcapitypes.AutoScalingGroupParameters, *svcsdk.DescribeAutoScalingGroupsOutput) error
-	isUpToDate     func(*svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.CreateAutoScalingGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.CreateAutoScalingGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DeleteAutoScalingGroupInput) (bool, error)
@@ -205,8 +206,8 @@ func nopFilterList(_ *svcapitypes.AutoScalingGroup, list *svcsdk.DescribeAutoSca
 func nopLateInitialize(*svcapitypes.AutoScalingGroupParameters, *svcsdk.DescribeAutoScalingGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DescribeAutoScalingGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.CreateAutoScalingGroupInput) error {

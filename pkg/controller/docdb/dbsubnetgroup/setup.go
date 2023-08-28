@@ -112,16 +112,17 @@ func postObserve(_ context.Context, cr *svcapitypes.DBSubnetGroup, resp *svcsdk.
 	return obs, nil
 }
 
-func (e *hooks) isUpToDate(cr *svcapitypes.DBSubnetGroup, resp *svcsdk.DescribeDBSubnetGroupsOutput) (bool, error) {
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBSubnetGroup, resp *svcsdk.DescribeDBSubnetGroupsOutput) (bool, string, error) {
 	group := resp.DBSubnetGroups[0]
 
 	switch {
 	case awsclient.StringValue(cr.Spec.ForProvider.DBSubnetGroupDescription) != awsclient.StringValue(group.DBSubnetGroupDescription),
 		!areSubnetsEqual(cr.Spec.ForProvider.SubnetIDs, group.Subnets):
-		return false, nil
+		return false, "", nil
 	}
 
-	return svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, group.DBSubnetGroupArn)
+	areTagsUpToDate, err := svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, group.DBSubnetGroupArn)
+	return areTagsUpToDate, "", err
 }
 
 func areSubnetsEqual(specSubnetIds []*string, current []*svcsdk.Subnet) bool {

@@ -138,27 +138,27 @@ type updater struct {
 	client svcsdkapi.EC2API
 }
 
-func isUpToDate(cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.DescribeVpcEndpointServiceConfigurationsOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.DescribeVpcEndpointServiceConfigurationsOutput) (bool, string, error) {
 
 	createGlbArns, deleteGlbArns := DifferenceARN(cr.Spec.ForProvider.GatewayLoadBalancerARNs, obj.ServiceConfigurations[0].GatewayLoadBalancerArns)
 	if len(createGlbArns) != 0 || len(deleteGlbArns) != 0 {
-		return false, nil
+		return false, "", nil
 	}
 
 	createNlbArns, deleteNlbArns := DifferenceARN(cr.Spec.ForProvider.NetworkLoadBalancerARNs, obj.ServiceConfigurations[0].NetworkLoadBalancerArns)
 	if len(createNlbArns) != 0 || len(deleteNlbArns) != 0 {
-		return false, nil
+		return false, "", nil
 	}
 
 	if awsclients.StringValue(cr.Spec.ForProvider.PrivateDNSName) != awsclients.StringValue(obj.ServiceConfigurations[0].PrivateDnsName) {
-		return false, nil
+		return false, "", nil
 	}
 
 	if awsclients.BoolValue(cr.Spec.ForProvider.AcceptanceRequired) != awsclients.BoolValue(obj.ServiceConfigurations[0].AcceptanceRequired) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }
 
 func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error {

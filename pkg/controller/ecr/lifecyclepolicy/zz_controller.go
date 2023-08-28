@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateLifecyclePolicy(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -184,7 +185,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyInput) error
 	postObserve    func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.LifecyclePolicyParameters, *svcsdk.GetLifecyclePolicyOutput) error
-	isUpToDate     func(*svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.PutLifecyclePolicyInput) error
 	postCreate     func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.PutLifecyclePolicyOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.DeleteLifecyclePolicyInput) (bool, error)
@@ -202,8 +203,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.LifecyclePolicy, _ *svcsdk
 func nopLateInitialize(*svcapitypes.LifecyclePolicyParameters, *svcsdk.GetLifecyclePolicyOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.GetLifecyclePolicyOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.LifecyclePolicy, *svcsdk.PutLifecyclePolicyInput) error {

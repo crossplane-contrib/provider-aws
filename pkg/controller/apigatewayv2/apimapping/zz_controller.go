@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAPIMapping(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -198,7 +199,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingInput) error
 	postObserve    func(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingOutput) error
-	isUpToDate     func(*svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingInput) error
 	postCreate     func(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingInput) (bool, error)
@@ -217,8 +218,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.APIMapping, _ *svcsdk.GetA
 func nopLateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingInput) error {

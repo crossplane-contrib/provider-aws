@@ -164,19 +164,19 @@ func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Do
 	return isUpToDate, nil
 }
 
-func (h *hooks) isUpToDate(cr *svcapitypes.Domain, obj *svcsdk.DescribeDomainsOutput) (bool, error) {
+func (h *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Domain, obj *svcsdk.DescribeDomainsOutput) (bool, string, error) {
 	ds := obj.DomainStatusList[0]
 
-	scalingParametersUpToDate, err := h.isUpToDateScalingParameters(context.TODO(), cr, ds.DomainName)
+	scalingParametersUpToDate, err := h.isUpToDateScalingParameters(ctx, cr, ds.DomainName)
 	if !scalingParametersUpToDate || err != nil {
-		return false, err
+		return false, "", err
 	}
-	accessPoliciesUpToDate, err := h.isUpToDateAccessPolicies(context.TODO(), cr, ds.DomainName)
+	accessPoliciesUpToDate, err := h.isUpToDateAccessPolicies(ctx, cr, ds.DomainName)
 	if !accessPoliciesUpToDate || err != nil {
-		return false, err
+		return false, "", err
 	}
 
-	return !awsclients.BoolValue(ds.RequiresIndexDocuments), nil
+	return !awsclients.BoolValue(ds.RequiresIndexDocuments), "", nil
 }
 
 func updateConditions(cr *svcapitypes.Domain, ds *svcsdk.DomainStatus) {

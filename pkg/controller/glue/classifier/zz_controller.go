@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateClassifier(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -177,7 +178,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Classifier, *svcsdk.GetClassifierInput) error
 	postObserve    func(context.Context, *svcapitypes.Classifier, *svcsdk.GetClassifierOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.ClassifierParameters, *svcsdk.GetClassifierOutput) error
-	isUpToDate     func(*svcapitypes.Classifier, *svcsdk.GetClassifierOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Classifier, *svcsdk.GetClassifierOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Classifier, *svcsdk.CreateClassifierInput) error
 	postCreate     func(context.Context, *svcapitypes.Classifier, *svcsdk.CreateClassifierOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Classifier, *svcsdk.DeleteClassifierInput) (bool, error)
@@ -196,8 +197,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Classifier, _ *svcsdk.GetC
 func nopLateInitialize(*svcapitypes.ClassifierParameters, *svcsdk.GetClassifierOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Classifier, *svcsdk.GetClassifierOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Classifier, *svcsdk.GetClassifierOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Classifier, *svcsdk.CreateClassifierInput) error {

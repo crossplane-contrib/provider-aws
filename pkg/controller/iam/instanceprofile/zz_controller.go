@@ -85,13 +85,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateInstanceProfile(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -275,7 +276,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileInput) error
 	postObserve    func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.InstanceProfileParameters, *svcsdk.GetInstanceProfileOutput) error
-	isUpToDate     func(*svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.CreateInstanceProfileInput) error
 	postCreate     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.CreateInstanceProfileOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.DeleteInstanceProfileInput) (bool, error)
@@ -293,8 +294,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.InstanceProfile, _ *svcsdk
 func nopLateInitialize(*svcapitypes.InstanceProfileParameters, *svcsdk.GetInstanceProfileOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.InstanceProfile, *svcsdk.CreateInstanceProfileInput) error {

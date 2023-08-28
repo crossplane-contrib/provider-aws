@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateWorkspace(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -199,7 +200,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Workspace, *svcsdk.DescribeWorkspaceInput) error
 	postObserve    func(context.Context, *svcapitypes.Workspace, *svcsdk.DescribeWorkspaceOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.WorkspaceParameters, *svcsdk.DescribeWorkspaceOutput) error
-	isUpToDate     func(*svcapitypes.Workspace, *svcsdk.DescribeWorkspaceOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Workspace, *svcsdk.DescribeWorkspaceOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Workspace, *svcsdk.CreateWorkspaceInput) error
 	postCreate     func(context.Context, *svcapitypes.Workspace, *svcsdk.CreateWorkspaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Workspace, *svcsdk.DeleteWorkspaceInput) (bool, error)
@@ -217,8 +218,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Workspace, _ *svcsdk.Descr
 func nopLateInitialize(*svcapitypes.WorkspaceParameters, *svcsdk.DescribeWorkspaceOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Workspace, *svcsdk.DescribeWorkspaceOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Workspace, *svcsdk.DescribeWorkspaceOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Workspace, *svcsdk.CreateWorkspaceInput) error {

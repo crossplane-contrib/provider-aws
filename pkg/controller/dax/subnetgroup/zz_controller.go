@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateSubnetGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -215,7 +216,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput) *svcsdk.DescribeSubnetGroupsOutput
 	lateInitialize func(*svcapitypes.SubnetGroupParameters, *svcsdk.DescribeSubnetGroupsOutput) error
-	isUpToDate     func(*svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.SubnetGroup, *svcsdk.CreateSubnetGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.SubnetGroup, *svcsdk.CreateSubnetGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.SubnetGroup, *svcsdk.DeleteSubnetGroupInput) (bool, error)
@@ -237,8 +238,8 @@ func nopFilterList(_ *svcapitypes.SubnetGroup, list *svcsdk.DescribeSubnetGroups
 func nopLateInitialize(*svcapitypes.SubnetGroupParameters, *svcsdk.DescribeSubnetGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.SubnetGroup, *svcsdk.DescribeSubnetGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.SubnetGroup, *svcsdk.CreateSubnetGroupInput) error {

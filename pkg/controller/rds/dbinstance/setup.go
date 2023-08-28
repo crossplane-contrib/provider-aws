@@ -393,16 +393,12 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, err error) { // nolint:gocyclo
-	// (PocketMobsters): Creating a context here is a temporary thing until a future
-	// update drops for aws-controllers-k8s/code-generator
-	ctx := context.TODO()
-
+func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, diff string, err error) { // nolint:gocyclo
 	db := out.DBInstances[0]
 
 	patch, err := createPatch(out, &cr.Spec.ForProvider)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	// (PocketMobsters): Certain statuses can cause us to send excessive updates because the
 	// expected state of the kubernetes resource differs from the actual state of the remote
@@ -412,26 +408,26 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	// when the status is "storage-optimization"
 	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
 	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" || status == "deleting" {
-		return true, nil
+		return true, "", nil
 	}
 
 	passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
 	if err != nil {
-		return false, errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
+		return false, "", errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
 	}
 	if !passwordUpToDate {
-		return false, nil
+		return false, "", nil
 	}
 
 	// (PocketMobsters): AWS reformats our preferred time windows for backups and maintenance,
 	// so we can't rely on automatic equality checks for them
 	maintenanceWindowChanged, err := compareTimeRanges(maintenanceWindowFormat, cr.Spec.ForProvider.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	backupWindowChanged, err := compareTimeRanges(backupWindowFormat, cr.Spec.ForProvider.PreferredBackupWindow, db.PreferredBackupWindow)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	versionChanged := !isEngineVersionUpToDate(cr, out)
@@ -440,7 +436,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
 	optionGroupChanged := !isOptionGroupUpToDate(cr, db)
 
-	diff := cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
+	diff = cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AllowMajorVersionUpgrade"),
@@ -461,7 +457,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	)
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged {
-		return true, nil
+		return true, diff, nil
 	}
 
 	diff = "Found observed difference in dbinstance\n" + diff
@@ -480,7 +476,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 
 	log.Println(diff)
 
-	return false, nil
+	return false, diff, nil
 }
 
 func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) bool {

@@ -89,13 +89,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateAddon(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -286,7 +287,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Addon, *svcsdk.DescribeAddonInput) error
 	postObserve    func(context.Context, *svcapitypes.Addon, *svcsdk.DescribeAddonOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.AddonParameters, *svcsdk.DescribeAddonOutput) error
-	isUpToDate     func(*svcapitypes.Addon, *svcsdk.DescribeAddonOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Addon, *svcsdk.DescribeAddonOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Addon, *svcsdk.CreateAddonInput) error
 	postCreate     func(context.Context, *svcapitypes.Addon, *svcsdk.CreateAddonOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Addon, *svcsdk.DeleteAddonInput) (bool, error)
@@ -305,8 +306,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Addon, _ *svcsdk.DescribeA
 func nopLateInitialize(*svcapitypes.AddonParameters, *svcsdk.DescribeAddonOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Addon, *svcsdk.DescribeAddonOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Addon, *svcsdk.DescribeAddonOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Addon, *svcsdk.CreateAddonInput) error {

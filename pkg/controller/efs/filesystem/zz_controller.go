@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateFileSystem(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -289,7 +290,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) *svcsdk.DescribeFileSystemsOutput
 	lateInitialize func(*svcapitypes.FileSystemParameters, *svcsdk.DescribeFileSystemsOutput) error
-	isUpToDate     func(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.FileSystem, *svcsdk.CreateFileSystemInput) error
 	postCreate     func(context.Context, *svcapitypes.FileSystem, *svcsdk.FileSystemDescription, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.FileSystem, *svcsdk.DeleteFileSystemInput) (bool, error)
@@ -311,8 +312,8 @@ func nopFilterList(_ *svcapitypes.FileSystem, list *svcsdk.DescribeFileSystemsOu
 func nopLateInitialize(*svcapitypes.FileSystemParameters, *svcsdk.DescribeFileSystemsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.FileSystem, *svcsdk.CreateFileSystemInput) error {

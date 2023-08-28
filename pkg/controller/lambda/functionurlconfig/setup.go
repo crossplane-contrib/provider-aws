@@ -99,12 +99,12 @@ func postObserve(_ context.Context, cr *svcapitypes.FunctionURLConfig, _ *svcsdk
 	return obs, nil
 }
 
-func isUpToDate(cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigOutput) (bool, string, error) {
 	if aws.StringValue(cr.Spec.ForProvider.AuthType) != aws.StringValue(obj.AuthType) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return isUpToDateCors(cr, obj), nil
+	return isUpToDateCors(cr, obj), "", nil
 }
 
 func isUpToDateCors(cr *svcapitypes.FunctionURLConfig, obj *svcsdk.GetFunctionUrlConfigOutput) bool {

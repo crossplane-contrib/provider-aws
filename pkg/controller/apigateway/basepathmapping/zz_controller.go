@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateBasePathMapping(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -193,7 +194,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.GetBasePathMappingInput) error
 	postObserve    func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.BasePathMapping, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.BasePathMappingParameters, *svcsdk.BasePathMapping) error
-	isUpToDate     func(*svcapitypes.BasePathMapping, *svcsdk.BasePathMapping) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.BasePathMapping) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.CreateBasePathMappingInput) error
 	postCreate     func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.BasePathMapping, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.BasePathMapping, *svcsdk.DeleteBasePathMappingInput) (bool, error)
@@ -212,8 +213,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.BasePathMapping, _ *svcsdk
 func nopLateInitialize(*svcapitypes.BasePathMappingParameters, *svcsdk.BasePathMapping) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.BasePathMapping, *svcsdk.BasePathMapping) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.BasePathMapping, *svcsdk.BasePathMapping) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.BasePathMapping, *svcsdk.CreateBasePathMappingInput) error {

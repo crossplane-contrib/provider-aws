@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateIntegration(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -289,7 +290,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationInput) error
 	postObserve    func(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.IntegrationParameters, *svcsdk.GetIntegrationOutput) error
-	isUpToDate     func(*svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationInput) error
 	postCreate     func(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationInput) (bool, error)
@@ -308,8 +309,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.Get
 func nopLateInitialize(*svcapitypes.IntegrationParameters, *svcsdk.GetIntegrationOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationInput) error {

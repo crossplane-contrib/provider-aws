@@ -218,14 +218,14 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 	return nil
 }
 
-func isUpToDate(wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, error) { // nolint:gocyclo
+func isUpToDate(_ context.Context, wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, string, error) { // nolint:gocyclo
 	forProvider := wanted.Spec.ForProvider
 	clusterInfo := current.ClusterInfo
 
 	switch {
 	// A cluster can not be updated while not in active status, therefore we consider the cluster as up to date
 	case aws.StringValue(clusterInfo.State) != stateActive:
-		return true, nil
+		return true, "", nil
 	case !isInstanceTypeUpToDate(forProvider.CustomBrokerNodeGroupInfo, clusterInfo.BrokerNodeGroupInfo),
 		!isStorageInfoUpToDate(forProvider.CustomBrokerNodeGroupInfo, clusterInfo.BrokerNodeGroupInfo),
 		!isNumberOfBrokerNodesUpToDate(forProvider, clusterInfo),
@@ -237,9 +237,9 @@ func isUpToDate(wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutp
 		!isEncryptionInfoInTransitUpToDate(forProvider.EncryptionInfo, clusterInfo.EncryptionInfo),
 		!isClientAuthenticationUpToDate(forProvider.ClientAuthentication, clusterInfo.ClientAuthentication),
 		!isTagsUpToDate(forProvider.Tags, clusterInfo.Tags):
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func isInstanceTypeUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, current *svcsdk.BrokerNodeGroupInfo) bool {

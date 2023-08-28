@@ -1,6 +1,7 @@
 package group
 
 import (
+	"context"
 	"testing"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
@@ -92,7 +93,7 @@ func TestIsUpToDate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			// Act
-			result, err := isUpToDate(tc.args.cr, tc.args.resp)
+			result, _, err := isUpToDate(context.Background(), tc.args.cr, tc.args.resp)
 
 			// Assert
 			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {

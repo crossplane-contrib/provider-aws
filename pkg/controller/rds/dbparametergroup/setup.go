@@ -165,19 +165,17 @@ func lateInitialize(spec *svcapitypes.DBParameterGroupParameters, current *svcsd
 	return nil
 }
 
-func (c *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
-	// TODO(Dkaykay): We need isUpToDate to have context.
-	ctx := context.TODO()
+func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, string, error) {
 	results, err := c.getCurrentDBParameters(ctx, cr)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	if len(c.parametersToUpdate(cr, results)) != 0 || len(c.parametersToReset(cr, results)) != 0 {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, err
+	return true, "", err
 }
 
 func (c *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {

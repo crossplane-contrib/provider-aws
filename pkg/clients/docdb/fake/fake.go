@@ -43,6 +43,7 @@ type MockDocDBClient struct {
 	MockDeleteDBSubnetGroupWithContext    func(context.Context, *docdb.DeleteDBSubnetGroupInput, []request.Option) (*docdb.DeleteDBSubnetGroupOutput, error)
 
 	MockDescribeDBClusterParameters                 func(*docdb.DescribeDBClusterParametersInput) (*docdb.DescribeDBClusterParametersOutput, error)
+	MockDescribeDBClusterParametersWithContext      func(context.Context, *docdb.DescribeDBClusterParametersInput, []request.Option) (*docdb.DescribeDBClusterParametersOutput, error)
 	MockDescribeDBClusterParameterGroupsWithContext func(context.Context, *docdb.DescribeDBClusterParameterGroupsInput, []request.Option) (*docdb.DescribeDBClusterParameterGroupsOutput, error)
 	MockCreateDBClusterParameterGroupWithContext    func(context.Context, *docdb.CreateDBClusterParameterGroupInput, []request.Option) (*docdb.CreateDBClusterParameterGroupOutput, error)
 	MockModifyDBClusterParameterGroupWithContext    func(context.Context, *docdb.ModifyDBClusterParameterGroupInput, []request.Option) (*docdb.ModifyDBClusterParameterGroupOutput, error)
@@ -219,6 +220,20 @@ func (m *MockDocDBClient) DescribeDBClusterParameters(i *docdb.DescribeDBCluster
 	return m.MockDescribeDBClusterParameters(i)
 }
 
+// CallDescribeDBClusterParametersWithContext to log call
+type CallDescribeDBClusterParametersWithContext struct {
+	Ctx  aws.Context
+	I    *docdb.DescribeDBClusterParametersInput
+	Opts []request.Option
+}
+
+// DescribeDBClusterParametersWithContext calls MockDescribeDBClusterParametersWithContext
+func (m *MockDocDBClient) DescribeDBClusterParametersWithContext(ctx context.Context, i *docdb.DescribeDBClusterParametersInput, opts ...request.Option) (*docdb.DescribeDBClusterParametersOutput, error) {
+	m.Called.DescribeDBClusterParametersWithContext = append(m.Called.DescribeDBClusterParametersWithContext, &CallDescribeDBClusterParametersWithContext{I: i, Ctx: ctx, Opts: opts})
+
+	return m.MockDescribeDBClusterParametersWithContext(ctx, i, opts)
+}
+
 // CallDescribeDBClusterParameterGroupsWithContext to log call
 type CallDescribeDBClusterParameterGroupsWithContext struct {
 	Ctx  aws.Context
@@ -375,6 +390,7 @@ type MockDocDBClientCall struct {
 	DeleteDBSubnetGroupWithContext    []*CallDeleteDBSubnetGroupWithContext
 
 	DescribeDBClusterParameters                 []*CallDescribeDBClusterParameters
+	DescribeDBClusterParametersWithContext      []*CallDescribeDBClusterParametersWithContext
 	DescribeDBClusterParameterGroupsWithContext []*CallDescribeDBClusterParameterGroupsWithContext
 	CreateDBClusterParameterGroupWithContext    []*CallCreateDBClusterParameterGroupWithContext
 	ModifyDBClusterParameterGroupWithContext    []*CallModifyDBClusterParameterGroupWithContext

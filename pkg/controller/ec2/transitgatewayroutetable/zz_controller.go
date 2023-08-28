@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateTransitGatewayRouteTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -222,7 +223,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput) *svcsdk.DescribeTransitGatewayRouteTablesOutput
 	lateInitialize func(*svcapitypes.TransitGatewayRouteTableParameters, *svcsdk.DescribeTransitGatewayRouteTablesOutput) error
-	isUpToDate     func(*svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.CreateTransitGatewayRouteTableInput) error
 	postCreate     func(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.CreateTransitGatewayRouteTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.DeleteTransitGatewayRouteTableInput) (bool, error)
@@ -243,8 +244,8 @@ func nopFilterList(_ *svcapitypes.TransitGatewayRouteTable, list *svcsdk.Describ
 func nopLateInitialize(*svcapitypes.TransitGatewayRouteTableParameters, *svcsdk.DescribeTransitGatewayRouteTablesOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.DescribeTransitGatewayRouteTablesOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.TransitGatewayRouteTable, *svcsdk.CreateTransitGatewayRouteTableInput) error {

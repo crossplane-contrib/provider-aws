@@ -278,12 +278,12 @@ func preObserve(_ context.Context, cr *svcapitypes.Distribution, gdi *svcsdk.Get
 	return nil
 }
 
-func isUpToDate(cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput) (bool, string, error) {
 	// We can only update a Distribution that's in state 'Deployed' so we
 	// temporarily consider it 'up to date' until it is since updating it
 	// wouldn't work.
 	if awsclients.StringValue(cr.Status.AtProvider.Distribution.Status) != stateDeployed {
-		return true, nil
+		return true, "", nil
 	}
 
 	// NOTE(negz): As far as I can tell we can't use the typical CreatePatch
@@ -297,7 +297,7 @@ func isUpToDate(cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput)
 	currentParams := &svcapitypes.DistributionParameters{}
 	_ = lateInitialize(currentParams, gdo)
 
-	return cmp.Equal(*currentParams, cr.Spec.ForProvider,
+	diff := cmp.Diff(*currentParams, cr.Spec.ForProvider,
 		// We don't late init region - it's not in the output.
 		cmpopts.IgnoreFields(svcapitypes.DistributionParameters{}, "Region"),
 
@@ -318,7 +318,8 @@ func isUpToDate(cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput)
 		cmpopts.SortSlices(func(x, y *svcapitypes.Origin) bool {
 			return awsclients.StringValue(x.ID) > awsclients.StringValue(y.ID)
 		}),
-	), nil
+	)
+	return diff == "", diff, nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Distribution, gdo *svcsdk.GetDistributionOutput,

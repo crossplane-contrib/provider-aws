@@ -716,7 +716,7 @@ func TestIsUpToDate(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := IsUpToDate(tt.args.actual, tt.args.desired, tt.args.opts...)
+			got, _, err := IsUpToDate(tt.args.actual, tt.args.desired, tt.args.opts...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("IsUpToDate() error = %v, wantErr %v", err, tt.wantErr)
 				return

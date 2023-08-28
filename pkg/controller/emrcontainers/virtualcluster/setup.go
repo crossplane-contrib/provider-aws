@@ -130,9 +130,9 @@ func postDelete(ctx context.Context, cr *svcapitypes.VirtualCluster, resp *svcsd
 	return err
 }
 
-func isUpToDate(cr *svcapitypes.VirtualCluster, output *svcsdk.DescribeVirtualClusterOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.VirtualCluster, output *svcsdk.DescribeVirtualClusterOutput) (bool, string, error) {
 	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, output.VirtualCluster.Tags)
-	return len(add) == 0 && len(remove) == 0, nil
+	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
 func (e *external) updater(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {

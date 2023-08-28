@@ -131,9 +131,9 @@ func postCreate(ctx context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.Creat
 	return managed.ExternalCreation{}, nil
 }
 
-func (u *updater) isUpToDate(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) (bool, error) {
+func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) (bool, string, error) {
 	if awsclients.Int64Value(cr.Spec.ForProvider.RetentionInDays) != awsclients.Int64Value(obj.LogGroups[0].RetentionInDays) {
-		return false, nil
+		return false, "", nil
 	}
 
 	trimmedArn := trimArnSuffix(*obj.LogGroups[0].Arn)
@@ -141,11 +141,11 @@ func (u *updater) isUpToDate(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGr
 		ResourceArn: &trimmedArn,
 	})
 	if err != nil {
-		return false, errors.Wrap(err, errListTags)
+		return false, "", errors.Wrap(err, errListTags)
 	}
 	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
-	return len(add) == 0 && len(remove) == 0, nil
+	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
 func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo

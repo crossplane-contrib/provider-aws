@@ -104,13 +104,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	Generate{{ .CRD.Names.Camel }}(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
+		Diff: diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 {{- else }}
@@ -228,18 +229,18 @@ type external struct {
 	preObserve  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.InputRef.Shape.ShapeName }}) error
 	postObserve func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }}, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }}) error
-	isUpToDate     func(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }}) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }}) (bool, string, error)
 	{{- else if .CRD.Ops.GetAttributes }}
 	preObserve  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.InputRef.Shape.ShapeName }}) error
 	postObserve func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}) error
-	isUpToDate     func(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}) (bool, string, error)
 	{{- else if .CRD.Ops.ReadMany }}
 	preObserve  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.InputRef.Shape.ShapeName }}) error
 	postObserve func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList func(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}
 	lateInitialize func(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) error
-	isUpToDate     func(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) (bool, string, error)
 	{{- else }}
 	observe     func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
 	{{- end }}
@@ -270,8 +271,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.{{ .CRD.Names.Camel }}, _ 
 func nopLateInitialize(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }}) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }})  (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadOne.OutputRef.Shape.ShapeName }})  (bool, string, error) {
+	return true, "", nil
 }
 {{- else if .CRD.Ops.GetAttributes }}
 func nopPreObserve(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.InputRef.Shape.ShapeName }}) error {
@@ -284,8 +285,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.{{ .CRD.Names.Camel }}, _ 
 func nopLateInitialize(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }}) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.GetAttributes.OutputRef.Shape.ShapeName }})  (bool, string, error) {
+	return true, "", nil
 }
 {{- else if .CRD.Ops.ReadMany }}
 func nopPreObserve(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.InputRef.Shape.ShapeName }}) error {
@@ -301,8 +302,8 @@ func nopFilterList(_ *svcapitypes.{{ .CRD.Names.Camel }}, list *svcsdk.{{ .CRD.O
 func nopLateInitialize(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }})  (bool, string, error) {
+	return true, "", nil
 }
 {{ else }}
 func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {

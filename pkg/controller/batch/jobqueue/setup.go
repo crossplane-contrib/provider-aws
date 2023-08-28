@@ -180,16 +180,16 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *sv
 	return true, awsclients.Wrap(err, errUpdate)
 }
 
-func isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, string, error) {
 	status := awsclients.StringValue(cr.Status.AtProvider.Status)
 
 	// Skip when updating, deleting or creating
 	if status == svcsdk.JQStatusUpdating || status == svcsdk.JQStatusDeleting || status == svcsdk.JQStatusCreating {
-		return true, nil
+		return true, "", nil
 	}
 
 	if awsclients.StringValue(cr.Spec.ForProvider.DesiredState) != awsclients.StringValue(obj.JobQueues[0].State) {
-		return false, nil
+		return false, "", nil
 	}
 
 	currentParams := GenerateJobQueue(obj).Spec.ForProvider
@@ -204,13 +204,11 @@ func isUpToDate(cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (
 		}
 	}
 
-	if !cmp.Equal(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
+	diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.JobQueueParameters{}, "Region", "DesiredState")) {
-		return false, nil
-	}
+		cmpopts.IgnoreFields(svcapitypes.JobQueueParameters{}, "Region", "DesiredState"))
 
-	return true, nil
+	return diff == "", diff, nil
 }
 
 func lateInitialize(spec *svcapitypes.JobQueueParameters, resp *svcsdk.DescribeJobQueuesOutput) error {

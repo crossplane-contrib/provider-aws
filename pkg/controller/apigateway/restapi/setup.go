@@ -144,7 +144,7 @@ func preDelete(_ context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.DeleteRes
 	return false, nil
 }
 
-func isUpToDate(cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, string, error) {
 	s := &svcapitypes.RestAPIParameters{
 		Name:   cur.Name,
 		Region: cr.Spec.ForProvider.Region,
@@ -153,23 +153,24 @@ func isUpToDate(cr *svcapitypes.RestAPI, cur *svcsdk.RestApi) (bool, error) {
 	var err error
 
 	if err = lateInitialize(s, cur); err != nil {
-		return false, errors.Wrap(err, "cannot lateinit")
+		return false, "", errors.Wrap(err, "cannot lateinit")
 	}
 
 	patchJSON, err := aws.CreateJSONPatch(cr.Spec.ForProvider, &s)
 	if err != nil {
-		return false, errors.Wrap(err, "error checking up to date")
+		return false, "", errors.Wrap(err, "error checking up to date")
 	}
 
 	patch := &svcapitypes.RestAPIParameters{}
 	if err := json.Unmarshal(patchJSON, patch); err != nil {
-		return false, errors.Wrap(err, "error checking up to date")
+		return false, "", errors.Wrap(err, "error checking up to date")
 	}
 
-	return cmp.Equal(&svcapitypes.RestAPIParameters{}, patch,
+	diff := cmp.Diff(&svcapitypes.RestAPIParameters{}, patch,
 		cmpopts.IgnoreTypes([]xpv1.Reference{}, []xpv1.Selector{}),
 		cmpopts.IgnoreFields(svcapitypes.RestAPIParameters{}, "Region"),
-	), nil
+	)
+	return diff == "", diff, nil
 }
 
 func lateInitialize(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestApi) error {

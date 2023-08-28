@@ -91,12 +91,12 @@ func preDelete(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.Delet
 	return false, nil
 }
 
-func isUpToDate(cr *svcapitypes.SubnetGroup, output *svcsdk.DescribeSubnetGroupsOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.SubnetGroup, output *svcsdk.DescribeSubnetGroupsOutput) (bool, string, error) {
 	in := cr.Spec.ForProvider
 	out := output.SubnetGroups[0]
 
 	if !cmp.Equal(in.Description, out.Description) {
-		return false, nil
+		return false, "", nil
 	}
 
 	subnetsOut := make([]*string, len(out.Subnets))
@@ -105,8 +105,8 @@ func isUpToDate(cr *svcapitypes.SubnetGroup, output *svcsdk.DescribeSubnetGroups
 	}
 
 	if !cmp.Equal(in.SubnetIds, subnetsOut) {
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, "", nil
 }

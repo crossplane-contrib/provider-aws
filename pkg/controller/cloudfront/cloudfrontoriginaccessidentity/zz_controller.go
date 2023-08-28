@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateCloudFrontOriginAccessIdentity(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -207,7 +208,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityInput) error
 	postObserve    func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.CloudFrontOriginAccessIdentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error
-	isUpToDate     func(*svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error
 	postCreate     func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error)
@@ -226,8 +227,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.CloudFrontOriginAccessIden
 func nopLateInitialize(*svcapitypes.CloudFrontOriginAccessIdentityParameters, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.GetCloudFrontOriginAccessIdentityOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.CloudFrontOriginAccessIdentity, *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {

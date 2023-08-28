@@ -81,11 +81,9 @@ func preDelete(_ context.Context, cr *svcapitypes.LifecyclePolicy, obj *svcsdk.D
 	return false, nil
 }
 
-func isUpToDate(cr *svcapitypes.LifecyclePolicy, obj *svcsdk.GetLifecyclePolicyOutput) (bool, error) {
-	if diff := cmp.Diff(cr.Spec.ForProvider.LifecyclePolicyText, obj.LifecyclePolicyText); diff != "" {
-		return false, nil
-	}
-	return true, nil
+func isUpToDate(_ context.Context, cr *svcapitypes.LifecyclePolicy, obj *svcsdk.GetLifecyclePolicyOutput) (bool, string, error) {
+	diff := cmp.Diff(cr.Spec.ForProvider.LifecyclePolicyText, obj.LifecyclePolicyText)
+	return diff == "", diff, nil
 }
 
 type updateClient struct {

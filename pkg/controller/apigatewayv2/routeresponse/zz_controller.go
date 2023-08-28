@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateRouteResponse(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -217,7 +218,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.GetRouteResponseInput) error
 	postObserve    func(context.Context, *svcapitypes.RouteResponse, *svcsdk.GetRouteResponseOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.RouteResponseParameters, *svcsdk.GetRouteResponseOutput) error
-	isUpToDate     func(*svcapitypes.RouteResponse, *svcsdk.GetRouteResponseOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.GetRouteResponseOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.RouteResponse, *svcsdk.CreateRouteResponseInput) error
 	postCreate     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.CreateRouteResponseOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.RouteResponse, *svcsdk.DeleteRouteResponseInput) (bool, error)
@@ -236,8 +237,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.G
 func nopLateInitialize(*svcapitypes.RouteResponseParameters, *svcsdk.GetRouteResponseOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.RouteResponse, *svcsdk.GetRouteResponseOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.RouteResponse, *svcsdk.GetRouteResponseOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.RouteResponse, *svcsdk.CreateRouteResponseInput) error {

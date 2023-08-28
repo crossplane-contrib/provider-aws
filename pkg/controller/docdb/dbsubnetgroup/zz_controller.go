@@ -92,13 +92,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateDBSubnetGroup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -232,7 +233,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput) *svcsdk.DescribeDBSubnetGroupsOutput
 	lateInitialize func(*svcapitypes.DBSubnetGroupParameters, *svcsdk.DescribeDBSubnetGroupsOutput) error
-	isUpToDate     func(*svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.CreateDBSubnetGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.CreateDBSubnetGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.DeleteDBSubnetGroupInput) (bool, error)
@@ -254,8 +255,8 @@ func nopFilterList(_ *svcapitypes.DBSubnetGroup, list *svcsdk.DescribeDBSubnetGr
 func nopLateInitialize(*svcapitypes.DBSubnetGroupParameters, *svcsdk.DescribeDBSubnetGroupsOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.DescribeDBSubnetGroupsOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.DBSubnetGroup, *svcsdk.CreateDBSubnetGroupInput) error {

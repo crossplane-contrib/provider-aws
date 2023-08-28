@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateRuleGroupsNamespace(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -202,7 +203,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceInput) error
 	postObserve    func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.RuleGroupsNamespaceParameters, *svcsdk.DescribeRuleGroupsNamespaceOutput) error
-	isUpToDate     func(*svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.CreateRuleGroupsNamespaceInput) error
 	postCreate     func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.CreateRuleGroupsNamespaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DeleteRuleGroupsNamespaceInput) (bool, error)
@@ -220,8 +221,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.RuleGroupsNamespace, _ *sv
 func nopLateInitialize(*svcapitypes.RuleGroupsNamespaceParameters, *svcsdk.DescribeRuleGroupsNamespaceOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.RuleGroupsNamespace, *svcsdk.CreateRuleGroupsNamespaceInput) error {

@@ -154,19 +154,19 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
-func isUpToDate(cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, error) {
+func isUpToDate(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, string, error) {
 	// A rule that's currently creating, deleting, or updating can't be
 	// updated, so we temporarily consider it to be up-to-date no matter
 	// what.
 	switch aws.StringValue(cr.Status.AtProvider.Status.StatusCode) {
 	case string(svcapitypes.RuleGroupsNamespaceStatusCode_CREATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_UPDATING), string(svcapitypes.RuleGroupsNamespaceStatusCode_DELETING):
-		return true, nil
+		return true, "", nil
 	}
 
 	if cmp := bytes.Compare(cr.Spec.ForProvider.Data, resp.RuleGroupsNamespace.Data); cmp != 0 {
-		return false, nil
+		return false, "", nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 type updateClient struct {

@@ -88,13 +88,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateUsagePlanKey(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -189,7 +190,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.GetUsagePlanKeyInput) error
 	postObserve    func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.UsagePlanKeyParameters, *svcsdk.UsagePlanKey) error
-	isUpToDate     func(*svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.CreateUsagePlanKeyInput) error
 	postCreate     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.DeleteUsagePlanKeyInput) (bool, error)
@@ -207,8 +208,8 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.UsagePlanKey, _ *svcsdk.Us
 func nopLateInitialize(*svcapitypes.UsagePlanKeyParameters, *svcsdk.UsagePlanKey) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.CreateUsagePlanKeyInput) error {

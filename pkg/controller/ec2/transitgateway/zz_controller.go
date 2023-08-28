@@ -93,13 +93,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateTransitGateway(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
+		Diff:                    diff,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -267,7 +268,7 @@ type external struct {
 	postObserve    func(context.Context, *svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput) *svcsdk.DescribeTransitGatewaysOutput
 	lateInitialize func(*svcapitypes.TransitGatewayParameters, *svcsdk.DescribeTransitGatewaysOutput) error
-	isUpToDate     func(*svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput) (bool, error)
+	isUpToDate     func(context.Context, *svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.TransitGateway, *svcsdk.CreateTransitGatewayInput) error
 	postCreate     func(context.Context, *svcapitypes.TransitGateway, *svcsdk.CreateTransitGatewayOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.TransitGateway, *svcsdk.DeleteTransitGatewayInput) (bool, error)
@@ -289,8 +290,8 @@ func nopFilterList(_ *svcapitypes.TransitGateway, list *svcsdk.DescribeTransitGa
 func nopLateInitialize(*svcapitypes.TransitGatewayParameters, *svcsdk.DescribeTransitGatewaysOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput) (bool, error) {
-	return true, nil
+func alwaysUpToDate(context.Context, *svcapitypes.TransitGateway, *svcsdk.DescribeTransitGatewaysOutput) (bool, string, error) {
+	return true, "", nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.TransitGateway, *svcsdk.CreateTransitGatewayInput) error {
