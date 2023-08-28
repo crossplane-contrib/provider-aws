@@ -37,7 +37,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2"
+	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/utils"
 
 	"github.com/pkg/errors"
 )
