@@ -170,6 +170,23 @@ spec:
                       engines, Amazon Aurora Not applicable. The character set is
                       managed by the DB cluster. For more information, see CreateDBCluster.
                     type: string
+                  cloudwatchLogsExportConfiguration:
+                    description: 'Deprecated: This field will be removed. Use `enableCloudwatchLogsExports`
+                      instead. CloudwatchLogsExportConfiguration is the configuration
+                      setting for the log types to be enabled for export to CloudWatch
+                      Logs for a specific DB instance.'
+                    properties:
+                      disableLogTypes:
+                        description: DisableLogTypes is the list of log types to disable.
+                        items:
+                          type: string
+                        type: array
+                      enableLogTypes:
+                        description: EnableLogTypes is the list of log types to enable.
+                        items:
+                          type: string
+                        type: array
+                    type: object
                   copyTagsToSnapshot:
                     description: CopyTagsToSnapshot should be true to copy all tags
                       from the DB instance to snapshots of the DB instance, and otherwise
