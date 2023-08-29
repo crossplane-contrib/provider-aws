@@ -569,7 +569,7 @@ func generateReplicationGroupPendingModifiedValues(in elasticachetypes.Replicati
 func newEndpoint(rg elasticachetypes.ReplicationGroup) v1beta1.Endpoint {
 	var e *elasticachetypes.Endpoint
 	switch {
-	case !aws.ToBool(rg.ClusterEnabled) && len(rg.NodeGroups) > 0:
+	case !aws.ToBool(rg.ClusterEnabled) && len(rg.NodeGroups) > 0 && rg.NodeGroups[0].PrimaryEndpoint != nil:
 		e = rg.NodeGroups[0].PrimaryEndpoint
 	case aws.ToBool(rg.ClusterEnabled) && rg.ConfigurationEndpoint != nil:
 		e = rg.ConfigurationEndpoint
