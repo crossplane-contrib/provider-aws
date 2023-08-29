@@ -24,6 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
+	"github.com/aws/aws-sdk-go/aws"
 	awseks "github.com/aws/aws-sdk-go/service/eks"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -831,6 +832,227 @@ func TestDelete(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDateConfigurationValues(t *testing.T) {
+	type args struct {
+		cr  *v1alpha1.Addon
+		obj *awseks.DescribeAddonOutput
+	}
+	type want struct {
+		isUpToDate bool
+		isError    bool
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"UpToDateForEmpty": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String(""),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("")}},
+			},
+			want: want{
+				isUpToDate: true,
+				isError:    false,
+			},
+		},
+		"UpToDateForJson": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}")}},
+			},
+			want: want{
+				isUpToDate: true,
+				isError:    false,
+			},
+		},
+		"UpToDateForJsonWithIndentationAndWhitespace": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{\"controller\":     {\"podAnnotations\":\n{\"fluentbit.io/exclude\":   \"true\"   }}}\n")}},
+			},
+			want: want{
+				isUpToDate: true,
+				isError:    false,
+			},
+		},
+		"UpToDateForYaml": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"true\\"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"true\\")}},
+			},
+			want: want{
+				isUpToDate: true,
+				isError:    false,
+			},
+		},
+		"NotUpToDateForYamlToJson": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"true\\"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+		"NotUpToDateForJsonToYaml": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"true\\"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+		"NotUpToDateForEmptyCr": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+		"NotUpToDateForEmptyObj": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("{}"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+		"NotUpToDateHandleInvalidJson": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("{InvalidJson {}!}"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    true,
+			},
+		},
+		"NotUpToDateHandleCrGarbage": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("abcd1234"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    true,
+			},
+		},
+		"NotUpToDateForDifferentJson": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"true\"}}}"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("{\"controller\": {\"podAnnotations\": {\"fluentbit.io/exclude\": \"false\"}}}")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+		"NotUpToDateForDifferentYaml": {
+			args: args{
+				cr: &v1alpha1.Addon{
+					Spec: v1alpha1.AddonSpec{
+						ForProvider: v1alpha1.AddonParameters{
+							ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"true\\"),
+						},
+					},
+				},
+				obj: &awseks.DescribeAddonOutput{Addon: &awseks.Addon{ConfigurationValues: aws.String("controller:\\r\\n  podAnnotations:\\r\\n    fluentbit.io/exclude: \\\"false\\")}},
+			},
+			want: want{
+				isUpToDate: false,
+				isError:    false,
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			actualUpToDate, _, err := isUpToDateConfigurationValues(tc.args.cr, tc.args.obj)
+
+			// Assert
+			if diff := cmp.Diff(tc.want.isUpToDate, actualUpToDate); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			// Assert
+			if diff := cmp.Diff(tc.want.isError, err != nil); diff != "" {
+				t.Errorf("isError: -want, +got:\n%s", diff)
 			}
 		})
 	}

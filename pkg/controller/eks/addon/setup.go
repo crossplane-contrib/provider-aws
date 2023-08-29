@@ -19,11 +19,14 @@ package addon
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	awseks "github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -144,8 +147,54 @@ func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awsek
 		return false, "", nil
 	}
 
+	// AddOn Configuration Values
+	configUpToDate, configUpToDateDiff, configUpToDateErr := isUpToDateConfigurationValues(cr, resp)
+	if configUpToDateErr != nil {
+		return false, "", configUpToDateErr
+	}
+	if !configUpToDate {
+		return false, configUpToDateDiff, nil
+	}
+
 	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
 	return len(add) == 0 && len(remove) == 0, "", nil
+}
+
+func isUpToDateConfigurationValues(cr *eksv1alpha1.Addon, obj *awseks.DescribeAddonOutput) (bool, string, error) {
+	// Handle nil pointer refs
+	crConfigurationValues := aws.StringValue(cr.Spec.ForProvider.ConfigurationValues)
+	objConfigurationValues := aws.StringValue(obj.Addon.ConfigurationValues)
+	if crConfigurationValues == "" && objConfigurationValues == "" {
+		return true, "", nil
+	}
+
+	if crConfigurationValues == "" && objConfigurationValues != "" {
+		return false, "", nil
+	}
+	if crConfigurationValues != "" && objConfigurationValues == "" {
+		return false, "", nil
+	}
+
+	// Normalize the data
+	objConfigurationValuesCmp, objErr := convertConfigurationValuesToObj(objConfigurationValues)
+	if objErr != nil {
+		return false, "", objErr
+	}
+	crConfigurationValuesCmp, crErr := convertConfigurationValuesToObj(crConfigurationValues)
+	if crErr != nil {
+		return false, "", crErr
+	}
+	// Compare objects and return a diff
+	diff := cmp.Diff(objConfigurationValuesCmp, crConfigurationValuesCmp)
+	return diff == "", diff, nil
+}
+
+// convertConfigurationValuesToObj will deserialize in order to normalize and compare
+func convertConfigurationValuesToObj(configurationValues string) (map[string]interface{}, error) {
+	var objConfigurationValues map[string]interface{}
+	// Yaml parser is able to handle Unmarshal for both YAML and JSON
+	err := yaml.Unmarshal([]byte(configurationValues), &objConfigurationValues)
+	return objConfigurationValues, err
 }
 
 func preUpdate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.UpdateAddonInput) error {
