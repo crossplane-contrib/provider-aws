@@ -34,6 +34,10 @@ import (
 func GenerateDescribeLaunchTemplateVersionsInput(cr *svcapitypes.LaunchTemplateVersion) *svcsdk.DescribeLaunchTemplateVersionsInput {
 	res := &svcsdk.DescribeLaunchTemplateVersionsInput{}
 
+	if cr.Spec.ForProvider.ResolveAlias != nil {
+		res.SetResolveAlias(*cr.Spec.ForProvider.ResolveAlias)
+	}
+
 	return res
 }
 
@@ -1281,6 +1285,9 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			f0.SetUserData(*cr.Spec.ForProvider.LaunchTemplateData.UserData)
 		}
 		res.SetLaunchTemplateData(f0)
+	}
+	if cr.Spec.ForProvider.ResolveAlias != nil {
+		res.SetResolveAlias(*cr.Spec.ForProvider.ResolveAlias)
 	}
 	if cr.Spec.ForProvider.SourceVersion != nil {
 		res.SetSourceVersion(*cr.Spec.ForProvider.SourceVersion)

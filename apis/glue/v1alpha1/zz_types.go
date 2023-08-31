@@ -142,6 +142,19 @@ type CatalogEntry struct {
 }
 
 // +kubebuilder:skipversion
+type CatalogHudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CatalogImportStatus struct {
 	ImportCompleted *bool `json:"importCompleted,omitempty"`
 
@@ -245,6 +258,8 @@ type CodeGenConfigurationNode struct {
 	ApplyMapping *ApplyMapping `json:"applyMapping,omitempty"`
 	// Specifies a connector to an Amazon Athena data source.
 	AthenaConnectorSource *AthenaConnectorSource `json:"athenaConnectorSource,omitempty"`
+	// Specifies a Hudi data source that is registered in the Glue Data Catalog.
+	CatalogHudiSource *CatalogHudiSource `json:"catalogHudiSource,omitempty"`
 	// Specifies an Apache Kafka data store in the Data Catalog.
 	CatalogKafkaSource *CatalogKafkaSource `json:"catalogKafkaSource,omitempty"`
 	// Specifies a Kinesis data source in the Glue Data Catalog.
@@ -327,6 +342,9 @@ type CodeGenConfigurationNode struct {
 	RelationalCatalogSource *RelationalCatalogSource `json:"relationalCatalogSource,omitempty"`
 	// Specifies a transform that renames a single data property key.
 	RenameField *RenameField `json:"renameField,omitempty"`
+	// Specifies a Hudi data source that is registered in the Glue Data Catalog.
+	// The Hudi data source must be stored in Amazon S3.
+	S3CatalogHudiSource *S3CatalogHudiSource `json:"s3CatalogHudiSource,omitempty"`
 	// Specifies an Amazon S3 data store in the Glue Data Catalog.
 	S3CatalogSource *S3CatalogSource `json:"s3CatalogSource,omitempty"`
 	// Specifies a data target that writes to Amazon S3 using the Glue Data Catalog.
@@ -338,6 +356,12 @@ type CodeGenConfigurationNode struct {
 	// Specifies a data target that writes to Amazon S3 in Apache Parquet columnar
 	// storage.
 	S3GlueParquetTarget *S3GlueParquetTarget `json:"s3GlueParquetTarget,omitempty"`
+	// Specifies a target that writes to a Hudi data source in the Glue Data Catalog.
+	S3HudiCatalogTarget *S3HudiCatalogTarget `json:"s3HudiCatalogTarget,omitempty"`
+	// Specifies a target that writes to a Hudi data source in Amazon S3.
+	S3HudiDirectTarget *S3HudiDirectTarget `json:"s3HudiDirectTarget,omitempty"`
+	// Specifies a Hudi data source stored in Amazon S3.
+	S3HudiSource *S3HudiSource `json:"s3HudiSource,omitempty"`
 	// Specifies a JSON data store stored in Amazon S3.
 	S3JSONSource *S3JSONSource `json:"s3JSONSource,omitempty"`
 	// Specifies an Apache Parquet data store stored in Amazon S3.
@@ -1886,6 +1910,19 @@ type ResourceURI struct {
 }
 
 // +kubebuilder:skipversion
+type S3CatalogHudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type S3CatalogSource struct {
 	// Specifies additional connection options for the Amazon S3 data store.
 	AdditionalOptions *S3SourceAdditionalOptions `json:"additionalOptions,omitempty"`
@@ -2004,6 +2041,55 @@ type S3GlueParquetTarget struct {
 	Path *string `json:"path,omitempty"`
 	// A policy that specifies update behavior for the crawler.
 	SchemaChangePolicy *DirectSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiCatalogTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *CatalogSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiDirectTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Compression *string `json:"compression,omitempty"`
+
+	Format *string `json:"format,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+
+	Path *string `json:"path,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *DirectSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+	// Specifies additional connection options for the Amazon S3 data store.
+	AdditionalOptions *S3DirectSourceAdditionalOptions `json:"additionalOptions,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Paths []*string `json:"paths,omitempty"`
 }
 
 // +kubebuilder:skipversion

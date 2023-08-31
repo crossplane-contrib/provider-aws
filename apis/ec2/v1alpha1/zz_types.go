@@ -1783,11 +1783,17 @@ type IKEVersionsRequestListValue struct {
 
 // +kubebuilder:skipversion
 type IPAM struct {
+	DefaultResourceDiscoveryID *string `json:"defaultResourceDiscoveryID,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
 	IPAMRegion *string `json:"ipamRegion,omitempty"`
 
+	OperatingRegions []*IPAMOperatingRegion `json:"operatingRegions,omitempty"`
+
 	OwnerID *string `json:"ownerID,omitempty"`
+
+	ResourceDiscoveryAssociationCount *int64 `json:"resourceDiscoveryAssociationCount,omitempty"`
 
 	ScopeCount *int64 `json:"scopeCount,omitempty"`
 
@@ -1818,6 +1824,39 @@ type IPAMCIDRAuthorizationContext struct {
 	Message *string `json:"message,omitempty"`
 
 	Signature *string `json:"signature,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMDiscoveredAccount struct {
+	AccountID *string `json:"accountID,omitempty"`
+
+	DiscoveryRegion *string `json:"discoveryRegion,omitempty"`
+
+	LastAttemptedDiscoveryTime *metav1.Time `json:"lastAttemptedDiscoveryTime,omitempty"`
+
+	LastSuccessfulDiscoveryTime *metav1.Time `json:"lastSuccessfulDiscoveryTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMDiscoveredResourceCIDR struct {
+	IPAMResourceDiscoveryID *string `json:"ipamResourceDiscoveryID,omitempty"`
+
+	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
+
+	ResourceID *string `json:"resourceID,omitempty"`
+
+	ResourceOwnerID *string `json:"resourceOwnerID,omitempty"`
+
+	ResourceRegion *string `json:"resourceRegion,omitempty"`
+
+	SampleTime *metav1.Time `json:"sampleTime,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMDiscoveryFailureReason struct {
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1862,6 +1901,8 @@ type IPAMPoolAllocation struct {
 // +kubebuilder:skipversion
 type IPAMPoolCIDR struct {
 	CIDR *string `json:"cidr,omitempty"`
+
+	NetmaskLength *int64 `json:"netmaskLength,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1882,6 +1923,42 @@ type IPAMResourceCIDR struct {
 	ResourceRegion *string `json:"resourceRegion,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMResourceDiscoveryAssociation struct {
+	IPAMRegion *string `json:"ipamRegion,omitempty"`
+
+	IPAMResourceDiscoveryAssociationARN *string `json:"ipamResourceDiscoveryAssociationARN,omitempty"`
+
+	IPAMResourceDiscoveryID *string `json:"ipamResourceDiscoveryID,omitempty"`
+
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMResourceDiscovery_SDK struct {
+	Description *string `json:"description,omitempty"`
+
+	IPAMResourceDiscoveryARN *string `json:"ipamResourceDiscoveryARN,omitempty"`
+
+	IPAMResourceDiscoveryID *string `json:"ipamResourceDiscoveryID,omitempty"`
+
+	IPAMResourceDiscoveryRegion *string `json:"ipamResourceDiscoveryRegion,omitempty"`
+
+	IsDefault *bool `json:"isDefault,omitempty"`
+
+	OperatingRegions []*IPAMOperatingRegion `json:"operatingRegions,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3155,6 +3232,8 @@ type LocalGateway struct {
 type LocalGatewayRoute struct {
 	DestinationCIDRBlock *string `json:"destinationCIDRBlock,omitempty"`
 
+	DestinationPrefixListID *string `json:"destinationPrefixListID,omitempty"`
+
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 
 	OwnerID *string `json:"ownerID,omitempty"`
@@ -3370,6 +3449,12 @@ type NATGateway struct {
 // +kubebuilder:skipversion
 type NATGatewayAddress struct {
 	AllocationID *string `json:"allocationID,omitempty"`
+
+	AssociationID *string `json:"associationID,omitempty"`
+
+	FailureMessage *string `json:"failureMessage,omitempty"`
+
+	IsPrimary *bool `json:"isPrimary,omitempty"`
 
 	NetworkInterfaceID *string `json:"networkInterfaceID,omitempty"`
 

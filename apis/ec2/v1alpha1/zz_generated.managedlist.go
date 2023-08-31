@@ -29,6 +29,15 @@ func (l *FlowLogList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this IPAMResourceDiscoveryList.
+func (l *IPAMResourceDiscoveryList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this LaunchTemplateList.
 func (l *LaunchTemplateList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))

@@ -334,6 +334,15 @@ const (
 	GlueRecordType_DOUBLE     GlueRecordType = "DOUBLE"
 )
 
+type HudiTargetCompressionType string
+
+const (
+	HudiTargetCompressionType_gzip         HudiTargetCompressionType = "gzip"
+	HudiTargetCompressionType_lzo          HudiTargetCompressionType = "lzo"
+	HudiTargetCompressionType_uncompressed HudiTargetCompressionType = "uncompressed"
+	HudiTargetCompressionType_snappy       HudiTargetCompressionType = "snappy"
+)
+
 type JDBCDataType string
 
 const (
@@ -683,6 +692,7 @@ const (
 	TargetFormat_avro    TargetFormat = "avro"
 	TargetFormat_orc     TargetFormat = "orc"
 	TargetFormat_parquet TargetFormat = "parquet"
+	TargetFormat_hudi    TargetFormat = "hudi"
 )
 
 type TaskRunSortColumnType string

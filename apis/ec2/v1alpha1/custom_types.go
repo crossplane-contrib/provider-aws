@@ -20,6 +20,14 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
+// CustomIPAMResourceDiscoveryParameters inclues the custom fields of IPAMResourceDiscovery
+type CustomIPAMResourceDiscoveryParameters struct {
+
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+}
+
 // CustomLaunchTemplateParameters includes the custom fields of LaunchTemplate.
 type CustomLaunchTemplateParameters struct {
 	// Metadata tagging key value pairs

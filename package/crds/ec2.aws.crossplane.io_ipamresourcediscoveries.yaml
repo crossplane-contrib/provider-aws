@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.1
-  name: volumes.ec2.aws.crossplane.io
+  name: ipamresourcediscoveries.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
   names:
@@ -12,10 +12,10 @@ spec:
     - crossplane
     - managed
     - aws
-    kind: Volume
-    listKind: VolumeList
-    plural: volumes
-    singular: volume
+    kind: IPAMResourceDiscovery
+    listKind: IPAMResourceDiscoveryList
+    plural: ipamresourcediscoveries
+    singular: ipamresourcediscovery
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,7 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Volume is the Schema for the Volumes API
+        description: IPAMResourceDiscovery is the Schema for the IPAMResourceDiscoveries
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -49,7 +50,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: VolumeSpec defines the desired state of Volume
+            description: IPAMResourceDiscoverySpec defines the desired state of IPAMResourceDiscovery
             properties:
               deletionPolicy:
                 default: Delete
@@ -65,158 +66,39 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: VolumeParameters defines the desired state of Volume
+                description: IPAMResourceDiscoveryParameters defines the desired state
+                  of IPAMResourceDiscovery
                 properties:
-                  availabilityZone:
-                    description: The Availability Zone in which to create the volume.
+                  clientToken:
+                    description: A client token for the IPAM resource discovery.
                     type: string
-                  encrypted:
-                    description: "Indicates whether the volume should be encrypted.
-                      The effect of setting the encryption state to true depends on
-                      the volume origin (new or from a snapshot), starting encryption
-                      state, ownership, and whether encryption by default is enabled.
-                      For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
-                      in the Amazon Elastic Compute Cloud User Guide. \n Encrypted
-                      Amazon EBS volumes must be attached to instances that support
-                      Amazon EBS encryption. For more information, see Supported instance
-                      types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances)."
+                  description:
+                    description: A description for the IPAM resource discovery.
+                    type: string
+                  dryRun:
+                    description: A check for whether you have the required permissions
+                      for the action without actually making the request and provides
+                      an error response. If you have the required permissions, the
+                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean
-                  iops:
-                    description: "The number of I/O operations per second (IOPS).
-                      For gp3, io1, and io2 volumes, this represents the number of
-                      IOPS that are provisioned for the volume. For gp2 volumes, this
-                      represents the baseline performance of the volume and the rate
-                      at which the volume accumulates I/O credits for bursting. \n
-                      The following are the supported values for each volume type:
-                      \n * gp3: 3,000-16,000 IOPS \n * io1: 100-64,000 IOPS \n * io2:
-                      100-64,000 IOPS \n io1 and io2 volumes support up to 64,000
-                      IOPS only on Instances built on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-                      Other instance families support performance up to 32,000 IOPS.
-                      \n This parameter is required for io1 and io2 volumes. The default
-                      for gp3 volumes is 3,000 IOPS. This parameter is not supported
-                      for gp2, st1, sc1, or standard volumes."
-                    format: int64
-                    type: integer
-                  kmsKeyId:
-                    description: "The identifier of the AWS Key Management Service
-                      (AWS KMS) customer master key (CMK) to use for Amazon EBS encryption.
-                      If this parameter is not specified, your AWS managed CMK for
-                      EBS is used. If KmsKeyId is specified, the encrypted state must
-                      be true. \n You can specify the CMK using any of the following:
-                      \n * Key ID. For example, 1234abcd-12ab-34cd-56ef-1234567890ab.
-                      \n * Key alias. For example, alias/ExampleAlias. \n * Key ARN.
-                      For example, arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab.
-                      \n * Alias ARN. For example, arn:aws:kms:us-east-1:012345678910:alias/ExampleAlias.
-                      \n AWS authenticates the CMK asynchronously. Therefore, if you
-                      specify an ID, alias, or ARN that is not valid, the action can
-                      appear to complete, but eventually fails."
-                    type: string
-                  kmsKeyIdRef:
-                    description: KMSKeyIDRef is a reference to a KMS Key used to set
-                      KMSKeyID.
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                      policy:
-                        description: Policies for referencing.
-                        properties:
-                          resolution:
-                            default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
-                            enum:
-                            - Required
-                            - Optional
-                            type: string
-                          resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
-                            enum:
-                            - Always
-                            - IfNotPresent
-                            type: string
-                        type: object
-                    required:
-                    - name
-                    type: object
-                  kmsKeyIdSelector:
-                    description: KMSKeyIDSelector selects a reference to a KMS Key
-                      used to set KMSKeyID.
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
+                  operatingRegions:
+                    description: Operating Regions for the IPAM resource discovery.
+                      Operating Regions are Amazon Web Services Regions where the
+                      IPAM is allowed to manage IP address CIDRs. IPAM only discovers
+                      and monitors resources in the Amazon Web Services Regions you
+                      select as operating Regions.
+                    items:
+                      properties:
+                        regionName:
                           type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
-                        type: object
-                      policy:
-                        description: Policies for selection.
-                        properties:
-                          resolution:
-                            default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
-                            enum:
-                            - Required
-                            - Optional
-                            type: string
-                          resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
-                            enum:
-                            - Always
-                            - IfNotPresent
-                            type: string
-                        type: object
-                    type: object
-                  multiAttachEnabled:
-                    description: Indicates whether to enable Amazon EBS Multi-Attach.
-                      If you enable Multi-Attach, you can attach the volume to up
-                      to 16 Instances built on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
-                      in the same Availability Zone. This parameter is supported with
-                      io1 and io2 volumes only. For more information, see Amazon EBS
-                      Multi-Attach (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html)
-                      in the Amazon Elastic Compute Cloud User Guide.
-                    type: boolean
-                  outpostARN:
-                    description: The Amazon Resource Name (ARN) of the Outpost.
-                    type: string
+                      type: object
+                    type: array
                   region:
-                    description: Region is which region the Volume will be created.
-                    type: string
-                  size:
-                    description: "The size of the volume, in GiBs. You must specify
-                      either a snapshot ID or a volume size. If you specify a snapshot,
-                      the default is the snapshot size. You can specify a volume size
-                      that is equal to or larger than the snapshot size. \n The following
-                      are the supported volumes sizes for each volume type: \n * gp2
-                      and gp3: 1-16,384 \n * io1 and io2: 4-16,384 \n * st1 and sc1:
-                      125-16,384 \n * standard: 1-1,024"
-                    format: int64
-                    type: integer
-                  snapshotID:
-                    description: The snapshot from which to create the volume. You
-                      must specify either a snapshot ID or a volume size.
+                    description: Region is which region the IPAMResourceDiscovery
+                      will be created.
                     type: string
                   tagSpecifications:
-                    description: The tags to apply to the volume during creation.
+                    description: Tag specifications for the IPAM resource discovery.
                     items:
                       properties:
                         resourceType:
@@ -233,29 +115,16 @@ spec:
                       type: object
                     type: array
                   tags:
-                    additionalProperties:
-                      type: string
                     description: Metadata tagging key value pairs
-                    type: object
-                  throughput:
-                    description: "The throughput to provision for a volume, with a
-                      maximum of 1,000 MiB/s. \n This parameter is valid only for
-                      gp3 volumes. \n Valid Range: Minimum value of 125. Maximum value
-                      of 1000."
-                    format: int64
-                    type: integer
-                  volumeType:
-                    description: "The volume type. This parameter can be one of the
-                      following values: \n * General Purpose SSD: gp2 | gp3 \n * Provisioned
-                      IOPS SSD: io1 | io2 \n * Throughput Optimized HDD: st1 \n *
-                      Cold HDD: sc1 \n * Magnetic: standard \n Throughput Optimized
-                      HDD (st1) and Cold HDD (sc1) volumes can't be used as boot volumes.
-                      \n For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-                      in the Amazon Elastic Compute Cloud User Guide. \n Default:
-                      gp2"
-                    type: string
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
                 required:
-                - availabilityZone
                 - region
                 type: object
               managementPolicies:
@@ -456,48 +325,53 @@ spec:
             - forProvider
             type: object
           status:
-            description: VolumeStatus defines the observed state of Volume.
+            description: IPAMResourceDiscoveryStatus defines the observed state of
+              IPAMResourceDiscovery.
             properties:
               atProvider:
-                description: VolumeObservation defines the observed state of Volume
+                description: IPAMResourceDiscoveryObservation defines the observed
+                  state of IPAMResourceDiscovery
                 properties:
-                  attachments:
-                    description: Information about the volume attachments.
-                    items:
-                      properties:
-                        attachTime:
-                          format: date-time
-                          type: string
-                        deleteOnTermination:
-                          type: boolean
-                        device:
-                          type: string
-                        instanceID:
-                          type: string
-                        state:
-                          type: string
-                        volumeID:
-                          type: string
-                      type: object
-                    type: array
-                  createTime:
-                    description: The time stamp when volume creation was initiated.
-                    format: date-time
+                  ipamResourceDiscoveryARN:
+                    description: The resource discovery Amazon Resource Name (ARN).
                     type: string
-                  fastRestored:
-                    description: Indicates whether the volume was created using fast
-                      snapshot restore.
+                  ipamResourceDiscoveryID:
+                    description: The resource discovery ID.
+                    type: string
+                  ipamResourceDiscoveryRegion:
+                    description: The resource discovery Region.
+                    type: string
+                  isDefault:
+                    description: Defines if the resource discovery is the default.
+                      The default resource discovery is the resource discovery automatically
+                      created when you create an IPAM.
                     type: boolean
-                  kmsKeyID:
-                    description: The Amazon Resource Name (ARN) of the Key Management
-                      Service (KMS) KMS key that was used to protect the volume encryption
-                      key for the volume.
+                  ownerID:
+                    description: The ID of the owner.
                     type: string
                   state:
-                    description: The volume state.
+                    description: "The lifecycle state of the resource discovery. \n
+                      * create-in-progress - Resource discovery is being created.
+                      \n * create-complete - Resource discovery creation is complete.
+                      \n * create-failed - Resource discovery creation has failed.
+                      \n * modify-in-progress - Resource discovery is being modified.
+                      \n * modify-complete - Resource discovery modification is complete.
+                      \n * modify-failed - Resource discovery modification has failed.
+                      \n * delete-in-progress - Resource discovery is being deleted.
+                      \n * delete-complete - Resource discovery deletion is complete.
+                      \n * delete-failed - Resource discovery deletion has failed.
+                      \n * isolate-in-progress - Amazon Web Services account that
+                      created the resource discovery has been removed and the resource
+                      discovery is being isolated. \n * isolate-complete - Resource
+                      discovery isolation is complete. \n * restore-in-progress -
+                      Amazon Web Services account that created the resource discovery
+                      and was isolated has been restored."
                     type: string
                   tags:
-                    description: Any tags assigned to the volume.
+                    description: A tag is a label that you assign to an Amazon Web
+                      Services resource. Each tag consists of a key and an optional
+                      value. You can use tags to search and filter your resources
+                      or track your Amazon Web Services costs.
                     items:
                       properties:
                         key:
@@ -506,9 +380,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                  volumeID:
-                    description: The ID of the volume.
-                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

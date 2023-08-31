@@ -929,6 +929,13 @@ const (
 	IPAMAddressHistoryResourceType_instance          IPAMAddressHistoryResourceType = "instance"
 )
 
+type IPAMAssociatedResourceDiscoveryStatus string
+
+const (
+	IPAMAssociatedResourceDiscoveryStatus_active    IPAMAssociatedResourceDiscoveryStatus = "active"
+	IPAMAssociatedResourceDiscoveryStatus_not_found IPAMAssociatedResourceDiscoveryStatus = "not-found"
+)
+
 type IPAMComplianceStatus string
 
 const (
@@ -936,6 +943,14 @@ const (
 	IPAMComplianceStatus_noncompliant IPAMComplianceStatus = "noncompliant"
 	IPAMComplianceStatus_unmanaged    IPAMComplianceStatus = "unmanaged"
 	IPAMComplianceStatus_ignored      IPAMComplianceStatus = "ignored"
+)
+
+type IPAMDiscoveryFailureCode string
+
+const (
+	IPAMDiscoveryFailureCode_assume_role_failure  IPAMDiscoveryFailureCode = "assume-role-failure"
+	IPAMDiscoveryFailureCode_throttling_failure   IPAMDiscoveryFailureCode = "throttling-failure"
+	IPAMDiscoveryFailureCode_unauthorized_failure IPAMDiscoveryFailureCode = "unauthorized-failure"
 )
 
 type IPAMManagementState string
@@ -973,6 +988,7 @@ type IPAMPoolCIDRFailureCode string
 
 const (
 	IPAMPoolCIDRFailureCode_cidr_not_available IPAMPoolCIDRFailureCode = "cidr-not-available"
+	IPAMPoolCIDRFailureCode_limit_exceeded     IPAMPoolCIDRFailureCode = "limit-exceeded"
 )
 
 type IPAMPoolCIDRState string
@@ -986,6 +1002,13 @@ const (
 	IPAMPoolCIDRState_failed_deprovision  IPAMPoolCIDRState = "failed-deprovision"
 	IPAMPoolCIDRState_pending_import      IPAMPoolCIDRState = "pending-import"
 	IPAMPoolCIDRState_failed_import       IPAMPoolCIDRState = "failed-import"
+)
+
+type IPAMPoolPublicIPSource string
+
+const (
+	IPAMPoolPublicIPSource_amazon IPAMPoolPublicIPSource = "amazon"
+	IPAMPoolPublicIPSource_byoip  IPAMPoolPublicIPSource = "byoip"
 )
 
 type IPAMPoolState string
@@ -1003,6 +1026,37 @@ const (
 	IPAMPoolState_isolate_in_progress IPAMPoolState = "isolate-in-progress"
 	IPAMPoolState_isolate_complete    IPAMPoolState = "isolate-complete"
 	IPAMPoolState_restore_in_progress IPAMPoolState = "restore-in-progress"
+)
+
+type IPAMResourceDiscoveryAssociationState string
+
+const (
+	IPAMResourceDiscoveryAssociationState_associate_in_progress    IPAMResourceDiscoveryAssociationState = "associate-in-progress"
+	IPAMResourceDiscoveryAssociationState_associate_complete       IPAMResourceDiscoveryAssociationState = "associate-complete"
+	IPAMResourceDiscoveryAssociationState_associate_failed         IPAMResourceDiscoveryAssociationState = "associate-failed"
+	IPAMResourceDiscoveryAssociationState_disassociate_in_progress IPAMResourceDiscoveryAssociationState = "disassociate-in-progress"
+	IPAMResourceDiscoveryAssociationState_disassociate_complete    IPAMResourceDiscoveryAssociationState = "disassociate-complete"
+	IPAMResourceDiscoveryAssociationState_disassociate_failed      IPAMResourceDiscoveryAssociationState = "disassociate-failed"
+	IPAMResourceDiscoveryAssociationState_isolate_in_progress      IPAMResourceDiscoveryAssociationState = "isolate-in-progress"
+	IPAMResourceDiscoveryAssociationState_isolate_complete         IPAMResourceDiscoveryAssociationState = "isolate-complete"
+	IPAMResourceDiscoveryAssociationState_restore_in_progress      IPAMResourceDiscoveryAssociationState = "restore-in-progress"
+)
+
+type IPAMResourceDiscoveryState string
+
+const (
+	IPAMResourceDiscoveryState_create_in_progress  IPAMResourceDiscoveryState = "create-in-progress"
+	IPAMResourceDiscoveryState_create_complete     IPAMResourceDiscoveryState = "create-complete"
+	IPAMResourceDiscoveryState_create_failed       IPAMResourceDiscoveryState = "create-failed"
+	IPAMResourceDiscoveryState_modify_in_progress  IPAMResourceDiscoveryState = "modify-in-progress"
+	IPAMResourceDiscoveryState_modify_complete     IPAMResourceDiscoveryState = "modify-complete"
+	IPAMResourceDiscoveryState_modify_failed       IPAMResourceDiscoveryState = "modify-failed"
+	IPAMResourceDiscoveryState_delete_in_progress  IPAMResourceDiscoveryState = "delete-in-progress"
+	IPAMResourceDiscoveryState_delete_complete     IPAMResourceDiscoveryState = "delete-complete"
+	IPAMResourceDiscoveryState_delete_failed       IPAMResourceDiscoveryState = "delete-failed"
+	IPAMResourceDiscoveryState_isolate_in_progress IPAMResourceDiscoveryState = "isolate-in-progress"
+	IPAMResourceDiscoveryState_isolate_complete    IPAMResourceDiscoveryState = "isolate-complete"
+	IPAMResourceDiscoveryState_restore_in_progress IPAMResourceDiscoveryState = "restore-in-progress"
 )
 
 type IPAMResourceType string
@@ -1824,6 +1878,51 @@ const (
 	InstanceType_trn1_2xlarge      InstanceType = "trn1.2xlarge"
 	InstanceType_trn1_32xlarge     InstanceType = "trn1.32xlarge"
 	InstanceType_hpc6id_32xlarge   InstanceType = "hpc6id.32xlarge"
+	InstanceType_c6in_large        InstanceType = "c6in.large"
+	InstanceType_c6in_xlarge       InstanceType = "c6in.xlarge"
+	InstanceType_c6in_2xlarge      InstanceType = "c6in.2xlarge"
+	InstanceType_c6in_4xlarge      InstanceType = "c6in.4xlarge"
+	InstanceType_c6in_8xlarge      InstanceType = "c6in.8xlarge"
+	InstanceType_c6in_12xlarge     InstanceType = "c6in.12xlarge"
+	InstanceType_c6in_16xlarge     InstanceType = "c6in.16xlarge"
+	InstanceType_c6in_24xlarge     InstanceType = "c6in.24xlarge"
+	InstanceType_c6in_32xlarge     InstanceType = "c6in.32xlarge"
+	InstanceType_m6in_large        InstanceType = "m6in.large"
+	InstanceType_m6in_xlarge       InstanceType = "m6in.xlarge"
+	InstanceType_m6in_2xlarge      InstanceType = "m6in.2xlarge"
+	InstanceType_m6in_4xlarge      InstanceType = "m6in.4xlarge"
+	InstanceType_m6in_8xlarge      InstanceType = "m6in.8xlarge"
+	InstanceType_m6in_12xlarge     InstanceType = "m6in.12xlarge"
+	InstanceType_m6in_16xlarge     InstanceType = "m6in.16xlarge"
+	InstanceType_m6in_24xlarge     InstanceType = "m6in.24xlarge"
+	InstanceType_m6in_32xlarge     InstanceType = "m6in.32xlarge"
+	InstanceType_m6idn_large       InstanceType = "m6idn.large"
+	InstanceType_m6idn_xlarge      InstanceType = "m6idn.xlarge"
+	InstanceType_m6idn_2xlarge     InstanceType = "m6idn.2xlarge"
+	InstanceType_m6idn_4xlarge     InstanceType = "m6idn.4xlarge"
+	InstanceType_m6idn_8xlarge     InstanceType = "m6idn.8xlarge"
+	InstanceType_m6idn_12xlarge    InstanceType = "m6idn.12xlarge"
+	InstanceType_m6idn_16xlarge    InstanceType = "m6idn.16xlarge"
+	InstanceType_m6idn_24xlarge    InstanceType = "m6idn.24xlarge"
+	InstanceType_m6idn_32xlarge    InstanceType = "m6idn.32xlarge"
+	InstanceType_r6in_large        InstanceType = "r6in.large"
+	InstanceType_r6in_xlarge       InstanceType = "r6in.xlarge"
+	InstanceType_r6in_2xlarge      InstanceType = "r6in.2xlarge"
+	InstanceType_r6in_4xlarge      InstanceType = "r6in.4xlarge"
+	InstanceType_r6in_8xlarge      InstanceType = "r6in.8xlarge"
+	InstanceType_r6in_12xlarge     InstanceType = "r6in.12xlarge"
+	InstanceType_r6in_16xlarge     InstanceType = "r6in.16xlarge"
+	InstanceType_r6in_24xlarge     InstanceType = "r6in.24xlarge"
+	InstanceType_r6in_32xlarge     InstanceType = "r6in.32xlarge"
+	InstanceType_r6idn_large       InstanceType = "r6idn.large"
+	InstanceType_r6idn_xlarge      InstanceType = "r6idn.xlarge"
+	InstanceType_r6idn_2xlarge     InstanceType = "r6idn.2xlarge"
+	InstanceType_r6idn_4xlarge     InstanceType = "r6idn.4xlarge"
+	InstanceType_r6idn_8xlarge     InstanceType = "r6idn.8xlarge"
+	InstanceType_r6idn_12xlarge    InstanceType = "r6idn.12xlarge"
+	InstanceType_r6idn_16xlarge    InstanceType = "r6idn.16xlarge"
+	InstanceType_r6idn_24xlarge    InstanceType = "r6idn.24xlarge"
+	InstanceType_r6idn_32xlarge    InstanceType = "r6idn.32xlarge"
 )
 
 type InstanceTypeHypervisor string
@@ -2034,6 +2133,17 @@ type MulticastSupportValue string
 const (
 	MulticastSupportValue_enable  MulticastSupportValue = "enable"
 	MulticastSupportValue_disable MulticastSupportValue = "disable"
+)
+
+type NATGatewayAddressStatus string
+
+const (
+	NATGatewayAddressStatus_assigning      NATGatewayAddressStatus = "assigning"
+	NATGatewayAddressStatus_unassigning    NATGatewayAddressStatus = "unassigning"
+	NATGatewayAddressStatus_associating    NATGatewayAddressStatus = "associating"
+	NATGatewayAddressStatus_disassociating NATGatewayAddressStatus = "disassociating"
+	NATGatewayAddressStatus_succeeded      NATGatewayAddressStatus = "succeeded"
+	NATGatewayAddressStatus_failed         NATGatewayAddressStatus = "failed"
 )
 
 type NATGatewayState string
@@ -2427,6 +2537,8 @@ const (
 	ResourceType_verified_access_trust_provider                                ResourceType = "verified-access-trust-provider"
 	ResourceType_vpn_connection_device_type                                    ResourceType = "vpn-connection-device-type"
 	ResourceType_vpc_block_public_access_exclusion                             ResourceType = "vpc-block-public-access-exclusion"
+	ResourceType_ipam_resource_discovery                                       ResourceType = "ipam-resource-discovery"
+	ResourceType_ipam_resource_discovery_association                           ResourceType = "ipam-resource-discovery-association"
 )
 
 type RootDeviceType string

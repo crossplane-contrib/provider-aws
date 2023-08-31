@@ -244,3 +244,11 @@ const (
 	TracingMode_Active      TracingMode = "Active"
 	TracingMode_PassThrough TracingMode = "PassThrough"
 )
+
+type UpdateRuntimeOn string
+
+const (
+	UpdateRuntimeOn_Auto           UpdateRuntimeOn = "Auto"
+	UpdateRuntimeOn_Manual         UpdateRuntimeOn = "Manual"
+	UpdateRuntimeOn_FunctionUpdate UpdateRuntimeOn = "FunctionUpdate"
+)

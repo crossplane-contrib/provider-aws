@@ -1823,6 +1823,21 @@ spec:
                   role:
                     description: The function's execution role.
                     type: string
+                  runtimeVersionConfig:
+                    description: The ARN of the runtime and any errors that occured.
+                    properties:
+                      error:
+                        description: Any error returned when the runtime version information
+                          for the function could not be retrieved.
+                        properties:
+                          errorCode:
+                            type: string
+                          message:
+                            type: string
+                        type: object
+                      runtimeVersionARN:
+                        type: string
+                    type: object
                   signingJobARN:
                     description: The ARN of the signing job.
                     type: string

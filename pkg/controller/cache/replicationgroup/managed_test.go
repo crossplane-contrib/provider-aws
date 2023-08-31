@@ -19,6 +19,7 @@ package replicationgroup
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -76,12 +77,22 @@ type testCase struct {
 
 type replicationGroupModifier func(*v1beta1.ReplicationGroup)
 
+func withAutomaticFailover(v types.AutomaticFailoverStatus) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) {
+		r.Status.AtProvider.AutomaticFailover = string(v)
+	}
+}
+
 func withConditions(c ...xpv1.Condition) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withProviderStatus(s string) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.Status = s }
+}
+
+func withProviderStatusNodeGroups(n []v1beta1.NodeGroup) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.NodeGroups = n }
 }
 
 func withReplicationGroupID(n string) replicationGroupModifier {
@@ -120,6 +131,10 @@ func withTags(tagMaps ...map[string]string) replicationGroupModifier {
 
 func withNumNodeGroups(n int) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.NumNodeGroups = &n }
+}
+
+func withAtRestEncryptionEnabled(b bool) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.AtRestEncryptionEnabled = &b }
 }
 
 func withNumCacheClusters(n int) replicationGroupModifier {
@@ -205,6 +220,30 @@ func TestCreate(t *testing.T) {
 }
 
 func TestObserve(t *testing.T) {
+	var makeStringPtr = func(id string) *string {
+		var p = new(string)
+		*p = id
+		return p
+	}
+	var makeBoolPtr = func(v bool) *bool {
+		var p = new(bool)
+		*p = v
+		return p
+	}
+	var makeTimePtr = func(t time.Time) *time.Time {
+		var p = new(time.Time)
+		*p = t
+		return p
+	}
+	var makeArn = func(id string) *string {
+		return makeStringPtr("arn:aws:elasticache:eu-central-1:1001001ESOES:replicationgroup:" + id)
+	}
+	var makeDescription = func(id string) *string {
+		return makeStringPtr("Redis Group:" + id)
+	}
+
+	var successfulObserveAfterCreationFailed = "SuccessfulObserveAfterCreationFailed"
+
 	cases := []testCase{
 		{
 			name: "SuccessfulObserveWhileGroupCreating",
@@ -293,6 +332,62 @@ func TestObserve(t *testing.T) {
 				withClusterEnabled(true),
 			),
 			tokenCreated: true,
+		},
+		{
+			name: successfulObserveAfterCreationFailed, // Replicates issue #1838
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							ARN:                       makeArn(successfulObserveAfterCreationFailed),
+							AtRestEncryptionEnabled:   makeBoolPtr(true),
+							AuthTokenEnabled:          makeBoolPtr(true),
+							AutomaticFailover:         types.AutomaticFailoverStatusEnabled,
+							AuthTokenLastModifiedDate: makeTimePtr(time.Date(2023, 6, 15, 12, 21, 05, 0, time.UTC)),
+							DataTiering:               types.DataTieringStatusDisabled,
+							Description:               makeDescription(successfulObserveAfterCreationFailed),
+							MultiAZ:                   types.MultiAZStatusDisabled,
+							NodeGroups: []types.NodeGroup{
+								{NodeGroupId: aws.String("0001"), Status: makeStringPtr(v1beta1.StatusCreateFailed)},
+								{NodeGroupId: aws.String("0002"), Status: makeStringPtr(v1beta1.StatusCreateFailed)},
+							},
+							ReplicationGroupCreateTime: makeTimePtr(time.Date(2023, 6, 15, 12, 21, 05, 0, time.UTC)),
+							Status:                     aws.String(v1beta1.StatusCreateFailed),
+							TransitEncryptionEnabled:   makeBoolPtr(true),
+						}},
+					}, nil
+				},
+				MockListTagsForResource: func(ctx context.Context, _ *elasticache.ListTagsForResourceInput, opts []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+					return &elasticache.ListTagsForResourceOutput{
+						TagList: []types.Tag{
+							{Key: aws.String("key1"), Value: aws.String("val1")},
+							{Key: aws.String("key2"), Value: aws.String("val2")},
+						},
+					}, nil
+				},
+			}},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withConditions(xpv1.Creating()),
+				withClusterEnabled(true),
+				withNumNodeGroups(2),
+				withAtRestEncryptionEnabled(true),
+				withAuthEnabled(true),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusCreateFailed),
+				withConditions(xpv1.Unavailable()),
+				withNumNodeGroups(2),
+				withAutomaticFailover(types.AutomaticFailoverStatusEnabled),
+				withProviderStatusNodeGroups([]v1beta1.NodeGroup{
+					{NodeGroupID: "0001", Status: v1beta1.StatusCreateFailed},
+					{NodeGroupID: "0002", Status: v1beta1.StatusCreateFailed},
+				}),
+				withAtRestEncryptionEnabled(true),
+				withAuthEnabled(true),
+			),
+			tokenCreated: false,
 		},
 		{
 			name: "SuccessfulObserveLateInitialized",

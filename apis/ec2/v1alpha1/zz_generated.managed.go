@@ -96,6 +96,82 @@ func (mg *FlowLog) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) 
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetManagementPolicies of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// GetProviderConfigReference of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this IPAMResourceDiscovery.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *IPAMResourceDiscovery) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetPublishConnectionDetailsTo of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
+	return mg.Spec.PublishConnectionDetailsTo
+}
+
+// GetWriteConnectionSecretToReference of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
+}
+
+// SetProviderConfigReference of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this IPAMResourceDiscovery.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *IPAMResourceDiscovery) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetPublishConnectionDetailsTo of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+	mg.Spec.PublishConnectionDetailsTo = r
+}
+
+// SetWriteConnectionSecretToReference of this IPAMResourceDiscovery.
+func (mg *IPAMResourceDiscovery) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this LaunchTemplate.
 func (mg *LaunchTemplate) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)

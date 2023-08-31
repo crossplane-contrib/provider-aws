@@ -346,6 +346,17 @@ type DomainStatus_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type DryRunProgressStatus struct {
+	CreationDate *string `json:"creationDate,omitempty"`
+
+	DryRunID *string `json:"dryRunID,omitempty"`
+
+	DryRunStatus *string `json:"dryRunStatus,omitempty"`
+
+	UpdateDate *string `json:"updateDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DryRunResults struct {
 	Message *string `json:"message,omitempty"`
 }
@@ -602,6 +613,13 @@ type VPCOptions struct {
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ValidationFailure struct {
+	Code *string `json:"code,omitempty"`
+
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion

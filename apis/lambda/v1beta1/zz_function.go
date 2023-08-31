@@ -129,6 +129,8 @@ type FunctionObservation struct {
 	RevisionID *string `json:"revisionID,omitempty"`
 	// The function's execution role.
 	Role *string `json:"role,omitempty"`
+	// The ARN of the runtime and any errors that occured.
+	RuntimeVersionConfig *RuntimeVersionConfig `json:"runtimeVersionConfig,omitempty"`
 	// The ARN of the signing job.
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 	// The ARN of the signing profile version.

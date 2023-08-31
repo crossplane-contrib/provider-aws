@@ -169,6 +169,35 @@ spec:
                             schemaName:
                               type: string
                           type: object
+                        catalogHudiSource:
+                          description: Specifies a Hudi data source that is registered
+                            in the Glue Data Catalog.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
+                          type: object
                         catalogKafkaSource:
                           description: Specifies an Apache Kafka data store in the
                             Data Catalog.
@@ -1107,6 +1136,36 @@ spec:
                                 type: string
                               type: array
                           type: object
+                        s3CatalogHudiSource:
+                          description: Specifies a Hudi data source that is registered
+                            in the Glue Data Catalog. The Hudi data source must be
+                            stored in Amazon S3.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
+                          type: object
                         s3CatalogSource:
                           description: Specifies an Amazon S3 data store in the Glue
                             Data Catalog.
@@ -1304,6 +1363,124 @@ spec:
                                 updateBehavior:
                                   type: string
                               type: object
+                          type: object
+                        s3HudiCatalogTarget:
+                          description: Specifies a target that writes to a Hudi data
+                            source in the Glue Data Catalog.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                enableUpdateCatalog:
+                                  type: boolean
+                                updateBehavior:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                          type: object
+                        s3HudiDirectTarget:
+                          description: Specifies a target that writes to a Hudi data
+                            source in Amazon S3.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            compression:
+                              type: string
+                            format:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            path:
+                              type: string
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                database:
+                                  type: string
+                                enableUpdateCatalog:
+                                  type: boolean
+                                table:
+                                  type: string
+                                updateBehavior:
+                                  type: string
+                              type: object
+                          type: object
+                        s3HudiSource:
+                          description: Specifies a Hudi data source stored in Amazon
+                            S3.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
                           type: object
                         s3JSONSource:
                           description: Specifies a JSON data store stored in Amazon

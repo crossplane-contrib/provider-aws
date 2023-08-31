@@ -32,6 +32,13 @@ type LaunchTemplateVersionParameters struct {
 	// The information for the launch template.
 	// +kubebuilder:validation:Required
 	LaunchTemplateData *RequestLaunchTemplateData `json:"launchTemplateData"`
+	// If true, and if a Systems Manager parameter is specified for ImageId, the
+	// AMI ID is displayed in the response for imageID. For more information, see
+	// Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Default: false
+	ResolveAlias *bool `json:"resolveAlias,omitempty"`
 	// The version number of the launch template version on which to base the new
 	// version. The new version inherits the same launch parameters as the source
 	// version, except for parameters that you specify in LaunchTemplateData. Snapshots

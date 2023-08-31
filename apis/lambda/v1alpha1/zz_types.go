@@ -171,6 +171,8 @@ type FunctionConfiguration struct {
 	Role *string `json:"role,omitempty"`
 
 	Runtime *string `json:"runtime,omitempty"`
+	// The ARN of the runtime and any errors that occured.
+	RuntimeVersionConfig *RuntimeVersionConfig `json:"runtimeVersionConfig,omitempty"`
 
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 
@@ -287,6 +289,22 @@ type ProvisionedConcurrencyConfigListItem struct {
 // +kubebuilder:skipversion
 type PutFunctionConcurrencyOutput struct {
 	ReservedConcurrentExecutions *int64 `json:"reservedConcurrentExecutions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RuntimeVersionConfig struct {
+	// Any error returned when the runtime version information for the function
+	// could not be retrieved.
+	Error *RuntimeVersionError `json:"error,omitempty"`
+
+	RuntimeVersionARN *string `json:"runtimeVersionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RuntimeVersionError struct {
+	ErrorCode *string `json:"errorCode,omitempty"`
+
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion

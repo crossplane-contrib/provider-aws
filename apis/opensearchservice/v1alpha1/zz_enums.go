@@ -45,6 +45,13 @@ const (
 	AutoTuneType_SCHEDULED_ACTION AutoTuneType = "SCHEDULED_ACTION"
 )
 
+type ConnectionMode string
+
+const (
+	ConnectionMode_DIRECT       ConnectionMode = "DIRECT"
+	ConnectionMode_VPC_ENDPOINT ConnectionMode = "VPC_ENDPOINT"
+)
+
 type DeploymentStatus string
 
 const (
@@ -71,6 +78,13 @@ const (
 	DomainPackageStatus_ACTIVE              DomainPackageStatus = "ACTIVE"
 	DomainPackageStatus_DISSOCIATING        DomainPackageStatus = "DISSOCIATING"
 	DomainPackageStatus_DISSOCIATION_FAILED DomainPackageStatus = "DISSOCIATION_FAILED"
+)
+
+type DryRunMode string
+
+const (
+	DryRunMode_Basic   DryRunMode = "Basic"
+	DryRunMode_Verbose DryRunMode = "Verbose"
 )
 
 type EngineType string
