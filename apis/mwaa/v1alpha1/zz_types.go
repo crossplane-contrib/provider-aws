@@ -28,6 +28,13 @@ var (
 )
 
 // +kubebuilder:skipversion
+type Dimension struct {
+	Name *string `json:"name,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Environment_SDK struct {
 	AirflowConfigurationOptions map[string]*string `json:"airflowConfigurationOptions,omitempty"`
 
@@ -69,6 +76,10 @@ type Environment_SDK struct {
 	ServiceRoleARN *string `json:"serviceRoleARN,omitempty"`
 
 	SourceBucketARN *string `json:"sourceBucketARN,omitempty"`
+
+	StartupScriptS3ObjectVersion *string `json:"startupScriptS3ObjectVersion,omitempty"`
+
+	StartupScriptS3Path *string `json:"startupScriptS3Path,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
@@ -122,6 +133,11 @@ type LoggingConfigurationInput struct {
 	// Enables the Apache Airflow log type (e.g. DagProcessingLogs) and defines
 	// the log level to send to CloudWatch Logs (e.g. INFO).
 	WorkerLogs *ModuleLoggingConfigurationInput `json:"workerLogs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MetricDatum struct {
+	MetricName *string `json:"metricName,omitempty"`
 }
 
 // +kubebuilder:skipversion

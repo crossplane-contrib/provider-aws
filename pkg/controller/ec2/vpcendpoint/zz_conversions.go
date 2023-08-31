@@ -75,6 +75,9 @@ func GenerateVPCEndpoint(resp *svcsdk.DescribeVpcEndpointsOutput) *svcapitypes.V
 			if elem.DnsOptions.DnsRecordIpType != nil {
 				f2.DNSRecordIPType = elem.DnsOptions.DnsRecordIpType
 			}
+			if elem.DnsOptions.PrivateDnsOnlyForInboundResolverEndpoint != nil {
+				f2.PrivateDNSOnlyForInboundResolverEndpoint = elem.DnsOptions.PrivateDnsOnlyForInboundResolverEndpoint
+			}
 			cr.Spec.ForProvider.DNSOptions = f2
 		} else {
 			cr.Spec.ForProvider.DNSOptions = nil
@@ -225,6 +228,9 @@ func GenerateCreateVpcEndpointInput(cr *svcapitypes.VPCEndpoint) *svcsdk.CreateV
 		if cr.Spec.ForProvider.DNSOptions.DNSRecordIPType != nil {
 			f0.SetDnsRecordIpType(*cr.Spec.ForProvider.DNSOptions.DNSRecordIPType)
 		}
+		if cr.Spec.ForProvider.DNSOptions.PrivateDNSOnlyForInboundResolverEndpoint != nil {
+			f0.SetPrivateDnsOnlyForInboundResolverEndpoint(*cr.Spec.ForProvider.DNSOptions.PrivateDNSOnlyForInboundResolverEndpoint)
+		}
 		res.SetDnsOptions(f0)
 	}
 	if cr.Spec.ForProvider.IPAddressType != nil {
@@ -279,6 +285,9 @@ func GenerateModifyVpcEndpointInput(cr *svcapitypes.VPCEndpoint) *svcsdk.ModifyV
 		f3 := &svcsdk.DnsOptionsSpecification{}
 		if cr.Spec.ForProvider.DNSOptions.DNSRecordIPType != nil {
 			f3.SetDnsRecordIpType(*cr.Spec.ForProvider.DNSOptions.DNSRecordIPType)
+		}
+		if cr.Spec.ForProvider.DNSOptions.PrivateDNSOnlyForInboundResolverEndpoint != nil {
+			f3.SetPrivateDnsOnlyForInboundResolverEndpoint(*cr.Spec.ForProvider.DNSOptions.PrivateDNSOnlyForInboundResolverEndpoint)
 		}
 		res.SetDnsOptions(f3)
 	}

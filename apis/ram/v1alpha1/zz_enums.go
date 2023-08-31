@@ -18,6 +18,46 @@ limitations under the License.
 
 package v1alpha1
 
+type PermissionFeatureSet string
+
+const (
+	PermissionFeatureSet_CREATED_FROM_POLICY   PermissionFeatureSet = "CREATED_FROM_POLICY"
+	PermissionFeatureSet_PROMOTING_TO_STANDARD PermissionFeatureSet = "PROMOTING_TO_STANDARD"
+	PermissionFeatureSet_STANDARD              PermissionFeatureSet = "STANDARD"
+)
+
+type PermissionStatus_SDK string
+
+const (
+	PermissionStatus_SDK_ATTACHABLE   PermissionStatus_SDK = "ATTACHABLE"
+	PermissionStatus_SDK_UNATTACHABLE PermissionStatus_SDK = "UNATTACHABLE"
+	PermissionStatus_SDK_DELETING     PermissionStatus_SDK = "DELETING"
+	PermissionStatus_SDK_DELETED      PermissionStatus_SDK = "DELETED"
+)
+
+type PermissionType string
+
+const (
+	PermissionType_CUSTOMER_MANAGED PermissionType = "CUSTOMER_MANAGED"
+	PermissionType_AWS_MANAGED      PermissionType = "AWS_MANAGED"
+)
+
+type PermissionTypeFilter string
+
+const (
+	PermissionTypeFilter_ALL              PermissionTypeFilter = "ALL"
+	PermissionTypeFilter_AWS_MANAGED      PermissionTypeFilter = "AWS_MANAGED"
+	PermissionTypeFilter_CUSTOMER_MANAGED PermissionTypeFilter = "CUSTOMER_MANAGED"
+)
+
+type ReplacePermissionAssociationsWorkStatus string
+
+const (
+	ReplacePermissionAssociationsWorkStatus_IN_PROGRESS ReplacePermissionAssociationsWorkStatus = "IN_PROGRESS"
+	ReplacePermissionAssociationsWorkStatus_COMPLETED   ReplacePermissionAssociationsWorkStatus = "COMPLETED"
+	ReplacePermissionAssociationsWorkStatus_FAILED      ReplacePermissionAssociationsWorkStatus = "FAILED"
+)
+
 type ResourceOwner string
 
 const (

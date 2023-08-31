@@ -59,9 +59,15 @@ type FunctionParameters struct {
 	// Container image configuration values (https://docs.aws.amazon.com/lambda/latest/dg/configuration-images.html#configuration-images-settings)
 	// that override the values in the container image Dockerfile.
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
-	// The ARN of the Key Management Service (KMS) key that's used to encrypt your
-	// function's environment variables. If it's not provided, Lambda uses a default
-	// service key.
+	// The ARN of the Key Management Service (KMS) customer managed key that's used
+	// to encrypt your function's environment variables (https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-encryption).
+	// When Lambda SnapStart (https://docs.aws.amazon.com/lambda/latest/dg/snapstart-security.html)
+	// is activated, Lambda also uses this key is to encrypt your function's snapshot.
+	// If you deploy your function using a container image, Lambda also uses this
+	// key to encrypt your function when it's deployed. Note that this is not the
+	// same key that's used to protect your container image in the Amazon Elastic
+	// Container Registry (Amazon ECR). If you don't provide a customer managed
+	// key, Lambda uses a default service key.
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 	// A list of function layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html)
 	// to add to the function's execution environment. Specify each layer by its
@@ -78,6 +84,9 @@ type FunctionParameters struct {
 	Publish *bool `json:"publish,omitempty"`
 	// The identifier of the function's runtime (https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 	// Runtime is required if the deployment package is a .zip file archive.
+	//
+	// The following list includes deprecated runtimes. For more information, see
+	// Runtime deprecation policy (https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html#runtime-support-policy).
 	Runtime *string `json:"runtime,omitempty"`
 	// The function's SnapStart (https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
 	// setting.

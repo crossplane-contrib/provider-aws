@@ -187,6 +187,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			if f13iter.Ip != nil {
 				f13elem.IP = f13iter.Ip
 			}
+			if f13iter.Ipv6 != nil {
+				f13elem.IPv6 = f13iter.Ipv6
+			}
 			if f13iter.Port != nil {
 				f13elem.Port = f13iter.Port
 			}

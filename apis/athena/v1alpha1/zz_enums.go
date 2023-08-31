@@ -31,6 +31,25 @@ const (
 	CalculationExecutionState_FAILED    CalculationExecutionState = "FAILED"
 )
 
+type CapacityAllocationStatus string
+
+const (
+	CapacityAllocationStatus_PENDING   CapacityAllocationStatus = "PENDING"
+	CapacityAllocationStatus_SUCCEEDED CapacityAllocationStatus = "SUCCEEDED"
+	CapacityAllocationStatus_FAILED    CapacityAllocationStatus = "FAILED"
+)
+
+type CapacityReservationStatus_SDK string
+
+const (
+	CapacityReservationStatus_SDK_PENDING        CapacityReservationStatus_SDK = "PENDING"
+	CapacityReservationStatus_SDK_ACTIVE         CapacityReservationStatus_SDK = "ACTIVE"
+	CapacityReservationStatus_SDK_CANCELLING     CapacityReservationStatus_SDK = "CANCELLING"
+	CapacityReservationStatus_SDK_CANCELLED      CapacityReservationStatus_SDK = "CANCELLED"
+	CapacityReservationStatus_SDK_FAILED         CapacityReservationStatus_SDK = "FAILED"
+	CapacityReservationStatus_SDK_UPDATE_PENDING CapacityReservationStatus_SDK = "UPDATE_PENDING"
+)
+
 type ColumnNullable string
 
 const (

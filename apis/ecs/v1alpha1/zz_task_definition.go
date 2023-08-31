@@ -79,10 +79,12 @@ type TaskDefinitionParameters struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using the following
-	// platform versions:
+	// For tasks using the Fargate launch type, the task requires the following
+	// platforms:
 	//
 	//    * Linux platform version 1.4.0 or later.
+	//
+	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 	// You must specify a family for a task definition. You can use it track multiple
 	// versions of the same task definition. The family is used as a name for your

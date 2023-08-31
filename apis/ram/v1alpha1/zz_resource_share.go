@@ -44,6 +44,9 @@ type ResourceShareParameters struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `json:"clientToken,omitempty"`
 	// Specifies the name of the resource share.
 	// +kubebuilder:validation:Required
@@ -61,7 +64,7 @@ type ResourceShareParameters struct {
 	//
 	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
 	//    * An ARN of an organizational unit (OU) in Organizations, for example:

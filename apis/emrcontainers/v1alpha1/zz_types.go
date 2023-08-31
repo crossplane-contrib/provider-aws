@@ -39,7 +39,7 @@ type Configuration struct {
 
 // +kubebuilder:skipversion
 type ContainerInfo struct {
-	// The information about the EKS cluster.
+	// The information about the Amazon EKS cluster.
 	EKSInfo *EKSInfo `json:"eksInfo,omitempty"`
 }
 
@@ -112,6 +112,10 @@ type JobRun_SDK struct {
 	Name *string `json:"name,omitempty"`
 
 	ReleaseLabel *string `json:"releaseLabel,omitempty"`
+	// The configuration of the retry policy that the job runs on.
+	RetryPolicyConfiguration *RetryPolicyConfiguration `json:"retryPolicyConfiguration,omitempty"`
+	// The current status of the retry policy executed on the job.
+	RetryPolicyExecution *RetryPolicyExecution `json:"retryPolicyExecution,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
@@ -147,6 +151,16 @@ type JobTemplateData struct {
 // +kubebuilder:skipversion
 type ParametricCloudWatchMonitoringConfiguration struct {
 	LogStreamNamePrefix *string `json:"logStreamNamePrefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RetryPolicyConfiguration struct {
+	MaxAttempts *int64 `json:"maxAttempts,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RetryPolicyExecution struct {
+	CurrentAttemptCount *int64 `json:"currentAttemptCount,omitempty"`
 }
 
 // +kubebuilder:skipversion

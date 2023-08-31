@@ -18,3 +18,11 @@ package v1alpha1
 
 // CustomResourceShareParameters includes custom fields for ResourceShareParameters.
 type CustomResourceShareParameters struct{}
+
+// CustomPermissionParameters includes custom fields for Permission
+// ToDo: implement all custom parameters
+type CustomPermissionParameters struct{}
+
+// CustomPermissionVersionParameters includes custom fields for PermissionVersion
+// ToDo: implement all custom parameters
+type CustomPermissionVersionParameters struct{}

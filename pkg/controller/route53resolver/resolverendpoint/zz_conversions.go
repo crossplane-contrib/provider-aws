@@ -85,14 +85,19 @@ func GenerateResolverEndpoint(resp *svcsdk.GetResolverEndpointOutput) *svcapityp
 	} else {
 		cr.Spec.ForProvider.Name = nil
 	}
+	if resp.ResolverEndpoint.ResolverEndpointType != nil {
+		cr.Spec.ForProvider.ResolverEndpointType = resp.ResolverEndpoint.ResolverEndpointType
+	} else {
+		cr.Spec.ForProvider.ResolverEndpointType = nil
+	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.ResolverEndpoint.SecurityGroupIds {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f10 := []*string{}
+		for _, f10iter := range resp.ResolverEndpoint.SecurityGroupIds {
+			var f10elem string
+			f10elem = *f10iter
+			f10 = append(f10, &f10elem)
 		}
-		cr.Status.AtProvider.SecurityGroupIDs = f9
+		cr.Status.AtProvider.SecurityGroupIDs = f10
 	} else {
 		cr.Status.AtProvider.SecurityGroupIDs = nil
 	}
@@ -120,19 +125,22 @@ func GenerateCreateResolverEndpointInput(cr *svcapitypes.ResolverEndpoint) *svcs
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
+	if cr.Spec.ForProvider.ResolverEndpointType != nil {
+		res.SetResolverEndpointType(*cr.Spec.ForProvider.ResolverEndpointType)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+		f3 := []*svcsdk.Tag{}
+		for _, f3iter := range cr.Spec.ForProvider.Tags {
+			f3elem := &svcsdk.Tag{}
+			if f3iter.Key != nil {
+				f3elem.SetKey(*f3iter.Key)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
 			}
-			f2 = append(f2, f2elem)
+			f3 = append(f3, f3elem)
 		}
-		res.SetTags(f2)
+		res.SetTags(f3)
 	}
 
 	return res
@@ -144,6 +152,9 @@ func GenerateUpdateResolverEndpointInput(cr *svcapitypes.ResolverEndpoint) *svcs
 
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.ResolverEndpointType != nil {
+		res.SetResolverEndpointType(*cr.Spec.ForProvider.ResolverEndpointType)
 	}
 
 	return res

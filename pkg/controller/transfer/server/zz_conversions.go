@@ -65,6 +65,9 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 		if resp.Server.IdentityProviderDetails.InvocationRole != nil {
 			f6.InvocationRole = resp.Server.IdentityProviderDetails.InvocationRole
 		}
+		if resp.Server.IdentityProviderDetails.SftpAuthenticationMethods != nil {
+			f6.SftpAuthenticationMethods = resp.Server.IdentityProviderDetails.SftpAuthenticationMethods
+		}
 		if resp.Server.IdentityProviderDetails.Url != nil {
 			f6.URL = resp.Server.IdentityProviderDetails.Url
 		}
@@ -210,6 +213,9 @@ func GenerateCreateServerInput(cr *svcapitypes.Server) *svcsdk.CreateServerInput
 		if cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole != nil {
 			f3.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
 		}
+		if cr.Spec.ForProvider.IdentityProviderDetails.SftpAuthenticationMethods != nil {
+			f3.SetSftpAuthenticationMethods(*cr.Spec.ForProvider.IdentityProviderDetails.SftpAuthenticationMethods)
+		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.URL != nil {
 			f3.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)
 		}
@@ -328,6 +334,9 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole != nil {
 			f4.SetInvocationRole(*cr.Spec.ForProvider.IdentityProviderDetails.InvocationRole)
+		}
+		if cr.Spec.ForProvider.IdentityProviderDetails.SftpAuthenticationMethods != nil {
+			f4.SetSftpAuthenticationMethods(*cr.Spec.ForProvider.IdentityProviderDetails.SftpAuthenticationMethods)
 		}
 		if cr.Spec.ForProvider.IdentityProviderDetails.URL != nil {
 			f4.SetUrl(*cr.Spec.ForProvider.IdentityProviderDetails.URL)

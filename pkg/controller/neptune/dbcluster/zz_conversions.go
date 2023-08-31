@@ -221,6 +221,11 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Spec.ForProvider.EngineVersion = nil
 		}
+		if elem.GlobalClusterIdentifier != nil {
+			cr.Spec.ForProvider.GlobalClusterIdentifier = elem.GlobalClusterIdentifier
+		} else {
+			cr.Spec.ForProvider.GlobalClusterIdentifier = nil
+		}
 		if elem.HostedZoneId != nil {
 			cr.Status.AtProvider.HostedZoneID = elem.HostedZoneId
 		} else {
@@ -251,6 +256,52 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Status.AtProvider.MultiAZ = nil
 		}
+		if elem.PendingModifiedValues != nil {
+			f31 := &svcapitypes.ClusterPendingModifiedValues{}
+			if elem.PendingModifiedValues.AllocatedStorage != nil {
+				f31.AllocatedStorage = elem.PendingModifiedValues.AllocatedStorage
+			}
+			if elem.PendingModifiedValues.BackupRetentionPeriod != nil {
+				f31.BackupRetentionPeriod = elem.PendingModifiedValues.BackupRetentionPeriod
+			}
+			if elem.PendingModifiedValues.DBClusterIdentifier != nil {
+				f31.DBClusterIdentifier = elem.PendingModifiedValues.DBClusterIdentifier
+			}
+			if elem.PendingModifiedValues.EngineVersion != nil {
+				f31.EngineVersion = elem.PendingModifiedValues.EngineVersion
+			}
+			if elem.PendingModifiedValues.IAMDatabaseAuthenticationEnabled != nil {
+				f31.IAMDatabaseAuthenticationEnabled = elem.PendingModifiedValues.IAMDatabaseAuthenticationEnabled
+			}
+			if elem.PendingModifiedValues.Iops != nil {
+				f31.IOPS = elem.PendingModifiedValues.Iops
+			}
+			if elem.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
+				f31f6 := &svcapitypes.PendingCloudwatchLogsExports{}
+				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable != nil {
+					f31f6f0 := []*string{}
+					for _, f31f6f0iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable {
+						var f31f6f0elem string
+						f31f6f0elem = *f31f6f0iter
+						f31f6f0 = append(f31f6f0, &f31f6f0elem)
+					}
+					f31f6.LogTypesToDisable = f31f6f0
+				}
+				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable != nil {
+					f31f6f1 := []*string{}
+					for _, f31f6f1iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable {
+						var f31f6f1elem string
+						f31f6f1elem = *f31f6f1iter
+						f31f6f1 = append(f31f6f1, &f31f6f1elem)
+					}
+					f31f6.LogTypesToEnable = f31f6f1
+				}
+				f31.PendingCloudwatchLogsExports = f31f6
+			}
+			cr.Status.AtProvider.PendingModifiedValues = f31
+		} else {
+			cr.Status.AtProvider.PendingModifiedValues = nil
+		}
 		if elem.PercentProgress != nil {
 			cr.Status.AtProvider.PercentProgress = elem.PercentProgress
 		} else {
@@ -272,13 +323,13 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
 		}
 		if elem.ReadReplicaIdentifiers != nil {
-			f34 := []*string{}
-			for _, f34iter := range elem.ReadReplicaIdentifiers {
-				var f34elem string
-				f34elem = *f34iter
-				f34 = append(f34, &f34elem)
+			f36 := []*string{}
+			for _, f36iter := range elem.ReadReplicaIdentifiers {
+				var f36elem string
+				f36elem = *f36iter
+				f36 = append(f36, &f36elem)
 			}
-			cr.Status.AtProvider.ReadReplicaIdentifiers = f34
+			cr.Status.AtProvider.ReadReplicaIdentifiers = f36
 		} else {
 			cr.Status.AtProvider.ReadReplicaIdentifiers = nil
 		}
@@ -293,14 +344,14 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.ReplicationSourceIdentifier = nil
 		}
 		if elem.ServerlessV2ScalingConfiguration != nil {
-			f37 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+			f39 := &svcapitypes.ServerlessV2ScalingConfiguration{}
 			if elem.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
-				f37.MaxCapacity = elem.ServerlessV2ScalingConfiguration.MaxCapacity
+				f39.MaxCapacity = elem.ServerlessV2ScalingConfiguration.MaxCapacity
 			}
 			if elem.ServerlessV2ScalingConfiguration.MinCapacity != nil {
-				f37.MinCapacity = elem.ServerlessV2ScalingConfiguration.MinCapacity
+				f39.MinCapacity = elem.ServerlessV2ScalingConfiguration.MinCapacity
 			}
-			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f37
+			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f39
 		} else {
 			cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = nil
 		}
@@ -315,18 +366,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f40 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f40iter := range elem.VpcSecurityGroups {
-				f40elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f40iter.Status != nil {
-					f40elem.Status = f40iter.Status
+			f42 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f42iter := range elem.VpcSecurityGroups {
+				f42elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f42iter.Status != nil {
+					f42elem.Status = f42iter.Status
 				}
-				if f40iter.VpcSecurityGroupId != nil {
-					f40elem.VPCSecurityGroupID = f40iter.VpcSecurityGroupId
+				if f42iter.VpcSecurityGroupId != nil {
+					f42elem.VPCSecurityGroupID = f42iter.VpcSecurityGroupId
 				}
-				f40 = append(f40, f40elem)
+				f42 = append(f42, f42elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f40
+			cr.Status.AtProvider.VPCSecurityGroups = f42
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}

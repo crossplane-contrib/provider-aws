@@ -178,6 +178,8 @@ spec:
                               type: string
                           type: object
                         type: array
+                      useOffPeakWindow:
+                        type: boolean
                     type: object
                   clusterConfig:
                     description: Container for the cluster configuration of a domain.
@@ -203,6 +205,8 @@ spec:
                         type: integer
                       instanceType:
                         type: string
+                      multiAZWithStandbyEnabled:
+                        type: boolean
                       warmCount:
                         format: int64
                         type: integer
@@ -374,13 +378,47 @@ spec:
                         enabled:
                           type: boolean
                       type: object
-                    description: Key-value pairs to configure slow log publishing.
+                    description: Key-value pairs to configure log publishing.
                     type: object
                   nodeToNodeEncryptionOptions:
                     description: Enables node-to-node encryption.
                     properties:
                       enabled:
                         type: boolean
+                    type: object
+                  offPeakWindowOptions:
+                    description: Specifies a daily 10-hour time block during which
+                      OpenSearch Service can perform configuration changes on the
+                      domain, including service software updates and Auto-Tune enhancements
+                      that require a blue/green deployment. If no options are specified,
+                      the default start time of 10:00 P.M. local time (for the Region
+                      that the domain is created in) is used.
+                    properties:
+                      enabled:
+                        type: boolean
+                      offPeakWindow:
+                        description: "A custom 10-hour, low-traffic window during
+                          which OpenSearch Service can perform mandatory configuration
+                          changes on the domain. These actions can include scheduled
+                          service software updates and blue/green Auto-Tune enhancements.
+                          OpenSearch Service will schedule these actions during the
+                          window that you specify. \n If you don't specify a window
+                          start time, it defaults to 10:00 P.M. local time. \n For
+                          more information, see Defining off-peak maintenance windows
+                          for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/off-peak.html)."
+                        properties:
+                          windowStartTime:
+                            description: The desired start time for an off-peak maintenance
+                              window (https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_OffPeakWindow.html).
+                            properties:
+                              hours:
+                                format: int64
+                                type: integer
+                              minutes:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
                     type: object
                   region:
                     description: Region is which region the Domain will be created.
@@ -390,6 +428,12 @@ spec:
                       automatedSnapshotStartHour:
                         format: int64
                         type: integer
+                    type: object
+                  softwareUpdateOptions:
+                    description: Software update options for the domain.
+                    properties:
+                      autoSoftwareUpdateEnabled:
+                        type: boolean
                     type: object
                   tags:
                     description: List of tags to add to the domain upon creation.
@@ -847,6 +891,8 @@ spec:
                         description: The Auto-Tune state for the domain. For valid
                           states see Auto-Tune for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
                         type: string
+                      useOffPeakWindow:
+                        type: boolean
                     type: object
                   changeProgressDetails:
                     description: Information about a configuration change happening
@@ -881,6 +927,8 @@ spec:
                         type: integer
                       instanceType:
                         type: string
+                      multiAZWithStandbyEnabled:
+                        type: boolean
                       warmCount:
                         format: int64
                         type: integer

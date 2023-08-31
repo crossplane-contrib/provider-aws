@@ -18,6 +18,33 @@ limitations under the License.
 
 package v1alpha1
 
+type ActionSeverity string
+
+const (
+	ActionSeverity_HIGH   ActionSeverity = "HIGH"
+	ActionSeverity_MEDIUM ActionSeverity = "MEDIUM"
+	ActionSeverity_LOW    ActionSeverity = "LOW"
+)
+
+type ActionStatus string
+
+const (
+	ActionStatus_PENDING_UPDATE ActionStatus = "PENDING_UPDATE"
+	ActionStatus_IN_PROGRESS    ActionStatus = "IN_PROGRESS"
+	ActionStatus_FAILED         ActionStatus = "FAILED"
+	ActionStatus_COMPLETED      ActionStatus = "COMPLETED"
+	ActionStatus_NOT_ELIGIBLE   ActionStatus = "NOT_ELIGIBLE"
+	ActionStatus_ELIGIBLE       ActionStatus = "ELIGIBLE"
+)
+
+type ActionType string
+
+const (
+	ActionType_SERVICE_SOFTWARE_UPDATE ActionType = "SERVICE_SOFTWARE_UPDATE"
+	ActionType_JVM_HEAP_SIZE_TUNING    ActionType = "JVM_HEAP_SIZE_TUNING"
+	ActionType_JVM_YOUNG_GEN_TUNING    ActionType = "JVM_YOUNG_GEN_TUNING"
+)
+
 type AutoTuneDesiredState string
 
 const (
@@ -70,6 +97,15 @@ const (
 	DescribePackagesFilterName_PackageStatus DescribePackagesFilterName = "PackageStatus"
 )
 
+type DomainHealth string
+
+const (
+	DomainHealth_Red          DomainHealth = "Red"
+	DomainHealth_Yellow       DomainHealth = "Yellow"
+	DomainHealth_Green        DomainHealth = "Green"
+	DomainHealth_NotAvailable DomainHealth = "NotAvailable"
+)
+
 type DomainPackageStatus string
 
 const (
@@ -78,6 +114,14 @@ const (
 	DomainPackageStatus_ACTIVE              DomainPackageStatus = "ACTIVE"
 	DomainPackageStatus_DISSOCIATING        DomainPackageStatus = "DISSOCIATING"
 	DomainPackageStatus_DISSOCIATION_FAILED DomainPackageStatus = "DISSOCIATION_FAILED"
+)
+
+type DomainState string
+
+const (
+	DomainState_Active       DomainState = "Active"
+	DomainState_Processing   DomainState = "Processing"
+	DomainState_NotAvailable DomainState = "NotAvailable"
 )
 
 type DryRunMode string
@@ -114,6 +158,29 @@ const (
 	LogType_SEARCH_SLOW_LOGS    LogType = "SEARCH_SLOW_LOGS"
 	LogType_ES_APPLICATION_LOGS LogType = "ES_APPLICATION_LOGS"
 	LogType_AUDIT_LOGS          LogType = "AUDIT_LOGS"
+)
+
+type MasterNodeStatus string
+
+const (
+	MasterNodeStatus_Available   MasterNodeStatus = "Available"
+	MasterNodeStatus_UnAvailable MasterNodeStatus = "UnAvailable"
+)
+
+type NodeStatus string
+
+const (
+	NodeStatus_Active       NodeStatus = "Active"
+	NodeStatus_StandBy      NodeStatus = "StandBy"
+	NodeStatus_NotAvailable NodeStatus = "NotAvailable"
+)
+
+type NodeType string
+
+const (
+	NodeType_Data      NodeType = "Data"
+	NodeType_Ultrawarm NodeType = "Ultrawarm"
+	NodeType_Master    NodeType = "Master"
 )
 
 type OpenSearchPartitionInstanceType string
@@ -297,6 +364,14 @@ const (
 	RollbackOnDisable_DEFAULT_ROLLBACK RollbackOnDisable = "DEFAULT_ROLLBACK"
 )
 
+type ScheduleAt string
+
+const (
+	ScheduleAt_NOW             ScheduleAt = "NOW"
+	ScheduleAt_TIMESTAMP       ScheduleAt = "TIMESTAMP"
+	ScheduleAt_OFF_PEAK_WINDOW ScheduleAt = "OFF_PEAK_WINDOW"
+)
+
 type ScheduledAutoTuneActionType string
 
 const (
@@ -310,6 +385,13 @@ const (
 	ScheduledAutoTuneSeverityType_LOW    ScheduledAutoTuneSeverityType = "LOW"
 	ScheduledAutoTuneSeverityType_MEDIUM ScheduledAutoTuneSeverityType = "MEDIUM"
 	ScheduledAutoTuneSeverityType_HIGH   ScheduledAutoTuneSeverityType = "HIGH"
+)
+
+type ScheduledBy string
+
+const (
+	ScheduledBy_CUSTOMER ScheduledBy = "CUSTOMER"
+	ScheduledBy_SYSTEM   ScheduledBy = "SYSTEM"
 )
 
 type TLSSecurityPolicy string
@@ -368,4 +450,12 @@ const (
 	VolumeType_gp2      VolumeType = "gp2"
 	VolumeType_io1      VolumeType = "io1"
 	VolumeType_gp3      VolumeType = "gp3"
+)
+
+type ZoneStatus string
+
+const (
+	ZoneStatus_Active       ZoneStatus = "Active"
+	ZoneStatus_StandBy      ZoneStatus = "StandBy"
+	ZoneStatus_NotAvailable ZoneStatus = "NotAvailable"
 )

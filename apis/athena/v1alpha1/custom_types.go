@@ -15,3 +15,12 @@ package v1alpha1
 
 // CustomWorkGroupParameters contains the additional fields for WorkGroupParameters.
 type CustomWorkGroupParameters struct{}
+
+// CustomCapacityReservationParameters includes the custom fields of CapacityReservation
+// ToDo: implement all custom parameters
+type CustomCapacityReservationParameters struct {
+
+	// Metadata tagging key value pairs
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+}

@@ -20,7 +20,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// CustomIPAMResourceDiscoveryParameters inclues the custom fields of IPAMResourceDiscovery
+// CustomIPAMResourceDiscoveryParameters includes the custom fields of IPAMResourceDiscovery
+// ToDo: implement all custom parameters
 type CustomIPAMResourceDiscoveryParameters struct {
 
 	// Metadata tagging key value pairs

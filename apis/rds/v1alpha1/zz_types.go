@@ -114,6 +114,8 @@ type ClusterPendingModifiedValues struct {
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -253,6 +255,8 @@ type DBClusterSnapshot struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
 	TagList []*Tag `json:"tagList,omitempty"`
@@ -357,6 +361,8 @@ type DBCluster_SDK struct {
 	HTTPEndpointEnabled *bool `json:"httpEndpointEnabled,omitempty"`
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
 
 	IOPS *int64 `json:"iops,omitempty"`
 
@@ -734,6 +740,8 @@ type DBInstance_SDK struct {
 	ReadReplicaDBClusterIdentifiers []*string `json:"readReplicaDBClusterIdentifiers,omitempty"`
 
 	ReadReplicaDBInstanceIdentifiers []*string `json:"readReplicaDBInstanceIdentifiers,omitempty"`
+
+	ReadReplicaSourceDBClusterIdentifier *string `json:"readReplicaSourceDBClusterIdentifier,omitempty"`
 
 	ReadReplicaSourceDBInstanceIdentifier *string `json:"readReplicaSourceDBInstanceIdentifier,omitempty"`
 
@@ -1442,6 +1450,8 @@ type PendingModifiedValues struct {
 	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
 
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 

@@ -133,6 +133,9 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions != nil {
 			f0f2 := &svcsdk.LaunchTemplateCpuOptionsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp != nil {
+				f0f2.SetAmdSevSnp(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp)
+			}
 			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount != nil {
 				f0f2.SetCoreCount(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount)
 			}

@@ -194,6 +194,8 @@ spec:
                       properties:
                         ip:
                           type: string
+                        ipv6:
+                          type: string
                         port:
                           format: int64
                           type: integer

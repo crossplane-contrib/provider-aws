@@ -387,6 +387,11 @@ type EKSVolume struct {
 }
 
 // +kubebuilder:skipversion
+type EphemeralStorage struct {
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EvaluateOnExit struct {
 	OnExitCode *string `json:"onExitCode,omitempty"`
 

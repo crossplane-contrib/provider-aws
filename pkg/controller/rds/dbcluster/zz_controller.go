@@ -412,6 +412,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.IAMDatabaseAuthenticationEnabled = nil
 	}
+	if resp.DBCluster.IOOptimizedNextAllowedModificationTime != nil {
+		cr.Status.AtProvider.IOOptimizedNextAllowedModificationTime = &metav1.Time{*resp.DBCluster.IOOptimizedNextAllowedModificationTime}
+	} else {
+		cr.Status.AtProvider.IOOptimizedNextAllowedModificationTime = nil
+	}
 	if resp.DBCluster.Iops != nil {
 		cr.Spec.ForProvider.IOPS = resp.DBCluster.Iops
 	} else {
@@ -428,17 +433,17 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.LatestRestorableTime = nil
 	}
 	if resp.DBCluster.MasterUserSecret != nil {
-		f46 := &svcapitypes.MasterUserSecret{}
+		f47 := &svcapitypes.MasterUserSecret{}
 		if resp.DBCluster.MasterUserSecret.KmsKeyId != nil {
-			f46.KMSKeyID = resp.DBCluster.MasterUserSecret.KmsKeyId
+			f47.KMSKeyID = resp.DBCluster.MasterUserSecret.KmsKeyId
 		}
 		if resp.DBCluster.MasterUserSecret.SecretArn != nil {
-			f46.SecretARN = resp.DBCluster.MasterUserSecret.SecretArn
+			f47.SecretARN = resp.DBCluster.MasterUserSecret.SecretArn
 		}
 		if resp.DBCluster.MasterUserSecret.SecretStatus != nil {
-			f46.SecretStatus = resp.DBCluster.MasterUserSecret.SecretStatus
+			f47.SecretStatus = resp.DBCluster.MasterUserSecret.SecretStatus
 		}
-		cr.Status.AtProvider.MasterUserSecret = f46
+		cr.Status.AtProvider.MasterUserSecret = f47
 	} else {
 		cr.Status.AtProvider.MasterUserSecret = nil
 	}
@@ -508,13 +513,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.PubliclyAccessible = nil
 	}
 	if resp.DBCluster.ReadReplicaIdentifiers != nil {
-		f60 := []*string{}
-		for _, f60iter := range resp.DBCluster.ReadReplicaIdentifiers {
-			var f60elem string
-			f60elem = *f60iter
-			f60 = append(f60, &f60elem)
+		f61 := []*string{}
+		for _, f61iter := range resp.DBCluster.ReadReplicaIdentifiers {
+			var f61elem string
+			f61elem = *f61iter
+			f61 = append(f61, &f61elem)
 		}
-		cr.Status.AtProvider.ReadReplicaIdentifiers = f60
+		cr.Status.AtProvider.ReadReplicaIdentifiers = f61
 	} else {
 		cr.Status.AtProvider.ReadReplicaIdentifiers = nil
 	}
@@ -529,38 +534,38 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.ReplicationSourceIdentifier = nil
 	}
 	if resp.DBCluster.ScalingConfigurationInfo != nil {
-		f63 := &svcapitypes.ScalingConfigurationInfo{}
+		f64 := &svcapitypes.ScalingConfigurationInfo{}
 		if resp.DBCluster.ScalingConfigurationInfo.AutoPause != nil {
-			f63.AutoPause = resp.DBCluster.ScalingConfigurationInfo.AutoPause
+			f64.AutoPause = resp.DBCluster.ScalingConfigurationInfo.AutoPause
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.MaxCapacity != nil {
-			f63.MaxCapacity = resp.DBCluster.ScalingConfigurationInfo.MaxCapacity
+			f64.MaxCapacity = resp.DBCluster.ScalingConfigurationInfo.MaxCapacity
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.MinCapacity != nil {
-			f63.MinCapacity = resp.DBCluster.ScalingConfigurationInfo.MinCapacity
+			f64.MinCapacity = resp.DBCluster.ScalingConfigurationInfo.MinCapacity
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.SecondsBeforeTimeout != nil {
-			f63.SecondsBeforeTimeout = resp.DBCluster.ScalingConfigurationInfo.SecondsBeforeTimeout
+			f64.SecondsBeforeTimeout = resp.DBCluster.ScalingConfigurationInfo.SecondsBeforeTimeout
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause != nil {
-			f63.SecondsUntilAutoPause = resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause
+			f64.SecondsUntilAutoPause = resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.TimeoutAction != nil {
-			f63.TimeoutAction = resp.DBCluster.ScalingConfigurationInfo.TimeoutAction
+			f64.TimeoutAction = resp.DBCluster.ScalingConfigurationInfo.TimeoutAction
 		}
-		cr.Status.AtProvider.ScalingConfigurationInfo = f63
+		cr.Status.AtProvider.ScalingConfigurationInfo = f64
 	} else {
 		cr.Status.AtProvider.ScalingConfigurationInfo = nil
 	}
 	if resp.DBCluster.ServerlessV2ScalingConfiguration != nil {
-		f64 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+		f65 := &svcapitypes.ServerlessV2ScalingConfiguration{}
 		if resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
-			f64.MaxCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity
+			f65.MaxCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity
 		}
 		if resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity != nil {
-			f64.MinCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity
+			f65.MinCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity
 		}
-		cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f64
+		cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = f65
 	} else {
 		cr.Spec.ForProvider.ServerlessV2ScalingConfiguration = nil
 	}
@@ -580,34 +585,34 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.StorageType = nil
 	}
 	if resp.DBCluster.TagList != nil {
-		f68 := []*svcapitypes.Tag{}
-		for _, f68iter := range resp.DBCluster.TagList {
-			f68elem := &svcapitypes.Tag{}
-			if f68iter.Key != nil {
-				f68elem.Key = f68iter.Key
+		f69 := []*svcapitypes.Tag{}
+		for _, f69iter := range resp.DBCluster.TagList {
+			f69elem := &svcapitypes.Tag{}
+			if f69iter.Key != nil {
+				f69elem.Key = f69iter.Key
 			}
-			if f68iter.Value != nil {
-				f68elem.Value = f68iter.Value
+			if f69iter.Value != nil {
+				f69elem.Value = f69iter.Value
 			}
-			f68 = append(f68, f68elem)
+			f69 = append(f69, f69elem)
 		}
-		cr.Status.AtProvider.TagList = f68
+		cr.Status.AtProvider.TagList = f69
 	} else {
 		cr.Status.AtProvider.TagList = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f69 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f69iter := range resp.DBCluster.VpcSecurityGroups {
-			f69elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f69iter.Status != nil {
-				f69elem.Status = f69iter.Status
+		f70 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f70iter := range resp.DBCluster.VpcSecurityGroups {
+			f70elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f70iter.Status != nil {
+				f70elem.Status = f70iter.Status
 			}
-			if f69iter.VpcSecurityGroupId != nil {
-				f69elem.VPCSecurityGroupID = f69iter.VpcSecurityGroupId
+			if f70iter.VpcSecurityGroupId != nil {
+				f70elem.VPCSecurityGroupID = f70iter.VpcSecurityGroupId
 			}
-			f69 = append(f69, f69elem)
+			f70 = append(f70, f70elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f69
+		cr.Status.AtProvider.VPCSecurityGroups = f70
 	} else {
 		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}

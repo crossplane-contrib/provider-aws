@@ -216,6 +216,8 @@ type FunctionURLConfig_SDK struct {
 
 	FunctionURL *string `json:"functionURL,omitempty"`
 
+	InvokeMode *string `json:"invokeMode,omitempty"`
+
 	LastModifiedTime *string `json:"lastModifiedTime,omitempty"`
 }
 
@@ -242,6 +244,15 @@ type ImageConfigResponse struct {
 	// Configuration values that override the container image Dockerfile settings.
 	// For more information, see Container image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InvokeWithResponseStreamCompleteEvent struct {
+	ErrorCode *string `json:"errorCode,omitempty"`
+
+	ErrorDetails *string `json:"errorDetails,omitempty"`
+
+	LogResult *string `json:"logResult,omitempty"`
 }
 
 // +kubebuilder:skipversion

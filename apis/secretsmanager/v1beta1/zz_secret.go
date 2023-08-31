@@ -34,7 +34,7 @@ type SecretParameters struct {
 	// The description of the secret.
 	Description *string `json:"description,omitempty"`
 	// Specifies whether to overwrite a secret with the same name in the destination
-	// Region.
+	// Region. By default, secrets aren't overwritten.
 	ForceOverwriteReplicaSecret *bool `json:"forceOverwriteReplicaSecret,omitempty"`
 	// The ARN, key ID, or alias of the KMS key that Secrets Manager uses to encrypt
 	// the secret value in the secret. An alias is always prefixed by alias/, for

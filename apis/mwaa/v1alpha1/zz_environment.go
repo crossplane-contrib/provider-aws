@@ -30,20 +30,20 @@ type EnvironmentParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// A list of key-value pairs containing the Apache Airflow configuration options
-	// you want to attach to your environment. To learn more, see Apache Airflow
-	// configuration options (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-env-variables.html).
+	// you want to attach to your environment. For more information, see Apache
+	// Airflow configuration options (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-env-variables.html).
 	AirflowConfigurationOptions map[string]*string `json:"airflowConfigurationOptions,omitempty"`
 	// The Apache Airflow version for your environment. If no value is specified,
-	// it defaults to the latest version. Valid values: 1.10.12, 2.0.2, 2.2.2, and
-	// 2.4.3. For more information, see Apache Airflow versions on Amazon Managed
+	// it defaults to the latest version. Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3,
+	// and 2.5.1. For more information, see Apache Airflow versions on Amazon Managed
 	// Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 	AirflowVersion *string `json:"airflowVersion,omitempty"`
 	// The relative path to the DAGs folder on your Amazon S3 bucket. For example,
-	// dags. To learn more, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
+	// dags. For more information, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
 	// +kubebuilder:validation:Required
 	DagS3Path *string `json:"dagS3Path"`
 	// The environment class type. Valid values: mw1.small, mw1.medium, mw1.large.
-	// To learn more, see Amazon MWAA environment class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
+	// For more information, see Amazon MWAA environment class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
 	// Defines the Apache Airflow logs to send to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfigurationInput `json:"loggingConfiguration,omitempty"`
@@ -60,21 +60,21 @@ type EnvironmentParameters struct {
 	// in the queue, MWAA disposes of the extra workers leaving the worker count
 	// you specify in the MinWorkers field. For example, 2.
 	MinWorkers *int64 `json:"minWorkers,omitempty"`
-	// The version of the plugins.zip file on your Amazon S3 bucket. A version must
-	// be specified each time a plugins.zip file is updated. To learn more, see
-	// How S3 Versioning works (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html).
+	// The version of the plugins.zip file on your Amazon S3 bucket. You must specify
+	// a version each time a plugins.zip file is updated. For more information,
+	// see How S3 Versioning works (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html).
 	PluginsS3ObjectVersion *string `json:"pluginsS3ObjectVersion,omitempty"`
 	// The relative path to the plugins.zip file on your Amazon S3 bucket. For example,
-	// plugins.zip. If specified, then the plugins.zip version is required. To learn
-	// more, see Installing custom plugins (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-import-plugins.html).
+	// plugins.zip. If specified, then the plugins.zip version is required. For
+	// more information, see Installing custom plugins (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-import-plugins.html).
 	PluginsS3Path *string `json:"pluginsS3Path,omitempty"`
-	// The version of the requirements.txt file on your Amazon S3 bucket. A version
-	// must be specified each time a requirements.txt file is updated. To learn
-	// more, see How S3 Versioning works (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html).
+	// The version of the requirements.txt file on your Amazon S3 bucket. You must
+	// specify a version each time a requirements.txt file is updated. For more
+	// information, see How S3 Versioning works (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html).
 	RequirementsS3ObjectVersion *string `json:"requirementsS3ObjectVersion,omitempty"`
 	// The relative path to the requirements.txt file on your Amazon S3 bucket.
-	// For example, requirements.txt. If specified, then a file version is required.
-	// To learn more, see Installing Python dependencies (https://docs.aws.amazon.com/mwaa/latest/userguide/working-dags-dependencies.html).
+	// For example, requirements.txt. If specified, then a version is required.
+	// For more information, see Installing Python dependencies (https://docs.aws.amazon.com/mwaa/latest/userguide/working-dags-dependencies.html).
 	RequirementsS3Path *string `json:"requirementsS3Path,omitempty"`
 	// The number of Apache Airflow schedulers to run in your environment. Valid
 	// values:
@@ -83,12 +83,31 @@ type EnvironmentParameters struct {
 	//
 	//    * v1 - Accepts 1.
 	Schedulers *int64 `json:"schedulers,omitempty"`
+	// The version of the startup shell script in your Amazon S3 bucket. You must
+	// specify the version ID (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html)
+	// that Amazon S3 assigns to the file every time you update the script.
+	//
+	// Version IDs are Unicode, UTF-8 encoded, URL-ready, opaque strings that are
+	// no more than 1,024 bytes long. The following is an example:
+	//
+	// 3sL4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY+MTRCxf3vjVBH40Nr8X8gdRQBpUMLUo
+	//
+	// For more information, see Using a startup script (https://docs.aws.amazon.com/mwaa/latest/userguide/using-startup-script.html).
+	StartupScriptS3ObjectVersion *string `json:"startupScriptS3ObjectVersion,omitempty"`
+	// The relative path to the startup shell script in your Amazon S3 bucket. For
+	// example, s3://mwaa-environment/startup.sh.
+	//
+	// Amazon MWAA runs the script as your environment starts, and before running
+	// the Apache Airflow process. You can use this script to install dependencies,
+	// modify Apache Airflow configuration options, and set environment variables.
+	// For more information, see Using a startup script (https://docs.aws.amazon.com/mwaa/latest/userguide/using-startup-script.html).
+	StartupScriptS3Path *string `json:"startupScriptS3Path,omitempty"`
 	// The key-value tag pairs you want to associate to your environment. For example,
-	// "Environment": "Staging". To learn more, see Tagging Amazon Web Services
+	// "Environment": "Staging". For more information, see Tagging Amazon Web Services
 	// resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `json:"tags,omitempty"`
-	// The Apache Airflow Web server access mode. To learn more, see Apache Airflow
-	// access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
+	// The Apache Airflow Web server access mode. For more information, see Apache
+	// Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
 	// The day and time of the week in Coordinated Universal Time (UTC) 24-hour
 	// standard time to start weekly maintenance updates of your environment in
@@ -114,6 +133,13 @@ type EnvironmentObservation struct {
 	//
 	//    * CREATING - Indicates the request to create the environment is in progress.
 	//
+	//    * CREATING_SNAPSHOT - Indicates the request to update environment details,
+	//    or upgrade the environment version, is in progress and Amazon MWAA is
+	//    creating a storage volume snapshot of the Amazon RDS database cluster
+	//    associated with the environment. A database snapshot is a backup created
+	//    at a specific point in time. Amazon MWAA uses snapshots to recover environment
+	//    metadata if the process to update or upgrade an environment fails.
+	//
 	//    * CREATE_FAILED - Indicates the request to create the environment failed,
 	//    and the environment could not be created.
 	//
@@ -121,6 +147,10 @@ type EnvironmentObservation struct {
 	//    is ready to use.
 	//
 	//    * UPDATING - Indicates the request to update the environment is in progress.
+	//
+	//    * ROLLING_BACK - Indicates the request to update environment details,
+	//    or upgrade the environment version, failed and Amazon MWAA is restoring
+	//    the environment using the latest storage volume snapshot.
 	//
 	//    * DELETING - Indicates the request to delete the environment is in progress.
 	//
@@ -134,7 +164,8 @@ type EnvironmentObservation struct {
 	//    and the environment has rolled back successfully and is ready to use.
 	//
 	// We recommend reviewing our troubleshooting guide for a list of common errors
-	// and their solutions. To learn more, see Amazon MWAA troubleshooting (https://docs.aws.amazon.com/mwaa/latest/userguide/troubleshooting.html).
+	// and their solutions. For more information, see Amazon MWAA troubleshooting
+	// (https://docs.aws.amazon.com/mwaa/latest/userguide/troubleshooting.html).
 	Status *string `json:"status,omitempty"`
 }
 

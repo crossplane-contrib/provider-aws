@@ -113,6 +113,9 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 			}
 			if elem.LaunchTemplateData.CpuOptions != nil {
 				f3f2 := &svcapitypes.LaunchTemplateCPUOptionsRequest{}
+				if elem.LaunchTemplateData.CpuOptions.AmdSevSnp != nil {
+					f3f2.AmdSevSnp = elem.LaunchTemplateData.CpuOptions.AmdSevSnp
+				}
 				if elem.LaunchTemplateData.CpuOptions.CoreCount != nil {
 					f3f2.CoreCount = elem.LaunchTemplateData.CpuOptions.CoreCount
 				}
@@ -743,6 +746,9 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions != nil {
 			f0f2 := &svcsdk.LaunchTemplateCpuOptionsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp != nil {
+				f0f2.SetAmdSevSnp(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp)
+			}
 			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount != nil {
 				f0f2.SetCoreCount(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount)
 			}

@@ -180,6 +180,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	if resp.DomainStatus.AutoTuneOptions != nil {
 		f4 := &svcapitypes.AutoTuneOptionsInput{}
+		if resp.DomainStatus.AutoTuneOptions.UseOffPeakWindow != nil {
+			f4.UseOffPeakWindow = resp.DomainStatus.AutoTuneOptions.UseOffPeakWindow
+		}
 		cr.Spec.ForProvider.AutoTuneOptions = f4
 	} else {
 		cr.Spec.ForProvider.AutoTuneOptions = nil
@@ -220,6 +223,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.DomainStatus.ClusterConfig.InstanceType != nil {
 			f6.InstanceType = resp.DomainStatus.ClusterConfig.InstanceType
 		}
+		if resp.DomainStatus.ClusterConfig.MultiAZWithStandbyEnabled != nil {
+			f6.MultiAZWithStandbyEnabled = resp.DomainStatus.ClusterConfig.MultiAZWithStandbyEnabled
+		}
 		if resp.DomainStatus.ClusterConfig.WarmCount != nil {
 			f6.WarmCount = resp.DomainStatus.ClusterConfig.WarmCount
 		}
@@ -230,11 +236,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f6.WarmType = resp.DomainStatus.ClusterConfig.WarmType
 		}
 		if resp.DomainStatus.ClusterConfig.ZoneAwarenessConfig != nil {
-			f6f9 := &svcapitypes.ZoneAwarenessConfig{}
+			f6f10 := &svcapitypes.ZoneAwarenessConfig{}
 			if resp.DomainStatus.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount != nil {
-				f6f9.AvailabilityZoneCount = resp.DomainStatus.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount
+				f6f10.AvailabilityZoneCount = resp.DomainStatus.ClusterConfig.ZoneAwarenessConfig.AvailabilityZoneCount
 			}
-			f6.ZoneAwarenessConfig = f6f9
+			f6.ZoneAwarenessConfig = f6f10
 		}
 		if resp.DomainStatus.ClusterConfig.ZoneAwarenessEnabled != nil {
 			f6.ZoneAwarenessEnabled = resp.DomainStatus.ClusterConfig.ZoneAwarenessEnabled
@@ -381,49 +387,81 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.NodeToNodeEncryptionOptions = nil
 	}
+	if resp.DomainStatus.OffPeakWindowOptions != nil {
+		f20 := &svcapitypes.OffPeakWindowOptions{}
+		if resp.DomainStatus.OffPeakWindowOptions.Enabled != nil {
+			f20.Enabled = resp.DomainStatus.OffPeakWindowOptions.Enabled
+		}
+		if resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow != nil {
+			f20f1 := &svcapitypes.OffPeakWindow{}
+			if resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow.WindowStartTime != nil {
+				f20f1f0 := &svcapitypes.WindowStartTime{}
+				if resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow.WindowStartTime.Hours != nil {
+					f20f1f0.Hours = resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow.WindowStartTime.Hours
+				}
+				if resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow.WindowStartTime.Minutes != nil {
+					f20f1f0.Minutes = resp.DomainStatus.OffPeakWindowOptions.OffPeakWindow.WindowStartTime.Minutes
+				}
+				f20f1.WindowStartTime = f20f1f0
+			}
+			f20.OffPeakWindow = f20f1
+		}
+		cr.Spec.ForProvider.OffPeakWindowOptions = f20
+	} else {
+		cr.Spec.ForProvider.OffPeakWindowOptions = nil
+	}
 	if resp.DomainStatus.Processing != nil {
 		cr.Status.AtProvider.Processing = resp.DomainStatus.Processing
 	} else {
 		cr.Status.AtProvider.Processing = nil
 	}
 	if resp.DomainStatus.ServiceSoftwareOptions != nil {
-		f21 := &svcapitypes.ServiceSoftwareOptions{}
+		f22 := &svcapitypes.ServiceSoftwareOptions{}
 		if resp.DomainStatus.ServiceSoftwareOptions.AutomatedUpdateDate != nil {
-			f21.AutomatedUpdateDate = &metav1.Time{*resp.DomainStatus.ServiceSoftwareOptions.AutomatedUpdateDate}
+			f22.AutomatedUpdateDate = &metav1.Time{*resp.DomainStatus.ServiceSoftwareOptions.AutomatedUpdateDate}
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.Cancellable != nil {
-			f21.Cancellable = resp.DomainStatus.ServiceSoftwareOptions.Cancellable
+			f22.Cancellable = resp.DomainStatus.ServiceSoftwareOptions.Cancellable
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.CurrentVersion != nil {
-			f21.CurrentVersion = resp.DomainStatus.ServiceSoftwareOptions.CurrentVersion
+			f22.CurrentVersion = resp.DomainStatus.ServiceSoftwareOptions.CurrentVersion
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.Description != nil {
-			f21.Description = resp.DomainStatus.ServiceSoftwareOptions.Description
+			f22.Description = resp.DomainStatus.ServiceSoftwareOptions.Description
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.NewVersion != nil {
-			f21.NewVersion = resp.DomainStatus.ServiceSoftwareOptions.NewVersion
+			f22.NewVersion = resp.DomainStatus.ServiceSoftwareOptions.NewVersion
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.OptionalDeployment != nil {
-			f21.OptionalDeployment = resp.DomainStatus.ServiceSoftwareOptions.OptionalDeployment
+			f22.OptionalDeployment = resp.DomainStatus.ServiceSoftwareOptions.OptionalDeployment
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.UpdateAvailable != nil {
-			f21.UpdateAvailable = resp.DomainStatus.ServiceSoftwareOptions.UpdateAvailable
+			f22.UpdateAvailable = resp.DomainStatus.ServiceSoftwareOptions.UpdateAvailable
 		}
 		if resp.DomainStatus.ServiceSoftwareOptions.UpdateStatus != nil {
-			f21.UpdateStatus = resp.DomainStatus.ServiceSoftwareOptions.UpdateStatus
+			f22.UpdateStatus = resp.DomainStatus.ServiceSoftwareOptions.UpdateStatus
 		}
-		cr.Status.AtProvider.ServiceSoftwareOptions = f21
+		cr.Status.AtProvider.ServiceSoftwareOptions = f22
 	} else {
 		cr.Status.AtProvider.ServiceSoftwareOptions = nil
 	}
 	if resp.DomainStatus.SnapshotOptions != nil {
-		f22 := &svcapitypes.SnapshotOptions{}
+		f23 := &svcapitypes.SnapshotOptions{}
 		if resp.DomainStatus.SnapshotOptions.AutomatedSnapshotStartHour != nil {
-			f22.AutomatedSnapshotStartHour = resp.DomainStatus.SnapshotOptions.AutomatedSnapshotStartHour
+			f23.AutomatedSnapshotStartHour = resp.DomainStatus.SnapshotOptions.AutomatedSnapshotStartHour
 		}
-		cr.Status.AtProvider.SnapshotOptions = f22
+		cr.Status.AtProvider.SnapshotOptions = f23
 	} else {
 		cr.Status.AtProvider.SnapshotOptions = nil
+	}
+	if resp.DomainStatus.SoftwareUpdateOptions != nil {
+		f24 := &svcapitypes.SoftwareUpdateOptions{}
+		if resp.DomainStatus.SoftwareUpdateOptions.AutoSoftwareUpdateEnabled != nil {
+			f24.AutoSoftwareUpdateEnabled = resp.DomainStatus.SoftwareUpdateOptions.AutoSoftwareUpdateEnabled
+		}
+		cr.Spec.ForProvider.SoftwareUpdateOptions = f24
+	} else {
+		cr.Spec.ForProvider.SoftwareUpdateOptions = nil
 	}
 	if resp.DomainStatus.UpgradeProcessing != nil {
 		cr.Status.AtProvider.UpgradeProcessing = resp.DomainStatus.UpgradeProcessing
@@ -431,38 +469,38 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.UpgradeProcessing = nil
 	}
 	if resp.DomainStatus.VPCOptions != nil {
-		f24 := &svcapitypes.VPCDerivedInfo{}
+		f26 := &svcapitypes.VPCDerivedInfo{}
 		if resp.DomainStatus.VPCOptions.AvailabilityZones != nil {
-			f24f0 := []*string{}
-			for _, f24f0iter := range resp.DomainStatus.VPCOptions.AvailabilityZones {
-				var f24f0elem string
-				f24f0elem = *f24f0iter
-				f24f0 = append(f24f0, &f24f0elem)
+			f26f0 := []*string{}
+			for _, f26f0iter := range resp.DomainStatus.VPCOptions.AvailabilityZones {
+				var f26f0elem string
+				f26f0elem = *f26f0iter
+				f26f0 = append(f26f0, &f26f0elem)
 			}
-			f24.AvailabilityZones = f24f0
+			f26.AvailabilityZones = f26f0
 		}
 		if resp.DomainStatus.VPCOptions.SecurityGroupIds != nil {
-			f24f1 := []*string{}
-			for _, f24f1iter := range resp.DomainStatus.VPCOptions.SecurityGroupIds {
-				var f24f1elem string
-				f24f1elem = *f24f1iter
-				f24f1 = append(f24f1, &f24f1elem)
+			f26f1 := []*string{}
+			for _, f26f1iter := range resp.DomainStatus.VPCOptions.SecurityGroupIds {
+				var f26f1elem string
+				f26f1elem = *f26f1iter
+				f26f1 = append(f26f1, &f26f1elem)
 			}
-			f24.SecurityGroupIDs = f24f1
+			f26.SecurityGroupIDs = f26f1
 		}
 		if resp.DomainStatus.VPCOptions.SubnetIds != nil {
-			f24f2 := []*string{}
-			for _, f24f2iter := range resp.DomainStatus.VPCOptions.SubnetIds {
-				var f24f2elem string
-				f24f2elem = *f24f2iter
-				f24f2 = append(f24f2, &f24f2elem)
+			f26f2 := []*string{}
+			for _, f26f2iter := range resp.DomainStatus.VPCOptions.SubnetIds {
+				var f26f2elem string
+				f26f2elem = *f26f2iter
+				f26f2 = append(f26f2, &f26f2elem)
 			}
-			f24.SubnetIDs = f24f2
+			f26.SubnetIDs = f26f2
 		}
 		if resp.DomainStatus.VPCOptions.VPCId != nil {
-			f24.VPCID = resp.DomainStatus.VPCOptions.VPCId
+			f26.VPCID = resp.DomainStatus.VPCOptions.VPCId
 		}
-		cr.Status.AtProvider.VPCOptions = f24
+		cr.Status.AtProvider.VPCOptions = f26
 	} else {
 		cr.Status.AtProvider.VPCOptions = nil
 	}

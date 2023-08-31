@@ -72,6 +72,8 @@ spec:
                     properties:
                       dnsRecordIPType:
                         type: string
+                      privateDNSOnlyForInboundResolverEndpoint:
+                        type: boolean
                     type: object
                   ipAddressType:
                     description: The IP address type for the endpoint.

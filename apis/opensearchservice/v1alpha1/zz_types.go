@@ -110,6 +110,8 @@ type AutoTuneOptions struct {
 	DesiredState *string `json:"desiredState,omitempty"`
 
 	MaintenanceSchedules []*AutoTuneMaintenanceSchedule `json:"maintenanceSchedules,omitempty"`
+
+	UseOffPeakWindow *bool `json:"useOffPeakWindow,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -118,6 +120,8 @@ type AutoTuneOptionsInput struct {
 	DesiredState *string `json:"desiredState,omitempty"`
 
 	MaintenanceSchedules []*AutoTuneMaintenanceSchedule `json:"maintenanceSchedules,omitempty"`
+
+	UseOffPeakWindow *bool `json:"useOffPeakWindow,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -126,6 +130,8 @@ type AutoTuneOptionsOutput struct {
 	// The Auto-Tune state for the domain. For valid states see Auto-Tune for Amazon
 	// OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
 	State *string `json:"state,omitempty"`
+
+	UseOffPeakWindow *bool `json:"useOffPeakWindow,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -170,6 +176,8 @@ type ClusterConfig struct {
 	InstanceCount *int64 `json:"instanceCount,omitempty"`
 
 	InstanceType *string `json:"instanceType,omitempty"`
+
+	MultiAZWithStandbyEnabled *bool `json:"multiAZWithStandbyEnabled,omitempty"`
 
 	WarmCount *int64 `json:"warmCount,omitempty"`
 
@@ -254,6 +262,14 @@ type DomainInfo struct {
 }
 
 // +kubebuilder:skipversion
+type DomainNodesStatus struct {
+	InstanceType *string `json:"instanceType,omitempty"`
+	// The type of EBS volume that a domain uses. For more information, see Configuring
+	// EBS-based storage (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/opensearch-createupdatedomains.html#opensearch-createdomain-configure-ebs).
+	StorageVolumeType *string `json:"storageVolumeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DomainPackageDetails struct {
 	// The name of an OpenSearch Service domain. Domain names are unique across
 	// the domains owned by an account within an Amazon Web Services Region.
@@ -326,6 +342,10 @@ type DomainStatus_SDK struct {
 	// Enables or disables node-to-node encryption. For more information, see Node-to-node
 	// encryption for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/ntn.html).
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
+	// Options for a domain's off-peak window (https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_OffPeakWindow.html),
+	// during which OpenSearch Service can perform mandatory configuration changes
+	// on the domain.
+	OffPeakWindowOptions *OffPeakWindowOptions `json:"offPeakWindowOptions,omitempty"`
 
 	Processing *bool `json:"processing,omitempty"`
 	// The current status of the service software for an Amazon OpenSearch Service
@@ -335,6 +355,8 @@ type DomainStatus_SDK struct {
 	// The time, in UTC format, when OpenSearch Service takes a daily automated
 	// snapshot of the specified domain. Default is 0 hours.
 	SnapshotOptions *SnapshotOptions `json:"snapshotOptions,omitempty"`
+	// Options for configuring service software updates for a domain.
+	SoftwareUpdateOptions *SoftwareUpdateOptions `json:"softwareUpdateOptions,omitempty"`
 
 	UpgradeProcessing *bool `json:"upgradeProcessing,omitempty"`
 	// Information about the subnets and security groups for an Amazon OpenSearch
@@ -458,6 +480,37 @@ type NodeToNodeEncryptionOptionsStatus struct {
 }
 
 // +kubebuilder:skipversion
+type OffPeakWindow struct {
+	// The desired start time for an off-peak maintenance window (https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_OffPeakWindow.html).
+	WindowStartTime *WindowStartTime `json:"windowStartTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OffPeakWindowOptions struct {
+	Enabled *bool `json:"enabled,omitempty"`
+	// A custom 10-hour, low-traffic window during which OpenSearch Service can
+	// perform mandatory configuration changes on the domain. These actions can
+	// include scheduled service software updates and blue/green Auto-Tune enhancements.
+	// OpenSearch Service will schedule these actions during the window that you
+	// specify.
+	//
+	// If you don't specify a window start time, it defaults to 10:00 P.M. local
+	// time.
+	//
+	// For more information, see Defining off-peak maintenance windows for Amazon
+	// OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/off-peak.html).
+	OffPeakWindow *OffPeakWindow `json:"offPeakWindow,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OffPeakWindowOptionsStatus struct {
+	// Options for a domain's off-peak window (https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_OffPeakWindow.html),
+	// during which OpenSearch Service can perform mandatory configuration changes
+	// on the domain.
+	Options *OffPeakWindowOptions `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type OptionStatus struct {
 	PendingDeletion *bool `json:"pendingDeletion,omitempty"`
 }
@@ -527,6 +580,17 @@ type SAMLOptionsOutput struct {
 }
 
 // +kubebuilder:skipversion
+type ScheduledAction struct {
+	Cancellable *bool `json:"cancellable,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	Mandatory *bool `json:"mandatory,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ServiceSoftwareOptions struct {
 	AutomatedUpdateDate *metav1.Time `json:"automatedUpdateDate,omitempty"`
 
@@ -555,6 +619,17 @@ type SnapshotOptionsStatus struct {
 	// The time, in UTC format, when OpenSearch Service takes a daily automated
 	// snapshot of the specified domain. Default is 0 hours.
 	Options *SnapshotOptions `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SoftwareUpdateOptions struct {
+	AutoSoftwareUpdateEnabled *bool `json:"autoSoftwareUpdateEnabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SoftwareUpdateOptionsStatus struct {
+	// Options for configuring service software updates for a domain.
+	Options *SoftwareUpdateOptions `json:"options,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -625,6 +700,13 @@ type ValidationFailure struct {
 // +kubebuilder:skipversion
 type VersionStatus struct {
 	Options *string `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type WindowStartTime struct {
+	Hours *int64 `json:"hours,omitempty"`
+
+	Minutes *int64 `json:"minutes,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -218,8 +218,6 @@ type DeleteReplicationGroupMemberAction struct {
 // +kubebuilder:skipversion
 type Endpoint struct {
 	Address *string `json:"address,omitempty"`
-
-	CachePeriodInMinutes *int64 `json:"cachePeriodInMinutes,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -720,6 +718,8 @@ type TableDescription struct {
 	BillingModeSummary *BillingModeSummary `json:"billingModeSummary,omitempty"`
 
 	CreationDateTime *metav1.Time `json:"creationDateTime,omitempty"`
+
+	DeletionProtectionEnabled *bool `json:"deletionProtectionEnabled,omitempty"`
 
 	GlobalSecondaryIndexes []*GlobalSecondaryIndexDescription `json:"globalSecondaryIndexes,omitempty"`
 

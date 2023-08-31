@@ -197,6 +197,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions != nil {
 				f0f3f2 := &svcapitypes.LaunchTemplateCPUOptions{}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.AmdSevSnp != nil {
+					f0f3f2.AmdSevSnp = resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.AmdSevSnp
+				}
 				if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.CoreCount != nil {
 					f0f3f2.CoreCount = resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.CoreCount
 				}

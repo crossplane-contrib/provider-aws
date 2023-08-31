@@ -183,6 +183,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.FunctionURL = nil
 	}
+	if resp.InvokeMode != nil {
+		cr.Spec.ForProvider.InvokeMode = resp.InvokeMode
+	} else {
+		cr.Spec.ForProvider.InvokeMode = nil
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

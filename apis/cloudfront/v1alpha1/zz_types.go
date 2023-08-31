@@ -179,10 +179,10 @@ type CachePolicyConfig struct {
 	// viewer.
 	//
 	// The headers, cookies, and query strings that are included in the cache key
-	// are automatically included in requests that CloudFront sends to the origin.
-	// CloudFront sends a request when it can't find an object in its cache that
-	// matches the request's cache key. If you want to send values to the origin
-	// but not include them in the cache key, use OriginRequestPolicy.
+	// are also included in requests that CloudFront sends to the origin. CloudFront
+	// sends a request when it can't find an object in its cache that matches the
+	// request's cache key. If you want to send values to the origin but not include
+	// them in the cache key, use OriginRequestPolicy.
 	ParametersInCacheKeyAndForwardedToOrigin *ParametersInCacheKeyAndForwardedToOrigin `json:"parametersInCacheKeyAndForwardedToOrigin,omitempty"`
 }
 
@@ -233,10 +233,10 @@ type CachePolicySummary struct {
 	//    want objects to stay in the CloudFront cache.
 	//
 	// The headers, cookies, and query strings that are included in the cache key
-	// are automatically included in requests that CloudFront sends to the origin.
-	// CloudFront sends a request when it can't find a valid object in its cache
-	// that matches the request's cache key. If you want to send values to the origin
-	// but not include them in the cache key, use OriginRequestPolicy.
+	// are also included in requests that CloudFront sends to the origin. CloudFront
+	// sends a request when it can't find a valid object in its cache that matches
+	// the request's cache key. If you want to send values to the origin but not
+	// include them in the cache key, use OriginRequestPolicy.
 	CachePolicy *CachePolicy_SDK `json:"cachePolicy,omitempty"`
 
 	Type *string `json:"type_,omitempty"`
@@ -257,10 +257,10 @@ type CachePolicy_SDK struct {
 	//    want objects to stay in the CloudFront cache.
 	//
 	// The headers, cookies, and query strings that are included in the cache key
-	// are automatically included in requests that CloudFront sends to the origin.
-	// CloudFront sends a request when it can't find a valid object in its cache
-	// that matches the request's cache key. If you want to send values to the origin
-	// but not include them in the cache key, use OriginRequestPolicy.
+	// are also included in requests that CloudFront sends to the origin. CloudFront
+	// sends a request when it can't find a valid object in its cache that matches
+	// the request's cache key. If you want to send values to the origin but not
+	// include them in the cache key, use OriginRequestPolicy.
 	CachePolicyConfig *CachePolicyConfig `json:"cachePolicyConfig,omitempty"`
 
 	ID *string `json:"id,omitempty"`
@@ -1212,20 +1212,20 @@ type Origins struct {
 // +kubebuilder:skipversion
 type ParametersInCacheKeyAndForwardedToOrigin struct {
 	// An object that determines whether any cookies in viewer requests (and if
-	// so, which cookies) are included in the cache key and automatically included
-	// in requests that CloudFront sends to the origin.
+	// so, which cookies) are included in the cache key and in requests that CloudFront
+	// sends to the origin.
 	CookiesConfig *CachePolicyCookiesConfig `json:"cookiesConfig,omitempty"`
 
 	EnableAcceptEncodingBrotli *bool `json:"enableAcceptEncodingBrotli,omitempty"`
 
 	EnableAcceptEncodingGzip *bool `json:"enableAcceptEncodingGzip,omitempty"`
 	// An object that determines whether any HTTP headers (and if so, which headers)
-	// are included in the cache key and automatically included in requests that
-	// CloudFront sends to the origin.
+	// are included in the cache key and in requests that CloudFront sends to the
+	// origin.
 	HeadersConfig *CachePolicyHeadersConfig `json:"headersConfig,omitempty"`
 	// An object that determines whether any URL query strings in viewer requests
-	// (and if so, which query strings) are included in the cache key and automatically
-	// included in requests that CloudFront sends to the origin.
+	// (and if so, which query strings) are included in the cache key and in requests
+	// that CloudFront sends to the origin.
 	QueryStringsConfig *CachePolicyQueryStringsConfig `json:"queryStringsConfig,omitempty"`
 }
 

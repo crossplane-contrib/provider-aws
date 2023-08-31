@@ -28,6 +28,25 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AssociatedPermission struct {
+	ARN *string `json:"arn,omitempty"`
+
+	DefaultVersion *bool `json:"defaultVersion,omitempty"`
+
+	FeatureSet *string `json:"featureSet,omitempty"`
+
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
+	PermissionVersion *string `json:"permissionVersion,omitempty"`
+
+	ResourceShareARN *string `json:"resourceShareARN,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Principal struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
@@ -38,6 +57,25 @@ type Principal struct {
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 
 	ResourceShareARN *string `json:"resourceShareARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplacePermissionAssociationsWork struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	FromPermissionARN *string `json:"fromPermissionARN,omitempty"`
+
+	FromPermissionVersion *string `json:"fromPermissionVersion,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
+	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	ToPermissionARN *string `json:"toPermissionARN,omitempty"`
+
+	ToPermissionVersion *string `json:"toPermissionVersion,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -99,6 +137,8 @@ type ResourceSharePermissionDetail struct {
 
 	DefaultVersion *bool `json:"defaultVersion,omitempty"`
 
+	FeatureSet *string `json:"featureSet,omitempty"`
+
 	IsResourceTypeDefault *bool `json:"isResourceTypeDefault,omitempty"`
 
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
@@ -107,7 +147,13 @@ type ResourceSharePermissionDetail struct {
 
 	Permission *string `json:"permission,omitempty"`
 
+	PermissionType *string `json:"permissionType,omitempty"`
+
 	ResourceType *string `json:"resourceType,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 
 	Version *string `json:"version,omitempty"`
 }
@@ -120,15 +166,21 @@ type ResourceSharePermissionSummary struct {
 
 	DefaultVersion *bool `json:"defaultVersion,omitempty"`
 
+	FeatureSet *string `json:"featureSet,omitempty"`
+
 	IsResourceTypeDefault *bool `json:"isResourceTypeDefault,omitempty"`
 
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 
+	PermissionType *string `json:"permissionType,omitempty"`
+
 	ResourceType *string `json:"resourceType,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 
 	Version *string `json:"version,omitempty"`
 }

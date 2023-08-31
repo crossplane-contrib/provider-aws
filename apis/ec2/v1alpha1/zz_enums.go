@@ -127,6 +127,13 @@ const (
 	AllowsMultipleInstanceTypes_off AllowsMultipleInstanceTypes = "off"
 )
 
+type AmdSevSnpSpecification string
+
+const (
+	AmdSevSnpSpecification_enabled  AmdSevSnpSpecification = "enabled"
+	AmdSevSnpSpecification_disabled AmdSevSnpSpecification = "disabled"
+)
+
 type AnalysisStatus string
 
 const (
@@ -262,8 +269,9 @@ const (
 type BootModeValues string
 
 const (
-	BootModeValues_legacy_bios BootModeValues = "legacy-bios"
-	BootModeValues_uefi        BootModeValues = "uefi"
+	BootModeValues_legacy_bios    BootModeValues = "legacy-bios"
+	BootModeValues_uefi           BootModeValues = "uefi"
+	BootModeValues_uefi_preferred BootModeValues = "uefi-preferred"
 )
 
 type BundleTaskState string
@@ -882,6 +890,13 @@ const (
 	HTTPTokensState_required HTTPTokensState = "required"
 )
 
+type HostMaintenance string
+
+const (
+	HostMaintenance_on  HostMaintenance = "on"
+	HostMaintenance_off HostMaintenance = "off"
+)
+
 type HostRecovery string
 
 const (
@@ -1201,6 +1216,13 @@ type InstanceAutoRecoveryState string
 const (
 	InstanceAutoRecoveryState_disabled InstanceAutoRecoveryState = "disabled"
 	InstanceAutoRecoveryState_default  InstanceAutoRecoveryState = "default"
+)
+
+type InstanceBootModeValues string
+
+const (
+	InstanceBootModeValues_legacy_bios InstanceBootModeValues = "legacy-bios"
+	InstanceBootModeValues_uefi        InstanceBootModeValues = "uefi"
 )
 
 type InstanceEventWindowState string
@@ -1923,6 +1945,41 @@ const (
 	InstanceType_r6idn_16xlarge    InstanceType = "r6idn.16xlarge"
 	InstanceType_r6idn_24xlarge    InstanceType = "r6idn.24xlarge"
 	InstanceType_r6idn_32xlarge    InstanceType = "r6idn.32xlarge"
+	InstanceType_c7g_metal         InstanceType = "c7g.metal"
+	InstanceType_m7g_medium        InstanceType = "m7g.medium"
+	InstanceType_m7g_large         InstanceType = "m7g.large"
+	InstanceType_m7g_xlarge        InstanceType = "m7g.xlarge"
+	InstanceType_m7g_2xlarge       InstanceType = "m7g.2xlarge"
+	InstanceType_m7g_4xlarge       InstanceType = "m7g.4xlarge"
+	InstanceType_m7g_8xlarge       InstanceType = "m7g.8xlarge"
+	InstanceType_m7g_12xlarge      InstanceType = "m7g.12xlarge"
+	InstanceType_m7g_16xlarge      InstanceType = "m7g.16xlarge"
+	InstanceType_m7g_metal         InstanceType = "m7g.metal"
+	InstanceType_r7g_medium        InstanceType = "r7g.medium"
+	InstanceType_r7g_large         InstanceType = "r7g.large"
+	InstanceType_r7g_xlarge        InstanceType = "r7g.xlarge"
+	InstanceType_r7g_2xlarge       InstanceType = "r7g.2xlarge"
+	InstanceType_r7g_4xlarge       InstanceType = "r7g.4xlarge"
+	InstanceType_r7g_8xlarge       InstanceType = "r7g.8xlarge"
+	InstanceType_r7g_12xlarge      InstanceType = "r7g.12xlarge"
+	InstanceType_r7g_16xlarge      InstanceType = "r7g.16xlarge"
+	InstanceType_r7g_metal         InstanceType = "r7g.metal"
+	InstanceType_c6in_metal        InstanceType = "c6in.metal"
+	InstanceType_m6in_metal        InstanceType = "m6in.metal"
+	InstanceType_m6idn_metal       InstanceType = "m6idn.metal"
+	InstanceType_r6in_metal        InstanceType = "r6in.metal"
+	InstanceType_r6idn_metal       InstanceType = "r6idn.metal"
+	InstanceType_inf2_xlarge       InstanceType = "inf2.xlarge"
+	InstanceType_inf2_8xlarge      InstanceType = "inf2.8xlarge"
+	InstanceType_inf2_24xlarge     InstanceType = "inf2.24xlarge"
+	InstanceType_inf2_48xlarge     InstanceType = "inf2.48xlarge"
+	InstanceType_trn1n_32xlarge    InstanceType = "trn1n.32xlarge"
+	InstanceType_i4g_large         InstanceType = "i4g.large"
+	InstanceType_i4g_xlarge        InstanceType = "i4g.xlarge"
+	InstanceType_i4g_2xlarge       InstanceType = "i4g.2xlarge"
+	InstanceType_i4g_4xlarge       InstanceType = "i4g.4xlarge"
+	InstanceType_i4g_8xlarge       InstanceType = "i4g.8xlarge"
+	InstanceType_i4g_16xlarge      InstanceType = "i4g.16xlarge"
 )
 
 type InstanceTypeHypervisor string
@@ -2774,6 +2831,12 @@ const (
 	SummaryStatus_insufficient_data SummaryStatus = "insufficient-data"
 	SummaryStatus_not_applicable    SummaryStatus = "not-applicable"
 	SummaryStatus_initializing      SummaryStatus = "initializing"
+)
+
+type SupportedAdditionalProcessorFeature string
+
+const (
+	SupportedAdditionalProcessorFeature_amd_sev_snp SupportedAdditionalProcessorFeature = "amd-sev-snp"
 )
 
 type TPMSupportValues string

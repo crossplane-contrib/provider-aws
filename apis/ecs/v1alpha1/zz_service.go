@@ -44,7 +44,7 @@ type ServiceParameters struct {
 	// is specified, the default value of ECS is used.
 	DeploymentController *DeploymentController `json:"deploymentController,omitempty"`
 	// The number of instantiations of the specified task definition to place and
-	// keep running on your cluster.
+	// keep running in your service.
 	//
 	// This is required if schedulingStrategy is REPLICA or isn't specified. If
 	// schedulingStrategy is DAEMON then this isn't required.
@@ -54,9 +54,9 @@ type ServiceParameters struct {
 	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	EnableECSManagedTags *bool `json:"enableECSManagedTags,omitempty"`
-	// Determines whether the execute command functionality is enabled for the service.
-	// If true, this enables execute command functionality on all containers in
-	// the service tasks.
+	// Determines whether the execute command functionality is turned on for the
+	// service. If true, this enables execute command functionality on all containers
+	// in the service tasks.
 	EnableExecuteCommand *bool `json:"enableExecuteCommand,omitempty"`
 	// The period of time, in seconds, that the Amazon ECS service scheduler ignores
 	// unhealthy Elastic Load Balancing target health checks after a task has first
@@ -112,7 +112,8 @@ type ServiceParameters struct {
 	// Specifies whether to propagate the tags from the task definition to the task.
 	// If no value is specified, the tags aren't propagated. Tags can only be propagated
 	// to the task during task creation. To add tags to a task after task creation,
-	// use the TagResource API action.
+	// use the TagResource (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html)
+	// API action.
 	PropagateTags *string `json:"propagateTags,omitempty"`
 	// The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon
 	// ECS to make calls to your load balancer on your behalf. This parameter is

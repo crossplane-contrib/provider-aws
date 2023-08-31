@@ -18,6 +18,12 @@ limitations under the License.
 
 package v1alpha1
 
+type AdditionalOptionKeys string
+
+const (
+	AdditionalOptionKeys_performanceTuning_caching AdditionalOptionKeys = "performanceTuning.caching"
+)
+
 type AggFunction string
 
 const (
@@ -250,6 +256,13 @@ const (
 	DeleteBehavior_DEPRECATE_IN_DATABASE DeleteBehavior = "DEPRECATE_IN_DATABASE"
 )
 
+type DeltaTargetCompressionType string
+
+const (
+	DeltaTargetCompressionType_uncompressed DeltaTargetCompressionType = "uncompressed"
+	DeltaTargetCompressionType_snappy       DeltaTargetCompressionType = "snappy"
+)
+
 type EnableHybridValues string
 
 const (
@@ -270,6 +283,16 @@ const (
 	ExistCondition_MUST_EXIST ExistCondition = "MUST_EXIST"
 	ExistCondition_NOT_EXIST  ExistCondition = "NOT_EXIST"
 	ExistCondition_NONE       ExistCondition = "NONE"
+)
+
+type FederationSourceErrorCode string
+
+const (
+	FederationSourceErrorCode_InvalidResponseException       FederationSourceErrorCode = "InvalidResponseException"
+	FederationSourceErrorCode_OperationTimeoutException      FederationSourceErrorCode = "OperationTimeoutException"
+	FederationSourceErrorCode_OperationNotSupportedException FederationSourceErrorCode = "OperationNotSupportedException"
+	FederationSourceErrorCode_InternalServiceException       FederationSourceErrorCode = "InternalServiceException"
+	FederationSourceErrorCode_ThrottlingException            FederationSourceErrorCode = "ThrottlingException"
 )
 
 type FieldName string
@@ -341,6 +364,16 @@ const (
 	HudiTargetCompressionType_lzo          HudiTargetCompressionType = "lzo"
 	HudiTargetCompressionType_uncompressed HudiTargetCompressionType = "uncompressed"
 	HudiTargetCompressionType_snappy       HudiTargetCompressionType = "snappy"
+)
+
+type JDBCConnectionType string
+
+const (
+	JDBCConnectionType_sqlserver  JDBCConnectionType = "sqlserver"
+	JDBCConnectionType_mysql      JDBCConnectionType = "mysql"
+	JDBCConnectionType_oracle     JDBCConnectionType = "oracle"
+	JDBCConnectionType_postgresql JDBCConnectionType = "postgresql"
+	JDBCConnectionType_redshift   JDBCConnectionType = "redshift"
 )
 
 type JDBCDataType string
@@ -565,8 +598,9 @@ const (
 type ResourceShareType string
 
 const (
-	ResourceShareType_FOREIGN ResourceShareType = "FOREIGN"
-	ResourceShareType_ALL     ResourceShareType = "ALL"
+	ResourceShareType_FOREIGN   ResourceShareType = "FOREIGN"
+	ResourceShareType_ALL       ResourceShareType = "ALL"
+	ResourceShareType_FEDERATED ResourceShareType = "FEDERATED"
 )
 
 type ResourceType string
@@ -693,6 +727,7 @@ const (
 	TargetFormat_orc     TargetFormat = "orc"
 	TargetFormat_parquet TargetFormat = "parquet"
 	TargetFormat_hudi    TargetFormat = "hudi"
+	TargetFormat_delta   TargetFormat = "delta"
 )
 
 type TaskRunSortColumnType string
@@ -799,6 +834,9 @@ const (
 	WorkerType_G_1X     WorkerType = "G.1X"
 	WorkerType_G_2X     WorkerType = "G.2X"
 	WorkerType_G_025X   WorkerType = "G.025X"
+	WorkerType_G_4X     WorkerType = "G.4X"
+	WorkerType_G_8X     WorkerType = "G.8X"
+	WorkerType_Z_2X     WorkerType = "Z.2X"
 )
 
 type WorkflowRunStatus string

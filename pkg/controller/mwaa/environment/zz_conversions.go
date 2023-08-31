@@ -184,19 +184,29 @@ func GenerateEnvironment(resp *svcsdk.GetEnvironmentOutput) *svcapitypes.Environ
 	} else {
 		cr.Spec.ForProvider.Schedulers = nil
 	}
+	if resp.Environment.StartupScriptS3ObjectVersion != nil {
+		cr.Spec.ForProvider.StartupScriptS3ObjectVersion = resp.Environment.StartupScriptS3ObjectVersion
+	} else {
+		cr.Spec.ForProvider.StartupScriptS3ObjectVersion = nil
+	}
+	if resp.Environment.StartupScriptS3Path != nil {
+		cr.Spec.ForProvider.StartupScriptS3Path = resp.Environment.StartupScriptS3Path
+	} else {
+		cr.Spec.ForProvider.StartupScriptS3Path = nil
+	}
 	if resp.Environment.Status != nil {
 		cr.Status.AtProvider.Status = resp.Environment.Status
 	} else {
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Environment.Tags != nil {
-		f21 := map[string]*string{}
-		for f21key, f21valiter := range resp.Environment.Tags {
-			var f21val string
-			f21val = *f21valiter
-			f21[f21key] = &f21val
+		f23 := map[string]*string{}
+		for f23key, f23valiter := range resp.Environment.Tags {
+			var f23val string
+			f23val = *f23valiter
+			f23[f23key] = &f23val
 		}
-		cr.Spec.ForProvider.Tags = f21
+		cr.Spec.ForProvider.Tags = f23
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -311,14 +321,20 @@ func GenerateCreateEnvironmentInput(cr *svcapitypes.Environment) *svcsdk.CreateE
 	if cr.Spec.ForProvider.Schedulers != nil {
 		res.SetSchedulers(*cr.Spec.ForProvider.Schedulers)
 	}
+	if cr.Spec.ForProvider.StartupScriptS3ObjectVersion != nil {
+		res.SetStartupScriptS3ObjectVersion(*cr.Spec.ForProvider.StartupScriptS3ObjectVersion)
+	}
+	if cr.Spec.ForProvider.StartupScriptS3Path != nil {
+		res.SetStartupScriptS3Path(*cr.Spec.ForProvider.StartupScriptS3Path)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f12 := map[string]*string{}
-		for f12key, f12valiter := range cr.Spec.ForProvider.Tags {
-			var f12val string
-			f12val = *f12valiter
-			f12[f12key] = &f12val
+		f14 := map[string]*string{}
+		for f14key, f14valiter := range cr.Spec.ForProvider.Tags {
+			var f14val string
+			f14val = *f14valiter
+			f14[f14key] = &f14val
 		}
-		res.SetTags(f12)
+		res.SetTags(f14)
 	}
 	if cr.Spec.ForProvider.WebserverAccessMode != nil {
 		res.SetWebserverAccessMode(*cr.Spec.ForProvider.WebserverAccessMode)
@@ -426,6 +442,12 @@ func GenerateUpdateEnvironmentInput(cr *svcapitypes.Environment) *svcsdk.UpdateE
 	}
 	if cr.Spec.ForProvider.Schedulers != nil {
 		res.SetSchedulers(*cr.Spec.ForProvider.Schedulers)
+	}
+	if cr.Spec.ForProvider.StartupScriptS3ObjectVersion != nil {
+		res.SetStartupScriptS3ObjectVersion(*cr.Spec.ForProvider.StartupScriptS3ObjectVersion)
+	}
+	if cr.Spec.ForProvider.StartupScriptS3Path != nil {
+		res.SetStartupScriptS3Path(*cr.Spec.ForProvider.StartupScriptS3Path)
 	}
 	if cr.Spec.ForProvider.WebserverAccessMode != nil {
 		res.SetWebserverAccessMode(*cr.Spec.ForProvider.WebserverAccessMode)

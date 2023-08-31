@@ -239,6 +239,7 @@ const (
 	RecommendationType_DKIM  RecommendationType = "DKIM"
 	RecommendationType_DMARC RecommendationType = "DMARC"
 	RecommendationType_SPF   RecommendationType = "SPF"
+	RecommendationType_BIMI  RecommendationType = "BIMI"
 )
 
 type ReviewStatus string

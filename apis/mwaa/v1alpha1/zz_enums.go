@@ -21,14 +21,16 @@ package v1alpha1
 type EnvironmentStatus_SDK string
 
 const (
-	EnvironmentStatus_SDK_CREATING      EnvironmentStatus_SDK = "CREATING"
-	EnvironmentStatus_SDK_CREATE_FAILED EnvironmentStatus_SDK = "CREATE_FAILED"
-	EnvironmentStatus_SDK_AVAILABLE     EnvironmentStatus_SDK = "AVAILABLE"
-	EnvironmentStatus_SDK_UPDATING      EnvironmentStatus_SDK = "UPDATING"
-	EnvironmentStatus_SDK_DELETING      EnvironmentStatus_SDK = "DELETING"
-	EnvironmentStatus_SDK_DELETED       EnvironmentStatus_SDK = "DELETED"
-	EnvironmentStatus_SDK_UNAVAILABLE   EnvironmentStatus_SDK = "UNAVAILABLE"
-	EnvironmentStatus_SDK_UPDATE_FAILED EnvironmentStatus_SDK = "UPDATE_FAILED"
+	EnvironmentStatus_SDK_CREATING          EnvironmentStatus_SDK = "CREATING"
+	EnvironmentStatus_SDK_CREATE_FAILED     EnvironmentStatus_SDK = "CREATE_FAILED"
+	EnvironmentStatus_SDK_AVAILABLE         EnvironmentStatus_SDK = "AVAILABLE"
+	EnvironmentStatus_SDK_UPDATING          EnvironmentStatus_SDK = "UPDATING"
+	EnvironmentStatus_SDK_DELETING          EnvironmentStatus_SDK = "DELETING"
+	EnvironmentStatus_SDK_DELETED           EnvironmentStatus_SDK = "DELETED"
+	EnvironmentStatus_SDK_UNAVAILABLE       EnvironmentStatus_SDK = "UNAVAILABLE"
+	EnvironmentStatus_SDK_UPDATE_FAILED     EnvironmentStatus_SDK = "UPDATE_FAILED"
+	EnvironmentStatus_SDK_ROLLING_BACK      EnvironmentStatus_SDK = "ROLLING_BACK"
+	EnvironmentStatus_SDK_CREATING_SNAPSHOT EnvironmentStatus_SDK = "CREATING_SNAPSHOT"
 )
 
 type LoggingLevel string

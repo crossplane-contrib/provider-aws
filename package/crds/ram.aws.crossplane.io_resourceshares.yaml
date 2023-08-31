@@ -85,7 +85,9 @@ spec:
                       same value for all other parameters. We recommend that you use
                       a UUID type of value. (https://wikipedia.org/wiki/Universally_unique_identifier).
                       \n If you don't provide this value, then Amazon Web Services
-                      generates a random one for you."
+                      generates a random one for you. \n If you retry the operation
+                      with the same ClientToken, but with different parameters, the
+                      retry fails with an IdempotentParameterMismatch error."
                     type: string
                   name:
                     description: Specifies the name of the resource share.
@@ -104,7 +106,7 @@ spec:
                     description: "Specifies a list of one or more principals to associate
                       with the resource share. \n You can include the following values:
                       \n * An Amazon Web Services account ID, for example: 123456789012
-                      \n * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                      \n * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                       of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
                       \n * An ARN of an organizational unit (OU) in Organizations,
                       for example: organizations::123456789012:ou/o-exampleorgid/ou-examplerootid-exampleouid123

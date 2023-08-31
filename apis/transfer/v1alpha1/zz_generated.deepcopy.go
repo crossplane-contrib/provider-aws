@@ -867,6 +867,11 @@ func (in *IdentityProviderDetails) DeepCopyInto(out *IdentityProviderDetails) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SftpAuthenticationMethods != nil {
+		in, out := &in.SftpAuthenticationMethods, &out.SftpAuthenticationMethods
+		*out = new(string)
+		**out = **in
+	}
 	if in.URL != nil {
 		in, out := &in.URL, &out.URL
 		*out = new(string)

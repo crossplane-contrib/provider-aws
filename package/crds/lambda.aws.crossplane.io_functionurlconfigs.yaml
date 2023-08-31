@@ -71,7 +71,7 @@ spec:
                   authType:
                     description: The type of authentication that your function URL
                       uses. Set to AWS_IAM if you want to restrict access to authenticated
-                      IAM users only. Set to NONE if you want to bypass IAM authentication
+                      users only. Set to NONE if you want to bypass IAM authentication
                       to create a public endpoint. For more information, see Security
                       and auth model for Lambda function URLs (https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html).
                     type: string
@@ -178,6 +178,17 @@ spec:
                             type: string
                         type: object
                     type: object
+                  invokeMode:
+                    description: "Use one of the following options: \n * BUFFERED
+                      – This is the default option. Lambda invokes your function using
+                      the Invoke API operation. Invocation results are available when
+                      the payload is complete. The maximum payload size is 6 MB. \n
+                      * RESPONSE_STREAM – Your function streams payload results as
+                      they become available. Lambda invokes your function using the
+                      InvokeWithResponseStream API operation. The maximum response
+                      payload size is 20 MB, however, you can request a quota increase
+                      (https://docs.aws.amazon.com/servicequotas/latest/userguide/request-quota-increase.html)."
+                    type: string
                   qualifier:
                     description: The alias name.
                     type: string

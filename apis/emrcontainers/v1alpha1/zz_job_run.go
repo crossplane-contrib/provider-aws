@@ -41,6 +41,8 @@ type JobRunParameters struct {
 	JobTemplateParameters map[string]*string `json:"jobTemplateParameters,omitempty"`
 	// The Amazon EMR release version to use for the job run.
 	ReleaseLabel *string `json:"releaseLabel,omitempty"`
+	// The retry policy configuration for the job run.
+	RetryPolicyConfiguration *RetryPolicyConfiguration `json:"retryPolicyConfiguration,omitempty"`
 	// The tags assigned to job runs.
 	Tags                   map[string]*string `json:"tags,omitempty"`
 	CustomJobRunParameters `json:",inline"`

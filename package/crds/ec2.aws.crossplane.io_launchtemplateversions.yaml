@@ -133,6 +133,8 @@ spec:
                         description: The CPU options for the instance. Both the core
                           count and threads per core must be specified in the request.
                         properties:
+                          amdSevSnp:
+                            type: string
                           coreCount:
                             format: int64
                             type: integer
@@ -1027,6 +1029,8 @@ spec:
                           cpuOptions:
                             description: The CPU options for the instance.
                             properties:
+                              amdSevSnp:
+                                type: string
                               coreCount:
                                 format: int64
                                 type: integer

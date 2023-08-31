@@ -471,19 +471,19 @@ type DBInstanceParameters struct {
 	//
 	// Valid Values:
 	//
-	//    * aurora (for MySQL 5.6-compatible Aurora)
+	//    * aurora-mysql (for Aurora MySQL DB instances)
 	//
-	//    * aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
+	//    * aurora-postgresql (for Aurora PostgreSQL DB instances)
 	//
-	//    * aurora-postgresql
+	//    * custom-oracle-ee (for RDS Custom for Oracle DB instances)
 	//
-	//    * custom-oracle-ee (for RDS Custom for Oracle instances)
+	//    * custom-oracle-ee-cdb (for RDS Custom for Oracle DB instances)
 	//
-	//    * custom-sqlserver-ee (for RDS Custom for SQL Server instances)
+	//    * custom-sqlserver-ee (for RDS Custom for SQL Server DB instances)
 	//
-	//    * custom-sqlserver-se (for RDS Custom for SQL Server instances)
+	//    * custom-sqlserver-se (for RDS Custom for SQL Server DB instances)
 	//
-	//    * custom-sqlserver-web (for RDS Custom for SQL Server instances)
+	//    * custom-sqlserver-web (for RDS Custom for SQL Server DB instances)
 	//
 	//    * mariadb
 	//
@@ -1012,14 +1012,10 @@ type DBInstanceObservation struct {
 	// True if mapping of Amazon Web Services Identity and Access Management (IAM)
 	// accounts to database accounts is enabled, and otherwise false.
 	//
-	// IAM database authentication can be enabled for the following database engines
-	//
-	//    * For MySQL 5.6, minor version 5.6.34 or higher
-	//
-	//    * For MySQL 5.7, minor version 5.7.16 or higher
-	//
-	//    * Aurora 5.6 or higher. To enable IAM database authentication for Aurora,
-	//    see DBCluster Type.
+	// For a list of engine versions that support IAM database authentication, see
+	// IAM database authentication (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RDS_Fea_Regions_DB-eng.Feature.IamDatabaseAuthentication.html)
+	// in the Amazon RDS User Guide and IAM database authentication in Aurora (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.Aurora_Fea_Regions_DB-eng.Feature.IAMdbauth.html)
+	// in the Amazon Aurora User Guide.
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 	// Provides the date and time the DB instance was created.
 	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
@@ -1055,6 +1051,9 @@ type DBInstanceObservation struct {
 	// Contains one or more identifiers of the read replicas associated with this
 	// DB instance.
 	ReadReplicaDBInstanceIdentifiers []*string `json:"readReplicaDBInstanceIdentifiers,omitempty"`
+	// Contains the identifier of the source DB cluster if this DB instance is a
+	// read replica.
+	ReadReplicaSourceDBClusterIdentifier *string `json:"readReplicaSourceDBClusterIdentifier,omitempty"`
 	// Contains the identifier of the source DB instance if this DB instance is
 	// a read replica.
 	ReadReplicaSourceDBInstanceIdentifier *string `json:"readReplicaSourceDBInstanceIdentifier,omitempty"`

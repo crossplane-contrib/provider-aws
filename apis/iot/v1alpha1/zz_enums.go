@@ -489,6 +489,8 @@ const (
 	OTAUpdateStatus_CREATE_IN_PROGRESS OTAUpdateStatus = "CREATE_IN_PROGRESS"
 	OTAUpdateStatus_CREATE_COMPLETE    OTAUpdateStatus = "CREATE_COMPLETE"
 	OTAUpdateStatus_CREATE_FAILED      OTAUpdateStatus = "CREATE_FAILED"
+	OTAUpdateStatus_DELETE_IN_PROGRESS OTAUpdateStatus = "DELETE_IN_PROGRESS"
+	OTAUpdateStatus_DELETE_FAILED      OTAUpdateStatus = "DELETE_FAILED"
 )
 
 type PolicyTemplateName string

@@ -88,3 +88,23 @@ const (
 	StorageMode_LOCAL  StorageMode = "LOCAL"
 	StorageMode_TIERED StorageMode = "TIERED"
 )
+
+type UserIdentityType string
+
+const (
+	UserIdentityType_AWSACCOUNT UserIdentityType = "AWSACCOUNT"
+	UserIdentityType_AWSSERVICE UserIdentityType = "AWSSERVICE"
+)
+
+type VPCConnectionState string
+
+const (
+	VPCConnectionState_CREATING     VPCConnectionState = "CREATING"
+	VPCConnectionState_AVAILABLE    VPCConnectionState = "AVAILABLE"
+	VPCConnectionState_INACTIVE     VPCConnectionState = "INACTIVE"
+	VPCConnectionState_DEACTIVATING VPCConnectionState = "DEACTIVATING"
+	VPCConnectionState_DELETING     VPCConnectionState = "DELETING"
+	VPCConnectionState_FAILED       VPCConnectionState = "FAILED"
+	VPCConnectionState_REJECTED     VPCConnectionState = "REJECTED"
+	VPCConnectionState_REJECTING    VPCConnectionState = "REJECTING"
+)

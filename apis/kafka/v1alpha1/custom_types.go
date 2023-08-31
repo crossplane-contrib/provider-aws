@@ -90,3 +90,7 @@ type CustomBrokerNodeGroupInfo struct {
 	// Contains information about storage volumes attached to MSK broker nodes.
 	StorageInfo *StorageInfo `json:"storageInfo,omitempty"`
 }
+
+// CustomVPCConnectionParameters includes the custom fields of VPCConnection
+// ToDo: implement all custom parameters
+type CustomVPCConnectionParameters struct{}

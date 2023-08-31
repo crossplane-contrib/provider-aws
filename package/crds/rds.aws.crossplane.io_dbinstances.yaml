@@ -684,16 +684,17 @@ spec:
                   engine:
                     description: "The name of the database engine to be used for this
                       instance. \n Not every database engine is available for every
-                      Amazon Web Services Region. \n Valid Values: \n * aurora (for
-                      MySQL 5.6-compatible Aurora) \n * aurora-mysql (for MySQL 5.7-compatible
-                      and MySQL 8.0-compatible Aurora) \n * aurora-postgresql \n *
-                      custom-oracle-ee (for RDS Custom for Oracle instances) \n *
-                      custom-sqlserver-ee (for RDS Custom for SQL Server instances)
-                      \n * custom-sqlserver-se (for RDS Custom for SQL Server instances)
-                      \n * custom-sqlserver-web (for RDS Custom for SQL Server instances)
-                      \n * mariadb \n * mysql \n * oracle-ee \n * oracle-ee-cdb \n
-                      * oracle-se2 \n * oracle-se2-cdb \n * postgres \n * sqlserver-ee
-                      \n * sqlserver-se \n * sqlserver-ex \n * sqlserver-web"
+                      Amazon Web Services Region. \n Valid Values: \n * aurora-mysql
+                      (for Aurora MySQL DB instances) \n * aurora-postgresql (for
+                      Aurora PostgreSQL DB instances) \n * custom-oracle-ee (for RDS
+                      Custom for Oracle DB instances) \n * custom-oracle-ee-cdb (for
+                      RDS Custom for Oracle DB instances) \n * custom-sqlserver-ee
+                      (for RDS Custom for SQL Server DB instances) \n * custom-sqlserver-se
+                      (for RDS Custom for SQL Server DB instances) \n * custom-sqlserver-web
+                      (for RDS Custom for SQL Server DB instances) \n * mariadb \n
+                      * mysql \n * oracle-ee \n * oracle-ee-cdb \n * oracle-se2 \n
+                      * oracle-se2-cdb \n * postgres \n * sqlserver-ee \n * sqlserver-se
+                      \n * sqlserver-ex \n * sqlserver-web"
                     type: string
                   engineVersion:
                     description: "The version number of the database engine to use.
@@ -1815,11 +1816,12 @@ spec:
                   iamDatabaseAuthenticationEnabled:
                     description: "True if mapping of Amazon Web Services Identity
                       and Access Management (IAM) accounts to database accounts is
-                      enabled, and otherwise false. \n IAM database authentication
-                      can be enabled for the following database engines \n * For MySQL
-                      5.6, minor version 5.6.34 or higher \n * For MySQL 5.7, minor
-                      version 5.7.16 or higher \n * Aurora 5.6 or higher. To enable
-                      IAM database authentication for Aurora, see DBCluster Type."
+                      enabled, and otherwise false. \n For a list of engine versions
+                      that support IAM database authentication, see IAM database authentication
+                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RDS_Fea_Regions_DB-eng.Feature.IamDatabaseAuthentication.html)
+                      in the Amazon RDS User Guide and IAM database authentication
+                      in Aurora (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.Aurora_Fea_Regions_DB-eng.Feature.IAMdbauth.html)
+                      in the Amazon Aurora User Guide."
                     type: boolean
                   instanceCreateTime:
                     description: Provides the date and time the DB instance was created.
@@ -1887,6 +1889,8 @@ spec:
                       dbInstanceIdentifier:
                         type: string
                       dbSubnetGroupName:
+                        type: string
+                      engine:
                         type: string
                       engineVersion:
                         type: string
@@ -1957,6 +1961,10 @@ spec:
                     items:
                       type: string
                     type: array
+                  readReplicaSourceDBClusterIdentifier:
+                    description: Contains the identifier of the source DB cluster
+                      if this DB instance is a read replica.
+                    type: string
                   readReplicaSourceDBInstanceIdentifier:
                     description: Contains the identifier of the source DB instance
                       if this DB instance is a read replica.

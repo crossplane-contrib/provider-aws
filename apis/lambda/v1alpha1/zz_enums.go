@@ -46,6 +46,13 @@ const (
 	EventSourcePosition_AT_TIMESTAMP EventSourcePosition = "AT_TIMESTAMP"
 )
 
+type FullDocument string
+
+const (
+	FullDocument_UpdateLookup FullDocument = "UpdateLookup"
+	FullDocument_Default      FullDocument = "Default"
+)
+
 type FunctionResponseType string
 
 const (
@@ -71,6 +78,13 @@ const (
 	InvocationType_Event           InvocationType = "Event"
 	InvocationType_RequestResponse InvocationType = "RequestResponse"
 	InvocationType_DryRun          InvocationType = "DryRun"
+)
+
+type InvokeMode string
+
+const (
+	InvokeMode_BUFFERED        InvokeMode = "BUFFERED"
+	InvokeMode_RESPONSE_STREAM InvokeMode = "RESPONSE_STREAM"
 )
 
 type LastUpdateStatus string
@@ -129,6 +143,13 @@ const (
 	ProvisionedConcurrencyStatusEnum_FAILED      ProvisionedConcurrencyStatusEnum = "FAILED"
 )
 
+type ResponseStreamingInvocationType string
+
+const (
+	ResponseStreamingInvocationType_RequestResponse ResponseStreamingInvocationType = "RequestResponse"
+	ResponseStreamingInvocationType_DryRun          ResponseStreamingInvocationType = "DryRun"
+)
+
 type Runtime string
 
 const (
@@ -160,6 +181,9 @@ const (
 	Runtime_provided       Runtime = "provided"
 	Runtime_provided_al2   Runtime = "provided.al2"
 	Runtime_nodejs18_x     Runtime = "nodejs18.x"
+	Runtime_python3_10     Runtime = "python3.10"
+	Runtime_java17         Runtime = "java17"
+	Runtime_ruby3_2        Runtime = "ruby3.2"
 )
 
 type SnapStartApplyOn string

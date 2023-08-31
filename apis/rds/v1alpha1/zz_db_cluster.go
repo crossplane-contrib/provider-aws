@@ -232,9 +232,7 @@ type DBClusterParameters struct {
 	//
 	// Valid Values:
 	//
-	//    * aurora (for MySQL 5.6-compatible Aurora)
-	//
-	//    * aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
+	//    * aurora-mysql
 	//
 	//    * aurora-postgresql
 	//
@@ -245,35 +243,16 @@ type DBClusterParameters struct {
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	// +kubebuilder:validation:Required
 	Engine *string `json:"engine"`
-	// The DB engine mode of the DB cluster, either provisioned, serverless, parallelquery,
-	// global, or multimaster.
-	//
-	// The parallelquery engine mode isn't required for Aurora MySQL version 1.23
-	// and higher 1.x versions, and version 2.09 and higher 2.x versions.
-	//
-	// The global engine mode isn't required for Aurora MySQL version 1.22 and higher
-	// 1.x versions, and global engine mode isn't required for any 2.x versions.
-	//
-	// The multimaster engine mode only applies for DB clusters created with Aurora
-	// MySQL version 5.6.10a.
+	// The DB engine mode of the DB cluster, either provisioned or serverless.
 	//
 	// The serverless engine mode only applies for Aurora Serverless v1 DB clusters.
 	//
-	// For Aurora PostgreSQL, the global engine mode isn't required, and both the
-	// parallelquery and the multimaster engine modes currently aren't supported.
-	//
-	// Limitations and requirements apply to some DB engine modes. For more information,
+	// For information about limitations and requirements for Serverless DB clusters,
 	// see the following sections in the Amazon Aurora User Guide:
 	//
 	//    * Limitations of Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
 	//
 	//    * Requirements for Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.requirements.html)
-	//
-	//    * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
-	//
-	//    * Limitations of Aurora Global Databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
-	//
-	//    * Limitations of Multi-Master Clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html#aurora-multi-master-limitations)
 	//
 	// Valid for: Aurora DB clusters only
 	EngineMode *string `json:"engineMode,omitempty"`
@@ -285,8 +264,7 @@ type DBClusterParameters struct {
 	// The amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for each DB instance in the Multi-AZ DB cluster.
 	//
-	// For information about valid IOPS values, see Amazon RDS Provisioned IOPS
-	// storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
+	// For information about valid IOPS values, see Provisioned IOPS storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
 	// in the Amazon RDS User Guide.
 	//
 	// This setting is required to create a Multi-AZ DB cluster.
@@ -585,7 +563,7 @@ type DBClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a read replica.
 	//
-	// Valid for: Aurora DB clusters only
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
 	// For DB clusters in serverless DB engine mode, the scaling properties of the
 	// DB cluster.
@@ -606,13 +584,20 @@ type DBClusterParameters struct {
 	//
 	// This setting is required to create a Multi-AZ DB cluster.
 	//
-	// Valid values: io1
+	// When specified for a Multi-AZ DB cluster, a value for the Iops parameter
+	// is required.
 	//
-	// When specified, a value for the Iops parameter is required.
+	// Valid values: aurora, aurora-iopt1 (Aurora DB clusters); io1 (Multi-AZ DB
+	// clusters)
 	//
-	// Default: io1
+	// Default: aurora (Aurora DB clusters); io1 (Multi-AZ DB clusters)
 	//
-	// Valid for: Multi-AZ DB clusters only
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
+	//
+	// For more information on storage types for Aurora DB clusters, see Storage
+	// configurations for Amazon Aurora DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html#aurora-storage-type).
+	// For more information on storage types for Multi-AZ DB clusters, see Settings
+	// for creating Multi-AZ DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/create-multi-az-db-cluster.html#create-multi-az-db-cluster-settings).
 	StorageType *string `json:"storageType,omitempty"`
 	// Tags to assign to the DB cluster.
 	//
@@ -730,6 +715,11 @@ type DBClusterObservation struct {
 	// A value that indicates whether the mapping of Amazon Web Services Identity
 	// and Access Management (IAM) accounts to database accounts is enabled.
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+	// The next time you can modify the DB cluster to use the aurora-iopt1 storage
+	// type.
+	//
+	// This setting is only for Aurora DB clusters.
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`

@@ -93,56 +93,61 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	} else {
 		cr.Status.AtProvider.CreationDateTime = nil
 	}
+	if resp.Table.DeletionProtectionEnabled != nil {
+		cr.Spec.ForProvider.DeletionProtectionEnabled = resp.Table.DeletionProtectionEnabled
+	} else {
+		cr.Spec.ForProvider.DeletionProtectionEnabled = nil
+	}
 	if resp.Table.GlobalSecondaryIndexes != nil {
-		f4 := []*svcapitypes.GlobalSecondaryIndex{}
-		for _, f4iter := range resp.Table.GlobalSecondaryIndexes {
-			f4elem := &svcapitypes.GlobalSecondaryIndex{}
-			if f4iter.IndexName != nil {
-				f4elem.IndexName = f4iter.IndexName
+		f5 := []*svcapitypes.GlobalSecondaryIndex{}
+		for _, f5iter := range resp.Table.GlobalSecondaryIndexes {
+			f5elem := &svcapitypes.GlobalSecondaryIndex{}
+			if f5iter.IndexName != nil {
+				f5elem.IndexName = f5iter.IndexName
 			}
-			if f4iter.KeySchema != nil {
-				f4elemf6 := []*svcapitypes.KeySchemaElement{}
-				for _, f4elemf6iter := range f4iter.KeySchema {
-					f4elemf6elem := &svcapitypes.KeySchemaElement{}
-					if f4elemf6iter.AttributeName != nil {
-						f4elemf6elem.AttributeName = f4elemf6iter.AttributeName
+			if f5iter.KeySchema != nil {
+				f5elemf6 := []*svcapitypes.KeySchemaElement{}
+				for _, f5elemf6iter := range f5iter.KeySchema {
+					f5elemf6elem := &svcapitypes.KeySchemaElement{}
+					if f5elemf6iter.AttributeName != nil {
+						f5elemf6elem.AttributeName = f5elemf6iter.AttributeName
 					}
-					if f4elemf6iter.KeyType != nil {
-						f4elemf6elem.KeyType = f4elemf6iter.KeyType
+					if f5elemf6iter.KeyType != nil {
+						f5elemf6elem.KeyType = f5elemf6iter.KeyType
 					}
-					f4elemf6 = append(f4elemf6, f4elemf6elem)
+					f5elemf6 = append(f5elemf6, f5elemf6elem)
 				}
-				f4elem.KeySchema = f4elemf6
+				f5elem.KeySchema = f5elemf6
 			}
-			if f4iter.Projection != nil {
-				f4elemf7 := &svcapitypes.Projection{}
-				if f4iter.Projection.NonKeyAttributes != nil {
-					f4elemf7f0 := []*string{}
-					for _, f4elemf7f0iter := range f4iter.Projection.NonKeyAttributes {
-						var f4elemf7f0elem string
-						f4elemf7f0elem = *f4elemf7f0iter
-						f4elemf7f0 = append(f4elemf7f0, &f4elemf7f0elem)
+			if f5iter.Projection != nil {
+				f5elemf7 := &svcapitypes.Projection{}
+				if f5iter.Projection.NonKeyAttributes != nil {
+					f5elemf7f0 := []*string{}
+					for _, f5elemf7f0iter := range f5iter.Projection.NonKeyAttributes {
+						var f5elemf7f0elem string
+						f5elemf7f0elem = *f5elemf7f0iter
+						f5elemf7f0 = append(f5elemf7f0, &f5elemf7f0elem)
 					}
-					f4elemf7.NonKeyAttributes = f4elemf7f0
+					f5elemf7.NonKeyAttributes = f5elemf7f0
 				}
-				if f4iter.Projection.ProjectionType != nil {
-					f4elemf7.ProjectionType = f4iter.Projection.ProjectionType
+				if f5iter.Projection.ProjectionType != nil {
+					f5elemf7.ProjectionType = f5iter.Projection.ProjectionType
 				}
-				f4elem.Projection = f4elemf7
+				f5elem.Projection = f5elemf7
 			}
-			if f4iter.ProvisionedThroughput != nil {
-				f4elemf8 := &svcapitypes.ProvisionedThroughput{}
-				if f4iter.ProvisionedThroughput.ReadCapacityUnits != nil {
-					f4elemf8.ReadCapacityUnits = f4iter.ProvisionedThroughput.ReadCapacityUnits
+			if f5iter.ProvisionedThroughput != nil {
+				f5elemf8 := &svcapitypes.ProvisionedThroughput{}
+				if f5iter.ProvisionedThroughput.ReadCapacityUnits != nil {
+					f5elemf8.ReadCapacityUnits = f5iter.ProvisionedThroughput.ReadCapacityUnits
 				}
-				if f4iter.ProvisionedThroughput.WriteCapacityUnits != nil {
-					f4elemf8.WriteCapacityUnits = f4iter.ProvisionedThroughput.WriteCapacityUnits
+				if f5iter.ProvisionedThroughput.WriteCapacityUnits != nil {
+					f5elemf8.WriteCapacityUnits = f5iter.ProvisionedThroughput.WriteCapacityUnits
 				}
-				f4elem.ProvisionedThroughput = f4elemf8
+				f5elem.ProvisionedThroughput = f5elemf8
 			}
-			f4 = append(f4, f4elem)
+			f5 = append(f5, f5elem)
 		}
-		cr.Spec.ForProvider.GlobalSecondaryIndexes = f4
+		cr.Spec.ForProvider.GlobalSecondaryIndexes = f5
 	} else {
 		cr.Spec.ForProvider.GlobalSecondaryIndexes = nil
 	}
@@ -157,18 +162,18 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.ItemCount = nil
 	}
 	if resp.Table.KeySchema != nil {
-		f7 := []*svcapitypes.KeySchemaElement{}
-		for _, f7iter := range resp.Table.KeySchema {
-			f7elem := &svcapitypes.KeySchemaElement{}
-			if f7iter.AttributeName != nil {
-				f7elem.AttributeName = f7iter.AttributeName
+		f8 := []*svcapitypes.KeySchemaElement{}
+		for _, f8iter := range resp.Table.KeySchema {
+			f8elem := &svcapitypes.KeySchemaElement{}
+			if f8iter.AttributeName != nil {
+				f8elem.AttributeName = f8iter.AttributeName
 			}
-			if f7iter.KeyType != nil {
-				f7elem.KeyType = f7iter.KeyType
+			if f8iter.KeyType != nil {
+				f8elem.KeyType = f8iter.KeyType
 			}
-			f7 = append(f7, f7elem)
+			f8 = append(f8, f8elem)
 		}
-		cr.Spec.ForProvider.KeySchema = f7
+		cr.Spec.ForProvider.KeySchema = f8
 	} else {
 		cr.Spec.ForProvider.KeySchema = nil
 	}
@@ -183,168 +188,168 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.LatestStreamLabel = nil
 	}
 	if resp.Table.LocalSecondaryIndexes != nil {
-		f10 := []*svcapitypes.LocalSecondaryIndex{}
-		for _, f10iter := range resp.Table.LocalSecondaryIndexes {
-			f10elem := &svcapitypes.LocalSecondaryIndex{}
-			if f10iter.IndexName != nil {
-				f10elem.IndexName = f10iter.IndexName
+		f11 := []*svcapitypes.LocalSecondaryIndex{}
+		for _, f11iter := range resp.Table.LocalSecondaryIndexes {
+			f11elem := &svcapitypes.LocalSecondaryIndex{}
+			if f11iter.IndexName != nil {
+				f11elem.IndexName = f11iter.IndexName
 			}
-			if f10iter.KeySchema != nil {
-				f10elemf4 := []*svcapitypes.KeySchemaElement{}
-				for _, f10elemf4iter := range f10iter.KeySchema {
-					f10elemf4elem := &svcapitypes.KeySchemaElement{}
-					if f10elemf4iter.AttributeName != nil {
-						f10elemf4elem.AttributeName = f10elemf4iter.AttributeName
+			if f11iter.KeySchema != nil {
+				f11elemf4 := []*svcapitypes.KeySchemaElement{}
+				for _, f11elemf4iter := range f11iter.KeySchema {
+					f11elemf4elem := &svcapitypes.KeySchemaElement{}
+					if f11elemf4iter.AttributeName != nil {
+						f11elemf4elem.AttributeName = f11elemf4iter.AttributeName
 					}
-					if f10elemf4iter.KeyType != nil {
-						f10elemf4elem.KeyType = f10elemf4iter.KeyType
+					if f11elemf4iter.KeyType != nil {
+						f11elemf4elem.KeyType = f11elemf4iter.KeyType
 					}
-					f10elemf4 = append(f10elemf4, f10elemf4elem)
+					f11elemf4 = append(f11elemf4, f11elemf4elem)
 				}
-				f10elem.KeySchema = f10elemf4
+				f11elem.KeySchema = f11elemf4
 			}
-			if f10iter.Projection != nil {
-				f10elemf5 := &svcapitypes.Projection{}
-				if f10iter.Projection.NonKeyAttributes != nil {
-					f10elemf5f0 := []*string{}
-					for _, f10elemf5f0iter := range f10iter.Projection.NonKeyAttributes {
-						var f10elemf5f0elem string
-						f10elemf5f0elem = *f10elemf5f0iter
-						f10elemf5f0 = append(f10elemf5f0, &f10elemf5f0elem)
+			if f11iter.Projection != nil {
+				f11elemf5 := &svcapitypes.Projection{}
+				if f11iter.Projection.NonKeyAttributes != nil {
+					f11elemf5f0 := []*string{}
+					for _, f11elemf5f0iter := range f11iter.Projection.NonKeyAttributes {
+						var f11elemf5f0elem string
+						f11elemf5f0elem = *f11elemf5f0iter
+						f11elemf5f0 = append(f11elemf5f0, &f11elemf5f0elem)
 					}
-					f10elemf5.NonKeyAttributes = f10elemf5f0
+					f11elemf5.NonKeyAttributes = f11elemf5f0
 				}
-				if f10iter.Projection.ProjectionType != nil {
-					f10elemf5.ProjectionType = f10iter.Projection.ProjectionType
+				if f11iter.Projection.ProjectionType != nil {
+					f11elemf5.ProjectionType = f11iter.Projection.ProjectionType
 				}
-				f10elem.Projection = f10elemf5
+				f11elem.Projection = f11elemf5
 			}
-			f10 = append(f10, f10elem)
+			f11 = append(f11, f11elem)
 		}
-		cr.Spec.ForProvider.LocalSecondaryIndexes = f10
+		cr.Spec.ForProvider.LocalSecondaryIndexes = f11
 	} else {
 		cr.Spec.ForProvider.LocalSecondaryIndexes = nil
 	}
 	if resp.Table.ProvisionedThroughput != nil {
-		f11 := &svcapitypes.ProvisionedThroughput{}
+		f12 := &svcapitypes.ProvisionedThroughput{}
 		if resp.Table.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f11.ReadCapacityUnits = resp.Table.ProvisionedThroughput.ReadCapacityUnits
+			f12.ReadCapacityUnits = resp.Table.ProvisionedThroughput.ReadCapacityUnits
 		}
 		if resp.Table.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f11.WriteCapacityUnits = resp.Table.ProvisionedThroughput.WriteCapacityUnits
+			f12.WriteCapacityUnits = resp.Table.ProvisionedThroughput.WriteCapacityUnits
 		}
-		cr.Spec.ForProvider.ProvisionedThroughput = f11
+		cr.Spec.ForProvider.ProvisionedThroughput = f12
 	} else {
 		cr.Spec.ForProvider.ProvisionedThroughput = nil
 	}
 	if resp.Table.Replicas != nil {
-		f12 := []*svcapitypes.ReplicaDescription{}
-		for _, f12iter := range resp.Table.Replicas {
-			f12elem := &svcapitypes.ReplicaDescription{}
-			if f12iter.GlobalSecondaryIndexes != nil {
-				f12elemf0 := []*svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
-				for _, f12elemf0iter := range f12iter.GlobalSecondaryIndexes {
-					f12elemf0elem := &svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
-					if f12elemf0iter.IndexName != nil {
-						f12elemf0elem.IndexName = f12elemf0iter.IndexName
+		f13 := []*svcapitypes.ReplicaDescription{}
+		for _, f13iter := range resp.Table.Replicas {
+			f13elem := &svcapitypes.ReplicaDescription{}
+			if f13iter.GlobalSecondaryIndexes != nil {
+				f13elemf0 := []*svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
+				for _, f13elemf0iter := range f13iter.GlobalSecondaryIndexes {
+					f13elemf0elem := &svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
+					if f13elemf0iter.IndexName != nil {
+						f13elemf0elem.IndexName = f13elemf0iter.IndexName
 					}
-					if f12elemf0iter.ProvisionedThroughputOverride != nil {
-						f12elemf0elemf1 := &svcapitypes.ProvisionedThroughputOverride{}
-						if f12elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
-							f12elemf0elemf1.ReadCapacityUnits = f12elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits
+					if f13elemf0iter.ProvisionedThroughputOverride != nil {
+						f13elemf0elemf1 := &svcapitypes.ProvisionedThroughputOverride{}
+						if f13elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
+							f13elemf0elemf1.ReadCapacityUnits = f13elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits
 						}
-						f12elemf0elem.ProvisionedThroughputOverride = f12elemf0elemf1
+						f13elemf0elem.ProvisionedThroughputOverride = f13elemf0elemf1
 					}
-					f12elemf0 = append(f12elemf0, f12elemf0elem)
+					f13elemf0 = append(f13elemf0, f13elemf0elem)
 				}
-				f12elem.GlobalSecondaryIndexes = f12elemf0
+				f13elem.GlobalSecondaryIndexes = f13elemf0
 			}
-			if f12iter.KMSMasterKeyId != nil {
-				f12elem.KMSMasterKeyID = f12iter.KMSMasterKeyId
+			if f13iter.KMSMasterKeyId != nil {
+				f13elem.KMSMasterKeyID = f13iter.KMSMasterKeyId
 			}
-			if f12iter.ProvisionedThroughputOverride != nil {
-				f12elemf2 := &svcapitypes.ProvisionedThroughputOverride{}
-				if f12iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
-					f12elemf2.ReadCapacityUnits = f12iter.ProvisionedThroughputOverride.ReadCapacityUnits
+			if f13iter.ProvisionedThroughputOverride != nil {
+				f13elemf2 := &svcapitypes.ProvisionedThroughputOverride{}
+				if f13iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
+					f13elemf2.ReadCapacityUnits = f13iter.ProvisionedThroughputOverride.ReadCapacityUnits
 				}
-				f12elem.ProvisionedThroughputOverride = f12elemf2
+				f13elem.ProvisionedThroughputOverride = f13elemf2
 			}
-			if f12iter.RegionName != nil {
-				f12elem.RegionName = f12iter.RegionName
+			if f13iter.RegionName != nil {
+				f13elem.RegionName = f13iter.RegionName
 			}
-			if f12iter.ReplicaInaccessibleDateTime != nil {
-				f12elem.ReplicaInaccessibleDateTime = &metav1.Time{*f12iter.ReplicaInaccessibleDateTime}
+			if f13iter.ReplicaInaccessibleDateTime != nil {
+				f13elem.ReplicaInaccessibleDateTime = &metav1.Time{*f13iter.ReplicaInaccessibleDateTime}
 			}
-			if f12iter.ReplicaStatus != nil {
-				f12elem.ReplicaStatus = f12iter.ReplicaStatus
+			if f13iter.ReplicaStatus != nil {
+				f13elem.ReplicaStatus = f13iter.ReplicaStatus
 			}
-			if f12iter.ReplicaStatusDescription != nil {
-				f12elem.ReplicaStatusDescription = f12iter.ReplicaStatusDescription
+			if f13iter.ReplicaStatusDescription != nil {
+				f13elem.ReplicaStatusDescription = f13iter.ReplicaStatusDescription
 			}
-			if f12iter.ReplicaStatusPercentProgress != nil {
-				f12elem.ReplicaStatusPercentProgress = f12iter.ReplicaStatusPercentProgress
+			if f13iter.ReplicaStatusPercentProgress != nil {
+				f13elem.ReplicaStatusPercentProgress = f13iter.ReplicaStatusPercentProgress
 			}
-			if f12iter.ReplicaTableClassSummary != nil {
-				f12elemf8 := &svcapitypes.TableClassSummary{}
-				if f12iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
-					f12elemf8.LastUpdateDateTime = &metav1.Time{*f12iter.ReplicaTableClassSummary.LastUpdateDateTime}
+			if f13iter.ReplicaTableClassSummary != nil {
+				f13elemf8 := &svcapitypes.TableClassSummary{}
+				if f13iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
+					f13elemf8.LastUpdateDateTime = &metav1.Time{*f13iter.ReplicaTableClassSummary.LastUpdateDateTime}
 				}
-				if f12iter.ReplicaTableClassSummary.TableClass != nil {
-					f12elemf8.TableClass = f12iter.ReplicaTableClassSummary.TableClass
+				if f13iter.ReplicaTableClassSummary.TableClass != nil {
+					f13elemf8.TableClass = f13iter.ReplicaTableClassSummary.TableClass
 				}
-				f12elem.ReplicaTableClassSummary = f12elemf8
+				f13elem.ReplicaTableClassSummary = f13elemf8
 			}
-			f12 = append(f12, f12elem)
+			f13 = append(f13, f13elem)
 		}
-		cr.Status.AtProvider.Replicas = f12
+		cr.Status.AtProvider.Replicas = f13
 	} else {
 		cr.Status.AtProvider.Replicas = nil
 	}
 	if resp.Table.RestoreSummary != nil {
-		f13 := &svcapitypes.RestoreSummary{}
+		f14 := &svcapitypes.RestoreSummary{}
 		if resp.Table.RestoreSummary.RestoreDateTime != nil {
-			f13.RestoreDateTime = &metav1.Time{*resp.Table.RestoreSummary.RestoreDateTime}
+			f14.RestoreDateTime = &metav1.Time{*resp.Table.RestoreSummary.RestoreDateTime}
 		}
 		if resp.Table.RestoreSummary.RestoreInProgress != nil {
-			f13.RestoreInProgress = resp.Table.RestoreSummary.RestoreInProgress
+			f14.RestoreInProgress = resp.Table.RestoreSummary.RestoreInProgress
 		}
 		if resp.Table.RestoreSummary.SourceBackupArn != nil {
-			f13.SourceBackupARN = resp.Table.RestoreSummary.SourceBackupArn
+			f14.SourceBackupARN = resp.Table.RestoreSummary.SourceBackupArn
 		}
 		if resp.Table.RestoreSummary.SourceTableArn != nil {
-			f13.SourceTableARN = resp.Table.RestoreSummary.SourceTableArn
+			f14.SourceTableARN = resp.Table.RestoreSummary.SourceTableArn
 		}
-		cr.Status.AtProvider.RestoreSummary = f13
+		cr.Status.AtProvider.RestoreSummary = f14
 	} else {
 		cr.Status.AtProvider.RestoreSummary = nil
 	}
 	if resp.Table.SSEDescription != nil {
-		f14 := &svcapitypes.SSEDescription{}
+		f15 := &svcapitypes.SSEDescription{}
 		if resp.Table.SSEDescription.InaccessibleEncryptionDateTime != nil {
-			f14.InaccessibleEncryptionDateTime = &metav1.Time{*resp.Table.SSEDescription.InaccessibleEncryptionDateTime}
+			f15.InaccessibleEncryptionDateTime = &metav1.Time{*resp.Table.SSEDescription.InaccessibleEncryptionDateTime}
 		}
 		if resp.Table.SSEDescription.KMSMasterKeyArn != nil {
-			f14.KMSMasterKeyARN = resp.Table.SSEDescription.KMSMasterKeyArn
+			f15.KMSMasterKeyARN = resp.Table.SSEDescription.KMSMasterKeyArn
 		}
 		if resp.Table.SSEDescription.SSEType != nil {
-			f14.SSEType = resp.Table.SSEDescription.SSEType
+			f15.SSEType = resp.Table.SSEDescription.SSEType
 		}
 		if resp.Table.SSEDescription.Status != nil {
-			f14.Status = resp.Table.SSEDescription.Status
+			f15.Status = resp.Table.SSEDescription.Status
 		}
-		cr.Status.AtProvider.SSEDescription = f14
+		cr.Status.AtProvider.SSEDescription = f15
 	} else {
 		cr.Status.AtProvider.SSEDescription = nil
 	}
 	if resp.Table.StreamSpecification != nil {
-		f15 := &svcapitypes.StreamSpecification{}
+		f16 := &svcapitypes.StreamSpecification{}
 		if resp.Table.StreamSpecification.StreamEnabled != nil {
-			f15.StreamEnabled = resp.Table.StreamSpecification.StreamEnabled
+			f16.StreamEnabled = resp.Table.StreamSpecification.StreamEnabled
 		}
 		if resp.Table.StreamSpecification.StreamViewType != nil {
-			f15.StreamViewType = resp.Table.StreamSpecification.StreamViewType
+			f16.StreamViewType = resp.Table.StreamSpecification.StreamViewType
 		}
-		cr.Spec.ForProvider.StreamSpecification = f15
+		cr.Spec.ForProvider.StreamSpecification = f16
 	} else {
 		cr.Spec.ForProvider.StreamSpecification = nil
 	}
@@ -354,14 +359,14 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.TableARN = nil
 	}
 	if resp.Table.TableClassSummary != nil {
-		f17 := &svcapitypes.TableClassSummary{}
+		f18 := &svcapitypes.TableClassSummary{}
 		if resp.Table.TableClassSummary.LastUpdateDateTime != nil {
-			f17.LastUpdateDateTime = &metav1.Time{*resp.Table.TableClassSummary.LastUpdateDateTime}
+			f18.LastUpdateDateTime = &metav1.Time{*resp.Table.TableClassSummary.LastUpdateDateTime}
 		}
 		if resp.Table.TableClassSummary.TableClass != nil {
-			f17.TableClass = resp.Table.TableClassSummary.TableClass
+			f18.TableClass = resp.Table.TableClassSummary.TableClass
 		}
-		cr.Status.AtProvider.TableClassSummary = f17
+		cr.Status.AtProvider.TableClassSummary = f18
 	} else {
 		cr.Status.AtProvider.TableClassSummary = nil
 	}
@@ -410,161 +415,164 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 	if cr.Spec.ForProvider.BillingMode != nil {
 		res.SetBillingMode(*cr.Spec.ForProvider.BillingMode)
 	}
-	if cr.Spec.ForProvider.GlobalSecondaryIndexes != nil {
-		f2 := []*svcsdk.GlobalSecondaryIndex{}
-		for _, f2iter := range cr.Spec.ForProvider.GlobalSecondaryIndexes {
-			f2elem := &svcsdk.GlobalSecondaryIndex{}
-			if f2iter.IndexName != nil {
-				f2elem.SetIndexName(*f2iter.IndexName)
-			}
-			if f2iter.KeySchema != nil {
-				f2elemf1 := []*svcsdk.KeySchemaElement{}
-				for _, f2elemf1iter := range f2iter.KeySchema {
-					f2elemf1elem := &svcsdk.KeySchemaElement{}
-					if f2elemf1iter.AttributeName != nil {
-						f2elemf1elem.SetAttributeName(*f2elemf1iter.AttributeName)
-					}
-					if f2elemf1iter.KeyType != nil {
-						f2elemf1elem.SetKeyType(*f2elemf1iter.KeyType)
-					}
-					f2elemf1 = append(f2elemf1, f2elemf1elem)
-				}
-				f2elem.SetKeySchema(f2elemf1)
-			}
-			if f2iter.Projection != nil {
-				f2elemf2 := &svcsdk.Projection{}
-				if f2iter.Projection.NonKeyAttributes != nil {
-					f2elemf2f0 := []*string{}
-					for _, f2elemf2f0iter := range f2iter.Projection.NonKeyAttributes {
-						var f2elemf2f0elem string
-						f2elemf2f0elem = *f2elemf2f0iter
-						f2elemf2f0 = append(f2elemf2f0, &f2elemf2f0elem)
-					}
-					f2elemf2.SetNonKeyAttributes(f2elemf2f0)
-				}
-				if f2iter.Projection.ProjectionType != nil {
-					f2elemf2.SetProjectionType(*f2iter.Projection.ProjectionType)
-				}
-				f2elem.SetProjection(f2elemf2)
-			}
-			if f2iter.ProvisionedThroughput != nil {
-				f2elemf3 := &svcsdk.ProvisionedThroughput{}
-				if f2iter.ProvisionedThroughput.ReadCapacityUnits != nil {
-					f2elemf3.SetReadCapacityUnits(*f2iter.ProvisionedThroughput.ReadCapacityUnits)
-				}
-				if f2iter.ProvisionedThroughput.WriteCapacityUnits != nil {
-					f2elemf3.SetWriteCapacityUnits(*f2iter.ProvisionedThroughput.WriteCapacityUnits)
-				}
-				f2elem.SetProvisionedThroughput(f2elemf3)
-			}
-			f2 = append(f2, f2elem)
-		}
-		res.SetGlobalSecondaryIndexes(f2)
+	if cr.Spec.ForProvider.DeletionProtectionEnabled != nil {
+		res.SetDeletionProtectionEnabled(*cr.Spec.ForProvider.DeletionProtectionEnabled)
 	}
-	if cr.Spec.ForProvider.KeySchema != nil {
-		f3 := []*svcsdk.KeySchemaElement{}
-		for _, f3iter := range cr.Spec.ForProvider.KeySchema {
-			f3elem := &svcsdk.KeySchemaElement{}
-			if f3iter.AttributeName != nil {
-				f3elem.SetAttributeName(*f3iter.AttributeName)
+	if cr.Spec.ForProvider.GlobalSecondaryIndexes != nil {
+		f3 := []*svcsdk.GlobalSecondaryIndex{}
+		for _, f3iter := range cr.Spec.ForProvider.GlobalSecondaryIndexes {
+			f3elem := &svcsdk.GlobalSecondaryIndex{}
+			if f3iter.IndexName != nil {
+				f3elem.SetIndexName(*f3iter.IndexName)
 			}
-			if f3iter.KeyType != nil {
-				f3elem.SetKeyType(*f3iter.KeyType)
+			if f3iter.KeySchema != nil {
+				f3elemf1 := []*svcsdk.KeySchemaElement{}
+				for _, f3elemf1iter := range f3iter.KeySchema {
+					f3elemf1elem := &svcsdk.KeySchemaElement{}
+					if f3elemf1iter.AttributeName != nil {
+						f3elemf1elem.SetAttributeName(*f3elemf1iter.AttributeName)
+					}
+					if f3elemf1iter.KeyType != nil {
+						f3elemf1elem.SetKeyType(*f3elemf1iter.KeyType)
+					}
+					f3elemf1 = append(f3elemf1, f3elemf1elem)
+				}
+				f3elem.SetKeySchema(f3elemf1)
+			}
+			if f3iter.Projection != nil {
+				f3elemf2 := &svcsdk.Projection{}
+				if f3iter.Projection.NonKeyAttributes != nil {
+					f3elemf2f0 := []*string{}
+					for _, f3elemf2f0iter := range f3iter.Projection.NonKeyAttributes {
+						var f3elemf2f0elem string
+						f3elemf2f0elem = *f3elemf2f0iter
+						f3elemf2f0 = append(f3elemf2f0, &f3elemf2f0elem)
+					}
+					f3elemf2.SetNonKeyAttributes(f3elemf2f0)
+				}
+				if f3iter.Projection.ProjectionType != nil {
+					f3elemf2.SetProjectionType(*f3iter.Projection.ProjectionType)
+				}
+				f3elem.SetProjection(f3elemf2)
+			}
+			if f3iter.ProvisionedThroughput != nil {
+				f3elemf3 := &svcsdk.ProvisionedThroughput{}
+				if f3iter.ProvisionedThroughput.ReadCapacityUnits != nil {
+					f3elemf3.SetReadCapacityUnits(*f3iter.ProvisionedThroughput.ReadCapacityUnits)
+				}
+				if f3iter.ProvisionedThroughput.WriteCapacityUnits != nil {
+					f3elemf3.SetWriteCapacityUnits(*f3iter.ProvisionedThroughput.WriteCapacityUnits)
+				}
+				f3elem.SetProvisionedThroughput(f3elemf3)
 			}
 			f3 = append(f3, f3elem)
 		}
-		res.SetKeySchema(f3)
+		res.SetGlobalSecondaryIndexes(f3)
 	}
-	if cr.Spec.ForProvider.LocalSecondaryIndexes != nil {
-		f4 := []*svcsdk.LocalSecondaryIndex{}
-		for _, f4iter := range cr.Spec.ForProvider.LocalSecondaryIndexes {
-			f4elem := &svcsdk.LocalSecondaryIndex{}
-			if f4iter.IndexName != nil {
-				f4elem.SetIndexName(*f4iter.IndexName)
+	if cr.Spec.ForProvider.KeySchema != nil {
+		f4 := []*svcsdk.KeySchemaElement{}
+		for _, f4iter := range cr.Spec.ForProvider.KeySchema {
+			f4elem := &svcsdk.KeySchemaElement{}
+			if f4iter.AttributeName != nil {
+				f4elem.SetAttributeName(*f4iter.AttributeName)
 			}
-			if f4iter.KeySchema != nil {
-				f4elemf1 := []*svcsdk.KeySchemaElement{}
-				for _, f4elemf1iter := range f4iter.KeySchema {
-					f4elemf1elem := &svcsdk.KeySchemaElement{}
-					if f4elemf1iter.AttributeName != nil {
-						f4elemf1elem.SetAttributeName(*f4elemf1iter.AttributeName)
-					}
-					if f4elemf1iter.KeyType != nil {
-						f4elemf1elem.SetKeyType(*f4elemf1iter.KeyType)
-					}
-					f4elemf1 = append(f4elemf1, f4elemf1elem)
-				}
-				f4elem.SetKeySchema(f4elemf1)
-			}
-			if f4iter.Projection != nil {
-				f4elemf2 := &svcsdk.Projection{}
-				if f4iter.Projection.NonKeyAttributes != nil {
-					f4elemf2f0 := []*string{}
-					for _, f4elemf2f0iter := range f4iter.Projection.NonKeyAttributes {
-						var f4elemf2f0elem string
-						f4elemf2f0elem = *f4elemf2f0iter
-						f4elemf2f0 = append(f4elemf2f0, &f4elemf2f0elem)
-					}
-					f4elemf2.SetNonKeyAttributes(f4elemf2f0)
-				}
-				if f4iter.Projection.ProjectionType != nil {
-					f4elemf2.SetProjectionType(*f4iter.Projection.ProjectionType)
-				}
-				f4elem.SetProjection(f4elemf2)
+			if f4iter.KeyType != nil {
+				f4elem.SetKeyType(*f4iter.KeyType)
 			}
 			f4 = append(f4, f4elem)
 		}
-		res.SetLocalSecondaryIndexes(f4)
+		res.SetKeySchema(f4)
+	}
+	if cr.Spec.ForProvider.LocalSecondaryIndexes != nil {
+		f5 := []*svcsdk.LocalSecondaryIndex{}
+		for _, f5iter := range cr.Spec.ForProvider.LocalSecondaryIndexes {
+			f5elem := &svcsdk.LocalSecondaryIndex{}
+			if f5iter.IndexName != nil {
+				f5elem.SetIndexName(*f5iter.IndexName)
+			}
+			if f5iter.KeySchema != nil {
+				f5elemf1 := []*svcsdk.KeySchemaElement{}
+				for _, f5elemf1iter := range f5iter.KeySchema {
+					f5elemf1elem := &svcsdk.KeySchemaElement{}
+					if f5elemf1iter.AttributeName != nil {
+						f5elemf1elem.SetAttributeName(*f5elemf1iter.AttributeName)
+					}
+					if f5elemf1iter.KeyType != nil {
+						f5elemf1elem.SetKeyType(*f5elemf1iter.KeyType)
+					}
+					f5elemf1 = append(f5elemf1, f5elemf1elem)
+				}
+				f5elem.SetKeySchema(f5elemf1)
+			}
+			if f5iter.Projection != nil {
+				f5elemf2 := &svcsdk.Projection{}
+				if f5iter.Projection.NonKeyAttributes != nil {
+					f5elemf2f0 := []*string{}
+					for _, f5elemf2f0iter := range f5iter.Projection.NonKeyAttributes {
+						var f5elemf2f0elem string
+						f5elemf2f0elem = *f5elemf2f0iter
+						f5elemf2f0 = append(f5elemf2f0, &f5elemf2f0elem)
+					}
+					f5elemf2.SetNonKeyAttributes(f5elemf2f0)
+				}
+				if f5iter.Projection.ProjectionType != nil {
+					f5elemf2.SetProjectionType(*f5iter.Projection.ProjectionType)
+				}
+				f5elem.SetProjection(f5elemf2)
+			}
+			f5 = append(f5, f5elem)
+		}
+		res.SetLocalSecondaryIndexes(f5)
 	}
 	if cr.Spec.ForProvider.ProvisionedThroughput != nil {
-		f5 := &svcsdk.ProvisionedThroughput{}
+		f6 := &svcsdk.ProvisionedThroughput{}
 		if cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f5.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
+			f6.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
 		}
 		if cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f5.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
+			f6.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
 		}
-		res.SetProvisionedThroughput(f5)
+		res.SetProvisionedThroughput(f6)
 	}
 	if cr.Spec.ForProvider.SSESpecification != nil {
-		f6 := &svcsdk.SSESpecification{}
+		f7 := &svcsdk.SSESpecification{}
 		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
-			f6.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+			f7.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
 		}
 		if cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID != nil {
-			f6.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
+			f7.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
 		}
 		if cr.Spec.ForProvider.SSESpecification.SSEType != nil {
-			f6.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
+			f7.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
 		}
-		res.SetSSESpecification(f6)
+		res.SetSSESpecification(f7)
 	}
 	if cr.Spec.ForProvider.StreamSpecification != nil {
-		f7 := &svcsdk.StreamSpecification{}
+		f8 := &svcsdk.StreamSpecification{}
 		if cr.Spec.ForProvider.StreamSpecification.StreamEnabled != nil {
-			f7.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
+			f8.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
 		}
 		if cr.Spec.ForProvider.StreamSpecification.StreamViewType != nil {
-			f7.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
+			f8.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
 		}
-		res.SetStreamSpecification(f7)
+		res.SetStreamSpecification(f8)
 	}
 	if cr.Spec.ForProvider.TableClass != nil {
 		res.SetTableClass(*cr.Spec.ForProvider.TableClass)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := []*svcsdk.Tag{}
-		for _, f9iter := range cr.Spec.ForProvider.Tags {
-			f9elem := &svcsdk.Tag{}
-			if f9iter.Key != nil {
-				f9elem.SetKey(*f9iter.Key)
+		f10 := []*svcsdk.Tag{}
+		for _, f10iter := range cr.Spec.ForProvider.Tags {
+			f10elem := &svcsdk.Tag{}
+			if f10iter.Key != nil {
+				f10elem.SetKey(*f10iter.Key)
 			}
-			if f9iter.Value != nil {
-				f9elem.SetValue(*f9iter.Value)
+			if f10iter.Value != nil {
+				f10elem.SetValue(*f10iter.Value)
 			}
-			f9 = append(f9, f9elem)
+			f10 = append(f10, f10elem)
 		}
-		res.SetTags(f9)
+		res.SetTags(f10)
 	}
 
 	return res
@@ -591,38 +599,41 @@ func GenerateUpdateTableInput(cr *svcapitypes.Table) *svcsdk.UpdateTableInput {
 	if cr.Spec.ForProvider.BillingMode != nil {
 		res.SetBillingMode(*cr.Spec.ForProvider.BillingMode)
 	}
+	if cr.Spec.ForProvider.DeletionProtectionEnabled != nil {
+		res.SetDeletionProtectionEnabled(*cr.Spec.ForProvider.DeletionProtectionEnabled)
+	}
 	if cr.Spec.ForProvider.ProvisionedThroughput != nil {
-		f3 := &svcsdk.ProvisionedThroughput{}
+		f4 := &svcsdk.ProvisionedThroughput{}
 		if cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f3.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
+			f4.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
 		}
 		if cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f3.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
+			f4.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
 		}
-		res.SetProvisionedThroughput(f3)
+		res.SetProvisionedThroughput(f4)
 	}
 	if cr.Spec.ForProvider.SSESpecification != nil {
-		f5 := &svcsdk.SSESpecification{}
+		f6 := &svcsdk.SSESpecification{}
 		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
-			f5.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+			f6.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
 		}
 		if cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID != nil {
-			f5.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
+			f6.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
 		}
 		if cr.Spec.ForProvider.SSESpecification.SSEType != nil {
-			f5.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
+			f6.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
 		}
-		res.SetSSESpecification(f5)
+		res.SetSSESpecification(f6)
 	}
 	if cr.Spec.ForProvider.StreamSpecification != nil {
-		f6 := &svcsdk.StreamSpecification{}
+		f7 := &svcsdk.StreamSpecification{}
 		if cr.Spec.ForProvider.StreamSpecification.StreamEnabled != nil {
-			f6.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
+			f7.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
 		}
 		if cr.Spec.ForProvider.StreamSpecification.StreamViewType != nil {
-			f6.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
+			f7.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
 		}
-		res.SetStreamSpecification(f6)
+		res.SetStreamSpecification(f7)
 	}
 	if cr.Spec.ForProvider.TableClass != nil {
 		res.SetTableClass(*cr.Spec.ForProvider.TableClass)

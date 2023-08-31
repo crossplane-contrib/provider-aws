@@ -183,6 +183,15 @@ const (
 	SetStatOption_ENABLE_NO_OP SetStatOption = "ENABLE_NO_OP"
 )
 
+type SftpAuthenticationMethods string
+
+const (
+	SftpAuthenticationMethods_PASSWORD                SftpAuthenticationMethods = "PASSWORD"
+	SftpAuthenticationMethods_PUBLIC_KEY              SftpAuthenticationMethods = "PUBLIC_KEY"
+	SftpAuthenticationMethods_PUBLIC_KEY_OR_PASSWORD  SftpAuthenticationMethods = "PUBLIC_KEY_OR_PASSWORD"
+	SftpAuthenticationMethods_PUBLIC_KEY_AND_PASSWORD SftpAuthenticationMethods = "PUBLIC_KEY_AND_PASSWORD"
+)
+
 type SigningAlg string
 
 const (

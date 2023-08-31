@@ -641,22 +641,25 @@ spec:
                       a string of your choice. \n If you aren't planning to migrate
                       existing users from an existing SFTP-enabled server to a new
                       server, don't update the host key. Accidentally changing a server's
-                      host key can be disruptive. \n For more information, see Update
+                      host key can be disruptive. \n For more information, see Manage
                       host keys for your SFTP-enabled server (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
                       in the Transfer Family User Guide."
                     type: string
                   identityProviderDetails:
-                    description: Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE
-                      or API_GATEWAY. Accepts an array containing all of the information
-                      required to use a directory in AWS_DIRECTORY_SERVICE or invoke
-                      a customer-supplied authentication API, including the API Gateway
-                      URL. Not required when IdentityProviderType is set to SERVICE_MANAGED.
+                    description: Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE,
+                      Amazon Web Services_LAMBDA or API_GATEWAY. Accepts an array
+                      containing all of the information required to use a directory
+                      in AWS_DIRECTORY_SERVICE or invoke a customer-supplied authentication
+                      API, including the API Gateway URL. Not required when IdentityProviderType
+                      is set to SERVICE_MANAGED.
                     properties:
                       directoryID:
                         type: string
                       function:
                         type: string
                       invocationRole:
+                        type: string
+                      sftpAuthenticationMethods:
                         type: string
                       url:
                         type: string
@@ -677,7 +680,7 @@ spec:
                       parameter. \n Use the AWS_LAMBDA value to directly use an Lambda
                       function as your identity provider. If you choose this value,
                       you must specify the ARN for the Lambda function in the Function
-                      parameter or the IdentityProviderDetails data type."
+                      parameter for the IdentityProviderDetails data type."
                     type: string
                   loggingRole:
                     description: Allows the service to write your users' activity
@@ -815,12 +818,13 @@ spec:
                       Manager (ACM) which is used to identify your server when clients
                       connect to it over FTPS. \n * If Protocol includes either FTP
                       or FTPS, then the EndpointType must be VPC and the IdentityProviderType
-                      must be AWS_DIRECTORY_SERVICE or API_GATEWAY. \n * If Protocol
-                      includes FTP, then AddressAllocationIds cannot be associated.
-                      \n * If Protocol is set only to SFTP, the EndpointType can be
-                      set to PUBLIC and the IdentityProviderType can be set to SERVICE_MANAGED.
-                      \n * If Protocol includes AS2, then the EndpointType must be
-                      VPC, and domain must be Amazon S3."
+                      must be either AWS_DIRECTORY_SERVICE, AWS_LAMBDA, or API_GATEWAY.
+                      \n * If Protocol includes FTP, then AddressAllocationIds cannot
+                      be associated. \n * If Protocol is set only to SFTP, the EndpointType
+                      can be set to PUBLIC and the IdentityProviderType can be set
+                      any of the supported identity types: SERVICE_MANAGED, AWS_DIRECTORY_SERVICE,
+                      AWS_LAMBDA, or API_GATEWAY. \n * If Protocol includes AS2, then
+                      the EndpointType must be VPC, and domain must be Amazon S3."
                     items:
                       type: string
                     type: array
@@ -845,11 +849,11 @@ spec:
                   workflowDetails:
                     description: "Specifies the workflow ID for the workflow to assign
                       and the execution role that's used for executing the workflow.
-                      \n In additon to a workflow to execute when a file is uploaded
-                      completely, WorkflowDeatails can also contain a workflow ID
-                      (and execution role) for a workflow to execute on partial upload.
-                      A partial upload occurs when a file is open when the session
-                      disconnects."
+                      \n In addition to a workflow to execute when a file is uploaded
+                      completely, WorkflowDetails can also contain a workflow ID (and
+                      execution role) for a workflow to execute on partial upload.
+                      A partial upload occurs when the server session disconnects
+                      while the file is still being uploaded."
                     properties:
                       onPartialUpload:
                         items:

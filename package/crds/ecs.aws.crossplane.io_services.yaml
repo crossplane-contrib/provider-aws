@@ -194,15 +194,14 @@ spec:
                         type: object
                       deploymentCircuitBreaker:
                         description: "The deployment circuit breaker can only be used
-                          for services using the rolling update (ECS) deployment type
-                          that aren't behind a Classic Load Balancer. \n The deployment
-                          circuit breaker determines whether a service deployment
-                          will fail if the service can't reach a steady state. If
-                          enabled, a service deployment will transition to a failed
-                          state and stop launching new tasks. You can also configure
-                          Amazon ECS to roll back your service to the last completed
-                          deployment after a failure. For more information, see Rolling
-                          update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+                          for services using the rolling update (ECS) deployment type.
+                          \n The deployment circuit breaker determines whether a service
+                          deployment will fail if the service can't reach a steady
+                          state. If it is turned on, a service deployment will transition
+                          to a failed state and stop launching new tasks. You can
+                          also configure Amazon ECS to roll back your service to the
+                          last completed deployment after a failure. For more information,
+                          see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
                           in the Amazon Elastic Container Service Developer Guide."
                         properties:
                           enable:
@@ -227,7 +226,7 @@ spec:
                     type: object
                   desiredCount:
                     description: "The number of instantiations of the specified task
-                      definition to place and keep running on your cluster. \n This
+                      definition to place and keep running in your service. \n This
                       is required if schedulingStrategy is REPLICA or isn't specified.
                       If schedulingStrategy is DAEMON then this isn't required."
                     format: int64
@@ -240,8 +239,8 @@ spec:
                     type: boolean
                   enableExecuteCommand:
                     description: Determines whether the execute command functionality
-                      is enabled for the service. If true, this enables execute command
-                      functionality on all containers in the service tasks.
+                      is turned on for the service. If true, this enables execute
+                      command functionality on all containers in the service tasks.
                     type: boolean
                   forceDeletion:
                     description: Force Service to be deleted, even with task Running
@@ -755,7 +754,8 @@ spec:
                       task definition to the task. If no value is specified, the tags
                       aren't propagated. Tags can only be propagated to the task during
                       task creation. To add tags to a task after task creation, use
-                      the TagResource API action.
+                      the TagResource (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html)
+                      API action.
                     type: string
                   region:
                     description: Region is which region the Service will be created.
@@ -1270,8 +1270,7 @@ spec:
                         launchType:
                           type: string
                         networkConfiguration:
-                          description: An object representing the network configuration
-                            for a task or service.
+                          description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
                               description: An object representing the networking details
@@ -1561,8 +1560,7 @@ spec:
                             type: object
                           type: array
                         networkConfiguration:
-                          description: An object representing the network configuration
-                            for a task or service.
+                          description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
                               description: An object representing the networking details

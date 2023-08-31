@@ -112,6 +112,13 @@ spec:
                     description: The Amazon EMR release version to use for the job
                       run.
                     type: string
+                  retryPolicyConfiguration:
+                    description: The retry policy configuration for the job run.
+                    properties:
+                      maxAttempts:
+                        format: int64
+                        type: integer
+                    type: object
                   tags:
                     additionalProperties:
                       type: string

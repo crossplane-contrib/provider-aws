@@ -64,6 +64,8 @@ type BrokerNodeGroupInfo struct {
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
 	// Contains information about storage volumes attached to MSK broker nodes.
 	StorageInfo *StorageInfo `json:"storageInfo,omitempty"`
+
+	ZoneIDs []*string `json:"zoneIDs,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -95,6 +97,19 @@ type ClientAuthentication struct {
 	TLS *TLS `json:"tls,omitempty"`
 	// Contains information about unauthenticated traffic to the cluster.
 	Unauthenticated *Unauthenticated `json:"unauthenticated,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ClientVPCConnection struct {
+	Authentication *string `json:"authentication,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Owner *string `json:"owner,omitempty"`
+	// The state of a configuration.
+	State *string `json:"state,omitempty"`
+
+	VPCConnectionARN *string `json:"vpcConnectionARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -242,6 +257,8 @@ type Configuration_SDK struct {
 type ConnectivityInfo struct {
 	// Broker public access control.
 	PublicAccess *PublicAccess `json:"publicAccess,omitempty"`
+	// Broker VPC connectivity access control.
+	VPCConnectivity *VPCConnectivity `json:"vpcConnectivity,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -528,10 +545,73 @@ type UnprocessedSCRAMSecret struct {
 }
 
 // +kubebuilder:skipversion
+type UserIdentity struct {
+	PrincipalID *string `json:"principalID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type VPCConfig struct {
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectionInfo struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Owner *string `json:"owner,omitempty"`
+
+	VPCConnectionARN *string `json:"vpcConnectionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnection_SDK struct {
+	Authentication *string `json:"authentication,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The state of a configuration.
+	State *string `json:"state,omitempty"`
+
+	TargetClusterARN *string `json:"targetClusterARN,omitempty"`
+
+	VPCConnectionARN *string `json:"vpcConnectionARN,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivity struct {
+	ClientAuthentication *VPCConnectivityClientAuthentication `json:"clientAuthentication,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivityClientAuthentication struct {
+	SASL *VPCConnectivitySASL `json:"sasl,omitempty"`
+
+	TLS *VPCConnectivityTLS `json:"tls,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivityIAM struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivitySASL struct {
+	IAM *VPCConnectivityIAM `json:"iam,omitempty"`
+
+	SCRAM *VPCConnectivitySCRAM `json:"scram,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivitySCRAM struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VPCConnectivityTLS struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // +kubebuilder:skipversion

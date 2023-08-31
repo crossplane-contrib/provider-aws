@@ -404,8 +404,8 @@ spec:
                       a global database cluster.
                     type: string
                   globalClusterMembers:
-                    description: The list of cluster IDs for secondary clusters within
-                      the global database cluster. Currently limited to 1 item.
+                    description: The list of primary and secondary clusters within
+                      the global database cluster.
                     items:
                       properties:
                         dbClusterARN:

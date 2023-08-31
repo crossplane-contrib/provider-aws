@@ -66,8 +66,7 @@ type GlobalClusterObservation struct {
 	// Contains a user-supplied global database cluster identifier. This identifier
 	// is the unique key that identifies a global database cluster.
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
-	// The list of cluster IDs for secondary clusters within the global database
-	// cluster. Currently limited to 1 item.
+	// The list of primary and secondary clusters within the global database cluster.
 	GlobalClusterMembers []*GlobalClusterMember `json:"globalClusterMembers,omitempty"`
 	// The Amazon Web Services Region-unique, immutable identifier for the global
 	// database cluster. This identifier is found in Amazon Web Services CloudTrail

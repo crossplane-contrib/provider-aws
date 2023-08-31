@@ -99,2373 +99,3160 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 				}
 				f1val.Aggregate = f1valf0
 			}
-			if f1valiter.ApplyMapping != nil {
-				f1valf1 := &svcapitypes.ApplyMapping{}
-				if f1valiter.ApplyMapping.Inputs != nil {
-					f1valf1f0 := []*string{}
-					for _, f1valf1f0iter := range f1valiter.ApplyMapping.Inputs {
-						var f1valf1f0elem string
-						f1valf1f0elem = *f1valf1f0iter
-						f1valf1f0 = append(f1valf1f0, &f1valf1f0elem)
+			if f1valiter.AmazonRedshiftSource != nil {
+				f1valf1 := &svcapitypes.AmazonRedshiftSource{}
+				if f1valiter.AmazonRedshiftSource.Data != nil {
+					f1valf1f0 := &svcapitypes.AmazonRedshiftNodeData{}
+					if f1valiter.AmazonRedshiftSource.Data.AccessType != nil {
+						f1valf1f0.AccessType = f1valiter.AmazonRedshiftSource.Data.AccessType
 					}
-					f1valf1.Inputs = f1valf1f0
+					if f1valiter.AmazonRedshiftSource.Data.Action != nil {
+						f1valf1f0.Action = f1valiter.AmazonRedshiftSource.Data.Action
+					}
+					if f1valiter.AmazonRedshiftSource.Data.AdvancedOptions != nil {
+						f1valf1f0f2 := []*svcapitypes.AmazonRedshiftAdvancedOption{}
+						for _, f1valf1f0f2iter := range f1valiter.AmazonRedshiftSource.Data.AdvancedOptions {
+							f1valf1f0f2elem := &svcapitypes.AmazonRedshiftAdvancedOption{}
+							if f1valf1f0f2iter.Key != nil {
+								f1valf1f0f2elem.Key = f1valf1f0f2iter.Key
+							}
+							if f1valf1f0f2iter.Value != nil {
+								f1valf1f0f2elem.Value = f1valf1f0f2iter.Value
+							}
+							f1valf1f0f2 = append(f1valf1f0f2, f1valf1f0f2elem)
+						}
+						f1valf1f0.AdvancedOptions = f1valf1f0f2
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase != nil {
+						f1valf1f0f3 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Description != nil {
+							f1valf1f0f3.Description = f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Label != nil {
+							f1valf1f0f3.Label = f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Value != nil {
+							f1valf1f0f3.Value = f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Value
+						}
+						f1valf1f0.CatalogDatabase = f1valf1f0f3
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftSchema != nil {
+						f1valf1f0.CatalogRedshiftSchema = f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftSchema
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftTable != nil {
+						f1valf1f0.CatalogRedshiftTable = f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftTable
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogTable != nil {
+						f1valf1f0f6 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Description != nil {
+							f1valf1f0f6.Description = f1valiter.AmazonRedshiftSource.Data.CatalogTable.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Label != nil {
+							f1valf1f0f6.Label = f1valiter.AmazonRedshiftSource.Data.CatalogTable.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Value != nil {
+							f1valf1f0f6.Value = f1valiter.AmazonRedshiftSource.Data.CatalogTable.Value
+						}
+						f1valf1f0.CatalogTable = f1valf1f0f6
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Connection != nil {
+						f1valf1f0f7 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Description != nil {
+							f1valf1f0f7.Description = f1valiter.AmazonRedshiftSource.Data.Connection.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Label != nil {
+							f1valf1f0f7.Label = f1valiter.AmazonRedshiftSource.Data.Connection.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Value != nil {
+							f1valf1f0f7.Value = f1valiter.AmazonRedshiftSource.Data.Connection.Value
+						}
+						f1valf1f0.Connection = f1valf1f0f7
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CrawlerConnection != nil {
+						f1valf1f0.CrawlerConnection = f1valiter.AmazonRedshiftSource.Data.CrawlerConnection
+					}
+					if f1valiter.AmazonRedshiftSource.Data.IamRole != nil {
+						f1valf1f0f9 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.IamRole.Description != nil {
+							f1valf1f0f9.Description = f1valiter.AmazonRedshiftSource.Data.IamRole.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.IamRole.Label != nil {
+							f1valf1f0f9.Label = f1valiter.AmazonRedshiftSource.Data.IamRole.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.IamRole.Value != nil {
+							f1valf1f0f9.Value = f1valiter.AmazonRedshiftSource.Data.IamRole.Value
+						}
+						f1valf1f0.IAMRole = f1valf1f0f9
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeAction != nil {
+						f1valf1f0.MergeAction = f1valiter.AmazonRedshiftSource.Data.MergeAction
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeClause != nil {
+						f1valf1f0.MergeClause = f1valiter.AmazonRedshiftSource.Data.MergeClause
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeWhenMatched != nil {
+						f1valf1f0.MergeWhenMatched = f1valiter.AmazonRedshiftSource.Data.MergeWhenMatched
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeWhenNotMatched != nil {
+						f1valf1f0.MergeWhenNotMatched = f1valiter.AmazonRedshiftSource.Data.MergeWhenNotMatched
+					}
+					if f1valiter.AmazonRedshiftSource.Data.PostAction != nil {
+						f1valf1f0.PostAction = f1valiter.AmazonRedshiftSource.Data.PostAction
+					}
+					if f1valiter.AmazonRedshiftSource.Data.PreAction != nil {
+						f1valf1f0.PreAction = f1valiter.AmazonRedshiftSource.Data.PreAction
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SampleQuery != nil {
+						f1valf1f0.SampleQuery = f1valiter.AmazonRedshiftSource.Data.SampleQuery
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Schema != nil {
+						f1valf1f0f17 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Description != nil {
+							f1valf1f0f17.Description = f1valiter.AmazonRedshiftSource.Data.Schema.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Label != nil {
+							f1valf1f0f17.Label = f1valiter.AmazonRedshiftSource.Data.Schema.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Value != nil {
+							f1valf1f0f17.Value = f1valiter.AmazonRedshiftSource.Data.Schema.Value
+						}
+						f1valf1f0.Schema = f1valf1f0f17
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SelectedColumns != nil {
+						f1valf1f0f18 := []*svcapitypes.Option{}
+						for _, f1valf1f0f18iter := range f1valiter.AmazonRedshiftSource.Data.SelectedColumns {
+							f1valf1f0f18elem := &svcapitypes.Option{}
+							if f1valf1f0f18iter.Description != nil {
+								f1valf1f0f18elem.Description = f1valf1f0f18iter.Description
+							}
+							if f1valf1f0f18iter.Label != nil {
+								f1valf1f0f18elem.Label = f1valf1f0f18iter.Label
+							}
+							if f1valf1f0f18iter.Value != nil {
+								f1valf1f0f18elem.Value = f1valf1f0f18iter.Value
+							}
+							f1valf1f0f18 = append(f1valf1f0f18, f1valf1f0f18elem)
+						}
+						f1valf1f0.SelectedColumns = f1valf1f0f18
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SourceType != nil {
+						f1valf1f0.SourceType = f1valiter.AmazonRedshiftSource.Data.SourceType
+					}
+					if f1valiter.AmazonRedshiftSource.Data.StagingTable != nil {
+						f1valf1f0.StagingTable = f1valiter.AmazonRedshiftSource.Data.StagingTable
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Table != nil {
+						f1valf1f0f21 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Description != nil {
+							f1valf1f0f21.Description = f1valiter.AmazonRedshiftSource.Data.Table.Description
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Label != nil {
+							f1valf1f0f21.Label = f1valiter.AmazonRedshiftSource.Data.Table.Label
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Value != nil {
+							f1valf1f0f21.Value = f1valiter.AmazonRedshiftSource.Data.Table.Value
+						}
+						f1valf1f0.Table = f1valf1f0f21
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TablePrefix != nil {
+						f1valf1f0.TablePrefix = f1valiter.AmazonRedshiftSource.Data.TablePrefix
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TableSchema != nil {
+						f1valf1f0f23 := []*svcapitypes.Option{}
+						for _, f1valf1f0f23iter := range f1valiter.AmazonRedshiftSource.Data.TableSchema {
+							f1valf1f0f23elem := &svcapitypes.Option{}
+							if f1valf1f0f23iter.Description != nil {
+								f1valf1f0f23elem.Description = f1valf1f0f23iter.Description
+							}
+							if f1valf1f0f23iter.Label != nil {
+								f1valf1f0f23elem.Label = f1valf1f0f23iter.Label
+							}
+							if f1valf1f0f23iter.Value != nil {
+								f1valf1f0f23elem.Value = f1valf1f0f23iter.Value
+							}
+							f1valf1f0f23 = append(f1valf1f0f23, f1valf1f0f23elem)
+						}
+						f1valf1f0.TableSchema = f1valf1f0f23
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TempDir != nil {
+						f1valf1f0.TempDir = f1valiter.AmazonRedshiftSource.Data.TempDir
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Upsert != nil {
+						f1valf1f0.Upsert = f1valiter.AmazonRedshiftSource.Data.Upsert
+					}
+					f1valf1.Data = f1valf1f0
+				}
+				if f1valiter.AmazonRedshiftSource.Name != nil {
+					f1valf1.Name = f1valiter.AmazonRedshiftSource.Name
+				}
+				f1val.AmazonRedshiftSource = f1valf1
+			}
+			if f1valiter.AmazonRedshiftTarget != nil {
+				f1valf2 := &svcapitypes.AmazonRedshiftTarget{}
+				if f1valiter.AmazonRedshiftTarget.Data != nil {
+					f1valf2f0 := &svcapitypes.AmazonRedshiftNodeData{}
+					if f1valiter.AmazonRedshiftTarget.Data.AccessType != nil {
+						f1valf2f0.AccessType = f1valiter.AmazonRedshiftTarget.Data.AccessType
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Action != nil {
+						f1valf2f0.Action = f1valiter.AmazonRedshiftTarget.Data.Action
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.AdvancedOptions != nil {
+						f1valf2f0f2 := []*svcapitypes.AmazonRedshiftAdvancedOption{}
+						for _, f1valf2f0f2iter := range f1valiter.AmazonRedshiftTarget.Data.AdvancedOptions {
+							f1valf2f0f2elem := &svcapitypes.AmazonRedshiftAdvancedOption{}
+							if f1valf2f0f2iter.Key != nil {
+								f1valf2f0f2elem.Key = f1valf2f0f2iter.Key
+							}
+							if f1valf2f0f2iter.Value != nil {
+								f1valf2f0f2elem.Value = f1valf2f0f2iter.Value
+							}
+							f1valf2f0f2 = append(f1valf2f0f2, f1valf2f0f2elem)
+						}
+						f1valf2f0.AdvancedOptions = f1valf2f0f2
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase != nil {
+						f1valf2f0f3 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Description != nil {
+							f1valf2f0f3.Description = f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Label != nil {
+							f1valf2f0f3.Label = f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Value != nil {
+							f1valf2f0f3.Value = f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Value
+						}
+						f1valf2f0.CatalogDatabase = f1valf2f0f3
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftSchema != nil {
+						f1valf2f0.CatalogRedshiftSchema = f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftSchema
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftTable != nil {
+						f1valf2f0.CatalogRedshiftTable = f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftTable
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogTable != nil {
+						f1valf2f0f6 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Description != nil {
+							f1valf2f0f6.Description = f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Label != nil {
+							f1valf2f0f6.Label = f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Value != nil {
+							f1valf2f0f6.Value = f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Value
+						}
+						f1valf2f0.CatalogTable = f1valf2f0f6
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Connection != nil {
+						f1valf2f0f7 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Description != nil {
+							f1valf2f0f7.Description = f1valiter.AmazonRedshiftTarget.Data.Connection.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Label != nil {
+							f1valf2f0f7.Label = f1valiter.AmazonRedshiftTarget.Data.Connection.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Value != nil {
+							f1valf2f0f7.Value = f1valiter.AmazonRedshiftTarget.Data.Connection.Value
+						}
+						f1valf2f0.Connection = f1valf2f0f7
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CrawlerConnection != nil {
+						f1valf2f0.CrawlerConnection = f1valiter.AmazonRedshiftTarget.Data.CrawlerConnection
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.IamRole != nil {
+						f1valf2f0f9 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.IamRole.Description != nil {
+							f1valf2f0f9.Description = f1valiter.AmazonRedshiftTarget.Data.IamRole.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.IamRole.Label != nil {
+							f1valf2f0f9.Label = f1valiter.AmazonRedshiftTarget.Data.IamRole.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.IamRole.Value != nil {
+							f1valf2f0f9.Value = f1valiter.AmazonRedshiftTarget.Data.IamRole.Value
+						}
+						f1valf2f0.IAMRole = f1valf2f0f9
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeAction != nil {
+						f1valf2f0.MergeAction = f1valiter.AmazonRedshiftTarget.Data.MergeAction
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeClause != nil {
+						f1valf2f0.MergeClause = f1valiter.AmazonRedshiftTarget.Data.MergeClause
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeWhenMatched != nil {
+						f1valf2f0.MergeWhenMatched = f1valiter.AmazonRedshiftTarget.Data.MergeWhenMatched
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeWhenNotMatched != nil {
+						f1valf2f0.MergeWhenNotMatched = f1valiter.AmazonRedshiftTarget.Data.MergeWhenNotMatched
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.PostAction != nil {
+						f1valf2f0.PostAction = f1valiter.AmazonRedshiftTarget.Data.PostAction
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.PreAction != nil {
+						f1valf2f0.PreAction = f1valiter.AmazonRedshiftTarget.Data.PreAction
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SampleQuery != nil {
+						f1valf2f0.SampleQuery = f1valiter.AmazonRedshiftTarget.Data.SampleQuery
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Schema != nil {
+						f1valf2f0f17 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Description != nil {
+							f1valf2f0f17.Description = f1valiter.AmazonRedshiftTarget.Data.Schema.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Label != nil {
+							f1valf2f0f17.Label = f1valiter.AmazonRedshiftTarget.Data.Schema.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Value != nil {
+							f1valf2f0f17.Value = f1valiter.AmazonRedshiftTarget.Data.Schema.Value
+						}
+						f1valf2f0.Schema = f1valf2f0f17
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SelectedColumns != nil {
+						f1valf2f0f18 := []*svcapitypes.Option{}
+						for _, f1valf2f0f18iter := range f1valiter.AmazonRedshiftTarget.Data.SelectedColumns {
+							f1valf2f0f18elem := &svcapitypes.Option{}
+							if f1valf2f0f18iter.Description != nil {
+								f1valf2f0f18elem.Description = f1valf2f0f18iter.Description
+							}
+							if f1valf2f0f18iter.Label != nil {
+								f1valf2f0f18elem.Label = f1valf2f0f18iter.Label
+							}
+							if f1valf2f0f18iter.Value != nil {
+								f1valf2f0f18elem.Value = f1valf2f0f18iter.Value
+							}
+							f1valf2f0f18 = append(f1valf2f0f18, f1valf2f0f18elem)
+						}
+						f1valf2f0.SelectedColumns = f1valf2f0f18
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SourceType != nil {
+						f1valf2f0.SourceType = f1valiter.AmazonRedshiftTarget.Data.SourceType
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.StagingTable != nil {
+						f1valf2f0.StagingTable = f1valiter.AmazonRedshiftTarget.Data.StagingTable
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Table != nil {
+						f1valf2f0f21 := &svcapitypes.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Description != nil {
+							f1valf2f0f21.Description = f1valiter.AmazonRedshiftTarget.Data.Table.Description
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Label != nil {
+							f1valf2f0f21.Label = f1valiter.AmazonRedshiftTarget.Data.Table.Label
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Value != nil {
+							f1valf2f0f21.Value = f1valiter.AmazonRedshiftTarget.Data.Table.Value
+						}
+						f1valf2f0.Table = f1valf2f0f21
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TablePrefix != nil {
+						f1valf2f0.TablePrefix = f1valiter.AmazonRedshiftTarget.Data.TablePrefix
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TableSchema != nil {
+						f1valf2f0f23 := []*svcapitypes.Option{}
+						for _, f1valf2f0f23iter := range f1valiter.AmazonRedshiftTarget.Data.TableSchema {
+							f1valf2f0f23elem := &svcapitypes.Option{}
+							if f1valf2f0f23iter.Description != nil {
+								f1valf2f0f23elem.Description = f1valf2f0f23iter.Description
+							}
+							if f1valf2f0f23iter.Label != nil {
+								f1valf2f0f23elem.Label = f1valf2f0f23iter.Label
+							}
+							if f1valf2f0f23iter.Value != nil {
+								f1valf2f0f23elem.Value = f1valf2f0f23iter.Value
+							}
+							f1valf2f0f23 = append(f1valf2f0f23, f1valf2f0f23elem)
+						}
+						f1valf2f0.TableSchema = f1valf2f0f23
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TempDir != nil {
+						f1valf2f0.TempDir = f1valiter.AmazonRedshiftTarget.Data.TempDir
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Upsert != nil {
+						f1valf2f0.Upsert = f1valiter.AmazonRedshiftTarget.Data.Upsert
+					}
+					f1valf2.Data = f1valf2f0
+				}
+				if f1valiter.AmazonRedshiftTarget.Inputs != nil {
+					f1valf2f1 := []*string{}
+					for _, f1valf2f1iter := range f1valiter.AmazonRedshiftTarget.Inputs {
+						var f1valf2f1elem string
+						f1valf2f1elem = *f1valf2f1iter
+						f1valf2f1 = append(f1valf2f1, &f1valf2f1elem)
+					}
+					f1valf2.Inputs = f1valf2f1
+				}
+				if f1valiter.AmazonRedshiftTarget.Name != nil {
+					f1valf2.Name = f1valiter.AmazonRedshiftTarget.Name
+				}
+				f1val.AmazonRedshiftTarget = f1valf2
+			}
+			if f1valiter.ApplyMapping != nil {
+				f1valf3 := &svcapitypes.ApplyMapping{}
+				if f1valiter.ApplyMapping.Inputs != nil {
+					f1valf3f0 := []*string{}
+					for _, f1valf3f0iter := range f1valiter.ApplyMapping.Inputs {
+						var f1valf3f0elem string
+						f1valf3f0elem = *f1valf3f0iter
+						f1valf3f0 = append(f1valf3f0, &f1valf3f0elem)
+					}
+					f1valf3.Inputs = f1valf3f0
 				}
 				if f1valiter.ApplyMapping.Mapping != nil {
-					f1valf1f1 := []*svcapitypes.Mapping{}
-					for _, f1valf1f1iter := range f1valiter.ApplyMapping.Mapping {
-						f1valf1f1elem := &svcapitypes.Mapping{}
-						if f1valf1f1iter.Dropped != nil {
-							f1valf1f1elem.Dropped = f1valf1f1iter.Dropped
+					f1valf3f1 := []*svcapitypes.Mapping{}
+					for _, f1valf3f1iter := range f1valiter.ApplyMapping.Mapping {
+						f1valf3f1elem := &svcapitypes.Mapping{}
+						if f1valf3f1iter.Dropped != nil {
+							f1valf3f1elem.Dropped = f1valf3f1iter.Dropped
 						}
-						if f1valf1f1iter.FromPath != nil {
-							f1valf1f1elemf1 := []*string{}
-							for _, f1valf1f1elemf1iter := range f1valf1f1iter.FromPath {
-								var f1valf1f1elemf1elem string
-								f1valf1f1elemf1elem = *f1valf1f1elemf1iter
-								f1valf1f1elemf1 = append(f1valf1f1elemf1, &f1valf1f1elemf1elem)
+						if f1valf3f1iter.FromPath != nil {
+							f1valf3f1elemf1 := []*string{}
+							for _, f1valf3f1elemf1iter := range f1valf3f1iter.FromPath {
+								var f1valf3f1elemf1elem string
+								f1valf3f1elemf1elem = *f1valf3f1elemf1iter
+								f1valf3f1elemf1 = append(f1valf3f1elemf1, &f1valf3f1elemf1elem)
 							}
-							f1valf1f1elem.FromPath = f1valf1f1elemf1
+							f1valf3f1elem.FromPath = f1valf3f1elemf1
 						}
-						if f1valf1f1iter.FromType != nil {
-							f1valf1f1elem.FromType = f1valf1f1iter.FromType
+						if f1valf3f1iter.FromType != nil {
+							f1valf3f1elem.FromType = f1valf3f1iter.FromType
 						}
-						if f1valf1f1iter.ToKey != nil {
-							f1valf1f1elem.ToKey = f1valf1f1iter.ToKey
+						if f1valf3f1iter.ToKey != nil {
+							f1valf3f1elem.ToKey = f1valf3f1iter.ToKey
 						}
-						if f1valf1f1iter.ToType != nil {
-							f1valf1f1elem.ToType = f1valf1f1iter.ToType
+						if f1valf3f1iter.ToType != nil {
+							f1valf3f1elem.ToType = f1valf3f1iter.ToType
 						}
-						f1valf1f1 = append(f1valf1f1, f1valf1f1elem)
+						f1valf3f1 = append(f1valf3f1, f1valf3f1elem)
 					}
-					f1valf1.Mapping = f1valf1f1
+					f1valf3.Mapping = f1valf3f1
 				}
 				if f1valiter.ApplyMapping.Name != nil {
-					f1valf1.Name = f1valiter.ApplyMapping.Name
+					f1valf3.Name = f1valiter.ApplyMapping.Name
 				}
-				f1val.ApplyMapping = f1valf1
+				f1val.ApplyMapping = f1valf3
 			}
 			if f1valiter.AthenaConnectorSource != nil {
-				f1valf2 := &svcapitypes.AthenaConnectorSource{}
+				f1valf4 := &svcapitypes.AthenaConnectorSource{}
 				if f1valiter.AthenaConnectorSource.ConnectionName != nil {
-					f1valf2.ConnectionName = f1valiter.AthenaConnectorSource.ConnectionName
+					f1valf4.ConnectionName = f1valiter.AthenaConnectorSource.ConnectionName
 				}
 				if f1valiter.AthenaConnectorSource.ConnectionTable != nil {
-					f1valf2.ConnectionTable = f1valiter.AthenaConnectorSource.ConnectionTable
+					f1valf4.ConnectionTable = f1valiter.AthenaConnectorSource.ConnectionTable
 				}
 				if f1valiter.AthenaConnectorSource.ConnectionType != nil {
-					f1valf2.ConnectionType = f1valiter.AthenaConnectorSource.ConnectionType
+					f1valf4.ConnectionType = f1valiter.AthenaConnectorSource.ConnectionType
 				}
 				if f1valiter.AthenaConnectorSource.ConnectorName != nil {
-					f1valf2.ConnectorName = f1valiter.AthenaConnectorSource.ConnectorName
+					f1valf4.ConnectorName = f1valiter.AthenaConnectorSource.ConnectorName
 				}
 				if f1valiter.AthenaConnectorSource.Name != nil {
-					f1valf2.Name = f1valiter.AthenaConnectorSource.Name
+					f1valf4.Name = f1valiter.AthenaConnectorSource.Name
 				}
 				if f1valiter.AthenaConnectorSource.OutputSchemas != nil {
-					f1valf2f5 := []*svcapitypes.GlueSchema{}
-					for _, f1valf2f5iter := range f1valiter.AthenaConnectorSource.OutputSchemas {
-						f1valf2f5elem := &svcapitypes.GlueSchema{}
-						if f1valf2f5iter.Columns != nil {
-							f1valf2f5elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf2f5elemf0iter := range f1valf2f5iter.Columns {
-								f1valf2f5elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf2f5elemf0iter.Name != nil {
-									f1valf2f5elemf0elem.Name = f1valf2f5elemf0iter.Name
+					f1valf4f5 := []*svcapitypes.GlueSchema{}
+					for _, f1valf4f5iter := range f1valiter.AthenaConnectorSource.OutputSchemas {
+						f1valf4f5elem := &svcapitypes.GlueSchema{}
+						if f1valf4f5iter.Columns != nil {
+							f1valf4f5elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf4f5elemf0iter := range f1valf4f5iter.Columns {
+								f1valf4f5elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf4f5elemf0iter.Name != nil {
+									f1valf4f5elemf0elem.Name = f1valf4f5elemf0iter.Name
 								}
-								if f1valf2f5elemf0iter.Type != nil {
-									f1valf2f5elemf0elem.Type = f1valf2f5elemf0iter.Type
+								if f1valf4f5elemf0iter.Type != nil {
+									f1valf4f5elemf0elem.Type = f1valf4f5elemf0iter.Type
 								}
-								f1valf2f5elemf0 = append(f1valf2f5elemf0, f1valf2f5elemf0elem)
+								f1valf4f5elemf0 = append(f1valf4f5elemf0, f1valf4f5elemf0elem)
 							}
-							f1valf2f5elem.Columns = f1valf2f5elemf0
+							f1valf4f5elem.Columns = f1valf4f5elemf0
 						}
-						f1valf2f5 = append(f1valf2f5, f1valf2f5elem)
+						f1valf4f5 = append(f1valf4f5, f1valf4f5elem)
 					}
-					f1valf2.OutputSchemas = f1valf2f5
+					f1valf4.OutputSchemas = f1valf4f5
 				}
 				if f1valiter.AthenaConnectorSource.SchemaName != nil {
-					f1valf2.SchemaName = f1valiter.AthenaConnectorSource.SchemaName
+					f1valf4.SchemaName = f1valiter.AthenaConnectorSource.SchemaName
 				}
-				f1val.AthenaConnectorSource = f1valf2
+				f1val.AthenaConnectorSource = f1valf4
+			}
+			if f1valiter.CatalogDeltaSource != nil {
+				f1valf5 := &svcapitypes.CatalogDeltaSource{}
+				if f1valiter.CatalogDeltaSource.AdditionalDeltaOptions != nil {
+					f1valf5f0 := map[string]*string{}
+					for f1valf5f0key, f1valf5f0valiter := range f1valiter.CatalogDeltaSource.AdditionalDeltaOptions {
+						var f1valf5f0val string
+						f1valf5f0val = *f1valf5f0valiter
+						f1valf5f0[f1valf5f0key] = &f1valf5f0val
+					}
+					f1valf5.AdditionalDeltaOptions = f1valf5f0
+				}
+				if f1valiter.CatalogDeltaSource.Database != nil {
+					f1valf5.Database = f1valiter.CatalogDeltaSource.Database
+				}
+				if f1valiter.CatalogDeltaSource.Name != nil {
+					f1valf5.Name = f1valiter.CatalogDeltaSource.Name
+				}
+				if f1valiter.CatalogDeltaSource.OutputSchemas != nil {
+					f1valf5f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf5f3iter := range f1valiter.CatalogDeltaSource.OutputSchemas {
+						f1valf5f3elem := &svcapitypes.GlueSchema{}
+						if f1valf5f3iter.Columns != nil {
+							f1valf5f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf5f3elemf0iter := range f1valf5f3iter.Columns {
+								f1valf5f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf5f3elemf0iter.Name != nil {
+									f1valf5f3elemf0elem.Name = f1valf5f3elemf0iter.Name
+								}
+								if f1valf5f3elemf0iter.Type != nil {
+									f1valf5f3elemf0elem.Type = f1valf5f3elemf0iter.Type
+								}
+								f1valf5f3elemf0 = append(f1valf5f3elemf0, f1valf5f3elemf0elem)
+							}
+							f1valf5f3elem.Columns = f1valf5f3elemf0
+						}
+						f1valf5f3 = append(f1valf5f3, f1valf5f3elem)
+					}
+					f1valf5.OutputSchemas = f1valf5f3
+				}
+				if f1valiter.CatalogDeltaSource.Table != nil {
+					f1valf5.Table = f1valiter.CatalogDeltaSource.Table
+				}
+				f1val.CatalogDeltaSource = f1valf5
 			}
 			if f1valiter.CatalogHudiSource != nil {
-				f1valf3 := &svcapitypes.CatalogHudiSource{}
+				f1valf6 := &svcapitypes.CatalogHudiSource{}
 				if f1valiter.CatalogHudiSource.AdditionalHudiOptions != nil {
-					f1valf3f0 := map[string]*string{}
-					for f1valf3f0key, f1valf3f0valiter := range f1valiter.CatalogHudiSource.AdditionalHudiOptions {
-						var f1valf3f0val string
-						f1valf3f0val = *f1valf3f0valiter
-						f1valf3f0[f1valf3f0key] = &f1valf3f0val
+					f1valf6f0 := map[string]*string{}
+					for f1valf6f0key, f1valf6f0valiter := range f1valiter.CatalogHudiSource.AdditionalHudiOptions {
+						var f1valf6f0val string
+						f1valf6f0val = *f1valf6f0valiter
+						f1valf6f0[f1valf6f0key] = &f1valf6f0val
 					}
-					f1valf3.AdditionalHudiOptions = f1valf3f0
+					f1valf6.AdditionalHudiOptions = f1valf6f0
 				}
 				if f1valiter.CatalogHudiSource.Database != nil {
-					f1valf3.Database = f1valiter.CatalogHudiSource.Database
+					f1valf6.Database = f1valiter.CatalogHudiSource.Database
 				}
 				if f1valiter.CatalogHudiSource.Name != nil {
-					f1valf3.Name = f1valiter.CatalogHudiSource.Name
+					f1valf6.Name = f1valiter.CatalogHudiSource.Name
 				}
 				if f1valiter.CatalogHudiSource.OutputSchemas != nil {
-					f1valf3f3 := []*svcapitypes.GlueSchema{}
-					for _, f1valf3f3iter := range f1valiter.CatalogHudiSource.OutputSchemas {
-						f1valf3f3elem := &svcapitypes.GlueSchema{}
-						if f1valf3f3iter.Columns != nil {
-							f1valf3f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf3f3elemf0iter := range f1valf3f3iter.Columns {
-								f1valf3f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf3f3elemf0iter.Name != nil {
-									f1valf3f3elemf0elem.Name = f1valf3f3elemf0iter.Name
+					f1valf6f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf6f3iter := range f1valiter.CatalogHudiSource.OutputSchemas {
+						f1valf6f3elem := &svcapitypes.GlueSchema{}
+						if f1valf6f3iter.Columns != nil {
+							f1valf6f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf6f3elemf0iter := range f1valf6f3iter.Columns {
+								f1valf6f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf6f3elemf0iter.Name != nil {
+									f1valf6f3elemf0elem.Name = f1valf6f3elemf0iter.Name
 								}
-								if f1valf3f3elemf0iter.Type != nil {
-									f1valf3f3elemf0elem.Type = f1valf3f3elemf0iter.Type
+								if f1valf6f3elemf0iter.Type != nil {
+									f1valf6f3elemf0elem.Type = f1valf6f3elemf0iter.Type
 								}
-								f1valf3f3elemf0 = append(f1valf3f3elemf0, f1valf3f3elemf0elem)
+								f1valf6f3elemf0 = append(f1valf6f3elemf0, f1valf6f3elemf0elem)
 							}
-							f1valf3f3elem.Columns = f1valf3f3elemf0
+							f1valf6f3elem.Columns = f1valf6f3elemf0
 						}
-						f1valf3f3 = append(f1valf3f3, f1valf3f3elem)
+						f1valf6f3 = append(f1valf6f3, f1valf6f3elem)
 					}
-					f1valf3.OutputSchemas = f1valf3f3
+					f1valf6.OutputSchemas = f1valf6f3
 				}
 				if f1valiter.CatalogHudiSource.Table != nil {
-					f1valf3.Table = f1valiter.CatalogHudiSource.Table
+					f1valf6.Table = f1valiter.CatalogHudiSource.Table
 				}
-				f1val.CatalogHudiSource = f1valf3
+				f1val.CatalogHudiSource = f1valf6
 			}
 			if f1valiter.CatalogKafkaSource != nil {
-				f1valf4 := &svcapitypes.CatalogKafkaSource{}
+				f1valf7 := &svcapitypes.CatalogKafkaSource{}
 				if f1valiter.CatalogKafkaSource.DataPreviewOptions != nil {
-					f1valf4f0 := &svcapitypes.StreamingDataPreviewOptions{}
+					f1valf7f0 := &svcapitypes.StreamingDataPreviewOptions{}
 					if f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime != nil {
-						f1valf4f0.PollingTime = f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime
+						f1valf7f0.PollingTime = f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime
 					}
 					if f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf4f0.RecordPollingLimit = f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit
+						f1valf7f0.RecordPollingLimit = f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit
 					}
-					f1valf4.DataPreviewOptions = f1valf4f0
+					f1valf7.DataPreviewOptions = f1valf7f0
 				}
 				if f1valiter.CatalogKafkaSource.Database != nil {
-					f1valf4.Database = f1valiter.CatalogKafkaSource.Database
+					f1valf7.Database = f1valiter.CatalogKafkaSource.Database
 				}
 				if f1valiter.CatalogKafkaSource.DetectSchema != nil {
-					f1valf4.DetectSchema = f1valiter.CatalogKafkaSource.DetectSchema
+					f1valf7.DetectSchema = f1valiter.CatalogKafkaSource.DetectSchema
 				}
 				if f1valiter.CatalogKafkaSource.Name != nil {
-					f1valf4.Name = f1valiter.CatalogKafkaSource.Name
+					f1valf7.Name = f1valiter.CatalogKafkaSource.Name
 				}
 				if f1valiter.CatalogKafkaSource.StreamingOptions != nil {
-					f1valf4f4 := &svcapitypes.KafkaStreamingSourceOptions{}
+					f1valf7f4 := &svcapitypes.KafkaStreamingSourceOptions{}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf7f4.AddRecordTimestamp = f1valiter.CatalogKafkaSource.StreamingOptions.AddRecordTimestamp
+					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Assign != nil {
-						f1valf4f4.Assign = f1valiter.CatalogKafkaSource.StreamingOptions.Assign
+						f1valf7f4.Assign = f1valiter.CatalogKafkaSource.StreamingOptions.Assign
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers != nil {
-						f1valf4f4.BootstrapServers = f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers
+						f1valf7f4.BootstrapServers = f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Classification != nil {
-						f1valf4f4.Classification = f1valiter.CatalogKafkaSource.StreamingOptions.Classification
+						f1valf7f4.Classification = f1valiter.CatalogKafkaSource.StreamingOptions.Classification
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName != nil {
-						f1valf4f4.ConnectionName = f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName
+						f1valf7f4.ConnectionName = f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter != nil {
-						f1valf4f4.Delimiter = f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter
+						f1valf7f4.Delimiter = f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter
+					}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf7f4.EmitConsumerLagMetrics = f1valiter.CatalogKafkaSource.StreamingOptions.EmitConsumerLagMetrics
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets != nil {
-						f1valf4f4.EndingOffsets = f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets
+						f1valf7f4.EndingOffsets = f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets
+					}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.IncludeHeaders != nil {
+						f1valf7f4.IncludeHeaders = f1valiter.CatalogKafkaSource.StreamingOptions.IncludeHeaders
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger != nil {
-						f1valf4f4.MaxOffsetsPerTrigger = f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger
+						f1valf7f4.MaxOffsetsPerTrigger = f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions != nil {
-						f1valf4f4.MinPartitions = f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions
+						f1valf7f4.MinPartitions = f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries != nil {
-						f1valf4f4.NumRetries = f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries
+						f1valf7f4.NumRetries = f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs != nil {
-						f1valf4f4.PollTimeoutMs = f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs
+						f1valf7f4.PollTimeoutMs = f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf4f4.RetryIntervalMs = f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs
+						f1valf7f4.RetryIntervalMs = f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol != nil {
-						f1valf4f4.SecurityProtocol = f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol
+						f1valf7f4.SecurityProtocol = f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets != nil {
-						f1valf4f4.StartingOffsets = f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets
+						f1valf7f4.StartingOffsets = f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern != nil {
-						f1valf4f4.SubscribePattern = f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern
+						f1valf7f4.SubscribePattern = f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.TopicName != nil {
-						f1valf4f4.TopicName = f1valiter.CatalogKafkaSource.StreamingOptions.TopicName
+						f1valf7f4.TopicName = f1valiter.CatalogKafkaSource.StreamingOptions.TopicName
 					}
-					f1valf4.StreamingOptions = f1valf4f4
+					f1valf7.StreamingOptions = f1valf7f4
 				}
 				if f1valiter.CatalogKafkaSource.Table != nil {
-					f1valf4.Table = f1valiter.CatalogKafkaSource.Table
+					f1valf7.Table = f1valiter.CatalogKafkaSource.Table
 				}
 				if f1valiter.CatalogKafkaSource.WindowSize != nil {
-					f1valf4.WindowSize = f1valiter.CatalogKafkaSource.WindowSize
+					f1valf7.WindowSize = f1valiter.CatalogKafkaSource.WindowSize
 				}
-				f1val.CatalogKafkaSource = f1valf4
+				f1val.CatalogKafkaSource = f1valf7
 			}
 			if f1valiter.CatalogKinesisSource != nil {
-				f1valf5 := &svcapitypes.CatalogKinesisSource{}
+				f1valf8 := &svcapitypes.CatalogKinesisSource{}
 				if f1valiter.CatalogKinesisSource.DataPreviewOptions != nil {
-					f1valf5f0 := &svcapitypes.StreamingDataPreviewOptions{}
+					f1valf8f0 := &svcapitypes.StreamingDataPreviewOptions{}
 					if f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime != nil {
-						f1valf5f0.PollingTime = f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime
+						f1valf8f0.PollingTime = f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime
 					}
 					if f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf5f0.RecordPollingLimit = f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit
+						f1valf8f0.RecordPollingLimit = f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit
 					}
-					f1valf5.DataPreviewOptions = f1valf5f0
+					f1valf8.DataPreviewOptions = f1valf8f0
 				}
 				if f1valiter.CatalogKinesisSource.Database != nil {
-					f1valf5.Database = f1valiter.CatalogKinesisSource.Database
+					f1valf8.Database = f1valiter.CatalogKinesisSource.Database
 				}
 				if f1valiter.CatalogKinesisSource.DetectSchema != nil {
-					f1valf5.DetectSchema = f1valiter.CatalogKinesisSource.DetectSchema
+					f1valf8.DetectSchema = f1valiter.CatalogKinesisSource.DetectSchema
 				}
 				if f1valiter.CatalogKinesisSource.Name != nil {
-					f1valf5.Name = f1valiter.CatalogKinesisSource.Name
+					f1valf8.Name = f1valiter.CatalogKinesisSource.Name
 				}
 				if f1valiter.CatalogKinesisSource.StreamingOptions != nil {
-					f1valf5f4 := &svcapitypes.KinesisStreamingSourceOptions{}
+					f1valf8f4 := &svcapitypes.KinesisStreamingSourceOptions{}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads != nil {
-						f1valf5f4.AddIdleTimeBetweenReads = f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads
+						f1valf8f4.AddIdleTimeBetweenReads = f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads
+					}
+					if f1valiter.CatalogKinesisSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf8f4.AddRecordTimestamp = f1valiter.CatalogKinesisSource.StreamingOptions.AddRecordTimestamp
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches != nil {
-						f1valf5f4.AvoidEmptyBatches = f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches
+						f1valf8f4.AvoidEmptyBatches = f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.Classification != nil {
-						f1valf5f4.Classification = f1valiter.CatalogKinesisSource.StreamingOptions.Classification
+						f1valf8f4.Classification = f1valiter.CatalogKinesisSource.StreamingOptions.Classification
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter != nil {
-						f1valf5f4.Delimiter = f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter
+						f1valf8f4.Delimiter = f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval != nil {
-						f1valf5f4.DescribeShardInterval = f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval
+						f1valf8f4.DescribeShardInterval = f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval
+					}
+					if f1valiter.CatalogKinesisSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf8f4.EmitConsumerLagMetrics = f1valiter.CatalogKinesisSource.StreamingOptions.EmitConsumerLagMetrics
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.EndpointUrl != nil {
-						f1valf5f4.EndpointURL = f1valiter.CatalogKinesisSource.StreamingOptions.EndpointUrl
+						f1valf8f4.EndpointURL = f1valiter.CatalogKinesisSource.StreamingOptions.EndpointUrl
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs != nil {
-						f1valf5f4.IdleTimeBetweenReadsInMs = f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs
+						f1valf8f4.IdleTimeBetweenReadsInMs = f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard != nil {
-						f1valf5f4.MaxFetchRecordsPerShard = f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard
+						f1valf8f4.MaxFetchRecordsPerShard = f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs != nil {
-						f1valf5f4.MaxFetchTimeInMs = f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs
+						f1valf8f4.MaxFetchTimeInMs = f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead != nil {
-						f1valf5f4.MaxRecordPerRead = f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead
+						f1valf8f4.MaxRecordPerRead = f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs != nil {
-						f1valf5f4.MaxRetryIntervalMs = f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs
+						f1valf8f4.MaxRetryIntervalMs = f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries != nil {
-						f1valf5f4.NumRetries = f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries
+						f1valf8f4.NumRetries = f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf5f4.RetryIntervalMs = f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs
+						f1valf8f4.RetryIntervalMs = f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RoleArn != nil {
-						f1valf5f4.RoleARN = f1valiter.CatalogKinesisSource.StreamingOptions.RoleArn
+						f1valf8f4.RoleARN = f1valiter.CatalogKinesisSource.StreamingOptions.RoleArn
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName != nil {
-						f1valf5f4.RoleSessionName = f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName
+						f1valf8f4.RoleSessionName = f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition != nil {
-						f1valf5f4.StartingPosition = f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition
+						f1valf8f4.StartingPosition = f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StreamArn != nil {
-						f1valf5f4.StreamARN = f1valiter.CatalogKinesisSource.StreamingOptions.StreamArn
+						f1valf8f4.StreamARN = f1valiter.CatalogKinesisSource.StreamingOptions.StreamArn
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StreamName != nil {
-						f1valf5f4.StreamName = f1valiter.CatalogKinesisSource.StreamingOptions.StreamName
+						f1valf8f4.StreamName = f1valiter.CatalogKinesisSource.StreamingOptions.StreamName
 					}
-					f1valf5.StreamingOptions = f1valf5f4
+					f1valf8.StreamingOptions = f1valf8f4
 				}
 				if f1valiter.CatalogKinesisSource.Table != nil {
-					f1valf5.Table = f1valiter.CatalogKinesisSource.Table
+					f1valf8.Table = f1valiter.CatalogKinesisSource.Table
 				}
 				if f1valiter.CatalogKinesisSource.WindowSize != nil {
-					f1valf5.WindowSize = f1valiter.CatalogKinesisSource.WindowSize
+					f1valf8.WindowSize = f1valiter.CatalogKinesisSource.WindowSize
 				}
-				f1val.CatalogKinesisSource = f1valf5
+				f1val.CatalogKinesisSource = f1valf8
 			}
 			if f1valiter.CatalogSource != nil {
-				f1valf6 := &svcapitypes.CatalogSource{}
+				f1valf9 := &svcapitypes.CatalogSource{}
 				if f1valiter.CatalogSource.Database != nil {
-					f1valf6.Database = f1valiter.CatalogSource.Database
+					f1valf9.Database = f1valiter.CatalogSource.Database
 				}
 				if f1valiter.CatalogSource.Name != nil {
-					f1valf6.Name = f1valiter.CatalogSource.Name
+					f1valf9.Name = f1valiter.CatalogSource.Name
 				}
 				if f1valiter.CatalogSource.Table != nil {
-					f1valf6.Table = f1valiter.CatalogSource.Table
+					f1valf9.Table = f1valiter.CatalogSource.Table
 				}
-				f1val.CatalogSource = f1valf6
+				f1val.CatalogSource = f1valf9
 			}
 			if f1valiter.CatalogTarget != nil {
-				f1valf7 := &svcapitypes.BasicCatalogTarget{}
+				f1valf10 := &svcapitypes.BasicCatalogTarget{}
 				if f1valiter.CatalogTarget.Database != nil {
-					f1valf7.Database = f1valiter.CatalogTarget.Database
+					f1valf10.Database = f1valiter.CatalogTarget.Database
 				}
 				if f1valiter.CatalogTarget.Inputs != nil {
-					f1valf7f1 := []*string{}
-					for _, f1valf7f1iter := range f1valiter.CatalogTarget.Inputs {
-						var f1valf7f1elem string
-						f1valf7f1elem = *f1valf7f1iter
-						f1valf7f1 = append(f1valf7f1, &f1valf7f1elem)
+					f1valf10f1 := []*string{}
+					for _, f1valf10f1iter := range f1valiter.CatalogTarget.Inputs {
+						var f1valf10f1elem string
+						f1valf10f1elem = *f1valf10f1iter
+						f1valf10f1 = append(f1valf10f1, &f1valf10f1elem)
 					}
-					f1valf7.Inputs = f1valf7f1
+					f1valf10.Inputs = f1valf10f1
 				}
 				if f1valiter.CatalogTarget.Name != nil {
-					f1valf7.Name = f1valiter.CatalogTarget.Name
+					f1valf10.Name = f1valiter.CatalogTarget.Name
 				}
 				if f1valiter.CatalogTarget.Table != nil {
-					f1valf7.Table = f1valiter.CatalogTarget.Table
+					f1valf10.Table = f1valiter.CatalogTarget.Table
 				}
-				f1val.CatalogTarget = f1valf7
+				f1val.CatalogTarget = f1valf10
 			}
 			if f1valiter.CustomCode != nil {
-				f1valf8 := &svcapitypes.CustomCode{}
+				f1valf11 := &svcapitypes.CustomCode{}
 				if f1valiter.CustomCode.ClassName != nil {
-					f1valf8.ClassName = f1valiter.CustomCode.ClassName
+					f1valf11.ClassName = f1valiter.CustomCode.ClassName
 				}
 				if f1valiter.CustomCode.Code != nil {
-					f1valf8.Code = f1valiter.CustomCode.Code
+					f1valf11.Code = f1valiter.CustomCode.Code
 				}
 				if f1valiter.CustomCode.Inputs != nil {
-					f1valf8f2 := []*string{}
-					for _, f1valf8f2iter := range f1valiter.CustomCode.Inputs {
-						var f1valf8f2elem string
-						f1valf8f2elem = *f1valf8f2iter
-						f1valf8f2 = append(f1valf8f2, &f1valf8f2elem)
+					f1valf11f2 := []*string{}
+					for _, f1valf11f2iter := range f1valiter.CustomCode.Inputs {
+						var f1valf11f2elem string
+						f1valf11f2elem = *f1valf11f2iter
+						f1valf11f2 = append(f1valf11f2, &f1valf11f2elem)
 					}
-					f1valf8.Inputs = f1valf8f2
+					f1valf11.Inputs = f1valf11f2
 				}
 				if f1valiter.CustomCode.Name != nil {
-					f1valf8.Name = f1valiter.CustomCode.Name
+					f1valf11.Name = f1valiter.CustomCode.Name
 				}
 				if f1valiter.CustomCode.OutputSchemas != nil {
-					f1valf8f4 := []*svcapitypes.GlueSchema{}
-					for _, f1valf8f4iter := range f1valiter.CustomCode.OutputSchemas {
-						f1valf8f4elem := &svcapitypes.GlueSchema{}
-						if f1valf8f4iter.Columns != nil {
-							f1valf8f4elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf8f4elemf0iter := range f1valf8f4iter.Columns {
-								f1valf8f4elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf8f4elemf0iter.Name != nil {
-									f1valf8f4elemf0elem.Name = f1valf8f4elemf0iter.Name
+					f1valf11f4 := []*svcapitypes.GlueSchema{}
+					for _, f1valf11f4iter := range f1valiter.CustomCode.OutputSchemas {
+						f1valf11f4elem := &svcapitypes.GlueSchema{}
+						if f1valf11f4iter.Columns != nil {
+							f1valf11f4elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf11f4elemf0iter := range f1valf11f4iter.Columns {
+								f1valf11f4elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf11f4elemf0iter.Name != nil {
+									f1valf11f4elemf0elem.Name = f1valf11f4elemf0iter.Name
 								}
-								if f1valf8f4elemf0iter.Type != nil {
-									f1valf8f4elemf0elem.Type = f1valf8f4elemf0iter.Type
+								if f1valf11f4elemf0iter.Type != nil {
+									f1valf11f4elemf0elem.Type = f1valf11f4elemf0iter.Type
 								}
-								f1valf8f4elemf0 = append(f1valf8f4elemf0, f1valf8f4elemf0elem)
+								f1valf11f4elemf0 = append(f1valf11f4elemf0, f1valf11f4elemf0elem)
 							}
-							f1valf8f4elem.Columns = f1valf8f4elemf0
+							f1valf11f4elem.Columns = f1valf11f4elemf0
 						}
-						f1valf8f4 = append(f1valf8f4, f1valf8f4elem)
+						f1valf11f4 = append(f1valf11f4, f1valf11f4elem)
 					}
-					f1valf8.OutputSchemas = f1valf8f4
+					f1valf11.OutputSchemas = f1valf11f4
 				}
-				f1val.CustomCode = f1valf8
+				f1val.CustomCode = f1valf11
+			}
+			if f1valiter.DirectJDBCSource != nil {
+				f1valf12 := &svcapitypes.DirectJDBCSource{}
+				if f1valiter.DirectJDBCSource.ConnectionName != nil {
+					f1valf12.ConnectionName = f1valiter.DirectJDBCSource.ConnectionName
+				}
+				if f1valiter.DirectJDBCSource.ConnectionType != nil {
+					f1valf12.ConnectionType = f1valiter.DirectJDBCSource.ConnectionType
+				}
+				if f1valiter.DirectJDBCSource.Database != nil {
+					f1valf12.Database = f1valiter.DirectJDBCSource.Database
+				}
+				if f1valiter.DirectJDBCSource.Name != nil {
+					f1valf12.Name = f1valiter.DirectJDBCSource.Name
+				}
+				if f1valiter.DirectJDBCSource.RedshiftTmpDir != nil {
+					f1valf12.RedshiftTmpDir = f1valiter.DirectJDBCSource.RedshiftTmpDir
+				}
+				if f1valiter.DirectJDBCSource.Table != nil {
+					f1valf12.Table = f1valiter.DirectJDBCSource.Table
+				}
+				f1val.DirectJDBCSource = f1valf12
 			}
 			if f1valiter.DirectKafkaSource != nil {
-				f1valf9 := &svcapitypes.DirectKafkaSource{}
+				f1valf13 := &svcapitypes.DirectKafkaSource{}
 				if f1valiter.DirectKafkaSource.DataPreviewOptions != nil {
-					f1valf9f0 := &svcapitypes.StreamingDataPreviewOptions{}
+					f1valf13f0 := &svcapitypes.StreamingDataPreviewOptions{}
 					if f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime != nil {
-						f1valf9f0.PollingTime = f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime
+						f1valf13f0.PollingTime = f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime
 					}
 					if f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf9f0.RecordPollingLimit = f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit
+						f1valf13f0.RecordPollingLimit = f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit
 					}
-					f1valf9.DataPreviewOptions = f1valf9f0
+					f1valf13.DataPreviewOptions = f1valf13f0
 				}
 				if f1valiter.DirectKafkaSource.DetectSchema != nil {
-					f1valf9.DetectSchema = f1valiter.DirectKafkaSource.DetectSchema
+					f1valf13.DetectSchema = f1valiter.DirectKafkaSource.DetectSchema
 				}
 				if f1valiter.DirectKafkaSource.Name != nil {
-					f1valf9.Name = f1valiter.DirectKafkaSource.Name
+					f1valf13.Name = f1valiter.DirectKafkaSource.Name
 				}
 				if f1valiter.DirectKafkaSource.StreamingOptions != nil {
-					f1valf9f3 := &svcapitypes.KafkaStreamingSourceOptions{}
+					f1valf13f3 := &svcapitypes.KafkaStreamingSourceOptions{}
+					if f1valiter.DirectKafkaSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf13f3.AddRecordTimestamp = f1valiter.DirectKafkaSource.StreamingOptions.AddRecordTimestamp
+					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Assign != nil {
-						f1valf9f3.Assign = f1valiter.DirectKafkaSource.StreamingOptions.Assign
+						f1valf13f3.Assign = f1valiter.DirectKafkaSource.StreamingOptions.Assign
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers != nil {
-						f1valf9f3.BootstrapServers = f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers
+						f1valf13f3.BootstrapServers = f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Classification != nil {
-						f1valf9f3.Classification = f1valiter.DirectKafkaSource.StreamingOptions.Classification
+						f1valf13f3.Classification = f1valiter.DirectKafkaSource.StreamingOptions.Classification
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName != nil {
-						f1valf9f3.ConnectionName = f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName
+						f1valf13f3.ConnectionName = f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Delimiter != nil {
-						f1valf9f3.Delimiter = f1valiter.DirectKafkaSource.StreamingOptions.Delimiter
+						f1valf13f3.Delimiter = f1valiter.DirectKafkaSource.StreamingOptions.Delimiter
+					}
+					if f1valiter.DirectKafkaSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf13f3.EmitConsumerLagMetrics = f1valiter.DirectKafkaSource.StreamingOptions.EmitConsumerLagMetrics
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets != nil {
-						f1valf9f3.EndingOffsets = f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets
+						f1valf13f3.EndingOffsets = f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets
+					}
+					if f1valiter.DirectKafkaSource.StreamingOptions.IncludeHeaders != nil {
+						f1valf13f3.IncludeHeaders = f1valiter.DirectKafkaSource.StreamingOptions.IncludeHeaders
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger != nil {
-						f1valf9f3.MaxOffsetsPerTrigger = f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger
+						f1valf13f3.MaxOffsetsPerTrigger = f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions != nil {
-						f1valf9f3.MinPartitions = f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions
+						f1valf13f3.MinPartitions = f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.NumRetries != nil {
-						f1valf9f3.NumRetries = f1valiter.DirectKafkaSource.StreamingOptions.NumRetries
+						f1valf13f3.NumRetries = f1valiter.DirectKafkaSource.StreamingOptions.NumRetries
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs != nil {
-						f1valf9f3.PollTimeoutMs = f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs
+						f1valf13f3.PollTimeoutMs = f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf9f3.RetryIntervalMs = f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs
+						f1valf13f3.RetryIntervalMs = f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol != nil {
-						f1valf9f3.SecurityProtocol = f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol
+						f1valf13f3.SecurityProtocol = f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets != nil {
-						f1valf9f3.StartingOffsets = f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets
+						f1valf13f3.StartingOffsets = f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern != nil {
-						f1valf9f3.SubscribePattern = f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern
+						f1valf13f3.SubscribePattern = f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.TopicName != nil {
-						f1valf9f3.TopicName = f1valiter.DirectKafkaSource.StreamingOptions.TopicName
+						f1valf13f3.TopicName = f1valiter.DirectKafkaSource.StreamingOptions.TopicName
 					}
-					f1valf9.StreamingOptions = f1valf9f3
+					f1valf13.StreamingOptions = f1valf13f3
 				}
 				if f1valiter.DirectKafkaSource.WindowSize != nil {
-					f1valf9.WindowSize = f1valiter.DirectKafkaSource.WindowSize
+					f1valf13.WindowSize = f1valiter.DirectKafkaSource.WindowSize
 				}
-				f1val.DirectKafkaSource = f1valf9
+				f1val.DirectKafkaSource = f1valf13
 			}
 			if f1valiter.DirectKinesisSource != nil {
-				f1valf10 := &svcapitypes.DirectKinesisSource{}
+				f1valf14 := &svcapitypes.DirectKinesisSource{}
 				if f1valiter.DirectKinesisSource.DataPreviewOptions != nil {
-					f1valf10f0 := &svcapitypes.StreamingDataPreviewOptions{}
+					f1valf14f0 := &svcapitypes.StreamingDataPreviewOptions{}
 					if f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime != nil {
-						f1valf10f0.PollingTime = f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime
+						f1valf14f0.PollingTime = f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime
 					}
 					if f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf10f0.RecordPollingLimit = f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit
+						f1valf14f0.RecordPollingLimit = f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit
 					}
-					f1valf10.DataPreviewOptions = f1valf10f0
+					f1valf14.DataPreviewOptions = f1valf14f0
 				}
 				if f1valiter.DirectKinesisSource.DetectSchema != nil {
-					f1valf10.DetectSchema = f1valiter.DirectKinesisSource.DetectSchema
+					f1valf14.DetectSchema = f1valiter.DirectKinesisSource.DetectSchema
 				}
 				if f1valiter.DirectKinesisSource.Name != nil {
-					f1valf10.Name = f1valiter.DirectKinesisSource.Name
+					f1valf14.Name = f1valiter.DirectKinesisSource.Name
 				}
 				if f1valiter.DirectKinesisSource.StreamingOptions != nil {
-					f1valf10f3 := &svcapitypes.KinesisStreamingSourceOptions{}
+					f1valf14f3 := &svcapitypes.KinesisStreamingSourceOptions{}
 					if f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads != nil {
-						f1valf10f3.AddIdleTimeBetweenReads = f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads
+						f1valf14f3.AddIdleTimeBetweenReads = f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads
+					}
+					if f1valiter.DirectKinesisSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf14f3.AddRecordTimestamp = f1valiter.DirectKinesisSource.StreamingOptions.AddRecordTimestamp
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches != nil {
-						f1valf10f3.AvoidEmptyBatches = f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches
+						f1valf14f3.AvoidEmptyBatches = f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.Classification != nil {
-						f1valf10f3.Classification = f1valiter.DirectKinesisSource.StreamingOptions.Classification
+						f1valf14f3.Classification = f1valiter.DirectKinesisSource.StreamingOptions.Classification
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.Delimiter != nil {
-						f1valf10f3.Delimiter = f1valiter.DirectKinesisSource.StreamingOptions.Delimiter
+						f1valf14f3.Delimiter = f1valiter.DirectKinesisSource.StreamingOptions.Delimiter
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval != nil {
-						f1valf10f3.DescribeShardInterval = f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval
+						f1valf14f3.DescribeShardInterval = f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval
+					}
+					if f1valiter.DirectKinesisSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf14f3.EmitConsumerLagMetrics = f1valiter.DirectKinesisSource.StreamingOptions.EmitConsumerLagMetrics
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.EndpointUrl != nil {
-						f1valf10f3.EndpointURL = f1valiter.DirectKinesisSource.StreamingOptions.EndpointUrl
+						f1valf14f3.EndpointURL = f1valiter.DirectKinesisSource.StreamingOptions.EndpointUrl
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs != nil {
-						f1valf10f3.IdleTimeBetweenReadsInMs = f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs
+						f1valf14f3.IdleTimeBetweenReadsInMs = f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard != nil {
-						f1valf10f3.MaxFetchRecordsPerShard = f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard
+						f1valf14f3.MaxFetchRecordsPerShard = f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs != nil {
-						f1valf10f3.MaxFetchTimeInMs = f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs
+						f1valf14f3.MaxFetchTimeInMs = f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead != nil {
-						f1valf10f3.MaxRecordPerRead = f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead
+						f1valf14f3.MaxRecordPerRead = f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs != nil {
-						f1valf10f3.MaxRetryIntervalMs = f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs
+						f1valf14f3.MaxRetryIntervalMs = f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.NumRetries != nil {
-						f1valf10f3.NumRetries = f1valiter.DirectKinesisSource.StreamingOptions.NumRetries
+						f1valf14f3.NumRetries = f1valiter.DirectKinesisSource.StreamingOptions.NumRetries
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf10f3.RetryIntervalMs = f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs
+						f1valf14f3.RetryIntervalMs = f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RoleArn != nil {
-						f1valf10f3.RoleARN = f1valiter.DirectKinesisSource.StreamingOptions.RoleArn
+						f1valf14f3.RoleARN = f1valiter.DirectKinesisSource.StreamingOptions.RoleArn
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName != nil {
-						f1valf10f3.RoleSessionName = f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName
+						f1valf14f3.RoleSessionName = f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition != nil {
-						f1valf10f3.StartingPosition = f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition
+						f1valf14f3.StartingPosition = f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StreamArn != nil {
-						f1valf10f3.StreamARN = f1valiter.DirectKinesisSource.StreamingOptions.StreamArn
+						f1valf14f3.StreamARN = f1valiter.DirectKinesisSource.StreamingOptions.StreamArn
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StreamName != nil {
-						f1valf10f3.StreamName = f1valiter.DirectKinesisSource.StreamingOptions.StreamName
+						f1valf14f3.StreamName = f1valiter.DirectKinesisSource.StreamingOptions.StreamName
 					}
-					f1valf10.StreamingOptions = f1valf10f3
+					f1valf14.StreamingOptions = f1valf14f3
 				}
 				if f1valiter.DirectKinesisSource.WindowSize != nil {
-					f1valf10.WindowSize = f1valiter.DirectKinesisSource.WindowSize
+					f1valf14.WindowSize = f1valiter.DirectKinesisSource.WindowSize
 				}
-				f1val.DirectKinesisSource = f1valf10
+				f1val.DirectKinesisSource = f1valf14
 			}
 			if f1valiter.DropDuplicates != nil {
-				f1valf11 := &svcapitypes.DropDuplicates{}
+				f1valf15 := &svcapitypes.DropDuplicates{}
 				if f1valiter.DropDuplicates.Columns != nil {
-					f1valf11f0 := [][]*string{}
-					for _, f1valf11f0iter := range f1valiter.DropDuplicates.Columns {
-						f1valf11f0elem := []*string{}
-						for _, f1valf11f0elemiter := range f1valf11f0iter {
-							var f1valf11f0elemelem string
-							f1valf11f0elemelem = *f1valf11f0elemiter
-							f1valf11f0elem = append(f1valf11f0elem, &f1valf11f0elemelem)
+					f1valf15f0 := [][]*string{}
+					for _, f1valf15f0iter := range f1valiter.DropDuplicates.Columns {
+						f1valf15f0elem := []*string{}
+						for _, f1valf15f0elemiter := range f1valf15f0iter {
+							var f1valf15f0elemelem string
+							f1valf15f0elemelem = *f1valf15f0elemiter
+							f1valf15f0elem = append(f1valf15f0elem, &f1valf15f0elemelem)
 						}
-						f1valf11f0 = append(f1valf11f0, f1valf11f0elem)
+						f1valf15f0 = append(f1valf15f0, f1valf15f0elem)
 					}
-					f1valf11.Columns = f1valf11f0
+					f1valf15.Columns = f1valf15f0
 				}
 				if f1valiter.DropDuplicates.Inputs != nil {
-					f1valf11f1 := []*string{}
-					for _, f1valf11f1iter := range f1valiter.DropDuplicates.Inputs {
-						var f1valf11f1elem string
-						f1valf11f1elem = *f1valf11f1iter
-						f1valf11f1 = append(f1valf11f1, &f1valf11f1elem)
+					f1valf15f1 := []*string{}
+					for _, f1valf15f1iter := range f1valiter.DropDuplicates.Inputs {
+						var f1valf15f1elem string
+						f1valf15f1elem = *f1valf15f1iter
+						f1valf15f1 = append(f1valf15f1, &f1valf15f1elem)
 					}
-					f1valf11.Inputs = f1valf11f1
+					f1valf15.Inputs = f1valf15f1
 				}
 				if f1valiter.DropDuplicates.Name != nil {
-					f1valf11.Name = f1valiter.DropDuplicates.Name
+					f1valf15.Name = f1valiter.DropDuplicates.Name
 				}
-				f1val.DropDuplicates = f1valf11
+				f1val.DropDuplicates = f1valf15
 			}
 			if f1valiter.DropFields != nil {
-				f1valf12 := &svcapitypes.DropFields{}
+				f1valf16 := &svcapitypes.DropFields{}
 				if f1valiter.DropFields.Inputs != nil {
-					f1valf12f0 := []*string{}
-					for _, f1valf12f0iter := range f1valiter.DropFields.Inputs {
-						var f1valf12f0elem string
-						f1valf12f0elem = *f1valf12f0iter
-						f1valf12f0 = append(f1valf12f0, &f1valf12f0elem)
-					}
-					f1valf12.Inputs = f1valf12f0
-				}
-				if f1valiter.DropFields.Name != nil {
-					f1valf12.Name = f1valiter.DropFields.Name
-				}
-				if f1valiter.DropFields.Paths != nil {
-					f1valf12f2 := [][]*string{}
-					for _, f1valf12f2iter := range f1valiter.DropFields.Paths {
-						f1valf12f2elem := []*string{}
-						for _, f1valf12f2elemiter := range f1valf12f2iter {
-							var f1valf12f2elemelem string
-							f1valf12f2elemelem = *f1valf12f2elemiter
-							f1valf12f2elem = append(f1valf12f2elem, &f1valf12f2elemelem)
-						}
-						f1valf12f2 = append(f1valf12f2, f1valf12f2elem)
-					}
-					f1valf12.Paths = f1valf12f2
-				}
-				f1val.DropFields = f1valf12
-			}
-			if f1valiter.DropNullFields != nil {
-				f1valf13 := &svcapitypes.DropNullFields{}
-				if f1valiter.DropNullFields.Inputs != nil {
-					f1valf13f0 := []*string{}
-					for _, f1valf13f0iter := range f1valiter.DropNullFields.Inputs {
-						var f1valf13f0elem string
-						f1valf13f0elem = *f1valf13f0iter
-						f1valf13f0 = append(f1valf13f0, &f1valf13f0elem)
-					}
-					f1valf13.Inputs = f1valf13f0
-				}
-				if f1valiter.DropNullFields.Name != nil {
-					f1valf13.Name = f1valiter.DropNullFields.Name
-				}
-				if f1valiter.DropNullFields.NullCheckBoxList != nil {
-					f1valf13f2 := &svcapitypes.NullCheckBoxList{}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsEmpty != nil {
-						f1valf13f2.IsEmpty = f1valiter.DropNullFields.NullCheckBoxList.IsEmpty
-					}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsNegOne != nil {
-						f1valf13f2.IsNegOne = f1valiter.DropNullFields.NullCheckBoxList.IsNegOne
-					}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsNullString != nil {
-						f1valf13f2.IsNullString = f1valiter.DropNullFields.NullCheckBoxList.IsNullString
-					}
-					f1valf13.NullCheckBoxList = f1valf13f2
-				}
-				if f1valiter.DropNullFields.NullTextList != nil {
-					f1valf13f3 := []*svcapitypes.NullValueField{}
-					for _, f1valf13f3iter := range f1valiter.DropNullFields.NullTextList {
-						f1valf13f3elem := &svcapitypes.NullValueField{}
-						if f1valf13f3iter.Datatype != nil {
-							f1valf13f3elemf0 := &svcapitypes.Datatype{}
-							if f1valf13f3iter.Datatype.Id != nil {
-								f1valf13f3elemf0.ID = f1valf13f3iter.Datatype.Id
-							}
-							if f1valf13f3iter.Datatype.Label != nil {
-								f1valf13f3elemf0.Label = f1valf13f3iter.Datatype.Label
-							}
-							f1valf13f3elem.Datatype = f1valf13f3elemf0
-						}
-						if f1valf13f3iter.Value != nil {
-							f1valf13f3elem.Value = f1valf13f3iter.Value
-						}
-						f1valf13f3 = append(f1valf13f3, f1valf13f3elem)
-					}
-					f1valf13.NullTextList = f1valf13f3
-				}
-				f1val.DropNullFields = f1valf13
-			}
-			if f1valiter.DynamicTransform != nil {
-				f1valf14 := &svcapitypes.DynamicTransform{}
-				if f1valiter.DynamicTransform.FunctionName != nil {
-					f1valf14.FunctionName = f1valiter.DynamicTransform.FunctionName
-				}
-				if f1valiter.DynamicTransform.Inputs != nil {
-					f1valf14f1 := []*string{}
-					for _, f1valf14f1iter := range f1valiter.DynamicTransform.Inputs {
-						var f1valf14f1elem string
-						f1valf14f1elem = *f1valf14f1iter
-						f1valf14f1 = append(f1valf14f1, &f1valf14f1elem)
-					}
-					f1valf14.Inputs = f1valf14f1
-				}
-				if f1valiter.DynamicTransform.Name != nil {
-					f1valf14.Name = f1valiter.DynamicTransform.Name
-				}
-				if f1valiter.DynamicTransform.Parameters != nil {
-					f1valf14f3 := []*svcapitypes.TransformConfigParameter{}
-					for _, f1valf14f3iter := range f1valiter.DynamicTransform.Parameters {
-						f1valf14f3elem := &svcapitypes.TransformConfigParameter{}
-						if f1valf14f3iter.IsOptional != nil {
-							f1valf14f3elem.IsOptional = f1valf14f3iter.IsOptional
-						}
-						if f1valf14f3iter.ListType != nil {
-							f1valf14f3elem.ListType = f1valf14f3iter.ListType
-						}
-						if f1valf14f3iter.Name != nil {
-							f1valf14f3elem.Name = f1valf14f3iter.Name
-						}
-						if f1valf14f3iter.Type != nil {
-							f1valf14f3elem.Type = f1valf14f3iter.Type
-						}
-						if f1valf14f3iter.ValidationMessage != nil {
-							f1valf14f3elem.ValidationMessage = f1valf14f3iter.ValidationMessage
-						}
-						if f1valf14f3iter.ValidationRule != nil {
-							f1valf14f3elem.ValidationRule = f1valf14f3iter.ValidationRule
-						}
-						if f1valf14f3iter.Value != nil {
-							f1valf14f3elemf6 := []*string{}
-							for _, f1valf14f3elemf6iter := range f1valf14f3iter.Value {
-								var f1valf14f3elemf6elem string
-								f1valf14f3elemf6elem = *f1valf14f3elemf6iter
-								f1valf14f3elemf6 = append(f1valf14f3elemf6, &f1valf14f3elemf6elem)
-							}
-							f1valf14f3elem.Value = f1valf14f3elemf6
-						}
-						f1valf14f3 = append(f1valf14f3, f1valf14f3elem)
-					}
-					f1valf14.Parameters = f1valf14f3
-				}
-				if f1valiter.DynamicTransform.Path != nil {
-					f1valf14.Path = f1valiter.DynamicTransform.Path
-				}
-				if f1valiter.DynamicTransform.TransformName != nil {
-					f1valf14.TransformName = f1valiter.DynamicTransform.TransformName
-				}
-				if f1valiter.DynamicTransform.Version != nil {
-					f1valf14.Version = f1valiter.DynamicTransform.Version
-				}
-				f1val.DynamicTransform = f1valf14
-			}
-			if f1valiter.DynamoDBCatalogSource != nil {
-				f1valf15 := &svcapitypes.DynamoDBCatalogSource{}
-				if f1valiter.DynamoDBCatalogSource.Database != nil {
-					f1valf15.Database = f1valiter.DynamoDBCatalogSource.Database
-				}
-				if f1valiter.DynamoDBCatalogSource.Name != nil {
-					f1valf15.Name = f1valiter.DynamoDBCatalogSource.Name
-				}
-				if f1valiter.DynamoDBCatalogSource.Table != nil {
-					f1valf15.Table = f1valiter.DynamoDBCatalogSource.Table
-				}
-				f1val.DynamoDBCatalogSource = f1valf15
-			}
-			if f1valiter.EvaluateDataQuality != nil {
-				f1valf16 := &svcapitypes.EvaluateDataQuality{}
-				if f1valiter.EvaluateDataQuality.Inputs != nil {
 					f1valf16f0 := []*string{}
-					for _, f1valf16f0iter := range f1valiter.EvaluateDataQuality.Inputs {
+					for _, f1valf16f0iter := range f1valiter.DropFields.Inputs {
 						var f1valf16f0elem string
 						f1valf16f0elem = *f1valf16f0iter
 						f1valf16f0 = append(f1valf16f0, &f1valf16f0elem)
 					}
 					f1valf16.Inputs = f1valf16f0
 				}
-				if f1valiter.EvaluateDataQuality.Name != nil {
-					f1valf16.Name = f1valiter.EvaluateDataQuality.Name
+				if f1valiter.DropFields.Name != nil {
+					f1valf16.Name = f1valiter.DropFields.Name
 				}
-				if f1valiter.EvaluateDataQuality.Output != nil {
-					f1valf16.Output = f1valiter.EvaluateDataQuality.Output
-				}
-				if f1valiter.EvaluateDataQuality.PublishingOptions != nil {
-					f1valf16f3 := &svcapitypes.DQResultsPublishingOptions{}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled != nil {
-						f1valf16f3.CloudWatchMetricsEnabled = f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext != nil {
-						f1valf16f3.EvaluationContext = f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled != nil {
-						f1valf16f3.ResultsPublishingEnabled = f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix != nil {
-						f1valf16f3.ResultsS3Prefix = f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix
-					}
-					f1valf16.PublishingOptions = f1valf16f3
-				}
-				if f1valiter.EvaluateDataQuality.Ruleset != nil {
-					f1valf16.Ruleset = f1valiter.EvaluateDataQuality.Ruleset
-				}
-				if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions != nil {
-					f1valf16f5 := &svcapitypes.DQStopJobOnFailureOptions{}
-					if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
-						f1valf16f5.StopJobOnFailureTiming = f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming
-					}
-					f1valf16.StopJobOnFailureOptions = f1valf16f5
-				}
-				f1val.EvaluateDataQuality = f1valf16
-			}
-			if f1valiter.FillMissingValues != nil {
-				f1valf17 := &svcapitypes.FillMissingValues{}
-				if f1valiter.FillMissingValues.FilledPath != nil {
-					f1valf17.FilledPath = f1valiter.FillMissingValues.FilledPath
-				}
-				if f1valiter.FillMissingValues.ImputedPath != nil {
-					f1valf17.ImputedPath = f1valiter.FillMissingValues.ImputedPath
-				}
-				if f1valiter.FillMissingValues.Inputs != nil {
-					f1valf17f2 := []*string{}
-					for _, f1valf17f2iter := range f1valiter.FillMissingValues.Inputs {
-						var f1valf17f2elem string
-						f1valf17f2elem = *f1valf17f2iter
-						f1valf17f2 = append(f1valf17f2, &f1valf17f2elem)
-					}
-					f1valf17.Inputs = f1valf17f2
-				}
-				if f1valiter.FillMissingValues.Name != nil {
-					f1valf17.Name = f1valiter.FillMissingValues.Name
-				}
-				f1val.FillMissingValues = f1valf17
-			}
-			if f1valiter.Filter != nil {
-				f1valf18 := &svcapitypes.Filter{}
-				if f1valiter.Filter.Filters != nil {
-					f1valf18f0 := []*svcapitypes.FilterExpression{}
-					for _, f1valf18f0iter := range f1valiter.Filter.Filters {
-						f1valf18f0elem := &svcapitypes.FilterExpression{}
-						if f1valf18f0iter.Negated != nil {
-							f1valf18f0elem.Negated = f1valf18f0iter.Negated
+				if f1valiter.DropFields.Paths != nil {
+					f1valf16f2 := [][]*string{}
+					for _, f1valf16f2iter := range f1valiter.DropFields.Paths {
+						f1valf16f2elem := []*string{}
+						for _, f1valf16f2elemiter := range f1valf16f2iter {
+							var f1valf16f2elemelem string
+							f1valf16f2elemelem = *f1valf16f2elemiter
+							f1valf16f2elem = append(f1valf16f2elem, &f1valf16f2elemelem)
 						}
-						if f1valf18f0iter.Operation != nil {
-							f1valf18f0elem.Operation = f1valf18f0iter.Operation
-						}
-						if f1valf18f0iter.Values != nil {
-							f1valf18f0elemf2 := []*svcapitypes.FilterValue{}
-							for _, f1valf18f0elemf2iter := range f1valf18f0iter.Values {
-								f1valf18f0elemf2elem := &svcapitypes.FilterValue{}
-								if f1valf18f0elemf2iter.Type != nil {
-									f1valf18f0elemf2elem.Type = f1valf18f0elemf2iter.Type
-								}
-								if f1valf18f0elemf2iter.Value != nil {
-									f1valf18f0elemf2elemf1 := []*string{}
-									for _, f1valf18f0elemf2elemf1iter := range f1valf18f0elemf2iter.Value {
-										var f1valf18f0elemf2elemf1elem string
-										f1valf18f0elemf2elemf1elem = *f1valf18f0elemf2elemf1iter
-										f1valf18f0elemf2elemf1 = append(f1valf18f0elemf2elemf1, &f1valf18f0elemf2elemf1elem)
-									}
-									f1valf18f0elemf2elem.Value = f1valf18f0elemf2elemf1
-								}
-								f1valf18f0elemf2 = append(f1valf18f0elemf2, f1valf18f0elemf2elem)
+						f1valf16f2 = append(f1valf16f2, f1valf16f2elem)
+					}
+					f1valf16.Paths = f1valf16f2
+				}
+				f1val.DropFields = f1valf16
+			}
+			if f1valiter.DropNullFields != nil {
+				f1valf17 := &svcapitypes.DropNullFields{}
+				if f1valiter.DropNullFields.Inputs != nil {
+					f1valf17f0 := []*string{}
+					for _, f1valf17f0iter := range f1valiter.DropNullFields.Inputs {
+						var f1valf17f0elem string
+						f1valf17f0elem = *f1valf17f0iter
+						f1valf17f0 = append(f1valf17f0, &f1valf17f0elem)
+					}
+					f1valf17.Inputs = f1valf17f0
+				}
+				if f1valiter.DropNullFields.Name != nil {
+					f1valf17.Name = f1valiter.DropNullFields.Name
+				}
+				if f1valiter.DropNullFields.NullCheckBoxList != nil {
+					f1valf17f2 := &svcapitypes.NullCheckBoxList{}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsEmpty != nil {
+						f1valf17f2.IsEmpty = f1valiter.DropNullFields.NullCheckBoxList.IsEmpty
+					}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsNegOne != nil {
+						f1valf17f2.IsNegOne = f1valiter.DropNullFields.NullCheckBoxList.IsNegOne
+					}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsNullString != nil {
+						f1valf17f2.IsNullString = f1valiter.DropNullFields.NullCheckBoxList.IsNullString
+					}
+					f1valf17.NullCheckBoxList = f1valf17f2
+				}
+				if f1valiter.DropNullFields.NullTextList != nil {
+					f1valf17f3 := []*svcapitypes.NullValueField{}
+					for _, f1valf17f3iter := range f1valiter.DropNullFields.NullTextList {
+						f1valf17f3elem := &svcapitypes.NullValueField{}
+						if f1valf17f3iter.Datatype != nil {
+							f1valf17f3elemf0 := &svcapitypes.Datatype{}
+							if f1valf17f3iter.Datatype.Id != nil {
+								f1valf17f3elemf0.ID = f1valf17f3iter.Datatype.Id
 							}
-							f1valf18f0elem.Values = f1valf18f0elemf2
+							if f1valf17f3iter.Datatype.Label != nil {
+								f1valf17f3elemf0.Label = f1valf17f3iter.Datatype.Label
+							}
+							f1valf17f3elem.Datatype = f1valf17f3elemf0
 						}
-						f1valf18f0 = append(f1valf18f0, f1valf18f0elem)
+						if f1valf17f3iter.Value != nil {
+							f1valf17f3elem.Value = f1valf17f3iter.Value
+						}
+						f1valf17f3 = append(f1valf17f3, f1valf17f3elem)
 					}
-					f1valf18.Filters = f1valf18f0
+					f1valf17.NullTextList = f1valf17f3
 				}
-				if f1valiter.Filter.Inputs != nil {
+				f1val.DropNullFields = f1valf17
+			}
+			if f1valiter.DynamicTransform != nil {
+				f1valf18 := &svcapitypes.DynamicTransform{}
+				if f1valiter.DynamicTransform.FunctionName != nil {
+					f1valf18.FunctionName = f1valiter.DynamicTransform.FunctionName
+				}
+				if f1valiter.DynamicTransform.Inputs != nil {
 					f1valf18f1 := []*string{}
-					for _, f1valf18f1iter := range f1valiter.Filter.Inputs {
+					for _, f1valf18f1iter := range f1valiter.DynamicTransform.Inputs {
 						var f1valf18f1elem string
 						f1valf18f1elem = *f1valf18f1iter
 						f1valf18f1 = append(f1valf18f1, &f1valf18f1elem)
 					}
 					f1valf18.Inputs = f1valf18f1
 				}
-				if f1valiter.Filter.LogicalOperator != nil {
-					f1valf18.LogicalOperator = f1valiter.Filter.LogicalOperator
+				if f1valiter.DynamicTransform.Name != nil {
+					f1valf18.Name = f1valiter.DynamicTransform.Name
 				}
-				if f1valiter.Filter.Name != nil {
-					f1valf18.Name = f1valiter.Filter.Name
-				}
-				f1val.Filter = f1valf18
-			}
-			if f1valiter.GovernedCatalogSource != nil {
-				f1valf19 := &svcapitypes.GovernedCatalogSource{}
-				if f1valiter.GovernedCatalogSource.AdditionalOptions != nil {
-					f1valf19f0 := &svcapitypes.S3SourceAdditionalOptions{}
-					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf19f0.BoundedFiles = f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles
-					}
-					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize != nil {
-						f1valf19f0.BoundedSize = f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize
-					}
-					f1valf19.AdditionalOptions = f1valf19f0
-				}
-				if f1valiter.GovernedCatalogSource.Database != nil {
-					f1valf19.Database = f1valiter.GovernedCatalogSource.Database
-				}
-				if f1valiter.GovernedCatalogSource.Name != nil {
-					f1valf19.Name = f1valiter.GovernedCatalogSource.Name
-				}
-				if f1valiter.GovernedCatalogSource.PartitionPredicate != nil {
-					f1valf19.PartitionPredicate = f1valiter.GovernedCatalogSource.PartitionPredicate
-				}
-				if f1valiter.GovernedCatalogSource.Table != nil {
-					f1valf19.Table = f1valiter.GovernedCatalogSource.Table
-				}
-				f1val.GovernedCatalogSource = f1valf19
-			}
-			if f1valiter.GovernedCatalogTarget != nil {
-				f1valf20 := &svcapitypes.GovernedCatalogTarget{}
-				if f1valiter.GovernedCatalogTarget.Database != nil {
-					f1valf20.Database = f1valiter.GovernedCatalogTarget.Database
-				}
-				if f1valiter.GovernedCatalogTarget.Inputs != nil {
-					f1valf20f1 := []*string{}
-					for _, f1valf20f1iter := range f1valiter.GovernedCatalogTarget.Inputs {
-						var f1valf20f1elem string
-						f1valf20f1elem = *f1valf20f1iter
-						f1valf20f1 = append(f1valf20f1, &f1valf20f1elem)
-					}
-					f1valf20.Inputs = f1valf20f1
-				}
-				if f1valiter.GovernedCatalogTarget.Name != nil {
-					f1valf20.Name = f1valiter.GovernedCatalogTarget.Name
-				}
-				if f1valiter.GovernedCatalogTarget.PartitionKeys != nil {
-					f1valf20f3 := [][]*string{}
-					for _, f1valf20f3iter := range f1valiter.GovernedCatalogTarget.PartitionKeys {
-						f1valf20f3elem := []*string{}
-						for _, f1valf20f3elemiter := range f1valf20f3iter {
-							var f1valf20f3elemelem string
-							f1valf20f3elemelem = *f1valf20f3elemiter
-							f1valf20f3elem = append(f1valf20f3elem, &f1valf20f3elemelem)
-						}
-						f1valf20f3 = append(f1valf20f3, f1valf20f3elem)
-					}
-					f1valf20.PartitionKeys = f1valf20f3
-				}
-				if f1valiter.GovernedCatalogTarget.SchemaChangePolicy != nil {
-					f1valf20f4 := &svcapitypes.CatalogSchemaChangePolicy{}
-					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf20f4.EnableUpdateCatalog = f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf20f4.UpdateBehavior = f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf20.SchemaChangePolicy = f1valf20f4
-				}
-				if f1valiter.GovernedCatalogTarget.Table != nil {
-					f1valf20.Table = f1valiter.GovernedCatalogTarget.Table
-				}
-				f1val.GovernedCatalogTarget = f1valf20
-			}
-			if f1valiter.JDBCConnectorSource != nil {
-				f1valf21 := &svcapitypes.JDBCConnectorSource{}
-				if f1valiter.JDBCConnectorSource.AdditionalOptions != nil {
-					f1valf21f0 := &svcapitypes.JDBCConnectorOptions{}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping != nil {
-						f1valf21f0f0 := map[string]*string{}
-						for f1valf21f0f0key, f1valf21f0f0valiter := range f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping {
-							var f1valf21f0f0val string
-							f1valf21f0f0val = *f1valf21f0f0valiter
-							f1valf21f0f0[f1valf21f0f0key] = &f1valf21f0f0val
-						}
-						f1valf21f0.DataTypeMapping = f1valf21f0f0
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate != nil {
-						f1valf21f0.FilterPredicate = f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys != nil {
-						f1valf21f0f2 := []*string{}
-						for _, f1valf21f0f2iter := range f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys {
-							var f1valf21f0f2elem string
-							f1valf21f0f2elem = *f1valf21f0f2iter
-							f1valf21f0f2 = append(f1valf21f0f2, &f1valf21f0f2elem)
-						}
-						f1valf21f0.JobBookmarkKeys = f1valf21f0f2
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder != nil {
-						f1valf21f0.JobBookmarkKeysSortOrder = f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound != nil {
-						f1valf21f0.LowerBound = f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions != nil {
-						f1valf21f0.NumPartitions = f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn != nil {
-						f1valf21f0.PartitionColumn = f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound != nil {
-						f1valf21f0.UpperBound = f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound
-					}
-					f1valf21.AdditionalOptions = f1valf21f0
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionName != nil {
-					f1valf21.ConnectionName = f1valiter.JDBCConnectorSource.ConnectionName
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionTable != nil {
-					f1valf21.ConnectionTable = f1valiter.JDBCConnectorSource.ConnectionTable
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionType != nil {
-					f1valf21.ConnectionType = f1valiter.JDBCConnectorSource.ConnectionType
-				}
-				if f1valiter.JDBCConnectorSource.ConnectorName != nil {
-					f1valf21.ConnectorName = f1valiter.JDBCConnectorSource.ConnectorName
-				}
-				if f1valiter.JDBCConnectorSource.Name != nil {
-					f1valf21.Name = f1valiter.JDBCConnectorSource.Name
-				}
-				if f1valiter.JDBCConnectorSource.OutputSchemas != nil {
-					f1valf21f6 := []*svcapitypes.GlueSchema{}
-					for _, f1valf21f6iter := range f1valiter.JDBCConnectorSource.OutputSchemas {
-						f1valf21f6elem := &svcapitypes.GlueSchema{}
-						if f1valf21f6iter.Columns != nil {
-							f1valf21f6elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf21f6elemf0iter := range f1valf21f6iter.Columns {
-								f1valf21f6elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf21f6elemf0iter.Name != nil {
-									f1valf21f6elemf0elem.Name = f1valf21f6elemf0iter.Name
+				if f1valiter.DynamicTransform.OutputSchemas != nil {
+					f1valf18f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf18f3iter := range f1valiter.DynamicTransform.OutputSchemas {
+						f1valf18f3elem := &svcapitypes.GlueSchema{}
+						if f1valf18f3iter.Columns != nil {
+							f1valf18f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf18f3elemf0iter := range f1valf18f3iter.Columns {
+								f1valf18f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf18f3elemf0iter.Name != nil {
+									f1valf18f3elemf0elem.Name = f1valf18f3elemf0iter.Name
 								}
-								if f1valf21f6elemf0iter.Type != nil {
-									f1valf21f6elemf0elem.Type = f1valf21f6elemf0iter.Type
+								if f1valf18f3elemf0iter.Type != nil {
+									f1valf18f3elemf0elem.Type = f1valf18f3elemf0iter.Type
 								}
-								f1valf21f6elemf0 = append(f1valf21f6elemf0, f1valf21f6elemf0elem)
+								f1valf18f3elemf0 = append(f1valf18f3elemf0, f1valf18f3elemf0elem)
 							}
-							f1valf21f6elem.Columns = f1valf21f6elemf0
+							f1valf18f3elem.Columns = f1valf18f3elemf0
 						}
-						f1valf21f6 = append(f1valf21f6, f1valf21f6elem)
+						f1valf18f3 = append(f1valf18f3, f1valf18f3elem)
 					}
-					f1valf21.OutputSchemas = f1valf21f6
+					f1valf18.OutputSchemas = f1valf18f3
 				}
-				if f1valiter.JDBCConnectorSource.Query != nil {
-					f1valf21.Query = f1valiter.JDBCConnectorSource.Query
-				}
-				f1val.JDBCConnectorSource = f1valf21
-			}
-			if f1valiter.JDBCConnectorTarget != nil {
-				f1valf22 := &svcapitypes.JDBCConnectorTarget{}
-				if f1valiter.JDBCConnectorTarget.AdditionalOptions != nil {
-					f1valf22f0 := map[string]*string{}
-					for f1valf22f0key, f1valf22f0valiter := range f1valiter.JDBCConnectorTarget.AdditionalOptions {
-						var f1valf22f0val string
-						f1valf22f0val = *f1valf22f0valiter
-						f1valf22f0[f1valf22f0key] = &f1valf22f0val
-					}
-					f1valf22.AdditionalOptions = f1valf22f0
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionName != nil {
-					f1valf22.ConnectionName = f1valiter.JDBCConnectorTarget.ConnectionName
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionTable != nil {
-					f1valf22.ConnectionTable = f1valiter.JDBCConnectorTarget.ConnectionTable
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionType != nil {
-					f1valf22.ConnectionType = f1valiter.JDBCConnectorTarget.ConnectionType
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectorName != nil {
-					f1valf22.ConnectorName = f1valiter.JDBCConnectorTarget.ConnectorName
-				}
-				if f1valiter.JDBCConnectorTarget.Inputs != nil {
-					f1valf22f5 := []*string{}
-					for _, f1valf22f5iter := range f1valiter.JDBCConnectorTarget.Inputs {
-						var f1valf22f5elem string
-						f1valf22f5elem = *f1valf22f5iter
-						f1valf22f5 = append(f1valf22f5, &f1valf22f5elem)
-					}
-					f1valf22.Inputs = f1valf22f5
-				}
-				if f1valiter.JDBCConnectorTarget.Name != nil {
-					f1valf22.Name = f1valiter.JDBCConnectorTarget.Name
-				}
-				if f1valiter.JDBCConnectorTarget.OutputSchemas != nil {
-					f1valf22f7 := []*svcapitypes.GlueSchema{}
-					for _, f1valf22f7iter := range f1valiter.JDBCConnectorTarget.OutputSchemas {
-						f1valf22f7elem := &svcapitypes.GlueSchema{}
-						if f1valf22f7iter.Columns != nil {
-							f1valf22f7elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf22f7elemf0iter := range f1valf22f7iter.Columns {
-								f1valf22f7elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf22f7elemf0iter.Name != nil {
-									f1valf22f7elemf0elem.Name = f1valf22f7elemf0iter.Name
-								}
-								if f1valf22f7elemf0iter.Type != nil {
-									f1valf22f7elemf0elem.Type = f1valf22f7elemf0iter.Type
-								}
-								f1valf22f7elemf0 = append(f1valf22f7elemf0, f1valf22f7elemf0elem)
+				if f1valiter.DynamicTransform.Parameters != nil {
+					f1valf18f4 := []*svcapitypes.TransformConfigParameter{}
+					for _, f1valf18f4iter := range f1valiter.DynamicTransform.Parameters {
+						f1valf18f4elem := &svcapitypes.TransformConfigParameter{}
+						if f1valf18f4iter.IsOptional != nil {
+							f1valf18f4elem.IsOptional = f1valf18f4iter.IsOptional
+						}
+						if f1valf18f4iter.ListType != nil {
+							f1valf18f4elem.ListType = f1valf18f4iter.ListType
+						}
+						if f1valf18f4iter.Name != nil {
+							f1valf18f4elem.Name = f1valf18f4iter.Name
+						}
+						if f1valf18f4iter.Type != nil {
+							f1valf18f4elem.Type = f1valf18f4iter.Type
+						}
+						if f1valf18f4iter.ValidationMessage != nil {
+							f1valf18f4elem.ValidationMessage = f1valf18f4iter.ValidationMessage
+						}
+						if f1valf18f4iter.ValidationRule != nil {
+							f1valf18f4elem.ValidationRule = f1valf18f4iter.ValidationRule
+						}
+						if f1valf18f4iter.Value != nil {
+							f1valf18f4elemf6 := []*string{}
+							for _, f1valf18f4elemf6iter := range f1valf18f4iter.Value {
+								var f1valf18f4elemf6elem string
+								f1valf18f4elemf6elem = *f1valf18f4elemf6iter
+								f1valf18f4elemf6 = append(f1valf18f4elemf6, &f1valf18f4elemf6elem)
 							}
-							f1valf22f7elem.Columns = f1valf22f7elemf0
+							f1valf18f4elem.Value = f1valf18f4elemf6
 						}
-						f1valf22f7 = append(f1valf22f7, f1valf22f7elem)
+						f1valf18f4 = append(f1valf18f4, f1valf18f4elem)
 					}
-					f1valf22.OutputSchemas = f1valf22f7
+					f1valf18.Parameters = f1valf18f4
 				}
-				f1val.JDBCConnectorTarget = f1valf22
+				if f1valiter.DynamicTransform.Path != nil {
+					f1valf18.Path = f1valiter.DynamicTransform.Path
+				}
+				if f1valiter.DynamicTransform.TransformName != nil {
+					f1valf18.TransformName = f1valiter.DynamicTransform.TransformName
+				}
+				if f1valiter.DynamicTransform.Version != nil {
+					f1valf18.Version = f1valiter.DynamicTransform.Version
+				}
+				f1val.DynamicTransform = f1valf18
 			}
-			if f1valiter.Join != nil {
-				f1valf23 := &svcapitypes.Join{}
-				if f1valiter.Join.Columns != nil {
-					f1valf23f0 := []*svcapitypes.JoinColumn{}
-					for _, f1valf23f0iter := range f1valiter.Join.Columns {
-						f1valf23f0elem := &svcapitypes.JoinColumn{}
-						if f1valf23f0iter.From != nil {
-							f1valf23f0elem.From = f1valf23f0iter.From
+			if f1valiter.DynamoDBCatalogSource != nil {
+				f1valf19 := &svcapitypes.DynamoDBCatalogSource{}
+				if f1valiter.DynamoDBCatalogSource.Database != nil {
+					f1valf19.Database = f1valiter.DynamoDBCatalogSource.Database
+				}
+				if f1valiter.DynamoDBCatalogSource.Name != nil {
+					f1valf19.Name = f1valiter.DynamoDBCatalogSource.Name
+				}
+				if f1valiter.DynamoDBCatalogSource.Table != nil {
+					f1valf19.Table = f1valiter.DynamoDBCatalogSource.Table
+				}
+				f1val.DynamoDBCatalogSource = f1valf19
+			}
+			if f1valiter.EvaluateDataQuality != nil {
+				f1valf20 := &svcapitypes.EvaluateDataQuality{}
+				if f1valiter.EvaluateDataQuality.Inputs != nil {
+					f1valf20f0 := []*string{}
+					for _, f1valf20f0iter := range f1valiter.EvaluateDataQuality.Inputs {
+						var f1valf20f0elem string
+						f1valf20f0elem = *f1valf20f0iter
+						f1valf20f0 = append(f1valf20f0, &f1valf20f0elem)
+					}
+					f1valf20.Inputs = f1valf20f0
+				}
+				if f1valiter.EvaluateDataQuality.Name != nil {
+					f1valf20.Name = f1valiter.EvaluateDataQuality.Name
+				}
+				if f1valiter.EvaluateDataQuality.Output != nil {
+					f1valf20.Output = f1valiter.EvaluateDataQuality.Output
+				}
+				if f1valiter.EvaluateDataQuality.PublishingOptions != nil {
+					f1valf20f3 := &svcapitypes.DQResultsPublishingOptions{}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled != nil {
+						f1valf20f3.CloudWatchMetricsEnabled = f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext != nil {
+						f1valf20f3.EvaluationContext = f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled != nil {
+						f1valf20f3.ResultsPublishingEnabled = f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix != nil {
+						f1valf20f3.ResultsS3Prefix = f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix
+					}
+					f1valf20.PublishingOptions = f1valf20f3
+				}
+				if f1valiter.EvaluateDataQuality.Ruleset != nil {
+					f1valf20.Ruleset = f1valiter.EvaluateDataQuality.Ruleset
+				}
+				if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions != nil {
+					f1valf20f5 := &svcapitypes.DQStopJobOnFailureOptions{}
+					if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
+						f1valf20f5.StopJobOnFailureTiming = f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming
+					}
+					f1valf20.StopJobOnFailureOptions = f1valf20f5
+				}
+				f1val.EvaluateDataQuality = f1valf20
+			}
+			if f1valiter.EvaluateDataQualityMultiFrame != nil {
+				f1valf21 := &svcapitypes.EvaluateDataQualityMultiFrame{}
+				if f1valiter.EvaluateDataQualityMultiFrame.AdditionalDataSources != nil {
+					f1valf21f0 := map[string]*string{}
+					for f1valf21f0key, f1valf21f0valiter := range f1valiter.EvaluateDataQualityMultiFrame.AdditionalDataSources {
+						var f1valf21f0val string
+						f1valf21f0val = *f1valf21f0valiter
+						f1valf21f0[f1valf21f0key] = &f1valf21f0val
+					}
+					f1valf21.AdditionalDataSources = f1valf21f0
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.AdditionalOptions != nil {
+					f1valf21f1 := map[string]*string{}
+					for f1valf21f1key, f1valf21f1valiter := range f1valiter.EvaluateDataQualityMultiFrame.AdditionalOptions {
+						var f1valf21f1val string
+						f1valf21f1val = *f1valf21f1valiter
+						f1valf21f1[f1valf21f1key] = &f1valf21f1val
+					}
+					f1valf21.AdditionalOptions = f1valf21f1
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Inputs != nil {
+					f1valf21f2 := []*string{}
+					for _, f1valf21f2iter := range f1valiter.EvaluateDataQualityMultiFrame.Inputs {
+						var f1valf21f2elem string
+						f1valf21f2elem = *f1valf21f2iter
+						f1valf21f2 = append(f1valf21f2, &f1valf21f2elem)
+					}
+					f1valf21.Inputs = f1valf21f2
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Name != nil {
+					f1valf21.Name = f1valiter.EvaluateDataQualityMultiFrame.Name
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions != nil {
+					f1valf21f4 := &svcapitypes.DQResultsPublishingOptions{}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.CloudWatchMetricsEnabled != nil {
+						f1valf21f4.CloudWatchMetricsEnabled = f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.CloudWatchMetricsEnabled
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.EvaluationContext != nil {
+						f1valf21f4.EvaluationContext = f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.EvaluationContext
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsPublishingEnabled != nil {
+						f1valf21f4.ResultsPublishingEnabled = f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsPublishingEnabled
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsS3Prefix != nil {
+						f1valf21f4.ResultsS3Prefix = f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsS3Prefix
+					}
+					f1valf21.PublishingOptions = f1valf21f4
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Ruleset != nil {
+					f1valf21.Ruleset = f1valiter.EvaluateDataQualityMultiFrame.Ruleset
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions != nil {
+					f1valf21f6 := &svcapitypes.DQStopJobOnFailureOptions{}
+					if f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
+						f1valf21f6.StopJobOnFailureTiming = f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions.StopJobOnFailureTiming
+					}
+					f1valf21.StopJobOnFailureOptions = f1valf21f6
+				}
+				f1val.EvaluateDataQualityMultiFrame = f1valf21
+			}
+			if f1valiter.FillMissingValues != nil {
+				f1valf22 := &svcapitypes.FillMissingValues{}
+				if f1valiter.FillMissingValues.FilledPath != nil {
+					f1valf22.FilledPath = f1valiter.FillMissingValues.FilledPath
+				}
+				if f1valiter.FillMissingValues.ImputedPath != nil {
+					f1valf22.ImputedPath = f1valiter.FillMissingValues.ImputedPath
+				}
+				if f1valiter.FillMissingValues.Inputs != nil {
+					f1valf22f2 := []*string{}
+					for _, f1valf22f2iter := range f1valiter.FillMissingValues.Inputs {
+						var f1valf22f2elem string
+						f1valf22f2elem = *f1valf22f2iter
+						f1valf22f2 = append(f1valf22f2, &f1valf22f2elem)
+					}
+					f1valf22.Inputs = f1valf22f2
+				}
+				if f1valiter.FillMissingValues.Name != nil {
+					f1valf22.Name = f1valiter.FillMissingValues.Name
+				}
+				f1val.FillMissingValues = f1valf22
+			}
+			if f1valiter.Filter != nil {
+				f1valf23 := &svcapitypes.Filter{}
+				if f1valiter.Filter.Filters != nil {
+					f1valf23f0 := []*svcapitypes.FilterExpression{}
+					for _, f1valf23f0iter := range f1valiter.Filter.Filters {
+						f1valf23f0elem := &svcapitypes.FilterExpression{}
+						if f1valf23f0iter.Negated != nil {
+							f1valf23f0elem.Negated = f1valf23f0iter.Negated
 						}
-						if f1valf23f0iter.Keys != nil {
-							f1valf23f0elemf1 := [][]*string{}
-							for _, f1valf23f0elemf1iter := range f1valf23f0iter.Keys {
-								f1valf23f0elemf1elem := []*string{}
-								for _, f1valf23f0elemf1elemiter := range f1valf23f0elemf1iter {
-									var f1valf23f0elemf1elemelem string
-									f1valf23f0elemf1elemelem = *f1valf23f0elemf1elemiter
-									f1valf23f0elemf1elem = append(f1valf23f0elemf1elem, &f1valf23f0elemf1elemelem)
+						if f1valf23f0iter.Operation != nil {
+							f1valf23f0elem.Operation = f1valf23f0iter.Operation
+						}
+						if f1valf23f0iter.Values != nil {
+							f1valf23f0elemf2 := []*svcapitypes.FilterValue{}
+							for _, f1valf23f0elemf2iter := range f1valf23f0iter.Values {
+								f1valf23f0elemf2elem := &svcapitypes.FilterValue{}
+								if f1valf23f0elemf2iter.Type != nil {
+									f1valf23f0elemf2elem.Type = f1valf23f0elemf2iter.Type
 								}
-								f1valf23f0elemf1 = append(f1valf23f0elemf1, f1valf23f0elemf1elem)
+								if f1valf23f0elemf2iter.Value != nil {
+									f1valf23f0elemf2elemf1 := []*string{}
+									for _, f1valf23f0elemf2elemf1iter := range f1valf23f0elemf2iter.Value {
+										var f1valf23f0elemf2elemf1elem string
+										f1valf23f0elemf2elemf1elem = *f1valf23f0elemf2elemf1iter
+										f1valf23f0elemf2elemf1 = append(f1valf23f0elemf2elemf1, &f1valf23f0elemf2elemf1elem)
+									}
+									f1valf23f0elemf2elem.Value = f1valf23f0elemf2elemf1
+								}
+								f1valf23f0elemf2 = append(f1valf23f0elemf2, f1valf23f0elemf2elem)
 							}
-							f1valf23f0elem.Keys = f1valf23f0elemf1
+							f1valf23f0elem.Values = f1valf23f0elemf2
 						}
 						f1valf23f0 = append(f1valf23f0, f1valf23f0elem)
 					}
-					f1valf23.Columns = f1valf23f0
+					f1valf23.Filters = f1valf23f0
 				}
-				if f1valiter.Join.Inputs != nil {
+				if f1valiter.Filter.Inputs != nil {
 					f1valf23f1 := []*string{}
-					for _, f1valf23f1iter := range f1valiter.Join.Inputs {
+					for _, f1valf23f1iter := range f1valiter.Filter.Inputs {
 						var f1valf23f1elem string
 						f1valf23f1elem = *f1valf23f1iter
 						f1valf23f1 = append(f1valf23f1, &f1valf23f1elem)
 					}
 					f1valf23.Inputs = f1valf23f1
 				}
-				if f1valiter.Join.JoinType != nil {
-					f1valf23.JoinType = f1valiter.Join.JoinType
+				if f1valiter.Filter.LogicalOperator != nil {
+					f1valf23.LogicalOperator = f1valiter.Filter.LogicalOperator
 				}
-				if f1valiter.Join.Name != nil {
-					f1valf23.Name = f1valiter.Join.Name
+				if f1valiter.Filter.Name != nil {
+					f1valf23.Name = f1valiter.Filter.Name
 				}
-				f1val.Join = f1valf23
+				f1val.Filter = f1valf23
 			}
-			if f1valiter.Merge != nil {
-				f1valf24 := &svcapitypes.Merge{}
-				if f1valiter.Merge.Inputs != nil {
-					f1valf24f0 := []*string{}
-					for _, f1valf24f0iter := range f1valiter.Merge.Inputs {
-						var f1valf24f0elem string
-						f1valf24f0elem = *f1valf24f0iter
-						f1valf24f0 = append(f1valf24f0, &f1valf24f0elem)
+			if f1valiter.GovernedCatalogSource != nil {
+				f1valf24 := &svcapitypes.GovernedCatalogSource{}
+				if f1valiter.GovernedCatalogSource.AdditionalOptions != nil {
+					f1valf24f0 := &svcapitypes.S3SourceAdditionalOptions{}
+					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf24f0.BoundedFiles = f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles
 					}
-					f1valf24.Inputs = f1valf24f0
+					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize != nil {
+						f1valf24f0.BoundedSize = f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize
+					}
+					f1valf24.AdditionalOptions = f1valf24f0
 				}
-				if f1valiter.Merge.Name != nil {
-					f1valf24.Name = f1valiter.Merge.Name
+				if f1valiter.GovernedCatalogSource.Database != nil {
+					f1valf24.Database = f1valiter.GovernedCatalogSource.Database
 				}
-				if f1valiter.Merge.PrimaryKeys != nil {
-					f1valf24f2 := [][]*string{}
-					for _, f1valf24f2iter := range f1valiter.Merge.PrimaryKeys {
-						f1valf24f2elem := []*string{}
-						for _, f1valf24f2elemiter := range f1valf24f2iter {
-							var f1valf24f2elemelem string
-							f1valf24f2elemelem = *f1valf24f2elemiter
-							f1valf24f2elem = append(f1valf24f2elem, &f1valf24f2elemelem)
+				if f1valiter.GovernedCatalogSource.Name != nil {
+					f1valf24.Name = f1valiter.GovernedCatalogSource.Name
+				}
+				if f1valiter.GovernedCatalogSource.PartitionPredicate != nil {
+					f1valf24.PartitionPredicate = f1valiter.GovernedCatalogSource.PartitionPredicate
+				}
+				if f1valiter.GovernedCatalogSource.Table != nil {
+					f1valf24.Table = f1valiter.GovernedCatalogSource.Table
+				}
+				f1val.GovernedCatalogSource = f1valf24
+			}
+			if f1valiter.GovernedCatalogTarget != nil {
+				f1valf25 := &svcapitypes.GovernedCatalogTarget{}
+				if f1valiter.GovernedCatalogTarget.Database != nil {
+					f1valf25.Database = f1valiter.GovernedCatalogTarget.Database
+				}
+				if f1valiter.GovernedCatalogTarget.Inputs != nil {
+					f1valf25f1 := []*string{}
+					for _, f1valf25f1iter := range f1valiter.GovernedCatalogTarget.Inputs {
+						var f1valf25f1elem string
+						f1valf25f1elem = *f1valf25f1iter
+						f1valf25f1 = append(f1valf25f1, &f1valf25f1elem)
+					}
+					f1valf25.Inputs = f1valf25f1
+				}
+				if f1valiter.GovernedCatalogTarget.Name != nil {
+					f1valf25.Name = f1valiter.GovernedCatalogTarget.Name
+				}
+				if f1valiter.GovernedCatalogTarget.PartitionKeys != nil {
+					f1valf25f3 := [][]*string{}
+					for _, f1valf25f3iter := range f1valiter.GovernedCatalogTarget.PartitionKeys {
+						f1valf25f3elem := []*string{}
+						for _, f1valf25f3elemiter := range f1valf25f3iter {
+							var f1valf25f3elemelem string
+							f1valf25f3elemelem = *f1valf25f3elemiter
+							f1valf25f3elem = append(f1valf25f3elem, &f1valf25f3elemelem)
 						}
-						f1valf24f2 = append(f1valf24f2, f1valf24f2elem)
+						f1valf25f3 = append(f1valf25f3, f1valf25f3elem)
 					}
-					f1valf24.PrimaryKeys = f1valf24f2
+					f1valf25.PartitionKeys = f1valf25f3
 				}
-				if f1valiter.Merge.Source != nil {
-					f1valf24.Source = f1valiter.Merge.Source
-				}
-				f1val.Merge = f1valf24
-			}
-			if f1valiter.MicrosoftSQLServerCatalogSource != nil {
-				f1valf25 := &svcapitypes.MicrosoftSQLServerCatalogSource{}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Database != nil {
-					f1valf25.Database = f1valiter.MicrosoftSQLServerCatalogSource.Database
-				}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Name != nil {
-					f1valf25.Name = f1valiter.MicrosoftSQLServerCatalogSource.Name
-				}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Table != nil {
-					f1valf25.Table = f1valiter.MicrosoftSQLServerCatalogSource.Table
-				}
-				f1val.MicrosoftSQLServerCatalogSource = f1valf25
-			}
-			if f1valiter.MicrosoftSQLServerCatalogTarget != nil {
-				f1valf26 := &svcapitypes.MicrosoftSQLServerCatalogTarget{}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Database != nil {
-					f1valf26.Database = f1valiter.MicrosoftSQLServerCatalogTarget.Database
-				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Inputs != nil {
-					f1valf26f1 := []*string{}
-					for _, f1valf26f1iter := range f1valiter.MicrosoftSQLServerCatalogTarget.Inputs {
-						var f1valf26f1elem string
-						f1valf26f1elem = *f1valf26f1iter
-						f1valf26f1 = append(f1valf26f1, &f1valf26f1elem)
+				if f1valiter.GovernedCatalogTarget.SchemaChangePolicy != nil {
+					f1valf25f4 := &svcapitypes.CatalogSchemaChangePolicy{}
+					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf25f4.EnableUpdateCatalog = f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
 					}
-					f1valf26.Inputs = f1valf26f1
+					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf25f4.UpdateBehavior = f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf25.SchemaChangePolicy = f1valf25f4
 				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Name != nil {
-					f1valf26.Name = f1valiter.MicrosoftSQLServerCatalogTarget.Name
+				if f1valiter.GovernedCatalogTarget.Table != nil {
+					f1valf25.Table = f1valiter.GovernedCatalogTarget.Table
 				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Table != nil {
-					f1valf26.Table = f1valiter.MicrosoftSQLServerCatalogTarget.Table
-				}
-				f1val.MicrosoftSQLServerCatalogTarget = f1valf26
+				f1val.GovernedCatalogTarget = f1valf25
 			}
-			if f1valiter.MySQLCatalogSource != nil {
-				f1valf27 := &svcapitypes.MySQLCatalogSource{}
-				if f1valiter.MySQLCatalogSource.Database != nil {
-					f1valf27.Database = f1valiter.MySQLCatalogSource.Database
+			if f1valiter.JDBCConnectorSource != nil {
+				f1valf26 := &svcapitypes.JDBCConnectorSource{}
+				if f1valiter.JDBCConnectorSource.AdditionalOptions != nil {
+					f1valf26f0 := &svcapitypes.JDBCConnectorOptions{}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping != nil {
+						f1valf26f0f0 := map[string]*string{}
+						for f1valf26f0f0key, f1valf26f0f0valiter := range f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping {
+							var f1valf26f0f0val string
+							f1valf26f0f0val = *f1valf26f0f0valiter
+							f1valf26f0f0[f1valf26f0f0key] = &f1valf26f0f0val
+						}
+						f1valf26f0.DataTypeMapping = f1valf26f0f0
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate != nil {
+						f1valf26f0.FilterPredicate = f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys != nil {
+						f1valf26f0f2 := []*string{}
+						for _, f1valf26f0f2iter := range f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys {
+							var f1valf26f0f2elem string
+							f1valf26f0f2elem = *f1valf26f0f2iter
+							f1valf26f0f2 = append(f1valf26f0f2, &f1valf26f0f2elem)
+						}
+						f1valf26f0.JobBookmarkKeys = f1valf26f0f2
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder != nil {
+						f1valf26f0.JobBookmarkKeysSortOrder = f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound != nil {
+						f1valf26f0.LowerBound = f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions != nil {
+						f1valf26f0.NumPartitions = f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn != nil {
+						f1valf26f0.PartitionColumn = f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound != nil {
+						f1valf26f0.UpperBound = f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound
+					}
+					f1valf26.AdditionalOptions = f1valf26f0
 				}
-				if f1valiter.MySQLCatalogSource.Name != nil {
-					f1valf27.Name = f1valiter.MySQLCatalogSource.Name
+				if f1valiter.JDBCConnectorSource.ConnectionName != nil {
+					f1valf26.ConnectionName = f1valiter.JDBCConnectorSource.ConnectionName
 				}
-				if f1valiter.MySQLCatalogSource.Table != nil {
-					f1valf27.Table = f1valiter.MySQLCatalogSource.Table
+				if f1valiter.JDBCConnectorSource.ConnectionTable != nil {
+					f1valf26.ConnectionTable = f1valiter.JDBCConnectorSource.ConnectionTable
 				}
-				f1val.MySQLCatalogSource = f1valf27
+				if f1valiter.JDBCConnectorSource.ConnectionType != nil {
+					f1valf26.ConnectionType = f1valiter.JDBCConnectorSource.ConnectionType
+				}
+				if f1valiter.JDBCConnectorSource.ConnectorName != nil {
+					f1valf26.ConnectorName = f1valiter.JDBCConnectorSource.ConnectorName
+				}
+				if f1valiter.JDBCConnectorSource.Name != nil {
+					f1valf26.Name = f1valiter.JDBCConnectorSource.Name
+				}
+				if f1valiter.JDBCConnectorSource.OutputSchemas != nil {
+					f1valf26f6 := []*svcapitypes.GlueSchema{}
+					for _, f1valf26f6iter := range f1valiter.JDBCConnectorSource.OutputSchemas {
+						f1valf26f6elem := &svcapitypes.GlueSchema{}
+						if f1valf26f6iter.Columns != nil {
+							f1valf26f6elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf26f6elemf0iter := range f1valf26f6iter.Columns {
+								f1valf26f6elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf26f6elemf0iter.Name != nil {
+									f1valf26f6elemf0elem.Name = f1valf26f6elemf0iter.Name
+								}
+								if f1valf26f6elemf0iter.Type != nil {
+									f1valf26f6elemf0elem.Type = f1valf26f6elemf0iter.Type
+								}
+								f1valf26f6elemf0 = append(f1valf26f6elemf0, f1valf26f6elemf0elem)
+							}
+							f1valf26f6elem.Columns = f1valf26f6elemf0
+						}
+						f1valf26f6 = append(f1valf26f6, f1valf26f6elem)
+					}
+					f1valf26.OutputSchemas = f1valf26f6
+				}
+				if f1valiter.JDBCConnectorSource.Query != nil {
+					f1valf26.Query = f1valiter.JDBCConnectorSource.Query
+				}
+				f1val.JDBCConnectorSource = f1valf26
 			}
-			if f1valiter.MySQLCatalogTarget != nil {
-				f1valf28 := &svcapitypes.MySQLCatalogTarget{}
-				if f1valiter.MySQLCatalogTarget.Database != nil {
-					f1valf28.Database = f1valiter.MySQLCatalogTarget.Database
+			if f1valiter.JDBCConnectorTarget != nil {
+				f1valf27 := &svcapitypes.JDBCConnectorTarget{}
+				if f1valiter.JDBCConnectorTarget.AdditionalOptions != nil {
+					f1valf27f0 := map[string]*string{}
+					for f1valf27f0key, f1valf27f0valiter := range f1valiter.JDBCConnectorTarget.AdditionalOptions {
+						var f1valf27f0val string
+						f1valf27f0val = *f1valf27f0valiter
+						f1valf27f0[f1valf27f0key] = &f1valf27f0val
+					}
+					f1valf27.AdditionalOptions = f1valf27f0
 				}
-				if f1valiter.MySQLCatalogTarget.Inputs != nil {
+				if f1valiter.JDBCConnectorTarget.ConnectionName != nil {
+					f1valf27.ConnectionName = f1valiter.JDBCConnectorTarget.ConnectionName
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectionTable != nil {
+					f1valf27.ConnectionTable = f1valiter.JDBCConnectorTarget.ConnectionTable
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectionType != nil {
+					f1valf27.ConnectionType = f1valiter.JDBCConnectorTarget.ConnectionType
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectorName != nil {
+					f1valf27.ConnectorName = f1valiter.JDBCConnectorTarget.ConnectorName
+				}
+				if f1valiter.JDBCConnectorTarget.Inputs != nil {
+					f1valf27f5 := []*string{}
+					for _, f1valf27f5iter := range f1valiter.JDBCConnectorTarget.Inputs {
+						var f1valf27f5elem string
+						f1valf27f5elem = *f1valf27f5iter
+						f1valf27f5 = append(f1valf27f5, &f1valf27f5elem)
+					}
+					f1valf27.Inputs = f1valf27f5
+				}
+				if f1valiter.JDBCConnectorTarget.Name != nil {
+					f1valf27.Name = f1valiter.JDBCConnectorTarget.Name
+				}
+				if f1valiter.JDBCConnectorTarget.OutputSchemas != nil {
+					f1valf27f7 := []*svcapitypes.GlueSchema{}
+					for _, f1valf27f7iter := range f1valiter.JDBCConnectorTarget.OutputSchemas {
+						f1valf27f7elem := &svcapitypes.GlueSchema{}
+						if f1valf27f7iter.Columns != nil {
+							f1valf27f7elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf27f7elemf0iter := range f1valf27f7iter.Columns {
+								f1valf27f7elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf27f7elemf0iter.Name != nil {
+									f1valf27f7elemf0elem.Name = f1valf27f7elemf0iter.Name
+								}
+								if f1valf27f7elemf0iter.Type != nil {
+									f1valf27f7elemf0elem.Type = f1valf27f7elemf0iter.Type
+								}
+								f1valf27f7elemf0 = append(f1valf27f7elemf0, f1valf27f7elemf0elem)
+							}
+							f1valf27f7elem.Columns = f1valf27f7elemf0
+						}
+						f1valf27f7 = append(f1valf27f7, f1valf27f7elem)
+					}
+					f1valf27.OutputSchemas = f1valf27f7
+				}
+				f1val.JDBCConnectorTarget = f1valf27
+			}
+			if f1valiter.Join != nil {
+				f1valf28 := &svcapitypes.Join{}
+				if f1valiter.Join.Columns != nil {
+					f1valf28f0 := []*svcapitypes.JoinColumn{}
+					for _, f1valf28f0iter := range f1valiter.Join.Columns {
+						f1valf28f0elem := &svcapitypes.JoinColumn{}
+						if f1valf28f0iter.From != nil {
+							f1valf28f0elem.From = f1valf28f0iter.From
+						}
+						if f1valf28f0iter.Keys != nil {
+							f1valf28f0elemf1 := [][]*string{}
+							for _, f1valf28f0elemf1iter := range f1valf28f0iter.Keys {
+								f1valf28f0elemf1elem := []*string{}
+								for _, f1valf28f0elemf1elemiter := range f1valf28f0elemf1iter {
+									var f1valf28f0elemf1elemelem string
+									f1valf28f0elemf1elemelem = *f1valf28f0elemf1elemiter
+									f1valf28f0elemf1elem = append(f1valf28f0elemf1elem, &f1valf28f0elemf1elemelem)
+								}
+								f1valf28f0elemf1 = append(f1valf28f0elemf1, f1valf28f0elemf1elem)
+							}
+							f1valf28f0elem.Keys = f1valf28f0elemf1
+						}
+						f1valf28f0 = append(f1valf28f0, f1valf28f0elem)
+					}
+					f1valf28.Columns = f1valf28f0
+				}
+				if f1valiter.Join.Inputs != nil {
 					f1valf28f1 := []*string{}
-					for _, f1valf28f1iter := range f1valiter.MySQLCatalogTarget.Inputs {
+					for _, f1valf28f1iter := range f1valiter.Join.Inputs {
 						var f1valf28f1elem string
 						f1valf28f1elem = *f1valf28f1iter
 						f1valf28f1 = append(f1valf28f1, &f1valf28f1elem)
 					}
 					f1valf28.Inputs = f1valf28f1
 				}
-				if f1valiter.MySQLCatalogTarget.Name != nil {
-					f1valf28.Name = f1valiter.MySQLCatalogTarget.Name
+				if f1valiter.Join.JoinType != nil {
+					f1valf28.JoinType = f1valiter.Join.JoinType
 				}
-				if f1valiter.MySQLCatalogTarget.Table != nil {
-					f1valf28.Table = f1valiter.MySQLCatalogTarget.Table
+				if f1valiter.Join.Name != nil {
+					f1valf28.Name = f1valiter.Join.Name
 				}
-				f1val.MySQLCatalogTarget = f1valf28
+				f1val.Join = f1valf28
 			}
-			if f1valiter.OracleSQLCatalogSource != nil {
-				f1valf29 := &svcapitypes.OracleSQLCatalogSource{}
-				if f1valiter.OracleSQLCatalogSource.Database != nil {
-					f1valf29.Database = f1valiter.OracleSQLCatalogSource.Database
-				}
-				if f1valiter.OracleSQLCatalogSource.Name != nil {
-					f1valf29.Name = f1valiter.OracleSQLCatalogSource.Name
-				}
-				if f1valiter.OracleSQLCatalogSource.Table != nil {
-					f1valf29.Table = f1valiter.OracleSQLCatalogSource.Table
-				}
-				f1val.OracleSQLCatalogSource = f1valf29
-			}
-			if f1valiter.OracleSQLCatalogTarget != nil {
-				f1valf30 := &svcapitypes.OracleSQLCatalogTarget{}
-				if f1valiter.OracleSQLCatalogTarget.Database != nil {
-					f1valf30.Database = f1valiter.OracleSQLCatalogTarget.Database
-				}
-				if f1valiter.OracleSQLCatalogTarget.Inputs != nil {
-					f1valf30f1 := []*string{}
-					for _, f1valf30f1iter := range f1valiter.OracleSQLCatalogTarget.Inputs {
-						var f1valf30f1elem string
-						f1valf30f1elem = *f1valf30f1iter
-						f1valf30f1 = append(f1valf30f1, &f1valf30f1elem)
+			if f1valiter.Merge != nil {
+				f1valf29 := &svcapitypes.Merge{}
+				if f1valiter.Merge.Inputs != nil {
+					f1valf29f0 := []*string{}
+					for _, f1valf29f0iter := range f1valiter.Merge.Inputs {
+						var f1valf29f0elem string
+						f1valf29f0elem = *f1valf29f0iter
+						f1valf29f0 = append(f1valf29f0, &f1valf29f0elem)
 					}
-					f1valf30.Inputs = f1valf30f1
+					f1valf29.Inputs = f1valf29f0
 				}
-				if f1valiter.OracleSQLCatalogTarget.Name != nil {
-					f1valf30.Name = f1valiter.OracleSQLCatalogTarget.Name
+				if f1valiter.Merge.Name != nil {
+					f1valf29.Name = f1valiter.Merge.Name
 				}
-				if f1valiter.OracleSQLCatalogTarget.Table != nil {
-					f1valf30.Table = f1valiter.OracleSQLCatalogTarget.Table
-				}
-				f1val.OracleSQLCatalogTarget = f1valf30
-			}
-			if f1valiter.PIIDetection != nil {
-				f1valf31 := &svcapitypes.PIIDetection{}
-				if f1valiter.PIIDetection.EntityTypesToDetect != nil {
-					f1valf31f0 := []*string{}
-					for _, f1valf31f0iter := range f1valiter.PIIDetection.EntityTypesToDetect {
-						var f1valf31f0elem string
-						f1valf31f0elem = *f1valf31f0iter
-						f1valf31f0 = append(f1valf31f0, &f1valf31f0elem)
+				if f1valiter.Merge.PrimaryKeys != nil {
+					f1valf29f2 := [][]*string{}
+					for _, f1valf29f2iter := range f1valiter.Merge.PrimaryKeys {
+						f1valf29f2elem := []*string{}
+						for _, f1valf29f2elemiter := range f1valf29f2iter {
+							var f1valf29f2elemelem string
+							f1valf29f2elemelem = *f1valf29f2elemiter
+							f1valf29f2elem = append(f1valf29f2elem, &f1valf29f2elemelem)
+						}
+						f1valf29f2 = append(f1valf29f2, f1valf29f2elem)
 					}
-					f1valf31.EntityTypesToDetect = f1valf31f0
+					f1valf29.PrimaryKeys = f1valf29f2
 				}
-				if f1valiter.PIIDetection.Inputs != nil {
+				if f1valiter.Merge.Source != nil {
+					f1valf29.Source = f1valiter.Merge.Source
+				}
+				f1val.Merge = f1valf29
+			}
+			if f1valiter.MicrosoftSQLServerCatalogSource != nil {
+				f1valf30 := &svcapitypes.MicrosoftSQLServerCatalogSource{}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Database != nil {
+					f1valf30.Database = f1valiter.MicrosoftSQLServerCatalogSource.Database
+				}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Name != nil {
+					f1valf30.Name = f1valiter.MicrosoftSQLServerCatalogSource.Name
+				}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Table != nil {
+					f1valf30.Table = f1valiter.MicrosoftSQLServerCatalogSource.Table
+				}
+				f1val.MicrosoftSQLServerCatalogSource = f1valf30
+			}
+			if f1valiter.MicrosoftSQLServerCatalogTarget != nil {
+				f1valf31 := &svcapitypes.MicrosoftSQLServerCatalogTarget{}
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Database != nil {
+					f1valf31.Database = f1valiter.MicrosoftSQLServerCatalogTarget.Database
+				}
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Inputs != nil {
 					f1valf31f1 := []*string{}
-					for _, f1valf31f1iter := range f1valiter.PIIDetection.Inputs {
+					for _, f1valf31f1iter := range f1valiter.MicrosoftSQLServerCatalogTarget.Inputs {
 						var f1valf31f1elem string
 						f1valf31f1elem = *f1valf31f1iter
 						f1valf31f1 = append(f1valf31f1, &f1valf31f1elem)
 					}
 					f1valf31.Inputs = f1valf31f1
 				}
-				if f1valiter.PIIDetection.MaskValue != nil {
-					f1valf31.MaskValue = f1valiter.PIIDetection.MaskValue
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Name != nil {
+					f1valf31.Name = f1valiter.MicrosoftSQLServerCatalogTarget.Name
 				}
-				if f1valiter.PIIDetection.Name != nil {
-					f1valf31.Name = f1valiter.PIIDetection.Name
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Table != nil {
+					f1valf31.Table = f1valiter.MicrosoftSQLServerCatalogTarget.Table
 				}
-				if f1valiter.PIIDetection.OutputColumnName != nil {
-					f1valf31.OutputColumnName = f1valiter.PIIDetection.OutputColumnName
-				}
-				if f1valiter.PIIDetection.PiiType != nil {
-					f1valf31.PiiType = f1valiter.PIIDetection.PiiType
-				}
-				if f1valiter.PIIDetection.SampleFraction != nil {
-					f1valf31.SampleFraction = f1valiter.PIIDetection.SampleFraction
-				}
-				if f1valiter.PIIDetection.ThresholdFraction != nil {
-					f1valf31.ThresholdFraction = f1valiter.PIIDetection.ThresholdFraction
-				}
-				f1val.PIIDetection = f1valf31
+				f1val.MicrosoftSQLServerCatalogTarget = f1valf31
 			}
-			if f1valiter.PostgreSQLCatalogSource != nil {
-				f1valf32 := &svcapitypes.PostgreSQLCatalogSource{}
-				if f1valiter.PostgreSQLCatalogSource.Database != nil {
-					f1valf32.Database = f1valiter.PostgreSQLCatalogSource.Database
+			if f1valiter.MySQLCatalogSource != nil {
+				f1valf32 := &svcapitypes.MySQLCatalogSource{}
+				if f1valiter.MySQLCatalogSource.Database != nil {
+					f1valf32.Database = f1valiter.MySQLCatalogSource.Database
 				}
-				if f1valiter.PostgreSQLCatalogSource.Name != nil {
-					f1valf32.Name = f1valiter.PostgreSQLCatalogSource.Name
+				if f1valiter.MySQLCatalogSource.Name != nil {
+					f1valf32.Name = f1valiter.MySQLCatalogSource.Name
 				}
-				if f1valiter.PostgreSQLCatalogSource.Table != nil {
-					f1valf32.Table = f1valiter.PostgreSQLCatalogSource.Table
+				if f1valiter.MySQLCatalogSource.Table != nil {
+					f1valf32.Table = f1valiter.MySQLCatalogSource.Table
 				}
-				f1val.PostgreSQLCatalogSource = f1valf32
+				f1val.MySQLCatalogSource = f1valf32
 			}
-			if f1valiter.PostgreSQLCatalogTarget != nil {
-				f1valf33 := &svcapitypes.PostgreSQLCatalogTarget{}
-				if f1valiter.PostgreSQLCatalogTarget.Database != nil {
-					f1valf33.Database = f1valiter.PostgreSQLCatalogTarget.Database
+			if f1valiter.MySQLCatalogTarget != nil {
+				f1valf33 := &svcapitypes.MySQLCatalogTarget{}
+				if f1valiter.MySQLCatalogTarget.Database != nil {
+					f1valf33.Database = f1valiter.MySQLCatalogTarget.Database
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Inputs != nil {
+				if f1valiter.MySQLCatalogTarget.Inputs != nil {
 					f1valf33f1 := []*string{}
-					for _, f1valf33f1iter := range f1valiter.PostgreSQLCatalogTarget.Inputs {
+					for _, f1valf33f1iter := range f1valiter.MySQLCatalogTarget.Inputs {
 						var f1valf33f1elem string
 						f1valf33f1elem = *f1valf33f1iter
 						f1valf33f1 = append(f1valf33f1, &f1valf33f1elem)
 					}
 					f1valf33.Inputs = f1valf33f1
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Name != nil {
-					f1valf33.Name = f1valiter.PostgreSQLCatalogTarget.Name
+				if f1valiter.MySQLCatalogTarget.Name != nil {
+					f1valf33.Name = f1valiter.MySQLCatalogTarget.Name
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Table != nil {
-					f1valf33.Table = f1valiter.PostgreSQLCatalogTarget.Table
+				if f1valiter.MySQLCatalogTarget.Table != nil {
+					f1valf33.Table = f1valiter.MySQLCatalogTarget.Table
 				}
-				f1val.PostgreSQLCatalogTarget = f1valf33
+				f1val.MySQLCatalogTarget = f1valf33
 			}
-			if f1valiter.RedshiftSource != nil {
-				f1valf34 := &svcapitypes.RedshiftSource{}
-				if f1valiter.RedshiftSource.Database != nil {
-					f1valf34.Database = f1valiter.RedshiftSource.Database
+			if f1valiter.OracleSQLCatalogSource != nil {
+				f1valf34 := &svcapitypes.OracleSQLCatalogSource{}
+				if f1valiter.OracleSQLCatalogSource.Database != nil {
+					f1valf34.Database = f1valiter.OracleSQLCatalogSource.Database
 				}
-				if f1valiter.RedshiftSource.Name != nil {
-					f1valf34.Name = f1valiter.RedshiftSource.Name
+				if f1valiter.OracleSQLCatalogSource.Name != nil {
+					f1valf34.Name = f1valiter.OracleSQLCatalogSource.Name
 				}
-				if f1valiter.RedshiftSource.RedshiftTmpDir != nil {
-					f1valf34.RedshiftTmpDir = f1valiter.RedshiftSource.RedshiftTmpDir
+				if f1valiter.OracleSQLCatalogSource.Table != nil {
+					f1valf34.Table = f1valiter.OracleSQLCatalogSource.Table
 				}
-				if f1valiter.RedshiftSource.Table != nil {
-					f1valf34.Table = f1valiter.RedshiftSource.Table
-				}
-				if f1valiter.RedshiftSource.TmpDirIAMRole != nil {
-					f1valf34.TmpDirIAMRole = f1valiter.RedshiftSource.TmpDirIAMRole
-				}
-				f1val.RedshiftSource = f1valf34
+				f1val.OracleSQLCatalogSource = f1valf34
 			}
-			if f1valiter.RedshiftTarget != nil {
-				f1valf35 := &svcapitypes.RedshiftTarget{}
-				if f1valiter.RedshiftTarget.Database != nil {
-					f1valf35.Database = f1valiter.RedshiftTarget.Database
+			if f1valiter.OracleSQLCatalogTarget != nil {
+				f1valf35 := &svcapitypes.OracleSQLCatalogTarget{}
+				if f1valiter.OracleSQLCatalogTarget.Database != nil {
+					f1valf35.Database = f1valiter.OracleSQLCatalogTarget.Database
 				}
-				if f1valiter.RedshiftTarget.Inputs != nil {
+				if f1valiter.OracleSQLCatalogTarget.Inputs != nil {
 					f1valf35f1 := []*string{}
-					for _, f1valf35f1iter := range f1valiter.RedshiftTarget.Inputs {
+					for _, f1valf35f1iter := range f1valiter.OracleSQLCatalogTarget.Inputs {
 						var f1valf35f1elem string
 						f1valf35f1elem = *f1valf35f1iter
 						f1valf35f1 = append(f1valf35f1, &f1valf35f1elem)
 					}
 					f1valf35.Inputs = f1valf35f1
 				}
-				if f1valiter.RedshiftTarget.Name != nil {
-					f1valf35.Name = f1valiter.RedshiftTarget.Name
+				if f1valiter.OracleSQLCatalogTarget.Name != nil {
+					f1valf35.Name = f1valiter.OracleSQLCatalogTarget.Name
 				}
-				if f1valiter.RedshiftTarget.RedshiftTmpDir != nil {
-					f1valf35.RedshiftTmpDir = f1valiter.RedshiftTarget.RedshiftTmpDir
+				if f1valiter.OracleSQLCatalogTarget.Table != nil {
+					f1valf35.Table = f1valiter.OracleSQLCatalogTarget.Table
 				}
-				if f1valiter.RedshiftTarget.Table != nil {
-					f1valf35.Table = f1valiter.RedshiftTarget.Table
-				}
-				if f1valiter.RedshiftTarget.TmpDirIAMRole != nil {
-					f1valf35.TmpDirIAMRole = f1valiter.RedshiftTarget.TmpDirIAMRole
-				}
-				if f1valiter.RedshiftTarget.UpsertRedshiftOptions != nil {
-					f1valf35f6 := &svcapitypes.UpsertRedshiftTargetOptions{}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName != nil {
-						f1valf35f6.ConnectionName = f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName
-					}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation != nil {
-						f1valf35f6.TableLocation = f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation
-					}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys != nil {
-						f1valf35f6f2 := []*string{}
-						for _, f1valf35f6f2iter := range f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys {
-							var f1valf35f6f2elem string
-							f1valf35f6f2elem = *f1valf35f6f2iter
-							f1valf35f6f2 = append(f1valf35f6f2, &f1valf35f6f2elem)
-						}
-						f1valf35f6.UpsertKeys = f1valf35f6f2
-					}
-					f1valf35.UpsertRedshiftOptions = f1valf35f6
-				}
-				f1val.RedshiftTarget = f1valf35
+				f1val.OracleSQLCatalogTarget = f1valf35
 			}
-			if f1valiter.RelationalCatalogSource != nil {
-				f1valf36 := &svcapitypes.RelationalCatalogSource{}
-				if f1valiter.RelationalCatalogSource.Database != nil {
-					f1valf36.Database = f1valiter.RelationalCatalogSource.Database
+			if f1valiter.PIIDetection != nil {
+				f1valf36 := &svcapitypes.PIIDetection{}
+				if f1valiter.PIIDetection.EntityTypesToDetect != nil {
+					f1valf36f0 := []*string{}
+					for _, f1valf36f0iter := range f1valiter.PIIDetection.EntityTypesToDetect {
+						var f1valf36f0elem string
+						f1valf36f0elem = *f1valf36f0iter
+						f1valf36f0 = append(f1valf36f0, &f1valf36f0elem)
+					}
+					f1valf36.EntityTypesToDetect = f1valf36f0
 				}
-				if f1valiter.RelationalCatalogSource.Name != nil {
-					f1valf36.Name = f1valiter.RelationalCatalogSource.Name
+				if f1valiter.PIIDetection.Inputs != nil {
+					f1valf36f1 := []*string{}
+					for _, f1valf36f1iter := range f1valiter.PIIDetection.Inputs {
+						var f1valf36f1elem string
+						f1valf36f1elem = *f1valf36f1iter
+						f1valf36f1 = append(f1valf36f1, &f1valf36f1elem)
+					}
+					f1valf36.Inputs = f1valf36f1
 				}
-				if f1valiter.RelationalCatalogSource.Table != nil {
-					f1valf36.Table = f1valiter.RelationalCatalogSource.Table
+				if f1valiter.PIIDetection.MaskValue != nil {
+					f1valf36.MaskValue = f1valiter.PIIDetection.MaskValue
 				}
-				f1val.RelationalCatalogSource = f1valf36
+				if f1valiter.PIIDetection.Name != nil {
+					f1valf36.Name = f1valiter.PIIDetection.Name
+				}
+				if f1valiter.PIIDetection.OutputColumnName != nil {
+					f1valf36.OutputColumnName = f1valiter.PIIDetection.OutputColumnName
+				}
+				if f1valiter.PIIDetection.PiiType != nil {
+					f1valf36.PiiType = f1valiter.PIIDetection.PiiType
+				}
+				if f1valiter.PIIDetection.SampleFraction != nil {
+					f1valf36.SampleFraction = f1valiter.PIIDetection.SampleFraction
+				}
+				if f1valiter.PIIDetection.ThresholdFraction != nil {
+					f1valf36.ThresholdFraction = f1valiter.PIIDetection.ThresholdFraction
+				}
+				f1val.PIIDetection = f1valf36
 			}
-			if f1valiter.RenameField != nil {
-				f1valf37 := &svcapitypes.RenameField{}
-				if f1valiter.RenameField.Inputs != nil {
-					f1valf37f0 := []*string{}
-					for _, f1valf37f0iter := range f1valiter.RenameField.Inputs {
-						var f1valf37f0elem string
-						f1valf37f0elem = *f1valf37f0iter
-						f1valf37f0 = append(f1valf37f0, &f1valf37f0elem)
-					}
-					f1valf37.Inputs = f1valf37f0
+			if f1valiter.PostgreSQLCatalogSource != nil {
+				f1valf37 := &svcapitypes.PostgreSQLCatalogSource{}
+				if f1valiter.PostgreSQLCatalogSource.Database != nil {
+					f1valf37.Database = f1valiter.PostgreSQLCatalogSource.Database
 				}
-				if f1valiter.RenameField.Name != nil {
-					f1valf37.Name = f1valiter.RenameField.Name
+				if f1valiter.PostgreSQLCatalogSource.Name != nil {
+					f1valf37.Name = f1valiter.PostgreSQLCatalogSource.Name
 				}
-				if f1valiter.RenameField.SourcePath != nil {
-					f1valf37f2 := []*string{}
-					for _, f1valf37f2iter := range f1valiter.RenameField.SourcePath {
-						var f1valf37f2elem string
-						f1valf37f2elem = *f1valf37f2iter
-						f1valf37f2 = append(f1valf37f2, &f1valf37f2elem)
-					}
-					f1valf37.SourcePath = f1valf37f2
+				if f1valiter.PostgreSQLCatalogSource.Table != nil {
+					f1valf37.Table = f1valiter.PostgreSQLCatalogSource.Table
 				}
-				if f1valiter.RenameField.TargetPath != nil {
-					f1valf37f3 := []*string{}
-					for _, f1valf37f3iter := range f1valiter.RenameField.TargetPath {
-						var f1valf37f3elem string
-						f1valf37f3elem = *f1valf37f3iter
-						f1valf37f3 = append(f1valf37f3, &f1valf37f3elem)
-					}
-					f1valf37.TargetPath = f1valf37f3
-				}
-				f1val.RenameField = f1valf37
+				f1val.PostgreSQLCatalogSource = f1valf37
 			}
-			if f1valiter.S3CatalogHudiSource != nil {
-				f1valf38 := &svcapitypes.S3CatalogHudiSource{}
-				if f1valiter.S3CatalogHudiSource.AdditionalHudiOptions != nil {
-					f1valf38f0 := map[string]*string{}
-					for f1valf38f0key, f1valf38f0valiter := range f1valiter.S3CatalogHudiSource.AdditionalHudiOptions {
-						var f1valf38f0val string
-						f1valf38f0val = *f1valf38f0valiter
-						f1valf38f0[f1valf38f0key] = &f1valf38f0val
+			if f1valiter.PostgreSQLCatalogTarget != nil {
+				f1valf38 := &svcapitypes.PostgreSQLCatalogTarget{}
+				if f1valiter.PostgreSQLCatalogTarget.Database != nil {
+					f1valf38.Database = f1valiter.PostgreSQLCatalogTarget.Database
+				}
+				if f1valiter.PostgreSQLCatalogTarget.Inputs != nil {
+					f1valf38f1 := []*string{}
+					for _, f1valf38f1iter := range f1valiter.PostgreSQLCatalogTarget.Inputs {
+						var f1valf38f1elem string
+						f1valf38f1elem = *f1valf38f1iter
+						f1valf38f1 = append(f1valf38f1, &f1valf38f1elem)
 					}
-					f1valf38.AdditionalHudiOptions = f1valf38f0
+					f1valf38.Inputs = f1valf38f1
 				}
-				if f1valiter.S3CatalogHudiSource.Database != nil {
-					f1valf38.Database = f1valiter.S3CatalogHudiSource.Database
+				if f1valiter.PostgreSQLCatalogTarget.Name != nil {
+					f1valf38.Name = f1valiter.PostgreSQLCatalogTarget.Name
 				}
-				if f1valiter.S3CatalogHudiSource.Name != nil {
-					f1valf38.Name = f1valiter.S3CatalogHudiSource.Name
+				if f1valiter.PostgreSQLCatalogTarget.Table != nil {
+					f1valf38.Table = f1valiter.PostgreSQLCatalogTarget.Table
 				}
-				if f1valiter.S3CatalogHudiSource.OutputSchemas != nil {
-					f1valf38f3 := []*svcapitypes.GlueSchema{}
-					for _, f1valf38f3iter := range f1valiter.S3CatalogHudiSource.OutputSchemas {
-						f1valf38f3elem := &svcapitypes.GlueSchema{}
-						if f1valf38f3iter.Columns != nil {
-							f1valf38f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf38f3elemf0iter := range f1valf38f3iter.Columns {
-								f1valf38f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf38f3elemf0iter.Name != nil {
-									f1valf38f3elemf0elem.Name = f1valf38f3elemf0iter.Name
-								}
-								if f1valf38f3elemf0iter.Type != nil {
-									f1valf38f3elemf0elem.Type = f1valf38f3elemf0iter.Type
-								}
-								f1valf38f3elemf0 = append(f1valf38f3elemf0, f1valf38f3elemf0elem)
-							}
-							f1valf38f3elem.Columns = f1valf38f3elemf0
-						}
-						f1valf38f3 = append(f1valf38f3, f1valf38f3elem)
-					}
-					f1valf38.OutputSchemas = f1valf38f3
-				}
-				if f1valiter.S3CatalogHudiSource.Table != nil {
-					f1valf38.Table = f1valiter.S3CatalogHudiSource.Table
-				}
-				f1val.S3CatalogHudiSource = f1valf38
+				f1val.PostgreSQLCatalogTarget = f1valf38
 			}
-			if f1valiter.S3CatalogSource != nil {
-				f1valf39 := &svcapitypes.S3CatalogSource{}
-				if f1valiter.S3CatalogSource.AdditionalOptions != nil {
-					f1valf39f0 := &svcapitypes.S3SourceAdditionalOptions{}
-					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf39f0.BoundedFiles = f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles
-					}
-					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize != nil {
-						f1valf39f0.BoundedSize = f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize
-					}
-					f1valf39.AdditionalOptions = f1valf39f0
+			if f1valiter.RedshiftSource != nil {
+				f1valf39 := &svcapitypes.RedshiftSource{}
+				if f1valiter.RedshiftSource.Database != nil {
+					f1valf39.Database = f1valiter.RedshiftSource.Database
 				}
-				if f1valiter.S3CatalogSource.Database != nil {
-					f1valf39.Database = f1valiter.S3CatalogSource.Database
+				if f1valiter.RedshiftSource.Name != nil {
+					f1valf39.Name = f1valiter.RedshiftSource.Name
 				}
-				if f1valiter.S3CatalogSource.Name != nil {
-					f1valf39.Name = f1valiter.S3CatalogSource.Name
+				if f1valiter.RedshiftSource.RedshiftTmpDir != nil {
+					f1valf39.RedshiftTmpDir = f1valiter.RedshiftSource.RedshiftTmpDir
 				}
-				if f1valiter.S3CatalogSource.PartitionPredicate != nil {
-					f1valf39.PartitionPredicate = f1valiter.S3CatalogSource.PartitionPredicate
+				if f1valiter.RedshiftSource.Table != nil {
+					f1valf39.Table = f1valiter.RedshiftSource.Table
 				}
-				if f1valiter.S3CatalogSource.Table != nil {
-					f1valf39.Table = f1valiter.S3CatalogSource.Table
+				if f1valiter.RedshiftSource.TmpDirIAMRole != nil {
+					f1valf39.TmpDirIAMRole = f1valiter.RedshiftSource.TmpDirIAMRole
 				}
-				f1val.S3CatalogSource = f1valf39
+				f1val.RedshiftSource = f1valf39
 			}
-			if f1valiter.S3CatalogTarget != nil {
-				f1valf40 := &svcapitypes.S3CatalogTarget{}
-				if f1valiter.S3CatalogTarget.Database != nil {
-					f1valf40.Database = f1valiter.S3CatalogTarget.Database
+			if f1valiter.RedshiftTarget != nil {
+				f1valf40 := &svcapitypes.RedshiftTarget{}
+				if f1valiter.RedshiftTarget.Database != nil {
+					f1valf40.Database = f1valiter.RedshiftTarget.Database
 				}
-				if f1valiter.S3CatalogTarget.Inputs != nil {
+				if f1valiter.RedshiftTarget.Inputs != nil {
 					f1valf40f1 := []*string{}
-					for _, f1valf40f1iter := range f1valiter.S3CatalogTarget.Inputs {
+					for _, f1valf40f1iter := range f1valiter.RedshiftTarget.Inputs {
 						var f1valf40f1elem string
 						f1valf40f1elem = *f1valf40f1iter
 						f1valf40f1 = append(f1valf40f1, &f1valf40f1elem)
 					}
 					f1valf40.Inputs = f1valf40f1
 				}
-				if f1valiter.S3CatalogTarget.Name != nil {
-					f1valf40.Name = f1valiter.S3CatalogTarget.Name
+				if f1valiter.RedshiftTarget.Name != nil {
+					f1valf40.Name = f1valiter.RedshiftTarget.Name
 				}
-				if f1valiter.S3CatalogTarget.PartitionKeys != nil {
-					f1valf40f3 := [][]*string{}
-					for _, f1valf40f3iter := range f1valiter.S3CatalogTarget.PartitionKeys {
-						f1valf40f3elem := []*string{}
-						for _, f1valf40f3elemiter := range f1valf40f3iter {
-							var f1valf40f3elemelem string
-							f1valf40f3elemelem = *f1valf40f3elemiter
-							f1valf40f3elem = append(f1valf40f3elem, &f1valf40f3elemelem)
+				if f1valiter.RedshiftTarget.RedshiftTmpDir != nil {
+					f1valf40.RedshiftTmpDir = f1valiter.RedshiftTarget.RedshiftTmpDir
+				}
+				if f1valiter.RedshiftTarget.Table != nil {
+					f1valf40.Table = f1valiter.RedshiftTarget.Table
+				}
+				if f1valiter.RedshiftTarget.TmpDirIAMRole != nil {
+					f1valf40.TmpDirIAMRole = f1valiter.RedshiftTarget.TmpDirIAMRole
+				}
+				if f1valiter.RedshiftTarget.UpsertRedshiftOptions != nil {
+					f1valf40f6 := &svcapitypes.UpsertRedshiftTargetOptions{}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName != nil {
+						f1valf40f6.ConnectionName = f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName
+					}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation != nil {
+						f1valf40f6.TableLocation = f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation
+					}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys != nil {
+						f1valf40f6f2 := []*string{}
+						for _, f1valf40f6f2iter := range f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys {
+							var f1valf40f6f2elem string
+							f1valf40f6f2elem = *f1valf40f6f2iter
+							f1valf40f6f2 = append(f1valf40f6f2, &f1valf40f6f2elem)
 						}
-						f1valf40f3 = append(f1valf40f3, f1valf40f3elem)
+						f1valf40f6.UpsertKeys = f1valf40f6f2
 					}
-					f1valf40.PartitionKeys = f1valf40f3
+					f1valf40.UpsertRedshiftOptions = f1valf40f6
 				}
-				if f1valiter.S3CatalogTarget.SchemaChangePolicy != nil {
-					f1valf40f4 := &svcapitypes.CatalogSchemaChangePolicy{}
-					if f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf40f4.EnableUpdateCatalog = f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf40f4.UpdateBehavior = f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf40.SchemaChangePolicy = f1valf40f4
-				}
-				if f1valiter.S3CatalogTarget.Table != nil {
-					f1valf40.Table = f1valiter.S3CatalogTarget.Table
-				}
-				f1val.S3CatalogTarget = f1valf40
+				f1val.RedshiftTarget = f1valf40
 			}
-			if f1valiter.S3CsvSource != nil {
-				f1valf41 := &svcapitypes.S3CsvSource{}
-				if f1valiter.S3CsvSource.AdditionalOptions != nil {
-					f1valf41f0 := &svcapitypes.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf41f0.BoundedFiles = f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.BoundedSize != nil {
-						f1valf41f0.BoundedSize = f1valiter.S3CsvSource.AdditionalOptions.BoundedSize
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf41f0.EnableSamplePath = f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.SamplePath != nil {
-						f1valf41f0.SamplePath = f1valiter.S3CsvSource.AdditionalOptions.SamplePath
-					}
-					f1valf41.AdditionalOptions = f1valf41f0
+			if f1valiter.RelationalCatalogSource != nil {
+				f1valf41 := &svcapitypes.RelationalCatalogSource{}
+				if f1valiter.RelationalCatalogSource.Database != nil {
+					f1valf41.Database = f1valiter.RelationalCatalogSource.Database
 				}
-				if f1valiter.S3CsvSource.CompressionType != nil {
-					f1valf41.CompressionType = f1valiter.S3CsvSource.CompressionType
+				if f1valiter.RelationalCatalogSource.Name != nil {
+					f1valf41.Name = f1valiter.RelationalCatalogSource.Name
 				}
-				if f1valiter.S3CsvSource.Escaper != nil {
-					f1valf41.Escaper = f1valiter.S3CsvSource.Escaper
+				if f1valiter.RelationalCatalogSource.Table != nil {
+					f1valf41.Table = f1valiter.RelationalCatalogSource.Table
 				}
-				if f1valiter.S3CsvSource.Exclusions != nil {
-					f1valf41f3 := []*string{}
-					for _, f1valf41f3iter := range f1valiter.S3CsvSource.Exclusions {
-						var f1valf41f3elem string
-						f1valf41f3elem = *f1valf41f3iter
-						f1valf41f3 = append(f1valf41f3, &f1valf41f3elem)
-					}
-					f1valf41.Exclusions = f1valf41f3
-				}
-				if f1valiter.S3CsvSource.GroupFiles != nil {
-					f1valf41.GroupFiles = f1valiter.S3CsvSource.GroupFiles
-				}
-				if f1valiter.S3CsvSource.GroupSize != nil {
-					f1valf41.GroupSize = f1valiter.S3CsvSource.GroupSize
-				}
-				if f1valiter.S3CsvSource.MaxBand != nil {
-					f1valf41.MaxBand = f1valiter.S3CsvSource.MaxBand
-				}
-				if f1valiter.S3CsvSource.MaxFilesInBand != nil {
-					f1valf41.MaxFilesInBand = f1valiter.S3CsvSource.MaxFilesInBand
-				}
-				if f1valiter.S3CsvSource.Multiline != nil {
-					f1valf41.Multiline = f1valiter.S3CsvSource.Multiline
-				}
-				if f1valiter.S3CsvSource.Name != nil {
-					f1valf41.Name = f1valiter.S3CsvSource.Name
-				}
-				if f1valiter.S3CsvSource.OptimizePerformance != nil {
-					f1valf41.OptimizePerformance = f1valiter.S3CsvSource.OptimizePerformance
-				}
-				if f1valiter.S3CsvSource.OutputSchemas != nil {
-					f1valf41f11 := []*svcapitypes.GlueSchema{}
-					for _, f1valf41f11iter := range f1valiter.S3CsvSource.OutputSchemas {
-						f1valf41f11elem := &svcapitypes.GlueSchema{}
-						if f1valf41f11iter.Columns != nil {
-							f1valf41f11elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf41f11elemf0iter := range f1valf41f11iter.Columns {
-								f1valf41f11elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf41f11elemf0iter.Name != nil {
-									f1valf41f11elemf0elem.Name = f1valf41f11elemf0iter.Name
-								}
-								if f1valf41f11elemf0iter.Type != nil {
-									f1valf41f11elemf0elem.Type = f1valf41f11elemf0iter.Type
-								}
-								f1valf41f11elemf0 = append(f1valf41f11elemf0, f1valf41f11elemf0elem)
-							}
-							f1valf41f11elem.Columns = f1valf41f11elemf0
-						}
-						f1valf41f11 = append(f1valf41f11, f1valf41f11elem)
-					}
-					f1valf41.OutputSchemas = f1valf41f11
-				}
-				if f1valiter.S3CsvSource.Paths != nil {
-					f1valf41f12 := []*string{}
-					for _, f1valf41f12iter := range f1valiter.S3CsvSource.Paths {
-						var f1valf41f12elem string
-						f1valf41f12elem = *f1valf41f12iter
-						f1valf41f12 = append(f1valf41f12, &f1valf41f12elem)
-					}
-					f1valf41.Paths = f1valf41f12
-				}
-				if f1valiter.S3CsvSource.QuoteChar != nil {
-					f1valf41.QuoteChar = f1valiter.S3CsvSource.QuoteChar
-				}
-				if f1valiter.S3CsvSource.Recurse != nil {
-					f1valf41.Recurse = f1valiter.S3CsvSource.Recurse
-				}
-				if f1valiter.S3CsvSource.Separator != nil {
-					f1valf41.Separator = f1valiter.S3CsvSource.Separator
-				}
-				if f1valiter.S3CsvSource.SkipFirst != nil {
-					f1valf41.SkipFirst = f1valiter.S3CsvSource.SkipFirst
-				}
-				if f1valiter.S3CsvSource.WithHeader != nil {
-					f1valf41.WithHeader = f1valiter.S3CsvSource.WithHeader
-				}
-				if f1valiter.S3CsvSource.WriteHeader != nil {
-					f1valf41.WriteHeader = f1valiter.S3CsvSource.WriteHeader
-				}
-				f1val.S3CsvSource = f1valf41
+				f1val.RelationalCatalogSource = f1valf41
 			}
-			if f1valiter.S3DirectTarget != nil {
-				f1valf42 := &svcapitypes.S3DirectTarget{}
-				if f1valiter.S3DirectTarget.Compression != nil {
-					f1valf42.Compression = f1valiter.S3DirectTarget.Compression
+			if f1valiter.RenameField != nil {
+				f1valf42 := &svcapitypes.RenameField{}
+				if f1valiter.RenameField.Inputs != nil {
+					f1valf42f0 := []*string{}
+					for _, f1valf42f0iter := range f1valiter.RenameField.Inputs {
+						var f1valf42f0elem string
+						f1valf42f0elem = *f1valf42f0iter
+						f1valf42f0 = append(f1valf42f0, &f1valf42f0elem)
+					}
+					f1valf42.Inputs = f1valf42f0
 				}
-				if f1valiter.S3DirectTarget.Format != nil {
-					f1valf42.Format = f1valiter.S3DirectTarget.Format
+				if f1valiter.RenameField.Name != nil {
+					f1valf42.Name = f1valiter.RenameField.Name
 				}
-				if f1valiter.S3DirectTarget.Inputs != nil {
+				if f1valiter.RenameField.SourcePath != nil {
 					f1valf42f2 := []*string{}
-					for _, f1valf42f2iter := range f1valiter.S3DirectTarget.Inputs {
+					for _, f1valf42f2iter := range f1valiter.RenameField.SourcePath {
 						var f1valf42f2elem string
 						f1valf42f2elem = *f1valf42f2iter
 						f1valf42f2 = append(f1valf42f2, &f1valf42f2elem)
 					}
-					f1valf42.Inputs = f1valf42f2
+					f1valf42.SourcePath = f1valf42f2
 				}
-				if f1valiter.S3DirectTarget.Name != nil {
-					f1valf42.Name = f1valiter.S3DirectTarget.Name
+				if f1valiter.RenameField.TargetPath != nil {
+					f1valf42f3 := []*string{}
+					for _, f1valf42f3iter := range f1valiter.RenameField.TargetPath {
+						var f1valf42f3elem string
+						f1valf42f3elem = *f1valf42f3iter
+						f1valf42f3 = append(f1valf42f3, &f1valf42f3elem)
+					}
+					f1valf42.TargetPath = f1valf42f3
 				}
-				if f1valiter.S3DirectTarget.PartitionKeys != nil {
-					f1valf42f4 := [][]*string{}
-					for _, f1valf42f4iter := range f1valiter.S3DirectTarget.PartitionKeys {
-						f1valf42f4elem := []*string{}
-						for _, f1valf42f4elemiter := range f1valf42f4iter {
-							var f1valf42f4elemelem string
-							f1valf42f4elemelem = *f1valf42f4elemiter
-							f1valf42f4elem = append(f1valf42f4elem, &f1valf42f4elemelem)
-						}
-						f1valf42f4 = append(f1valf42f4, f1valf42f4elem)
-					}
-					f1valf42.PartitionKeys = f1valf42f4
-				}
-				if f1valiter.S3DirectTarget.Path != nil {
-					f1valf42.Path = f1valiter.S3DirectTarget.Path
-				}
-				if f1valiter.S3DirectTarget.SchemaChangePolicy != nil {
-					f1valf42f6 := &svcapitypes.DirectSchemaChangePolicy{}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.Database != nil {
-						f1valf42f6.Database = f1valiter.S3DirectTarget.SchemaChangePolicy.Database
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf42f6.EnableUpdateCatalog = f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.Table != nil {
-						f1valf42f6.Table = f1valiter.S3DirectTarget.SchemaChangePolicy.Table
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf42f6.UpdateBehavior = f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf42.SchemaChangePolicy = f1valf42f6
-				}
-				f1val.S3DirectTarget = f1valf42
+				f1val.RenameField = f1valf42
 			}
-			if f1valiter.S3GlueParquetTarget != nil {
-				f1valf43 := &svcapitypes.S3GlueParquetTarget{}
-				if f1valiter.S3GlueParquetTarget.Compression != nil {
-					f1valf43.Compression = f1valiter.S3GlueParquetTarget.Compression
-				}
-				if f1valiter.S3GlueParquetTarget.Inputs != nil {
-					f1valf43f1 := []*string{}
-					for _, f1valf43f1iter := range f1valiter.S3GlueParquetTarget.Inputs {
-						var f1valf43f1elem string
-						f1valf43f1elem = *f1valf43f1iter
-						f1valf43f1 = append(f1valf43f1, &f1valf43f1elem)
+			if f1valiter.S3CatalogDeltaSource != nil {
+				f1valf43 := &svcapitypes.S3CatalogDeltaSource{}
+				if f1valiter.S3CatalogDeltaSource.AdditionalDeltaOptions != nil {
+					f1valf43f0 := map[string]*string{}
+					for f1valf43f0key, f1valf43f0valiter := range f1valiter.S3CatalogDeltaSource.AdditionalDeltaOptions {
+						var f1valf43f0val string
+						f1valf43f0val = *f1valf43f0valiter
+						f1valf43f0[f1valf43f0key] = &f1valf43f0val
 					}
-					f1valf43.Inputs = f1valf43f1
+					f1valf43.AdditionalDeltaOptions = f1valf43f0
 				}
-				if f1valiter.S3GlueParquetTarget.Name != nil {
-					f1valf43.Name = f1valiter.S3GlueParquetTarget.Name
+				if f1valiter.S3CatalogDeltaSource.Database != nil {
+					f1valf43.Database = f1valiter.S3CatalogDeltaSource.Database
 				}
-				if f1valiter.S3GlueParquetTarget.PartitionKeys != nil {
-					f1valf43f3 := [][]*string{}
-					for _, f1valf43f3iter := range f1valiter.S3GlueParquetTarget.PartitionKeys {
-						f1valf43f3elem := []*string{}
-						for _, f1valf43f3elemiter := range f1valf43f3iter {
-							var f1valf43f3elemelem string
-							f1valf43f3elemelem = *f1valf43f3elemiter
-							f1valf43f3elem = append(f1valf43f3elem, &f1valf43f3elemelem)
+				if f1valiter.S3CatalogDeltaSource.Name != nil {
+					f1valf43.Name = f1valiter.S3CatalogDeltaSource.Name
+				}
+				if f1valiter.S3CatalogDeltaSource.OutputSchemas != nil {
+					f1valf43f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf43f3iter := range f1valiter.S3CatalogDeltaSource.OutputSchemas {
+						f1valf43f3elem := &svcapitypes.GlueSchema{}
+						if f1valf43f3iter.Columns != nil {
+							f1valf43f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf43f3elemf0iter := range f1valf43f3iter.Columns {
+								f1valf43f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf43f3elemf0iter.Name != nil {
+									f1valf43f3elemf0elem.Name = f1valf43f3elemf0iter.Name
+								}
+								if f1valf43f3elemf0iter.Type != nil {
+									f1valf43f3elemf0elem.Type = f1valf43f3elemf0iter.Type
+								}
+								f1valf43f3elemf0 = append(f1valf43f3elemf0, f1valf43f3elemf0elem)
+							}
+							f1valf43f3elem.Columns = f1valf43f3elemf0
 						}
 						f1valf43f3 = append(f1valf43f3, f1valf43f3elem)
 					}
-					f1valf43.PartitionKeys = f1valf43f3
+					f1valf43.OutputSchemas = f1valf43f3
 				}
-				if f1valiter.S3GlueParquetTarget.Path != nil {
-					f1valf43.Path = f1valiter.S3GlueParquetTarget.Path
+				if f1valiter.S3CatalogDeltaSource.Table != nil {
+					f1valf43.Table = f1valiter.S3CatalogDeltaSource.Table
 				}
-				if f1valiter.S3GlueParquetTarget.SchemaChangePolicy != nil {
-					f1valf43f5 := &svcapitypes.DirectSchemaChangePolicy{}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database != nil {
-						f1valf43f5.Database = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf43f5.EnableUpdateCatalog = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table != nil {
-						f1valf43f5.Table = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf43f5.UpdateBehavior = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf43.SchemaChangePolicy = f1valf43f5
-				}
-				f1val.S3GlueParquetTarget = f1valf43
+				f1val.S3CatalogDeltaSource = f1valf43
 			}
-			if f1valiter.S3HudiCatalogTarget != nil {
-				f1valf44 := &svcapitypes.S3HudiCatalogTarget{}
-				if f1valiter.S3HudiCatalogTarget.AdditionalOptions != nil {
+			if f1valiter.S3CatalogHudiSource != nil {
+				f1valf44 := &svcapitypes.S3CatalogHudiSource{}
+				if f1valiter.S3CatalogHudiSource.AdditionalHudiOptions != nil {
 					f1valf44f0 := map[string]*string{}
-					for f1valf44f0key, f1valf44f0valiter := range f1valiter.S3HudiCatalogTarget.AdditionalOptions {
+					for f1valf44f0key, f1valf44f0valiter := range f1valiter.S3CatalogHudiSource.AdditionalHudiOptions {
 						var f1valf44f0val string
 						f1valf44f0val = *f1valf44f0valiter
 						f1valf44f0[f1valf44f0key] = &f1valf44f0val
 					}
-					f1valf44.AdditionalOptions = f1valf44f0
+					f1valf44.AdditionalHudiOptions = f1valf44f0
 				}
-				if f1valiter.S3HudiCatalogTarget.Database != nil {
-					f1valf44.Database = f1valiter.S3HudiCatalogTarget.Database
+				if f1valiter.S3CatalogHudiSource.Database != nil {
+					f1valf44.Database = f1valiter.S3CatalogHudiSource.Database
 				}
-				if f1valiter.S3HudiCatalogTarget.Inputs != nil {
-					f1valf44f2 := []*string{}
-					for _, f1valf44f2iter := range f1valiter.S3HudiCatalogTarget.Inputs {
-						var f1valf44f2elem string
-						f1valf44f2elem = *f1valf44f2iter
-						f1valf44f2 = append(f1valf44f2, &f1valf44f2elem)
-					}
-					f1valf44.Inputs = f1valf44f2
+				if f1valiter.S3CatalogHudiSource.Name != nil {
+					f1valf44.Name = f1valiter.S3CatalogHudiSource.Name
 				}
-				if f1valiter.S3HudiCatalogTarget.Name != nil {
-					f1valf44.Name = f1valiter.S3HudiCatalogTarget.Name
-				}
-				if f1valiter.S3HudiCatalogTarget.PartitionKeys != nil {
-					f1valf44f4 := [][]*string{}
-					for _, f1valf44f4iter := range f1valiter.S3HudiCatalogTarget.PartitionKeys {
-						f1valf44f4elem := []*string{}
-						for _, f1valf44f4elemiter := range f1valf44f4iter {
-							var f1valf44f4elemelem string
-							f1valf44f4elemelem = *f1valf44f4elemiter
-							f1valf44f4elem = append(f1valf44f4elem, &f1valf44f4elemelem)
+				if f1valiter.S3CatalogHudiSource.OutputSchemas != nil {
+					f1valf44f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf44f3iter := range f1valiter.S3CatalogHudiSource.OutputSchemas {
+						f1valf44f3elem := &svcapitypes.GlueSchema{}
+						if f1valf44f3iter.Columns != nil {
+							f1valf44f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf44f3elemf0iter := range f1valf44f3iter.Columns {
+								f1valf44f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf44f3elemf0iter.Name != nil {
+									f1valf44f3elemf0elem.Name = f1valf44f3elemf0iter.Name
+								}
+								if f1valf44f3elemf0iter.Type != nil {
+									f1valf44f3elemf0elem.Type = f1valf44f3elemf0iter.Type
+								}
+								f1valf44f3elemf0 = append(f1valf44f3elemf0, f1valf44f3elemf0elem)
+							}
+							f1valf44f3elem.Columns = f1valf44f3elemf0
 						}
-						f1valf44f4 = append(f1valf44f4, f1valf44f4elem)
+						f1valf44f3 = append(f1valf44f3, f1valf44f3elem)
 					}
-					f1valf44.PartitionKeys = f1valf44f4
+					f1valf44.OutputSchemas = f1valf44f3
 				}
-				if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy != nil {
-					f1valf44f5 := &svcapitypes.CatalogSchemaChangePolicy{}
-					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf44f5.EnableUpdateCatalog = f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf44f5.UpdateBehavior = f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf44.SchemaChangePolicy = f1valf44f5
+				if f1valiter.S3CatalogHudiSource.Table != nil {
+					f1valf44.Table = f1valiter.S3CatalogHudiSource.Table
 				}
-				if f1valiter.S3HudiCatalogTarget.Table != nil {
-					f1valf44.Table = f1valiter.S3HudiCatalogTarget.Table
-				}
-				f1val.S3HudiCatalogTarget = f1valf44
+				f1val.S3CatalogHudiSource = f1valf44
 			}
-			if f1valiter.S3HudiDirectTarget != nil {
-				f1valf45 := &svcapitypes.S3HudiDirectTarget{}
-				if f1valiter.S3HudiDirectTarget.AdditionalOptions != nil {
-					f1valf45f0 := map[string]*string{}
-					for f1valf45f0key, f1valf45f0valiter := range f1valiter.S3HudiDirectTarget.AdditionalOptions {
-						var f1valf45f0val string
-						f1valf45f0val = *f1valf45f0valiter
-						f1valf45f0[f1valf45f0key] = &f1valf45f0val
+			if f1valiter.S3CatalogSource != nil {
+				f1valf45 := &svcapitypes.S3CatalogSource{}
+				if f1valiter.S3CatalogSource.AdditionalOptions != nil {
+					f1valf45f0 := &svcapitypes.S3SourceAdditionalOptions{}
+					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf45f0.BoundedFiles = f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles
+					}
+					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize != nil {
+						f1valf45f0.BoundedSize = f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize
 					}
 					f1valf45.AdditionalOptions = f1valf45f0
 				}
-				if f1valiter.S3HudiDirectTarget.Compression != nil {
-					f1valf45.Compression = f1valiter.S3HudiDirectTarget.Compression
+				if f1valiter.S3CatalogSource.Database != nil {
+					f1valf45.Database = f1valiter.S3CatalogSource.Database
 				}
-				if f1valiter.S3HudiDirectTarget.Format != nil {
-					f1valf45.Format = f1valiter.S3HudiDirectTarget.Format
+				if f1valiter.S3CatalogSource.Name != nil {
+					f1valf45.Name = f1valiter.S3CatalogSource.Name
 				}
-				if f1valiter.S3HudiDirectTarget.Inputs != nil {
-					f1valf45f3 := []*string{}
-					for _, f1valf45f3iter := range f1valiter.S3HudiDirectTarget.Inputs {
-						var f1valf45f3elem string
-						f1valf45f3elem = *f1valf45f3iter
-						f1valf45f3 = append(f1valf45f3, &f1valf45f3elem)
-					}
-					f1valf45.Inputs = f1valf45f3
+				if f1valiter.S3CatalogSource.PartitionPredicate != nil {
+					f1valf45.PartitionPredicate = f1valiter.S3CatalogSource.PartitionPredicate
 				}
-				if f1valiter.S3HudiDirectTarget.Name != nil {
-					f1valf45.Name = f1valiter.S3HudiDirectTarget.Name
+				if f1valiter.S3CatalogSource.Table != nil {
+					f1valf45.Table = f1valiter.S3CatalogSource.Table
 				}
-				if f1valiter.S3HudiDirectTarget.PartitionKeys != nil {
-					f1valf45f5 := [][]*string{}
-					for _, f1valf45f5iter := range f1valiter.S3HudiDirectTarget.PartitionKeys {
-						f1valf45f5elem := []*string{}
-						for _, f1valf45f5elemiter := range f1valf45f5iter {
-							var f1valf45f5elemelem string
-							f1valf45f5elemelem = *f1valf45f5elemiter
-							f1valf45f5elem = append(f1valf45f5elem, &f1valf45f5elemelem)
-						}
-						f1valf45f5 = append(f1valf45f5, f1valf45f5elem)
-					}
-					f1valf45.PartitionKeys = f1valf45f5
-				}
-				if f1valiter.S3HudiDirectTarget.Path != nil {
-					f1valf45.Path = f1valiter.S3HudiDirectTarget.Path
-				}
-				if f1valiter.S3HudiDirectTarget.SchemaChangePolicy != nil {
-					f1valf45f7 := &svcapitypes.DirectSchemaChangePolicy{}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database != nil {
-						f1valf45f7.Database = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf45f7.EnableUpdateCatalog = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table != nil {
-						f1valf45f7.Table = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf45f7.UpdateBehavior = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior
-					}
-					f1valf45.SchemaChangePolicy = f1valf45f7
-				}
-				f1val.S3HudiDirectTarget = f1valf45
+				f1val.S3CatalogSource = f1valf45
 			}
-			if f1valiter.S3HudiSource != nil {
-				f1valf46 := &svcapitypes.S3HudiSource{}
-				if f1valiter.S3HudiSource.AdditionalHudiOptions != nil {
-					f1valf46f0 := map[string]*string{}
-					for f1valf46f0key, f1valf46f0valiter := range f1valiter.S3HudiSource.AdditionalHudiOptions {
-						var f1valf46f0val string
-						f1valf46f0val = *f1valf46f0valiter
-						f1valf46f0[f1valf46f0key] = &f1valf46f0val
-					}
-					f1valf46.AdditionalHudiOptions = f1valf46f0
+			if f1valiter.S3CatalogTarget != nil {
+				f1valf46 := &svcapitypes.S3CatalogTarget{}
+				if f1valiter.S3CatalogTarget.Database != nil {
+					f1valf46.Database = f1valiter.S3CatalogTarget.Database
 				}
-				if f1valiter.S3HudiSource.AdditionalOptions != nil {
-					f1valf46f1 := &svcapitypes.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf46f1.BoundedFiles = f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles
+				if f1valiter.S3CatalogTarget.Inputs != nil {
+					f1valf46f1 := []*string{}
+					for _, f1valf46f1iter := range f1valiter.S3CatalogTarget.Inputs {
+						var f1valf46f1elem string
+						f1valf46f1elem = *f1valf46f1iter
+						f1valf46f1 = append(f1valf46f1, &f1valf46f1elem)
 					}
-					if f1valiter.S3HudiSource.AdditionalOptions.BoundedSize != nil {
-						f1valf46f1.BoundedSize = f1valiter.S3HudiSource.AdditionalOptions.BoundedSize
-					}
-					if f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf46f1.EnableSamplePath = f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath
-					}
-					if f1valiter.S3HudiSource.AdditionalOptions.SamplePath != nil {
-						f1valf46f1.SamplePath = f1valiter.S3HudiSource.AdditionalOptions.SamplePath
-					}
-					f1valf46.AdditionalOptions = f1valf46f1
+					f1valf46.Inputs = f1valf46f1
 				}
-				if f1valiter.S3HudiSource.Name != nil {
-					f1valf46.Name = f1valiter.S3HudiSource.Name
+				if f1valiter.S3CatalogTarget.Name != nil {
+					f1valf46.Name = f1valiter.S3CatalogTarget.Name
 				}
-				if f1valiter.S3HudiSource.OutputSchemas != nil {
-					f1valf46f3 := []*svcapitypes.GlueSchema{}
-					for _, f1valf46f3iter := range f1valiter.S3HudiSource.OutputSchemas {
-						f1valf46f3elem := &svcapitypes.GlueSchema{}
-						if f1valf46f3iter.Columns != nil {
-							f1valf46f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf46f3elemf0iter := range f1valf46f3iter.Columns {
-								f1valf46f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf46f3elemf0iter.Name != nil {
-									f1valf46f3elemf0elem.Name = f1valf46f3elemf0iter.Name
-								}
-								if f1valf46f3elemf0iter.Type != nil {
-									f1valf46f3elemf0elem.Type = f1valf46f3elemf0iter.Type
-								}
-								f1valf46f3elemf0 = append(f1valf46f3elemf0, f1valf46f3elemf0elem)
-							}
-							f1valf46f3elem.Columns = f1valf46f3elemf0
+				if f1valiter.S3CatalogTarget.PartitionKeys != nil {
+					f1valf46f3 := [][]*string{}
+					for _, f1valf46f3iter := range f1valiter.S3CatalogTarget.PartitionKeys {
+						f1valf46f3elem := []*string{}
+						for _, f1valf46f3elemiter := range f1valf46f3iter {
+							var f1valf46f3elemelem string
+							f1valf46f3elemelem = *f1valf46f3elemiter
+							f1valf46f3elem = append(f1valf46f3elem, &f1valf46f3elemelem)
 						}
 						f1valf46f3 = append(f1valf46f3, f1valf46f3elem)
 					}
-					f1valf46.OutputSchemas = f1valf46f3
+					f1valf46.PartitionKeys = f1valf46f3
 				}
-				if f1valiter.S3HudiSource.Paths != nil {
-					f1valf46f4 := []*string{}
-					for _, f1valf46f4iter := range f1valiter.S3HudiSource.Paths {
-						var f1valf46f4elem string
-						f1valf46f4elem = *f1valf46f4iter
-						f1valf46f4 = append(f1valf46f4, &f1valf46f4elem)
+				if f1valiter.S3CatalogTarget.SchemaChangePolicy != nil {
+					f1valf46f4 := &svcapitypes.CatalogSchemaChangePolicy{}
+					if f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf46f4.EnableUpdateCatalog = f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
 					}
-					f1valf46.Paths = f1valf46f4
+					if f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf46f4.UpdateBehavior = f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf46.SchemaChangePolicy = f1valf46f4
 				}
-				f1val.S3HudiSource = f1valf46
+				if f1valiter.S3CatalogTarget.Table != nil {
+					f1valf46.Table = f1valiter.S3CatalogTarget.Table
+				}
+				f1val.S3CatalogTarget = f1valf46
 			}
-			if f1valiter.S3JsonSource != nil {
-				f1valf47 := &svcapitypes.S3JSONSource{}
-				if f1valiter.S3JsonSource.AdditionalOptions != nil {
+			if f1valiter.S3CsvSource != nil {
+				f1valf47 := &svcapitypes.S3CsvSource{}
+				if f1valiter.S3CsvSource.AdditionalOptions != nil {
 					f1valf47f0 := &svcapitypes.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3JsonSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf47f0.BoundedFiles = f1valiter.S3JsonSource.AdditionalOptions.BoundedFiles
+					if f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf47f0.BoundedFiles = f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles
 					}
-					if f1valiter.S3JsonSource.AdditionalOptions.BoundedSize != nil {
-						f1valf47f0.BoundedSize = f1valiter.S3JsonSource.AdditionalOptions.BoundedSize
+					if f1valiter.S3CsvSource.AdditionalOptions.BoundedSize != nil {
+						f1valf47f0.BoundedSize = f1valiter.S3CsvSource.AdditionalOptions.BoundedSize
 					}
-					if f1valiter.S3JsonSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf47f0.EnableSamplePath = f1valiter.S3JsonSource.AdditionalOptions.EnableSamplePath
+					if f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf47f0.EnableSamplePath = f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath
 					}
-					if f1valiter.S3JsonSource.AdditionalOptions.SamplePath != nil {
-						f1valf47f0.SamplePath = f1valiter.S3JsonSource.AdditionalOptions.SamplePath
+					if f1valiter.S3CsvSource.AdditionalOptions.SamplePath != nil {
+						f1valf47f0.SamplePath = f1valiter.S3CsvSource.AdditionalOptions.SamplePath
 					}
 					f1valf47.AdditionalOptions = f1valf47f0
 				}
-				if f1valiter.S3JsonSource.CompressionType != nil {
-					f1valf47.CompressionType = f1valiter.S3JsonSource.CompressionType
+				if f1valiter.S3CsvSource.CompressionType != nil {
+					f1valf47.CompressionType = f1valiter.S3CsvSource.CompressionType
 				}
-				if f1valiter.S3JsonSource.Exclusions != nil {
-					f1valf47f2 := []*string{}
-					for _, f1valf47f2iter := range f1valiter.S3JsonSource.Exclusions {
-						var f1valf47f2elem string
-						f1valf47f2elem = *f1valf47f2iter
-						f1valf47f2 = append(f1valf47f2, &f1valf47f2elem)
+				if f1valiter.S3CsvSource.Escaper != nil {
+					f1valf47.Escaper = f1valiter.S3CsvSource.Escaper
+				}
+				if f1valiter.S3CsvSource.Exclusions != nil {
+					f1valf47f3 := []*string{}
+					for _, f1valf47f3iter := range f1valiter.S3CsvSource.Exclusions {
+						var f1valf47f3elem string
+						f1valf47f3elem = *f1valf47f3iter
+						f1valf47f3 = append(f1valf47f3, &f1valf47f3elem)
 					}
-					f1valf47.Exclusions = f1valf47f2
+					f1valf47.Exclusions = f1valf47f3
 				}
-				if f1valiter.S3JsonSource.GroupFiles != nil {
-					f1valf47.GroupFiles = f1valiter.S3JsonSource.GroupFiles
+				if f1valiter.S3CsvSource.GroupFiles != nil {
+					f1valf47.GroupFiles = f1valiter.S3CsvSource.GroupFiles
 				}
-				if f1valiter.S3JsonSource.GroupSize != nil {
-					f1valf47.GroupSize = f1valiter.S3JsonSource.GroupSize
+				if f1valiter.S3CsvSource.GroupSize != nil {
+					f1valf47.GroupSize = f1valiter.S3CsvSource.GroupSize
 				}
-				if f1valiter.S3JsonSource.JsonPath != nil {
-					f1valf47.JSONPath = f1valiter.S3JsonSource.JsonPath
+				if f1valiter.S3CsvSource.MaxBand != nil {
+					f1valf47.MaxBand = f1valiter.S3CsvSource.MaxBand
 				}
-				if f1valiter.S3JsonSource.MaxBand != nil {
-					f1valf47.MaxBand = f1valiter.S3JsonSource.MaxBand
+				if f1valiter.S3CsvSource.MaxFilesInBand != nil {
+					f1valf47.MaxFilesInBand = f1valiter.S3CsvSource.MaxFilesInBand
 				}
-				if f1valiter.S3JsonSource.MaxFilesInBand != nil {
-					f1valf47.MaxFilesInBand = f1valiter.S3JsonSource.MaxFilesInBand
+				if f1valiter.S3CsvSource.Multiline != nil {
+					f1valf47.Multiline = f1valiter.S3CsvSource.Multiline
 				}
-				if f1valiter.S3JsonSource.Multiline != nil {
-					f1valf47.Multiline = f1valiter.S3JsonSource.Multiline
+				if f1valiter.S3CsvSource.Name != nil {
+					f1valf47.Name = f1valiter.S3CsvSource.Name
 				}
-				if f1valiter.S3JsonSource.Name != nil {
-					f1valf47.Name = f1valiter.S3JsonSource.Name
+				if f1valiter.S3CsvSource.OptimizePerformance != nil {
+					f1valf47.OptimizePerformance = f1valiter.S3CsvSource.OptimizePerformance
 				}
-				if f1valiter.S3JsonSource.OutputSchemas != nil {
-					f1valf47f10 := []*svcapitypes.GlueSchema{}
-					for _, f1valf47f10iter := range f1valiter.S3JsonSource.OutputSchemas {
-						f1valf47f10elem := &svcapitypes.GlueSchema{}
-						if f1valf47f10iter.Columns != nil {
-							f1valf47f10elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf47f10elemf0iter := range f1valf47f10iter.Columns {
-								f1valf47f10elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf47f10elemf0iter.Name != nil {
-									f1valf47f10elemf0elem.Name = f1valf47f10elemf0iter.Name
+				if f1valiter.S3CsvSource.OutputSchemas != nil {
+					f1valf47f11 := []*svcapitypes.GlueSchema{}
+					for _, f1valf47f11iter := range f1valiter.S3CsvSource.OutputSchemas {
+						f1valf47f11elem := &svcapitypes.GlueSchema{}
+						if f1valf47f11iter.Columns != nil {
+							f1valf47f11elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf47f11elemf0iter := range f1valf47f11iter.Columns {
+								f1valf47f11elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf47f11elemf0iter.Name != nil {
+									f1valf47f11elemf0elem.Name = f1valf47f11elemf0iter.Name
 								}
-								if f1valf47f10elemf0iter.Type != nil {
-									f1valf47f10elemf0elem.Type = f1valf47f10elemf0iter.Type
+								if f1valf47f11elemf0iter.Type != nil {
+									f1valf47f11elemf0elem.Type = f1valf47f11elemf0iter.Type
 								}
-								f1valf47f10elemf0 = append(f1valf47f10elemf0, f1valf47f10elemf0elem)
+								f1valf47f11elemf0 = append(f1valf47f11elemf0, f1valf47f11elemf0elem)
 							}
-							f1valf47f10elem.Columns = f1valf47f10elemf0
+							f1valf47f11elem.Columns = f1valf47f11elemf0
 						}
-						f1valf47f10 = append(f1valf47f10, f1valf47f10elem)
+						f1valf47f11 = append(f1valf47f11, f1valf47f11elem)
 					}
-					f1valf47.OutputSchemas = f1valf47f10
+					f1valf47.OutputSchemas = f1valf47f11
 				}
-				if f1valiter.S3JsonSource.Paths != nil {
-					f1valf47f11 := []*string{}
-					for _, f1valf47f11iter := range f1valiter.S3JsonSource.Paths {
-						var f1valf47f11elem string
-						f1valf47f11elem = *f1valf47f11iter
-						f1valf47f11 = append(f1valf47f11, &f1valf47f11elem)
+				if f1valiter.S3CsvSource.Paths != nil {
+					f1valf47f12 := []*string{}
+					for _, f1valf47f12iter := range f1valiter.S3CsvSource.Paths {
+						var f1valf47f12elem string
+						f1valf47f12elem = *f1valf47f12iter
+						f1valf47f12 = append(f1valf47f12, &f1valf47f12elem)
 					}
-					f1valf47.Paths = f1valf47f11
+					f1valf47.Paths = f1valf47f12
 				}
-				if f1valiter.S3JsonSource.Recurse != nil {
-					f1valf47.Recurse = f1valiter.S3JsonSource.Recurse
+				if f1valiter.S3CsvSource.QuoteChar != nil {
+					f1valf47.QuoteChar = f1valiter.S3CsvSource.QuoteChar
 				}
-				f1val.S3JSONSource = f1valf47
+				if f1valiter.S3CsvSource.Recurse != nil {
+					f1valf47.Recurse = f1valiter.S3CsvSource.Recurse
+				}
+				if f1valiter.S3CsvSource.Separator != nil {
+					f1valf47.Separator = f1valiter.S3CsvSource.Separator
+				}
+				if f1valiter.S3CsvSource.SkipFirst != nil {
+					f1valf47.SkipFirst = f1valiter.S3CsvSource.SkipFirst
+				}
+				if f1valiter.S3CsvSource.WithHeader != nil {
+					f1valf47.WithHeader = f1valiter.S3CsvSource.WithHeader
+				}
+				if f1valiter.S3CsvSource.WriteHeader != nil {
+					f1valf47.WriteHeader = f1valiter.S3CsvSource.WriteHeader
+				}
+				f1val.S3CsvSource = f1valf47
 			}
-			if f1valiter.S3ParquetSource != nil {
-				f1valf48 := &svcapitypes.S3ParquetSource{}
-				if f1valiter.S3ParquetSource.AdditionalOptions != nil {
-					f1valf48f0 := &svcapitypes.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf48f0.BoundedFiles = f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize != nil {
-						f1valf48f0.BoundedSize = f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf48f0.EnableSamplePath = f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.SamplePath != nil {
-						f1valf48f0.SamplePath = f1valiter.S3ParquetSource.AdditionalOptions.SamplePath
+			if f1valiter.S3DeltaCatalogTarget != nil {
+				f1valf48 := &svcapitypes.S3DeltaCatalogTarget{}
+				if f1valiter.S3DeltaCatalogTarget.AdditionalOptions != nil {
+					f1valf48f0 := map[string]*string{}
+					for f1valf48f0key, f1valf48f0valiter := range f1valiter.S3DeltaCatalogTarget.AdditionalOptions {
+						var f1valf48f0val string
+						f1valf48f0val = *f1valf48f0valiter
+						f1valf48f0[f1valf48f0key] = &f1valf48f0val
 					}
 					f1valf48.AdditionalOptions = f1valf48f0
 				}
-				if f1valiter.S3ParquetSource.CompressionType != nil {
-					f1valf48.CompressionType = f1valiter.S3ParquetSource.CompressionType
+				if f1valiter.S3DeltaCatalogTarget.Database != nil {
+					f1valf48.Database = f1valiter.S3DeltaCatalogTarget.Database
 				}
-				if f1valiter.S3ParquetSource.Exclusions != nil {
+				if f1valiter.S3DeltaCatalogTarget.Inputs != nil {
 					f1valf48f2 := []*string{}
-					for _, f1valf48f2iter := range f1valiter.S3ParquetSource.Exclusions {
+					for _, f1valf48f2iter := range f1valiter.S3DeltaCatalogTarget.Inputs {
 						var f1valf48f2elem string
 						f1valf48f2elem = *f1valf48f2iter
 						f1valf48f2 = append(f1valf48f2, &f1valf48f2elem)
 					}
-					f1valf48.Exclusions = f1valf48f2
+					f1valf48.Inputs = f1valf48f2
+				}
+				if f1valiter.S3DeltaCatalogTarget.Name != nil {
+					f1valf48.Name = f1valiter.S3DeltaCatalogTarget.Name
+				}
+				if f1valiter.S3DeltaCatalogTarget.PartitionKeys != nil {
+					f1valf48f4 := [][]*string{}
+					for _, f1valf48f4iter := range f1valiter.S3DeltaCatalogTarget.PartitionKeys {
+						f1valf48f4elem := []*string{}
+						for _, f1valf48f4elemiter := range f1valf48f4iter {
+							var f1valf48f4elemelem string
+							f1valf48f4elemelem = *f1valf48f4elemiter
+							f1valf48f4elem = append(f1valf48f4elem, &f1valf48f4elemelem)
+						}
+						f1valf48f4 = append(f1valf48f4, f1valf48f4elem)
+					}
+					f1valf48.PartitionKeys = f1valf48f4
+				}
+				if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy != nil {
+					f1valf48f5 := &svcapitypes.CatalogSchemaChangePolicy{}
+					if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf48f5.EnableUpdateCatalog = f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf48f5.UpdateBehavior = f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf48.SchemaChangePolicy = f1valf48f5
+				}
+				if f1valiter.S3DeltaCatalogTarget.Table != nil {
+					f1valf48.Table = f1valiter.S3DeltaCatalogTarget.Table
+				}
+				f1val.S3DeltaCatalogTarget = f1valf48
+			}
+			if f1valiter.S3DeltaDirectTarget != nil {
+				f1valf49 := &svcapitypes.S3DeltaDirectTarget{}
+				if f1valiter.S3DeltaDirectTarget.AdditionalOptions != nil {
+					f1valf49f0 := map[string]*string{}
+					for f1valf49f0key, f1valf49f0valiter := range f1valiter.S3DeltaDirectTarget.AdditionalOptions {
+						var f1valf49f0val string
+						f1valf49f0val = *f1valf49f0valiter
+						f1valf49f0[f1valf49f0key] = &f1valf49f0val
+					}
+					f1valf49.AdditionalOptions = f1valf49f0
+				}
+				if f1valiter.S3DeltaDirectTarget.Compression != nil {
+					f1valf49.Compression = f1valiter.S3DeltaDirectTarget.Compression
+				}
+				if f1valiter.S3DeltaDirectTarget.Format != nil {
+					f1valf49.Format = f1valiter.S3DeltaDirectTarget.Format
+				}
+				if f1valiter.S3DeltaDirectTarget.Inputs != nil {
+					f1valf49f3 := []*string{}
+					for _, f1valf49f3iter := range f1valiter.S3DeltaDirectTarget.Inputs {
+						var f1valf49f3elem string
+						f1valf49f3elem = *f1valf49f3iter
+						f1valf49f3 = append(f1valf49f3, &f1valf49f3elem)
+					}
+					f1valf49.Inputs = f1valf49f3
+				}
+				if f1valiter.S3DeltaDirectTarget.Name != nil {
+					f1valf49.Name = f1valiter.S3DeltaDirectTarget.Name
+				}
+				if f1valiter.S3DeltaDirectTarget.PartitionKeys != nil {
+					f1valf49f5 := [][]*string{}
+					for _, f1valf49f5iter := range f1valiter.S3DeltaDirectTarget.PartitionKeys {
+						f1valf49f5elem := []*string{}
+						for _, f1valf49f5elemiter := range f1valf49f5iter {
+							var f1valf49f5elemelem string
+							f1valf49f5elemelem = *f1valf49f5elemiter
+							f1valf49f5elem = append(f1valf49f5elem, &f1valf49f5elemelem)
+						}
+						f1valf49f5 = append(f1valf49f5, f1valf49f5elem)
+					}
+					f1valf49.PartitionKeys = f1valf49f5
+				}
+				if f1valiter.S3DeltaDirectTarget.Path != nil {
+					f1valf49.Path = f1valiter.S3DeltaDirectTarget.Path
+				}
+				if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy != nil {
+					f1valf49f7 := &svcapitypes.DirectSchemaChangePolicy{}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf49f7.Database = f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Database
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf49f7.EnableUpdateCatalog = f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf49f7.Table = f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Table
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf49f7.UpdateBehavior = f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf49.SchemaChangePolicy = f1valf49f7
+				}
+				f1val.S3DeltaDirectTarget = f1valf49
+			}
+			if f1valiter.S3DeltaSource != nil {
+				f1valf50 := &svcapitypes.S3DeltaSource{}
+				if f1valiter.S3DeltaSource.AdditionalDeltaOptions != nil {
+					f1valf50f0 := map[string]*string{}
+					for f1valf50f0key, f1valf50f0valiter := range f1valiter.S3DeltaSource.AdditionalDeltaOptions {
+						var f1valf50f0val string
+						f1valf50f0val = *f1valf50f0valiter
+						f1valf50f0[f1valf50f0key] = &f1valf50f0val
+					}
+					f1valf50.AdditionalDeltaOptions = f1valf50f0
+				}
+				if f1valiter.S3DeltaSource.AdditionalOptions != nil {
+					f1valf50f1 := &svcapitypes.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3DeltaSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf50f1.BoundedFiles = f1valiter.S3DeltaSource.AdditionalOptions.BoundedFiles
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.BoundedSize != nil {
+						f1valf50f1.BoundedSize = f1valiter.S3DeltaSource.AdditionalOptions.BoundedSize
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf50f1.EnableSamplePath = f1valiter.S3DeltaSource.AdditionalOptions.EnableSamplePath
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.SamplePath != nil {
+						f1valf50f1.SamplePath = f1valiter.S3DeltaSource.AdditionalOptions.SamplePath
+					}
+					f1valf50.AdditionalOptions = f1valf50f1
+				}
+				if f1valiter.S3DeltaSource.Name != nil {
+					f1valf50.Name = f1valiter.S3DeltaSource.Name
+				}
+				if f1valiter.S3DeltaSource.OutputSchemas != nil {
+					f1valf50f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf50f3iter := range f1valiter.S3DeltaSource.OutputSchemas {
+						f1valf50f3elem := &svcapitypes.GlueSchema{}
+						if f1valf50f3iter.Columns != nil {
+							f1valf50f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf50f3elemf0iter := range f1valf50f3iter.Columns {
+								f1valf50f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf50f3elemf0iter.Name != nil {
+									f1valf50f3elemf0elem.Name = f1valf50f3elemf0iter.Name
+								}
+								if f1valf50f3elemf0iter.Type != nil {
+									f1valf50f3elemf0elem.Type = f1valf50f3elemf0iter.Type
+								}
+								f1valf50f3elemf0 = append(f1valf50f3elemf0, f1valf50f3elemf0elem)
+							}
+							f1valf50f3elem.Columns = f1valf50f3elemf0
+						}
+						f1valf50f3 = append(f1valf50f3, f1valf50f3elem)
+					}
+					f1valf50.OutputSchemas = f1valf50f3
+				}
+				if f1valiter.S3DeltaSource.Paths != nil {
+					f1valf50f4 := []*string{}
+					for _, f1valf50f4iter := range f1valiter.S3DeltaSource.Paths {
+						var f1valf50f4elem string
+						f1valf50f4elem = *f1valf50f4iter
+						f1valf50f4 = append(f1valf50f4, &f1valf50f4elem)
+					}
+					f1valf50.Paths = f1valf50f4
+				}
+				f1val.S3DeltaSource = f1valf50
+			}
+			if f1valiter.S3DirectTarget != nil {
+				f1valf51 := &svcapitypes.S3DirectTarget{}
+				if f1valiter.S3DirectTarget.Compression != nil {
+					f1valf51.Compression = f1valiter.S3DirectTarget.Compression
+				}
+				if f1valiter.S3DirectTarget.Format != nil {
+					f1valf51.Format = f1valiter.S3DirectTarget.Format
+				}
+				if f1valiter.S3DirectTarget.Inputs != nil {
+					f1valf51f2 := []*string{}
+					for _, f1valf51f2iter := range f1valiter.S3DirectTarget.Inputs {
+						var f1valf51f2elem string
+						f1valf51f2elem = *f1valf51f2iter
+						f1valf51f2 = append(f1valf51f2, &f1valf51f2elem)
+					}
+					f1valf51.Inputs = f1valf51f2
+				}
+				if f1valiter.S3DirectTarget.Name != nil {
+					f1valf51.Name = f1valiter.S3DirectTarget.Name
+				}
+				if f1valiter.S3DirectTarget.PartitionKeys != nil {
+					f1valf51f4 := [][]*string{}
+					for _, f1valf51f4iter := range f1valiter.S3DirectTarget.PartitionKeys {
+						f1valf51f4elem := []*string{}
+						for _, f1valf51f4elemiter := range f1valf51f4iter {
+							var f1valf51f4elemelem string
+							f1valf51f4elemelem = *f1valf51f4elemiter
+							f1valf51f4elem = append(f1valf51f4elem, &f1valf51f4elemelem)
+						}
+						f1valf51f4 = append(f1valf51f4, f1valf51f4elem)
+					}
+					f1valf51.PartitionKeys = f1valf51f4
+				}
+				if f1valiter.S3DirectTarget.Path != nil {
+					f1valf51.Path = f1valiter.S3DirectTarget.Path
+				}
+				if f1valiter.S3DirectTarget.SchemaChangePolicy != nil {
+					f1valf51f6 := &svcapitypes.DirectSchemaChangePolicy{}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf51f6.Database = f1valiter.S3DirectTarget.SchemaChangePolicy.Database
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf51f6.EnableUpdateCatalog = f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf51f6.Table = f1valiter.S3DirectTarget.SchemaChangePolicy.Table
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf51f6.UpdateBehavior = f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf51.SchemaChangePolicy = f1valf51f6
+				}
+				f1val.S3DirectTarget = f1valf51
+			}
+			if f1valiter.S3GlueParquetTarget != nil {
+				f1valf52 := &svcapitypes.S3GlueParquetTarget{}
+				if f1valiter.S3GlueParquetTarget.Compression != nil {
+					f1valf52.Compression = f1valiter.S3GlueParquetTarget.Compression
+				}
+				if f1valiter.S3GlueParquetTarget.Inputs != nil {
+					f1valf52f1 := []*string{}
+					for _, f1valf52f1iter := range f1valiter.S3GlueParquetTarget.Inputs {
+						var f1valf52f1elem string
+						f1valf52f1elem = *f1valf52f1iter
+						f1valf52f1 = append(f1valf52f1, &f1valf52f1elem)
+					}
+					f1valf52.Inputs = f1valf52f1
+				}
+				if f1valiter.S3GlueParquetTarget.Name != nil {
+					f1valf52.Name = f1valiter.S3GlueParquetTarget.Name
+				}
+				if f1valiter.S3GlueParquetTarget.PartitionKeys != nil {
+					f1valf52f3 := [][]*string{}
+					for _, f1valf52f3iter := range f1valiter.S3GlueParquetTarget.PartitionKeys {
+						f1valf52f3elem := []*string{}
+						for _, f1valf52f3elemiter := range f1valf52f3iter {
+							var f1valf52f3elemelem string
+							f1valf52f3elemelem = *f1valf52f3elemiter
+							f1valf52f3elem = append(f1valf52f3elem, &f1valf52f3elemelem)
+						}
+						f1valf52f3 = append(f1valf52f3, f1valf52f3elem)
+					}
+					f1valf52.PartitionKeys = f1valf52f3
+				}
+				if f1valiter.S3GlueParquetTarget.Path != nil {
+					f1valf52.Path = f1valiter.S3GlueParquetTarget.Path
+				}
+				if f1valiter.S3GlueParquetTarget.SchemaChangePolicy != nil {
+					f1valf52f5 := &svcapitypes.DirectSchemaChangePolicy{}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database != nil {
+						f1valf52f5.Database = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf52f5.EnableUpdateCatalog = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table != nil {
+						f1valf52f5.Table = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf52f5.UpdateBehavior = f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf52.SchemaChangePolicy = f1valf52f5
+				}
+				f1val.S3GlueParquetTarget = f1valf52
+			}
+			if f1valiter.S3HudiCatalogTarget != nil {
+				f1valf53 := &svcapitypes.S3HudiCatalogTarget{}
+				if f1valiter.S3HudiCatalogTarget.AdditionalOptions != nil {
+					f1valf53f0 := map[string]*string{}
+					for f1valf53f0key, f1valf53f0valiter := range f1valiter.S3HudiCatalogTarget.AdditionalOptions {
+						var f1valf53f0val string
+						f1valf53f0val = *f1valf53f0valiter
+						f1valf53f0[f1valf53f0key] = &f1valf53f0val
+					}
+					f1valf53.AdditionalOptions = f1valf53f0
+				}
+				if f1valiter.S3HudiCatalogTarget.Database != nil {
+					f1valf53.Database = f1valiter.S3HudiCatalogTarget.Database
+				}
+				if f1valiter.S3HudiCatalogTarget.Inputs != nil {
+					f1valf53f2 := []*string{}
+					for _, f1valf53f2iter := range f1valiter.S3HudiCatalogTarget.Inputs {
+						var f1valf53f2elem string
+						f1valf53f2elem = *f1valf53f2iter
+						f1valf53f2 = append(f1valf53f2, &f1valf53f2elem)
+					}
+					f1valf53.Inputs = f1valf53f2
+				}
+				if f1valiter.S3HudiCatalogTarget.Name != nil {
+					f1valf53.Name = f1valiter.S3HudiCatalogTarget.Name
+				}
+				if f1valiter.S3HudiCatalogTarget.PartitionKeys != nil {
+					f1valf53f4 := [][]*string{}
+					for _, f1valf53f4iter := range f1valiter.S3HudiCatalogTarget.PartitionKeys {
+						f1valf53f4elem := []*string{}
+						for _, f1valf53f4elemiter := range f1valf53f4iter {
+							var f1valf53f4elemelem string
+							f1valf53f4elemelem = *f1valf53f4elemiter
+							f1valf53f4elem = append(f1valf53f4elem, &f1valf53f4elemelem)
+						}
+						f1valf53f4 = append(f1valf53f4, f1valf53f4elem)
+					}
+					f1valf53.PartitionKeys = f1valf53f4
+				}
+				if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy != nil {
+					f1valf53f5 := &svcapitypes.CatalogSchemaChangePolicy{}
+					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf53f5.EnableUpdateCatalog = f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf53f5.UpdateBehavior = f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf53.SchemaChangePolicy = f1valf53f5
+				}
+				if f1valiter.S3HudiCatalogTarget.Table != nil {
+					f1valf53.Table = f1valiter.S3HudiCatalogTarget.Table
+				}
+				f1val.S3HudiCatalogTarget = f1valf53
+			}
+			if f1valiter.S3HudiDirectTarget != nil {
+				f1valf54 := &svcapitypes.S3HudiDirectTarget{}
+				if f1valiter.S3HudiDirectTarget.AdditionalOptions != nil {
+					f1valf54f0 := map[string]*string{}
+					for f1valf54f0key, f1valf54f0valiter := range f1valiter.S3HudiDirectTarget.AdditionalOptions {
+						var f1valf54f0val string
+						f1valf54f0val = *f1valf54f0valiter
+						f1valf54f0[f1valf54f0key] = &f1valf54f0val
+					}
+					f1valf54.AdditionalOptions = f1valf54f0
+				}
+				if f1valiter.S3HudiDirectTarget.Compression != nil {
+					f1valf54.Compression = f1valiter.S3HudiDirectTarget.Compression
+				}
+				if f1valiter.S3HudiDirectTarget.Format != nil {
+					f1valf54.Format = f1valiter.S3HudiDirectTarget.Format
+				}
+				if f1valiter.S3HudiDirectTarget.Inputs != nil {
+					f1valf54f3 := []*string{}
+					for _, f1valf54f3iter := range f1valiter.S3HudiDirectTarget.Inputs {
+						var f1valf54f3elem string
+						f1valf54f3elem = *f1valf54f3iter
+						f1valf54f3 = append(f1valf54f3, &f1valf54f3elem)
+					}
+					f1valf54.Inputs = f1valf54f3
+				}
+				if f1valiter.S3HudiDirectTarget.Name != nil {
+					f1valf54.Name = f1valiter.S3HudiDirectTarget.Name
+				}
+				if f1valiter.S3HudiDirectTarget.PartitionKeys != nil {
+					f1valf54f5 := [][]*string{}
+					for _, f1valf54f5iter := range f1valiter.S3HudiDirectTarget.PartitionKeys {
+						f1valf54f5elem := []*string{}
+						for _, f1valf54f5elemiter := range f1valf54f5iter {
+							var f1valf54f5elemelem string
+							f1valf54f5elemelem = *f1valf54f5elemiter
+							f1valf54f5elem = append(f1valf54f5elem, &f1valf54f5elemelem)
+						}
+						f1valf54f5 = append(f1valf54f5, f1valf54f5elem)
+					}
+					f1valf54.PartitionKeys = f1valf54f5
+				}
+				if f1valiter.S3HudiDirectTarget.Path != nil {
+					f1valf54.Path = f1valiter.S3HudiDirectTarget.Path
+				}
+				if f1valiter.S3HudiDirectTarget.SchemaChangePolicy != nil {
+					f1valf54f7 := &svcapitypes.DirectSchemaChangePolicy{}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf54f7.Database = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf54f7.EnableUpdateCatalog = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf54f7.Table = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf54f7.UpdateBehavior = f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior
+					}
+					f1valf54.SchemaChangePolicy = f1valf54f7
+				}
+				f1val.S3HudiDirectTarget = f1valf54
+			}
+			if f1valiter.S3HudiSource != nil {
+				f1valf55 := &svcapitypes.S3HudiSource{}
+				if f1valiter.S3HudiSource.AdditionalHudiOptions != nil {
+					f1valf55f0 := map[string]*string{}
+					for f1valf55f0key, f1valf55f0valiter := range f1valiter.S3HudiSource.AdditionalHudiOptions {
+						var f1valf55f0val string
+						f1valf55f0val = *f1valf55f0valiter
+						f1valf55f0[f1valf55f0key] = &f1valf55f0val
+					}
+					f1valf55.AdditionalHudiOptions = f1valf55f0
+				}
+				if f1valiter.S3HudiSource.AdditionalOptions != nil {
+					f1valf55f1 := &svcapitypes.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf55f1.BoundedFiles = f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.BoundedSize != nil {
+						f1valf55f1.BoundedSize = f1valiter.S3HudiSource.AdditionalOptions.BoundedSize
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf55f1.EnableSamplePath = f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.SamplePath != nil {
+						f1valf55f1.SamplePath = f1valiter.S3HudiSource.AdditionalOptions.SamplePath
+					}
+					f1valf55.AdditionalOptions = f1valf55f1
+				}
+				if f1valiter.S3HudiSource.Name != nil {
+					f1valf55.Name = f1valiter.S3HudiSource.Name
+				}
+				if f1valiter.S3HudiSource.OutputSchemas != nil {
+					f1valf55f3 := []*svcapitypes.GlueSchema{}
+					for _, f1valf55f3iter := range f1valiter.S3HudiSource.OutputSchemas {
+						f1valf55f3elem := &svcapitypes.GlueSchema{}
+						if f1valf55f3iter.Columns != nil {
+							f1valf55f3elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf55f3elemf0iter := range f1valf55f3iter.Columns {
+								f1valf55f3elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf55f3elemf0iter.Name != nil {
+									f1valf55f3elemf0elem.Name = f1valf55f3elemf0iter.Name
+								}
+								if f1valf55f3elemf0iter.Type != nil {
+									f1valf55f3elemf0elem.Type = f1valf55f3elemf0iter.Type
+								}
+								f1valf55f3elemf0 = append(f1valf55f3elemf0, f1valf55f3elemf0elem)
+							}
+							f1valf55f3elem.Columns = f1valf55f3elemf0
+						}
+						f1valf55f3 = append(f1valf55f3, f1valf55f3elem)
+					}
+					f1valf55.OutputSchemas = f1valf55f3
+				}
+				if f1valiter.S3HudiSource.Paths != nil {
+					f1valf55f4 := []*string{}
+					for _, f1valf55f4iter := range f1valiter.S3HudiSource.Paths {
+						var f1valf55f4elem string
+						f1valf55f4elem = *f1valf55f4iter
+						f1valf55f4 = append(f1valf55f4, &f1valf55f4elem)
+					}
+					f1valf55.Paths = f1valf55f4
+				}
+				f1val.S3HudiSource = f1valf55
+			}
+			if f1valiter.S3JsonSource != nil {
+				f1valf56 := &svcapitypes.S3JSONSource{}
+				if f1valiter.S3JsonSource.AdditionalOptions != nil {
+					f1valf56f0 := &svcapitypes.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3JsonSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf56f0.BoundedFiles = f1valiter.S3JsonSource.AdditionalOptions.BoundedFiles
+					}
+					if f1valiter.S3JsonSource.AdditionalOptions.BoundedSize != nil {
+						f1valf56f0.BoundedSize = f1valiter.S3JsonSource.AdditionalOptions.BoundedSize
+					}
+					if f1valiter.S3JsonSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf56f0.EnableSamplePath = f1valiter.S3JsonSource.AdditionalOptions.EnableSamplePath
+					}
+					if f1valiter.S3JsonSource.AdditionalOptions.SamplePath != nil {
+						f1valf56f0.SamplePath = f1valiter.S3JsonSource.AdditionalOptions.SamplePath
+					}
+					f1valf56.AdditionalOptions = f1valf56f0
+				}
+				if f1valiter.S3JsonSource.CompressionType != nil {
+					f1valf56.CompressionType = f1valiter.S3JsonSource.CompressionType
+				}
+				if f1valiter.S3JsonSource.Exclusions != nil {
+					f1valf56f2 := []*string{}
+					for _, f1valf56f2iter := range f1valiter.S3JsonSource.Exclusions {
+						var f1valf56f2elem string
+						f1valf56f2elem = *f1valf56f2iter
+						f1valf56f2 = append(f1valf56f2, &f1valf56f2elem)
+					}
+					f1valf56.Exclusions = f1valf56f2
+				}
+				if f1valiter.S3JsonSource.GroupFiles != nil {
+					f1valf56.GroupFiles = f1valiter.S3JsonSource.GroupFiles
+				}
+				if f1valiter.S3JsonSource.GroupSize != nil {
+					f1valf56.GroupSize = f1valiter.S3JsonSource.GroupSize
+				}
+				if f1valiter.S3JsonSource.JsonPath != nil {
+					f1valf56.JSONPath = f1valiter.S3JsonSource.JsonPath
+				}
+				if f1valiter.S3JsonSource.MaxBand != nil {
+					f1valf56.MaxBand = f1valiter.S3JsonSource.MaxBand
+				}
+				if f1valiter.S3JsonSource.MaxFilesInBand != nil {
+					f1valf56.MaxFilesInBand = f1valiter.S3JsonSource.MaxFilesInBand
+				}
+				if f1valiter.S3JsonSource.Multiline != nil {
+					f1valf56.Multiline = f1valiter.S3JsonSource.Multiline
+				}
+				if f1valiter.S3JsonSource.Name != nil {
+					f1valf56.Name = f1valiter.S3JsonSource.Name
+				}
+				if f1valiter.S3JsonSource.OutputSchemas != nil {
+					f1valf56f10 := []*svcapitypes.GlueSchema{}
+					for _, f1valf56f10iter := range f1valiter.S3JsonSource.OutputSchemas {
+						f1valf56f10elem := &svcapitypes.GlueSchema{}
+						if f1valf56f10iter.Columns != nil {
+							f1valf56f10elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf56f10elemf0iter := range f1valf56f10iter.Columns {
+								f1valf56f10elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf56f10elemf0iter.Name != nil {
+									f1valf56f10elemf0elem.Name = f1valf56f10elemf0iter.Name
+								}
+								if f1valf56f10elemf0iter.Type != nil {
+									f1valf56f10elemf0elem.Type = f1valf56f10elemf0iter.Type
+								}
+								f1valf56f10elemf0 = append(f1valf56f10elemf0, f1valf56f10elemf0elem)
+							}
+							f1valf56f10elem.Columns = f1valf56f10elemf0
+						}
+						f1valf56f10 = append(f1valf56f10, f1valf56f10elem)
+					}
+					f1valf56.OutputSchemas = f1valf56f10
+				}
+				if f1valiter.S3JsonSource.Paths != nil {
+					f1valf56f11 := []*string{}
+					for _, f1valf56f11iter := range f1valiter.S3JsonSource.Paths {
+						var f1valf56f11elem string
+						f1valf56f11elem = *f1valf56f11iter
+						f1valf56f11 = append(f1valf56f11, &f1valf56f11elem)
+					}
+					f1valf56.Paths = f1valf56f11
+				}
+				if f1valiter.S3JsonSource.Recurse != nil {
+					f1valf56.Recurse = f1valiter.S3JsonSource.Recurse
+				}
+				f1val.S3JSONSource = f1valf56
+			}
+			if f1valiter.S3ParquetSource != nil {
+				f1valf57 := &svcapitypes.S3ParquetSource{}
+				if f1valiter.S3ParquetSource.AdditionalOptions != nil {
+					f1valf57f0 := &svcapitypes.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf57f0.BoundedFiles = f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize != nil {
+						f1valf57f0.BoundedSize = f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf57f0.EnableSamplePath = f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.SamplePath != nil {
+						f1valf57f0.SamplePath = f1valiter.S3ParquetSource.AdditionalOptions.SamplePath
+					}
+					f1valf57.AdditionalOptions = f1valf57f0
+				}
+				if f1valiter.S3ParquetSource.CompressionType != nil {
+					f1valf57.CompressionType = f1valiter.S3ParquetSource.CompressionType
+				}
+				if f1valiter.S3ParquetSource.Exclusions != nil {
+					f1valf57f2 := []*string{}
+					for _, f1valf57f2iter := range f1valiter.S3ParquetSource.Exclusions {
+						var f1valf57f2elem string
+						f1valf57f2elem = *f1valf57f2iter
+						f1valf57f2 = append(f1valf57f2, &f1valf57f2elem)
+					}
+					f1valf57.Exclusions = f1valf57f2
 				}
 				if f1valiter.S3ParquetSource.GroupFiles != nil {
-					f1valf48.GroupFiles = f1valiter.S3ParquetSource.GroupFiles
+					f1valf57.GroupFiles = f1valiter.S3ParquetSource.GroupFiles
 				}
 				if f1valiter.S3ParquetSource.GroupSize != nil {
-					f1valf48.GroupSize = f1valiter.S3ParquetSource.GroupSize
+					f1valf57.GroupSize = f1valiter.S3ParquetSource.GroupSize
 				}
 				if f1valiter.S3ParquetSource.MaxBand != nil {
-					f1valf48.MaxBand = f1valiter.S3ParquetSource.MaxBand
+					f1valf57.MaxBand = f1valiter.S3ParquetSource.MaxBand
 				}
 				if f1valiter.S3ParquetSource.MaxFilesInBand != nil {
-					f1valf48.MaxFilesInBand = f1valiter.S3ParquetSource.MaxFilesInBand
+					f1valf57.MaxFilesInBand = f1valiter.S3ParquetSource.MaxFilesInBand
 				}
 				if f1valiter.S3ParquetSource.Name != nil {
-					f1valf48.Name = f1valiter.S3ParquetSource.Name
+					f1valf57.Name = f1valiter.S3ParquetSource.Name
 				}
 				if f1valiter.S3ParquetSource.OutputSchemas != nil {
-					f1valf48f8 := []*svcapitypes.GlueSchema{}
-					for _, f1valf48f8iter := range f1valiter.S3ParquetSource.OutputSchemas {
-						f1valf48f8elem := &svcapitypes.GlueSchema{}
-						if f1valf48f8iter.Columns != nil {
-							f1valf48f8elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf48f8elemf0iter := range f1valf48f8iter.Columns {
-								f1valf48f8elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf48f8elemf0iter.Name != nil {
-									f1valf48f8elemf0elem.Name = f1valf48f8elemf0iter.Name
+					f1valf57f8 := []*svcapitypes.GlueSchema{}
+					for _, f1valf57f8iter := range f1valiter.S3ParquetSource.OutputSchemas {
+						f1valf57f8elem := &svcapitypes.GlueSchema{}
+						if f1valf57f8iter.Columns != nil {
+							f1valf57f8elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf57f8elemf0iter := range f1valf57f8iter.Columns {
+								f1valf57f8elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf57f8elemf0iter.Name != nil {
+									f1valf57f8elemf0elem.Name = f1valf57f8elemf0iter.Name
 								}
-								if f1valf48f8elemf0iter.Type != nil {
-									f1valf48f8elemf0elem.Type = f1valf48f8elemf0iter.Type
+								if f1valf57f8elemf0iter.Type != nil {
+									f1valf57f8elemf0elem.Type = f1valf57f8elemf0iter.Type
 								}
-								f1valf48f8elemf0 = append(f1valf48f8elemf0, f1valf48f8elemf0elem)
+								f1valf57f8elemf0 = append(f1valf57f8elemf0, f1valf57f8elemf0elem)
 							}
-							f1valf48f8elem.Columns = f1valf48f8elemf0
+							f1valf57f8elem.Columns = f1valf57f8elemf0
 						}
-						f1valf48f8 = append(f1valf48f8, f1valf48f8elem)
+						f1valf57f8 = append(f1valf57f8, f1valf57f8elem)
 					}
-					f1valf48.OutputSchemas = f1valf48f8
+					f1valf57.OutputSchemas = f1valf57f8
 				}
 				if f1valiter.S3ParquetSource.Paths != nil {
-					f1valf48f9 := []*string{}
-					for _, f1valf48f9iter := range f1valiter.S3ParquetSource.Paths {
-						var f1valf48f9elem string
-						f1valf48f9elem = *f1valf48f9iter
-						f1valf48f9 = append(f1valf48f9, &f1valf48f9elem)
+					f1valf57f9 := []*string{}
+					for _, f1valf57f9iter := range f1valiter.S3ParquetSource.Paths {
+						var f1valf57f9elem string
+						f1valf57f9elem = *f1valf57f9iter
+						f1valf57f9 = append(f1valf57f9, &f1valf57f9elem)
 					}
-					f1valf48.Paths = f1valf48f9
+					f1valf57.Paths = f1valf57f9
 				}
 				if f1valiter.S3ParquetSource.Recurse != nil {
-					f1valf48.Recurse = f1valiter.S3ParquetSource.Recurse
+					f1valf57.Recurse = f1valiter.S3ParquetSource.Recurse
 				}
-				f1val.S3ParquetSource = f1valf48
+				f1val.S3ParquetSource = f1valf57
 			}
 			if f1valiter.SelectFields != nil {
-				f1valf49 := &svcapitypes.SelectFields{}
+				f1valf58 := &svcapitypes.SelectFields{}
 				if f1valiter.SelectFields.Inputs != nil {
-					f1valf49f0 := []*string{}
-					for _, f1valf49f0iter := range f1valiter.SelectFields.Inputs {
-						var f1valf49f0elem string
-						f1valf49f0elem = *f1valf49f0iter
-						f1valf49f0 = append(f1valf49f0, &f1valf49f0elem)
+					f1valf58f0 := []*string{}
+					for _, f1valf58f0iter := range f1valiter.SelectFields.Inputs {
+						var f1valf58f0elem string
+						f1valf58f0elem = *f1valf58f0iter
+						f1valf58f0 = append(f1valf58f0, &f1valf58f0elem)
 					}
-					f1valf49.Inputs = f1valf49f0
+					f1valf58.Inputs = f1valf58f0
 				}
 				if f1valiter.SelectFields.Name != nil {
-					f1valf49.Name = f1valiter.SelectFields.Name
+					f1valf58.Name = f1valiter.SelectFields.Name
 				}
 				if f1valiter.SelectFields.Paths != nil {
-					f1valf49f2 := [][]*string{}
-					for _, f1valf49f2iter := range f1valiter.SelectFields.Paths {
-						f1valf49f2elem := []*string{}
-						for _, f1valf49f2elemiter := range f1valf49f2iter {
-							var f1valf49f2elemelem string
-							f1valf49f2elemelem = *f1valf49f2elemiter
-							f1valf49f2elem = append(f1valf49f2elem, &f1valf49f2elemelem)
+					f1valf58f2 := [][]*string{}
+					for _, f1valf58f2iter := range f1valiter.SelectFields.Paths {
+						f1valf58f2elem := []*string{}
+						for _, f1valf58f2elemiter := range f1valf58f2iter {
+							var f1valf58f2elemelem string
+							f1valf58f2elemelem = *f1valf58f2elemiter
+							f1valf58f2elem = append(f1valf58f2elem, &f1valf58f2elemelem)
 						}
-						f1valf49f2 = append(f1valf49f2, f1valf49f2elem)
+						f1valf58f2 = append(f1valf58f2, f1valf58f2elem)
 					}
-					f1valf49.Paths = f1valf49f2
+					f1valf58.Paths = f1valf58f2
 				}
-				f1val.SelectFields = f1valf49
+				f1val.SelectFields = f1valf58
 			}
 			if f1valiter.SelectFromCollection != nil {
-				f1valf50 := &svcapitypes.SelectFromCollection{}
+				f1valf59 := &svcapitypes.SelectFromCollection{}
 				if f1valiter.SelectFromCollection.Index != nil {
-					f1valf50.Index = f1valiter.SelectFromCollection.Index
+					f1valf59.Index = f1valiter.SelectFromCollection.Index
 				}
 				if f1valiter.SelectFromCollection.Inputs != nil {
-					f1valf50f1 := []*string{}
-					for _, f1valf50f1iter := range f1valiter.SelectFromCollection.Inputs {
-						var f1valf50f1elem string
-						f1valf50f1elem = *f1valf50f1iter
-						f1valf50f1 = append(f1valf50f1, &f1valf50f1elem)
+					f1valf59f1 := []*string{}
+					for _, f1valf59f1iter := range f1valiter.SelectFromCollection.Inputs {
+						var f1valf59f1elem string
+						f1valf59f1elem = *f1valf59f1iter
+						f1valf59f1 = append(f1valf59f1, &f1valf59f1elem)
 					}
-					f1valf50.Inputs = f1valf50f1
+					f1valf59.Inputs = f1valf59f1
 				}
 				if f1valiter.SelectFromCollection.Name != nil {
-					f1valf50.Name = f1valiter.SelectFromCollection.Name
+					f1valf59.Name = f1valiter.SelectFromCollection.Name
 				}
-				f1val.SelectFromCollection = f1valf50
+				f1val.SelectFromCollection = f1valf59
 			}
 			if f1valiter.SparkConnectorSource != nil {
-				f1valf51 := &svcapitypes.SparkConnectorSource{}
+				f1valf60 := &svcapitypes.SparkConnectorSource{}
 				if f1valiter.SparkConnectorSource.AdditionalOptions != nil {
-					f1valf51f0 := map[string]*string{}
-					for f1valf51f0key, f1valf51f0valiter := range f1valiter.SparkConnectorSource.AdditionalOptions {
-						var f1valf51f0val string
-						f1valf51f0val = *f1valf51f0valiter
-						f1valf51f0[f1valf51f0key] = &f1valf51f0val
+					f1valf60f0 := map[string]*string{}
+					for f1valf60f0key, f1valf60f0valiter := range f1valiter.SparkConnectorSource.AdditionalOptions {
+						var f1valf60f0val string
+						f1valf60f0val = *f1valf60f0valiter
+						f1valf60f0[f1valf60f0key] = &f1valf60f0val
 					}
-					f1valf51.AdditionalOptions = f1valf51f0
+					f1valf60.AdditionalOptions = f1valf60f0
 				}
 				if f1valiter.SparkConnectorSource.ConnectionName != nil {
-					f1valf51.ConnectionName = f1valiter.SparkConnectorSource.ConnectionName
+					f1valf60.ConnectionName = f1valiter.SparkConnectorSource.ConnectionName
 				}
 				if f1valiter.SparkConnectorSource.ConnectionType != nil {
-					f1valf51.ConnectionType = f1valiter.SparkConnectorSource.ConnectionType
+					f1valf60.ConnectionType = f1valiter.SparkConnectorSource.ConnectionType
 				}
 				if f1valiter.SparkConnectorSource.ConnectorName != nil {
-					f1valf51.ConnectorName = f1valiter.SparkConnectorSource.ConnectorName
+					f1valf60.ConnectorName = f1valiter.SparkConnectorSource.ConnectorName
 				}
 				if f1valiter.SparkConnectorSource.Name != nil {
-					f1valf51.Name = f1valiter.SparkConnectorSource.Name
+					f1valf60.Name = f1valiter.SparkConnectorSource.Name
 				}
 				if f1valiter.SparkConnectorSource.OutputSchemas != nil {
-					f1valf51f5 := []*svcapitypes.GlueSchema{}
-					for _, f1valf51f5iter := range f1valiter.SparkConnectorSource.OutputSchemas {
-						f1valf51f5elem := &svcapitypes.GlueSchema{}
-						if f1valf51f5iter.Columns != nil {
-							f1valf51f5elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf51f5elemf0iter := range f1valf51f5iter.Columns {
-								f1valf51f5elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf51f5elemf0iter.Name != nil {
-									f1valf51f5elemf0elem.Name = f1valf51f5elemf0iter.Name
+					f1valf60f5 := []*svcapitypes.GlueSchema{}
+					for _, f1valf60f5iter := range f1valiter.SparkConnectorSource.OutputSchemas {
+						f1valf60f5elem := &svcapitypes.GlueSchema{}
+						if f1valf60f5iter.Columns != nil {
+							f1valf60f5elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf60f5elemf0iter := range f1valf60f5iter.Columns {
+								f1valf60f5elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf60f5elemf0iter.Name != nil {
+									f1valf60f5elemf0elem.Name = f1valf60f5elemf0iter.Name
 								}
-								if f1valf51f5elemf0iter.Type != nil {
-									f1valf51f5elemf0elem.Type = f1valf51f5elemf0iter.Type
+								if f1valf60f5elemf0iter.Type != nil {
+									f1valf60f5elemf0elem.Type = f1valf60f5elemf0iter.Type
 								}
-								f1valf51f5elemf0 = append(f1valf51f5elemf0, f1valf51f5elemf0elem)
+								f1valf60f5elemf0 = append(f1valf60f5elemf0, f1valf60f5elemf0elem)
 							}
-							f1valf51f5elem.Columns = f1valf51f5elemf0
+							f1valf60f5elem.Columns = f1valf60f5elemf0
 						}
-						f1valf51f5 = append(f1valf51f5, f1valf51f5elem)
+						f1valf60f5 = append(f1valf60f5, f1valf60f5elem)
 					}
-					f1valf51.OutputSchemas = f1valf51f5
+					f1valf60.OutputSchemas = f1valf60f5
 				}
-				f1val.SparkConnectorSource = f1valf51
+				f1val.SparkConnectorSource = f1valf60
 			}
 			if f1valiter.SparkConnectorTarget != nil {
-				f1valf52 := &svcapitypes.SparkConnectorTarget{}
+				f1valf61 := &svcapitypes.SparkConnectorTarget{}
 				if f1valiter.SparkConnectorTarget.AdditionalOptions != nil {
-					f1valf52f0 := map[string]*string{}
-					for f1valf52f0key, f1valf52f0valiter := range f1valiter.SparkConnectorTarget.AdditionalOptions {
-						var f1valf52f0val string
-						f1valf52f0val = *f1valf52f0valiter
-						f1valf52f0[f1valf52f0key] = &f1valf52f0val
+					f1valf61f0 := map[string]*string{}
+					for f1valf61f0key, f1valf61f0valiter := range f1valiter.SparkConnectorTarget.AdditionalOptions {
+						var f1valf61f0val string
+						f1valf61f0val = *f1valf61f0valiter
+						f1valf61f0[f1valf61f0key] = &f1valf61f0val
 					}
-					f1valf52.AdditionalOptions = f1valf52f0
+					f1valf61.AdditionalOptions = f1valf61f0
 				}
 				if f1valiter.SparkConnectorTarget.ConnectionName != nil {
-					f1valf52.ConnectionName = f1valiter.SparkConnectorTarget.ConnectionName
+					f1valf61.ConnectionName = f1valiter.SparkConnectorTarget.ConnectionName
 				}
 				if f1valiter.SparkConnectorTarget.ConnectionType != nil {
-					f1valf52.ConnectionType = f1valiter.SparkConnectorTarget.ConnectionType
+					f1valf61.ConnectionType = f1valiter.SparkConnectorTarget.ConnectionType
 				}
 				if f1valiter.SparkConnectorTarget.ConnectorName != nil {
-					f1valf52.ConnectorName = f1valiter.SparkConnectorTarget.ConnectorName
+					f1valf61.ConnectorName = f1valiter.SparkConnectorTarget.ConnectorName
 				}
 				if f1valiter.SparkConnectorTarget.Inputs != nil {
-					f1valf52f4 := []*string{}
-					for _, f1valf52f4iter := range f1valiter.SparkConnectorTarget.Inputs {
-						var f1valf52f4elem string
-						f1valf52f4elem = *f1valf52f4iter
-						f1valf52f4 = append(f1valf52f4, &f1valf52f4elem)
+					f1valf61f4 := []*string{}
+					for _, f1valf61f4iter := range f1valiter.SparkConnectorTarget.Inputs {
+						var f1valf61f4elem string
+						f1valf61f4elem = *f1valf61f4iter
+						f1valf61f4 = append(f1valf61f4, &f1valf61f4elem)
 					}
-					f1valf52.Inputs = f1valf52f4
+					f1valf61.Inputs = f1valf61f4
 				}
 				if f1valiter.SparkConnectorTarget.Name != nil {
-					f1valf52.Name = f1valiter.SparkConnectorTarget.Name
+					f1valf61.Name = f1valiter.SparkConnectorTarget.Name
 				}
 				if f1valiter.SparkConnectorTarget.OutputSchemas != nil {
-					f1valf52f6 := []*svcapitypes.GlueSchema{}
-					for _, f1valf52f6iter := range f1valiter.SparkConnectorTarget.OutputSchemas {
-						f1valf52f6elem := &svcapitypes.GlueSchema{}
-						if f1valf52f6iter.Columns != nil {
-							f1valf52f6elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf52f6elemf0iter := range f1valf52f6iter.Columns {
-								f1valf52f6elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf52f6elemf0iter.Name != nil {
-									f1valf52f6elemf0elem.Name = f1valf52f6elemf0iter.Name
+					f1valf61f6 := []*svcapitypes.GlueSchema{}
+					for _, f1valf61f6iter := range f1valiter.SparkConnectorTarget.OutputSchemas {
+						f1valf61f6elem := &svcapitypes.GlueSchema{}
+						if f1valf61f6iter.Columns != nil {
+							f1valf61f6elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf61f6elemf0iter := range f1valf61f6iter.Columns {
+								f1valf61f6elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf61f6elemf0iter.Name != nil {
+									f1valf61f6elemf0elem.Name = f1valf61f6elemf0iter.Name
 								}
-								if f1valf52f6elemf0iter.Type != nil {
-									f1valf52f6elemf0elem.Type = f1valf52f6elemf0iter.Type
+								if f1valf61f6elemf0iter.Type != nil {
+									f1valf61f6elemf0elem.Type = f1valf61f6elemf0iter.Type
 								}
-								f1valf52f6elemf0 = append(f1valf52f6elemf0, f1valf52f6elemf0elem)
+								f1valf61f6elemf0 = append(f1valf61f6elemf0, f1valf61f6elemf0elem)
 							}
-							f1valf52f6elem.Columns = f1valf52f6elemf0
+							f1valf61f6elem.Columns = f1valf61f6elemf0
 						}
-						f1valf52f6 = append(f1valf52f6, f1valf52f6elem)
+						f1valf61f6 = append(f1valf61f6, f1valf61f6elem)
 					}
-					f1valf52.OutputSchemas = f1valf52f6
+					f1valf61.OutputSchemas = f1valf61f6
 				}
-				f1val.SparkConnectorTarget = f1valf52
+				f1val.SparkConnectorTarget = f1valf61
 			}
 			if f1valiter.SparkSQL != nil {
-				f1valf53 := &svcapitypes.SparkSQL{}
+				f1valf62 := &svcapitypes.SparkSQL{}
 				if f1valiter.SparkSQL.Inputs != nil {
-					f1valf53f0 := []*string{}
-					for _, f1valf53f0iter := range f1valiter.SparkSQL.Inputs {
-						var f1valf53f0elem string
-						f1valf53f0elem = *f1valf53f0iter
-						f1valf53f0 = append(f1valf53f0, &f1valf53f0elem)
+					f1valf62f0 := []*string{}
+					for _, f1valf62f0iter := range f1valiter.SparkSQL.Inputs {
+						var f1valf62f0elem string
+						f1valf62f0elem = *f1valf62f0iter
+						f1valf62f0 = append(f1valf62f0, &f1valf62f0elem)
 					}
-					f1valf53.Inputs = f1valf53f0
+					f1valf62.Inputs = f1valf62f0
 				}
 				if f1valiter.SparkSQL.Name != nil {
-					f1valf53.Name = f1valiter.SparkSQL.Name
+					f1valf62.Name = f1valiter.SparkSQL.Name
 				}
 				if f1valiter.SparkSQL.OutputSchemas != nil {
-					f1valf53f2 := []*svcapitypes.GlueSchema{}
-					for _, f1valf53f2iter := range f1valiter.SparkSQL.OutputSchemas {
-						f1valf53f2elem := &svcapitypes.GlueSchema{}
-						if f1valf53f2iter.Columns != nil {
-							f1valf53f2elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
-							for _, f1valf53f2elemf0iter := range f1valf53f2iter.Columns {
-								f1valf53f2elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
-								if f1valf53f2elemf0iter.Name != nil {
-									f1valf53f2elemf0elem.Name = f1valf53f2elemf0iter.Name
+					f1valf62f2 := []*svcapitypes.GlueSchema{}
+					for _, f1valf62f2iter := range f1valiter.SparkSQL.OutputSchemas {
+						f1valf62f2elem := &svcapitypes.GlueSchema{}
+						if f1valf62f2iter.Columns != nil {
+							f1valf62f2elemf0 := []*svcapitypes.GlueStudioSchemaColumn{}
+							for _, f1valf62f2elemf0iter := range f1valf62f2iter.Columns {
+								f1valf62f2elemf0elem := &svcapitypes.GlueStudioSchemaColumn{}
+								if f1valf62f2elemf0iter.Name != nil {
+									f1valf62f2elemf0elem.Name = f1valf62f2elemf0iter.Name
 								}
-								if f1valf53f2elemf0iter.Type != nil {
-									f1valf53f2elemf0elem.Type = f1valf53f2elemf0iter.Type
+								if f1valf62f2elemf0iter.Type != nil {
+									f1valf62f2elemf0elem.Type = f1valf62f2elemf0iter.Type
 								}
-								f1valf53f2elemf0 = append(f1valf53f2elemf0, f1valf53f2elemf0elem)
+								f1valf62f2elemf0 = append(f1valf62f2elemf0, f1valf62f2elemf0elem)
 							}
-							f1valf53f2elem.Columns = f1valf53f2elemf0
+							f1valf62f2elem.Columns = f1valf62f2elemf0
 						}
-						f1valf53f2 = append(f1valf53f2, f1valf53f2elem)
+						f1valf62f2 = append(f1valf62f2, f1valf62f2elem)
 					}
-					f1valf53.OutputSchemas = f1valf53f2
+					f1valf62.OutputSchemas = f1valf62f2
 				}
 				if f1valiter.SparkSQL.SqlAliases != nil {
-					f1valf53f3 := []*svcapitypes.SQLAlias{}
-					for _, f1valf53f3iter := range f1valiter.SparkSQL.SqlAliases {
-						f1valf53f3elem := &svcapitypes.SQLAlias{}
-						if f1valf53f3iter.Alias != nil {
-							f1valf53f3elem.Alias = f1valf53f3iter.Alias
+					f1valf62f3 := []*svcapitypes.SQLAlias{}
+					for _, f1valf62f3iter := range f1valiter.SparkSQL.SqlAliases {
+						f1valf62f3elem := &svcapitypes.SQLAlias{}
+						if f1valf62f3iter.Alias != nil {
+							f1valf62f3elem.Alias = f1valf62f3iter.Alias
 						}
-						if f1valf53f3iter.From != nil {
-							f1valf53f3elem.From = f1valf53f3iter.From
+						if f1valf62f3iter.From != nil {
+							f1valf62f3elem.From = f1valf62f3iter.From
 						}
-						f1valf53f3 = append(f1valf53f3, f1valf53f3elem)
+						f1valf62f3 = append(f1valf62f3, f1valf62f3elem)
 					}
-					f1valf53.SQLAliases = f1valf53f3
+					f1valf62.SQLAliases = f1valf62f3
 				}
 				if f1valiter.SparkSQL.SqlQuery != nil {
-					f1valf53.SQLQuery = f1valiter.SparkSQL.SqlQuery
+					f1valf62.SQLQuery = f1valiter.SparkSQL.SqlQuery
 				}
-				f1val.SparkSQL = f1valf53
+				f1val.SparkSQL = f1valf62
 			}
 			if f1valiter.Spigot != nil {
-				f1valf54 := &svcapitypes.Spigot{}
+				f1valf63 := &svcapitypes.Spigot{}
 				if f1valiter.Spigot.Inputs != nil {
-					f1valf54f0 := []*string{}
-					for _, f1valf54f0iter := range f1valiter.Spigot.Inputs {
-						var f1valf54f0elem string
-						f1valf54f0elem = *f1valf54f0iter
-						f1valf54f0 = append(f1valf54f0, &f1valf54f0elem)
+					f1valf63f0 := []*string{}
+					for _, f1valf63f0iter := range f1valiter.Spigot.Inputs {
+						var f1valf63f0elem string
+						f1valf63f0elem = *f1valf63f0iter
+						f1valf63f0 = append(f1valf63f0, &f1valf63f0elem)
 					}
-					f1valf54.Inputs = f1valf54f0
+					f1valf63.Inputs = f1valf63f0
 				}
 				if f1valiter.Spigot.Name != nil {
-					f1valf54.Name = f1valiter.Spigot.Name
+					f1valf63.Name = f1valiter.Spigot.Name
 				}
 				if f1valiter.Spigot.Path != nil {
-					f1valf54.Path = f1valiter.Spigot.Path
+					f1valf63.Path = f1valiter.Spigot.Path
 				}
 				if f1valiter.Spigot.Prob != nil {
-					f1valf54.Prob = f1valiter.Spigot.Prob
+					f1valf63.Prob = f1valiter.Spigot.Prob
 				}
 				if f1valiter.Spigot.Topk != nil {
-					f1valf54.Topk = f1valiter.Spigot.Topk
+					f1valf63.Topk = f1valiter.Spigot.Topk
 				}
-				f1val.Spigot = f1valf54
+				f1val.Spigot = f1valf63
 			}
 			if f1valiter.SplitFields != nil {
-				f1valf55 := &svcapitypes.SplitFields{}
+				f1valf64 := &svcapitypes.SplitFields{}
 				if f1valiter.SplitFields.Inputs != nil {
-					f1valf55f0 := []*string{}
-					for _, f1valf55f0iter := range f1valiter.SplitFields.Inputs {
-						var f1valf55f0elem string
-						f1valf55f0elem = *f1valf55f0iter
-						f1valf55f0 = append(f1valf55f0, &f1valf55f0elem)
+					f1valf64f0 := []*string{}
+					for _, f1valf64f0iter := range f1valiter.SplitFields.Inputs {
+						var f1valf64f0elem string
+						f1valf64f0elem = *f1valf64f0iter
+						f1valf64f0 = append(f1valf64f0, &f1valf64f0elem)
 					}
-					f1valf55.Inputs = f1valf55f0
+					f1valf64.Inputs = f1valf64f0
 				}
 				if f1valiter.SplitFields.Name != nil {
-					f1valf55.Name = f1valiter.SplitFields.Name
+					f1valf64.Name = f1valiter.SplitFields.Name
 				}
 				if f1valiter.SplitFields.Paths != nil {
-					f1valf55f2 := [][]*string{}
-					for _, f1valf55f2iter := range f1valiter.SplitFields.Paths {
-						f1valf55f2elem := []*string{}
-						for _, f1valf55f2elemiter := range f1valf55f2iter {
-							var f1valf55f2elemelem string
-							f1valf55f2elemelem = *f1valf55f2elemiter
-							f1valf55f2elem = append(f1valf55f2elem, &f1valf55f2elemelem)
+					f1valf64f2 := [][]*string{}
+					for _, f1valf64f2iter := range f1valiter.SplitFields.Paths {
+						f1valf64f2elem := []*string{}
+						for _, f1valf64f2elemiter := range f1valf64f2iter {
+							var f1valf64f2elemelem string
+							f1valf64f2elemelem = *f1valf64f2elemiter
+							f1valf64f2elem = append(f1valf64f2elem, &f1valf64f2elemelem)
 						}
-						f1valf55f2 = append(f1valf55f2, f1valf55f2elem)
+						f1valf64f2 = append(f1valf64f2, f1valf64f2elem)
 					}
-					f1valf55.Paths = f1valf55f2
+					f1valf64.Paths = f1valf64f2
 				}
-				f1val.SplitFields = f1valf55
+				f1val.SplitFields = f1valf64
 			}
 			if f1valiter.Union != nil {
-				f1valf56 := &svcapitypes.Union{}
+				f1valf65 := &svcapitypes.Union{}
 				if f1valiter.Union.Inputs != nil {
-					f1valf56f0 := []*string{}
-					for _, f1valf56f0iter := range f1valiter.Union.Inputs {
-						var f1valf56f0elem string
-						f1valf56f0elem = *f1valf56f0iter
-						f1valf56f0 = append(f1valf56f0, &f1valf56f0elem)
+					f1valf65f0 := []*string{}
+					for _, f1valf65f0iter := range f1valiter.Union.Inputs {
+						var f1valf65f0elem string
+						f1valf65f0elem = *f1valf65f0iter
+						f1valf65f0 = append(f1valf65f0, &f1valf65f0elem)
 					}
-					f1valf56.Inputs = f1valf56f0
+					f1valf65.Inputs = f1valf65f0
 				}
 				if f1valiter.Union.Name != nil {
-					f1valf56.Name = f1valiter.Union.Name
+					f1valf65.Name = f1valiter.Union.Name
 				}
 				if f1valiter.Union.UnionType != nil {
-					f1valf56.UnionType = f1valiter.Union.UnionType
+					f1valf65.UnionType = f1valiter.Union.UnionType
 				}
-				f1val.Union = f1valf56
+				f1val.Union = f1valf65
 			}
 			f1[f1key] = f1val
 		}
@@ -2480,6 +3267,9 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 		}
 		if resp.Job.Command.PythonVersion != nil {
 			f2.PythonVersion = resp.Job.Command.PythonVersion
+		}
+		if resp.Job.Command.Runtime != nil {
+			f2.Runtime = resp.Job.Command.Runtime
 		}
 		if resp.Job.Command.ScriptLocation != nil {
 			f2.ScriptLocation = resp.Job.Command.ScriptLocation
@@ -2682,2373 +3472,3160 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 				}
 				f1val.SetAggregate(f1valf0)
 			}
-			if f1valiter.ApplyMapping != nil {
-				f1valf1 := &svcsdk.ApplyMapping{}
-				if f1valiter.ApplyMapping.Inputs != nil {
-					f1valf1f0 := []*string{}
-					for _, f1valf1f0iter := range f1valiter.ApplyMapping.Inputs {
-						var f1valf1f0elem string
-						f1valf1f0elem = *f1valf1f0iter
-						f1valf1f0 = append(f1valf1f0, &f1valf1f0elem)
+			if f1valiter.AmazonRedshiftSource != nil {
+				f1valf1 := &svcsdk.AmazonRedshiftSource{}
+				if f1valiter.AmazonRedshiftSource.Data != nil {
+					f1valf1f0 := &svcsdk.AmazonRedshiftNodeData{}
+					if f1valiter.AmazonRedshiftSource.Data.AccessType != nil {
+						f1valf1f0.SetAccessType(*f1valiter.AmazonRedshiftSource.Data.AccessType)
 					}
-					f1valf1.SetInputs(f1valf1f0)
+					if f1valiter.AmazonRedshiftSource.Data.Action != nil {
+						f1valf1f0.SetAction(*f1valiter.AmazonRedshiftSource.Data.Action)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.AdvancedOptions != nil {
+						f1valf1f0f2 := []*svcsdk.AmazonRedshiftAdvancedOption{}
+						for _, f1valf1f0f2iter := range f1valiter.AmazonRedshiftSource.Data.AdvancedOptions {
+							f1valf1f0f2elem := &svcsdk.AmazonRedshiftAdvancedOption{}
+							if f1valf1f0f2iter.Key != nil {
+								f1valf1f0f2elem.SetKey(*f1valf1f0f2iter.Key)
+							}
+							if f1valf1f0f2iter.Value != nil {
+								f1valf1f0f2elem.SetValue(*f1valf1f0f2iter.Value)
+							}
+							f1valf1f0f2 = append(f1valf1f0f2, f1valf1f0f2elem)
+						}
+						f1valf1f0.SetAdvancedOptions(f1valf1f0f2)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase != nil {
+						f1valf1f0f3 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Description != nil {
+							f1valf1f0f3.SetDescription(*f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Label != nil {
+							f1valf1f0f3.SetLabel(*f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Value != nil {
+							f1valf1f0f3.SetValue(*f1valiter.AmazonRedshiftSource.Data.CatalogDatabase.Value)
+						}
+						f1valf1f0.SetCatalogDatabase(f1valf1f0f3)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftSchema != nil {
+						f1valf1f0.SetCatalogRedshiftSchema(*f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftSchema)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftTable != nil {
+						f1valf1f0.SetCatalogRedshiftTable(*f1valiter.AmazonRedshiftSource.Data.CatalogRedshiftTable)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CatalogTable != nil {
+						f1valf1f0f6 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Description != nil {
+							f1valf1f0f6.SetDescription(*f1valiter.AmazonRedshiftSource.Data.CatalogTable.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Label != nil {
+							f1valf1f0f6.SetLabel(*f1valiter.AmazonRedshiftSource.Data.CatalogTable.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.CatalogTable.Value != nil {
+							f1valf1f0f6.SetValue(*f1valiter.AmazonRedshiftSource.Data.CatalogTable.Value)
+						}
+						f1valf1f0.SetCatalogTable(f1valf1f0f6)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Connection != nil {
+						f1valf1f0f7 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Description != nil {
+							f1valf1f0f7.SetDescription(*f1valiter.AmazonRedshiftSource.Data.Connection.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Label != nil {
+							f1valf1f0f7.SetLabel(*f1valiter.AmazonRedshiftSource.Data.Connection.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Connection.Value != nil {
+							f1valf1f0f7.SetValue(*f1valiter.AmazonRedshiftSource.Data.Connection.Value)
+						}
+						f1valf1f0.SetConnection(f1valf1f0f7)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.CrawlerConnection != nil {
+						f1valf1f0.SetCrawlerConnection(*f1valiter.AmazonRedshiftSource.Data.CrawlerConnection)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.IAMRole != nil {
+						f1valf1f0f9 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.IAMRole.Description != nil {
+							f1valf1f0f9.SetDescription(*f1valiter.AmazonRedshiftSource.Data.IAMRole.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.IAMRole.Label != nil {
+							f1valf1f0f9.SetLabel(*f1valiter.AmazonRedshiftSource.Data.IAMRole.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.IAMRole.Value != nil {
+							f1valf1f0f9.SetValue(*f1valiter.AmazonRedshiftSource.Data.IAMRole.Value)
+						}
+						f1valf1f0.SetIamRole(f1valf1f0f9)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeAction != nil {
+						f1valf1f0.SetMergeAction(*f1valiter.AmazonRedshiftSource.Data.MergeAction)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeClause != nil {
+						f1valf1f0.SetMergeClause(*f1valiter.AmazonRedshiftSource.Data.MergeClause)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeWhenMatched != nil {
+						f1valf1f0.SetMergeWhenMatched(*f1valiter.AmazonRedshiftSource.Data.MergeWhenMatched)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.MergeWhenNotMatched != nil {
+						f1valf1f0.SetMergeWhenNotMatched(*f1valiter.AmazonRedshiftSource.Data.MergeWhenNotMatched)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.PostAction != nil {
+						f1valf1f0.SetPostAction(*f1valiter.AmazonRedshiftSource.Data.PostAction)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.PreAction != nil {
+						f1valf1f0.SetPreAction(*f1valiter.AmazonRedshiftSource.Data.PreAction)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SampleQuery != nil {
+						f1valf1f0.SetSampleQuery(*f1valiter.AmazonRedshiftSource.Data.SampleQuery)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Schema != nil {
+						f1valf1f0f17 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Description != nil {
+							f1valf1f0f17.SetDescription(*f1valiter.AmazonRedshiftSource.Data.Schema.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Label != nil {
+							f1valf1f0f17.SetLabel(*f1valiter.AmazonRedshiftSource.Data.Schema.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Schema.Value != nil {
+							f1valf1f0f17.SetValue(*f1valiter.AmazonRedshiftSource.Data.Schema.Value)
+						}
+						f1valf1f0.SetSchema(f1valf1f0f17)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SelectedColumns != nil {
+						f1valf1f0f18 := []*svcsdk.Option{}
+						for _, f1valf1f0f18iter := range f1valiter.AmazonRedshiftSource.Data.SelectedColumns {
+							f1valf1f0f18elem := &svcsdk.Option{}
+							if f1valf1f0f18iter.Description != nil {
+								f1valf1f0f18elem.SetDescription(*f1valf1f0f18iter.Description)
+							}
+							if f1valf1f0f18iter.Label != nil {
+								f1valf1f0f18elem.SetLabel(*f1valf1f0f18iter.Label)
+							}
+							if f1valf1f0f18iter.Value != nil {
+								f1valf1f0f18elem.SetValue(*f1valf1f0f18iter.Value)
+							}
+							f1valf1f0f18 = append(f1valf1f0f18, f1valf1f0f18elem)
+						}
+						f1valf1f0.SetSelectedColumns(f1valf1f0f18)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.SourceType != nil {
+						f1valf1f0.SetSourceType(*f1valiter.AmazonRedshiftSource.Data.SourceType)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.StagingTable != nil {
+						f1valf1f0.SetStagingTable(*f1valiter.AmazonRedshiftSource.Data.StagingTable)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Table != nil {
+						f1valf1f0f21 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Description != nil {
+							f1valf1f0f21.SetDescription(*f1valiter.AmazonRedshiftSource.Data.Table.Description)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Label != nil {
+							f1valf1f0f21.SetLabel(*f1valiter.AmazonRedshiftSource.Data.Table.Label)
+						}
+						if f1valiter.AmazonRedshiftSource.Data.Table.Value != nil {
+							f1valf1f0f21.SetValue(*f1valiter.AmazonRedshiftSource.Data.Table.Value)
+						}
+						f1valf1f0.SetTable(f1valf1f0f21)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TablePrefix != nil {
+						f1valf1f0.SetTablePrefix(*f1valiter.AmazonRedshiftSource.Data.TablePrefix)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TableSchema != nil {
+						f1valf1f0f23 := []*svcsdk.Option{}
+						for _, f1valf1f0f23iter := range f1valiter.AmazonRedshiftSource.Data.TableSchema {
+							f1valf1f0f23elem := &svcsdk.Option{}
+							if f1valf1f0f23iter.Description != nil {
+								f1valf1f0f23elem.SetDescription(*f1valf1f0f23iter.Description)
+							}
+							if f1valf1f0f23iter.Label != nil {
+								f1valf1f0f23elem.SetLabel(*f1valf1f0f23iter.Label)
+							}
+							if f1valf1f0f23iter.Value != nil {
+								f1valf1f0f23elem.SetValue(*f1valf1f0f23iter.Value)
+							}
+							f1valf1f0f23 = append(f1valf1f0f23, f1valf1f0f23elem)
+						}
+						f1valf1f0.SetTableSchema(f1valf1f0f23)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.TempDir != nil {
+						f1valf1f0.SetTempDir(*f1valiter.AmazonRedshiftSource.Data.TempDir)
+					}
+					if f1valiter.AmazonRedshiftSource.Data.Upsert != nil {
+						f1valf1f0.SetUpsert(*f1valiter.AmazonRedshiftSource.Data.Upsert)
+					}
+					f1valf1.SetData(f1valf1f0)
+				}
+				if f1valiter.AmazonRedshiftSource.Name != nil {
+					f1valf1.SetName(*f1valiter.AmazonRedshiftSource.Name)
+				}
+				f1val.SetAmazonRedshiftSource(f1valf1)
+			}
+			if f1valiter.AmazonRedshiftTarget != nil {
+				f1valf2 := &svcsdk.AmazonRedshiftTarget{}
+				if f1valiter.AmazonRedshiftTarget.Data != nil {
+					f1valf2f0 := &svcsdk.AmazonRedshiftNodeData{}
+					if f1valiter.AmazonRedshiftTarget.Data.AccessType != nil {
+						f1valf2f0.SetAccessType(*f1valiter.AmazonRedshiftTarget.Data.AccessType)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Action != nil {
+						f1valf2f0.SetAction(*f1valiter.AmazonRedshiftTarget.Data.Action)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.AdvancedOptions != nil {
+						f1valf2f0f2 := []*svcsdk.AmazonRedshiftAdvancedOption{}
+						for _, f1valf2f0f2iter := range f1valiter.AmazonRedshiftTarget.Data.AdvancedOptions {
+							f1valf2f0f2elem := &svcsdk.AmazonRedshiftAdvancedOption{}
+							if f1valf2f0f2iter.Key != nil {
+								f1valf2f0f2elem.SetKey(*f1valf2f0f2iter.Key)
+							}
+							if f1valf2f0f2iter.Value != nil {
+								f1valf2f0f2elem.SetValue(*f1valf2f0f2iter.Value)
+							}
+							f1valf2f0f2 = append(f1valf2f0f2, f1valf2f0f2elem)
+						}
+						f1valf2f0.SetAdvancedOptions(f1valf2f0f2)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase != nil {
+						f1valf2f0f3 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Description != nil {
+							f1valf2f0f3.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Label != nil {
+							f1valf2f0f3.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Value != nil {
+							f1valf2f0f3.SetValue(*f1valiter.AmazonRedshiftTarget.Data.CatalogDatabase.Value)
+						}
+						f1valf2f0.SetCatalogDatabase(f1valf2f0f3)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftSchema != nil {
+						f1valf2f0.SetCatalogRedshiftSchema(*f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftSchema)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftTable != nil {
+						f1valf2f0.SetCatalogRedshiftTable(*f1valiter.AmazonRedshiftTarget.Data.CatalogRedshiftTable)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CatalogTable != nil {
+						f1valf2f0f6 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Description != nil {
+							f1valf2f0f6.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Label != nil {
+							f1valf2f0f6.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Value != nil {
+							f1valf2f0f6.SetValue(*f1valiter.AmazonRedshiftTarget.Data.CatalogTable.Value)
+						}
+						f1valf2f0.SetCatalogTable(f1valf2f0f6)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Connection != nil {
+						f1valf2f0f7 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Description != nil {
+							f1valf2f0f7.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.Connection.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Label != nil {
+							f1valf2f0f7.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.Connection.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Connection.Value != nil {
+							f1valf2f0f7.SetValue(*f1valiter.AmazonRedshiftTarget.Data.Connection.Value)
+						}
+						f1valf2f0.SetConnection(f1valf2f0f7)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.CrawlerConnection != nil {
+						f1valf2f0.SetCrawlerConnection(*f1valiter.AmazonRedshiftTarget.Data.CrawlerConnection)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.IAMRole != nil {
+						f1valf2f0f9 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.IAMRole.Description != nil {
+							f1valf2f0f9.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.IAMRole.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.IAMRole.Label != nil {
+							f1valf2f0f9.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.IAMRole.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.IAMRole.Value != nil {
+							f1valf2f0f9.SetValue(*f1valiter.AmazonRedshiftTarget.Data.IAMRole.Value)
+						}
+						f1valf2f0.SetIamRole(f1valf2f0f9)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeAction != nil {
+						f1valf2f0.SetMergeAction(*f1valiter.AmazonRedshiftTarget.Data.MergeAction)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeClause != nil {
+						f1valf2f0.SetMergeClause(*f1valiter.AmazonRedshiftTarget.Data.MergeClause)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeWhenMatched != nil {
+						f1valf2f0.SetMergeWhenMatched(*f1valiter.AmazonRedshiftTarget.Data.MergeWhenMatched)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.MergeWhenNotMatched != nil {
+						f1valf2f0.SetMergeWhenNotMatched(*f1valiter.AmazonRedshiftTarget.Data.MergeWhenNotMatched)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.PostAction != nil {
+						f1valf2f0.SetPostAction(*f1valiter.AmazonRedshiftTarget.Data.PostAction)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.PreAction != nil {
+						f1valf2f0.SetPreAction(*f1valiter.AmazonRedshiftTarget.Data.PreAction)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SampleQuery != nil {
+						f1valf2f0.SetSampleQuery(*f1valiter.AmazonRedshiftTarget.Data.SampleQuery)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Schema != nil {
+						f1valf2f0f17 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Description != nil {
+							f1valf2f0f17.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.Schema.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Label != nil {
+							f1valf2f0f17.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.Schema.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Schema.Value != nil {
+							f1valf2f0f17.SetValue(*f1valiter.AmazonRedshiftTarget.Data.Schema.Value)
+						}
+						f1valf2f0.SetSchema(f1valf2f0f17)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SelectedColumns != nil {
+						f1valf2f0f18 := []*svcsdk.Option{}
+						for _, f1valf2f0f18iter := range f1valiter.AmazonRedshiftTarget.Data.SelectedColumns {
+							f1valf2f0f18elem := &svcsdk.Option{}
+							if f1valf2f0f18iter.Description != nil {
+								f1valf2f0f18elem.SetDescription(*f1valf2f0f18iter.Description)
+							}
+							if f1valf2f0f18iter.Label != nil {
+								f1valf2f0f18elem.SetLabel(*f1valf2f0f18iter.Label)
+							}
+							if f1valf2f0f18iter.Value != nil {
+								f1valf2f0f18elem.SetValue(*f1valf2f0f18iter.Value)
+							}
+							f1valf2f0f18 = append(f1valf2f0f18, f1valf2f0f18elem)
+						}
+						f1valf2f0.SetSelectedColumns(f1valf2f0f18)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.SourceType != nil {
+						f1valf2f0.SetSourceType(*f1valiter.AmazonRedshiftTarget.Data.SourceType)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.StagingTable != nil {
+						f1valf2f0.SetStagingTable(*f1valiter.AmazonRedshiftTarget.Data.StagingTable)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Table != nil {
+						f1valf2f0f21 := &svcsdk.Option{}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Description != nil {
+							f1valf2f0f21.SetDescription(*f1valiter.AmazonRedshiftTarget.Data.Table.Description)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Label != nil {
+							f1valf2f0f21.SetLabel(*f1valiter.AmazonRedshiftTarget.Data.Table.Label)
+						}
+						if f1valiter.AmazonRedshiftTarget.Data.Table.Value != nil {
+							f1valf2f0f21.SetValue(*f1valiter.AmazonRedshiftTarget.Data.Table.Value)
+						}
+						f1valf2f0.SetTable(f1valf2f0f21)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TablePrefix != nil {
+						f1valf2f0.SetTablePrefix(*f1valiter.AmazonRedshiftTarget.Data.TablePrefix)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TableSchema != nil {
+						f1valf2f0f23 := []*svcsdk.Option{}
+						for _, f1valf2f0f23iter := range f1valiter.AmazonRedshiftTarget.Data.TableSchema {
+							f1valf2f0f23elem := &svcsdk.Option{}
+							if f1valf2f0f23iter.Description != nil {
+								f1valf2f0f23elem.SetDescription(*f1valf2f0f23iter.Description)
+							}
+							if f1valf2f0f23iter.Label != nil {
+								f1valf2f0f23elem.SetLabel(*f1valf2f0f23iter.Label)
+							}
+							if f1valf2f0f23iter.Value != nil {
+								f1valf2f0f23elem.SetValue(*f1valf2f0f23iter.Value)
+							}
+							f1valf2f0f23 = append(f1valf2f0f23, f1valf2f0f23elem)
+						}
+						f1valf2f0.SetTableSchema(f1valf2f0f23)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.TempDir != nil {
+						f1valf2f0.SetTempDir(*f1valiter.AmazonRedshiftTarget.Data.TempDir)
+					}
+					if f1valiter.AmazonRedshiftTarget.Data.Upsert != nil {
+						f1valf2f0.SetUpsert(*f1valiter.AmazonRedshiftTarget.Data.Upsert)
+					}
+					f1valf2.SetData(f1valf2f0)
+				}
+				if f1valiter.AmazonRedshiftTarget.Inputs != nil {
+					f1valf2f1 := []*string{}
+					for _, f1valf2f1iter := range f1valiter.AmazonRedshiftTarget.Inputs {
+						var f1valf2f1elem string
+						f1valf2f1elem = *f1valf2f1iter
+						f1valf2f1 = append(f1valf2f1, &f1valf2f1elem)
+					}
+					f1valf2.SetInputs(f1valf2f1)
+				}
+				if f1valiter.AmazonRedshiftTarget.Name != nil {
+					f1valf2.SetName(*f1valiter.AmazonRedshiftTarget.Name)
+				}
+				f1val.SetAmazonRedshiftTarget(f1valf2)
+			}
+			if f1valiter.ApplyMapping != nil {
+				f1valf3 := &svcsdk.ApplyMapping{}
+				if f1valiter.ApplyMapping.Inputs != nil {
+					f1valf3f0 := []*string{}
+					for _, f1valf3f0iter := range f1valiter.ApplyMapping.Inputs {
+						var f1valf3f0elem string
+						f1valf3f0elem = *f1valf3f0iter
+						f1valf3f0 = append(f1valf3f0, &f1valf3f0elem)
+					}
+					f1valf3.SetInputs(f1valf3f0)
 				}
 				if f1valiter.ApplyMapping.Mapping != nil {
-					f1valf1f1 := []*svcsdk.Mapping{}
-					for _, f1valf1f1iter := range f1valiter.ApplyMapping.Mapping {
-						f1valf1f1elem := &svcsdk.Mapping{}
-						if f1valf1f1iter.Dropped != nil {
-							f1valf1f1elem.SetDropped(*f1valf1f1iter.Dropped)
+					f1valf3f1 := []*svcsdk.Mapping{}
+					for _, f1valf3f1iter := range f1valiter.ApplyMapping.Mapping {
+						f1valf3f1elem := &svcsdk.Mapping{}
+						if f1valf3f1iter.Dropped != nil {
+							f1valf3f1elem.SetDropped(*f1valf3f1iter.Dropped)
 						}
-						if f1valf1f1iter.FromPath != nil {
-							f1valf1f1elemf1 := []*string{}
-							for _, f1valf1f1elemf1iter := range f1valf1f1iter.FromPath {
-								var f1valf1f1elemf1elem string
-								f1valf1f1elemf1elem = *f1valf1f1elemf1iter
-								f1valf1f1elemf1 = append(f1valf1f1elemf1, &f1valf1f1elemf1elem)
+						if f1valf3f1iter.FromPath != nil {
+							f1valf3f1elemf1 := []*string{}
+							for _, f1valf3f1elemf1iter := range f1valf3f1iter.FromPath {
+								var f1valf3f1elemf1elem string
+								f1valf3f1elemf1elem = *f1valf3f1elemf1iter
+								f1valf3f1elemf1 = append(f1valf3f1elemf1, &f1valf3f1elemf1elem)
 							}
-							f1valf1f1elem.SetFromPath(f1valf1f1elemf1)
+							f1valf3f1elem.SetFromPath(f1valf3f1elemf1)
 						}
-						if f1valf1f1iter.FromType != nil {
-							f1valf1f1elem.SetFromType(*f1valf1f1iter.FromType)
+						if f1valf3f1iter.FromType != nil {
+							f1valf3f1elem.SetFromType(*f1valf3f1iter.FromType)
 						}
-						if f1valf1f1iter.ToKey != nil {
-							f1valf1f1elem.SetToKey(*f1valf1f1iter.ToKey)
+						if f1valf3f1iter.ToKey != nil {
+							f1valf3f1elem.SetToKey(*f1valf3f1iter.ToKey)
 						}
-						if f1valf1f1iter.ToType != nil {
-							f1valf1f1elem.SetToType(*f1valf1f1iter.ToType)
+						if f1valf3f1iter.ToType != nil {
+							f1valf3f1elem.SetToType(*f1valf3f1iter.ToType)
 						}
-						f1valf1f1 = append(f1valf1f1, f1valf1f1elem)
+						f1valf3f1 = append(f1valf3f1, f1valf3f1elem)
 					}
-					f1valf1.SetMapping(f1valf1f1)
+					f1valf3.SetMapping(f1valf3f1)
 				}
 				if f1valiter.ApplyMapping.Name != nil {
-					f1valf1.SetName(*f1valiter.ApplyMapping.Name)
+					f1valf3.SetName(*f1valiter.ApplyMapping.Name)
 				}
-				f1val.SetApplyMapping(f1valf1)
+				f1val.SetApplyMapping(f1valf3)
 			}
 			if f1valiter.AthenaConnectorSource != nil {
-				f1valf2 := &svcsdk.AthenaConnectorSource{}
+				f1valf4 := &svcsdk.AthenaConnectorSource{}
 				if f1valiter.AthenaConnectorSource.ConnectionName != nil {
-					f1valf2.SetConnectionName(*f1valiter.AthenaConnectorSource.ConnectionName)
+					f1valf4.SetConnectionName(*f1valiter.AthenaConnectorSource.ConnectionName)
 				}
 				if f1valiter.AthenaConnectorSource.ConnectionTable != nil {
-					f1valf2.SetConnectionTable(*f1valiter.AthenaConnectorSource.ConnectionTable)
+					f1valf4.SetConnectionTable(*f1valiter.AthenaConnectorSource.ConnectionTable)
 				}
 				if f1valiter.AthenaConnectorSource.ConnectionType != nil {
-					f1valf2.SetConnectionType(*f1valiter.AthenaConnectorSource.ConnectionType)
+					f1valf4.SetConnectionType(*f1valiter.AthenaConnectorSource.ConnectionType)
 				}
 				if f1valiter.AthenaConnectorSource.ConnectorName != nil {
-					f1valf2.SetConnectorName(*f1valiter.AthenaConnectorSource.ConnectorName)
+					f1valf4.SetConnectorName(*f1valiter.AthenaConnectorSource.ConnectorName)
 				}
 				if f1valiter.AthenaConnectorSource.Name != nil {
-					f1valf2.SetName(*f1valiter.AthenaConnectorSource.Name)
+					f1valf4.SetName(*f1valiter.AthenaConnectorSource.Name)
 				}
 				if f1valiter.AthenaConnectorSource.OutputSchemas != nil {
-					f1valf2f5 := []*svcsdk.GlueSchema{}
-					for _, f1valf2f5iter := range f1valiter.AthenaConnectorSource.OutputSchemas {
-						f1valf2f5elem := &svcsdk.GlueSchema{}
-						if f1valf2f5iter.Columns != nil {
-							f1valf2f5elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf2f5elemf0iter := range f1valf2f5iter.Columns {
-								f1valf2f5elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf2f5elemf0iter.Name != nil {
-									f1valf2f5elemf0elem.SetName(*f1valf2f5elemf0iter.Name)
+					f1valf4f5 := []*svcsdk.GlueSchema{}
+					for _, f1valf4f5iter := range f1valiter.AthenaConnectorSource.OutputSchemas {
+						f1valf4f5elem := &svcsdk.GlueSchema{}
+						if f1valf4f5iter.Columns != nil {
+							f1valf4f5elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf4f5elemf0iter := range f1valf4f5iter.Columns {
+								f1valf4f5elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf4f5elemf0iter.Name != nil {
+									f1valf4f5elemf0elem.SetName(*f1valf4f5elemf0iter.Name)
 								}
-								if f1valf2f5elemf0iter.Type != nil {
-									f1valf2f5elemf0elem.SetType(*f1valf2f5elemf0iter.Type)
+								if f1valf4f5elemf0iter.Type != nil {
+									f1valf4f5elemf0elem.SetType(*f1valf4f5elemf0iter.Type)
 								}
-								f1valf2f5elemf0 = append(f1valf2f5elemf0, f1valf2f5elemf0elem)
+								f1valf4f5elemf0 = append(f1valf4f5elemf0, f1valf4f5elemf0elem)
 							}
-							f1valf2f5elem.SetColumns(f1valf2f5elemf0)
+							f1valf4f5elem.SetColumns(f1valf4f5elemf0)
 						}
-						f1valf2f5 = append(f1valf2f5, f1valf2f5elem)
+						f1valf4f5 = append(f1valf4f5, f1valf4f5elem)
 					}
-					f1valf2.SetOutputSchemas(f1valf2f5)
+					f1valf4.SetOutputSchemas(f1valf4f5)
 				}
 				if f1valiter.AthenaConnectorSource.SchemaName != nil {
-					f1valf2.SetSchemaName(*f1valiter.AthenaConnectorSource.SchemaName)
+					f1valf4.SetSchemaName(*f1valiter.AthenaConnectorSource.SchemaName)
 				}
-				f1val.SetAthenaConnectorSource(f1valf2)
+				f1val.SetAthenaConnectorSource(f1valf4)
+			}
+			if f1valiter.CatalogDeltaSource != nil {
+				f1valf5 := &svcsdk.CatalogDeltaSource{}
+				if f1valiter.CatalogDeltaSource.AdditionalDeltaOptions != nil {
+					f1valf5f0 := map[string]*string{}
+					for f1valf5f0key, f1valf5f0valiter := range f1valiter.CatalogDeltaSource.AdditionalDeltaOptions {
+						var f1valf5f0val string
+						f1valf5f0val = *f1valf5f0valiter
+						f1valf5f0[f1valf5f0key] = &f1valf5f0val
+					}
+					f1valf5.SetAdditionalDeltaOptions(f1valf5f0)
+				}
+				if f1valiter.CatalogDeltaSource.Database != nil {
+					f1valf5.SetDatabase(*f1valiter.CatalogDeltaSource.Database)
+				}
+				if f1valiter.CatalogDeltaSource.Name != nil {
+					f1valf5.SetName(*f1valiter.CatalogDeltaSource.Name)
+				}
+				if f1valiter.CatalogDeltaSource.OutputSchemas != nil {
+					f1valf5f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf5f3iter := range f1valiter.CatalogDeltaSource.OutputSchemas {
+						f1valf5f3elem := &svcsdk.GlueSchema{}
+						if f1valf5f3iter.Columns != nil {
+							f1valf5f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf5f3elemf0iter := range f1valf5f3iter.Columns {
+								f1valf5f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf5f3elemf0iter.Name != nil {
+									f1valf5f3elemf0elem.SetName(*f1valf5f3elemf0iter.Name)
+								}
+								if f1valf5f3elemf0iter.Type != nil {
+									f1valf5f3elemf0elem.SetType(*f1valf5f3elemf0iter.Type)
+								}
+								f1valf5f3elemf0 = append(f1valf5f3elemf0, f1valf5f3elemf0elem)
+							}
+							f1valf5f3elem.SetColumns(f1valf5f3elemf0)
+						}
+						f1valf5f3 = append(f1valf5f3, f1valf5f3elem)
+					}
+					f1valf5.SetOutputSchemas(f1valf5f3)
+				}
+				if f1valiter.CatalogDeltaSource.Table != nil {
+					f1valf5.SetTable(*f1valiter.CatalogDeltaSource.Table)
+				}
+				f1val.SetCatalogDeltaSource(f1valf5)
 			}
 			if f1valiter.CatalogHudiSource != nil {
-				f1valf3 := &svcsdk.CatalogHudiSource{}
+				f1valf6 := &svcsdk.CatalogHudiSource{}
 				if f1valiter.CatalogHudiSource.AdditionalHudiOptions != nil {
-					f1valf3f0 := map[string]*string{}
-					for f1valf3f0key, f1valf3f0valiter := range f1valiter.CatalogHudiSource.AdditionalHudiOptions {
-						var f1valf3f0val string
-						f1valf3f0val = *f1valf3f0valiter
-						f1valf3f0[f1valf3f0key] = &f1valf3f0val
+					f1valf6f0 := map[string]*string{}
+					for f1valf6f0key, f1valf6f0valiter := range f1valiter.CatalogHudiSource.AdditionalHudiOptions {
+						var f1valf6f0val string
+						f1valf6f0val = *f1valf6f0valiter
+						f1valf6f0[f1valf6f0key] = &f1valf6f0val
 					}
-					f1valf3.SetAdditionalHudiOptions(f1valf3f0)
+					f1valf6.SetAdditionalHudiOptions(f1valf6f0)
 				}
 				if f1valiter.CatalogHudiSource.Database != nil {
-					f1valf3.SetDatabase(*f1valiter.CatalogHudiSource.Database)
+					f1valf6.SetDatabase(*f1valiter.CatalogHudiSource.Database)
 				}
 				if f1valiter.CatalogHudiSource.Name != nil {
-					f1valf3.SetName(*f1valiter.CatalogHudiSource.Name)
+					f1valf6.SetName(*f1valiter.CatalogHudiSource.Name)
 				}
 				if f1valiter.CatalogHudiSource.OutputSchemas != nil {
-					f1valf3f3 := []*svcsdk.GlueSchema{}
-					for _, f1valf3f3iter := range f1valiter.CatalogHudiSource.OutputSchemas {
-						f1valf3f3elem := &svcsdk.GlueSchema{}
-						if f1valf3f3iter.Columns != nil {
-							f1valf3f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf3f3elemf0iter := range f1valf3f3iter.Columns {
-								f1valf3f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf3f3elemf0iter.Name != nil {
-									f1valf3f3elemf0elem.SetName(*f1valf3f3elemf0iter.Name)
+					f1valf6f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf6f3iter := range f1valiter.CatalogHudiSource.OutputSchemas {
+						f1valf6f3elem := &svcsdk.GlueSchema{}
+						if f1valf6f3iter.Columns != nil {
+							f1valf6f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf6f3elemf0iter := range f1valf6f3iter.Columns {
+								f1valf6f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf6f3elemf0iter.Name != nil {
+									f1valf6f3elemf0elem.SetName(*f1valf6f3elemf0iter.Name)
 								}
-								if f1valf3f3elemf0iter.Type != nil {
-									f1valf3f3elemf0elem.SetType(*f1valf3f3elemf0iter.Type)
+								if f1valf6f3elemf0iter.Type != nil {
+									f1valf6f3elemf0elem.SetType(*f1valf6f3elemf0iter.Type)
 								}
-								f1valf3f3elemf0 = append(f1valf3f3elemf0, f1valf3f3elemf0elem)
+								f1valf6f3elemf0 = append(f1valf6f3elemf0, f1valf6f3elemf0elem)
 							}
-							f1valf3f3elem.SetColumns(f1valf3f3elemf0)
+							f1valf6f3elem.SetColumns(f1valf6f3elemf0)
 						}
-						f1valf3f3 = append(f1valf3f3, f1valf3f3elem)
+						f1valf6f3 = append(f1valf6f3, f1valf6f3elem)
 					}
-					f1valf3.SetOutputSchemas(f1valf3f3)
+					f1valf6.SetOutputSchemas(f1valf6f3)
 				}
 				if f1valiter.CatalogHudiSource.Table != nil {
-					f1valf3.SetTable(*f1valiter.CatalogHudiSource.Table)
+					f1valf6.SetTable(*f1valiter.CatalogHudiSource.Table)
 				}
-				f1val.SetCatalogHudiSource(f1valf3)
+				f1val.SetCatalogHudiSource(f1valf6)
 			}
 			if f1valiter.CatalogKafkaSource != nil {
-				f1valf4 := &svcsdk.CatalogKafkaSource{}
+				f1valf7 := &svcsdk.CatalogKafkaSource{}
 				if f1valiter.CatalogKafkaSource.DataPreviewOptions != nil {
-					f1valf4f0 := &svcsdk.StreamingDataPreviewOptions{}
+					f1valf7f0 := &svcsdk.StreamingDataPreviewOptions{}
 					if f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime != nil {
-						f1valf4f0.SetPollingTime(*f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime)
+						f1valf7f0.SetPollingTime(*f1valiter.CatalogKafkaSource.DataPreviewOptions.PollingTime)
 					}
 					if f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf4f0.SetRecordPollingLimit(*f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit)
+						f1valf7f0.SetRecordPollingLimit(*f1valiter.CatalogKafkaSource.DataPreviewOptions.RecordPollingLimit)
 					}
-					f1valf4.SetDataPreviewOptions(f1valf4f0)
+					f1valf7.SetDataPreviewOptions(f1valf7f0)
 				}
 				if f1valiter.CatalogKafkaSource.Database != nil {
-					f1valf4.SetDatabase(*f1valiter.CatalogKafkaSource.Database)
+					f1valf7.SetDatabase(*f1valiter.CatalogKafkaSource.Database)
 				}
 				if f1valiter.CatalogKafkaSource.DetectSchema != nil {
-					f1valf4.SetDetectSchema(*f1valiter.CatalogKafkaSource.DetectSchema)
+					f1valf7.SetDetectSchema(*f1valiter.CatalogKafkaSource.DetectSchema)
 				}
 				if f1valiter.CatalogKafkaSource.Name != nil {
-					f1valf4.SetName(*f1valiter.CatalogKafkaSource.Name)
+					f1valf7.SetName(*f1valiter.CatalogKafkaSource.Name)
 				}
 				if f1valiter.CatalogKafkaSource.StreamingOptions != nil {
-					f1valf4f4 := &svcsdk.KafkaStreamingSourceOptions{}
+					f1valf7f4 := &svcsdk.KafkaStreamingSourceOptions{}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf7f4.SetAddRecordTimestamp(*f1valiter.CatalogKafkaSource.StreamingOptions.AddRecordTimestamp)
+					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Assign != nil {
-						f1valf4f4.SetAssign(*f1valiter.CatalogKafkaSource.StreamingOptions.Assign)
+						f1valf7f4.SetAssign(*f1valiter.CatalogKafkaSource.StreamingOptions.Assign)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers != nil {
-						f1valf4f4.SetBootstrapServers(*f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers)
+						f1valf7f4.SetBootstrapServers(*f1valiter.CatalogKafkaSource.StreamingOptions.BootstrapServers)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Classification != nil {
-						f1valf4f4.SetClassification(*f1valiter.CatalogKafkaSource.StreamingOptions.Classification)
+						f1valf7f4.SetClassification(*f1valiter.CatalogKafkaSource.StreamingOptions.Classification)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName != nil {
-						f1valf4f4.SetConnectionName(*f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName)
+						f1valf7f4.SetConnectionName(*f1valiter.CatalogKafkaSource.StreamingOptions.ConnectionName)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter != nil {
-						f1valf4f4.SetDelimiter(*f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter)
+						f1valf7f4.SetDelimiter(*f1valiter.CatalogKafkaSource.StreamingOptions.Delimiter)
+					}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf7f4.SetEmitConsumerLagMetrics(*f1valiter.CatalogKafkaSource.StreamingOptions.EmitConsumerLagMetrics)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets != nil {
-						f1valf4f4.SetEndingOffsets(*f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets)
+						f1valf7f4.SetEndingOffsets(*f1valiter.CatalogKafkaSource.StreamingOptions.EndingOffsets)
+					}
+					if f1valiter.CatalogKafkaSource.StreamingOptions.IncludeHeaders != nil {
+						f1valf7f4.SetIncludeHeaders(*f1valiter.CatalogKafkaSource.StreamingOptions.IncludeHeaders)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger != nil {
-						f1valf4f4.SetMaxOffsetsPerTrigger(*f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger)
+						f1valf7f4.SetMaxOffsetsPerTrigger(*f1valiter.CatalogKafkaSource.StreamingOptions.MaxOffsetsPerTrigger)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions != nil {
-						f1valf4f4.SetMinPartitions(*f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions)
+						f1valf7f4.SetMinPartitions(*f1valiter.CatalogKafkaSource.StreamingOptions.MinPartitions)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries != nil {
-						f1valf4f4.SetNumRetries(*f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries)
+						f1valf7f4.SetNumRetries(*f1valiter.CatalogKafkaSource.StreamingOptions.NumRetries)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs != nil {
-						f1valf4f4.SetPollTimeoutMs(*f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs)
+						f1valf7f4.SetPollTimeoutMs(*f1valiter.CatalogKafkaSource.StreamingOptions.PollTimeoutMs)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf4f4.SetRetryIntervalMs(*f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs)
+						f1valf7f4.SetRetryIntervalMs(*f1valiter.CatalogKafkaSource.StreamingOptions.RetryIntervalMs)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol != nil {
-						f1valf4f4.SetSecurityProtocol(*f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol)
+						f1valf7f4.SetSecurityProtocol(*f1valiter.CatalogKafkaSource.StreamingOptions.SecurityProtocol)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets != nil {
-						f1valf4f4.SetStartingOffsets(*f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets)
+						f1valf7f4.SetStartingOffsets(*f1valiter.CatalogKafkaSource.StreamingOptions.StartingOffsets)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern != nil {
-						f1valf4f4.SetSubscribePattern(*f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern)
+						f1valf7f4.SetSubscribePattern(*f1valiter.CatalogKafkaSource.StreamingOptions.SubscribePattern)
 					}
 					if f1valiter.CatalogKafkaSource.StreamingOptions.TopicName != nil {
-						f1valf4f4.SetTopicName(*f1valiter.CatalogKafkaSource.StreamingOptions.TopicName)
+						f1valf7f4.SetTopicName(*f1valiter.CatalogKafkaSource.StreamingOptions.TopicName)
 					}
-					f1valf4.SetStreamingOptions(f1valf4f4)
+					f1valf7.SetStreamingOptions(f1valf7f4)
 				}
 				if f1valiter.CatalogKafkaSource.Table != nil {
-					f1valf4.SetTable(*f1valiter.CatalogKafkaSource.Table)
+					f1valf7.SetTable(*f1valiter.CatalogKafkaSource.Table)
 				}
 				if f1valiter.CatalogKafkaSource.WindowSize != nil {
-					f1valf4.SetWindowSize(*f1valiter.CatalogKafkaSource.WindowSize)
+					f1valf7.SetWindowSize(*f1valiter.CatalogKafkaSource.WindowSize)
 				}
-				f1val.SetCatalogKafkaSource(f1valf4)
+				f1val.SetCatalogKafkaSource(f1valf7)
 			}
 			if f1valiter.CatalogKinesisSource != nil {
-				f1valf5 := &svcsdk.CatalogKinesisSource{}
+				f1valf8 := &svcsdk.CatalogKinesisSource{}
 				if f1valiter.CatalogKinesisSource.DataPreviewOptions != nil {
-					f1valf5f0 := &svcsdk.StreamingDataPreviewOptions{}
+					f1valf8f0 := &svcsdk.StreamingDataPreviewOptions{}
 					if f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime != nil {
-						f1valf5f0.SetPollingTime(*f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime)
+						f1valf8f0.SetPollingTime(*f1valiter.CatalogKinesisSource.DataPreviewOptions.PollingTime)
 					}
 					if f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf5f0.SetRecordPollingLimit(*f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit)
+						f1valf8f0.SetRecordPollingLimit(*f1valiter.CatalogKinesisSource.DataPreviewOptions.RecordPollingLimit)
 					}
-					f1valf5.SetDataPreviewOptions(f1valf5f0)
+					f1valf8.SetDataPreviewOptions(f1valf8f0)
 				}
 				if f1valiter.CatalogKinesisSource.Database != nil {
-					f1valf5.SetDatabase(*f1valiter.CatalogKinesisSource.Database)
+					f1valf8.SetDatabase(*f1valiter.CatalogKinesisSource.Database)
 				}
 				if f1valiter.CatalogKinesisSource.DetectSchema != nil {
-					f1valf5.SetDetectSchema(*f1valiter.CatalogKinesisSource.DetectSchema)
+					f1valf8.SetDetectSchema(*f1valiter.CatalogKinesisSource.DetectSchema)
 				}
 				if f1valiter.CatalogKinesisSource.Name != nil {
-					f1valf5.SetName(*f1valiter.CatalogKinesisSource.Name)
+					f1valf8.SetName(*f1valiter.CatalogKinesisSource.Name)
 				}
 				if f1valiter.CatalogKinesisSource.StreamingOptions != nil {
-					f1valf5f4 := &svcsdk.KinesisStreamingSourceOptions{}
+					f1valf8f4 := &svcsdk.KinesisStreamingSourceOptions{}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads != nil {
-						f1valf5f4.SetAddIdleTimeBetweenReads(*f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads)
+						f1valf8f4.SetAddIdleTimeBetweenReads(*f1valiter.CatalogKinesisSource.StreamingOptions.AddIdleTimeBetweenReads)
+					}
+					if f1valiter.CatalogKinesisSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf8f4.SetAddRecordTimestamp(*f1valiter.CatalogKinesisSource.StreamingOptions.AddRecordTimestamp)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches != nil {
-						f1valf5f4.SetAvoidEmptyBatches(*f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches)
+						f1valf8f4.SetAvoidEmptyBatches(*f1valiter.CatalogKinesisSource.StreamingOptions.AvoidEmptyBatches)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.Classification != nil {
-						f1valf5f4.SetClassification(*f1valiter.CatalogKinesisSource.StreamingOptions.Classification)
+						f1valf8f4.SetClassification(*f1valiter.CatalogKinesisSource.StreamingOptions.Classification)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter != nil {
-						f1valf5f4.SetDelimiter(*f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter)
+						f1valf8f4.SetDelimiter(*f1valiter.CatalogKinesisSource.StreamingOptions.Delimiter)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval != nil {
-						f1valf5f4.SetDescribeShardInterval(*f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval)
+						f1valf8f4.SetDescribeShardInterval(*f1valiter.CatalogKinesisSource.StreamingOptions.DescribeShardInterval)
+					}
+					if f1valiter.CatalogKinesisSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf8f4.SetEmitConsumerLagMetrics(*f1valiter.CatalogKinesisSource.StreamingOptions.EmitConsumerLagMetrics)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.EndpointURL != nil {
-						f1valf5f4.SetEndpointUrl(*f1valiter.CatalogKinesisSource.StreamingOptions.EndpointURL)
+						f1valf8f4.SetEndpointUrl(*f1valiter.CatalogKinesisSource.StreamingOptions.EndpointURL)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs != nil {
-						f1valf5f4.SetIdleTimeBetweenReadsInMs(*f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs)
+						f1valf8f4.SetIdleTimeBetweenReadsInMs(*f1valiter.CatalogKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard != nil {
-						f1valf5f4.SetMaxFetchRecordsPerShard(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard)
+						f1valf8f4.SetMaxFetchRecordsPerShard(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchRecordsPerShard)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs != nil {
-						f1valf5f4.SetMaxFetchTimeInMs(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs)
+						f1valf8f4.SetMaxFetchTimeInMs(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxFetchTimeInMs)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead != nil {
-						f1valf5f4.SetMaxRecordPerRead(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead)
+						f1valf8f4.SetMaxRecordPerRead(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxRecordPerRead)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs != nil {
-						f1valf5f4.SetMaxRetryIntervalMs(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs)
+						f1valf8f4.SetMaxRetryIntervalMs(*f1valiter.CatalogKinesisSource.StreamingOptions.MaxRetryIntervalMs)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries != nil {
-						f1valf5f4.SetNumRetries(*f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries)
+						f1valf8f4.SetNumRetries(*f1valiter.CatalogKinesisSource.StreamingOptions.NumRetries)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf5f4.SetRetryIntervalMs(*f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs)
+						f1valf8f4.SetRetryIntervalMs(*f1valiter.CatalogKinesisSource.StreamingOptions.RetryIntervalMs)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RoleARN != nil {
-						f1valf5f4.SetRoleArn(*f1valiter.CatalogKinesisSource.StreamingOptions.RoleARN)
+						f1valf8f4.SetRoleArn(*f1valiter.CatalogKinesisSource.StreamingOptions.RoleARN)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName != nil {
-						f1valf5f4.SetRoleSessionName(*f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName)
+						f1valf8f4.SetRoleSessionName(*f1valiter.CatalogKinesisSource.StreamingOptions.RoleSessionName)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition != nil {
-						f1valf5f4.SetStartingPosition(*f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition)
+						f1valf8f4.SetStartingPosition(*f1valiter.CatalogKinesisSource.StreamingOptions.StartingPosition)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StreamARN != nil {
-						f1valf5f4.SetStreamArn(*f1valiter.CatalogKinesisSource.StreamingOptions.StreamARN)
+						f1valf8f4.SetStreamArn(*f1valiter.CatalogKinesisSource.StreamingOptions.StreamARN)
 					}
 					if f1valiter.CatalogKinesisSource.StreamingOptions.StreamName != nil {
-						f1valf5f4.SetStreamName(*f1valiter.CatalogKinesisSource.StreamingOptions.StreamName)
+						f1valf8f4.SetStreamName(*f1valiter.CatalogKinesisSource.StreamingOptions.StreamName)
 					}
-					f1valf5.SetStreamingOptions(f1valf5f4)
+					f1valf8.SetStreamingOptions(f1valf8f4)
 				}
 				if f1valiter.CatalogKinesisSource.Table != nil {
-					f1valf5.SetTable(*f1valiter.CatalogKinesisSource.Table)
+					f1valf8.SetTable(*f1valiter.CatalogKinesisSource.Table)
 				}
 				if f1valiter.CatalogKinesisSource.WindowSize != nil {
-					f1valf5.SetWindowSize(*f1valiter.CatalogKinesisSource.WindowSize)
+					f1valf8.SetWindowSize(*f1valiter.CatalogKinesisSource.WindowSize)
 				}
-				f1val.SetCatalogKinesisSource(f1valf5)
+				f1val.SetCatalogKinesisSource(f1valf8)
 			}
 			if f1valiter.CatalogSource != nil {
-				f1valf6 := &svcsdk.CatalogSource{}
+				f1valf9 := &svcsdk.CatalogSource{}
 				if f1valiter.CatalogSource.Database != nil {
-					f1valf6.SetDatabase(*f1valiter.CatalogSource.Database)
+					f1valf9.SetDatabase(*f1valiter.CatalogSource.Database)
 				}
 				if f1valiter.CatalogSource.Name != nil {
-					f1valf6.SetName(*f1valiter.CatalogSource.Name)
+					f1valf9.SetName(*f1valiter.CatalogSource.Name)
 				}
 				if f1valiter.CatalogSource.Table != nil {
-					f1valf6.SetTable(*f1valiter.CatalogSource.Table)
+					f1valf9.SetTable(*f1valiter.CatalogSource.Table)
 				}
-				f1val.SetCatalogSource(f1valf6)
+				f1val.SetCatalogSource(f1valf9)
 			}
 			if f1valiter.CatalogTarget != nil {
-				f1valf7 := &svcsdk.BasicCatalogTarget{}
+				f1valf10 := &svcsdk.BasicCatalogTarget{}
 				if f1valiter.CatalogTarget.Database != nil {
-					f1valf7.SetDatabase(*f1valiter.CatalogTarget.Database)
+					f1valf10.SetDatabase(*f1valiter.CatalogTarget.Database)
 				}
 				if f1valiter.CatalogTarget.Inputs != nil {
-					f1valf7f1 := []*string{}
-					for _, f1valf7f1iter := range f1valiter.CatalogTarget.Inputs {
-						var f1valf7f1elem string
-						f1valf7f1elem = *f1valf7f1iter
-						f1valf7f1 = append(f1valf7f1, &f1valf7f1elem)
+					f1valf10f1 := []*string{}
+					for _, f1valf10f1iter := range f1valiter.CatalogTarget.Inputs {
+						var f1valf10f1elem string
+						f1valf10f1elem = *f1valf10f1iter
+						f1valf10f1 = append(f1valf10f1, &f1valf10f1elem)
 					}
-					f1valf7.SetInputs(f1valf7f1)
+					f1valf10.SetInputs(f1valf10f1)
 				}
 				if f1valiter.CatalogTarget.Name != nil {
-					f1valf7.SetName(*f1valiter.CatalogTarget.Name)
+					f1valf10.SetName(*f1valiter.CatalogTarget.Name)
 				}
 				if f1valiter.CatalogTarget.Table != nil {
-					f1valf7.SetTable(*f1valiter.CatalogTarget.Table)
+					f1valf10.SetTable(*f1valiter.CatalogTarget.Table)
 				}
-				f1val.SetCatalogTarget(f1valf7)
+				f1val.SetCatalogTarget(f1valf10)
 			}
 			if f1valiter.CustomCode != nil {
-				f1valf8 := &svcsdk.CustomCode{}
+				f1valf11 := &svcsdk.CustomCode{}
 				if f1valiter.CustomCode.ClassName != nil {
-					f1valf8.SetClassName(*f1valiter.CustomCode.ClassName)
+					f1valf11.SetClassName(*f1valiter.CustomCode.ClassName)
 				}
 				if f1valiter.CustomCode.Code != nil {
-					f1valf8.SetCode(*f1valiter.CustomCode.Code)
+					f1valf11.SetCode(*f1valiter.CustomCode.Code)
 				}
 				if f1valiter.CustomCode.Inputs != nil {
-					f1valf8f2 := []*string{}
-					for _, f1valf8f2iter := range f1valiter.CustomCode.Inputs {
-						var f1valf8f2elem string
-						f1valf8f2elem = *f1valf8f2iter
-						f1valf8f2 = append(f1valf8f2, &f1valf8f2elem)
+					f1valf11f2 := []*string{}
+					for _, f1valf11f2iter := range f1valiter.CustomCode.Inputs {
+						var f1valf11f2elem string
+						f1valf11f2elem = *f1valf11f2iter
+						f1valf11f2 = append(f1valf11f2, &f1valf11f2elem)
 					}
-					f1valf8.SetInputs(f1valf8f2)
+					f1valf11.SetInputs(f1valf11f2)
 				}
 				if f1valiter.CustomCode.Name != nil {
-					f1valf8.SetName(*f1valiter.CustomCode.Name)
+					f1valf11.SetName(*f1valiter.CustomCode.Name)
 				}
 				if f1valiter.CustomCode.OutputSchemas != nil {
-					f1valf8f4 := []*svcsdk.GlueSchema{}
-					for _, f1valf8f4iter := range f1valiter.CustomCode.OutputSchemas {
-						f1valf8f4elem := &svcsdk.GlueSchema{}
-						if f1valf8f4iter.Columns != nil {
-							f1valf8f4elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf8f4elemf0iter := range f1valf8f4iter.Columns {
-								f1valf8f4elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf8f4elemf0iter.Name != nil {
-									f1valf8f4elemf0elem.SetName(*f1valf8f4elemf0iter.Name)
+					f1valf11f4 := []*svcsdk.GlueSchema{}
+					for _, f1valf11f4iter := range f1valiter.CustomCode.OutputSchemas {
+						f1valf11f4elem := &svcsdk.GlueSchema{}
+						if f1valf11f4iter.Columns != nil {
+							f1valf11f4elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf11f4elemf0iter := range f1valf11f4iter.Columns {
+								f1valf11f4elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf11f4elemf0iter.Name != nil {
+									f1valf11f4elemf0elem.SetName(*f1valf11f4elemf0iter.Name)
 								}
-								if f1valf8f4elemf0iter.Type != nil {
-									f1valf8f4elemf0elem.SetType(*f1valf8f4elemf0iter.Type)
+								if f1valf11f4elemf0iter.Type != nil {
+									f1valf11f4elemf0elem.SetType(*f1valf11f4elemf0iter.Type)
 								}
-								f1valf8f4elemf0 = append(f1valf8f4elemf0, f1valf8f4elemf0elem)
+								f1valf11f4elemf0 = append(f1valf11f4elemf0, f1valf11f4elemf0elem)
 							}
-							f1valf8f4elem.SetColumns(f1valf8f4elemf0)
+							f1valf11f4elem.SetColumns(f1valf11f4elemf0)
 						}
-						f1valf8f4 = append(f1valf8f4, f1valf8f4elem)
+						f1valf11f4 = append(f1valf11f4, f1valf11f4elem)
 					}
-					f1valf8.SetOutputSchemas(f1valf8f4)
+					f1valf11.SetOutputSchemas(f1valf11f4)
 				}
-				f1val.SetCustomCode(f1valf8)
+				f1val.SetCustomCode(f1valf11)
+			}
+			if f1valiter.DirectJDBCSource != nil {
+				f1valf12 := &svcsdk.DirectJDBCSource{}
+				if f1valiter.DirectJDBCSource.ConnectionName != nil {
+					f1valf12.SetConnectionName(*f1valiter.DirectJDBCSource.ConnectionName)
+				}
+				if f1valiter.DirectJDBCSource.ConnectionType != nil {
+					f1valf12.SetConnectionType(*f1valiter.DirectJDBCSource.ConnectionType)
+				}
+				if f1valiter.DirectJDBCSource.Database != nil {
+					f1valf12.SetDatabase(*f1valiter.DirectJDBCSource.Database)
+				}
+				if f1valiter.DirectJDBCSource.Name != nil {
+					f1valf12.SetName(*f1valiter.DirectJDBCSource.Name)
+				}
+				if f1valiter.DirectJDBCSource.RedshiftTmpDir != nil {
+					f1valf12.SetRedshiftTmpDir(*f1valiter.DirectJDBCSource.RedshiftTmpDir)
+				}
+				if f1valiter.DirectJDBCSource.Table != nil {
+					f1valf12.SetTable(*f1valiter.DirectJDBCSource.Table)
+				}
+				f1val.SetDirectJDBCSource(f1valf12)
 			}
 			if f1valiter.DirectKafkaSource != nil {
-				f1valf9 := &svcsdk.DirectKafkaSource{}
+				f1valf13 := &svcsdk.DirectKafkaSource{}
 				if f1valiter.DirectKafkaSource.DataPreviewOptions != nil {
-					f1valf9f0 := &svcsdk.StreamingDataPreviewOptions{}
+					f1valf13f0 := &svcsdk.StreamingDataPreviewOptions{}
 					if f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime != nil {
-						f1valf9f0.SetPollingTime(*f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime)
+						f1valf13f0.SetPollingTime(*f1valiter.DirectKafkaSource.DataPreviewOptions.PollingTime)
 					}
 					if f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf9f0.SetRecordPollingLimit(*f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit)
+						f1valf13f0.SetRecordPollingLimit(*f1valiter.DirectKafkaSource.DataPreviewOptions.RecordPollingLimit)
 					}
-					f1valf9.SetDataPreviewOptions(f1valf9f0)
+					f1valf13.SetDataPreviewOptions(f1valf13f0)
 				}
 				if f1valiter.DirectKafkaSource.DetectSchema != nil {
-					f1valf9.SetDetectSchema(*f1valiter.DirectKafkaSource.DetectSchema)
+					f1valf13.SetDetectSchema(*f1valiter.DirectKafkaSource.DetectSchema)
 				}
 				if f1valiter.DirectKafkaSource.Name != nil {
-					f1valf9.SetName(*f1valiter.DirectKafkaSource.Name)
+					f1valf13.SetName(*f1valiter.DirectKafkaSource.Name)
 				}
 				if f1valiter.DirectKafkaSource.StreamingOptions != nil {
-					f1valf9f3 := &svcsdk.KafkaStreamingSourceOptions{}
+					f1valf13f3 := &svcsdk.KafkaStreamingSourceOptions{}
+					if f1valiter.DirectKafkaSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf13f3.SetAddRecordTimestamp(*f1valiter.DirectKafkaSource.StreamingOptions.AddRecordTimestamp)
+					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Assign != nil {
-						f1valf9f3.SetAssign(*f1valiter.DirectKafkaSource.StreamingOptions.Assign)
+						f1valf13f3.SetAssign(*f1valiter.DirectKafkaSource.StreamingOptions.Assign)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers != nil {
-						f1valf9f3.SetBootstrapServers(*f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers)
+						f1valf13f3.SetBootstrapServers(*f1valiter.DirectKafkaSource.StreamingOptions.BootstrapServers)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Classification != nil {
-						f1valf9f3.SetClassification(*f1valiter.DirectKafkaSource.StreamingOptions.Classification)
+						f1valf13f3.SetClassification(*f1valiter.DirectKafkaSource.StreamingOptions.Classification)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName != nil {
-						f1valf9f3.SetConnectionName(*f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName)
+						f1valf13f3.SetConnectionName(*f1valiter.DirectKafkaSource.StreamingOptions.ConnectionName)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.Delimiter != nil {
-						f1valf9f3.SetDelimiter(*f1valiter.DirectKafkaSource.StreamingOptions.Delimiter)
+						f1valf13f3.SetDelimiter(*f1valiter.DirectKafkaSource.StreamingOptions.Delimiter)
+					}
+					if f1valiter.DirectKafkaSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf13f3.SetEmitConsumerLagMetrics(*f1valiter.DirectKafkaSource.StreamingOptions.EmitConsumerLagMetrics)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets != nil {
-						f1valf9f3.SetEndingOffsets(*f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets)
+						f1valf13f3.SetEndingOffsets(*f1valiter.DirectKafkaSource.StreamingOptions.EndingOffsets)
+					}
+					if f1valiter.DirectKafkaSource.StreamingOptions.IncludeHeaders != nil {
+						f1valf13f3.SetIncludeHeaders(*f1valiter.DirectKafkaSource.StreamingOptions.IncludeHeaders)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger != nil {
-						f1valf9f3.SetMaxOffsetsPerTrigger(*f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger)
+						f1valf13f3.SetMaxOffsetsPerTrigger(*f1valiter.DirectKafkaSource.StreamingOptions.MaxOffsetsPerTrigger)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions != nil {
-						f1valf9f3.SetMinPartitions(*f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions)
+						f1valf13f3.SetMinPartitions(*f1valiter.DirectKafkaSource.StreamingOptions.MinPartitions)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.NumRetries != nil {
-						f1valf9f3.SetNumRetries(*f1valiter.DirectKafkaSource.StreamingOptions.NumRetries)
+						f1valf13f3.SetNumRetries(*f1valiter.DirectKafkaSource.StreamingOptions.NumRetries)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs != nil {
-						f1valf9f3.SetPollTimeoutMs(*f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs)
+						f1valf13f3.SetPollTimeoutMs(*f1valiter.DirectKafkaSource.StreamingOptions.PollTimeoutMs)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf9f3.SetRetryIntervalMs(*f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs)
+						f1valf13f3.SetRetryIntervalMs(*f1valiter.DirectKafkaSource.StreamingOptions.RetryIntervalMs)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol != nil {
-						f1valf9f3.SetSecurityProtocol(*f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol)
+						f1valf13f3.SetSecurityProtocol(*f1valiter.DirectKafkaSource.StreamingOptions.SecurityProtocol)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets != nil {
-						f1valf9f3.SetStartingOffsets(*f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets)
+						f1valf13f3.SetStartingOffsets(*f1valiter.DirectKafkaSource.StreamingOptions.StartingOffsets)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern != nil {
-						f1valf9f3.SetSubscribePattern(*f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern)
+						f1valf13f3.SetSubscribePattern(*f1valiter.DirectKafkaSource.StreamingOptions.SubscribePattern)
 					}
 					if f1valiter.DirectKafkaSource.StreamingOptions.TopicName != nil {
-						f1valf9f3.SetTopicName(*f1valiter.DirectKafkaSource.StreamingOptions.TopicName)
+						f1valf13f3.SetTopicName(*f1valiter.DirectKafkaSource.StreamingOptions.TopicName)
 					}
-					f1valf9.SetStreamingOptions(f1valf9f3)
+					f1valf13.SetStreamingOptions(f1valf13f3)
 				}
 				if f1valiter.DirectKafkaSource.WindowSize != nil {
-					f1valf9.SetWindowSize(*f1valiter.DirectKafkaSource.WindowSize)
+					f1valf13.SetWindowSize(*f1valiter.DirectKafkaSource.WindowSize)
 				}
-				f1val.SetDirectKafkaSource(f1valf9)
+				f1val.SetDirectKafkaSource(f1valf13)
 			}
 			if f1valiter.DirectKinesisSource != nil {
-				f1valf10 := &svcsdk.DirectKinesisSource{}
+				f1valf14 := &svcsdk.DirectKinesisSource{}
 				if f1valiter.DirectKinesisSource.DataPreviewOptions != nil {
-					f1valf10f0 := &svcsdk.StreamingDataPreviewOptions{}
+					f1valf14f0 := &svcsdk.StreamingDataPreviewOptions{}
 					if f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime != nil {
-						f1valf10f0.SetPollingTime(*f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime)
+						f1valf14f0.SetPollingTime(*f1valiter.DirectKinesisSource.DataPreviewOptions.PollingTime)
 					}
 					if f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit != nil {
-						f1valf10f0.SetRecordPollingLimit(*f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit)
+						f1valf14f0.SetRecordPollingLimit(*f1valiter.DirectKinesisSource.DataPreviewOptions.RecordPollingLimit)
 					}
-					f1valf10.SetDataPreviewOptions(f1valf10f0)
+					f1valf14.SetDataPreviewOptions(f1valf14f0)
 				}
 				if f1valiter.DirectKinesisSource.DetectSchema != nil {
-					f1valf10.SetDetectSchema(*f1valiter.DirectKinesisSource.DetectSchema)
+					f1valf14.SetDetectSchema(*f1valiter.DirectKinesisSource.DetectSchema)
 				}
 				if f1valiter.DirectKinesisSource.Name != nil {
-					f1valf10.SetName(*f1valiter.DirectKinesisSource.Name)
+					f1valf14.SetName(*f1valiter.DirectKinesisSource.Name)
 				}
 				if f1valiter.DirectKinesisSource.StreamingOptions != nil {
-					f1valf10f3 := &svcsdk.KinesisStreamingSourceOptions{}
+					f1valf14f3 := &svcsdk.KinesisStreamingSourceOptions{}
 					if f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads != nil {
-						f1valf10f3.SetAddIdleTimeBetweenReads(*f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads)
+						f1valf14f3.SetAddIdleTimeBetweenReads(*f1valiter.DirectKinesisSource.StreamingOptions.AddIdleTimeBetweenReads)
+					}
+					if f1valiter.DirectKinesisSource.StreamingOptions.AddRecordTimestamp != nil {
+						f1valf14f3.SetAddRecordTimestamp(*f1valiter.DirectKinesisSource.StreamingOptions.AddRecordTimestamp)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches != nil {
-						f1valf10f3.SetAvoidEmptyBatches(*f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches)
+						f1valf14f3.SetAvoidEmptyBatches(*f1valiter.DirectKinesisSource.StreamingOptions.AvoidEmptyBatches)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.Classification != nil {
-						f1valf10f3.SetClassification(*f1valiter.DirectKinesisSource.StreamingOptions.Classification)
+						f1valf14f3.SetClassification(*f1valiter.DirectKinesisSource.StreamingOptions.Classification)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.Delimiter != nil {
-						f1valf10f3.SetDelimiter(*f1valiter.DirectKinesisSource.StreamingOptions.Delimiter)
+						f1valf14f3.SetDelimiter(*f1valiter.DirectKinesisSource.StreamingOptions.Delimiter)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval != nil {
-						f1valf10f3.SetDescribeShardInterval(*f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval)
+						f1valf14f3.SetDescribeShardInterval(*f1valiter.DirectKinesisSource.StreamingOptions.DescribeShardInterval)
+					}
+					if f1valiter.DirectKinesisSource.StreamingOptions.EmitConsumerLagMetrics != nil {
+						f1valf14f3.SetEmitConsumerLagMetrics(*f1valiter.DirectKinesisSource.StreamingOptions.EmitConsumerLagMetrics)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.EndpointURL != nil {
-						f1valf10f3.SetEndpointUrl(*f1valiter.DirectKinesisSource.StreamingOptions.EndpointURL)
+						f1valf14f3.SetEndpointUrl(*f1valiter.DirectKinesisSource.StreamingOptions.EndpointURL)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs != nil {
-						f1valf10f3.SetIdleTimeBetweenReadsInMs(*f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs)
+						f1valf14f3.SetIdleTimeBetweenReadsInMs(*f1valiter.DirectKinesisSource.StreamingOptions.IdleTimeBetweenReadsInMs)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard != nil {
-						f1valf10f3.SetMaxFetchRecordsPerShard(*f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard)
+						f1valf14f3.SetMaxFetchRecordsPerShard(*f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchRecordsPerShard)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs != nil {
-						f1valf10f3.SetMaxFetchTimeInMs(*f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs)
+						f1valf14f3.SetMaxFetchTimeInMs(*f1valiter.DirectKinesisSource.StreamingOptions.MaxFetchTimeInMs)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead != nil {
-						f1valf10f3.SetMaxRecordPerRead(*f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead)
+						f1valf14f3.SetMaxRecordPerRead(*f1valiter.DirectKinesisSource.StreamingOptions.MaxRecordPerRead)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs != nil {
-						f1valf10f3.SetMaxRetryIntervalMs(*f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs)
+						f1valf14f3.SetMaxRetryIntervalMs(*f1valiter.DirectKinesisSource.StreamingOptions.MaxRetryIntervalMs)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.NumRetries != nil {
-						f1valf10f3.SetNumRetries(*f1valiter.DirectKinesisSource.StreamingOptions.NumRetries)
+						f1valf14f3.SetNumRetries(*f1valiter.DirectKinesisSource.StreamingOptions.NumRetries)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs != nil {
-						f1valf10f3.SetRetryIntervalMs(*f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs)
+						f1valf14f3.SetRetryIntervalMs(*f1valiter.DirectKinesisSource.StreamingOptions.RetryIntervalMs)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RoleARN != nil {
-						f1valf10f3.SetRoleArn(*f1valiter.DirectKinesisSource.StreamingOptions.RoleARN)
+						f1valf14f3.SetRoleArn(*f1valiter.DirectKinesisSource.StreamingOptions.RoleARN)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName != nil {
-						f1valf10f3.SetRoleSessionName(*f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName)
+						f1valf14f3.SetRoleSessionName(*f1valiter.DirectKinesisSource.StreamingOptions.RoleSessionName)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition != nil {
-						f1valf10f3.SetStartingPosition(*f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition)
+						f1valf14f3.SetStartingPosition(*f1valiter.DirectKinesisSource.StreamingOptions.StartingPosition)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StreamARN != nil {
-						f1valf10f3.SetStreamArn(*f1valiter.DirectKinesisSource.StreamingOptions.StreamARN)
+						f1valf14f3.SetStreamArn(*f1valiter.DirectKinesisSource.StreamingOptions.StreamARN)
 					}
 					if f1valiter.DirectKinesisSource.StreamingOptions.StreamName != nil {
-						f1valf10f3.SetStreamName(*f1valiter.DirectKinesisSource.StreamingOptions.StreamName)
+						f1valf14f3.SetStreamName(*f1valiter.DirectKinesisSource.StreamingOptions.StreamName)
 					}
-					f1valf10.SetStreamingOptions(f1valf10f3)
+					f1valf14.SetStreamingOptions(f1valf14f3)
 				}
 				if f1valiter.DirectKinesisSource.WindowSize != nil {
-					f1valf10.SetWindowSize(*f1valiter.DirectKinesisSource.WindowSize)
+					f1valf14.SetWindowSize(*f1valiter.DirectKinesisSource.WindowSize)
 				}
-				f1val.SetDirectKinesisSource(f1valf10)
+				f1val.SetDirectKinesisSource(f1valf14)
 			}
 			if f1valiter.DropDuplicates != nil {
-				f1valf11 := &svcsdk.DropDuplicates{}
+				f1valf15 := &svcsdk.DropDuplicates{}
 				if f1valiter.DropDuplicates.Columns != nil {
-					f1valf11f0 := [][]*string{}
-					for _, f1valf11f0iter := range f1valiter.DropDuplicates.Columns {
-						f1valf11f0elem := []*string{}
-						for _, f1valf11f0elemiter := range f1valf11f0iter {
-							var f1valf11f0elemelem string
-							f1valf11f0elemelem = *f1valf11f0elemiter
-							f1valf11f0elem = append(f1valf11f0elem, &f1valf11f0elemelem)
+					f1valf15f0 := [][]*string{}
+					for _, f1valf15f0iter := range f1valiter.DropDuplicates.Columns {
+						f1valf15f0elem := []*string{}
+						for _, f1valf15f0elemiter := range f1valf15f0iter {
+							var f1valf15f0elemelem string
+							f1valf15f0elemelem = *f1valf15f0elemiter
+							f1valf15f0elem = append(f1valf15f0elem, &f1valf15f0elemelem)
 						}
-						f1valf11f0 = append(f1valf11f0, f1valf11f0elem)
+						f1valf15f0 = append(f1valf15f0, f1valf15f0elem)
 					}
-					f1valf11.SetColumns(f1valf11f0)
+					f1valf15.SetColumns(f1valf15f0)
 				}
 				if f1valiter.DropDuplicates.Inputs != nil {
-					f1valf11f1 := []*string{}
-					for _, f1valf11f1iter := range f1valiter.DropDuplicates.Inputs {
-						var f1valf11f1elem string
-						f1valf11f1elem = *f1valf11f1iter
-						f1valf11f1 = append(f1valf11f1, &f1valf11f1elem)
+					f1valf15f1 := []*string{}
+					for _, f1valf15f1iter := range f1valiter.DropDuplicates.Inputs {
+						var f1valf15f1elem string
+						f1valf15f1elem = *f1valf15f1iter
+						f1valf15f1 = append(f1valf15f1, &f1valf15f1elem)
 					}
-					f1valf11.SetInputs(f1valf11f1)
+					f1valf15.SetInputs(f1valf15f1)
 				}
 				if f1valiter.DropDuplicates.Name != nil {
-					f1valf11.SetName(*f1valiter.DropDuplicates.Name)
+					f1valf15.SetName(*f1valiter.DropDuplicates.Name)
 				}
-				f1val.SetDropDuplicates(f1valf11)
+				f1val.SetDropDuplicates(f1valf15)
 			}
 			if f1valiter.DropFields != nil {
-				f1valf12 := &svcsdk.DropFields{}
+				f1valf16 := &svcsdk.DropFields{}
 				if f1valiter.DropFields.Inputs != nil {
-					f1valf12f0 := []*string{}
-					for _, f1valf12f0iter := range f1valiter.DropFields.Inputs {
-						var f1valf12f0elem string
-						f1valf12f0elem = *f1valf12f0iter
-						f1valf12f0 = append(f1valf12f0, &f1valf12f0elem)
-					}
-					f1valf12.SetInputs(f1valf12f0)
-				}
-				if f1valiter.DropFields.Name != nil {
-					f1valf12.SetName(*f1valiter.DropFields.Name)
-				}
-				if f1valiter.DropFields.Paths != nil {
-					f1valf12f2 := [][]*string{}
-					for _, f1valf12f2iter := range f1valiter.DropFields.Paths {
-						f1valf12f2elem := []*string{}
-						for _, f1valf12f2elemiter := range f1valf12f2iter {
-							var f1valf12f2elemelem string
-							f1valf12f2elemelem = *f1valf12f2elemiter
-							f1valf12f2elem = append(f1valf12f2elem, &f1valf12f2elemelem)
-						}
-						f1valf12f2 = append(f1valf12f2, f1valf12f2elem)
-					}
-					f1valf12.SetPaths(f1valf12f2)
-				}
-				f1val.SetDropFields(f1valf12)
-			}
-			if f1valiter.DropNullFields != nil {
-				f1valf13 := &svcsdk.DropNullFields{}
-				if f1valiter.DropNullFields.Inputs != nil {
-					f1valf13f0 := []*string{}
-					for _, f1valf13f0iter := range f1valiter.DropNullFields.Inputs {
-						var f1valf13f0elem string
-						f1valf13f0elem = *f1valf13f0iter
-						f1valf13f0 = append(f1valf13f0, &f1valf13f0elem)
-					}
-					f1valf13.SetInputs(f1valf13f0)
-				}
-				if f1valiter.DropNullFields.Name != nil {
-					f1valf13.SetName(*f1valiter.DropNullFields.Name)
-				}
-				if f1valiter.DropNullFields.NullCheckBoxList != nil {
-					f1valf13f2 := &svcsdk.NullCheckBoxList{}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsEmpty != nil {
-						f1valf13f2.SetIsEmpty(*f1valiter.DropNullFields.NullCheckBoxList.IsEmpty)
-					}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsNegOne != nil {
-						f1valf13f2.SetIsNegOne(*f1valiter.DropNullFields.NullCheckBoxList.IsNegOne)
-					}
-					if f1valiter.DropNullFields.NullCheckBoxList.IsNullString != nil {
-						f1valf13f2.SetIsNullString(*f1valiter.DropNullFields.NullCheckBoxList.IsNullString)
-					}
-					f1valf13.SetNullCheckBoxList(f1valf13f2)
-				}
-				if f1valiter.DropNullFields.NullTextList != nil {
-					f1valf13f3 := []*svcsdk.NullValueField{}
-					for _, f1valf13f3iter := range f1valiter.DropNullFields.NullTextList {
-						f1valf13f3elem := &svcsdk.NullValueField{}
-						if f1valf13f3iter.Datatype != nil {
-							f1valf13f3elemf0 := &svcsdk.Datatype{}
-							if f1valf13f3iter.Datatype.ID != nil {
-								f1valf13f3elemf0.SetId(*f1valf13f3iter.Datatype.ID)
-							}
-							if f1valf13f3iter.Datatype.Label != nil {
-								f1valf13f3elemf0.SetLabel(*f1valf13f3iter.Datatype.Label)
-							}
-							f1valf13f3elem.SetDatatype(f1valf13f3elemf0)
-						}
-						if f1valf13f3iter.Value != nil {
-							f1valf13f3elem.SetValue(*f1valf13f3iter.Value)
-						}
-						f1valf13f3 = append(f1valf13f3, f1valf13f3elem)
-					}
-					f1valf13.SetNullTextList(f1valf13f3)
-				}
-				f1val.SetDropNullFields(f1valf13)
-			}
-			if f1valiter.DynamicTransform != nil {
-				f1valf14 := &svcsdk.DynamicTransform{}
-				if f1valiter.DynamicTransform.FunctionName != nil {
-					f1valf14.SetFunctionName(*f1valiter.DynamicTransform.FunctionName)
-				}
-				if f1valiter.DynamicTransform.Inputs != nil {
-					f1valf14f1 := []*string{}
-					for _, f1valf14f1iter := range f1valiter.DynamicTransform.Inputs {
-						var f1valf14f1elem string
-						f1valf14f1elem = *f1valf14f1iter
-						f1valf14f1 = append(f1valf14f1, &f1valf14f1elem)
-					}
-					f1valf14.SetInputs(f1valf14f1)
-				}
-				if f1valiter.DynamicTransform.Name != nil {
-					f1valf14.SetName(*f1valiter.DynamicTransform.Name)
-				}
-				if f1valiter.DynamicTransform.Parameters != nil {
-					f1valf14f3 := []*svcsdk.TransformConfigParameter{}
-					for _, f1valf14f3iter := range f1valiter.DynamicTransform.Parameters {
-						f1valf14f3elem := &svcsdk.TransformConfigParameter{}
-						if f1valf14f3iter.IsOptional != nil {
-							f1valf14f3elem.SetIsOptional(*f1valf14f3iter.IsOptional)
-						}
-						if f1valf14f3iter.ListType != nil {
-							f1valf14f3elem.SetListType(*f1valf14f3iter.ListType)
-						}
-						if f1valf14f3iter.Name != nil {
-							f1valf14f3elem.SetName(*f1valf14f3iter.Name)
-						}
-						if f1valf14f3iter.Type != nil {
-							f1valf14f3elem.SetType(*f1valf14f3iter.Type)
-						}
-						if f1valf14f3iter.ValidationMessage != nil {
-							f1valf14f3elem.SetValidationMessage(*f1valf14f3iter.ValidationMessage)
-						}
-						if f1valf14f3iter.ValidationRule != nil {
-							f1valf14f3elem.SetValidationRule(*f1valf14f3iter.ValidationRule)
-						}
-						if f1valf14f3iter.Value != nil {
-							f1valf14f3elemf6 := []*string{}
-							for _, f1valf14f3elemf6iter := range f1valf14f3iter.Value {
-								var f1valf14f3elemf6elem string
-								f1valf14f3elemf6elem = *f1valf14f3elemf6iter
-								f1valf14f3elemf6 = append(f1valf14f3elemf6, &f1valf14f3elemf6elem)
-							}
-							f1valf14f3elem.SetValue(f1valf14f3elemf6)
-						}
-						f1valf14f3 = append(f1valf14f3, f1valf14f3elem)
-					}
-					f1valf14.SetParameters(f1valf14f3)
-				}
-				if f1valiter.DynamicTransform.Path != nil {
-					f1valf14.SetPath(*f1valiter.DynamicTransform.Path)
-				}
-				if f1valiter.DynamicTransform.TransformName != nil {
-					f1valf14.SetTransformName(*f1valiter.DynamicTransform.TransformName)
-				}
-				if f1valiter.DynamicTransform.Version != nil {
-					f1valf14.SetVersion(*f1valiter.DynamicTransform.Version)
-				}
-				f1val.SetDynamicTransform(f1valf14)
-			}
-			if f1valiter.DynamoDBCatalogSource != nil {
-				f1valf15 := &svcsdk.DynamoDBCatalogSource{}
-				if f1valiter.DynamoDBCatalogSource.Database != nil {
-					f1valf15.SetDatabase(*f1valiter.DynamoDBCatalogSource.Database)
-				}
-				if f1valiter.DynamoDBCatalogSource.Name != nil {
-					f1valf15.SetName(*f1valiter.DynamoDBCatalogSource.Name)
-				}
-				if f1valiter.DynamoDBCatalogSource.Table != nil {
-					f1valf15.SetTable(*f1valiter.DynamoDBCatalogSource.Table)
-				}
-				f1val.SetDynamoDBCatalogSource(f1valf15)
-			}
-			if f1valiter.EvaluateDataQuality != nil {
-				f1valf16 := &svcsdk.EvaluateDataQuality{}
-				if f1valiter.EvaluateDataQuality.Inputs != nil {
 					f1valf16f0 := []*string{}
-					for _, f1valf16f0iter := range f1valiter.EvaluateDataQuality.Inputs {
+					for _, f1valf16f0iter := range f1valiter.DropFields.Inputs {
 						var f1valf16f0elem string
 						f1valf16f0elem = *f1valf16f0iter
 						f1valf16f0 = append(f1valf16f0, &f1valf16f0elem)
 					}
 					f1valf16.SetInputs(f1valf16f0)
 				}
-				if f1valiter.EvaluateDataQuality.Name != nil {
-					f1valf16.SetName(*f1valiter.EvaluateDataQuality.Name)
+				if f1valiter.DropFields.Name != nil {
+					f1valf16.SetName(*f1valiter.DropFields.Name)
 				}
-				if f1valiter.EvaluateDataQuality.Output != nil {
-					f1valf16.SetOutput(*f1valiter.EvaluateDataQuality.Output)
-				}
-				if f1valiter.EvaluateDataQuality.PublishingOptions != nil {
-					f1valf16f3 := &svcsdk.DQResultsPublishingOptions{}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled != nil {
-						f1valf16f3.SetCloudWatchMetricsEnabled(*f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled)
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext != nil {
-						f1valf16f3.SetEvaluationContext(*f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext)
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled != nil {
-						f1valf16f3.SetResultsPublishingEnabled(*f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled)
-					}
-					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix != nil {
-						f1valf16f3.SetResultsS3Prefix(*f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix)
-					}
-					f1valf16.SetPublishingOptions(f1valf16f3)
-				}
-				if f1valiter.EvaluateDataQuality.Ruleset != nil {
-					f1valf16.SetRuleset(*f1valiter.EvaluateDataQuality.Ruleset)
-				}
-				if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions != nil {
-					f1valf16f5 := &svcsdk.DQStopJobOnFailureOptions{}
-					if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
-						f1valf16f5.SetStopJobOnFailureTiming(*f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming)
-					}
-					f1valf16.SetStopJobOnFailureOptions(f1valf16f5)
-				}
-				f1val.SetEvaluateDataQuality(f1valf16)
-			}
-			if f1valiter.FillMissingValues != nil {
-				f1valf17 := &svcsdk.FillMissingValues{}
-				if f1valiter.FillMissingValues.FilledPath != nil {
-					f1valf17.SetFilledPath(*f1valiter.FillMissingValues.FilledPath)
-				}
-				if f1valiter.FillMissingValues.ImputedPath != nil {
-					f1valf17.SetImputedPath(*f1valiter.FillMissingValues.ImputedPath)
-				}
-				if f1valiter.FillMissingValues.Inputs != nil {
-					f1valf17f2 := []*string{}
-					for _, f1valf17f2iter := range f1valiter.FillMissingValues.Inputs {
-						var f1valf17f2elem string
-						f1valf17f2elem = *f1valf17f2iter
-						f1valf17f2 = append(f1valf17f2, &f1valf17f2elem)
-					}
-					f1valf17.SetInputs(f1valf17f2)
-				}
-				if f1valiter.FillMissingValues.Name != nil {
-					f1valf17.SetName(*f1valiter.FillMissingValues.Name)
-				}
-				f1val.SetFillMissingValues(f1valf17)
-			}
-			if f1valiter.Filter != nil {
-				f1valf18 := &svcsdk.Filter{}
-				if f1valiter.Filter.Filters != nil {
-					f1valf18f0 := []*svcsdk.FilterExpression{}
-					for _, f1valf18f0iter := range f1valiter.Filter.Filters {
-						f1valf18f0elem := &svcsdk.FilterExpression{}
-						if f1valf18f0iter.Negated != nil {
-							f1valf18f0elem.SetNegated(*f1valf18f0iter.Negated)
+				if f1valiter.DropFields.Paths != nil {
+					f1valf16f2 := [][]*string{}
+					for _, f1valf16f2iter := range f1valiter.DropFields.Paths {
+						f1valf16f2elem := []*string{}
+						for _, f1valf16f2elemiter := range f1valf16f2iter {
+							var f1valf16f2elemelem string
+							f1valf16f2elemelem = *f1valf16f2elemiter
+							f1valf16f2elem = append(f1valf16f2elem, &f1valf16f2elemelem)
 						}
-						if f1valf18f0iter.Operation != nil {
-							f1valf18f0elem.SetOperation(*f1valf18f0iter.Operation)
-						}
-						if f1valf18f0iter.Values != nil {
-							f1valf18f0elemf2 := []*svcsdk.FilterValue{}
-							for _, f1valf18f0elemf2iter := range f1valf18f0iter.Values {
-								f1valf18f0elemf2elem := &svcsdk.FilterValue{}
-								if f1valf18f0elemf2iter.Type != nil {
-									f1valf18f0elemf2elem.SetType(*f1valf18f0elemf2iter.Type)
-								}
-								if f1valf18f0elemf2iter.Value != nil {
-									f1valf18f0elemf2elemf1 := []*string{}
-									for _, f1valf18f0elemf2elemf1iter := range f1valf18f0elemf2iter.Value {
-										var f1valf18f0elemf2elemf1elem string
-										f1valf18f0elemf2elemf1elem = *f1valf18f0elemf2elemf1iter
-										f1valf18f0elemf2elemf1 = append(f1valf18f0elemf2elemf1, &f1valf18f0elemf2elemf1elem)
-									}
-									f1valf18f0elemf2elem.SetValue(f1valf18f0elemf2elemf1)
-								}
-								f1valf18f0elemf2 = append(f1valf18f0elemf2, f1valf18f0elemf2elem)
+						f1valf16f2 = append(f1valf16f2, f1valf16f2elem)
+					}
+					f1valf16.SetPaths(f1valf16f2)
+				}
+				f1val.SetDropFields(f1valf16)
+			}
+			if f1valiter.DropNullFields != nil {
+				f1valf17 := &svcsdk.DropNullFields{}
+				if f1valiter.DropNullFields.Inputs != nil {
+					f1valf17f0 := []*string{}
+					for _, f1valf17f0iter := range f1valiter.DropNullFields.Inputs {
+						var f1valf17f0elem string
+						f1valf17f0elem = *f1valf17f0iter
+						f1valf17f0 = append(f1valf17f0, &f1valf17f0elem)
+					}
+					f1valf17.SetInputs(f1valf17f0)
+				}
+				if f1valiter.DropNullFields.Name != nil {
+					f1valf17.SetName(*f1valiter.DropNullFields.Name)
+				}
+				if f1valiter.DropNullFields.NullCheckBoxList != nil {
+					f1valf17f2 := &svcsdk.NullCheckBoxList{}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsEmpty != nil {
+						f1valf17f2.SetIsEmpty(*f1valiter.DropNullFields.NullCheckBoxList.IsEmpty)
+					}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsNegOne != nil {
+						f1valf17f2.SetIsNegOne(*f1valiter.DropNullFields.NullCheckBoxList.IsNegOne)
+					}
+					if f1valiter.DropNullFields.NullCheckBoxList.IsNullString != nil {
+						f1valf17f2.SetIsNullString(*f1valiter.DropNullFields.NullCheckBoxList.IsNullString)
+					}
+					f1valf17.SetNullCheckBoxList(f1valf17f2)
+				}
+				if f1valiter.DropNullFields.NullTextList != nil {
+					f1valf17f3 := []*svcsdk.NullValueField{}
+					for _, f1valf17f3iter := range f1valiter.DropNullFields.NullTextList {
+						f1valf17f3elem := &svcsdk.NullValueField{}
+						if f1valf17f3iter.Datatype != nil {
+							f1valf17f3elemf0 := &svcsdk.Datatype{}
+							if f1valf17f3iter.Datatype.ID != nil {
+								f1valf17f3elemf0.SetId(*f1valf17f3iter.Datatype.ID)
 							}
-							f1valf18f0elem.SetValues(f1valf18f0elemf2)
+							if f1valf17f3iter.Datatype.Label != nil {
+								f1valf17f3elemf0.SetLabel(*f1valf17f3iter.Datatype.Label)
+							}
+							f1valf17f3elem.SetDatatype(f1valf17f3elemf0)
 						}
-						f1valf18f0 = append(f1valf18f0, f1valf18f0elem)
+						if f1valf17f3iter.Value != nil {
+							f1valf17f3elem.SetValue(*f1valf17f3iter.Value)
+						}
+						f1valf17f3 = append(f1valf17f3, f1valf17f3elem)
 					}
-					f1valf18.SetFilters(f1valf18f0)
+					f1valf17.SetNullTextList(f1valf17f3)
 				}
-				if f1valiter.Filter.Inputs != nil {
+				f1val.SetDropNullFields(f1valf17)
+			}
+			if f1valiter.DynamicTransform != nil {
+				f1valf18 := &svcsdk.DynamicTransform{}
+				if f1valiter.DynamicTransform.FunctionName != nil {
+					f1valf18.SetFunctionName(*f1valiter.DynamicTransform.FunctionName)
+				}
+				if f1valiter.DynamicTransform.Inputs != nil {
 					f1valf18f1 := []*string{}
-					for _, f1valf18f1iter := range f1valiter.Filter.Inputs {
+					for _, f1valf18f1iter := range f1valiter.DynamicTransform.Inputs {
 						var f1valf18f1elem string
 						f1valf18f1elem = *f1valf18f1iter
 						f1valf18f1 = append(f1valf18f1, &f1valf18f1elem)
 					}
 					f1valf18.SetInputs(f1valf18f1)
 				}
-				if f1valiter.Filter.LogicalOperator != nil {
-					f1valf18.SetLogicalOperator(*f1valiter.Filter.LogicalOperator)
+				if f1valiter.DynamicTransform.Name != nil {
+					f1valf18.SetName(*f1valiter.DynamicTransform.Name)
 				}
-				if f1valiter.Filter.Name != nil {
-					f1valf18.SetName(*f1valiter.Filter.Name)
-				}
-				f1val.SetFilter(f1valf18)
-			}
-			if f1valiter.GovernedCatalogSource != nil {
-				f1valf19 := &svcsdk.GovernedCatalogSource{}
-				if f1valiter.GovernedCatalogSource.AdditionalOptions != nil {
-					f1valf19f0 := &svcsdk.S3SourceAdditionalOptions{}
-					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf19f0.SetBoundedFiles(*f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles)
-					}
-					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize != nil {
-						f1valf19f0.SetBoundedSize(*f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize)
-					}
-					f1valf19.SetAdditionalOptions(f1valf19f0)
-				}
-				if f1valiter.GovernedCatalogSource.Database != nil {
-					f1valf19.SetDatabase(*f1valiter.GovernedCatalogSource.Database)
-				}
-				if f1valiter.GovernedCatalogSource.Name != nil {
-					f1valf19.SetName(*f1valiter.GovernedCatalogSource.Name)
-				}
-				if f1valiter.GovernedCatalogSource.PartitionPredicate != nil {
-					f1valf19.SetPartitionPredicate(*f1valiter.GovernedCatalogSource.PartitionPredicate)
-				}
-				if f1valiter.GovernedCatalogSource.Table != nil {
-					f1valf19.SetTable(*f1valiter.GovernedCatalogSource.Table)
-				}
-				f1val.SetGovernedCatalogSource(f1valf19)
-			}
-			if f1valiter.GovernedCatalogTarget != nil {
-				f1valf20 := &svcsdk.GovernedCatalogTarget{}
-				if f1valiter.GovernedCatalogTarget.Database != nil {
-					f1valf20.SetDatabase(*f1valiter.GovernedCatalogTarget.Database)
-				}
-				if f1valiter.GovernedCatalogTarget.Inputs != nil {
-					f1valf20f1 := []*string{}
-					for _, f1valf20f1iter := range f1valiter.GovernedCatalogTarget.Inputs {
-						var f1valf20f1elem string
-						f1valf20f1elem = *f1valf20f1iter
-						f1valf20f1 = append(f1valf20f1, &f1valf20f1elem)
-					}
-					f1valf20.SetInputs(f1valf20f1)
-				}
-				if f1valiter.GovernedCatalogTarget.Name != nil {
-					f1valf20.SetName(*f1valiter.GovernedCatalogTarget.Name)
-				}
-				if f1valiter.GovernedCatalogTarget.PartitionKeys != nil {
-					f1valf20f3 := [][]*string{}
-					for _, f1valf20f3iter := range f1valiter.GovernedCatalogTarget.PartitionKeys {
-						f1valf20f3elem := []*string{}
-						for _, f1valf20f3elemiter := range f1valf20f3iter {
-							var f1valf20f3elemelem string
-							f1valf20f3elemelem = *f1valf20f3elemiter
-							f1valf20f3elem = append(f1valf20f3elem, &f1valf20f3elemelem)
-						}
-						f1valf20f3 = append(f1valf20f3, f1valf20f3elem)
-					}
-					f1valf20.SetPartitionKeys(f1valf20f3)
-				}
-				if f1valiter.GovernedCatalogTarget.SchemaChangePolicy != nil {
-					f1valf20f4 := &svcsdk.CatalogSchemaChangePolicy{}
-					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf20f4.SetEnableUpdateCatalog(*f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf20f4.SetUpdateBehavior(*f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf20.SetSchemaChangePolicy(f1valf20f4)
-				}
-				if f1valiter.GovernedCatalogTarget.Table != nil {
-					f1valf20.SetTable(*f1valiter.GovernedCatalogTarget.Table)
-				}
-				f1val.SetGovernedCatalogTarget(f1valf20)
-			}
-			if f1valiter.JDBCConnectorSource != nil {
-				f1valf21 := &svcsdk.JDBCConnectorSource{}
-				if f1valiter.JDBCConnectorSource.AdditionalOptions != nil {
-					f1valf21f0 := &svcsdk.JDBCConnectorOptions{}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping != nil {
-						f1valf21f0f0 := map[string]*string{}
-						for f1valf21f0f0key, f1valf21f0f0valiter := range f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping {
-							var f1valf21f0f0val string
-							f1valf21f0f0val = *f1valf21f0f0valiter
-							f1valf21f0f0[f1valf21f0f0key] = &f1valf21f0f0val
-						}
-						f1valf21f0.SetDataTypeMapping(f1valf21f0f0)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate != nil {
-						f1valf21f0.SetFilterPredicate(*f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys != nil {
-						f1valf21f0f2 := []*string{}
-						for _, f1valf21f0f2iter := range f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys {
-							var f1valf21f0f2elem string
-							f1valf21f0f2elem = *f1valf21f0f2iter
-							f1valf21f0f2 = append(f1valf21f0f2, &f1valf21f0f2elem)
-						}
-						f1valf21f0.SetJobBookmarkKeys(f1valf21f0f2)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder != nil {
-						f1valf21f0.SetJobBookmarkKeysSortOrder(*f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound != nil {
-						f1valf21f0.SetLowerBound(*f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions != nil {
-						f1valf21f0.SetNumPartitions(*f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn != nil {
-						f1valf21f0.SetPartitionColumn(*f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn)
-					}
-					if f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound != nil {
-						f1valf21f0.SetUpperBound(*f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound)
-					}
-					f1valf21.SetAdditionalOptions(f1valf21f0)
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionName != nil {
-					f1valf21.SetConnectionName(*f1valiter.JDBCConnectorSource.ConnectionName)
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionTable != nil {
-					f1valf21.SetConnectionTable(*f1valiter.JDBCConnectorSource.ConnectionTable)
-				}
-				if f1valiter.JDBCConnectorSource.ConnectionType != nil {
-					f1valf21.SetConnectionType(*f1valiter.JDBCConnectorSource.ConnectionType)
-				}
-				if f1valiter.JDBCConnectorSource.ConnectorName != nil {
-					f1valf21.SetConnectorName(*f1valiter.JDBCConnectorSource.ConnectorName)
-				}
-				if f1valiter.JDBCConnectorSource.Name != nil {
-					f1valf21.SetName(*f1valiter.JDBCConnectorSource.Name)
-				}
-				if f1valiter.JDBCConnectorSource.OutputSchemas != nil {
-					f1valf21f6 := []*svcsdk.GlueSchema{}
-					for _, f1valf21f6iter := range f1valiter.JDBCConnectorSource.OutputSchemas {
-						f1valf21f6elem := &svcsdk.GlueSchema{}
-						if f1valf21f6iter.Columns != nil {
-							f1valf21f6elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf21f6elemf0iter := range f1valf21f6iter.Columns {
-								f1valf21f6elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf21f6elemf0iter.Name != nil {
-									f1valf21f6elemf0elem.SetName(*f1valf21f6elemf0iter.Name)
+				if f1valiter.DynamicTransform.OutputSchemas != nil {
+					f1valf18f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf18f3iter := range f1valiter.DynamicTransform.OutputSchemas {
+						f1valf18f3elem := &svcsdk.GlueSchema{}
+						if f1valf18f3iter.Columns != nil {
+							f1valf18f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf18f3elemf0iter := range f1valf18f3iter.Columns {
+								f1valf18f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf18f3elemf0iter.Name != nil {
+									f1valf18f3elemf0elem.SetName(*f1valf18f3elemf0iter.Name)
 								}
-								if f1valf21f6elemf0iter.Type != nil {
-									f1valf21f6elemf0elem.SetType(*f1valf21f6elemf0iter.Type)
+								if f1valf18f3elemf0iter.Type != nil {
+									f1valf18f3elemf0elem.SetType(*f1valf18f3elemf0iter.Type)
 								}
-								f1valf21f6elemf0 = append(f1valf21f6elemf0, f1valf21f6elemf0elem)
+								f1valf18f3elemf0 = append(f1valf18f3elemf0, f1valf18f3elemf0elem)
 							}
-							f1valf21f6elem.SetColumns(f1valf21f6elemf0)
+							f1valf18f3elem.SetColumns(f1valf18f3elemf0)
 						}
-						f1valf21f6 = append(f1valf21f6, f1valf21f6elem)
+						f1valf18f3 = append(f1valf18f3, f1valf18f3elem)
 					}
-					f1valf21.SetOutputSchemas(f1valf21f6)
+					f1valf18.SetOutputSchemas(f1valf18f3)
 				}
-				if f1valiter.JDBCConnectorSource.Query != nil {
-					f1valf21.SetQuery(*f1valiter.JDBCConnectorSource.Query)
-				}
-				f1val.SetJDBCConnectorSource(f1valf21)
-			}
-			if f1valiter.JDBCConnectorTarget != nil {
-				f1valf22 := &svcsdk.JDBCConnectorTarget{}
-				if f1valiter.JDBCConnectorTarget.AdditionalOptions != nil {
-					f1valf22f0 := map[string]*string{}
-					for f1valf22f0key, f1valf22f0valiter := range f1valiter.JDBCConnectorTarget.AdditionalOptions {
-						var f1valf22f0val string
-						f1valf22f0val = *f1valf22f0valiter
-						f1valf22f0[f1valf22f0key] = &f1valf22f0val
-					}
-					f1valf22.SetAdditionalOptions(f1valf22f0)
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionName != nil {
-					f1valf22.SetConnectionName(*f1valiter.JDBCConnectorTarget.ConnectionName)
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionTable != nil {
-					f1valf22.SetConnectionTable(*f1valiter.JDBCConnectorTarget.ConnectionTable)
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectionType != nil {
-					f1valf22.SetConnectionType(*f1valiter.JDBCConnectorTarget.ConnectionType)
-				}
-				if f1valiter.JDBCConnectorTarget.ConnectorName != nil {
-					f1valf22.SetConnectorName(*f1valiter.JDBCConnectorTarget.ConnectorName)
-				}
-				if f1valiter.JDBCConnectorTarget.Inputs != nil {
-					f1valf22f5 := []*string{}
-					for _, f1valf22f5iter := range f1valiter.JDBCConnectorTarget.Inputs {
-						var f1valf22f5elem string
-						f1valf22f5elem = *f1valf22f5iter
-						f1valf22f5 = append(f1valf22f5, &f1valf22f5elem)
-					}
-					f1valf22.SetInputs(f1valf22f5)
-				}
-				if f1valiter.JDBCConnectorTarget.Name != nil {
-					f1valf22.SetName(*f1valiter.JDBCConnectorTarget.Name)
-				}
-				if f1valiter.JDBCConnectorTarget.OutputSchemas != nil {
-					f1valf22f7 := []*svcsdk.GlueSchema{}
-					for _, f1valf22f7iter := range f1valiter.JDBCConnectorTarget.OutputSchemas {
-						f1valf22f7elem := &svcsdk.GlueSchema{}
-						if f1valf22f7iter.Columns != nil {
-							f1valf22f7elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf22f7elemf0iter := range f1valf22f7iter.Columns {
-								f1valf22f7elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf22f7elemf0iter.Name != nil {
-									f1valf22f7elemf0elem.SetName(*f1valf22f7elemf0iter.Name)
-								}
-								if f1valf22f7elemf0iter.Type != nil {
-									f1valf22f7elemf0elem.SetType(*f1valf22f7elemf0iter.Type)
-								}
-								f1valf22f7elemf0 = append(f1valf22f7elemf0, f1valf22f7elemf0elem)
+				if f1valiter.DynamicTransform.Parameters != nil {
+					f1valf18f4 := []*svcsdk.TransformConfigParameter{}
+					for _, f1valf18f4iter := range f1valiter.DynamicTransform.Parameters {
+						f1valf18f4elem := &svcsdk.TransformConfigParameter{}
+						if f1valf18f4iter.IsOptional != nil {
+							f1valf18f4elem.SetIsOptional(*f1valf18f4iter.IsOptional)
+						}
+						if f1valf18f4iter.ListType != nil {
+							f1valf18f4elem.SetListType(*f1valf18f4iter.ListType)
+						}
+						if f1valf18f4iter.Name != nil {
+							f1valf18f4elem.SetName(*f1valf18f4iter.Name)
+						}
+						if f1valf18f4iter.Type != nil {
+							f1valf18f4elem.SetType(*f1valf18f4iter.Type)
+						}
+						if f1valf18f4iter.ValidationMessage != nil {
+							f1valf18f4elem.SetValidationMessage(*f1valf18f4iter.ValidationMessage)
+						}
+						if f1valf18f4iter.ValidationRule != nil {
+							f1valf18f4elem.SetValidationRule(*f1valf18f4iter.ValidationRule)
+						}
+						if f1valf18f4iter.Value != nil {
+							f1valf18f4elemf6 := []*string{}
+							for _, f1valf18f4elemf6iter := range f1valf18f4iter.Value {
+								var f1valf18f4elemf6elem string
+								f1valf18f4elemf6elem = *f1valf18f4elemf6iter
+								f1valf18f4elemf6 = append(f1valf18f4elemf6, &f1valf18f4elemf6elem)
 							}
-							f1valf22f7elem.SetColumns(f1valf22f7elemf0)
+							f1valf18f4elem.SetValue(f1valf18f4elemf6)
 						}
-						f1valf22f7 = append(f1valf22f7, f1valf22f7elem)
+						f1valf18f4 = append(f1valf18f4, f1valf18f4elem)
 					}
-					f1valf22.SetOutputSchemas(f1valf22f7)
+					f1valf18.SetParameters(f1valf18f4)
 				}
-				f1val.SetJDBCConnectorTarget(f1valf22)
+				if f1valiter.DynamicTransform.Path != nil {
+					f1valf18.SetPath(*f1valiter.DynamicTransform.Path)
+				}
+				if f1valiter.DynamicTransform.TransformName != nil {
+					f1valf18.SetTransformName(*f1valiter.DynamicTransform.TransformName)
+				}
+				if f1valiter.DynamicTransform.Version != nil {
+					f1valf18.SetVersion(*f1valiter.DynamicTransform.Version)
+				}
+				f1val.SetDynamicTransform(f1valf18)
 			}
-			if f1valiter.Join != nil {
-				f1valf23 := &svcsdk.Join{}
-				if f1valiter.Join.Columns != nil {
-					f1valf23f0 := []*svcsdk.JoinColumn{}
-					for _, f1valf23f0iter := range f1valiter.Join.Columns {
-						f1valf23f0elem := &svcsdk.JoinColumn{}
-						if f1valf23f0iter.From != nil {
-							f1valf23f0elem.SetFrom(*f1valf23f0iter.From)
+			if f1valiter.DynamoDBCatalogSource != nil {
+				f1valf19 := &svcsdk.DynamoDBCatalogSource{}
+				if f1valiter.DynamoDBCatalogSource.Database != nil {
+					f1valf19.SetDatabase(*f1valiter.DynamoDBCatalogSource.Database)
+				}
+				if f1valiter.DynamoDBCatalogSource.Name != nil {
+					f1valf19.SetName(*f1valiter.DynamoDBCatalogSource.Name)
+				}
+				if f1valiter.DynamoDBCatalogSource.Table != nil {
+					f1valf19.SetTable(*f1valiter.DynamoDBCatalogSource.Table)
+				}
+				f1val.SetDynamoDBCatalogSource(f1valf19)
+			}
+			if f1valiter.EvaluateDataQuality != nil {
+				f1valf20 := &svcsdk.EvaluateDataQuality{}
+				if f1valiter.EvaluateDataQuality.Inputs != nil {
+					f1valf20f0 := []*string{}
+					for _, f1valf20f0iter := range f1valiter.EvaluateDataQuality.Inputs {
+						var f1valf20f0elem string
+						f1valf20f0elem = *f1valf20f0iter
+						f1valf20f0 = append(f1valf20f0, &f1valf20f0elem)
+					}
+					f1valf20.SetInputs(f1valf20f0)
+				}
+				if f1valiter.EvaluateDataQuality.Name != nil {
+					f1valf20.SetName(*f1valiter.EvaluateDataQuality.Name)
+				}
+				if f1valiter.EvaluateDataQuality.Output != nil {
+					f1valf20.SetOutput(*f1valiter.EvaluateDataQuality.Output)
+				}
+				if f1valiter.EvaluateDataQuality.PublishingOptions != nil {
+					f1valf20f3 := &svcsdk.DQResultsPublishingOptions{}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled != nil {
+						f1valf20f3.SetCloudWatchMetricsEnabled(*f1valiter.EvaluateDataQuality.PublishingOptions.CloudWatchMetricsEnabled)
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext != nil {
+						f1valf20f3.SetEvaluationContext(*f1valiter.EvaluateDataQuality.PublishingOptions.EvaluationContext)
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled != nil {
+						f1valf20f3.SetResultsPublishingEnabled(*f1valiter.EvaluateDataQuality.PublishingOptions.ResultsPublishingEnabled)
+					}
+					if f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix != nil {
+						f1valf20f3.SetResultsS3Prefix(*f1valiter.EvaluateDataQuality.PublishingOptions.ResultsS3Prefix)
+					}
+					f1valf20.SetPublishingOptions(f1valf20f3)
+				}
+				if f1valiter.EvaluateDataQuality.Ruleset != nil {
+					f1valf20.SetRuleset(*f1valiter.EvaluateDataQuality.Ruleset)
+				}
+				if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions != nil {
+					f1valf20f5 := &svcsdk.DQStopJobOnFailureOptions{}
+					if f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
+						f1valf20f5.SetStopJobOnFailureTiming(*f1valiter.EvaluateDataQuality.StopJobOnFailureOptions.StopJobOnFailureTiming)
+					}
+					f1valf20.SetStopJobOnFailureOptions(f1valf20f5)
+				}
+				f1val.SetEvaluateDataQuality(f1valf20)
+			}
+			if f1valiter.EvaluateDataQualityMultiFrame != nil {
+				f1valf21 := &svcsdk.EvaluateDataQualityMultiFrame{}
+				if f1valiter.EvaluateDataQualityMultiFrame.AdditionalDataSources != nil {
+					f1valf21f0 := map[string]*string{}
+					for f1valf21f0key, f1valf21f0valiter := range f1valiter.EvaluateDataQualityMultiFrame.AdditionalDataSources {
+						var f1valf21f0val string
+						f1valf21f0val = *f1valf21f0valiter
+						f1valf21f0[f1valf21f0key] = &f1valf21f0val
+					}
+					f1valf21.SetAdditionalDataSources(f1valf21f0)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.AdditionalOptions != nil {
+					f1valf21f1 := map[string]*string{}
+					for f1valf21f1key, f1valf21f1valiter := range f1valiter.EvaluateDataQualityMultiFrame.AdditionalOptions {
+						var f1valf21f1val string
+						f1valf21f1val = *f1valf21f1valiter
+						f1valf21f1[f1valf21f1key] = &f1valf21f1val
+					}
+					f1valf21.SetAdditionalOptions(f1valf21f1)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Inputs != nil {
+					f1valf21f2 := []*string{}
+					for _, f1valf21f2iter := range f1valiter.EvaluateDataQualityMultiFrame.Inputs {
+						var f1valf21f2elem string
+						f1valf21f2elem = *f1valf21f2iter
+						f1valf21f2 = append(f1valf21f2, &f1valf21f2elem)
+					}
+					f1valf21.SetInputs(f1valf21f2)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Name != nil {
+					f1valf21.SetName(*f1valiter.EvaluateDataQualityMultiFrame.Name)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions != nil {
+					f1valf21f4 := &svcsdk.DQResultsPublishingOptions{}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.CloudWatchMetricsEnabled != nil {
+						f1valf21f4.SetCloudWatchMetricsEnabled(*f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.CloudWatchMetricsEnabled)
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.EvaluationContext != nil {
+						f1valf21f4.SetEvaluationContext(*f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.EvaluationContext)
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsPublishingEnabled != nil {
+						f1valf21f4.SetResultsPublishingEnabled(*f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsPublishingEnabled)
+					}
+					if f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsS3Prefix != nil {
+						f1valf21f4.SetResultsS3Prefix(*f1valiter.EvaluateDataQualityMultiFrame.PublishingOptions.ResultsS3Prefix)
+					}
+					f1valf21.SetPublishingOptions(f1valf21f4)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.Ruleset != nil {
+					f1valf21.SetRuleset(*f1valiter.EvaluateDataQualityMultiFrame.Ruleset)
+				}
+				if f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions != nil {
+					f1valf21f6 := &svcsdk.DQStopJobOnFailureOptions{}
+					if f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions.StopJobOnFailureTiming != nil {
+						f1valf21f6.SetStopJobOnFailureTiming(*f1valiter.EvaluateDataQualityMultiFrame.StopJobOnFailureOptions.StopJobOnFailureTiming)
+					}
+					f1valf21.SetStopJobOnFailureOptions(f1valf21f6)
+				}
+				f1val.SetEvaluateDataQualityMultiFrame(f1valf21)
+			}
+			if f1valiter.FillMissingValues != nil {
+				f1valf22 := &svcsdk.FillMissingValues{}
+				if f1valiter.FillMissingValues.FilledPath != nil {
+					f1valf22.SetFilledPath(*f1valiter.FillMissingValues.FilledPath)
+				}
+				if f1valiter.FillMissingValues.ImputedPath != nil {
+					f1valf22.SetImputedPath(*f1valiter.FillMissingValues.ImputedPath)
+				}
+				if f1valiter.FillMissingValues.Inputs != nil {
+					f1valf22f2 := []*string{}
+					for _, f1valf22f2iter := range f1valiter.FillMissingValues.Inputs {
+						var f1valf22f2elem string
+						f1valf22f2elem = *f1valf22f2iter
+						f1valf22f2 = append(f1valf22f2, &f1valf22f2elem)
+					}
+					f1valf22.SetInputs(f1valf22f2)
+				}
+				if f1valiter.FillMissingValues.Name != nil {
+					f1valf22.SetName(*f1valiter.FillMissingValues.Name)
+				}
+				f1val.SetFillMissingValues(f1valf22)
+			}
+			if f1valiter.Filter != nil {
+				f1valf23 := &svcsdk.Filter{}
+				if f1valiter.Filter.Filters != nil {
+					f1valf23f0 := []*svcsdk.FilterExpression{}
+					for _, f1valf23f0iter := range f1valiter.Filter.Filters {
+						f1valf23f0elem := &svcsdk.FilterExpression{}
+						if f1valf23f0iter.Negated != nil {
+							f1valf23f0elem.SetNegated(*f1valf23f0iter.Negated)
 						}
-						if f1valf23f0iter.Keys != nil {
-							f1valf23f0elemf1 := [][]*string{}
-							for _, f1valf23f0elemf1iter := range f1valf23f0iter.Keys {
-								f1valf23f0elemf1elem := []*string{}
-								for _, f1valf23f0elemf1elemiter := range f1valf23f0elemf1iter {
-									var f1valf23f0elemf1elemelem string
-									f1valf23f0elemf1elemelem = *f1valf23f0elemf1elemiter
-									f1valf23f0elemf1elem = append(f1valf23f0elemf1elem, &f1valf23f0elemf1elemelem)
+						if f1valf23f0iter.Operation != nil {
+							f1valf23f0elem.SetOperation(*f1valf23f0iter.Operation)
+						}
+						if f1valf23f0iter.Values != nil {
+							f1valf23f0elemf2 := []*svcsdk.FilterValue{}
+							for _, f1valf23f0elemf2iter := range f1valf23f0iter.Values {
+								f1valf23f0elemf2elem := &svcsdk.FilterValue{}
+								if f1valf23f0elemf2iter.Type != nil {
+									f1valf23f0elemf2elem.SetType(*f1valf23f0elemf2iter.Type)
 								}
-								f1valf23f0elemf1 = append(f1valf23f0elemf1, f1valf23f0elemf1elem)
+								if f1valf23f0elemf2iter.Value != nil {
+									f1valf23f0elemf2elemf1 := []*string{}
+									for _, f1valf23f0elemf2elemf1iter := range f1valf23f0elemf2iter.Value {
+										var f1valf23f0elemf2elemf1elem string
+										f1valf23f0elemf2elemf1elem = *f1valf23f0elemf2elemf1iter
+										f1valf23f0elemf2elemf1 = append(f1valf23f0elemf2elemf1, &f1valf23f0elemf2elemf1elem)
+									}
+									f1valf23f0elemf2elem.SetValue(f1valf23f0elemf2elemf1)
+								}
+								f1valf23f0elemf2 = append(f1valf23f0elemf2, f1valf23f0elemf2elem)
 							}
-							f1valf23f0elem.SetKeys(f1valf23f0elemf1)
+							f1valf23f0elem.SetValues(f1valf23f0elemf2)
 						}
 						f1valf23f0 = append(f1valf23f0, f1valf23f0elem)
 					}
-					f1valf23.SetColumns(f1valf23f0)
+					f1valf23.SetFilters(f1valf23f0)
 				}
-				if f1valiter.Join.Inputs != nil {
+				if f1valiter.Filter.Inputs != nil {
 					f1valf23f1 := []*string{}
-					for _, f1valf23f1iter := range f1valiter.Join.Inputs {
+					for _, f1valf23f1iter := range f1valiter.Filter.Inputs {
 						var f1valf23f1elem string
 						f1valf23f1elem = *f1valf23f1iter
 						f1valf23f1 = append(f1valf23f1, &f1valf23f1elem)
 					}
 					f1valf23.SetInputs(f1valf23f1)
 				}
-				if f1valiter.Join.JoinType != nil {
-					f1valf23.SetJoinType(*f1valiter.Join.JoinType)
+				if f1valiter.Filter.LogicalOperator != nil {
+					f1valf23.SetLogicalOperator(*f1valiter.Filter.LogicalOperator)
 				}
-				if f1valiter.Join.Name != nil {
-					f1valf23.SetName(*f1valiter.Join.Name)
+				if f1valiter.Filter.Name != nil {
+					f1valf23.SetName(*f1valiter.Filter.Name)
 				}
-				f1val.SetJoin(f1valf23)
+				f1val.SetFilter(f1valf23)
 			}
-			if f1valiter.Merge != nil {
-				f1valf24 := &svcsdk.Merge{}
-				if f1valiter.Merge.Inputs != nil {
-					f1valf24f0 := []*string{}
-					for _, f1valf24f0iter := range f1valiter.Merge.Inputs {
-						var f1valf24f0elem string
-						f1valf24f0elem = *f1valf24f0iter
-						f1valf24f0 = append(f1valf24f0, &f1valf24f0elem)
+			if f1valiter.GovernedCatalogSource != nil {
+				f1valf24 := &svcsdk.GovernedCatalogSource{}
+				if f1valiter.GovernedCatalogSource.AdditionalOptions != nil {
+					f1valf24f0 := &svcsdk.S3SourceAdditionalOptions{}
+					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf24f0.SetBoundedFiles(*f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedFiles)
 					}
-					f1valf24.SetInputs(f1valf24f0)
+					if f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize != nil {
+						f1valf24f0.SetBoundedSize(*f1valiter.GovernedCatalogSource.AdditionalOptions.BoundedSize)
+					}
+					f1valf24.SetAdditionalOptions(f1valf24f0)
 				}
-				if f1valiter.Merge.Name != nil {
-					f1valf24.SetName(*f1valiter.Merge.Name)
+				if f1valiter.GovernedCatalogSource.Database != nil {
+					f1valf24.SetDatabase(*f1valiter.GovernedCatalogSource.Database)
 				}
-				if f1valiter.Merge.PrimaryKeys != nil {
-					f1valf24f2 := [][]*string{}
-					for _, f1valf24f2iter := range f1valiter.Merge.PrimaryKeys {
-						f1valf24f2elem := []*string{}
-						for _, f1valf24f2elemiter := range f1valf24f2iter {
-							var f1valf24f2elemelem string
-							f1valf24f2elemelem = *f1valf24f2elemiter
-							f1valf24f2elem = append(f1valf24f2elem, &f1valf24f2elemelem)
+				if f1valiter.GovernedCatalogSource.Name != nil {
+					f1valf24.SetName(*f1valiter.GovernedCatalogSource.Name)
+				}
+				if f1valiter.GovernedCatalogSource.PartitionPredicate != nil {
+					f1valf24.SetPartitionPredicate(*f1valiter.GovernedCatalogSource.PartitionPredicate)
+				}
+				if f1valiter.GovernedCatalogSource.Table != nil {
+					f1valf24.SetTable(*f1valiter.GovernedCatalogSource.Table)
+				}
+				f1val.SetGovernedCatalogSource(f1valf24)
+			}
+			if f1valiter.GovernedCatalogTarget != nil {
+				f1valf25 := &svcsdk.GovernedCatalogTarget{}
+				if f1valiter.GovernedCatalogTarget.Database != nil {
+					f1valf25.SetDatabase(*f1valiter.GovernedCatalogTarget.Database)
+				}
+				if f1valiter.GovernedCatalogTarget.Inputs != nil {
+					f1valf25f1 := []*string{}
+					for _, f1valf25f1iter := range f1valiter.GovernedCatalogTarget.Inputs {
+						var f1valf25f1elem string
+						f1valf25f1elem = *f1valf25f1iter
+						f1valf25f1 = append(f1valf25f1, &f1valf25f1elem)
+					}
+					f1valf25.SetInputs(f1valf25f1)
+				}
+				if f1valiter.GovernedCatalogTarget.Name != nil {
+					f1valf25.SetName(*f1valiter.GovernedCatalogTarget.Name)
+				}
+				if f1valiter.GovernedCatalogTarget.PartitionKeys != nil {
+					f1valf25f3 := [][]*string{}
+					for _, f1valf25f3iter := range f1valiter.GovernedCatalogTarget.PartitionKeys {
+						f1valf25f3elem := []*string{}
+						for _, f1valf25f3elemiter := range f1valf25f3iter {
+							var f1valf25f3elemelem string
+							f1valf25f3elemelem = *f1valf25f3elemiter
+							f1valf25f3elem = append(f1valf25f3elem, &f1valf25f3elemelem)
 						}
-						f1valf24f2 = append(f1valf24f2, f1valf24f2elem)
+						f1valf25f3 = append(f1valf25f3, f1valf25f3elem)
 					}
-					f1valf24.SetPrimaryKeys(f1valf24f2)
+					f1valf25.SetPartitionKeys(f1valf25f3)
 				}
-				if f1valiter.Merge.Source != nil {
-					f1valf24.SetSource(*f1valiter.Merge.Source)
-				}
-				f1val.SetMerge(f1valf24)
-			}
-			if f1valiter.MicrosoftSQLServerCatalogSource != nil {
-				f1valf25 := &svcsdk.MicrosoftSQLServerCatalogSource{}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Database != nil {
-					f1valf25.SetDatabase(*f1valiter.MicrosoftSQLServerCatalogSource.Database)
-				}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Name != nil {
-					f1valf25.SetName(*f1valiter.MicrosoftSQLServerCatalogSource.Name)
-				}
-				if f1valiter.MicrosoftSQLServerCatalogSource.Table != nil {
-					f1valf25.SetTable(*f1valiter.MicrosoftSQLServerCatalogSource.Table)
-				}
-				f1val.SetMicrosoftSQLServerCatalogSource(f1valf25)
-			}
-			if f1valiter.MicrosoftSQLServerCatalogTarget != nil {
-				f1valf26 := &svcsdk.MicrosoftSQLServerCatalogTarget{}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Database != nil {
-					f1valf26.SetDatabase(*f1valiter.MicrosoftSQLServerCatalogTarget.Database)
-				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Inputs != nil {
-					f1valf26f1 := []*string{}
-					for _, f1valf26f1iter := range f1valiter.MicrosoftSQLServerCatalogTarget.Inputs {
-						var f1valf26f1elem string
-						f1valf26f1elem = *f1valf26f1iter
-						f1valf26f1 = append(f1valf26f1, &f1valf26f1elem)
+				if f1valiter.GovernedCatalogTarget.SchemaChangePolicy != nil {
+					f1valf25f4 := &svcsdk.CatalogSchemaChangePolicy{}
+					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf25f4.SetEnableUpdateCatalog(*f1valiter.GovernedCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
 					}
-					f1valf26.SetInputs(f1valf26f1)
+					if f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf25f4.SetUpdateBehavior(*f1valiter.GovernedCatalogTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf25.SetSchemaChangePolicy(f1valf25f4)
 				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Name != nil {
-					f1valf26.SetName(*f1valiter.MicrosoftSQLServerCatalogTarget.Name)
+				if f1valiter.GovernedCatalogTarget.Table != nil {
+					f1valf25.SetTable(*f1valiter.GovernedCatalogTarget.Table)
 				}
-				if f1valiter.MicrosoftSQLServerCatalogTarget.Table != nil {
-					f1valf26.SetTable(*f1valiter.MicrosoftSQLServerCatalogTarget.Table)
-				}
-				f1val.SetMicrosoftSQLServerCatalogTarget(f1valf26)
+				f1val.SetGovernedCatalogTarget(f1valf25)
 			}
-			if f1valiter.MySQLCatalogSource != nil {
-				f1valf27 := &svcsdk.MySQLCatalogSource{}
-				if f1valiter.MySQLCatalogSource.Database != nil {
-					f1valf27.SetDatabase(*f1valiter.MySQLCatalogSource.Database)
+			if f1valiter.JDBCConnectorSource != nil {
+				f1valf26 := &svcsdk.JDBCConnectorSource{}
+				if f1valiter.JDBCConnectorSource.AdditionalOptions != nil {
+					f1valf26f0 := &svcsdk.JDBCConnectorOptions{}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping != nil {
+						f1valf26f0f0 := map[string]*string{}
+						for f1valf26f0f0key, f1valf26f0f0valiter := range f1valiter.JDBCConnectorSource.AdditionalOptions.DataTypeMapping {
+							var f1valf26f0f0val string
+							f1valf26f0f0val = *f1valf26f0f0valiter
+							f1valf26f0f0[f1valf26f0f0key] = &f1valf26f0f0val
+						}
+						f1valf26f0.SetDataTypeMapping(f1valf26f0f0)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate != nil {
+						f1valf26f0.SetFilterPredicate(*f1valiter.JDBCConnectorSource.AdditionalOptions.FilterPredicate)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys != nil {
+						f1valf26f0f2 := []*string{}
+						for _, f1valf26f0f2iter := range f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeys {
+							var f1valf26f0f2elem string
+							f1valf26f0f2elem = *f1valf26f0f2iter
+							f1valf26f0f2 = append(f1valf26f0f2, &f1valf26f0f2elem)
+						}
+						f1valf26f0.SetJobBookmarkKeys(f1valf26f0f2)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder != nil {
+						f1valf26f0.SetJobBookmarkKeysSortOrder(*f1valiter.JDBCConnectorSource.AdditionalOptions.JobBookmarkKeysSortOrder)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound != nil {
+						f1valf26f0.SetLowerBound(*f1valiter.JDBCConnectorSource.AdditionalOptions.LowerBound)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions != nil {
+						f1valf26f0.SetNumPartitions(*f1valiter.JDBCConnectorSource.AdditionalOptions.NumPartitions)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn != nil {
+						f1valf26f0.SetPartitionColumn(*f1valiter.JDBCConnectorSource.AdditionalOptions.PartitionColumn)
+					}
+					if f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound != nil {
+						f1valf26f0.SetUpperBound(*f1valiter.JDBCConnectorSource.AdditionalOptions.UpperBound)
+					}
+					f1valf26.SetAdditionalOptions(f1valf26f0)
 				}
-				if f1valiter.MySQLCatalogSource.Name != nil {
-					f1valf27.SetName(*f1valiter.MySQLCatalogSource.Name)
+				if f1valiter.JDBCConnectorSource.ConnectionName != nil {
+					f1valf26.SetConnectionName(*f1valiter.JDBCConnectorSource.ConnectionName)
 				}
-				if f1valiter.MySQLCatalogSource.Table != nil {
-					f1valf27.SetTable(*f1valiter.MySQLCatalogSource.Table)
+				if f1valiter.JDBCConnectorSource.ConnectionTable != nil {
+					f1valf26.SetConnectionTable(*f1valiter.JDBCConnectorSource.ConnectionTable)
 				}
-				f1val.SetMySQLCatalogSource(f1valf27)
+				if f1valiter.JDBCConnectorSource.ConnectionType != nil {
+					f1valf26.SetConnectionType(*f1valiter.JDBCConnectorSource.ConnectionType)
+				}
+				if f1valiter.JDBCConnectorSource.ConnectorName != nil {
+					f1valf26.SetConnectorName(*f1valiter.JDBCConnectorSource.ConnectorName)
+				}
+				if f1valiter.JDBCConnectorSource.Name != nil {
+					f1valf26.SetName(*f1valiter.JDBCConnectorSource.Name)
+				}
+				if f1valiter.JDBCConnectorSource.OutputSchemas != nil {
+					f1valf26f6 := []*svcsdk.GlueSchema{}
+					for _, f1valf26f6iter := range f1valiter.JDBCConnectorSource.OutputSchemas {
+						f1valf26f6elem := &svcsdk.GlueSchema{}
+						if f1valf26f6iter.Columns != nil {
+							f1valf26f6elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf26f6elemf0iter := range f1valf26f6iter.Columns {
+								f1valf26f6elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf26f6elemf0iter.Name != nil {
+									f1valf26f6elemf0elem.SetName(*f1valf26f6elemf0iter.Name)
+								}
+								if f1valf26f6elemf0iter.Type != nil {
+									f1valf26f6elemf0elem.SetType(*f1valf26f6elemf0iter.Type)
+								}
+								f1valf26f6elemf0 = append(f1valf26f6elemf0, f1valf26f6elemf0elem)
+							}
+							f1valf26f6elem.SetColumns(f1valf26f6elemf0)
+						}
+						f1valf26f6 = append(f1valf26f6, f1valf26f6elem)
+					}
+					f1valf26.SetOutputSchemas(f1valf26f6)
+				}
+				if f1valiter.JDBCConnectorSource.Query != nil {
+					f1valf26.SetQuery(*f1valiter.JDBCConnectorSource.Query)
+				}
+				f1val.SetJDBCConnectorSource(f1valf26)
 			}
-			if f1valiter.MySQLCatalogTarget != nil {
-				f1valf28 := &svcsdk.MySQLCatalogTarget{}
-				if f1valiter.MySQLCatalogTarget.Database != nil {
-					f1valf28.SetDatabase(*f1valiter.MySQLCatalogTarget.Database)
+			if f1valiter.JDBCConnectorTarget != nil {
+				f1valf27 := &svcsdk.JDBCConnectorTarget{}
+				if f1valiter.JDBCConnectorTarget.AdditionalOptions != nil {
+					f1valf27f0 := map[string]*string{}
+					for f1valf27f0key, f1valf27f0valiter := range f1valiter.JDBCConnectorTarget.AdditionalOptions {
+						var f1valf27f0val string
+						f1valf27f0val = *f1valf27f0valiter
+						f1valf27f0[f1valf27f0key] = &f1valf27f0val
+					}
+					f1valf27.SetAdditionalOptions(f1valf27f0)
 				}
-				if f1valiter.MySQLCatalogTarget.Inputs != nil {
+				if f1valiter.JDBCConnectorTarget.ConnectionName != nil {
+					f1valf27.SetConnectionName(*f1valiter.JDBCConnectorTarget.ConnectionName)
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectionTable != nil {
+					f1valf27.SetConnectionTable(*f1valiter.JDBCConnectorTarget.ConnectionTable)
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectionType != nil {
+					f1valf27.SetConnectionType(*f1valiter.JDBCConnectorTarget.ConnectionType)
+				}
+				if f1valiter.JDBCConnectorTarget.ConnectorName != nil {
+					f1valf27.SetConnectorName(*f1valiter.JDBCConnectorTarget.ConnectorName)
+				}
+				if f1valiter.JDBCConnectorTarget.Inputs != nil {
+					f1valf27f5 := []*string{}
+					for _, f1valf27f5iter := range f1valiter.JDBCConnectorTarget.Inputs {
+						var f1valf27f5elem string
+						f1valf27f5elem = *f1valf27f5iter
+						f1valf27f5 = append(f1valf27f5, &f1valf27f5elem)
+					}
+					f1valf27.SetInputs(f1valf27f5)
+				}
+				if f1valiter.JDBCConnectorTarget.Name != nil {
+					f1valf27.SetName(*f1valiter.JDBCConnectorTarget.Name)
+				}
+				if f1valiter.JDBCConnectorTarget.OutputSchemas != nil {
+					f1valf27f7 := []*svcsdk.GlueSchema{}
+					for _, f1valf27f7iter := range f1valiter.JDBCConnectorTarget.OutputSchemas {
+						f1valf27f7elem := &svcsdk.GlueSchema{}
+						if f1valf27f7iter.Columns != nil {
+							f1valf27f7elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf27f7elemf0iter := range f1valf27f7iter.Columns {
+								f1valf27f7elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf27f7elemf0iter.Name != nil {
+									f1valf27f7elemf0elem.SetName(*f1valf27f7elemf0iter.Name)
+								}
+								if f1valf27f7elemf0iter.Type != nil {
+									f1valf27f7elemf0elem.SetType(*f1valf27f7elemf0iter.Type)
+								}
+								f1valf27f7elemf0 = append(f1valf27f7elemf0, f1valf27f7elemf0elem)
+							}
+							f1valf27f7elem.SetColumns(f1valf27f7elemf0)
+						}
+						f1valf27f7 = append(f1valf27f7, f1valf27f7elem)
+					}
+					f1valf27.SetOutputSchemas(f1valf27f7)
+				}
+				f1val.SetJDBCConnectorTarget(f1valf27)
+			}
+			if f1valiter.Join != nil {
+				f1valf28 := &svcsdk.Join{}
+				if f1valiter.Join.Columns != nil {
+					f1valf28f0 := []*svcsdk.JoinColumn{}
+					for _, f1valf28f0iter := range f1valiter.Join.Columns {
+						f1valf28f0elem := &svcsdk.JoinColumn{}
+						if f1valf28f0iter.From != nil {
+							f1valf28f0elem.SetFrom(*f1valf28f0iter.From)
+						}
+						if f1valf28f0iter.Keys != nil {
+							f1valf28f0elemf1 := [][]*string{}
+							for _, f1valf28f0elemf1iter := range f1valf28f0iter.Keys {
+								f1valf28f0elemf1elem := []*string{}
+								for _, f1valf28f0elemf1elemiter := range f1valf28f0elemf1iter {
+									var f1valf28f0elemf1elemelem string
+									f1valf28f0elemf1elemelem = *f1valf28f0elemf1elemiter
+									f1valf28f0elemf1elem = append(f1valf28f0elemf1elem, &f1valf28f0elemf1elemelem)
+								}
+								f1valf28f0elemf1 = append(f1valf28f0elemf1, f1valf28f0elemf1elem)
+							}
+							f1valf28f0elem.SetKeys(f1valf28f0elemf1)
+						}
+						f1valf28f0 = append(f1valf28f0, f1valf28f0elem)
+					}
+					f1valf28.SetColumns(f1valf28f0)
+				}
+				if f1valiter.Join.Inputs != nil {
 					f1valf28f1 := []*string{}
-					for _, f1valf28f1iter := range f1valiter.MySQLCatalogTarget.Inputs {
+					for _, f1valf28f1iter := range f1valiter.Join.Inputs {
 						var f1valf28f1elem string
 						f1valf28f1elem = *f1valf28f1iter
 						f1valf28f1 = append(f1valf28f1, &f1valf28f1elem)
 					}
 					f1valf28.SetInputs(f1valf28f1)
 				}
-				if f1valiter.MySQLCatalogTarget.Name != nil {
-					f1valf28.SetName(*f1valiter.MySQLCatalogTarget.Name)
+				if f1valiter.Join.JoinType != nil {
+					f1valf28.SetJoinType(*f1valiter.Join.JoinType)
 				}
-				if f1valiter.MySQLCatalogTarget.Table != nil {
-					f1valf28.SetTable(*f1valiter.MySQLCatalogTarget.Table)
+				if f1valiter.Join.Name != nil {
+					f1valf28.SetName(*f1valiter.Join.Name)
 				}
-				f1val.SetMySQLCatalogTarget(f1valf28)
+				f1val.SetJoin(f1valf28)
 			}
-			if f1valiter.OracleSQLCatalogSource != nil {
-				f1valf29 := &svcsdk.OracleSQLCatalogSource{}
-				if f1valiter.OracleSQLCatalogSource.Database != nil {
-					f1valf29.SetDatabase(*f1valiter.OracleSQLCatalogSource.Database)
-				}
-				if f1valiter.OracleSQLCatalogSource.Name != nil {
-					f1valf29.SetName(*f1valiter.OracleSQLCatalogSource.Name)
-				}
-				if f1valiter.OracleSQLCatalogSource.Table != nil {
-					f1valf29.SetTable(*f1valiter.OracleSQLCatalogSource.Table)
-				}
-				f1val.SetOracleSQLCatalogSource(f1valf29)
-			}
-			if f1valiter.OracleSQLCatalogTarget != nil {
-				f1valf30 := &svcsdk.OracleSQLCatalogTarget{}
-				if f1valiter.OracleSQLCatalogTarget.Database != nil {
-					f1valf30.SetDatabase(*f1valiter.OracleSQLCatalogTarget.Database)
-				}
-				if f1valiter.OracleSQLCatalogTarget.Inputs != nil {
-					f1valf30f1 := []*string{}
-					for _, f1valf30f1iter := range f1valiter.OracleSQLCatalogTarget.Inputs {
-						var f1valf30f1elem string
-						f1valf30f1elem = *f1valf30f1iter
-						f1valf30f1 = append(f1valf30f1, &f1valf30f1elem)
+			if f1valiter.Merge != nil {
+				f1valf29 := &svcsdk.Merge{}
+				if f1valiter.Merge.Inputs != nil {
+					f1valf29f0 := []*string{}
+					for _, f1valf29f0iter := range f1valiter.Merge.Inputs {
+						var f1valf29f0elem string
+						f1valf29f0elem = *f1valf29f0iter
+						f1valf29f0 = append(f1valf29f0, &f1valf29f0elem)
 					}
-					f1valf30.SetInputs(f1valf30f1)
+					f1valf29.SetInputs(f1valf29f0)
 				}
-				if f1valiter.OracleSQLCatalogTarget.Name != nil {
-					f1valf30.SetName(*f1valiter.OracleSQLCatalogTarget.Name)
+				if f1valiter.Merge.Name != nil {
+					f1valf29.SetName(*f1valiter.Merge.Name)
 				}
-				if f1valiter.OracleSQLCatalogTarget.Table != nil {
-					f1valf30.SetTable(*f1valiter.OracleSQLCatalogTarget.Table)
-				}
-				f1val.SetOracleSQLCatalogTarget(f1valf30)
-			}
-			if f1valiter.PIIDetection != nil {
-				f1valf31 := &svcsdk.PIIDetection{}
-				if f1valiter.PIIDetection.EntityTypesToDetect != nil {
-					f1valf31f0 := []*string{}
-					for _, f1valf31f0iter := range f1valiter.PIIDetection.EntityTypesToDetect {
-						var f1valf31f0elem string
-						f1valf31f0elem = *f1valf31f0iter
-						f1valf31f0 = append(f1valf31f0, &f1valf31f0elem)
+				if f1valiter.Merge.PrimaryKeys != nil {
+					f1valf29f2 := [][]*string{}
+					for _, f1valf29f2iter := range f1valiter.Merge.PrimaryKeys {
+						f1valf29f2elem := []*string{}
+						for _, f1valf29f2elemiter := range f1valf29f2iter {
+							var f1valf29f2elemelem string
+							f1valf29f2elemelem = *f1valf29f2elemiter
+							f1valf29f2elem = append(f1valf29f2elem, &f1valf29f2elemelem)
+						}
+						f1valf29f2 = append(f1valf29f2, f1valf29f2elem)
 					}
-					f1valf31.SetEntityTypesToDetect(f1valf31f0)
+					f1valf29.SetPrimaryKeys(f1valf29f2)
 				}
-				if f1valiter.PIIDetection.Inputs != nil {
+				if f1valiter.Merge.Source != nil {
+					f1valf29.SetSource(*f1valiter.Merge.Source)
+				}
+				f1val.SetMerge(f1valf29)
+			}
+			if f1valiter.MicrosoftSQLServerCatalogSource != nil {
+				f1valf30 := &svcsdk.MicrosoftSQLServerCatalogSource{}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Database != nil {
+					f1valf30.SetDatabase(*f1valiter.MicrosoftSQLServerCatalogSource.Database)
+				}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Name != nil {
+					f1valf30.SetName(*f1valiter.MicrosoftSQLServerCatalogSource.Name)
+				}
+				if f1valiter.MicrosoftSQLServerCatalogSource.Table != nil {
+					f1valf30.SetTable(*f1valiter.MicrosoftSQLServerCatalogSource.Table)
+				}
+				f1val.SetMicrosoftSQLServerCatalogSource(f1valf30)
+			}
+			if f1valiter.MicrosoftSQLServerCatalogTarget != nil {
+				f1valf31 := &svcsdk.MicrosoftSQLServerCatalogTarget{}
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Database != nil {
+					f1valf31.SetDatabase(*f1valiter.MicrosoftSQLServerCatalogTarget.Database)
+				}
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Inputs != nil {
 					f1valf31f1 := []*string{}
-					for _, f1valf31f1iter := range f1valiter.PIIDetection.Inputs {
+					for _, f1valf31f1iter := range f1valiter.MicrosoftSQLServerCatalogTarget.Inputs {
 						var f1valf31f1elem string
 						f1valf31f1elem = *f1valf31f1iter
 						f1valf31f1 = append(f1valf31f1, &f1valf31f1elem)
 					}
 					f1valf31.SetInputs(f1valf31f1)
 				}
-				if f1valiter.PIIDetection.MaskValue != nil {
-					f1valf31.SetMaskValue(*f1valiter.PIIDetection.MaskValue)
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Name != nil {
+					f1valf31.SetName(*f1valiter.MicrosoftSQLServerCatalogTarget.Name)
 				}
-				if f1valiter.PIIDetection.Name != nil {
-					f1valf31.SetName(*f1valiter.PIIDetection.Name)
+				if f1valiter.MicrosoftSQLServerCatalogTarget.Table != nil {
+					f1valf31.SetTable(*f1valiter.MicrosoftSQLServerCatalogTarget.Table)
 				}
-				if f1valiter.PIIDetection.OutputColumnName != nil {
-					f1valf31.SetOutputColumnName(*f1valiter.PIIDetection.OutputColumnName)
-				}
-				if f1valiter.PIIDetection.PiiType != nil {
-					f1valf31.SetPiiType(*f1valiter.PIIDetection.PiiType)
-				}
-				if f1valiter.PIIDetection.SampleFraction != nil {
-					f1valf31.SetSampleFraction(*f1valiter.PIIDetection.SampleFraction)
-				}
-				if f1valiter.PIIDetection.ThresholdFraction != nil {
-					f1valf31.SetThresholdFraction(*f1valiter.PIIDetection.ThresholdFraction)
-				}
-				f1val.SetPIIDetection(f1valf31)
+				f1val.SetMicrosoftSQLServerCatalogTarget(f1valf31)
 			}
-			if f1valiter.PostgreSQLCatalogSource != nil {
-				f1valf32 := &svcsdk.PostgreSQLCatalogSource{}
-				if f1valiter.PostgreSQLCatalogSource.Database != nil {
-					f1valf32.SetDatabase(*f1valiter.PostgreSQLCatalogSource.Database)
+			if f1valiter.MySQLCatalogSource != nil {
+				f1valf32 := &svcsdk.MySQLCatalogSource{}
+				if f1valiter.MySQLCatalogSource.Database != nil {
+					f1valf32.SetDatabase(*f1valiter.MySQLCatalogSource.Database)
 				}
-				if f1valiter.PostgreSQLCatalogSource.Name != nil {
-					f1valf32.SetName(*f1valiter.PostgreSQLCatalogSource.Name)
+				if f1valiter.MySQLCatalogSource.Name != nil {
+					f1valf32.SetName(*f1valiter.MySQLCatalogSource.Name)
 				}
-				if f1valiter.PostgreSQLCatalogSource.Table != nil {
-					f1valf32.SetTable(*f1valiter.PostgreSQLCatalogSource.Table)
+				if f1valiter.MySQLCatalogSource.Table != nil {
+					f1valf32.SetTable(*f1valiter.MySQLCatalogSource.Table)
 				}
-				f1val.SetPostgreSQLCatalogSource(f1valf32)
+				f1val.SetMySQLCatalogSource(f1valf32)
 			}
-			if f1valiter.PostgreSQLCatalogTarget != nil {
-				f1valf33 := &svcsdk.PostgreSQLCatalogTarget{}
-				if f1valiter.PostgreSQLCatalogTarget.Database != nil {
-					f1valf33.SetDatabase(*f1valiter.PostgreSQLCatalogTarget.Database)
+			if f1valiter.MySQLCatalogTarget != nil {
+				f1valf33 := &svcsdk.MySQLCatalogTarget{}
+				if f1valiter.MySQLCatalogTarget.Database != nil {
+					f1valf33.SetDatabase(*f1valiter.MySQLCatalogTarget.Database)
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Inputs != nil {
+				if f1valiter.MySQLCatalogTarget.Inputs != nil {
 					f1valf33f1 := []*string{}
-					for _, f1valf33f1iter := range f1valiter.PostgreSQLCatalogTarget.Inputs {
+					for _, f1valf33f1iter := range f1valiter.MySQLCatalogTarget.Inputs {
 						var f1valf33f1elem string
 						f1valf33f1elem = *f1valf33f1iter
 						f1valf33f1 = append(f1valf33f1, &f1valf33f1elem)
 					}
 					f1valf33.SetInputs(f1valf33f1)
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Name != nil {
-					f1valf33.SetName(*f1valiter.PostgreSQLCatalogTarget.Name)
+				if f1valiter.MySQLCatalogTarget.Name != nil {
+					f1valf33.SetName(*f1valiter.MySQLCatalogTarget.Name)
 				}
-				if f1valiter.PostgreSQLCatalogTarget.Table != nil {
-					f1valf33.SetTable(*f1valiter.PostgreSQLCatalogTarget.Table)
+				if f1valiter.MySQLCatalogTarget.Table != nil {
+					f1valf33.SetTable(*f1valiter.MySQLCatalogTarget.Table)
 				}
-				f1val.SetPostgreSQLCatalogTarget(f1valf33)
+				f1val.SetMySQLCatalogTarget(f1valf33)
 			}
-			if f1valiter.RedshiftSource != nil {
-				f1valf34 := &svcsdk.RedshiftSource{}
-				if f1valiter.RedshiftSource.Database != nil {
-					f1valf34.SetDatabase(*f1valiter.RedshiftSource.Database)
+			if f1valiter.OracleSQLCatalogSource != nil {
+				f1valf34 := &svcsdk.OracleSQLCatalogSource{}
+				if f1valiter.OracleSQLCatalogSource.Database != nil {
+					f1valf34.SetDatabase(*f1valiter.OracleSQLCatalogSource.Database)
 				}
-				if f1valiter.RedshiftSource.Name != nil {
-					f1valf34.SetName(*f1valiter.RedshiftSource.Name)
+				if f1valiter.OracleSQLCatalogSource.Name != nil {
+					f1valf34.SetName(*f1valiter.OracleSQLCatalogSource.Name)
 				}
-				if f1valiter.RedshiftSource.RedshiftTmpDir != nil {
-					f1valf34.SetRedshiftTmpDir(*f1valiter.RedshiftSource.RedshiftTmpDir)
+				if f1valiter.OracleSQLCatalogSource.Table != nil {
+					f1valf34.SetTable(*f1valiter.OracleSQLCatalogSource.Table)
 				}
-				if f1valiter.RedshiftSource.Table != nil {
-					f1valf34.SetTable(*f1valiter.RedshiftSource.Table)
-				}
-				if f1valiter.RedshiftSource.TmpDirIAMRole != nil {
-					f1valf34.SetTmpDirIAMRole(*f1valiter.RedshiftSource.TmpDirIAMRole)
-				}
-				f1val.SetRedshiftSource(f1valf34)
+				f1val.SetOracleSQLCatalogSource(f1valf34)
 			}
-			if f1valiter.RedshiftTarget != nil {
-				f1valf35 := &svcsdk.RedshiftTarget{}
-				if f1valiter.RedshiftTarget.Database != nil {
-					f1valf35.SetDatabase(*f1valiter.RedshiftTarget.Database)
+			if f1valiter.OracleSQLCatalogTarget != nil {
+				f1valf35 := &svcsdk.OracleSQLCatalogTarget{}
+				if f1valiter.OracleSQLCatalogTarget.Database != nil {
+					f1valf35.SetDatabase(*f1valiter.OracleSQLCatalogTarget.Database)
 				}
-				if f1valiter.RedshiftTarget.Inputs != nil {
+				if f1valiter.OracleSQLCatalogTarget.Inputs != nil {
 					f1valf35f1 := []*string{}
-					for _, f1valf35f1iter := range f1valiter.RedshiftTarget.Inputs {
+					for _, f1valf35f1iter := range f1valiter.OracleSQLCatalogTarget.Inputs {
 						var f1valf35f1elem string
 						f1valf35f1elem = *f1valf35f1iter
 						f1valf35f1 = append(f1valf35f1, &f1valf35f1elem)
 					}
 					f1valf35.SetInputs(f1valf35f1)
 				}
-				if f1valiter.RedshiftTarget.Name != nil {
-					f1valf35.SetName(*f1valiter.RedshiftTarget.Name)
+				if f1valiter.OracleSQLCatalogTarget.Name != nil {
+					f1valf35.SetName(*f1valiter.OracleSQLCatalogTarget.Name)
 				}
-				if f1valiter.RedshiftTarget.RedshiftTmpDir != nil {
-					f1valf35.SetRedshiftTmpDir(*f1valiter.RedshiftTarget.RedshiftTmpDir)
+				if f1valiter.OracleSQLCatalogTarget.Table != nil {
+					f1valf35.SetTable(*f1valiter.OracleSQLCatalogTarget.Table)
 				}
-				if f1valiter.RedshiftTarget.Table != nil {
-					f1valf35.SetTable(*f1valiter.RedshiftTarget.Table)
-				}
-				if f1valiter.RedshiftTarget.TmpDirIAMRole != nil {
-					f1valf35.SetTmpDirIAMRole(*f1valiter.RedshiftTarget.TmpDirIAMRole)
-				}
-				if f1valiter.RedshiftTarget.UpsertRedshiftOptions != nil {
-					f1valf35f6 := &svcsdk.UpsertRedshiftTargetOptions{}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName != nil {
-						f1valf35f6.SetConnectionName(*f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName)
-					}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation != nil {
-						f1valf35f6.SetTableLocation(*f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation)
-					}
-					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys != nil {
-						f1valf35f6f2 := []*string{}
-						for _, f1valf35f6f2iter := range f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys {
-							var f1valf35f6f2elem string
-							f1valf35f6f2elem = *f1valf35f6f2iter
-							f1valf35f6f2 = append(f1valf35f6f2, &f1valf35f6f2elem)
-						}
-						f1valf35f6.SetUpsertKeys(f1valf35f6f2)
-					}
-					f1valf35.SetUpsertRedshiftOptions(f1valf35f6)
-				}
-				f1val.SetRedshiftTarget(f1valf35)
+				f1val.SetOracleSQLCatalogTarget(f1valf35)
 			}
-			if f1valiter.RelationalCatalogSource != nil {
-				f1valf36 := &svcsdk.RelationalCatalogSource{}
-				if f1valiter.RelationalCatalogSource.Database != nil {
-					f1valf36.SetDatabase(*f1valiter.RelationalCatalogSource.Database)
+			if f1valiter.PIIDetection != nil {
+				f1valf36 := &svcsdk.PIIDetection{}
+				if f1valiter.PIIDetection.EntityTypesToDetect != nil {
+					f1valf36f0 := []*string{}
+					for _, f1valf36f0iter := range f1valiter.PIIDetection.EntityTypesToDetect {
+						var f1valf36f0elem string
+						f1valf36f0elem = *f1valf36f0iter
+						f1valf36f0 = append(f1valf36f0, &f1valf36f0elem)
+					}
+					f1valf36.SetEntityTypesToDetect(f1valf36f0)
 				}
-				if f1valiter.RelationalCatalogSource.Name != nil {
-					f1valf36.SetName(*f1valiter.RelationalCatalogSource.Name)
+				if f1valiter.PIIDetection.Inputs != nil {
+					f1valf36f1 := []*string{}
+					for _, f1valf36f1iter := range f1valiter.PIIDetection.Inputs {
+						var f1valf36f1elem string
+						f1valf36f1elem = *f1valf36f1iter
+						f1valf36f1 = append(f1valf36f1, &f1valf36f1elem)
+					}
+					f1valf36.SetInputs(f1valf36f1)
 				}
-				if f1valiter.RelationalCatalogSource.Table != nil {
-					f1valf36.SetTable(*f1valiter.RelationalCatalogSource.Table)
+				if f1valiter.PIIDetection.MaskValue != nil {
+					f1valf36.SetMaskValue(*f1valiter.PIIDetection.MaskValue)
 				}
-				f1val.SetRelationalCatalogSource(f1valf36)
+				if f1valiter.PIIDetection.Name != nil {
+					f1valf36.SetName(*f1valiter.PIIDetection.Name)
+				}
+				if f1valiter.PIIDetection.OutputColumnName != nil {
+					f1valf36.SetOutputColumnName(*f1valiter.PIIDetection.OutputColumnName)
+				}
+				if f1valiter.PIIDetection.PiiType != nil {
+					f1valf36.SetPiiType(*f1valiter.PIIDetection.PiiType)
+				}
+				if f1valiter.PIIDetection.SampleFraction != nil {
+					f1valf36.SetSampleFraction(*f1valiter.PIIDetection.SampleFraction)
+				}
+				if f1valiter.PIIDetection.ThresholdFraction != nil {
+					f1valf36.SetThresholdFraction(*f1valiter.PIIDetection.ThresholdFraction)
+				}
+				f1val.SetPIIDetection(f1valf36)
 			}
-			if f1valiter.RenameField != nil {
-				f1valf37 := &svcsdk.RenameField{}
-				if f1valiter.RenameField.Inputs != nil {
-					f1valf37f0 := []*string{}
-					for _, f1valf37f0iter := range f1valiter.RenameField.Inputs {
-						var f1valf37f0elem string
-						f1valf37f0elem = *f1valf37f0iter
-						f1valf37f0 = append(f1valf37f0, &f1valf37f0elem)
-					}
-					f1valf37.SetInputs(f1valf37f0)
+			if f1valiter.PostgreSQLCatalogSource != nil {
+				f1valf37 := &svcsdk.PostgreSQLCatalogSource{}
+				if f1valiter.PostgreSQLCatalogSource.Database != nil {
+					f1valf37.SetDatabase(*f1valiter.PostgreSQLCatalogSource.Database)
 				}
-				if f1valiter.RenameField.Name != nil {
-					f1valf37.SetName(*f1valiter.RenameField.Name)
+				if f1valiter.PostgreSQLCatalogSource.Name != nil {
+					f1valf37.SetName(*f1valiter.PostgreSQLCatalogSource.Name)
 				}
-				if f1valiter.RenameField.SourcePath != nil {
-					f1valf37f2 := []*string{}
-					for _, f1valf37f2iter := range f1valiter.RenameField.SourcePath {
-						var f1valf37f2elem string
-						f1valf37f2elem = *f1valf37f2iter
-						f1valf37f2 = append(f1valf37f2, &f1valf37f2elem)
-					}
-					f1valf37.SetSourcePath(f1valf37f2)
+				if f1valiter.PostgreSQLCatalogSource.Table != nil {
+					f1valf37.SetTable(*f1valiter.PostgreSQLCatalogSource.Table)
 				}
-				if f1valiter.RenameField.TargetPath != nil {
-					f1valf37f3 := []*string{}
-					for _, f1valf37f3iter := range f1valiter.RenameField.TargetPath {
-						var f1valf37f3elem string
-						f1valf37f3elem = *f1valf37f3iter
-						f1valf37f3 = append(f1valf37f3, &f1valf37f3elem)
-					}
-					f1valf37.SetTargetPath(f1valf37f3)
-				}
-				f1val.SetRenameField(f1valf37)
+				f1val.SetPostgreSQLCatalogSource(f1valf37)
 			}
-			if f1valiter.S3CatalogHudiSource != nil {
-				f1valf38 := &svcsdk.S3CatalogHudiSource{}
-				if f1valiter.S3CatalogHudiSource.AdditionalHudiOptions != nil {
-					f1valf38f0 := map[string]*string{}
-					for f1valf38f0key, f1valf38f0valiter := range f1valiter.S3CatalogHudiSource.AdditionalHudiOptions {
-						var f1valf38f0val string
-						f1valf38f0val = *f1valf38f0valiter
-						f1valf38f0[f1valf38f0key] = &f1valf38f0val
+			if f1valiter.PostgreSQLCatalogTarget != nil {
+				f1valf38 := &svcsdk.PostgreSQLCatalogTarget{}
+				if f1valiter.PostgreSQLCatalogTarget.Database != nil {
+					f1valf38.SetDatabase(*f1valiter.PostgreSQLCatalogTarget.Database)
+				}
+				if f1valiter.PostgreSQLCatalogTarget.Inputs != nil {
+					f1valf38f1 := []*string{}
+					for _, f1valf38f1iter := range f1valiter.PostgreSQLCatalogTarget.Inputs {
+						var f1valf38f1elem string
+						f1valf38f1elem = *f1valf38f1iter
+						f1valf38f1 = append(f1valf38f1, &f1valf38f1elem)
 					}
-					f1valf38.SetAdditionalHudiOptions(f1valf38f0)
+					f1valf38.SetInputs(f1valf38f1)
 				}
-				if f1valiter.S3CatalogHudiSource.Database != nil {
-					f1valf38.SetDatabase(*f1valiter.S3CatalogHudiSource.Database)
+				if f1valiter.PostgreSQLCatalogTarget.Name != nil {
+					f1valf38.SetName(*f1valiter.PostgreSQLCatalogTarget.Name)
 				}
-				if f1valiter.S3CatalogHudiSource.Name != nil {
-					f1valf38.SetName(*f1valiter.S3CatalogHudiSource.Name)
+				if f1valiter.PostgreSQLCatalogTarget.Table != nil {
+					f1valf38.SetTable(*f1valiter.PostgreSQLCatalogTarget.Table)
 				}
-				if f1valiter.S3CatalogHudiSource.OutputSchemas != nil {
-					f1valf38f3 := []*svcsdk.GlueSchema{}
-					for _, f1valf38f3iter := range f1valiter.S3CatalogHudiSource.OutputSchemas {
-						f1valf38f3elem := &svcsdk.GlueSchema{}
-						if f1valf38f3iter.Columns != nil {
-							f1valf38f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf38f3elemf0iter := range f1valf38f3iter.Columns {
-								f1valf38f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf38f3elemf0iter.Name != nil {
-									f1valf38f3elemf0elem.SetName(*f1valf38f3elemf0iter.Name)
-								}
-								if f1valf38f3elemf0iter.Type != nil {
-									f1valf38f3elemf0elem.SetType(*f1valf38f3elemf0iter.Type)
-								}
-								f1valf38f3elemf0 = append(f1valf38f3elemf0, f1valf38f3elemf0elem)
-							}
-							f1valf38f3elem.SetColumns(f1valf38f3elemf0)
-						}
-						f1valf38f3 = append(f1valf38f3, f1valf38f3elem)
-					}
-					f1valf38.SetOutputSchemas(f1valf38f3)
-				}
-				if f1valiter.S3CatalogHudiSource.Table != nil {
-					f1valf38.SetTable(*f1valiter.S3CatalogHudiSource.Table)
-				}
-				f1val.SetS3CatalogHudiSource(f1valf38)
+				f1val.SetPostgreSQLCatalogTarget(f1valf38)
 			}
-			if f1valiter.S3CatalogSource != nil {
-				f1valf39 := &svcsdk.S3CatalogSource{}
-				if f1valiter.S3CatalogSource.AdditionalOptions != nil {
-					f1valf39f0 := &svcsdk.S3SourceAdditionalOptions{}
-					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf39f0.SetBoundedFiles(*f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles)
-					}
-					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize != nil {
-						f1valf39f0.SetBoundedSize(*f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize)
-					}
-					f1valf39.SetAdditionalOptions(f1valf39f0)
+			if f1valiter.RedshiftSource != nil {
+				f1valf39 := &svcsdk.RedshiftSource{}
+				if f1valiter.RedshiftSource.Database != nil {
+					f1valf39.SetDatabase(*f1valiter.RedshiftSource.Database)
 				}
-				if f1valiter.S3CatalogSource.Database != nil {
-					f1valf39.SetDatabase(*f1valiter.S3CatalogSource.Database)
+				if f1valiter.RedshiftSource.Name != nil {
+					f1valf39.SetName(*f1valiter.RedshiftSource.Name)
 				}
-				if f1valiter.S3CatalogSource.Name != nil {
-					f1valf39.SetName(*f1valiter.S3CatalogSource.Name)
+				if f1valiter.RedshiftSource.RedshiftTmpDir != nil {
+					f1valf39.SetRedshiftTmpDir(*f1valiter.RedshiftSource.RedshiftTmpDir)
 				}
-				if f1valiter.S3CatalogSource.PartitionPredicate != nil {
-					f1valf39.SetPartitionPredicate(*f1valiter.S3CatalogSource.PartitionPredicate)
+				if f1valiter.RedshiftSource.Table != nil {
+					f1valf39.SetTable(*f1valiter.RedshiftSource.Table)
 				}
-				if f1valiter.S3CatalogSource.Table != nil {
-					f1valf39.SetTable(*f1valiter.S3CatalogSource.Table)
+				if f1valiter.RedshiftSource.TmpDirIAMRole != nil {
+					f1valf39.SetTmpDirIAMRole(*f1valiter.RedshiftSource.TmpDirIAMRole)
 				}
-				f1val.SetS3CatalogSource(f1valf39)
+				f1val.SetRedshiftSource(f1valf39)
 			}
-			if f1valiter.S3CatalogTarget != nil {
-				f1valf40 := &svcsdk.S3CatalogTarget{}
-				if f1valiter.S3CatalogTarget.Database != nil {
-					f1valf40.SetDatabase(*f1valiter.S3CatalogTarget.Database)
+			if f1valiter.RedshiftTarget != nil {
+				f1valf40 := &svcsdk.RedshiftTarget{}
+				if f1valiter.RedshiftTarget.Database != nil {
+					f1valf40.SetDatabase(*f1valiter.RedshiftTarget.Database)
 				}
-				if f1valiter.S3CatalogTarget.Inputs != nil {
+				if f1valiter.RedshiftTarget.Inputs != nil {
 					f1valf40f1 := []*string{}
-					for _, f1valf40f1iter := range f1valiter.S3CatalogTarget.Inputs {
+					for _, f1valf40f1iter := range f1valiter.RedshiftTarget.Inputs {
 						var f1valf40f1elem string
 						f1valf40f1elem = *f1valf40f1iter
 						f1valf40f1 = append(f1valf40f1, &f1valf40f1elem)
 					}
 					f1valf40.SetInputs(f1valf40f1)
 				}
-				if f1valiter.S3CatalogTarget.Name != nil {
-					f1valf40.SetName(*f1valiter.S3CatalogTarget.Name)
+				if f1valiter.RedshiftTarget.Name != nil {
+					f1valf40.SetName(*f1valiter.RedshiftTarget.Name)
 				}
-				if f1valiter.S3CatalogTarget.PartitionKeys != nil {
-					f1valf40f3 := [][]*string{}
-					for _, f1valf40f3iter := range f1valiter.S3CatalogTarget.PartitionKeys {
-						f1valf40f3elem := []*string{}
-						for _, f1valf40f3elemiter := range f1valf40f3iter {
-							var f1valf40f3elemelem string
-							f1valf40f3elemelem = *f1valf40f3elemiter
-							f1valf40f3elem = append(f1valf40f3elem, &f1valf40f3elemelem)
+				if f1valiter.RedshiftTarget.RedshiftTmpDir != nil {
+					f1valf40.SetRedshiftTmpDir(*f1valiter.RedshiftTarget.RedshiftTmpDir)
+				}
+				if f1valiter.RedshiftTarget.Table != nil {
+					f1valf40.SetTable(*f1valiter.RedshiftTarget.Table)
+				}
+				if f1valiter.RedshiftTarget.TmpDirIAMRole != nil {
+					f1valf40.SetTmpDirIAMRole(*f1valiter.RedshiftTarget.TmpDirIAMRole)
+				}
+				if f1valiter.RedshiftTarget.UpsertRedshiftOptions != nil {
+					f1valf40f6 := &svcsdk.UpsertRedshiftTargetOptions{}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName != nil {
+						f1valf40f6.SetConnectionName(*f1valiter.RedshiftTarget.UpsertRedshiftOptions.ConnectionName)
+					}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation != nil {
+						f1valf40f6.SetTableLocation(*f1valiter.RedshiftTarget.UpsertRedshiftOptions.TableLocation)
+					}
+					if f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys != nil {
+						f1valf40f6f2 := []*string{}
+						for _, f1valf40f6f2iter := range f1valiter.RedshiftTarget.UpsertRedshiftOptions.UpsertKeys {
+							var f1valf40f6f2elem string
+							f1valf40f6f2elem = *f1valf40f6f2iter
+							f1valf40f6f2 = append(f1valf40f6f2, &f1valf40f6f2elem)
 						}
-						f1valf40f3 = append(f1valf40f3, f1valf40f3elem)
+						f1valf40f6.SetUpsertKeys(f1valf40f6f2)
 					}
-					f1valf40.SetPartitionKeys(f1valf40f3)
+					f1valf40.SetUpsertRedshiftOptions(f1valf40f6)
 				}
-				if f1valiter.S3CatalogTarget.SchemaChangePolicy != nil {
-					f1valf40f4 := &svcsdk.CatalogSchemaChangePolicy{}
-					if f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf40f4.SetEnableUpdateCatalog(*f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf40f4.SetUpdateBehavior(*f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf40.SetSchemaChangePolicy(f1valf40f4)
-				}
-				if f1valiter.S3CatalogTarget.Table != nil {
-					f1valf40.SetTable(*f1valiter.S3CatalogTarget.Table)
-				}
-				f1val.SetS3CatalogTarget(f1valf40)
+				f1val.SetRedshiftTarget(f1valf40)
 			}
-			if f1valiter.S3CsvSource != nil {
-				f1valf41 := &svcsdk.S3CsvSource{}
-				if f1valiter.S3CsvSource.AdditionalOptions != nil {
-					f1valf41f0 := &svcsdk.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf41f0.SetBoundedFiles(*f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles)
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.BoundedSize != nil {
-						f1valf41f0.SetBoundedSize(*f1valiter.S3CsvSource.AdditionalOptions.BoundedSize)
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf41f0.SetEnableSamplePath(*f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath)
-					}
-					if f1valiter.S3CsvSource.AdditionalOptions.SamplePath != nil {
-						f1valf41f0.SetSamplePath(*f1valiter.S3CsvSource.AdditionalOptions.SamplePath)
-					}
-					f1valf41.SetAdditionalOptions(f1valf41f0)
+			if f1valiter.RelationalCatalogSource != nil {
+				f1valf41 := &svcsdk.RelationalCatalogSource{}
+				if f1valiter.RelationalCatalogSource.Database != nil {
+					f1valf41.SetDatabase(*f1valiter.RelationalCatalogSource.Database)
 				}
-				if f1valiter.S3CsvSource.CompressionType != nil {
-					f1valf41.SetCompressionType(*f1valiter.S3CsvSource.CompressionType)
+				if f1valiter.RelationalCatalogSource.Name != nil {
+					f1valf41.SetName(*f1valiter.RelationalCatalogSource.Name)
 				}
-				if f1valiter.S3CsvSource.Escaper != nil {
-					f1valf41.SetEscaper(*f1valiter.S3CsvSource.Escaper)
+				if f1valiter.RelationalCatalogSource.Table != nil {
+					f1valf41.SetTable(*f1valiter.RelationalCatalogSource.Table)
 				}
-				if f1valiter.S3CsvSource.Exclusions != nil {
-					f1valf41f3 := []*string{}
-					for _, f1valf41f3iter := range f1valiter.S3CsvSource.Exclusions {
-						var f1valf41f3elem string
-						f1valf41f3elem = *f1valf41f3iter
-						f1valf41f3 = append(f1valf41f3, &f1valf41f3elem)
-					}
-					f1valf41.SetExclusions(f1valf41f3)
-				}
-				if f1valiter.S3CsvSource.GroupFiles != nil {
-					f1valf41.SetGroupFiles(*f1valiter.S3CsvSource.GroupFiles)
-				}
-				if f1valiter.S3CsvSource.GroupSize != nil {
-					f1valf41.SetGroupSize(*f1valiter.S3CsvSource.GroupSize)
-				}
-				if f1valiter.S3CsvSource.MaxBand != nil {
-					f1valf41.SetMaxBand(*f1valiter.S3CsvSource.MaxBand)
-				}
-				if f1valiter.S3CsvSource.MaxFilesInBand != nil {
-					f1valf41.SetMaxFilesInBand(*f1valiter.S3CsvSource.MaxFilesInBand)
-				}
-				if f1valiter.S3CsvSource.Multiline != nil {
-					f1valf41.SetMultiline(*f1valiter.S3CsvSource.Multiline)
-				}
-				if f1valiter.S3CsvSource.Name != nil {
-					f1valf41.SetName(*f1valiter.S3CsvSource.Name)
-				}
-				if f1valiter.S3CsvSource.OptimizePerformance != nil {
-					f1valf41.SetOptimizePerformance(*f1valiter.S3CsvSource.OptimizePerformance)
-				}
-				if f1valiter.S3CsvSource.OutputSchemas != nil {
-					f1valf41f11 := []*svcsdk.GlueSchema{}
-					for _, f1valf41f11iter := range f1valiter.S3CsvSource.OutputSchemas {
-						f1valf41f11elem := &svcsdk.GlueSchema{}
-						if f1valf41f11iter.Columns != nil {
-							f1valf41f11elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf41f11elemf0iter := range f1valf41f11iter.Columns {
-								f1valf41f11elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf41f11elemf0iter.Name != nil {
-									f1valf41f11elemf0elem.SetName(*f1valf41f11elemf0iter.Name)
-								}
-								if f1valf41f11elemf0iter.Type != nil {
-									f1valf41f11elemf0elem.SetType(*f1valf41f11elemf0iter.Type)
-								}
-								f1valf41f11elemf0 = append(f1valf41f11elemf0, f1valf41f11elemf0elem)
-							}
-							f1valf41f11elem.SetColumns(f1valf41f11elemf0)
-						}
-						f1valf41f11 = append(f1valf41f11, f1valf41f11elem)
-					}
-					f1valf41.SetOutputSchemas(f1valf41f11)
-				}
-				if f1valiter.S3CsvSource.Paths != nil {
-					f1valf41f12 := []*string{}
-					for _, f1valf41f12iter := range f1valiter.S3CsvSource.Paths {
-						var f1valf41f12elem string
-						f1valf41f12elem = *f1valf41f12iter
-						f1valf41f12 = append(f1valf41f12, &f1valf41f12elem)
-					}
-					f1valf41.SetPaths(f1valf41f12)
-				}
-				if f1valiter.S3CsvSource.QuoteChar != nil {
-					f1valf41.SetQuoteChar(*f1valiter.S3CsvSource.QuoteChar)
-				}
-				if f1valiter.S3CsvSource.Recurse != nil {
-					f1valf41.SetRecurse(*f1valiter.S3CsvSource.Recurse)
-				}
-				if f1valiter.S3CsvSource.Separator != nil {
-					f1valf41.SetSeparator(*f1valiter.S3CsvSource.Separator)
-				}
-				if f1valiter.S3CsvSource.SkipFirst != nil {
-					f1valf41.SetSkipFirst(*f1valiter.S3CsvSource.SkipFirst)
-				}
-				if f1valiter.S3CsvSource.WithHeader != nil {
-					f1valf41.SetWithHeader(*f1valiter.S3CsvSource.WithHeader)
-				}
-				if f1valiter.S3CsvSource.WriteHeader != nil {
-					f1valf41.SetWriteHeader(*f1valiter.S3CsvSource.WriteHeader)
-				}
-				f1val.SetS3CsvSource(f1valf41)
+				f1val.SetRelationalCatalogSource(f1valf41)
 			}
-			if f1valiter.S3DirectTarget != nil {
-				f1valf42 := &svcsdk.S3DirectTarget{}
-				if f1valiter.S3DirectTarget.Compression != nil {
-					f1valf42.SetCompression(*f1valiter.S3DirectTarget.Compression)
+			if f1valiter.RenameField != nil {
+				f1valf42 := &svcsdk.RenameField{}
+				if f1valiter.RenameField.Inputs != nil {
+					f1valf42f0 := []*string{}
+					for _, f1valf42f0iter := range f1valiter.RenameField.Inputs {
+						var f1valf42f0elem string
+						f1valf42f0elem = *f1valf42f0iter
+						f1valf42f0 = append(f1valf42f0, &f1valf42f0elem)
+					}
+					f1valf42.SetInputs(f1valf42f0)
 				}
-				if f1valiter.S3DirectTarget.Format != nil {
-					f1valf42.SetFormat(*f1valiter.S3DirectTarget.Format)
+				if f1valiter.RenameField.Name != nil {
+					f1valf42.SetName(*f1valiter.RenameField.Name)
 				}
-				if f1valiter.S3DirectTarget.Inputs != nil {
+				if f1valiter.RenameField.SourcePath != nil {
 					f1valf42f2 := []*string{}
-					for _, f1valf42f2iter := range f1valiter.S3DirectTarget.Inputs {
+					for _, f1valf42f2iter := range f1valiter.RenameField.SourcePath {
 						var f1valf42f2elem string
 						f1valf42f2elem = *f1valf42f2iter
 						f1valf42f2 = append(f1valf42f2, &f1valf42f2elem)
 					}
-					f1valf42.SetInputs(f1valf42f2)
+					f1valf42.SetSourcePath(f1valf42f2)
 				}
-				if f1valiter.S3DirectTarget.Name != nil {
-					f1valf42.SetName(*f1valiter.S3DirectTarget.Name)
+				if f1valiter.RenameField.TargetPath != nil {
+					f1valf42f3 := []*string{}
+					for _, f1valf42f3iter := range f1valiter.RenameField.TargetPath {
+						var f1valf42f3elem string
+						f1valf42f3elem = *f1valf42f3iter
+						f1valf42f3 = append(f1valf42f3, &f1valf42f3elem)
+					}
+					f1valf42.SetTargetPath(f1valf42f3)
 				}
-				if f1valiter.S3DirectTarget.PartitionKeys != nil {
-					f1valf42f4 := [][]*string{}
-					for _, f1valf42f4iter := range f1valiter.S3DirectTarget.PartitionKeys {
-						f1valf42f4elem := []*string{}
-						for _, f1valf42f4elemiter := range f1valf42f4iter {
-							var f1valf42f4elemelem string
-							f1valf42f4elemelem = *f1valf42f4elemiter
-							f1valf42f4elem = append(f1valf42f4elem, &f1valf42f4elemelem)
-						}
-						f1valf42f4 = append(f1valf42f4, f1valf42f4elem)
-					}
-					f1valf42.SetPartitionKeys(f1valf42f4)
-				}
-				if f1valiter.S3DirectTarget.Path != nil {
-					f1valf42.SetPath(*f1valiter.S3DirectTarget.Path)
-				}
-				if f1valiter.S3DirectTarget.SchemaChangePolicy != nil {
-					f1valf42f6 := &svcsdk.DirectSchemaChangePolicy{}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.Database != nil {
-						f1valf42f6.SetDatabase(*f1valiter.S3DirectTarget.SchemaChangePolicy.Database)
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf42f6.SetEnableUpdateCatalog(*f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.Table != nil {
-						f1valf42f6.SetTable(*f1valiter.S3DirectTarget.SchemaChangePolicy.Table)
-					}
-					if f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf42f6.SetUpdateBehavior(*f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf42.SetSchemaChangePolicy(f1valf42f6)
-				}
-				f1val.SetS3DirectTarget(f1valf42)
+				f1val.SetRenameField(f1valf42)
 			}
-			if f1valiter.S3GlueParquetTarget != nil {
-				f1valf43 := &svcsdk.S3GlueParquetTarget{}
-				if f1valiter.S3GlueParquetTarget.Compression != nil {
-					f1valf43.SetCompression(*f1valiter.S3GlueParquetTarget.Compression)
-				}
-				if f1valiter.S3GlueParquetTarget.Inputs != nil {
-					f1valf43f1 := []*string{}
-					for _, f1valf43f1iter := range f1valiter.S3GlueParquetTarget.Inputs {
-						var f1valf43f1elem string
-						f1valf43f1elem = *f1valf43f1iter
-						f1valf43f1 = append(f1valf43f1, &f1valf43f1elem)
+			if f1valiter.S3CatalogDeltaSource != nil {
+				f1valf43 := &svcsdk.S3CatalogDeltaSource{}
+				if f1valiter.S3CatalogDeltaSource.AdditionalDeltaOptions != nil {
+					f1valf43f0 := map[string]*string{}
+					for f1valf43f0key, f1valf43f0valiter := range f1valiter.S3CatalogDeltaSource.AdditionalDeltaOptions {
+						var f1valf43f0val string
+						f1valf43f0val = *f1valf43f0valiter
+						f1valf43f0[f1valf43f0key] = &f1valf43f0val
 					}
-					f1valf43.SetInputs(f1valf43f1)
+					f1valf43.SetAdditionalDeltaOptions(f1valf43f0)
 				}
-				if f1valiter.S3GlueParquetTarget.Name != nil {
-					f1valf43.SetName(*f1valiter.S3GlueParquetTarget.Name)
+				if f1valiter.S3CatalogDeltaSource.Database != nil {
+					f1valf43.SetDatabase(*f1valiter.S3CatalogDeltaSource.Database)
 				}
-				if f1valiter.S3GlueParquetTarget.PartitionKeys != nil {
-					f1valf43f3 := [][]*string{}
-					for _, f1valf43f3iter := range f1valiter.S3GlueParquetTarget.PartitionKeys {
-						f1valf43f3elem := []*string{}
-						for _, f1valf43f3elemiter := range f1valf43f3iter {
-							var f1valf43f3elemelem string
-							f1valf43f3elemelem = *f1valf43f3elemiter
-							f1valf43f3elem = append(f1valf43f3elem, &f1valf43f3elemelem)
+				if f1valiter.S3CatalogDeltaSource.Name != nil {
+					f1valf43.SetName(*f1valiter.S3CatalogDeltaSource.Name)
+				}
+				if f1valiter.S3CatalogDeltaSource.OutputSchemas != nil {
+					f1valf43f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf43f3iter := range f1valiter.S3CatalogDeltaSource.OutputSchemas {
+						f1valf43f3elem := &svcsdk.GlueSchema{}
+						if f1valf43f3iter.Columns != nil {
+							f1valf43f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf43f3elemf0iter := range f1valf43f3iter.Columns {
+								f1valf43f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf43f3elemf0iter.Name != nil {
+									f1valf43f3elemf0elem.SetName(*f1valf43f3elemf0iter.Name)
+								}
+								if f1valf43f3elemf0iter.Type != nil {
+									f1valf43f3elemf0elem.SetType(*f1valf43f3elemf0iter.Type)
+								}
+								f1valf43f3elemf0 = append(f1valf43f3elemf0, f1valf43f3elemf0elem)
+							}
+							f1valf43f3elem.SetColumns(f1valf43f3elemf0)
 						}
 						f1valf43f3 = append(f1valf43f3, f1valf43f3elem)
 					}
-					f1valf43.SetPartitionKeys(f1valf43f3)
+					f1valf43.SetOutputSchemas(f1valf43f3)
 				}
-				if f1valiter.S3GlueParquetTarget.Path != nil {
-					f1valf43.SetPath(*f1valiter.S3GlueParquetTarget.Path)
+				if f1valiter.S3CatalogDeltaSource.Table != nil {
+					f1valf43.SetTable(*f1valiter.S3CatalogDeltaSource.Table)
 				}
-				if f1valiter.S3GlueParquetTarget.SchemaChangePolicy != nil {
-					f1valf43f5 := &svcsdk.DirectSchemaChangePolicy{}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database != nil {
-						f1valf43f5.SetDatabase(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database)
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf43f5.SetEnableUpdateCatalog(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table != nil {
-						f1valf43f5.SetTable(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table)
-					}
-					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf43f5.SetUpdateBehavior(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf43.SetSchemaChangePolicy(f1valf43f5)
-				}
-				f1val.SetS3GlueParquetTarget(f1valf43)
+				f1val.SetS3CatalogDeltaSource(f1valf43)
 			}
-			if f1valiter.S3HudiCatalogTarget != nil {
-				f1valf44 := &svcsdk.S3HudiCatalogTarget{}
-				if f1valiter.S3HudiCatalogTarget.AdditionalOptions != nil {
+			if f1valiter.S3CatalogHudiSource != nil {
+				f1valf44 := &svcsdk.S3CatalogHudiSource{}
+				if f1valiter.S3CatalogHudiSource.AdditionalHudiOptions != nil {
 					f1valf44f0 := map[string]*string{}
-					for f1valf44f0key, f1valf44f0valiter := range f1valiter.S3HudiCatalogTarget.AdditionalOptions {
+					for f1valf44f0key, f1valf44f0valiter := range f1valiter.S3CatalogHudiSource.AdditionalHudiOptions {
 						var f1valf44f0val string
 						f1valf44f0val = *f1valf44f0valiter
 						f1valf44f0[f1valf44f0key] = &f1valf44f0val
 					}
-					f1valf44.SetAdditionalOptions(f1valf44f0)
+					f1valf44.SetAdditionalHudiOptions(f1valf44f0)
 				}
-				if f1valiter.S3HudiCatalogTarget.Database != nil {
-					f1valf44.SetDatabase(*f1valiter.S3HudiCatalogTarget.Database)
+				if f1valiter.S3CatalogHudiSource.Database != nil {
+					f1valf44.SetDatabase(*f1valiter.S3CatalogHudiSource.Database)
 				}
-				if f1valiter.S3HudiCatalogTarget.Inputs != nil {
-					f1valf44f2 := []*string{}
-					for _, f1valf44f2iter := range f1valiter.S3HudiCatalogTarget.Inputs {
-						var f1valf44f2elem string
-						f1valf44f2elem = *f1valf44f2iter
-						f1valf44f2 = append(f1valf44f2, &f1valf44f2elem)
-					}
-					f1valf44.SetInputs(f1valf44f2)
+				if f1valiter.S3CatalogHudiSource.Name != nil {
+					f1valf44.SetName(*f1valiter.S3CatalogHudiSource.Name)
 				}
-				if f1valiter.S3HudiCatalogTarget.Name != nil {
-					f1valf44.SetName(*f1valiter.S3HudiCatalogTarget.Name)
-				}
-				if f1valiter.S3HudiCatalogTarget.PartitionKeys != nil {
-					f1valf44f4 := [][]*string{}
-					for _, f1valf44f4iter := range f1valiter.S3HudiCatalogTarget.PartitionKeys {
-						f1valf44f4elem := []*string{}
-						for _, f1valf44f4elemiter := range f1valf44f4iter {
-							var f1valf44f4elemelem string
-							f1valf44f4elemelem = *f1valf44f4elemiter
-							f1valf44f4elem = append(f1valf44f4elem, &f1valf44f4elemelem)
+				if f1valiter.S3CatalogHudiSource.OutputSchemas != nil {
+					f1valf44f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf44f3iter := range f1valiter.S3CatalogHudiSource.OutputSchemas {
+						f1valf44f3elem := &svcsdk.GlueSchema{}
+						if f1valf44f3iter.Columns != nil {
+							f1valf44f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf44f3elemf0iter := range f1valf44f3iter.Columns {
+								f1valf44f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf44f3elemf0iter.Name != nil {
+									f1valf44f3elemf0elem.SetName(*f1valf44f3elemf0iter.Name)
+								}
+								if f1valf44f3elemf0iter.Type != nil {
+									f1valf44f3elemf0elem.SetType(*f1valf44f3elemf0iter.Type)
+								}
+								f1valf44f3elemf0 = append(f1valf44f3elemf0, f1valf44f3elemf0elem)
+							}
+							f1valf44f3elem.SetColumns(f1valf44f3elemf0)
 						}
-						f1valf44f4 = append(f1valf44f4, f1valf44f4elem)
+						f1valf44f3 = append(f1valf44f3, f1valf44f3elem)
 					}
-					f1valf44.SetPartitionKeys(f1valf44f4)
+					f1valf44.SetOutputSchemas(f1valf44f3)
 				}
-				if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy != nil {
-					f1valf44f5 := &svcsdk.CatalogSchemaChangePolicy{}
-					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf44f5.SetEnableUpdateCatalog(*f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf44f5.SetUpdateBehavior(*f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf44.SetSchemaChangePolicy(f1valf44f5)
+				if f1valiter.S3CatalogHudiSource.Table != nil {
+					f1valf44.SetTable(*f1valiter.S3CatalogHudiSource.Table)
 				}
-				if f1valiter.S3HudiCatalogTarget.Table != nil {
-					f1valf44.SetTable(*f1valiter.S3HudiCatalogTarget.Table)
-				}
-				f1val.SetS3HudiCatalogTarget(f1valf44)
+				f1val.SetS3CatalogHudiSource(f1valf44)
 			}
-			if f1valiter.S3HudiDirectTarget != nil {
-				f1valf45 := &svcsdk.S3HudiDirectTarget{}
-				if f1valiter.S3HudiDirectTarget.AdditionalOptions != nil {
-					f1valf45f0 := map[string]*string{}
-					for f1valf45f0key, f1valf45f0valiter := range f1valiter.S3HudiDirectTarget.AdditionalOptions {
-						var f1valf45f0val string
-						f1valf45f0val = *f1valf45f0valiter
-						f1valf45f0[f1valf45f0key] = &f1valf45f0val
+			if f1valiter.S3CatalogSource != nil {
+				f1valf45 := &svcsdk.S3CatalogSource{}
+				if f1valiter.S3CatalogSource.AdditionalOptions != nil {
+					f1valf45f0 := &svcsdk.S3SourceAdditionalOptions{}
+					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf45f0.SetBoundedFiles(*f1valiter.S3CatalogSource.AdditionalOptions.BoundedFiles)
+					}
+					if f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize != nil {
+						f1valf45f0.SetBoundedSize(*f1valiter.S3CatalogSource.AdditionalOptions.BoundedSize)
 					}
 					f1valf45.SetAdditionalOptions(f1valf45f0)
 				}
-				if f1valiter.S3HudiDirectTarget.Compression != nil {
-					f1valf45.SetCompression(*f1valiter.S3HudiDirectTarget.Compression)
+				if f1valiter.S3CatalogSource.Database != nil {
+					f1valf45.SetDatabase(*f1valiter.S3CatalogSource.Database)
 				}
-				if f1valiter.S3HudiDirectTarget.Format != nil {
-					f1valf45.SetFormat(*f1valiter.S3HudiDirectTarget.Format)
+				if f1valiter.S3CatalogSource.Name != nil {
+					f1valf45.SetName(*f1valiter.S3CatalogSource.Name)
 				}
-				if f1valiter.S3HudiDirectTarget.Inputs != nil {
-					f1valf45f3 := []*string{}
-					for _, f1valf45f3iter := range f1valiter.S3HudiDirectTarget.Inputs {
-						var f1valf45f3elem string
-						f1valf45f3elem = *f1valf45f3iter
-						f1valf45f3 = append(f1valf45f3, &f1valf45f3elem)
-					}
-					f1valf45.SetInputs(f1valf45f3)
+				if f1valiter.S3CatalogSource.PartitionPredicate != nil {
+					f1valf45.SetPartitionPredicate(*f1valiter.S3CatalogSource.PartitionPredicate)
 				}
-				if f1valiter.S3HudiDirectTarget.Name != nil {
-					f1valf45.SetName(*f1valiter.S3HudiDirectTarget.Name)
+				if f1valiter.S3CatalogSource.Table != nil {
+					f1valf45.SetTable(*f1valiter.S3CatalogSource.Table)
 				}
-				if f1valiter.S3HudiDirectTarget.PartitionKeys != nil {
-					f1valf45f5 := [][]*string{}
-					for _, f1valf45f5iter := range f1valiter.S3HudiDirectTarget.PartitionKeys {
-						f1valf45f5elem := []*string{}
-						for _, f1valf45f5elemiter := range f1valf45f5iter {
-							var f1valf45f5elemelem string
-							f1valf45f5elemelem = *f1valf45f5elemiter
-							f1valf45f5elem = append(f1valf45f5elem, &f1valf45f5elemelem)
-						}
-						f1valf45f5 = append(f1valf45f5, f1valf45f5elem)
-					}
-					f1valf45.SetPartitionKeys(f1valf45f5)
-				}
-				if f1valiter.S3HudiDirectTarget.Path != nil {
-					f1valf45.SetPath(*f1valiter.S3HudiDirectTarget.Path)
-				}
-				if f1valiter.S3HudiDirectTarget.SchemaChangePolicy != nil {
-					f1valf45f7 := &svcsdk.DirectSchemaChangePolicy{}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database != nil {
-						f1valf45f7.SetDatabase(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database)
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
-						f1valf45f7.SetEnableUpdateCatalog(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog)
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table != nil {
-						f1valf45f7.SetTable(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table)
-					}
-					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
-						f1valf45f7.SetUpdateBehavior(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior)
-					}
-					f1valf45.SetSchemaChangePolicy(f1valf45f7)
-				}
-				f1val.SetS3HudiDirectTarget(f1valf45)
+				f1val.SetS3CatalogSource(f1valf45)
 			}
-			if f1valiter.S3HudiSource != nil {
-				f1valf46 := &svcsdk.S3HudiSource{}
-				if f1valiter.S3HudiSource.AdditionalHudiOptions != nil {
-					f1valf46f0 := map[string]*string{}
-					for f1valf46f0key, f1valf46f0valiter := range f1valiter.S3HudiSource.AdditionalHudiOptions {
-						var f1valf46f0val string
-						f1valf46f0val = *f1valf46f0valiter
-						f1valf46f0[f1valf46f0key] = &f1valf46f0val
-					}
-					f1valf46.SetAdditionalHudiOptions(f1valf46f0)
+			if f1valiter.S3CatalogTarget != nil {
+				f1valf46 := &svcsdk.S3CatalogTarget{}
+				if f1valiter.S3CatalogTarget.Database != nil {
+					f1valf46.SetDatabase(*f1valiter.S3CatalogTarget.Database)
 				}
-				if f1valiter.S3HudiSource.AdditionalOptions != nil {
-					f1valf46f1 := &svcsdk.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf46f1.SetBoundedFiles(*f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles)
+				if f1valiter.S3CatalogTarget.Inputs != nil {
+					f1valf46f1 := []*string{}
+					for _, f1valf46f1iter := range f1valiter.S3CatalogTarget.Inputs {
+						var f1valf46f1elem string
+						f1valf46f1elem = *f1valf46f1iter
+						f1valf46f1 = append(f1valf46f1, &f1valf46f1elem)
 					}
-					if f1valiter.S3HudiSource.AdditionalOptions.BoundedSize != nil {
-						f1valf46f1.SetBoundedSize(*f1valiter.S3HudiSource.AdditionalOptions.BoundedSize)
-					}
-					if f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf46f1.SetEnableSamplePath(*f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath)
-					}
-					if f1valiter.S3HudiSource.AdditionalOptions.SamplePath != nil {
-						f1valf46f1.SetSamplePath(*f1valiter.S3HudiSource.AdditionalOptions.SamplePath)
-					}
-					f1valf46.SetAdditionalOptions(f1valf46f1)
+					f1valf46.SetInputs(f1valf46f1)
 				}
-				if f1valiter.S3HudiSource.Name != nil {
-					f1valf46.SetName(*f1valiter.S3HudiSource.Name)
+				if f1valiter.S3CatalogTarget.Name != nil {
+					f1valf46.SetName(*f1valiter.S3CatalogTarget.Name)
 				}
-				if f1valiter.S3HudiSource.OutputSchemas != nil {
-					f1valf46f3 := []*svcsdk.GlueSchema{}
-					for _, f1valf46f3iter := range f1valiter.S3HudiSource.OutputSchemas {
-						f1valf46f3elem := &svcsdk.GlueSchema{}
-						if f1valf46f3iter.Columns != nil {
-							f1valf46f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf46f3elemf0iter := range f1valf46f3iter.Columns {
-								f1valf46f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf46f3elemf0iter.Name != nil {
-									f1valf46f3elemf0elem.SetName(*f1valf46f3elemf0iter.Name)
-								}
-								if f1valf46f3elemf0iter.Type != nil {
-									f1valf46f3elemf0elem.SetType(*f1valf46f3elemf0iter.Type)
-								}
-								f1valf46f3elemf0 = append(f1valf46f3elemf0, f1valf46f3elemf0elem)
-							}
-							f1valf46f3elem.SetColumns(f1valf46f3elemf0)
+				if f1valiter.S3CatalogTarget.PartitionKeys != nil {
+					f1valf46f3 := [][]*string{}
+					for _, f1valf46f3iter := range f1valiter.S3CatalogTarget.PartitionKeys {
+						f1valf46f3elem := []*string{}
+						for _, f1valf46f3elemiter := range f1valf46f3iter {
+							var f1valf46f3elemelem string
+							f1valf46f3elemelem = *f1valf46f3elemiter
+							f1valf46f3elem = append(f1valf46f3elem, &f1valf46f3elemelem)
 						}
 						f1valf46f3 = append(f1valf46f3, f1valf46f3elem)
 					}
-					f1valf46.SetOutputSchemas(f1valf46f3)
+					f1valf46.SetPartitionKeys(f1valf46f3)
 				}
-				if f1valiter.S3HudiSource.Paths != nil {
-					f1valf46f4 := []*string{}
-					for _, f1valf46f4iter := range f1valiter.S3HudiSource.Paths {
-						var f1valf46f4elem string
-						f1valf46f4elem = *f1valf46f4iter
-						f1valf46f4 = append(f1valf46f4, &f1valf46f4elem)
+				if f1valiter.S3CatalogTarget.SchemaChangePolicy != nil {
+					f1valf46f4 := &svcsdk.CatalogSchemaChangePolicy{}
+					if f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf46f4.SetEnableUpdateCatalog(*f1valiter.S3CatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
 					}
-					f1valf46.SetPaths(f1valf46f4)
+					if f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf46f4.SetUpdateBehavior(*f1valiter.S3CatalogTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf46.SetSchemaChangePolicy(f1valf46f4)
 				}
-				f1val.SetS3HudiSource(f1valf46)
+				if f1valiter.S3CatalogTarget.Table != nil {
+					f1valf46.SetTable(*f1valiter.S3CatalogTarget.Table)
+				}
+				f1val.SetS3CatalogTarget(f1valf46)
 			}
-			if f1valiter.S3JSONSource != nil {
-				f1valf47 := &svcsdk.S3JsonSource{}
-				if f1valiter.S3JSONSource.AdditionalOptions != nil {
+			if f1valiter.S3CsvSource != nil {
+				f1valf47 := &svcsdk.S3CsvSource{}
+				if f1valiter.S3CsvSource.AdditionalOptions != nil {
 					f1valf47f0 := &svcsdk.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3JSONSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf47f0.SetBoundedFiles(*f1valiter.S3JSONSource.AdditionalOptions.BoundedFiles)
+					if f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf47f0.SetBoundedFiles(*f1valiter.S3CsvSource.AdditionalOptions.BoundedFiles)
 					}
-					if f1valiter.S3JSONSource.AdditionalOptions.BoundedSize != nil {
-						f1valf47f0.SetBoundedSize(*f1valiter.S3JSONSource.AdditionalOptions.BoundedSize)
+					if f1valiter.S3CsvSource.AdditionalOptions.BoundedSize != nil {
+						f1valf47f0.SetBoundedSize(*f1valiter.S3CsvSource.AdditionalOptions.BoundedSize)
 					}
-					if f1valiter.S3JSONSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf47f0.SetEnableSamplePath(*f1valiter.S3JSONSource.AdditionalOptions.EnableSamplePath)
+					if f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf47f0.SetEnableSamplePath(*f1valiter.S3CsvSource.AdditionalOptions.EnableSamplePath)
 					}
-					if f1valiter.S3JSONSource.AdditionalOptions.SamplePath != nil {
-						f1valf47f0.SetSamplePath(*f1valiter.S3JSONSource.AdditionalOptions.SamplePath)
+					if f1valiter.S3CsvSource.AdditionalOptions.SamplePath != nil {
+						f1valf47f0.SetSamplePath(*f1valiter.S3CsvSource.AdditionalOptions.SamplePath)
 					}
 					f1valf47.SetAdditionalOptions(f1valf47f0)
 				}
-				if f1valiter.S3JSONSource.CompressionType != nil {
-					f1valf47.SetCompressionType(*f1valiter.S3JSONSource.CompressionType)
+				if f1valiter.S3CsvSource.CompressionType != nil {
+					f1valf47.SetCompressionType(*f1valiter.S3CsvSource.CompressionType)
 				}
-				if f1valiter.S3JSONSource.Exclusions != nil {
-					f1valf47f2 := []*string{}
-					for _, f1valf47f2iter := range f1valiter.S3JSONSource.Exclusions {
-						var f1valf47f2elem string
-						f1valf47f2elem = *f1valf47f2iter
-						f1valf47f2 = append(f1valf47f2, &f1valf47f2elem)
+				if f1valiter.S3CsvSource.Escaper != nil {
+					f1valf47.SetEscaper(*f1valiter.S3CsvSource.Escaper)
+				}
+				if f1valiter.S3CsvSource.Exclusions != nil {
+					f1valf47f3 := []*string{}
+					for _, f1valf47f3iter := range f1valiter.S3CsvSource.Exclusions {
+						var f1valf47f3elem string
+						f1valf47f3elem = *f1valf47f3iter
+						f1valf47f3 = append(f1valf47f3, &f1valf47f3elem)
 					}
-					f1valf47.SetExclusions(f1valf47f2)
+					f1valf47.SetExclusions(f1valf47f3)
 				}
-				if f1valiter.S3JSONSource.GroupFiles != nil {
-					f1valf47.SetGroupFiles(*f1valiter.S3JSONSource.GroupFiles)
+				if f1valiter.S3CsvSource.GroupFiles != nil {
+					f1valf47.SetGroupFiles(*f1valiter.S3CsvSource.GroupFiles)
 				}
-				if f1valiter.S3JSONSource.GroupSize != nil {
-					f1valf47.SetGroupSize(*f1valiter.S3JSONSource.GroupSize)
+				if f1valiter.S3CsvSource.GroupSize != nil {
+					f1valf47.SetGroupSize(*f1valiter.S3CsvSource.GroupSize)
 				}
-				if f1valiter.S3JSONSource.JSONPath != nil {
-					f1valf47.SetJsonPath(*f1valiter.S3JSONSource.JSONPath)
+				if f1valiter.S3CsvSource.MaxBand != nil {
+					f1valf47.SetMaxBand(*f1valiter.S3CsvSource.MaxBand)
 				}
-				if f1valiter.S3JSONSource.MaxBand != nil {
-					f1valf47.SetMaxBand(*f1valiter.S3JSONSource.MaxBand)
+				if f1valiter.S3CsvSource.MaxFilesInBand != nil {
+					f1valf47.SetMaxFilesInBand(*f1valiter.S3CsvSource.MaxFilesInBand)
 				}
-				if f1valiter.S3JSONSource.MaxFilesInBand != nil {
-					f1valf47.SetMaxFilesInBand(*f1valiter.S3JSONSource.MaxFilesInBand)
+				if f1valiter.S3CsvSource.Multiline != nil {
+					f1valf47.SetMultiline(*f1valiter.S3CsvSource.Multiline)
 				}
-				if f1valiter.S3JSONSource.Multiline != nil {
-					f1valf47.SetMultiline(*f1valiter.S3JSONSource.Multiline)
+				if f1valiter.S3CsvSource.Name != nil {
+					f1valf47.SetName(*f1valiter.S3CsvSource.Name)
 				}
-				if f1valiter.S3JSONSource.Name != nil {
-					f1valf47.SetName(*f1valiter.S3JSONSource.Name)
+				if f1valiter.S3CsvSource.OptimizePerformance != nil {
+					f1valf47.SetOptimizePerformance(*f1valiter.S3CsvSource.OptimizePerformance)
 				}
-				if f1valiter.S3JSONSource.OutputSchemas != nil {
-					f1valf47f10 := []*svcsdk.GlueSchema{}
-					for _, f1valf47f10iter := range f1valiter.S3JSONSource.OutputSchemas {
-						f1valf47f10elem := &svcsdk.GlueSchema{}
-						if f1valf47f10iter.Columns != nil {
-							f1valf47f10elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf47f10elemf0iter := range f1valf47f10iter.Columns {
-								f1valf47f10elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf47f10elemf0iter.Name != nil {
-									f1valf47f10elemf0elem.SetName(*f1valf47f10elemf0iter.Name)
+				if f1valiter.S3CsvSource.OutputSchemas != nil {
+					f1valf47f11 := []*svcsdk.GlueSchema{}
+					for _, f1valf47f11iter := range f1valiter.S3CsvSource.OutputSchemas {
+						f1valf47f11elem := &svcsdk.GlueSchema{}
+						if f1valf47f11iter.Columns != nil {
+							f1valf47f11elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf47f11elemf0iter := range f1valf47f11iter.Columns {
+								f1valf47f11elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf47f11elemf0iter.Name != nil {
+									f1valf47f11elemf0elem.SetName(*f1valf47f11elemf0iter.Name)
 								}
-								if f1valf47f10elemf0iter.Type != nil {
-									f1valf47f10elemf0elem.SetType(*f1valf47f10elemf0iter.Type)
+								if f1valf47f11elemf0iter.Type != nil {
+									f1valf47f11elemf0elem.SetType(*f1valf47f11elemf0iter.Type)
 								}
-								f1valf47f10elemf0 = append(f1valf47f10elemf0, f1valf47f10elemf0elem)
+								f1valf47f11elemf0 = append(f1valf47f11elemf0, f1valf47f11elemf0elem)
 							}
-							f1valf47f10elem.SetColumns(f1valf47f10elemf0)
+							f1valf47f11elem.SetColumns(f1valf47f11elemf0)
 						}
-						f1valf47f10 = append(f1valf47f10, f1valf47f10elem)
+						f1valf47f11 = append(f1valf47f11, f1valf47f11elem)
 					}
-					f1valf47.SetOutputSchemas(f1valf47f10)
+					f1valf47.SetOutputSchemas(f1valf47f11)
 				}
-				if f1valiter.S3JSONSource.Paths != nil {
-					f1valf47f11 := []*string{}
-					for _, f1valf47f11iter := range f1valiter.S3JSONSource.Paths {
-						var f1valf47f11elem string
-						f1valf47f11elem = *f1valf47f11iter
-						f1valf47f11 = append(f1valf47f11, &f1valf47f11elem)
+				if f1valiter.S3CsvSource.Paths != nil {
+					f1valf47f12 := []*string{}
+					for _, f1valf47f12iter := range f1valiter.S3CsvSource.Paths {
+						var f1valf47f12elem string
+						f1valf47f12elem = *f1valf47f12iter
+						f1valf47f12 = append(f1valf47f12, &f1valf47f12elem)
 					}
-					f1valf47.SetPaths(f1valf47f11)
+					f1valf47.SetPaths(f1valf47f12)
 				}
-				if f1valiter.S3JSONSource.Recurse != nil {
-					f1valf47.SetRecurse(*f1valiter.S3JSONSource.Recurse)
+				if f1valiter.S3CsvSource.QuoteChar != nil {
+					f1valf47.SetQuoteChar(*f1valiter.S3CsvSource.QuoteChar)
 				}
-				f1val.SetS3JsonSource(f1valf47)
+				if f1valiter.S3CsvSource.Recurse != nil {
+					f1valf47.SetRecurse(*f1valiter.S3CsvSource.Recurse)
+				}
+				if f1valiter.S3CsvSource.Separator != nil {
+					f1valf47.SetSeparator(*f1valiter.S3CsvSource.Separator)
+				}
+				if f1valiter.S3CsvSource.SkipFirst != nil {
+					f1valf47.SetSkipFirst(*f1valiter.S3CsvSource.SkipFirst)
+				}
+				if f1valiter.S3CsvSource.WithHeader != nil {
+					f1valf47.SetWithHeader(*f1valiter.S3CsvSource.WithHeader)
+				}
+				if f1valiter.S3CsvSource.WriteHeader != nil {
+					f1valf47.SetWriteHeader(*f1valiter.S3CsvSource.WriteHeader)
+				}
+				f1val.SetS3CsvSource(f1valf47)
 			}
-			if f1valiter.S3ParquetSource != nil {
-				f1valf48 := &svcsdk.S3ParquetSource{}
-				if f1valiter.S3ParquetSource.AdditionalOptions != nil {
-					f1valf48f0 := &svcsdk.S3DirectSourceAdditionalOptions{}
-					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles != nil {
-						f1valf48f0.SetBoundedFiles(*f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles)
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize != nil {
-						f1valf48f0.SetBoundedSize(*f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize)
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath != nil {
-						f1valf48f0.SetEnableSamplePath(*f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath)
-					}
-					if f1valiter.S3ParquetSource.AdditionalOptions.SamplePath != nil {
-						f1valf48f0.SetSamplePath(*f1valiter.S3ParquetSource.AdditionalOptions.SamplePath)
+			if f1valiter.S3DeltaCatalogTarget != nil {
+				f1valf48 := &svcsdk.S3DeltaCatalogTarget{}
+				if f1valiter.S3DeltaCatalogTarget.AdditionalOptions != nil {
+					f1valf48f0 := map[string]*string{}
+					for f1valf48f0key, f1valf48f0valiter := range f1valiter.S3DeltaCatalogTarget.AdditionalOptions {
+						var f1valf48f0val string
+						f1valf48f0val = *f1valf48f0valiter
+						f1valf48f0[f1valf48f0key] = &f1valf48f0val
 					}
 					f1valf48.SetAdditionalOptions(f1valf48f0)
 				}
-				if f1valiter.S3ParquetSource.CompressionType != nil {
-					f1valf48.SetCompressionType(*f1valiter.S3ParquetSource.CompressionType)
+				if f1valiter.S3DeltaCatalogTarget.Database != nil {
+					f1valf48.SetDatabase(*f1valiter.S3DeltaCatalogTarget.Database)
 				}
-				if f1valiter.S3ParquetSource.Exclusions != nil {
+				if f1valiter.S3DeltaCatalogTarget.Inputs != nil {
 					f1valf48f2 := []*string{}
-					for _, f1valf48f2iter := range f1valiter.S3ParquetSource.Exclusions {
+					for _, f1valf48f2iter := range f1valiter.S3DeltaCatalogTarget.Inputs {
 						var f1valf48f2elem string
 						f1valf48f2elem = *f1valf48f2iter
 						f1valf48f2 = append(f1valf48f2, &f1valf48f2elem)
 					}
-					f1valf48.SetExclusions(f1valf48f2)
+					f1valf48.SetInputs(f1valf48f2)
+				}
+				if f1valiter.S3DeltaCatalogTarget.Name != nil {
+					f1valf48.SetName(*f1valiter.S3DeltaCatalogTarget.Name)
+				}
+				if f1valiter.S3DeltaCatalogTarget.PartitionKeys != nil {
+					f1valf48f4 := [][]*string{}
+					for _, f1valf48f4iter := range f1valiter.S3DeltaCatalogTarget.PartitionKeys {
+						f1valf48f4elem := []*string{}
+						for _, f1valf48f4elemiter := range f1valf48f4iter {
+							var f1valf48f4elemelem string
+							f1valf48f4elemelem = *f1valf48f4elemiter
+							f1valf48f4elem = append(f1valf48f4elem, &f1valf48f4elemelem)
+						}
+						f1valf48f4 = append(f1valf48f4, f1valf48f4elem)
+					}
+					f1valf48.SetPartitionKeys(f1valf48f4)
+				}
+				if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy != nil {
+					f1valf48f5 := &svcsdk.CatalogSchemaChangePolicy{}
+					if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf48f5.SetEnableUpdateCatalog(*f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf48f5.SetUpdateBehavior(*f1valiter.S3DeltaCatalogTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf48.SetSchemaChangePolicy(f1valf48f5)
+				}
+				if f1valiter.S3DeltaCatalogTarget.Table != nil {
+					f1valf48.SetTable(*f1valiter.S3DeltaCatalogTarget.Table)
+				}
+				f1val.SetS3DeltaCatalogTarget(f1valf48)
+			}
+			if f1valiter.S3DeltaDirectTarget != nil {
+				f1valf49 := &svcsdk.S3DeltaDirectTarget{}
+				if f1valiter.S3DeltaDirectTarget.AdditionalOptions != nil {
+					f1valf49f0 := map[string]*string{}
+					for f1valf49f0key, f1valf49f0valiter := range f1valiter.S3DeltaDirectTarget.AdditionalOptions {
+						var f1valf49f0val string
+						f1valf49f0val = *f1valf49f0valiter
+						f1valf49f0[f1valf49f0key] = &f1valf49f0val
+					}
+					f1valf49.SetAdditionalOptions(f1valf49f0)
+				}
+				if f1valiter.S3DeltaDirectTarget.Compression != nil {
+					f1valf49.SetCompression(*f1valiter.S3DeltaDirectTarget.Compression)
+				}
+				if f1valiter.S3DeltaDirectTarget.Format != nil {
+					f1valf49.SetFormat(*f1valiter.S3DeltaDirectTarget.Format)
+				}
+				if f1valiter.S3DeltaDirectTarget.Inputs != nil {
+					f1valf49f3 := []*string{}
+					for _, f1valf49f3iter := range f1valiter.S3DeltaDirectTarget.Inputs {
+						var f1valf49f3elem string
+						f1valf49f3elem = *f1valf49f3iter
+						f1valf49f3 = append(f1valf49f3, &f1valf49f3elem)
+					}
+					f1valf49.SetInputs(f1valf49f3)
+				}
+				if f1valiter.S3DeltaDirectTarget.Name != nil {
+					f1valf49.SetName(*f1valiter.S3DeltaDirectTarget.Name)
+				}
+				if f1valiter.S3DeltaDirectTarget.PartitionKeys != nil {
+					f1valf49f5 := [][]*string{}
+					for _, f1valf49f5iter := range f1valiter.S3DeltaDirectTarget.PartitionKeys {
+						f1valf49f5elem := []*string{}
+						for _, f1valf49f5elemiter := range f1valf49f5iter {
+							var f1valf49f5elemelem string
+							f1valf49f5elemelem = *f1valf49f5elemiter
+							f1valf49f5elem = append(f1valf49f5elem, &f1valf49f5elemelem)
+						}
+						f1valf49f5 = append(f1valf49f5, f1valf49f5elem)
+					}
+					f1valf49.SetPartitionKeys(f1valf49f5)
+				}
+				if f1valiter.S3DeltaDirectTarget.Path != nil {
+					f1valf49.SetPath(*f1valiter.S3DeltaDirectTarget.Path)
+				}
+				if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy != nil {
+					f1valf49f7 := &svcsdk.DirectSchemaChangePolicy{}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf49f7.SetDatabase(*f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Database)
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf49f7.SetEnableUpdateCatalog(*f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf49f7.SetTable(*f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.Table)
+					}
+					if f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf49f7.SetUpdateBehavior(*f1valiter.S3DeltaDirectTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf49.SetSchemaChangePolicy(f1valf49f7)
+				}
+				f1val.SetS3DeltaDirectTarget(f1valf49)
+			}
+			if f1valiter.S3DeltaSource != nil {
+				f1valf50 := &svcsdk.S3DeltaSource{}
+				if f1valiter.S3DeltaSource.AdditionalDeltaOptions != nil {
+					f1valf50f0 := map[string]*string{}
+					for f1valf50f0key, f1valf50f0valiter := range f1valiter.S3DeltaSource.AdditionalDeltaOptions {
+						var f1valf50f0val string
+						f1valf50f0val = *f1valf50f0valiter
+						f1valf50f0[f1valf50f0key] = &f1valf50f0val
+					}
+					f1valf50.SetAdditionalDeltaOptions(f1valf50f0)
+				}
+				if f1valiter.S3DeltaSource.AdditionalOptions != nil {
+					f1valf50f1 := &svcsdk.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3DeltaSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf50f1.SetBoundedFiles(*f1valiter.S3DeltaSource.AdditionalOptions.BoundedFiles)
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.BoundedSize != nil {
+						f1valf50f1.SetBoundedSize(*f1valiter.S3DeltaSource.AdditionalOptions.BoundedSize)
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf50f1.SetEnableSamplePath(*f1valiter.S3DeltaSource.AdditionalOptions.EnableSamplePath)
+					}
+					if f1valiter.S3DeltaSource.AdditionalOptions.SamplePath != nil {
+						f1valf50f1.SetSamplePath(*f1valiter.S3DeltaSource.AdditionalOptions.SamplePath)
+					}
+					f1valf50.SetAdditionalOptions(f1valf50f1)
+				}
+				if f1valiter.S3DeltaSource.Name != nil {
+					f1valf50.SetName(*f1valiter.S3DeltaSource.Name)
+				}
+				if f1valiter.S3DeltaSource.OutputSchemas != nil {
+					f1valf50f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf50f3iter := range f1valiter.S3DeltaSource.OutputSchemas {
+						f1valf50f3elem := &svcsdk.GlueSchema{}
+						if f1valf50f3iter.Columns != nil {
+							f1valf50f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf50f3elemf0iter := range f1valf50f3iter.Columns {
+								f1valf50f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf50f3elemf0iter.Name != nil {
+									f1valf50f3elemf0elem.SetName(*f1valf50f3elemf0iter.Name)
+								}
+								if f1valf50f3elemf0iter.Type != nil {
+									f1valf50f3elemf0elem.SetType(*f1valf50f3elemf0iter.Type)
+								}
+								f1valf50f3elemf0 = append(f1valf50f3elemf0, f1valf50f3elemf0elem)
+							}
+							f1valf50f3elem.SetColumns(f1valf50f3elemf0)
+						}
+						f1valf50f3 = append(f1valf50f3, f1valf50f3elem)
+					}
+					f1valf50.SetOutputSchemas(f1valf50f3)
+				}
+				if f1valiter.S3DeltaSource.Paths != nil {
+					f1valf50f4 := []*string{}
+					for _, f1valf50f4iter := range f1valiter.S3DeltaSource.Paths {
+						var f1valf50f4elem string
+						f1valf50f4elem = *f1valf50f4iter
+						f1valf50f4 = append(f1valf50f4, &f1valf50f4elem)
+					}
+					f1valf50.SetPaths(f1valf50f4)
+				}
+				f1val.SetS3DeltaSource(f1valf50)
+			}
+			if f1valiter.S3DirectTarget != nil {
+				f1valf51 := &svcsdk.S3DirectTarget{}
+				if f1valiter.S3DirectTarget.Compression != nil {
+					f1valf51.SetCompression(*f1valiter.S3DirectTarget.Compression)
+				}
+				if f1valiter.S3DirectTarget.Format != nil {
+					f1valf51.SetFormat(*f1valiter.S3DirectTarget.Format)
+				}
+				if f1valiter.S3DirectTarget.Inputs != nil {
+					f1valf51f2 := []*string{}
+					for _, f1valf51f2iter := range f1valiter.S3DirectTarget.Inputs {
+						var f1valf51f2elem string
+						f1valf51f2elem = *f1valf51f2iter
+						f1valf51f2 = append(f1valf51f2, &f1valf51f2elem)
+					}
+					f1valf51.SetInputs(f1valf51f2)
+				}
+				if f1valiter.S3DirectTarget.Name != nil {
+					f1valf51.SetName(*f1valiter.S3DirectTarget.Name)
+				}
+				if f1valiter.S3DirectTarget.PartitionKeys != nil {
+					f1valf51f4 := [][]*string{}
+					for _, f1valf51f4iter := range f1valiter.S3DirectTarget.PartitionKeys {
+						f1valf51f4elem := []*string{}
+						for _, f1valf51f4elemiter := range f1valf51f4iter {
+							var f1valf51f4elemelem string
+							f1valf51f4elemelem = *f1valf51f4elemiter
+							f1valf51f4elem = append(f1valf51f4elem, &f1valf51f4elemelem)
+						}
+						f1valf51f4 = append(f1valf51f4, f1valf51f4elem)
+					}
+					f1valf51.SetPartitionKeys(f1valf51f4)
+				}
+				if f1valiter.S3DirectTarget.Path != nil {
+					f1valf51.SetPath(*f1valiter.S3DirectTarget.Path)
+				}
+				if f1valiter.S3DirectTarget.SchemaChangePolicy != nil {
+					f1valf51f6 := &svcsdk.DirectSchemaChangePolicy{}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf51f6.SetDatabase(*f1valiter.S3DirectTarget.SchemaChangePolicy.Database)
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf51f6.SetEnableUpdateCatalog(*f1valiter.S3DirectTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf51f6.SetTable(*f1valiter.S3DirectTarget.SchemaChangePolicy.Table)
+					}
+					if f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf51f6.SetUpdateBehavior(*f1valiter.S3DirectTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf51.SetSchemaChangePolicy(f1valf51f6)
+				}
+				f1val.SetS3DirectTarget(f1valf51)
+			}
+			if f1valiter.S3GlueParquetTarget != nil {
+				f1valf52 := &svcsdk.S3GlueParquetTarget{}
+				if f1valiter.S3GlueParquetTarget.Compression != nil {
+					f1valf52.SetCompression(*f1valiter.S3GlueParquetTarget.Compression)
+				}
+				if f1valiter.S3GlueParquetTarget.Inputs != nil {
+					f1valf52f1 := []*string{}
+					for _, f1valf52f1iter := range f1valiter.S3GlueParquetTarget.Inputs {
+						var f1valf52f1elem string
+						f1valf52f1elem = *f1valf52f1iter
+						f1valf52f1 = append(f1valf52f1, &f1valf52f1elem)
+					}
+					f1valf52.SetInputs(f1valf52f1)
+				}
+				if f1valiter.S3GlueParquetTarget.Name != nil {
+					f1valf52.SetName(*f1valiter.S3GlueParquetTarget.Name)
+				}
+				if f1valiter.S3GlueParquetTarget.PartitionKeys != nil {
+					f1valf52f3 := [][]*string{}
+					for _, f1valf52f3iter := range f1valiter.S3GlueParquetTarget.PartitionKeys {
+						f1valf52f3elem := []*string{}
+						for _, f1valf52f3elemiter := range f1valf52f3iter {
+							var f1valf52f3elemelem string
+							f1valf52f3elemelem = *f1valf52f3elemiter
+							f1valf52f3elem = append(f1valf52f3elem, &f1valf52f3elemelem)
+						}
+						f1valf52f3 = append(f1valf52f3, f1valf52f3elem)
+					}
+					f1valf52.SetPartitionKeys(f1valf52f3)
+				}
+				if f1valiter.S3GlueParquetTarget.Path != nil {
+					f1valf52.SetPath(*f1valiter.S3GlueParquetTarget.Path)
+				}
+				if f1valiter.S3GlueParquetTarget.SchemaChangePolicy != nil {
+					f1valf52f5 := &svcsdk.DirectSchemaChangePolicy{}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database != nil {
+						f1valf52f5.SetDatabase(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Database)
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf52f5.SetEnableUpdateCatalog(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table != nil {
+						f1valf52f5.SetTable(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.Table)
+					}
+					if f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf52f5.SetUpdateBehavior(*f1valiter.S3GlueParquetTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf52.SetSchemaChangePolicy(f1valf52f5)
+				}
+				f1val.SetS3GlueParquetTarget(f1valf52)
+			}
+			if f1valiter.S3HudiCatalogTarget != nil {
+				f1valf53 := &svcsdk.S3HudiCatalogTarget{}
+				if f1valiter.S3HudiCatalogTarget.AdditionalOptions != nil {
+					f1valf53f0 := map[string]*string{}
+					for f1valf53f0key, f1valf53f0valiter := range f1valiter.S3HudiCatalogTarget.AdditionalOptions {
+						var f1valf53f0val string
+						f1valf53f0val = *f1valf53f0valiter
+						f1valf53f0[f1valf53f0key] = &f1valf53f0val
+					}
+					f1valf53.SetAdditionalOptions(f1valf53f0)
+				}
+				if f1valiter.S3HudiCatalogTarget.Database != nil {
+					f1valf53.SetDatabase(*f1valiter.S3HudiCatalogTarget.Database)
+				}
+				if f1valiter.S3HudiCatalogTarget.Inputs != nil {
+					f1valf53f2 := []*string{}
+					for _, f1valf53f2iter := range f1valiter.S3HudiCatalogTarget.Inputs {
+						var f1valf53f2elem string
+						f1valf53f2elem = *f1valf53f2iter
+						f1valf53f2 = append(f1valf53f2, &f1valf53f2elem)
+					}
+					f1valf53.SetInputs(f1valf53f2)
+				}
+				if f1valiter.S3HudiCatalogTarget.Name != nil {
+					f1valf53.SetName(*f1valiter.S3HudiCatalogTarget.Name)
+				}
+				if f1valiter.S3HudiCatalogTarget.PartitionKeys != nil {
+					f1valf53f4 := [][]*string{}
+					for _, f1valf53f4iter := range f1valiter.S3HudiCatalogTarget.PartitionKeys {
+						f1valf53f4elem := []*string{}
+						for _, f1valf53f4elemiter := range f1valf53f4iter {
+							var f1valf53f4elemelem string
+							f1valf53f4elemelem = *f1valf53f4elemiter
+							f1valf53f4elem = append(f1valf53f4elem, &f1valf53f4elemelem)
+						}
+						f1valf53f4 = append(f1valf53f4, f1valf53f4elem)
+					}
+					f1valf53.SetPartitionKeys(f1valf53f4)
+				}
+				if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy != nil {
+					f1valf53f5 := &svcsdk.CatalogSchemaChangePolicy{}
+					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf53f5.SetEnableUpdateCatalog(*f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf53f5.SetUpdateBehavior(*f1valiter.S3HudiCatalogTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf53.SetSchemaChangePolicy(f1valf53f5)
+				}
+				if f1valiter.S3HudiCatalogTarget.Table != nil {
+					f1valf53.SetTable(*f1valiter.S3HudiCatalogTarget.Table)
+				}
+				f1val.SetS3HudiCatalogTarget(f1valf53)
+			}
+			if f1valiter.S3HudiDirectTarget != nil {
+				f1valf54 := &svcsdk.S3HudiDirectTarget{}
+				if f1valiter.S3HudiDirectTarget.AdditionalOptions != nil {
+					f1valf54f0 := map[string]*string{}
+					for f1valf54f0key, f1valf54f0valiter := range f1valiter.S3HudiDirectTarget.AdditionalOptions {
+						var f1valf54f0val string
+						f1valf54f0val = *f1valf54f0valiter
+						f1valf54f0[f1valf54f0key] = &f1valf54f0val
+					}
+					f1valf54.SetAdditionalOptions(f1valf54f0)
+				}
+				if f1valiter.S3HudiDirectTarget.Compression != nil {
+					f1valf54.SetCompression(*f1valiter.S3HudiDirectTarget.Compression)
+				}
+				if f1valiter.S3HudiDirectTarget.Format != nil {
+					f1valf54.SetFormat(*f1valiter.S3HudiDirectTarget.Format)
+				}
+				if f1valiter.S3HudiDirectTarget.Inputs != nil {
+					f1valf54f3 := []*string{}
+					for _, f1valf54f3iter := range f1valiter.S3HudiDirectTarget.Inputs {
+						var f1valf54f3elem string
+						f1valf54f3elem = *f1valf54f3iter
+						f1valf54f3 = append(f1valf54f3, &f1valf54f3elem)
+					}
+					f1valf54.SetInputs(f1valf54f3)
+				}
+				if f1valiter.S3HudiDirectTarget.Name != nil {
+					f1valf54.SetName(*f1valiter.S3HudiDirectTarget.Name)
+				}
+				if f1valiter.S3HudiDirectTarget.PartitionKeys != nil {
+					f1valf54f5 := [][]*string{}
+					for _, f1valf54f5iter := range f1valiter.S3HudiDirectTarget.PartitionKeys {
+						f1valf54f5elem := []*string{}
+						for _, f1valf54f5elemiter := range f1valf54f5iter {
+							var f1valf54f5elemelem string
+							f1valf54f5elemelem = *f1valf54f5elemiter
+							f1valf54f5elem = append(f1valf54f5elem, &f1valf54f5elemelem)
+						}
+						f1valf54f5 = append(f1valf54f5, f1valf54f5elem)
+					}
+					f1valf54.SetPartitionKeys(f1valf54f5)
+				}
+				if f1valiter.S3HudiDirectTarget.Path != nil {
+					f1valf54.SetPath(*f1valiter.S3HudiDirectTarget.Path)
+				}
+				if f1valiter.S3HudiDirectTarget.SchemaChangePolicy != nil {
+					f1valf54f7 := &svcsdk.DirectSchemaChangePolicy{}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database != nil {
+						f1valf54f7.SetDatabase(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Database)
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog != nil {
+						f1valf54f7.SetEnableUpdateCatalog(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.EnableUpdateCatalog)
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table != nil {
+						f1valf54f7.SetTable(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.Table)
+					}
+					if f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior != nil {
+						f1valf54f7.SetUpdateBehavior(*f1valiter.S3HudiDirectTarget.SchemaChangePolicy.UpdateBehavior)
+					}
+					f1valf54.SetSchemaChangePolicy(f1valf54f7)
+				}
+				f1val.SetS3HudiDirectTarget(f1valf54)
+			}
+			if f1valiter.S3HudiSource != nil {
+				f1valf55 := &svcsdk.S3HudiSource{}
+				if f1valiter.S3HudiSource.AdditionalHudiOptions != nil {
+					f1valf55f0 := map[string]*string{}
+					for f1valf55f0key, f1valf55f0valiter := range f1valiter.S3HudiSource.AdditionalHudiOptions {
+						var f1valf55f0val string
+						f1valf55f0val = *f1valf55f0valiter
+						f1valf55f0[f1valf55f0key] = &f1valf55f0val
+					}
+					f1valf55.SetAdditionalHudiOptions(f1valf55f0)
+				}
+				if f1valiter.S3HudiSource.AdditionalOptions != nil {
+					f1valf55f1 := &svcsdk.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf55f1.SetBoundedFiles(*f1valiter.S3HudiSource.AdditionalOptions.BoundedFiles)
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.BoundedSize != nil {
+						f1valf55f1.SetBoundedSize(*f1valiter.S3HudiSource.AdditionalOptions.BoundedSize)
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf55f1.SetEnableSamplePath(*f1valiter.S3HudiSource.AdditionalOptions.EnableSamplePath)
+					}
+					if f1valiter.S3HudiSource.AdditionalOptions.SamplePath != nil {
+						f1valf55f1.SetSamplePath(*f1valiter.S3HudiSource.AdditionalOptions.SamplePath)
+					}
+					f1valf55.SetAdditionalOptions(f1valf55f1)
+				}
+				if f1valiter.S3HudiSource.Name != nil {
+					f1valf55.SetName(*f1valiter.S3HudiSource.Name)
+				}
+				if f1valiter.S3HudiSource.OutputSchemas != nil {
+					f1valf55f3 := []*svcsdk.GlueSchema{}
+					for _, f1valf55f3iter := range f1valiter.S3HudiSource.OutputSchemas {
+						f1valf55f3elem := &svcsdk.GlueSchema{}
+						if f1valf55f3iter.Columns != nil {
+							f1valf55f3elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf55f3elemf0iter := range f1valf55f3iter.Columns {
+								f1valf55f3elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf55f3elemf0iter.Name != nil {
+									f1valf55f3elemf0elem.SetName(*f1valf55f3elemf0iter.Name)
+								}
+								if f1valf55f3elemf0iter.Type != nil {
+									f1valf55f3elemf0elem.SetType(*f1valf55f3elemf0iter.Type)
+								}
+								f1valf55f3elemf0 = append(f1valf55f3elemf0, f1valf55f3elemf0elem)
+							}
+							f1valf55f3elem.SetColumns(f1valf55f3elemf0)
+						}
+						f1valf55f3 = append(f1valf55f3, f1valf55f3elem)
+					}
+					f1valf55.SetOutputSchemas(f1valf55f3)
+				}
+				if f1valiter.S3HudiSource.Paths != nil {
+					f1valf55f4 := []*string{}
+					for _, f1valf55f4iter := range f1valiter.S3HudiSource.Paths {
+						var f1valf55f4elem string
+						f1valf55f4elem = *f1valf55f4iter
+						f1valf55f4 = append(f1valf55f4, &f1valf55f4elem)
+					}
+					f1valf55.SetPaths(f1valf55f4)
+				}
+				f1val.SetS3HudiSource(f1valf55)
+			}
+			if f1valiter.S3JSONSource != nil {
+				f1valf56 := &svcsdk.S3JsonSource{}
+				if f1valiter.S3JSONSource.AdditionalOptions != nil {
+					f1valf56f0 := &svcsdk.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3JSONSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf56f0.SetBoundedFiles(*f1valiter.S3JSONSource.AdditionalOptions.BoundedFiles)
+					}
+					if f1valiter.S3JSONSource.AdditionalOptions.BoundedSize != nil {
+						f1valf56f0.SetBoundedSize(*f1valiter.S3JSONSource.AdditionalOptions.BoundedSize)
+					}
+					if f1valiter.S3JSONSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf56f0.SetEnableSamplePath(*f1valiter.S3JSONSource.AdditionalOptions.EnableSamplePath)
+					}
+					if f1valiter.S3JSONSource.AdditionalOptions.SamplePath != nil {
+						f1valf56f0.SetSamplePath(*f1valiter.S3JSONSource.AdditionalOptions.SamplePath)
+					}
+					f1valf56.SetAdditionalOptions(f1valf56f0)
+				}
+				if f1valiter.S3JSONSource.CompressionType != nil {
+					f1valf56.SetCompressionType(*f1valiter.S3JSONSource.CompressionType)
+				}
+				if f1valiter.S3JSONSource.Exclusions != nil {
+					f1valf56f2 := []*string{}
+					for _, f1valf56f2iter := range f1valiter.S3JSONSource.Exclusions {
+						var f1valf56f2elem string
+						f1valf56f2elem = *f1valf56f2iter
+						f1valf56f2 = append(f1valf56f2, &f1valf56f2elem)
+					}
+					f1valf56.SetExclusions(f1valf56f2)
+				}
+				if f1valiter.S3JSONSource.GroupFiles != nil {
+					f1valf56.SetGroupFiles(*f1valiter.S3JSONSource.GroupFiles)
+				}
+				if f1valiter.S3JSONSource.GroupSize != nil {
+					f1valf56.SetGroupSize(*f1valiter.S3JSONSource.GroupSize)
+				}
+				if f1valiter.S3JSONSource.JSONPath != nil {
+					f1valf56.SetJsonPath(*f1valiter.S3JSONSource.JSONPath)
+				}
+				if f1valiter.S3JSONSource.MaxBand != nil {
+					f1valf56.SetMaxBand(*f1valiter.S3JSONSource.MaxBand)
+				}
+				if f1valiter.S3JSONSource.MaxFilesInBand != nil {
+					f1valf56.SetMaxFilesInBand(*f1valiter.S3JSONSource.MaxFilesInBand)
+				}
+				if f1valiter.S3JSONSource.Multiline != nil {
+					f1valf56.SetMultiline(*f1valiter.S3JSONSource.Multiline)
+				}
+				if f1valiter.S3JSONSource.Name != nil {
+					f1valf56.SetName(*f1valiter.S3JSONSource.Name)
+				}
+				if f1valiter.S3JSONSource.OutputSchemas != nil {
+					f1valf56f10 := []*svcsdk.GlueSchema{}
+					for _, f1valf56f10iter := range f1valiter.S3JSONSource.OutputSchemas {
+						f1valf56f10elem := &svcsdk.GlueSchema{}
+						if f1valf56f10iter.Columns != nil {
+							f1valf56f10elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf56f10elemf0iter := range f1valf56f10iter.Columns {
+								f1valf56f10elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf56f10elemf0iter.Name != nil {
+									f1valf56f10elemf0elem.SetName(*f1valf56f10elemf0iter.Name)
+								}
+								if f1valf56f10elemf0iter.Type != nil {
+									f1valf56f10elemf0elem.SetType(*f1valf56f10elemf0iter.Type)
+								}
+								f1valf56f10elemf0 = append(f1valf56f10elemf0, f1valf56f10elemf0elem)
+							}
+							f1valf56f10elem.SetColumns(f1valf56f10elemf0)
+						}
+						f1valf56f10 = append(f1valf56f10, f1valf56f10elem)
+					}
+					f1valf56.SetOutputSchemas(f1valf56f10)
+				}
+				if f1valiter.S3JSONSource.Paths != nil {
+					f1valf56f11 := []*string{}
+					for _, f1valf56f11iter := range f1valiter.S3JSONSource.Paths {
+						var f1valf56f11elem string
+						f1valf56f11elem = *f1valf56f11iter
+						f1valf56f11 = append(f1valf56f11, &f1valf56f11elem)
+					}
+					f1valf56.SetPaths(f1valf56f11)
+				}
+				if f1valiter.S3JSONSource.Recurse != nil {
+					f1valf56.SetRecurse(*f1valiter.S3JSONSource.Recurse)
+				}
+				f1val.SetS3JsonSource(f1valf56)
+			}
+			if f1valiter.S3ParquetSource != nil {
+				f1valf57 := &svcsdk.S3ParquetSource{}
+				if f1valiter.S3ParquetSource.AdditionalOptions != nil {
+					f1valf57f0 := &svcsdk.S3DirectSourceAdditionalOptions{}
+					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles != nil {
+						f1valf57f0.SetBoundedFiles(*f1valiter.S3ParquetSource.AdditionalOptions.BoundedFiles)
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize != nil {
+						f1valf57f0.SetBoundedSize(*f1valiter.S3ParquetSource.AdditionalOptions.BoundedSize)
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath != nil {
+						f1valf57f0.SetEnableSamplePath(*f1valiter.S3ParquetSource.AdditionalOptions.EnableSamplePath)
+					}
+					if f1valiter.S3ParquetSource.AdditionalOptions.SamplePath != nil {
+						f1valf57f0.SetSamplePath(*f1valiter.S3ParquetSource.AdditionalOptions.SamplePath)
+					}
+					f1valf57.SetAdditionalOptions(f1valf57f0)
+				}
+				if f1valiter.S3ParquetSource.CompressionType != nil {
+					f1valf57.SetCompressionType(*f1valiter.S3ParquetSource.CompressionType)
+				}
+				if f1valiter.S3ParquetSource.Exclusions != nil {
+					f1valf57f2 := []*string{}
+					for _, f1valf57f2iter := range f1valiter.S3ParquetSource.Exclusions {
+						var f1valf57f2elem string
+						f1valf57f2elem = *f1valf57f2iter
+						f1valf57f2 = append(f1valf57f2, &f1valf57f2elem)
+					}
+					f1valf57.SetExclusions(f1valf57f2)
 				}
 				if f1valiter.S3ParquetSource.GroupFiles != nil {
-					f1valf48.SetGroupFiles(*f1valiter.S3ParquetSource.GroupFiles)
+					f1valf57.SetGroupFiles(*f1valiter.S3ParquetSource.GroupFiles)
 				}
 				if f1valiter.S3ParquetSource.GroupSize != nil {
-					f1valf48.SetGroupSize(*f1valiter.S3ParquetSource.GroupSize)
+					f1valf57.SetGroupSize(*f1valiter.S3ParquetSource.GroupSize)
 				}
 				if f1valiter.S3ParquetSource.MaxBand != nil {
-					f1valf48.SetMaxBand(*f1valiter.S3ParquetSource.MaxBand)
+					f1valf57.SetMaxBand(*f1valiter.S3ParquetSource.MaxBand)
 				}
 				if f1valiter.S3ParquetSource.MaxFilesInBand != nil {
-					f1valf48.SetMaxFilesInBand(*f1valiter.S3ParquetSource.MaxFilesInBand)
+					f1valf57.SetMaxFilesInBand(*f1valiter.S3ParquetSource.MaxFilesInBand)
 				}
 				if f1valiter.S3ParquetSource.Name != nil {
-					f1valf48.SetName(*f1valiter.S3ParquetSource.Name)
+					f1valf57.SetName(*f1valiter.S3ParquetSource.Name)
 				}
 				if f1valiter.S3ParquetSource.OutputSchemas != nil {
-					f1valf48f8 := []*svcsdk.GlueSchema{}
-					for _, f1valf48f8iter := range f1valiter.S3ParquetSource.OutputSchemas {
-						f1valf48f8elem := &svcsdk.GlueSchema{}
-						if f1valf48f8iter.Columns != nil {
-							f1valf48f8elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf48f8elemf0iter := range f1valf48f8iter.Columns {
-								f1valf48f8elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf48f8elemf0iter.Name != nil {
-									f1valf48f8elemf0elem.SetName(*f1valf48f8elemf0iter.Name)
+					f1valf57f8 := []*svcsdk.GlueSchema{}
+					for _, f1valf57f8iter := range f1valiter.S3ParquetSource.OutputSchemas {
+						f1valf57f8elem := &svcsdk.GlueSchema{}
+						if f1valf57f8iter.Columns != nil {
+							f1valf57f8elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf57f8elemf0iter := range f1valf57f8iter.Columns {
+								f1valf57f8elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf57f8elemf0iter.Name != nil {
+									f1valf57f8elemf0elem.SetName(*f1valf57f8elemf0iter.Name)
 								}
-								if f1valf48f8elemf0iter.Type != nil {
-									f1valf48f8elemf0elem.SetType(*f1valf48f8elemf0iter.Type)
+								if f1valf57f8elemf0iter.Type != nil {
+									f1valf57f8elemf0elem.SetType(*f1valf57f8elemf0iter.Type)
 								}
-								f1valf48f8elemf0 = append(f1valf48f8elemf0, f1valf48f8elemf0elem)
+								f1valf57f8elemf0 = append(f1valf57f8elemf0, f1valf57f8elemf0elem)
 							}
-							f1valf48f8elem.SetColumns(f1valf48f8elemf0)
+							f1valf57f8elem.SetColumns(f1valf57f8elemf0)
 						}
-						f1valf48f8 = append(f1valf48f8, f1valf48f8elem)
+						f1valf57f8 = append(f1valf57f8, f1valf57f8elem)
 					}
-					f1valf48.SetOutputSchemas(f1valf48f8)
+					f1valf57.SetOutputSchemas(f1valf57f8)
 				}
 				if f1valiter.S3ParquetSource.Paths != nil {
-					f1valf48f9 := []*string{}
-					for _, f1valf48f9iter := range f1valiter.S3ParquetSource.Paths {
-						var f1valf48f9elem string
-						f1valf48f9elem = *f1valf48f9iter
-						f1valf48f9 = append(f1valf48f9, &f1valf48f9elem)
+					f1valf57f9 := []*string{}
+					for _, f1valf57f9iter := range f1valiter.S3ParquetSource.Paths {
+						var f1valf57f9elem string
+						f1valf57f9elem = *f1valf57f9iter
+						f1valf57f9 = append(f1valf57f9, &f1valf57f9elem)
 					}
-					f1valf48.SetPaths(f1valf48f9)
+					f1valf57.SetPaths(f1valf57f9)
 				}
 				if f1valiter.S3ParquetSource.Recurse != nil {
-					f1valf48.SetRecurse(*f1valiter.S3ParquetSource.Recurse)
+					f1valf57.SetRecurse(*f1valiter.S3ParquetSource.Recurse)
 				}
-				f1val.SetS3ParquetSource(f1valf48)
+				f1val.SetS3ParquetSource(f1valf57)
 			}
 			if f1valiter.SelectFields != nil {
-				f1valf49 := &svcsdk.SelectFields{}
+				f1valf58 := &svcsdk.SelectFields{}
 				if f1valiter.SelectFields.Inputs != nil {
-					f1valf49f0 := []*string{}
-					for _, f1valf49f0iter := range f1valiter.SelectFields.Inputs {
-						var f1valf49f0elem string
-						f1valf49f0elem = *f1valf49f0iter
-						f1valf49f0 = append(f1valf49f0, &f1valf49f0elem)
+					f1valf58f0 := []*string{}
+					for _, f1valf58f0iter := range f1valiter.SelectFields.Inputs {
+						var f1valf58f0elem string
+						f1valf58f0elem = *f1valf58f0iter
+						f1valf58f0 = append(f1valf58f0, &f1valf58f0elem)
 					}
-					f1valf49.SetInputs(f1valf49f0)
+					f1valf58.SetInputs(f1valf58f0)
 				}
 				if f1valiter.SelectFields.Name != nil {
-					f1valf49.SetName(*f1valiter.SelectFields.Name)
+					f1valf58.SetName(*f1valiter.SelectFields.Name)
 				}
 				if f1valiter.SelectFields.Paths != nil {
-					f1valf49f2 := [][]*string{}
-					for _, f1valf49f2iter := range f1valiter.SelectFields.Paths {
-						f1valf49f2elem := []*string{}
-						for _, f1valf49f2elemiter := range f1valf49f2iter {
-							var f1valf49f2elemelem string
-							f1valf49f2elemelem = *f1valf49f2elemiter
-							f1valf49f2elem = append(f1valf49f2elem, &f1valf49f2elemelem)
+					f1valf58f2 := [][]*string{}
+					for _, f1valf58f2iter := range f1valiter.SelectFields.Paths {
+						f1valf58f2elem := []*string{}
+						for _, f1valf58f2elemiter := range f1valf58f2iter {
+							var f1valf58f2elemelem string
+							f1valf58f2elemelem = *f1valf58f2elemiter
+							f1valf58f2elem = append(f1valf58f2elem, &f1valf58f2elemelem)
 						}
-						f1valf49f2 = append(f1valf49f2, f1valf49f2elem)
+						f1valf58f2 = append(f1valf58f2, f1valf58f2elem)
 					}
-					f1valf49.SetPaths(f1valf49f2)
+					f1valf58.SetPaths(f1valf58f2)
 				}
-				f1val.SetSelectFields(f1valf49)
+				f1val.SetSelectFields(f1valf58)
 			}
 			if f1valiter.SelectFromCollection != nil {
-				f1valf50 := &svcsdk.SelectFromCollection{}
+				f1valf59 := &svcsdk.SelectFromCollection{}
 				if f1valiter.SelectFromCollection.Index != nil {
-					f1valf50.SetIndex(*f1valiter.SelectFromCollection.Index)
+					f1valf59.SetIndex(*f1valiter.SelectFromCollection.Index)
 				}
 				if f1valiter.SelectFromCollection.Inputs != nil {
-					f1valf50f1 := []*string{}
-					for _, f1valf50f1iter := range f1valiter.SelectFromCollection.Inputs {
-						var f1valf50f1elem string
-						f1valf50f1elem = *f1valf50f1iter
-						f1valf50f1 = append(f1valf50f1, &f1valf50f1elem)
+					f1valf59f1 := []*string{}
+					for _, f1valf59f1iter := range f1valiter.SelectFromCollection.Inputs {
+						var f1valf59f1elem string
+						f1valf59f1elem = *f1valf59f1iter
+						f1valf59f1 = append(f1valf59f1, &f1valf59f1elem)
 					}
-					f1valf50.SetInputs(f1valf50f1)
+					f1valf59.SetInputs(f1valf59f1)
 				}
 				if f1valiter.SelectFromCollection.Name != nil {
-					f1valf50.SetName(*f1valiter.SelectFromCollection.Name)
+					f1valf59.SetName(*f1valiter.SelectFromCollection.Name)
 				}
-				f1val.SetSelectFromCollection(f1valf50)
+				f1val.SetSelectFromCollection(f1valf59)
 			}
 			if f1valiter.SparkConnectorSource != nil {
-				f1valf51 := &svcsdk.SparkConnectorSource{}
+				f1valf60 := &svcsdk.SparkConnectorSource{}
 				if f1valiter.SparkConnectorSource.AdditionalOptions != nil {
-					f1valf51f0 := map[string]*string{}
-					for f1valf51f0key, f1valf51f0valiter := range f1valiter.SparkConnectorSource.AdditionalOptions {
-						var f1valf51f0val string
-						f1valf51f0val = *f1valf51f0valiter
-						f1valf51f0[f1valf51f0key] = &f1valf51f0val
+					f1valf60f0 := map[string]*string{}
+					for f1valf60f0key, f1valf60f0valiter := range f1valiter.SparkConnectorSource.AdditionalOptions {
+						var f1valf60f0val string
+						f1valf60f0val = *f1valf60f0valiter
+						f1valf60f0[f1valf60f0key] = &f1valf60f0val
 					}
-					f1valf51.SetAdditionalOptions(f1valf51f0)
+					f1valf60.SetAdditionalOptions(f1valf60f0)
 				}
 				if f1valiter.SparkConnectorSource.ConnectionName != nil {
-					f1valf51.SetConnectionName(*f1valiter.SparkConnectorSource.ConnectionName)
+					f1valf60.SetConnectionName(*f1valiter.SparkConnectorSource.ConnectionName)
 				}
 				if f1valiter.SparkConnectorSource.ConnectionType != nil {
-					f1valf51.SetConnectionType(*f1valiter.SparkConnectorSource.ConnectionType)
+					f1valf60.SetConnectionType(*f1valiter.SparkConnectorSource.ConnectionType)
 				}
 				if f1valiter.SparkConnectorSource.ConnectorName != nil {
-					f1valf51.SetConnectorName(*f1valiter.SparkConnectorSource.ConnectorName)
+					f1valf60.SetConnectorName(*f1valiter.SparkConnectorSource.ConnectorName)
 				}
 				if f1valiter.SparkConnectorSource.Name != nil {
-					f1valf51.SetName(*f1valiter.SparkConnectorSource.Name)
+					f1valf60.SetName(*f1valiter.SparkConnectorSource.Name)
 				}
 				if f1valiter.SparkConnectorSource.OutputSchemas != nil {
-					f1valf51f5 := []*svcsdk.GlueSchema{}
-					for _, f1valf51f5iter := range f1valiter.SparkConnectorSource.OutputSchemas {
-						f1valf51f5elem := &svcsdk.GlueSchema{}
-						if f1valf51f5iter.Columns != nil {
-							f1valf51f5elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf51f5elemf0iter := range f1valf51f5iter.Columns {
-								f1valf51f5elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf51f5elemf0iter.Name != nil {
-									f1valf51f5elemf0elem.SetName(*f1valf51f5elemf0iter.Name)
+					f1valf60f5 := []*svcsdk.GlueSchema{}
+					for _, f1valf60f5iter := range f1valiter.SparkConnectorSource.OutputSchemas {
+						f1valf60f5elem := &svcsdk.GlueSchema{}
+						if f1valf60f5iter.Columns != nil {
+							f1valf60f5elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf60f5elemf0iter := range f1valf60f5iter.Columns {
+								f1valf60f5elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf60f5elemf0iter.Name != nil {
+									f1valf60f5elemf0elem.SetName(*f1valf60f5elemf0iter.Name)
 								}
-								if f1valf51f5elemf0iter.Type != nil {
-									f1valf51f5elemf0elem.SetType(*f1valf51f5elemf0iter.Type)
+								if f1valf60f5elemf0iter.Type != nil {
+									f1valf60f5elemf0elem.SetType(*f1valf60f5elemf0iter.Type)
 								}
-								f1valf51f5elemf0 = append(f1valf51f5elemf0, f1valf51f5elemf0elem)
+								f1valf60f5elemf0 = append(f1valf60f5elemf0, f1valf60f5elemf0elem)
 							}
-							f1valf51f5elem.SetColumns(f1valf51f5elemf0)
+							f1valf60f5elem.SetColumns(f1valf60f5elemf0)
 						}
-						f1valf51f5 = append(f1valf51f5, f1valf51f5elem)
+						f1valf60f5 = append(f1valf60f5, f1valf60f5elem)
 					}
-					f1valf51.SetOutputSchemas(f1valf51f5)
+					f1valf60.SetOutputSchemas(f1valf60f5)
 				}
-				f1val.SetSparkConnectorSource(f1valf51)
+				f1val.SetSparkConnectorSource(f1valf60)
 			}
 			if f1valiter.SparkConnectorTarget != nil {
-				f1valf52 := &svcsdk.SparkConnectorTarget{}
+				f1valf61 := &svcsdk.SparkConnectorTarget{}
 				if f1valiter.SparkConnectorTarget.AdditionalOptions != nil {
-					f1valf52f0 := map[string]*string{}
-					for f1valf52f0key, f1valf52f0valiter := range f1valiter.SparkConnectorTarget.AdditionalOptions {
-						var f1valf52f0val string
-						f1valf52f0val = *f1valf52f0valiter
-						f1valf52f0[f1valf52f0key] = &f1valf52f0val
+					f1valf61f0 := map[string]*string{}
+					for f1valf61f0key, f1valf61f0valiter := range f1valiter.SparkConnectorTarget.AdditionalOptions {
+						var f1valf61f0val string
+						f1valf61f0val = *f1valf61f0valiter
+						f1valf61f0[f1valf61f0key] = &f1valf61f0val
 					}
-					f1valf52.SetAdditionalOptions(f1valf52f0)
+					f1valf61.SetAdditionalOptions(f1valf61f0)
 				}
 				if f1valiter.SparkConnectorTarget.ConnectionName != nil {
-					f1valf52.SetConnectionName(*f1valiter.SparkConnectorTarget.ConnectionName)
+					f1valf61.SetConnectionName(*f1valiter.SparkConnectorTarget.ConnectionName)
 				}
 				if f1valiter.SparkConnectorTarget.ConnectionType != nil {
-					f1valf52.SetConnectionType(*f1valiter.SparkConnectorTarget.ConnectionType)
+					f1valf61.SetConnectionType(*f1valiter.SparkConnectorTarget.ConnectionType)
 				}
 				if f1valiter.SparkConnectorTarget.ConnectorName != nil {
-					f1valf52.SetConnectorName(*f1valiter.SparkConnectorTarget.ConnectorName)
+					f1valf61.SetConnectorName(*f1valiter.SparkConnectorTarget.ConnectorName)
 				}
 				if f1valiter.SparkConnectorTarget.Inputs != nil {
-					f1valf52f4 := []*string{}
-					for _, f1valf52f4iter := range f1valiter.SparkConnectorTarget.Inputs {
-						var f1valf52f4elem string
-						f1valf52f4elem = *f1valf52f4iter
-						f1valf52f4 = append(f1valf52f4, &f1valf52f4elem)
+					f1valf61f4 := []*string{}
+					for _, f1valf61f4iter := range f1valiter.SparkConnectorTarget.Inputs {
+						var f1valf61f4elem string
+						f1valf61f4elem = *f1valf61f4iter
+						f1valf61f4 = append(f1valf61f4, &f1valf61f4elem)
 					}
-					f1valf52.SetInputs(f1valf52f4)
+					f1valf61.SetInputs(f1valf61f4)
 				}
 				if f1valiter.SparkConnectorTarget.Name != nil {
-					f1valf52.SetName(*f1valiter.SparkConnectorTarget.Name)
+					f1valf61.SetName(*f1valiter.SparkConnectorTarget.Name)
 				}
 				if f1valiter.SparkConnectorTarget.OutputSchemas != nil {
-					f1valf52f6 := []*svcsdk.GlueSchema{}
-					for _, f1valf52f6iter := range f1valiter.SparkConnectorTarget.OutputSchemas {
-						f1valf52f6elem := &svcsdk.GlueSchema{}
-						if f1valf52f6iter.Columns != nil {
-							f1valf52f6elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf52f6elemf0iter := range f1valf52f6iter.Columns {
-								f1valf52f6elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf52f6elemf0iter.Name != nil {
-									f1valf52f6elemf0elem.SetName(*f1valf52f6elemf0iter.Name)
+					f1valf61f6 := []*svcsdk.GlueSchema{}
+					for _, f1valf61f6iter := range f1valiter.SparkConnectorTarget.OutputSchemas {
+						f1valf61f6elem := &svcsdk.GlueSchema{}
+						if f1valf61f6iter.Columns != nil {
+							f1valf61f6elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf61f6elemf0iter := range f1valf61f6iter.Columns {
+								f1valf61f6elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf61f6elemf0iter.Name != nil {
+									f1valf61f6elemf0elem.SetName(*f1valf61f6elemf0iter.Name)
 								}
-								if f1valf52f6elemf0iter.Type != nil {
-									f1valf52f6elemf0elem.SetType(*f1valf52f6elemf0iter.Type)
+								if f1valf61f6elemf0iter.Type != nil {
+									f1valf61f6elemf0elem.SetType(*f1valf61f6elemf0iter.Type)
 								}
-								f1valf52f6elemf0 = append(f1valf52f6elemf0, f1valf52f6elemf0elem)
+								f1valf61f6elemf0 = append(f1valf61f6elemf0, f1valf61f6elemf0elem)
 							}
-							f1valf52f6elem.SetColumns(f1valf52f6elemf0)
+							f1valf61f6elem.SetColumns(f1valf61f6elemf0)
 						}
-						f1valf52f6 = append(f1valf52f6, f1valf52f6elem)
+						f1valf61f6 = append(f1valf61f6, f1valf61f6elem)
 					}
-					f1valf52.SetOutputSchemas(f1valf52f6)
+					f1valf61.SetOutputSchemas(f1valf61f6)
 				}
-				f1val.SetSparkConnectorTarget(f1valf52)
+				f1val.SetSparkConnectorTarget(f1valf61)
 			}
 			if f1valiter.SparkSQL != nil {
-				f1valf53 := &svcsdk.SparkSQL{}
+				f1valf62 := &svcsdk.SparkSQL{}
 				if f1valiter.SparkSQL.Inputs != nil {
-					f1valf53f0 := []*string{}
-					for _, f1valf53f0iter := range f1valiter.SparkSQL.Inputs {
-						var f1valf53f0elem string
-						f1valf53f0elem = *f1valf53f0iter
-						f1valf53f0 = append(f1valf53f0, &f1valf53f0elem)
+					f1valf62f0 := []*string{}
+					for _, f1valf62f0iter := range f1valiter.SparkSQL.Inputs {
+						var f1valf62f0elem string
+						f1valf62f0elem = *f1valf62f0iter
+						f1valf62f0 = append(f1valf62f0, &f1valf62f0elem)
 					}
-					f1valf53.SetInputs(f1valf53f0)
+					f1valf62.SetInputs(f1valf62f0)
 				}
 				if f1valiter.SparkSQL.Name != nil {
-					f1valf53.SetName(*f1valiter.SparkSQL.Name)
+					f1valf62.SetName(*f1valiter.SparkSQL.Name)
 				}
 				if f1valiter.SparkSQL.OutputSchemas != nil {
-					f1valf53f2 := []*svcsdk.GlueSchema{}
-					for _, f1valf53f2iter := range f1valiter.SparkSQL.OutputSchemas {
-						f1valf53f2elem := &svcsdk.GlueSchema{}
-						if f1valf53f2iter.Columns != nil {
-							f1valf53f2elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
-							for _, f1valf53f2elemf0iter := range f1valf53f2iter.Columns {
-								f1valf53f2elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
-								if f1valf53f2elemf0iter.Name != nil {
-									f1valf53f2elemf0elem.SetName(*f1valf53f2elemf0iter.Name)
+					f1valf62f2 := []*svcsdk.GlueSchema{}
+					for _, f1valf62f2iter := range f1valiter.SparkSQL.OutputSchemas {
+						f1valf62f2elem := &svcsdk.GlueSchema{}
+						if f1valf62f2iter.Columns != nil {
+							f1valf62f2elemf0 := []*svcsdk.GlueStudioSchemaColumn{}
+							for _, f1valf62f2elemf0iter := range f1valf62f2iter.Columns {
+								f1valf62f2elemf0elem := &svcsdk.GlueStudioSchemaColumn{}
+								if f1valf62f2elemf0iter.Name != nil {
+									f1valf62f2elemf0elem.SetName(*f1valf62f2elemf0iter.Name)
 								}
-								if f1valf53f2elemf0iter.Type != nil {
-									f1valf53f2elemf0elem.SetType(*f1valf53f2elemf0iter.Type)
+								if f1valf62f2elemf0iter.Type != nil {
+									f1valf62f2elemf0elem.SetType(*f1valf62f2elemf0iter.Type)
 								}
-								f1valf53f2elemf0 = append(f1valf53f2elemf0, f1valf53f2elemf0elem)
+								f1valf62f2elemf0 = append(f1valf62f2elemf0, f1valf62f2elemf0elem)
 							}
-							f1valf53f2elem.SetColumns(f1valf53f2elemf0)
+							f1valf62f2elem.SetColumns(f1valf62f2elemf0)
 						}
-						f1valf53f2 = append(f1valf53f2, f1valf53f2elem)
+						f1valf62f2 = append(f1valf62f2, f1valf62f2elem)
 					}
-					f1valf53.SetOutputSchemas(f1valf53f2)
+					f1valf62.SetOutputSchemas(f1valf62f2)
 				}
 				if f1valiter.SparkSQL.SQLAliases != nil {
-					f1valf53f3 := []*svcsdk.SqlAlias{}
-					for _, f1valf53f3iter := range f1valiter.SparkSQL.SQLAliases {
-						f1valf53f3elem := &svcsdk.SqlAlias{}
-						if f1valf53f3iter.Alias != nil {
-							f1valf53f3elem.SetAlias(*f1valf53f3iter.Alias)
+					f1valf62f3 := []*svcsdk.SqlAlias{}
+					for _, f1valf62f3iter := range f1valiter.SparkSQL.SQLAliases {
+						f1valf62f3elem := &svcsdk.SqlAlias{}
+						if f1valf62f3iter.Alias != nil {
+							f1valf62f3elem.SetAlias(*f1valf62f3iter.Alias)
 						}
-						if f1valf53f3iter.From != nil {
-							f1valf53f3elem.SetFrom(*f1valf53f3iter.From)
+						if f1valf62f3iter.From != nil {
+							f1valf62f3elem.SetFrom(*f1valf62f3iter.From)
 						}
-						f1valf53f3 = append(f1valf53f3, f1valf53f3elem)
+						f1valf62f3 = append(f1valf62f3, f1valf62f3elem)
 					}
-					f1valf53.SetSqlAliases(f1valf53f3)
+					f1valf62.SetSqlAliases(f1valf62f3)
 				}
 				if f1valiter.SparkSQL.SQLQuery != nil {
-					f1valf53.SetSqlQuery(*f1valiter.SparkSQL.SQLQuery)
+					f1valf62.SetSqlQuery(*f1valiter.SparkSQL.SQLQuery)
 				}
-				f1val.SetSparkSQL(f1valf53)
+				f1val.SetSparkSQL(f1valf62)
 			}
 			if f1valiter.Spigot != nil {
-				f1valf54 := &svcsdk.Spigot{}
+				f1valf63 := &svcsdk.Spigot{}
 				if f1valiter.Spigot.Inputs != nil {
-					f1valf54f0 := []*string{}
-					for _, f1valf54f0iter := range f1valiter.Spigot.Inputs {
-						var f1valf54f0elem string
-						f1valf54f0elem = *f1valf54f0iter
-						f1valf54f0 = append(f1valf54f0, &f1valf54f0elem)
+					f1valf63f0 := []*string{}
+					for _, f1valf63f0iter := range f1valiter.Spigot.Inputs {
+						var f1valf63f0elem string
+						f1valf63f0elem = *f1valf63f0iter
+						f1valf63f0 = append(f1valf63f0, &f1valf63f0elem)
 					}
-					f1valf54.SetInputs(f1valf54f0)
+					f1valf63.SetInputs(f1valf63f0)
 				}
 				if f1valiter.Spigot.Name != nil {
-					f1valf54.SetName(*f1valiter.Spigot.Name)
+					f1valf63.SetName(*f1valiter.Spigot.Name)
 				}
 				if f1valiter.Spigot.Path != nil {
-					f1valf54.SetPath(*f1valiter.Spigot.Path)
+					f1valf63.SetPath(*f1valiter.Spigot.Path)
 				}
 				if f1valiter.Spigot.Prob != nil {
-					f1valf54.SetProb(*f1valiter.Spigot.Prob)
+					f1valf63.SetProb(*f1valiter.Spigot.Prob)
 				}
 				if f1valiter.Spigot.Topk != nil {
-					f1valf54.SetTopk(*f1valiter.Spigot.Topk)
+					f1valf63.SetTopk(*f1valiter.Spigot.Topk)
 				}
-				f1val.SetSpigot(f1valf54)
+				f1val.SetSpigot(f1valf63)
 			}
 			if f1valiter.SplitFields != nil {
-				f1valf55 := &svcsdk.SplitFields{}
+				f1valf64 := &svcsdk.SplitFields{}
 				if f1valiter.SplitFields.Inputs != nil {
-					f1valf55f0 := []*string{}
-					for _, f1valf55f0iter := range f1valiter.SplitFields.Inputs {
-						var f1valf55f0elem string
-						f1valf55f0elem = *f1valf55f0iter
-						f1valf55f0 = append(f1valf55f0, &f1valf55f0elem)
+					f1valf64f0 := []*string{}
+					for _, f1valf64f0iter := range f1valiter.SplitFields.Inputs {
+						var f1valf64f0elem string
+						f1valf64f0elem = *f1valf64f0iter
+						f1valf64f0 = append(f1valf64f0, &f1valf64f0elem)
 					}
-					f1valf55.SetInputs(f1valf55f0)
+					f1valf64.SetInputs(f1valf64f0)
 				}
 				if f1valiter.SplitFields.Name != nil {
-					f1valf55.SetName(*f1valiter.SplitFields.Name)
+					f1valf64.SetName(*f1valiter.SplitFields.Name)
 				}
 				if f1valiter.SplitFields.Paths != nil {
-					f1valf55f2 := [][]*string{}
-					for _, f1valf55f2iter := range f1valiter.SplitFields.Paths {
-						f1valf55f2elem := []*string{}
-						for _, f1valf55f2elemiter := range f1valf55f2iter {
-							var f1valf55f2elemelem string
-							f1valf55f2elemelem = *f1valf55f2elemiter
-							f1valf55f2elem = append(f1valf55f2elem, &f1valf55f2elemelem)
+					f1valf64f2 := [][]*string{}
+					for _, f1valf64f2iter := range f1valiter.SplitFields.Paths {
+						f1valf64f2elem := []*string{}
+						for _, f1valf64f2elemiter := range f1valf64f2iter {
+							var f1valf64f2elemelem string
+							f1valf64f2elemelem = *f1valf64f2elemiter
+							f1valf64f2elem = append(f1valf64f2elem, &f1valf64f2elemelem)
 						}
-						f1valf55f2 = append(f1valf55f2, f1valf55f2elem)
+						f1valf64f2 = append(f1valf64f2, f1valf64f2elem)
 					}
-					f1valf55.SetPaths(f1valf55f2)
+					f1valf64.SetPaths(f1valf64f2)
 				}
-				f1val.SetSplitFields(f1valf55)
+				f1val.SetSplitFields(f1valf64)
 			}
 			if f1valiter.Union != nil {
-				f1valf56 := &svcsdk.Union{}
+				f1valf65 := &svcsdk.Union{}
 				if f1valiter.Union.Inputs != nil {
-					f1valf56f0 := []*string{}
-					for _, f1valf56f0iter := range f1valiter.Union.Inputs {
-						var f1valf56f0elem string
-						f1valf56f0elem = *f1valf56f0iter
-						f1valf56f0 = append(f1valf56f0, &f1valf56f0elem)
+					f1valf65f0 := []*string{}
+					for _, f1valf65f0iter := range f1valiter.Union.Inputs {
+						var f1valf65f0elem string
+						f1valf65f0elem = *f1valf65f0iter
+						f1valf65f0 = append(f1valf65f0, &f1valf65f0elem)
 					}
-					f1valf56.SetInputs(f1valf56f0)
+					f1valf65.SetInputs(f1valf65f0)
 				}
 				if f1valiter.Union.Name != nil {
-					f1valf56.SetName(*f1valiter.Union.Name)
+					f1valf65.SetName(*f1valiter.Union.Name)
 				}
 				if f1valiter.Union.UnionType != nil {
-					f1valf56.SetUnionType(*f1valiter.Union.UnionType)
+					f1valf65.SetUnionType(*f1valiter.Union.UnionType)
 				}
-				f1val.SetUnion(f1valf56)
+				f1val.SetUnion(f1valf65)
 			}
 			f1[f1key] = f1val
 		}
@@ -5061,6 +6638,9 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 		}
 		if cr.Spec.ForProvider.Command.PythonVersion != nil {
 			f2.SetPythonVersion(*cr.Spec.ForProvider.Command.PythonVersion)
+		}
+		if cr.Spec.ForProvider.Command.Runtime != nil {
+			f2.SetRuntime(*cr.Spec.ForProvider.Command.Runtime)
 		}
 		if cr.Spec.ForProvider.Command.ScriptLocation != nil {
 			f2.SetScriptLocation(*cr.Spec.ForProvider.Command.ScriptLocation)

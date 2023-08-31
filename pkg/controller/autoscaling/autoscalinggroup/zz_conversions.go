@@ -569,6 +569,9 @@ func GenerateAutoScalingGroup(resp *svcsdk.DescribeAutoScalingGroupsOutput) *svc
 				if f30iter.Identifier != nil {
 					f30elem.Identifier = f30iter.Identifier
 				}
+				if f30iter.Type != nil {
+					f30elem.Type = f30iter.Type
+				}
 				f30 = append(f30, f30elem)
 			}
 			cr.Spec.ForProvider.TrafficSources = f30
@@ -1033,6 +1036,9 @@ func GenerateCreateAutoScalingGroupInput(cr *svcapitypes.AutoScalingGroup) *svcs
 			f24elem := &svcsdk.TrafficSourceIdentifier{}
 			if f24iter.Identifier != nil {
 				f24elem.SetIdentifier(*f24iter.Identifier)
+			}
+			if f24iter.Type != nil {
+				f24elem.SetType(*f24iter.Type)
 			}
 			f24 = append(f24, f24elem)
 		}
