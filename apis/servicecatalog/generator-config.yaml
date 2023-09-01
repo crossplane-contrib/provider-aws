@@ -1,0 +1,99 @@
+---
+ignore:
+  resource_names:
+    - Constraint
+    - PortfolioShare
+    - Portfolio
+    - Cluster
+    - Product
+    - ProvisionedProductPlan
+    - ProvisioningArtifact
+    - ServiceAction
+    - TagOption
+  field_paths:
+    - ProvisionProductInput.ProvisionToken
+    - UpdateProvisioningParameter.UsePreviousValue
+    - UpdateProvisioningPreferences.StackSetOperationType
+    - UpdateProvisionedProductInput.ProvisionedProductId
+    - TerminateProvisionedProductInput.ProvisionedProductId
+  shape_names:
+    - ProvisionedProductPlanSummary
+    - ProvisionedProductPlanDetails
+operations:
+  ProvisionProduct:
+    operation_type:
+      - Create
+    resource_name: ProvisionedProduct
+  UpdateProvisionedProduct:
+    operation_type:
+      - Update
+    resource_name: ProvisionedProduct
+  DescribeProvisionedProduct:
+    operation_type:
+      - Read
+    resource_name: ProvisionedProduct
+  TerminateProvisionedProduct:
+    operation_type:
+      - Delete
+    resource_name: ProvisionedProduct
+resources:
+  ProvisionedProduct:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+    fields:
+      Outputs:
+        is_read_only: true
+        custom_field:
+          map_of: RecordOutput
+      Arn:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.Arn
+      CreatedTime:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.CreatedTime
+      LastProvisioningRecordId:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.LastProvisioningRecordId
+      LastPathID:
+        is_read_only: true
+        from:
+          operation: DescribeRecord
+          path: RecordDetail.PathId
+      LastProductID:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.ProductId
+      LastProvisioningArtifactID:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.ProvisioningArtifactId
+      LaunchRoleArn:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.LaunchRoleArn
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.Status
+      StatusMessage:
+        is_read_only: true
+        from:
+          operation: DescribeProvisionedProduct
+          path: ProvisionedProductDetail.StatusMessage
+    renames:
+      operations:
+        ProvisionProduct:
+          input_fields:
+            ProvisionedProductName: Name

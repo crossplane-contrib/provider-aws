@@ -85,6 +85,7 @@ import (
 	s3control "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
 	secretsmanagerv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/secretsmanager/v1alpha1"
 	secretsmanagerv1beta1 "github.com/crossplane-contrib/provider-aws/apis/secretsmanager/v1beta1"
+	servicecatalogv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/servicecatalog/v1alpha1"
 	servicediscoveryv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	sesv2v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	sfnv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/sfn/v1alpha1"
@@ -170,6 +171,7 @@ func init() {
 		batchmanualv1alpha1.SchemeBuilder.AddToScheme,
 		emrcontainersv1alpah1.SchemeBuilder.AddToScheme,
 		autoscalingv1beta1.SchemeBuilder.AddToScheme,
+		servicecatalogv1alpha1.SchemeBuilder.AddToScheme,
 		s3control.SchemeBuilder.AddToScheme,
 	)
 }
