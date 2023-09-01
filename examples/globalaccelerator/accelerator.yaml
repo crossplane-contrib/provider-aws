@@ -1,0 +1,37 @@
+apiVersion: globalaccelerator.aws.crossplane.io/v1alpha1
+kind: Accelerator
+metadata:
+  name: sample-accelerator
+spec:
+  forProvider:
+    name: sample-accelerator
+    region: us-west-2
+    enabled: true
+---
+apiVersion: globalaccelerator.aws.crossplane.io/v1alpha1
+kind: Listener
+metadata:
+  name: sample-listener
+spec:
+  forProvider:
+    acceleratorArnRef: 
+      name: sample-accelerator
+    region: us-west-2
+    clientAffinity: SOURCE_IP
+    portRanges:
+      - fromPort: 443
+        toPort: 443
+    protocol: TCP
+
+
+---
+apiVersion: globalaccelerator.aws.crossplane.io/v1alpha1
+kind: EndpointGroup
+metadata:
+  name: sample-epg
+spec:
+  forProvider:
+    region: us-west-2
+    listenerArnRef: 
+      name: sample-listener
+    endpointGroupRegion: eu-central-1

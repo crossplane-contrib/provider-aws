@@ -58,6 +58,7 @@ import (
 	elbv2manualv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elbv2/manualv1alpha1"
 	elbv2v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 	emrcontainersv1alpah1 "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
+	globalacceleratorv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
 	gluev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	iamv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1alpha1"
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
@@ -148,6 +149,7 @@ func init() {
 		kafkav1alpha1.SchemeBuilder.AddToScheme,
 		transferv1alpha1.SchemeBuilder.AddToScheme,
 		gluev1alpha1.SchemeBuilder.AddToScheme,
+		globalacceleratorv1alpha1.SchemeBuilder.AddToScheme,
 		mqv1alpha1.SchemeBuilder.AddToScheme,
 		mwaav1alpha1.SchemeBuilder.AddToScheme,
 		cloudwatchlogsv1alpha1.SchemeBuilder.AddToScheme,
