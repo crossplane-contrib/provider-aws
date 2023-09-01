@@ -656,6 +656,27 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	if len(in.EnableCloudwatchLogsExports) == 0 && in.CloudwatchLogsExportConfiguration != nil {
 		in.EnableCloudwatchLogsExports = in.CloudwatchLogsExportConfiguration.EnableLogTypes
 	}
+
+	in.OptionGroupName = lateInitializeOptionGroupName(in.OptionGroupName, db.OptionGroupMemberships)
+
+}
+
+func lateInitializeOptionGroupName(inOptionGroupName *string, members []rdstypes.OptionGroupMembership) *string {
+
+	if inOptionGroupName == nil && len(members) != 0 {
+
+		for _, group := range members {
+			if group.OptionGroupName != nil && group.Status != nil {
+
+				// find the OptionGroup that is applied or will be applied to the DB
+				switch awsclients.StringValue(group.Status) {
+				case "in-sync", "applying", "pending-apply", "pending-maintenance-apply":
+					return group.OptionGroupName
+				}
+			}
+		}
+	}
+	return inOptionGroupName
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
@@ -680,6 +701,7 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "OptionGroupName"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "KMSKeyID"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "EnableCloudwatchLogsExports"),
 		// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "CloudwatchLogsExportConfiguration"),
