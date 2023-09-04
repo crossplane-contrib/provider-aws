@@ -225,6 +225,9 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 	}
 	var vpcEndpointTags svcapitypes.TagSpecification
 	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
+		if tagSpecification == nil {
+			continue
+		}
 		if aws.StringValue(tagSpecification.ResourceType) == "vpc-endpoint-service" {
 			vpcEndpointTags = *tagSpecification
 		}
