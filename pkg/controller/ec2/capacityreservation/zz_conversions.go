@@ -288,6 +288,17 @@ func GenerateModifyCapacityReservationInput(cr *svcapitypes.CapacityReservation)
 	return res
 }
 
+// GenerateDeleteCapacityReservationInput returns a deletion input.
+func GenerateCancelCapacityReservationInput(cr *svcapitypes.CapacityReservation) *svcsdk.CancelCapacityReservationInput {
+	res := &svcsdk.CancelCapacityReservationInput{}
+
+	if cr.Status.AtProvider.CapacityReservationID != nil {
+		res.SetCapacityReservationId(*cr.Status.AtProvider.CapacityReservationID)
+	}
+
+	return res
+}
+
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)

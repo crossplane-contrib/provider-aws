@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -123,8 +124,8 @@ func TestObserve(t *testing.T) {
 				},
 				cr: capacityReservationTesting.CapacityReservation(
 					capacityReservationTesting.WithSpec(svcapitypes.CapacityReservationParameters{
-					InstanceCount: aws.Int64(3),
-				})),
+						InstanceCount: aws.Int64(3),
+					})),
 			},
 			want: want{
 				cr: capacityReservationTesting.CapacityReservation(
@@ -132,12 +133,12 @@ func TestObserve(t *testing.T) {
 						svcapitypes.CapacityReservationObservation{
 							CapacityReservationARN: aws.String("test.capacityReservation.name"),
 							State:                  aws.String(ec2.CapacityReservationStateActive),
-							TotalInstanceCount: aws.Int64(2),
+							TotalInstanceCount:     aws.Int64(2),
 						},
 					),
 					capacityReservationTesting.WithSpec(
 						svcapitypes.CapacityReservationParameters{
-							InstanceCount:     aws.Int64(3),
+							InstanceCount: aws.Int64(3),
 						},
 					),
 					capacityReservationTesting.WithConditions(xpv1.Available()),
@@ -148,109 +149,271 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		//{name: "ValidInputWithPolicy",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//			GetAccessPointPolicyErr:         s3controlTesting.NoSuchAccessPointPolicy(),
-		//		},
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV1),
-		//		),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV1),
-		//			s3controlTesting.WithConditions(xpv1.Available()),
-		//		),
-		//		result: managed.ExternalObservation{
-		//			ResourceExists:   true,
-		//			ResourceUpToDate: false,
-		//		},
-		//	},
-		//},
-		//{name: "AccessPointPolicyUpToDate",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//			GetAccessPointPolicyOutput:      testOutputPolicyV1,
-		//		},
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV1),
-		//		),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV1),
-		//			s3controlTesting.WithConditions(xpv1.Available()),
-		//		),
-		//		result: managed.ExternalObservation{
-		//			ResourceExists:   true,
-		//			ResourceUpToDate: true,
-		//		},
-		//	},
-		//},
-		//{name: "AccessPointPolicyNotUpToDate",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//			GetAccessPointPolicyOutput:      testOutputPolicyV1,
-		//		},
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV2),
-		//		),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV2),
-		//			s3controlTesting.WithConditions(xpv1.Available()),
-		//		),
-		//		result: managed.ExternalObservation{
-		//			ResourceExists:   true,
-		//			ResourceUpToDate: false,
-		//		},
-		//	},
-		//},
-		//{name: "AccessPointPolicyNotUpToDateNeedsDeletion",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//			GetAccessPointPolicyOutput:      testOutputPolicyV1,
-		//		},
-		//		cr: s3controlTesting.AccessPoint(),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithConditions(xpv1.Available()),
-		//		),
-		//		result: managed.ExternalObservation{
-		//			ResourceExists:   true,
-		//			ResourceUpToDate: false,
-		//		},
-		//	},
-		//},
-		//{name: "FailedToDescribeAccessPointPolicy",
-		//	args: args{
-		//		client: &fake.MockS3ControlClient{
-		//			GetAccessPointWithContextOutput: s3control.GetAccessPointOutput{},
-		//			GetAccessPointPolicyErr:         errBoom,
-		//		},
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV2),
-		//		),
-		//	},
-		//	want: want{
-		//		cr: s3controlTesting.AccessPoint(
-		//			s3controlTesting.WithPolicy(testPolicyV2),
-		//		),
-		//		err: errors.Wrap(awsClient.Wrap(errBoom, errDescribePolicy), "isUpToDate check failed"),
-		//	},
-		//},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := newExternal(tt.args.kube, tt.args.client, createOptions())
 			o, err := e.Observe(context.Background(), tt.args.cr)
+			if diff := cmp.Diff(tt.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want.cr, tt.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	type args struct {
+		kube   client.Client
+		client ec2iface.EC2API
+		cr     resource.Managed
+	}
+
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalCreation
+		err    error
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "InValidInput",
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				cr:  unexpectedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		{name: "ClientError",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					CreateCapacityReservationErr: errBoom,
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.Creating()),
+				),
+				err: awsClient.Wrap(errBoom, errCreate),
+			},
+		},
+		{name: "ValidInput",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					CreateCapacityReservationOutput: ec2.CreateCapacityReservationOutput{
+						CapacityReservation: &ec2.CapacityReservation{
+							CapacityReservationArn: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStatePending),
+						},
+					},
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.Creating()),
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							CapacityReservationARN: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStatePending),
+						},
+					),
+				),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := newExternal(tt.args.kube, tt.args.client, createOptions())
+			o, err := e.Create(context.Background(), tt.args.cr)
+			if diff := cmp.Diff(tt.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want.cr, tt.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type args struct {
+		kube   client.Client
+		client ec2iface.EC2API
+		cr     resource.Managed
+	}
+
+	type want struct {
+		cr  resource.Managed
+		err error
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "InValidInput",
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				cr:  unexpectedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		{name: "ClientError",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					CancelCapacityReservationErr: errBoom,
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.Deleting()),
+				),
+				err: awsClient.Wrap(errBoom, errDelete),
+			},
+		},
+		{name: "ValidInput",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					CancelCapacityReservationOutput: ec2.CancelCapacityReservationOutput{},
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.Deleting()),
+				),
+			},
+		},
+		{name: "ResourceDoesNotExist",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					CancelCapacityReservationErr: awserr.New("NoSuchCapacityReservation", "", nil),
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.Deleting()),
+				),
+				err: awsClient.Wrap(awserr.New("NoSuchCapacityReservation", "", nil), errDelete),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := newExternal(tt.args.kube, tt.args.client, createOptions())
+			err := e.Delete(context.Background(), tt.args.cr)
+			if diff := cmp.Diff(tt.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want.cr, tt.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type args struct {
+		kube   client.Client
+		client ec2iface.EC2API
+		cr     resource.Managed
+	}
+
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "InValidInput",
+			args: args{
+				cr: unexpectedItem,
+			},
+			want: want{
+				cr:  unexpectedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		{name: "GetCapacityReservationClientError",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					ModifyCapacityReservationErr: errBoom,
+				},
+				cr: capacityReservationTesting.CapacityReservation(),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithConditions(xpv1.ReconcileError(awsClient.Wrap(errBoom, errUpdate))),
+				),
+				err: awsClient.Wrap(errBoom, errUpdate),
+			},
+		},
+		{name: "UpdateCapacityReservation",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{
+						CapacityReservations: []*ec2.CapacityReservation{
+							&ec2.CapacityReservation{
+								CapacityReservationArn: aws.String("test.capacityReservation.name"),
+								State:                  aws.String(ec2.CapacityReservationStateActive),
+								TotalInstanceCount:     aws.Int64(2),
+							},
+						},
+					},
+				},
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithSpec(svcapitypes.CapacityReservationParameters{
+						InstanceCount: aws.Int64(3),
+					})),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							CapacityReservationARN: aws.String("test.capacityReservation.name"),
+							State:                  aws.String(ec2.CapacityReservationStateActive),
+							TotalInstanceCount:     aws.Int64(3),
+						},
+					),
+					capacityReservationTesting.WithSpec(
+						svcapitypes.CapacityReservationParameters{
+							InstanceCount: aws.Int64(3),
+						},
+					),
+					capacityReservationTesting.WithConditions(xpv1.Available()),
+				),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := newExternal(tt.args.kube, tt.args.client, createOptions())
+			o, err := e.Update(context.Background(), tt.args.cr)
 			if diff := cmp.Diff(tt.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

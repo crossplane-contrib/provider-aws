@@ -277,8 +277,10 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
+	input := GenerateCancelCapacityReservationInput(cr)
+	resp, err := e.client.CancelCapacityReservationWithContext(ctx, input)
 	cr.Status.SetConditions(xpv1.Deleting())
-	return e.delete(ctx, mg)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(err, errDelete))
 }
 
 type option func(*external)
@@ -294,7 +296,7 @@ func newExternal(kube client.Client, client svcsdkapi.EC2API, opts []option) *ex
 		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
-		delete:         nopDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -314,7 +316,7 @@ type external struct {
 	isUpToDate     func(*svcapitypes.CapacityReservation, *svcsdk.CapacityReservation) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.CreateCapacityReservationInput) error
 	postCreate     func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.CreateCapacityReservationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(context.Context, cpresource.Managed) error
+	postDelete     func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.CancelCapacityReservationOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.ModifyCapacityReservationInput) error
 	postUpdate     func(context.Context, *svcapitypes.CapacityReservation, *svcsdk.ModifyCapacityReservationOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -342,8 +344,8 @@ func nopPreCreate(context.Context, *svcapitypes.CapacityReservation, *svcsdk.Cre
 func nopPostCreate(_ context.Context, _ *svcapitypes.CapacityReservation, _ *svcsdk.CreateCapacityReservationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) error {
-	return nil
+func nopPostDelete(_ context.Context, _ *svcapitypes.CapacityReservation, _ *svcsdk.CancelCapacityReservationOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.CapacityReservation, *svcsdk.ModifyCapacityReservationInput) error {
 	return nil
