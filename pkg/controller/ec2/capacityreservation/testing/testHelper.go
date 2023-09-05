@@ -8,11 +8,15 @@ import (
 )
 
 // CapacityReservationModifier is a function which modifies the CapacityReservation for testing
-type CapacityReservationModifier func(bucket *svcapitypes.CapacityReservation)
+type CapacityReservationModifier func(capacityReservation *svcapitypes.CapacityReservation)
 
 // WithConditions sets the Conditions for an CapacityReservation
 func WithConditions(c ...xpv1.Condition) CapacityReservationModifier {
 	return func(r *svcapitypes.CapacityReservation) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func WithSpec(c svcapitypes.CapacityReservationParameters) CapacityReservationModifier {
+	return func(r *svcapitypes.CapacityReservation) { r.Spec.ForProvider = c }
 }
 
 func WithStatus(s svcapitypes.CapacityReservationObservation) CapacityReservationModifier {

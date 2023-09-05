@@ -69,10 +69,16 @@ func filterList(cr *svcapitypes.CapacityReservation, list *svcsdk.DescribeCapaci
 }
 
 func isUpToDate(cr *svcapitypes.CapacityReservation, c *svcsdk.CapacityReservation) (bool, error) {
-	// Tried the approach with setting tags on the AWS resource like flowlogs it does, but this feels like a really bad solution
-	// values outside the tags could change and we wouldn't notice...
-	// therefore going with approach from s3control/accesspoint seems more reasonable, although they also seem to just compare policy fields
-	return true, nil
+	if c.AvailabilityZone != cr.Spec.ForProvider.AvailabilityZone ||
+		c.InstanceMatchCriteria != cr.Spec.ForProvider.InstanceMatchCriteria ||
+		c.InstancePlatform != cr.Spec.ForProvider.InstancePlatform ||
+		c.InstanceType != cr.Spec.ForProvider.InstanceType ||
+		c.Tenancy != cr.Spec.ForProvider.Tenancy ||
+		c.TotalInstanceCount != cr.Status.AtProvider.TotalInstanceCount {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.CapacityReservation, resp *svcsdk.CreateCapacityReservationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

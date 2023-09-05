@@ -121,7 +121,10 @@ func TestObserve(t *testing.T) {
 						},
 					}},
 				},
-				cr: capacityReservationTesting.CapacityReservation(),
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithSpec(svcapitypes.CapacityReservationParameters{
+					InstanceCount: aws.Int64(3),
+				})),
 			},
 			want: want{
 				cr: capacityReservationTesting.CapacityReservation(
@@ -129,6 +132,12 @@ func TestObserve(t *testing.T) {
 						svcapitypes.CapacityReservationObservation{
 							CapacityReservationARN: aws.String("test.capacityReservation.name"),
 							State:                  aws.String(ec2.CapacityReservationStateActive),
+							TotalInstanceCount: aws.Int64(2),
+						},
+					),
+					capacityReservationTesting.WithSpec(
+						svcapitypes.CapacityReservationParameters{
+							InstanceCount:     aws.Int64(3),
 						},
 					),
 					capacityReservationTesting.WithConditions(xpv1.Available()),
