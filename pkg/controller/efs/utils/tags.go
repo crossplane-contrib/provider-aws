@@ -18,6 +18,7 @@ package utils
 
 import (
 	"sort"
+	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/efs"
 	"github.com/aws/aws-sdk-go/service/efs/efsiface"
@@ -98,6 +99,12 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 	specMap := make(map[string]string, len(spec))
 	for _, t := range spec {
 		key := awsclient.StringValue(t.Key)
+
+		// Ignore "aws:" internal tags since they cannot be added or removed.
+		if strings.HasPrefix(key, "aws:") {
+			continue
+		}
+
 		val := awsclient.StringValue(t.Value)
 		specMap[key] = awsclient.StringValue(t.Value)
 
@@ -119,6 +126,12 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 
 	for _, t := range current {
 		key := awsclient.StringValue(t.Key)
+
+		// Ignore "aws:" internal tags since they cannot be added or removed.
+		if strings.HasPrefix(key, "aws:") {
+			continue
+		}
+
 		if _, exists := specMap[key]; !exists {
 			removeTags = append(removeTags, awsclient.String(key))
 		}
