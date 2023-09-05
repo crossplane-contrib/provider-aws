@@ -45,6 +45,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
 	"github.com/crossplane-contrib/provider-aws/pkg/version"
 )
 
@@ -74,9 +75,18 @@ const (
 	FieldRequired FieldOption = iota
 )
 
-// userAgentV2 constructs the Crossplane user agent for AWS v2 clients
-var userAgentV2 = config.WithAPIOptions([]func(*middleware.Stack) error{
+// middlewareV2 constructs the AWS SDK v2 middleware
+var middlewareV2 = config.WithAPIOptions([]func(*middleware.Stack) error{
 	awsmiddleware.AddUserAgentKeyValue("crossplane-provider-aws", version.Version),
+	func(s *middleware.Stack) error {
+		return s.Finalize.Add(recordRequestMetrics, middleware.After)
+	},
+})
+
+// recordRequestMetrics records Prometheus metrics for requests to the AWS APIs
+var recordRequestMetrics = middleware.FinalizeMiddlewareFunc("recordRequestMetrics", func(ctx context.Context, in middleware.FinalizeInput, next middleware.FinalizeHandler) (middleware.FinalizeOutput, middleware.Metadata, error) {
+	metrics.IncAWSAPICall(awsmiddleware.GetServiceID(ctx), awsmiddleware.GetOperationName(ctx), "2")
+	return next.HandleFinalize(ctx, in)
 })
 
 // userAgentV1 constructs the Crossplane user agent for AWS v1 clients
@@ -256,7 +266,7 @@ func UseProviderSecret(ctx context.Context, data []byte, profile, region string)
 
 	config, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: creds,
@@ -275,7 +285,7 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 
 	config, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: creds,
@@ -319,7 +329,7 @@ func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region str
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(cfg.Region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
@@ -339,7 +349,7 @@ func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region str
 // configured via a ServiceAccount assume Cross account IAM roles
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte, _, region string, pc *v1beta1.ProviderConfig) (*aws.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	cfg, err := config.LoadDefaultConfig(ctx, middlewareV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
@@ -354,7 +364,7 @@ func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte
 
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewWebIdentityRoleProvider(
@@ -386,13 +396,13 @@ func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws
 	if region == GlobalRegion {
 		cfg, err := config.LoadDefaultConfig(
 			ctx,
-			userAgentV2,
+			middlewareV2,
 		)
 		return &cfg, errors.Wrap(err, "failed to load default AWS config")
 	}
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 	)
 	if err != nil {
@@ -468,6 +478,9 @@ func GetSessionV1(cfg *awsv1.Config) (*session.Session, error) {
 		return nil, err
 	}
 	session.Handlers.Build.PushBackNamed(userAgentV1)
+	session.Handlers.Send.PushFront(func(r *requestv1.Request) {
+		metrics.IncAWSAPICall(r.ClientInfo.ServiceName, r.Operation.Name, "1")
+	})
 	return session, nil
 }
 
@@ -481,7 +494,7 @@ func UseProviderSecretV1AssumeRole(ctx context.Context, data []byte, pc *v1beta1
 
 	config, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: creds,
@@ -554,7 +567,7 @@ func UseProviderSecretV1(_ context.Context, data []byte, pc *v1beta1.ProviderCon
 // assume Cross account IAM role
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	cfg, err := config.LoadDefaultConfig(ctx, middlewareV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
@@ -570,7 +583,7 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 	}
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
@@ -598,7 +611,7 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 // assume Cross account IAM role
 // https://aws.amazon.com/blogs/containers/cross-account-iam-roles-for-kubernetes-service-accounts/
 func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+	cfg, err := config.LoadDefaultConfig(ctx, middlewareV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
@@ -613,7 +626,7 @@ func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []by
 
 	cnf, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewWebIdentityRoleProvider(
@@ -643,7 +656,7 @@ func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []by
 func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
-		userAgentV2,
+		middlewareV2,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")

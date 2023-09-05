@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
 )
 
 func main() {
@@ -123,6 +124,7 @@ func main() {
 		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
 	}
 
+	kingpin.FatalIfError(metrics.SetupMetrics(), "Cannot setup AWS metrics hook")
 	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 
