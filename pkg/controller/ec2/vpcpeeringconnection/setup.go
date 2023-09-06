@@ -247,6 +247,9 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	}
 	var vpcPeeringConnectionTags svcapitypes.TagSpecification
 	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
+		if tagSpecification == nil {
+			continue
+		}
 		if aws.StringValue(tagSpecification.ResourceType) == "vpc-peering-connection" {
 			vpcPeeringConnectionTags = *tagSpecification
 		}

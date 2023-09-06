@@ -372,12 +372,21 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 	}
 	var vpcEndpointTags svcapitypes.TagSpecification
 	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
+		if tagSpecification == nil {
+			continue
+		}
 		if aws.StringValue(tagSpecification.ResourceType) == "vpc-endpoint" {
 			vpcEndpointTags = *tagSpecification
 		}
 	}
 
-	tagMap := cr.Spec.ForProvider.Tags
+	var tagMap map[string]string
+	if cr.Spec.ForProvider.Tags != nil {
+		tagMap = cr.Spec.ForProvider.Tags
+	} else {
+		tagMap = map[string]string{}
+	}
+
 	tagMap["Name"] = cr.Name
 	for k, v := range cpresource.GetExternalTags(mgd) {
 		tagMap[k] = v
