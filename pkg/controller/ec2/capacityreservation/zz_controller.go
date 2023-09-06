@@ -269,6 +269,12 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyCapacityReservationWithContext(ctx, input)
+	if err != nil { 
+		cr.Status.SetConditions(xpv1.ReconcileError(awsclient.Wrap(err, errUpdate)))
+		
+	 } else {
+		cr.Status.SetConditions(xpv1.ReconcileSuccess())
+	 }
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
