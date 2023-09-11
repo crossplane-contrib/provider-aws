@@ -86,11 +86,27 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if len(resp.CapacityReservations) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
+
+	stateBeforeSync := ""
+	if cr.Status.AtProvider.State != nil {
+		stateBeforeSync = *cr.Status.AtProvider.State
+	}
+
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateCapacityReservation(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+
+	stateAfterSync := *cr.Status.AtProvider.State
+
+	if stateBeforeSync == svcsdk.CapacityReservationStateActive &&
+		stateAfterSync == svcsdk.CapacityReservationStateCancelled {
+		//create new Reservation here
+		meta.SetExternalName(cr, "")
+		meta.RemoveAnnotations(cr, meta.AnnotationKeyExternalCreateSucceeded)
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
 
 	upToDate, err := e.isUpToDate(cr, resp.CapacityReservations[0])
 	if err != nil {

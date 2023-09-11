@@ -34,11 +34,11 @@ import (
 func GenerateDescribeCapacityReservationsInput(cr *svcapitypes.CapacityReservation) *svcsdk.DescribeCapacityReservationsInput {
 	res := &svcsdk.DescribeCapacityReservationsInput{}
 
-	if cr.Status.AtProvider.CapacityReservationID != nil {
-		f0 := []*string{}
-		f0 = append(f0, cr.Status.AtProvider.CapacityReservationID)
-		res.SetCapacityReservationIds(f0)
-	}
+	//if meta.GetExternalName(cr) != "" {
+	//	f0 := []*string{}
+	//	f0 = append(f0, aws.String(meta.GetExternalName(cr)))
+	//	res.SetCapacityReservationIds(f0)
+	//}
 
 	return res
 }

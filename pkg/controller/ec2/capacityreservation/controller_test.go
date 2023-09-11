@@ -87,8 +87,8 @@ func TestObserve(t *testing.T) {
 				client: &fake.MockCapacityResourceClient{
 					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{CapacityReservations: []*ec2.CapacityReservation{
 						&ec2.CapacityReservation{
-							CapacityReservationArn: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStateActive),
+							CapacityReservationId: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateActive),
 						},
 					}},
 				},
@@ -98,8 +98,8 @@ func TestObserve(t *testing.T) {
 				cr: capacityReservationTesting.CapacityReservation(
 					capacityReservationTesting.WithStatus(
 						svcapitypes.CapacityReservationObservation{
-							CapacityReservationARN: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStateActive),
+							CapacityReservationID: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateActive),
 						},
 					),
 					capacityReservationTesting.WithConditions(xpv1.Available()),
@@ -116,9 +116,9 @@ func TestObserve(t *testing.T) {
 				client: &fake.MockCapacityResourceClient{
 					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{CapacityReservations: []*ec2.CapacityReservation{
 						&ec2.CapacityReservation{
-							CapacityReservationArn: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStateActive),
-							TotalInstanceCount:     aws.Int64(2),
+							CapacityReservationId: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateActive),
+							TotalInstanceCount:    aws.Int64(2),
 						},
 					}},
 				},
@@ -131,9 +131,9 @@ func TestObserve(t *testing.T) {
 				cr: capacityReservationTesting.CapacityReservation(
 					capacityReservationTesting.WithStatus(
 						svcapitypes.CapacityReservationObservation{
-							CapacityReservationARN: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStateActive),
-							TotalInstanceCount:     aws.Int64(2),
+							CapacityReservationID: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateActive),
+							TotalInstanceCount:    aws.Int64(2),
 						},
 					),
 					capacityReservationTesting.WithSpec(
@@ -213,8 +213,8 @@ func TestCreate(t *testing.T) {
 				client: &fake.MockCapacityResourceClient{
 					CreateCapacityReservationOutput: ec2.CreateCapacityReservationOutput{
 						CapacityReservation: &ec2.CapacityReservation{
-							CapacityReservationArn: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStatePending),
+							CapacityReservationId: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStatePending),
 						},
 					},
 				},
@@ -225,8 +225,8 @@ func TestCreate(t *testing.T) {
 					capacityReservationTesting.WithConditions(xpv1.Creating()),
 					capacityReservationTesting.WithStatus(
 						svcapitypes.CapacityReservationObservation{
-							CapacityReservationARN: aws.String("test.capacityReservation.name"),
-							State:                  aws.String(ec2.CapacityReservationStatePending),
+							CapacityReservationID: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStatePending),
 						},
 					),
 				),

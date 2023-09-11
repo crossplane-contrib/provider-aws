@@ -60,7 +60,7 @@ func filterList(cr *svcapitypes.CapacityReservation, list *svcsdk.DescribeCapaci
 	}
 	capacityReservations := []*svcsdk.CapacityReservation{}
 	for _, c := range list.CapacityReservations {
-		if aws.StringValue(c.CapacityReservationArn) == meta.GetExternalName(cr) {
+		if aws.StringValue(c.CapacityReservationId) == meta.GetExternalName(cr) {
 			capacityReservations = append(capacityReservations, c)
 		}
 	}
@@ -85,7 +85,7 @@ func postCreate(_ context.Context, cr *svcapitypes.CapacityReservation, resp *sv
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, aws.StringValue(resp.CapacityReservation.CapacityReservationArn))
+	meta.SetExternalName(cr, aws.StringValue(resp.CapacityReservation.CapacityReservationId))
 	return cre, nil
 }
 
