@@ -1,0 +1,13 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: CapacityReservation
+metadata:
+  name: sample-reservation
+spec:
+  forProvider:
+    region: us-east-1
+    availabilityZone: us-east-1a
+    instanceCount: 1
+    instanceType: t3a.nano
+    instancePlatform: "Linux/UNIX"
+  providerConfigRef:
+    name: example

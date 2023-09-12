@@ -102,7 +102,6 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 
 	if stateBeforeSync == svcsdk.CapacityReservationStateActive &&
 		stateAfterSync == svcsdk.CapacityReservationStateCancelled {
-		//create new Reservation here
 		meta.SetExternalName(cr, "")
 		meta.RemoveAnnotations(cr, meta.AnnotationKeyExternalCreateSucceeded)
 		return managed.ExternalObservation{ResourceExists: false}, nil

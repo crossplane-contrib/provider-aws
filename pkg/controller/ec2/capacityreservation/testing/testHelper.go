@@ -23,6 +23,10 @@ func WithStatus(s svcapitypes.CapacityReservationObservation) CapacityReservatio
 	return func(r *svcapitypes.CapacityReservation) { r.Status.AtProvider = s }
 }
 
+func WithExternalName(n string) CapacityReservationModifier {
+	return func(r *svcapitypes.CapacityReservation) { meta.SetExternalName(r, n) }
+}
+
 // CapacityReservation creates a CapacityReservation for use in testing
 func CapacityReservation(m ...CapacityReservationModifier) *svcapitypes.CapacityReservation {
 	cr := &svcapitypes.CapacityReservation{
@@ -33,10 +37,9 @@ func CapacityReservation(m ...CapacityReservationModifier) *svcapitypes.Capacity
 		},
 		Status: svcapitypes.CapacityReservationStatus{},
 	}
+	meta.SetExternalName(cr, "test.capacityReservation.name")
 	for _, f := range m {
 		f(cr)
 	}
-	//TODO this should be an ARN to be more plausible
-	meta.SetExternalName(cr, "test.capacityReservation.name")
 	return cr
 }

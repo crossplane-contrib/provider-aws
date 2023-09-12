@@ -149,6 +149,40 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "RecreateAlreadyDeletedResource",
+			args: args{
+				client: &fake.MockCapacityResourceClient{
+					DescribeCapacityReservationsOutput: ec2.DescribeCapacityReservationsOutput{CapacityReservations: []*ec2.CapacityReservation{
+						&ec2.CapacityReservation{
+							CapacityReservationId: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateCancelled),
+						},
+					}},
+				},
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							State: aws.String(ec2.CapacityReservationStateActive),
+						}),
+				),
+			},
+			want: want{
+				cr: capacityReservationTesting.CapacityReservation(
+					capacityReservationTesting.WithStatus(
+						svcapitypes.CapacityReservationObservation{
+							CapacityReservationID: aws.String("test.capacityReservation.name"),
+							State:                 aws.String(ec2.CapacityReservationStateCancelled),
+						},
+					),
+					capacityReservationTesting.WithExternalName(""),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   false,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
