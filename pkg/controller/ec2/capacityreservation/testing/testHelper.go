@@ -15,14 +15,17 @@ func WithConditions(c ...xpv1.Condition) CapacityReservationModifier {
 	return func(r *svcapitypes.CapacityReservation) { r.Status.ConditionedStatus.Conditions = c }
 }
 
+// WithSpec sets the Spec for an CapacityReservation
 func WithSpec(c svcapitypes.CapacityReservationParameters) CapacityReservationModifier {
 	return func(r *svcapitypes.CapacityReservation) { r.Spec.ForProvider = c }
 }
 
+// WithStatus sets the Status for an CapacityReservation
 func WithStatus(s svcapitypes.CapacityReservationObservation) CapacityReservationModifier {
 	return func(r *svcapitypes.CapacityReservation) { r.Status.AtProvider = s }
 }
 
+// WithExternalName sets the ExternalName for an CapacityReservation
 func WithExternalName(n string) CapacityReservationModifier {
 	return func(r *svcapitypes.CapacityReservation) { meta.SetExternalName(r, n) }
 }
