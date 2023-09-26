@@ -45,7 +45,50 @@ import (
 
 const (
 	errGetPasswordSecretFailed = "cannot get password secret"
+
+	// The condition CndtnPaswordSet is used to track whether the RDS master password has been
+	// set or not.
+	CndtnPaswordSet xpv1.ConditionType = "PasswordSet"
+
+	// CndtnPaswordSetReasonPending indicates that CndtnPaswordSet is False because we haven't
+	// had the chance to set the password yet.  e.g.  After a restore it is some time, several minutes,
+	// before AWS will let you set the password.
+	CndtnPaswordSetReasonPending xpv1.ConditionReason = "Pending"
+
+	// CndtnPaswordSetReasonSet indicates that CndtnPaswordSet is True because the
+	// password has been set.
+	CndtnPaswordSetReasonSet xpv1.ConditionReason = "PasswordSet"
+
+	// CndtnPaswordSetReasonFailed indicates that CndtnPaswordSet is False because an error
+	// occurred after as password set attempt.
+	CndtnPaswordSetReasonFailed xpv1.ConditionReason = "Failed"
 )
+
+// Create a CndtnPaswordSet Condition with the specified values
+func newPasswordSetCondition(sts corev1.ConditionStatus, rsn xpv1.ConditionReason, msg string) xpv1.Condition {
+	return xpv1.Condition{
+		Type:               CndtnPaswordSet,
+		Status:             sts,
+		LastTransitionTime: metav1.Now(),
+		Reason:             rsn,
+		Message:            msg,
+	}
+}
+
+// Create a CndtnPaswordSet Condition with false status, reason CndtnPaswordSetReasonPending and the provided message
+func PasswordSetPending(msg string) xpv1.Condition {
+	return newPasswordSetCondition(corev1.ConditionFalse, CndtnPaswordSetReasonPending, msg)
+}
+
+// Create a CndtnPaswordSet Condition with true status, reason CndtnPaswordSetReasonSet and the provided message
+func PasswordSet(msg string) xpv1.Condition {
+	return newPasswordSetCondition(corev1.ConditionTrue, CndtnPaswordSetReasonSet, msg)
+}
+
+// Create a CndtnPaswordSet Condition with fale status, reason CndtnPaswordSetReasonFailed and the error text in message
+func PasswordSetFail(err error) xpv1.Condition {
+	return newPasswordSetCondition(corev1.ConditionFalse, CndtnPaswordSetReasonFailed, err.Error())
+}
 
 // Client defines RDS RDSClient operations
 type Client interface {
@@ -685,6 +728,15 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 	if err != nil {
 		return false, "", err
 	}
+
+	if !pwdChanged {
+		// We test for != ConditionFalse because we don't want to disturb RDS steady state RDS created before
+		// this fix for https://github.com/crossplane-contrib/provider-aws/issues/1121 went in.
+		// False will only be set on those created after the fix went in or that had a failed password change
+		// attempt after the fix went in. ( And somehow the password setting didn't work of course )
+		pwdChanged = r.Status.GetCondition(CndtnPaswordSet).Status == corev1.ConditionFalse
+	}
+
 	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
 		return false, "", err

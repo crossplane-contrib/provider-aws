@@ -31,6 +31,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	xperrors "github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/password"
@@ -42,6 +43,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -170,7 +172,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
-	cr.SetConditions(xpv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating(), rds.PasswordSetPending("Creating"))
+	if err := e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+		return managed.ExternalCreation{}, err
+	}
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
@@ -205,6 +210,10 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 		if err != nil {
 			return awsclient.Wrap(err, errCreateFailed)
 		}
+		cr.Status.SetConditions(rds.PasswordSet("Set by CreateDBInstance"))
+		if err = e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+			return err
+		}
 		return nil
 	}
 
@@ -230,7 +239,23 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 	default:
 		return errors.New(errUnknownRestoreSource)
 	}
-	return nil
+
+	_, ret := e.client.ModifyDBInstance(ctx, &awsrds.ModifyDBInstanceInput{
+		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
+		MasterUserPassword:   aws.String(pw),
+	})
+
+	if ret == nil {
+		cr.Status.SetConditions(rds.PasswordSet("Password set via ModifyDBInstance in Create"))
+	} else {
+		cr.Status.SetConditions(rds.PasswordSetFail(ret))
+	}
+
+	if err := e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+		return xperrors.Join(ret, err)
+	}
+
+	return ret
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
@@ -262,15 +287,54 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
+
+	// In this additional check we test for != ConditionFalse because we don't want to disturb RDS
+	// steady state RDS created before this fix for https://github.com/crossplane-contrib/provider-aws/issues/1121
+	// was added.
+	// False will only be set on those created after the fix went in or that had a password change attempt after
+	// the fix went in. ( And somehow the password setting didn't work of course )
+	if cr.Status.GetCondition(rds.CndtnPaswordSet).Status == corev1.ConditionFalse {
+		changed = true
+	}
+	if changed {
+		cr.Status.SetConditions(rds.PasswordSetPending("Updating"))
+		if err = e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+			return managed.ExternalUpdate{}, err
+		}
+		// In case of restore from snapshot we still might not have a set password when we get here.
+		// So like in CreateOrRestore we look for "" and generate a password if we see it.
+		if pwd == "" {
+			pwd, err = password.Generate()
+			if err != nil {
+				return managed.ExternalUpdate{}, err
+			}
+		}
+	}
+
 	if changed {
 		conn = managed.ConnectionDetails{
 			xpv1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
+			// If we're here after after restore from Snapshot then user name
+			// might not be set.
+			xpv1.ResourceCredentialsSecretUserKey: []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername)),
 		}
 		modify.MasterUserPassword = aws.String(pwd)
 	}
 
 	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
+		if changed {
+			cr.Status.SetConditions(rds.PasswordSetFail(err))
+			if errSts := e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+				return managed.ExternalUpdate{}, xperrors.Join(err, errSts)
+			}
+		}
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
+	}
+	if changed {
+		cr.Status.SetConditions(rds.PasswordSet("Password set via ModifyDBInstance in Update"))
+		if err = e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
+			return managed.ExternalUpdate{}, err
+		}
 	}
 	if len(patch.Tags) > 0 {
 		tags := make([]awsrdstypes.Tag, len(patch.Tags))
