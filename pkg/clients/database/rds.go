@@ -46,7 +46,7 @@ import (
 const (
 	errGetPasswordSecretFailed = "cannot get password secret"
 
-	// The condition CndtnPaswordSet is used to track whether the RDS master password has been
+	// CndtnPaswordSet This used to track whether the RDS master password has been
 	// set or not.
 	CndtnPaswordSet xpv1.ConditionType = "PasswordSet"
 
@@ -75,17 +75,17 @@ func newPasswordSetCondition(sts corev1.ConditionStatus, rsn xpv1.ConditionReaso
 	}
 }
 
-// Create a CndtnPaswordSet Condition with false status, reason CndtnPaswordSetReasonPending and the provided message
+// PasswordSetPending creates a CndtnPaswordSet Condition with false status, reason CndtnPaswordSetReasonPending and the provided message
 func PasswordSetPending(msg string) xpv1.Condition {
 	return newPasswordSetCondition(corev1.ConditionFalse, CndtnPaswordSetReasonPending, msg)
 }
 
-// Create a CndtnPaswordSet Condition with true status, reason CndtnPaswordSetReasonSet and the provided message
+// PasswordSet creates a CndtnPaswordSet Condition with true status, reason CndtnPaswordSetReasonSet and the provided message
 func PasswordSet(msg string) xpv1.Condition {
 	return newPasswordSetCondition(corev1.ConditionTrue, CndtnPaswordSetReasonSet, msg)
 }
 
-// Create a CndtnPaswordSet Condition with fale status, reason CndtnPaswordSetReasonFailed and the error text in message
+// PasswordSetFail creates a CndtnPaswordSet Condition with fale status, reason CndtnPaswordSetReasonFailed and the error text in message
 func PasswordSetFail(err error) xpv1.Condition {
 	return newPasswordSetCondition(corev1.ConditionFalse, CndtnPaswordSetReasonFailed, err.Error())
 }
