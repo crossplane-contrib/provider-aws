@@ -38,12 +38,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
