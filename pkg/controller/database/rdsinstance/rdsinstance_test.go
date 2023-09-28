@@ -20,10 +20,12 @@ import (
 	"testing"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -32,7 +34,6 @@ import (
 	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -465,6 +466,14 @@ func TestCreate(t *testing.T) {
 		err    error
 	}
 
+	mockDbModify := func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+		return &awsrds.ModifyDBInstanceOutput{}, nil
+	}
+
+	mockStatusUpdate := &test.MockClient{
+		MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+	}
+
 	cases := map[string]struct {
 		args
 		want
@@ -476,12 +485,13 @@ func TestCreate(t *testing.T) {
 						return &awsrds.CreateDBInstanceOutput{}, nil
 					},
 				},
-				cr: instance(withMasterUsername(&masterUsername)),
+				kube: mockStatusUpdate,
+				cr:   instance(withMasterUsername(&masterUsername)),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Set by CreateDBInstance"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -496,7 +506,9 @@ func TestCreate(t *testing.T) {
 					MockS3Restore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromS3Input, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromS3Output, error) {
 						return &awsrds.RestoreDBInstanceFromS3Output{}, nil
 					},
+					MockModify: mockDbModify,
 				},
+				kube: mockStatusUpdate,
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&s3Backup)),
@@ -505,7 +517,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&s3Backup),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Password set via ModifyDBInstance in Create"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -520,7 +532,9 @@ func TestCreate(t *testing.T) {
 					MockSnapshotRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceFromDBSnapshotInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceFromDBSnapshotOutput, error) {
 						return &awsrds.RestoreDBInstanceFromDBSnapshotOutput{}, nil
 					},
+					MockModify: mockDbModify,
 				},
+				kube: mockStatusUpdate,
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&snapshotBackup)),
@@ -529,7 +543,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&snapshotBackup),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Password set via ModifyDBInstance in Create"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -544,7 +558,9 @@ func TestCreate(t *testing.T) {
 					MockPointInTimeRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceToPointInTimeInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceToPointInTimeOutput, error) {
 						return &awsrds.RestoreDBInstanceToPointInTimeOutput{}, nil
 					},
+					MockModify: mockDbModify,
 				},
+				kube: mockStatusUpdate,
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&pointInTimeLatestRestorableBackup)),
@@ -553,7 +569,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&pointInTimeLatestRestorableBackup),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Password set via ModifyDBInstance in Create"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -568,7 +584,9 @@ func TestCreate(t *testing.T) {
 					MockPointInTimeRestore: func(ctx context.Context, input *awsrds.RestoreDBInstanceToPointInTimeInput, opts []func(*awsrds.Options)) (*awsrds.RestoreDBInstanceToPointInTimeOutput, error) {
 						return &awsrds.RestoreDBInstanceToPointInTimeOutput{}, nil
 					},
+					MockModify: mockDbModify,
 				},
+				kube: mockStatusUpdate,
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&pointInTimeBackup)),
@@ -577,7 +595,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withBackupConfiguration(&pointInTimeBackup),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Password set via ModifyDBInstance in Create"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -603,12 +621,13 @@ func TestCreate(t *testing.T) {
 						return &awsrds.CreateDBInstanceOutput{}, nil
 					},
 				},
-				cr: instance(withMasterUsername(nil)),
+				kube: mockStatusUpdate,
+				cr:   instance(withMasterUsername(nil)),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(nil),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Set by CreateDBInstance"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
@@ -632,6 +651,7 @@ func TestCreate(t *testing.T) {
 						secret.DeepCopyInto(obj.(*corev1.Secret))
 						return nil
 					},
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(xpv1.SecretKeySelector{Key: secretKey})),
 			},
@@ -639,7 +659,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withPasswordSecretRef(xpv1.SecretKeySelector{Key: secretKey}),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSet("Set by CreateDBInstance"))),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
 						xpv1.ResourceCredentialsSecretPasswordKey: []byte(credData),
@@ -651,7 +671,8 @@ func TestCreate(t *testing.T) {
 		"FailedWhileGettingSecret": {
 			args: args{
 				kube: &test.MockClient{
-					MockGet: test.NewMockGetFn(errBoom),
+					MockGet:          test.NewMockGetFn(errBoom),
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(xpv1.SecretKeySelector{})),
 			},
@@ -659,7 +680,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withPasswordSecretRef(xpv1.SecretKeySelector{}),
-					withConditions(xpv1.Creating())),
+					withConditions(xpv1.Creating(), rds.PasswordSetPending("Creating"))),
 				err: awsclient.Wrap(errBoom, errGetPasswordSecretFailed),
 			},
 		},
@@ -670,10 +691,11 @@ func TestCreate(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: instance(),
+				kube: mockStatusUpdate,
+				cr:   instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(xpv1.Creating())),
+				cr:  instance(withConditions(xpv1.Creating(), rds.PasswordSetPending("Creating"))),
 				err: awsclient.Wrap(errBoom, errCreateFailed),
 			},
 		},

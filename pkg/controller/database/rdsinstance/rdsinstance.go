@@ -173,12 +173,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
+	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
+		cr.Status.SetConditions(xpv1.Creating())
+		return managed.ExternalCreation{}, nil
+	}
 	cr.Status.SetConditions(xpv1.Creating(), rds.PasswordSetPending("Creating"))
 	if err := e.kube.Status().Update(ctx, cr); err != nil { // Why can't we just let controller-runtime take care of this?
 		return managed.ExternalCreation{}, err
-	}
-	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
-		return managed.ExternalCreation{}, nil
 	}
 	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
