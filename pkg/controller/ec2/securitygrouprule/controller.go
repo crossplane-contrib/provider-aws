@@ -178,6 +178,17 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 				}},
 			}}
 		}
+		if providerValues.PrefixListID != nil {
+			input.IpPermissions = []awsec2types.IpPermission{{
+				FromPort:   providerValues.FromPort,
+				ToPort:     providerValues.ToPort,
+				IpProtocol: providerValues.Protocol,
+				PrefixListIds: []awsec2types.PrefixListId{{
+					Description:  providerValues.Description,
+					PrefixListId: providerValues.PrefixListID,
+				}},
+			}}
+		}
 		result, err := e.client.AuthorizeSecurityGroupIngress(ctx, input)
 
 		if err != nil {
@@ -229,6 +240,17 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 					GroupId: providerValues.SourceSecurityGroupID,
 
 					Description: providerValues.Description,
+				}},
+			}}
+		}
+		if providerValues.PrefixListID != nil {
+			input.IpPermissions = []awsec2types.IpPermission{{
+				FromPort:   providerValues.FromPort,
+				ToPort:     providerValues.ToPort,
+				IpProtocol: providerValues.Protocol,
+				PrefixListIds: []awsec2types.PrefixListId{{
+					Description:  providerValues.Description,
+					PrefixListId: providerValues.PrefixListID,
 				}},
 			}}
 		}
@@ -320,35 +342,40 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			// We return an error to fore a recreation, as we cant create a new sgr and update externalName here
 			return managed.ExternalUpdate{}, errors.New("Update needs recreation")
 		}
-		externalName := meta.GetExternalName(cr)
-		input := &awsec2.ModifySecurityGroupRulesInput{
-			GroupId: cr.Spec.ForProvider.SecurityGroupID,
-			SecurityGroupRules: []awsec2types.SecurityGroupRuleUpdate{{
-				SecurityGroupRuleId: &externalName,
-				SecurityGroupRule: &awsec2types.SecurityGroupRuleRequest{
-					FromPort:    cr.Spec.ForProvider.FromPort,
-					ToPort:      cr.Spec.ForProvider.ToPort,
-					Description: cr.Spec.ForProvider.Description,
-					IpProtocol:  cr.Spec.ForProvider.Protocol,
-				},
-			}},
-		}
-		if cr.Spec.ForProvider.CidrBlock != nil {
-			input.SecurityGroupRules[0].SecurityGroupRule.CidrIpv4 = cr.Spec.ForProvider.CidrBlock
-		}
-		if cr.Spec.ForProvider.Ipv6CidrBlock != nil {
-			input.SecurityGroupRules[0].SecurityGroupRule.CidrIpv6 = cr.Spec.ForProvider.Ipv6CidrBlock
-		}
-		if cr.Spec.ForProvider.SourceSecurityGroupID != nil {
-			input.SecurityGroupRules[0].SecurityGroupRule.ReferencedGroupId = cr.Spec.ForProvider.SourceSecurityGroupID
-		}
-
-		_, err := e.client.ModifySecurityGroupRules(ctx, input)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
+		return e.updateSgr(ctx, cr)
 	}
 	return managed.ExternalUpdate{}, nil
+}
+
+func (e *external) updateSgr(ctx context.Context, cr *manualv1alpha1.SecurityGroupRule) (managed.ExternalUpdate, error) {
+	externalName := meta.GetExternalName(cr)
+	input := &awsec2.ModifySecurityGroupRulesInput{
+		GroupId: cr.Spec.ForProvider.SecurityGroupID,
+		SecurityGroupRules: []awsec2types.SecurityGroupRuleUpdate{{
+			SecurityGroupRuleId: &externalName,
+			SecurityGroupRule: &awsec2types.SecurityGroupRuleRequest{
+				FromPort:    cr.Spec.ForProvider.FromPort,
+				ToPort:      cr.Spec.ForProvider.ToPort,
+				Description: cr.Spec.ForProvider.Description,
+				IpProtocol:  cr.Spec.ForProvider.Protocol,
+			},
+		}},
+	}
+	if cr.Spec.ForProvider.CidrBlock != nil {
+		input.SecurityGroupRules[0].SecurityGroupRule.CidrIpv4 = cr.Spec.ForProvider.CidrBlock
+	}
+	if cr.Spec.ForProvider.Ipv6CidrBlock != nil {
+		input.SecurityGroupRules[0].SecurityGroupRule.CidrIpv6 = cr.Spec.ForProvider.Ipv6CidrBlock
+	}
+	if cr.Spec.ForProvider.SourceSecurityGroupID != nil {
+		input.SecurityGroupRules[0].SecurityGroupRule.ReferencedGroupId = cr.Spec.ForProvider.SourceSecurityGroupID
+	}
+	if cr.Spec.ForProvider.PrefixListID != nil {
+		input.SecurityGroupRules[0].SecurityGroupRule.PrefixListId = cr.Spec.ForProvider.PrefixListID
+	}
+
+	_, err := e.client.ModifySecurityGroupRules(ctx, input)
+	return managed.ExternalUpdate{}, err
 }
 
 func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *manualv1alpha1.SecurityGroupRuleParameters) (needsUpdate bool, recreate bool, typechange bool) {
@@ -378,6 +405,10 @@ func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *man
 	}
 
 	if awsclient.StringValue(desired.SourceSecurityGroupID) != awsclient.StringValue(actual.SourceSecurityGroupID) {
+		needsUpdate = true
+	}
+
+	if awsclient.StringValue(desired.PrefixListID) != awsclient.StringValue(actual.PrefixListID) {
 		needsUpdate = true
 	}
 
@@ -412,6 +443,7 @@ func (e *external) getExternalSgr(ctx context.Context, externalName string) (*ma
 		Protocol:      existingSgr.IpProtocol,
 		CidrBlock:     existingSgr.CidrIpv4,
 		Ipv6CidrBlock: existingSgr.CidrIpv6,
+		PrefixListID:  existingSgr.PrefixListId,
 	}
 	if existingSgr.ReferencedGroupInfo != nil {
 		cr.SourceSecurityGroupID = existingSgr.ReferencedGroupInfo.GroupId
