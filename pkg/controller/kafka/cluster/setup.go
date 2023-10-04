@@ -40,6 +40,7 @@ import (
 )
 
 const (
+	errGetBootstrapBrokers        = "cannot get BootstrapBrokers of Cluster in AWS"
 	errUpdateBrokerType           = "cannot update BrokerType of Cluster in AWS"
 	errUpdateBrokerStorage        = "cannot update BrokerStorage of Cluster in AWS"
 	errUpdateBrokerCount          = "cannot update BrokerCount of Cluster in AWS"
@@ -57,14 +58,14 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
+			u := &updater{client: e.client}
 			e.preObserve = preObserve
-			e.postObserve = postObserve
+			e.postObserve = u.postObserve
 			e.preDelete = preDelete
 			e.postDelete = postDelete
 			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.lateInitialize = LateInitialize
-			u := &updater{client: e.client}
 			e.update = u.update
 			e.isUpToDate = isUpToDate
 		},
@@ -121,19 +122,9 @@ func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describe
 	return nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (u *updater) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
-	}
-	switch awsclients.StringValue(obj.ClusterInfo.State) {
-	case string(svcapitypes.ClusterState_ACTIVE):
-		cr.SetConditions(xpv1.Available())
-	case string(svcapitypes.ClusterState_CREATING):
-		cr.SetConditions(xpv1.Creating())
-	case string(svcapitypes.ClusterState_FAILED), string(svcapitypes.ClusterState_MAINTENANCE), string(svcapitypes.ClusterState_UPDATING):
-		cr.SetConditions(xpv1.Unavailable())
-	case string(svcapitypes.ClusterState_DELETING):
-		cr.SetConditions(xpv1.Deleting())
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
@@ -141,9 +132,33 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
 		"zookeeperEndpointPlain": []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
 		"zookeeperEndpointTls":   []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
-		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9092")),
-		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9094")),
-		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString), "2181", "9098")),
+	}
+
+	switch awsclients.StringValue(obj.ClusterInfo.State) {
+	case string(svcapitypes.ClusterState_ACTIVE):
+		cr.SetConditions(xpv1.Available())
+
+		// see: https://docs.aws.amazon.com/msk/latest/developerguide/msk-get-bootstrap-brokers.html
+		// retrieve cluster bootstrap brokers (endpoints)
+		// not possible in every cluster state (e.g. "You can't get bootstrap broker nodes for a cluster in DELETING state.")
+		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: awsclients.String(meta.GetExternalName(cr))})
+		if err != nil {
+			return obs, awsclients.Wrap(err, errGetBootstrapBrokers)
+		}
+		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerString))
+		obs.ConnectionDetails["clusterEndpointTls"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringTls))
+		obs.ConnectionDetails["clusterEndpointIAM"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringSaslIam))
+		obs.ConnectionDetails["clusterEndpointScram"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringSaslScram))
+		obs.ConnectionDetails["clusterEndpointTlsPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicTls))
+		obs.ConnectionDetails["clusterEndpointIAMPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicSaslIam))
+		obs.ConnectionDetails["clusterEndpointScramPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicSaslScram))
+
+	case string(svcapitypes.ClusterState_CREATING):
+		cr.SetConditions(xpv1.Creating())
+	case string(svcapitypes.ClusterState_FAILED), string(svcapitypes.ClusterState_MAINTENANCE), string(svcapitypes.ClusterState_UPDATING):
+		cr.SetConditions(xpv1.Unavailable())
+	case string(svcapitypes.ClusterState_DELETING):
+		cr.SetConditions(xpv1.Deleting())
 	}
 
 	return obs, nil
@@ -860,7 +875,7 @@ func generateClientAuthentication(wanted *svcapitypes.ClientAuthentication) *svc
 			if wanted.SASL.IAM != nil {
 				iam := &svcsdk.Iam{}
 				if wanted.SASL.IAM.Enabled != nil {
-					iam.Enabled = wanted.TLS.Enabled
+					iam.Enabled = wanted.SASL.IAM.Enabled
 				}
 				sasl.Iam = iam
 			}
