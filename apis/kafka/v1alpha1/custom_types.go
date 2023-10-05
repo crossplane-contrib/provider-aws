@@ -16,7 +16,11 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
+	"github.com/crossplane-contrib/provider-aws/apis/common"
+)
 
 // CustomConfigurationParameters contains the additional fields for ConfigurationParameters.
 type CustomConfigurationParameters struct {
@@ -28,6 +32,9 @@ type CustomConfigurationParameters struct {
 type CustomClusterParameters struct {
 	// Information about the brokers
 	CustomBrokerNodeGroupInfo *CustomBrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
+
+	// ClusterPolicy of the MSK cluster.
+	ClusterPolicy *common.ResourcePolicy `json:"clusterPolicy,omitempty"`
 
 	// Represents the configuration that you want MSK to use for the cluster.
 	CustomConfigurationInfo *CustomConfigurationInfo `json:"configurationInfo,omitempty"`
@@ -89,4 +96,27 @@ type CustomBrokerNodeGroupInfo struct {
 
 	// Contains information about storage volumes attached to MSK broker nodes.
 	StorageInfo *StorageInfo `json:"storageInfo,omitempty"`
+
+	// ConnectivityInfo Information about the broker access configuration.
+	ConnectivityInfo *CustomConnectivityInfo `json:"connectivityInfo,omitempty"`
+}
+
+// CustomConnectivityInfo replaces ConnectivityInfo because it contains a
+// json tag "type_" that is does not follow the convention.
+//
+// +kubebuilder:skipversion
+type CustomConnectivityInfo struct {
+	// Broker public access control.
+	PublicAccess *CustomPublicAccess `json:"publicAccess,omitempty"`
+	// Broker VPC connectivity access control.
+	VPCConnectivity *VPCConnectivity `json:"vpcConnectivity,omitempty"`
+}
+
+// CustomPublicAccess replaces PublicAccess because it contains a
+// json tag "type_" that is does not follow the convention.
+//
+// +kubebuilder:skipversion
+type CustomPublicAccess struct {
+	// Type of the public access control.
+	Type *string `json:"type,omitempty"`
 }

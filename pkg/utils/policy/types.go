@@ -11,7 +11,7 @@ type Policy struct {
 	Version string `json:"Version"`
 
 	// ID is the policy's optional identifier
-	ID string `json:"Id,omitempty"`
+	ID *string `json:"Id,omitempty"`
 
 	// Statements is the list of statement this policy applies.
 	Statements StatementList `json:"Statement,omitempty"`
@@ -50,7 +50,7 @@ const (
 type Statement struct {
 	// Optional identifier for this statement, must be unique within the
 	// policy if provided.
-	SID string `json:"Sid,omitempty"`
+	SID *string `json:"Sid,omitempty"`
 
 	// The effect is required and specifies whether the statement results
 	// in an allow or an explicit deny.
@@ -103,7 +103,7 @@ type Principal struct {
 	// This string contains the identifier for any federated web identity
 	// provider.
 	// +optional
-	Federated string `json:"Federated,omitempty"`
+	Federated *string `json:"Federated,omitempty"`
 
 	// Service define the services which can have access to this bucket
 	// +optional
