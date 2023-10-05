@@ -32,11 +32,13 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudsearch"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudwatchlogs"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentity"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentityprovider"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/config"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/dax"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/docdb"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/dynamodb"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecs"
@@ -92,11 +94,13 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cloudfront.Setup,
 		cloudsearch.Setup,
 		cloudwatchlogs.Setup,
+		cognitoidentity.Setup,
 		cognitoidentityprovider.Setup,
 		config.Setup,
 		database.Setup,
 		dax.Setup,
 		docdb.Setup,
+		dynamodb.Setup,
 		ec2.Setup,
 		ecr.Setup,
 		ecs.Setup,
