@@ -26,10 +26,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -77,7 +76,7 @@ func GenerateCreateELBInput(name string, p v1alpha1.ELBParameters) *elb.CreateLo
 
 // LateInitializeELB fills the empty fields in *v1alpha1.ELBParameters with
 // the values seen in elasticLoadBalancing.ELB.
-func LateInitializeELB(in *v1alpha1.ELBParameters, v *elbtypes.LoadBalancerDescription, elbTags []elbtypes.Tag) { // nolint:gocyclo
+func LateInitializeELB(in *v1alpha1.ELBParameters, v *elbtypes.LoadBalancerDescription, elbTags []elbtypes.Tag) { //nolint:gocyclo
 	if v == nil {
 		return
 	}

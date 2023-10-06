@@ -21,13 +21,13 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
+
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
+	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 // TopicAttributes refers to AWS SNS Topic Attributes List

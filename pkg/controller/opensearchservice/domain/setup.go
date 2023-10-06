@@ -16,6 +16,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/opensearchservice/v1alpha1"
@@ -151,7 +152,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Domain, resp *svcsdk.Describ
 }
 
 // GenerateObservation is used to produce DomainObservation
-func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation { // nolint:gocyclo
+func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation { //nolint:gocyclo
 	if obj == nil {
 		return svcapitypes.DomainObservation{}
 	}
@@ -359,7 +360,7 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 	return o
 }
 
-func isUpToDate(_ context.Context, obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, string, error) { // nolint:gocyclo
+func isUpToDate(_ context.Context, obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, string, error) {
 
 	switch {
 	case aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies),
@@ -385,7 +386,7 @@ func isUpToDate(_ context.Context, obj *svcapitypes.Domain, out *svcsdk.Describe
 	}
 }
 
-func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomainOutput) error { // nolint:gocyclo
+func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomainOutput) error { //nolint:gocyclo
 
 	if resp.DomainStatus.AccessPolicies != nil && resp.DomainStatus.AccessPolicies == nil {
 		cr.AccessPolicies = resp.DomainStatus.AccessPolicies
@@ -808,7 +809,7 @@ type updateDomain struct {
 	client svcsdkapi.OpenSearchServiceAPI
 }
 
-func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.Domain)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -938,7 +939,7 @@ out:
 	return true
 }
 
-func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptionsInput, current *svcsdk.AdvancedSecurityOptions) bool { // nolint:gocyclo
+func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptionsInput, current *svcsdk.AdvancedSecurityOptions) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -991,7 +992,7 @@ func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptio
 	return true
 }
 
-func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.ClusterConfig) bool { // nolint:gocyclo
+func isClusterConfigUpToDate(wanted *svcapitypes.ClusterConfig, current *svcsdk.ClusterConfig) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -1226,7 +1227,7 @@ func isSnapshotOptionsUpToDate(wanted *svcapitypes.SnapshotOptions, current *svc
 	return true
 }
 
-func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svcsdk.VPCDerivedInfo) bool { // nolint:gocyclo
+func isVpcOptionsUpToDate(wanted *svcapitypes.CustomVPCDerivedInfo, current *svcsdk.VPCDerivedInfo) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -1340,7 +1341,7 @@ func generateAutotuneOptionsInput(wanted *svcapitypes.AutoTuneOptionsInput) *svc
 					}
 				}
 				if ms.StartAt != nil {
-					msNew.StartAt = &ms.StartAt.Time
+					msNew.StartAt = ptr.To(ms.StartAt.Time)
 				}
 				msList = append(msList, msNew)
 			}

@@ -108,7 +108,7 @@ func GenerateSGObservation(sg ec2types.SecurityGroup) v1beta1.SecurityGroupObser
 
 // LateInitializeSG fills the empty fields in *v1beta1.SecurityGroupParameters with
 // the values seen in ec2types.SecurityGroup.
-func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.SecurityGroup) { // nolint:gocyclo
+func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.SecurityGroup) {
 	if sg == nil {
 		return
 	}

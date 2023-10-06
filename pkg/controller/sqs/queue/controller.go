@@ -20,11 +20,6 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	awssqs "github.com/aws/aws-sdk-go-v2/service/sqs"
 	awssqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -34,6 +29,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -109,7 +108,7 @@ type external struct {
 	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotQueue)

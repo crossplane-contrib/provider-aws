@@ -30,15 +30,15 @@ const (
 	nameUnspecified      = "unspecified"
 	nameMapperTest       = "mapper_test"
 	suffixID             = "ID"
-	suffixId             = "Id" // nolint:golint
+	suffixId             = "Id" //nolint:golint
 	nameWith             = "nameWith"
 	nameWithID           = nameWith + suffixID
-	nameWithId           = nameWith + suffixId // nolint:golint
+	nameWithId           = nameWith + suffixId //nolint:golint
 	prefixHTTP           = "HTTP"
-	prefixHttp           = "Http" // nolint:golint
+	prefixHttp           = "Http" //nolint:golint
 	nameVersion          = "Version"
 	nameHTTPVersion      = prefixHTTP + nameVersion
-	nameHttpVersion      = prefixHttp + nameVersion // nolint:golint
+	nameHttpVersion      = prefixHttp + nameVersion //nolint:golint
 )
 
 var (
@@ -683,7 +683,7 @@ func TestIsUpToDate(t *testing.T) {
 				actual: &struct {
 					// linter disabled because we are testing a case based on
 					// a common naming convention in aws-sdk-go
-					Id *string // nolint:golint
+					Id *string //nolint:golint
 				}{
 					Id: &valTest,
 				},

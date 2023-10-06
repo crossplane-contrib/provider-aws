@@ -20,9 +20,8 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/pkg/errors"
-
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -47,7 +46,7 @@ func NewPolicyClient(client s3.BucketPolicyClient) *PolicyClient {
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
+func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
 	resp, err := e.client.GetBucketPolicy(ctx, &awss3.GetBucketPolicyInput{
 		Bucket: awsclient.String(meta.GetExternalName(cr)),
 	})

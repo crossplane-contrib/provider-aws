@@ -18,12 +18,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/pkg/errors"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/kafka"
 	"github.com/aws/aws-sdk-go/service/kafka/kafkaiface"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -32,6 +28,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kafka/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -194,7 +192,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 
 // LateInitialize fills the empty fields in *svcapitypes.ClusterParameters with
 // the values seen in svcsdk.DescribeClusterOutput.
-// nolint:gocyclo
 func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error {
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
@@ -233,7 +230,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 	return nil
 }
 
-func isUpToDate(_ context.Context, wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, string, error) { // nolint:gocyclo
+func isUpToDate(_ context.Context, wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, string, error) {
 	forProvider := wanted.Spec.ForProvider
 	clusterInfo := current.ClusterInfo
 
@@ -272,7 +269,7 @@ func isInstanceTypeUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, curre
 	return true
 }
 
-func isStorageInfoUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, current *svcsdk.BrokerNodeGroupInfo) bool { // nolint:gocyclo
+func isStorageInfoUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, current *svcsdk.BrokerNodeGroupInfo) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -343,7 +340,7 @@ func isSomeLoggingEnabled(wanted *svcapitypes.LoggingInfo) bool {
 	return false
 }
 
-func isLoggingInfoUpToDate(wanted *svcapitypes.LoggingInfo, current *svcsdk.LoggingInfo) bool { // nolint:gocyclo
+func isLoggingInfoUpToDate(wanted *svcapitypes.LoggingInfo, current *svcsdk.LoggingInfo) bool { //nolint:gocyclo
 
 	if wanted != nil {
 		if current == nil {
@@ -422,7 +419,7 @@ func isLoggingInfoUpToDate(wanted *svcapitypes.LoggingInfo, current *svcsdk.Logg
 	return true
 }
 
-func isOpenMonitoringInfoUpToDate(wanted *svcapitypes.OpenMonitoringInfo, current *svcsdk.OpenMonitoring) bool { // nolint:gocyclo
+func isOpenMonitoringInfoUpToDate(wanted *svcapitypes.OpenMonitoringInfo, current *svcsdk.OpenMonitoring) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -507,7 +504,7 @@ func isTagsUpToDate(wanted map[string]*string, current map[string]*string) bool 
 	return true
 }
 
-func isEncryptionInfoInTransitUpToDate(wanted *svcapitypes.EncryptionInfo, current *svcsdk.EncryptionInfo) bool { // nolint:gocyclo
+func isEncryptionInfoInTransitUpToDate(wanted *svcapitypes.EncryptionInfo, current *svcsdk.EncryptionInfo) bool {
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -528,7 +525,7 @@ func isEncryptionInfoInTransitUpToDate(wanted *svcapitypes.EncryptionInfo, curre
 	return true
 }
 
-func isClientAuthenticationUpToDate(wanted *svcapitypes.ClientAuthentication, current *svcsdk.ClientAuthentication) bool { // nolint:gocyclo
+func isClientAuthenticationUpToDate(wanted *svcapitypes.ClientAuthentication, current *svcsdk.ClientAuthentication) bool { //nolint:gocyclo
 	if wanted != nil {
 		if current == nil {
 			return false
@@ -606,7 +603,7 @@ type updater struct {
 	client kafkaiface.KafkaAPI
 }
 
-func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.Cluster)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -866,7 +863,7 @@ func generateTags(wanted map[string]*string) map[string]*string {
 	return nil
 }
 
-func generateClientAuthentication(wanted *svcapitypes.ClientAuthentication) *svcsdk.ClientAuthentication { // nolint:gocyclo
+func generateClientAuthentication(wanted *svcapitypes.ClientAuthentication) *svcsdk.ClientAuthentication { //nolint:gocyclo
 
 	if wanted != nil {
 		output := &svcsdk.ClientAuthentication{}
@@ -928,7 +925,7 @@ func generateCustomConfigurationInfo(wanted *svcapitypes.CustomConfigurationInfo
 
 }
 
-func generateLoggingInfoInput(wanted *svcapitypes.LoggingInfo) *svcsdk.LoggingInfo { // nolint:gocyclo
+func generateLoggingInfoInput(wanted *svcapitypes.LoggingInfo) *svcsdk.LoggingInfo { //nolint:gocyclo
 
 	output := &svcsdk.LoggingInfo{}
 	if wanted.BrokerLogs != nil {

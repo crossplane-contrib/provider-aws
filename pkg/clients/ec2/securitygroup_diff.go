@@ -60,7 +60,7 @@ type ipPermissionMap struct {
 // merge adds rules from the permission set m into this permission
 // set. The caller must ensure that the permission set is for the same
 // protocol and port range.
-func (i *ipPermissionMap) merge(m ec2types.IpPermission) { // nolint:gocyclo
+func (i *ipPermissionMap) merge(m ec2types.IpPermission) {
 	i.FromPort = m.FromPort
 	i.ToPort = m.ToPort
 	i.IPProtocol = m.IpProtocol

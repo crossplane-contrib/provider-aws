@@ -19,7 +19,7 @@ func WithConditions(c ...xpv1.Condition) AccessPointModifier {
 }
 
 // WithPolicy sets the policy for an AccessPoint
-func WithPolicy(s *common.BucketPolicyBody) AccessPointModifier { // nolint
+func WithPolicy(s *common.BucketPolicyBody) AccessPointModifier {
 	return func(r *svcapitypes.AccessPoint) { r.Spec.ForProvider.Policy = s }
 }
 

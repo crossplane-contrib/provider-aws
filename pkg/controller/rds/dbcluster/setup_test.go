@@ -4,10 +4,9 @@ import (
 	"testing"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	"github.com/google/go-cmp/cmp"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func ptr(str string) *string {

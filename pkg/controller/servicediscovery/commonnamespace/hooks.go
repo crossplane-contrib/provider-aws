@@ -70,7 +70,7 @@ type Hooks struct {
 }
 
 // Observe observes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
-func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
 	var cr namespace
 	switch i := mg.(type) {
 	case *v1alpha1.HTTPNamespace:

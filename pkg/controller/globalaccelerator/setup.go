@@ -14,9 +14,8 @@ limitations under the License.
 package globalaccelerator
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/globalaccelerator/accelerator"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/globalaccelerator/endpointgroup"

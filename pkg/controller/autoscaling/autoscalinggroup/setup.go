@@ -4,8 +4,6 @@ import (
 	"context"
 	"sort"
 
-	"github.com/google/go-cmp/cmp"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/autoscaling"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -14,6 +12,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
@@ -67,7 +66,7 @@ func SetupAutoScalingGroup(mgr ctrl.Manager, o controller.Options) error {
 		Complete(r)
 }
 
-func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsdk.DescribeAutoScalingGroupsOutput) (bool, string, error) { // nolint:gocyclo
+func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsdk.DescribeAutoScalingGroupsOutput) (bool, string, error) { //nolint:gocyclo
 	in := obj.Spec.ForProvider
 	asg := obs.AutoScalingGroups[0]
 

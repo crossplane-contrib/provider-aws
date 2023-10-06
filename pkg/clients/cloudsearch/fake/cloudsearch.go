@@ -17,11 +17,10 @@ limitations under the License.
 package fake
 
 import (
-	svcsdkapi "github.com/aws/aws-sdk-go/service/cloudsearch/cloudsearchiface"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/cloudsearch"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/cloudsearch/cloudsearchiface"
 )
 
 // this ensures that the mock implements the client interface

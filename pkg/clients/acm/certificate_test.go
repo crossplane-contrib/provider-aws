@@ -3,16 +3,13 @@ package acm
 import (
 	"testing"
 
-	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
-
-	"github.com/aws/smithy-go/document"
-
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 

@@ -19,14 +19,13 @@ package bucket
 import (
 	"context"
 
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -50,7 +49,7 @@ func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfiguration
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
+func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
 	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
@@ -180,7 +179,7 @@ func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfigura
 	return wi
 }
 
-func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, config *v1beta1.WebsiteConfiguration) { // nolint:gocyclo
+func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, config *v1beta1.WebsiteConfiguration) { //nolint:gocyclo
 	if external.ErrorDocument != nil {
 		if config.ErrorDocument == nil {
 			config.ErrorDocument = &v1beta1.ErrorDocument{}

@@ -24,12 +24,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -37,6 +31,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -207,7 +206,7 @@ func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	return errors.Wrap(e.kube.Update(ctx, cr), "cannot update Table Spec")
 }
 
-func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutput) error { // nolint:gocyclo,unparam
+func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutput) error { //nolint:gocyclo
 	if t == nil {
 		return nil
 	}
@@ -598,7 +597,7 @@ func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, 
 }
 
 // GenerateGlobalSecondaryIndexDescriptions generates an array of GlobalSecondaryIndexDescriptions.
-func GenerateGlobalSecondaryIndexDescriptions(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndexDescription { // nolint:gocyclo
+func GenerateGlobalSecondaryIndexDescriptions(p []*svcapitypes.GlobalSecondaryIndex) []*svcsdk.GlobalSecondaryIndexDescription { //nolint:gocyclo
 	// Linter is disabled because this is a copy-paste from generated code and
 	// very simple.
 	result := make([]*svcsdk.GlobalSecondaryIndexDescription, len(p))

@@ -50,7 +50,7 @@ func GenerateCreateFargateProfileInput(name string, p v1beta1.FargateProfilePara
 
 // GenerateFargateProfileObservation is used to produce FargateProfileObservation
 // from eks.FargateProfile.
-func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1beta1.FargateProfileObservation { // nolint:gocyclo
+func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1beta1.FargateProfileObservation {
 	if fp == nil {
 		return v1beta1.FargateProfileObservation{}
 	}
@@ -66,7 +66,7 @@ func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1beta1.Farg
 
 // LateInitializeFargateProfile fills the empty fields in *FargateProfileParameters with the
 // values seen in eks.FargateProfile.
-func LateInitializeFargateProfile(in *v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) { // nolint:gocyclo
+func LateInitializeFargateProfile(in *v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) {
 	if fp == nil {
 		return
 	}
@@ -84,6 +84,6 @@ func LateInitializeFargateProfile(in *v1beta1.FargateProfileParameters, fp *ekst
 
 // IsFargateProfileUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsFargateProfileUpToDate(p v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool { // nolint:gocyclo
+func IsFargateProfileUpToDate(p v1beta1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool {
 	return cmp.Equal(p.Tags, fp.Tags, cmpopts.EquateEmpty())
 }

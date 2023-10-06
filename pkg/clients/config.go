@@ -27,22 +27,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
-	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
-
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	requestv1 "github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/smithy-go/middleware"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
@@ -102,7 +100,7 @@ func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region
 }
 
 // UseProviderConfig to produce a config that can be used to authenticate to AWS.
-func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) { // nolint:gocyclo
+func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) { //nolint:gocyclo
 	pc := &v1beta1.ProviderConfig{}
 	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
 		return nil, errors.Wrap(err, "cannot get referenced Provider")
@@ -162,7 +160,7 @@ func (a awsEndpointResolverAdaptorWithOptions) ResolveEndpoint(service, region s
 
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
-func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { // nolint:gocyclo
+func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //nolint:gocyclo
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
@@ -416,7 +414,7 @@ func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws
 
 // GetConfigV1 constructs an *awsv1.Config that can be used to authenticate to AWS
 // API by the AWSv1 clients.
-func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*session.Session, error) { // nolint:gocyclo
+func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*session.Session, error) { //nolint:gocyclo
 	if mg.GetProviderConfigReference() == nil {
 		return nil, errors.New("providerConfigRef cannot be empty")
 	}
@@ -677,7 +675,7 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderC
 
 // SetResolverV1 parses annotations from the managed resource
 // and returns a V1 configuration accordingly.
-func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config { // nolint:gocyclo
+func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config {
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}

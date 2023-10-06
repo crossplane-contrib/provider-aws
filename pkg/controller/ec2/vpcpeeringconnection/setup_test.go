@@ -27,7 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
-
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 

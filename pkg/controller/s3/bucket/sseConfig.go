@@ -46,7 +46,7 @@ func NewSSEConfigurationClient(client s3.BucketClient) *SSEConfigurationClient {
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
+func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
 	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
 	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {

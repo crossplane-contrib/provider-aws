@@ -3,10 +3,10 @@ package iam
 import (
 	"errors"
 
-	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+
+	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found

@@ -45,7 +45,7 @@ type MockServicediscoveryClient struct {
 }
 
 // CreatePrivateDnsNamespace is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePrivateDnsNamespace(input *svcsdk.CreatePrivateDnsNamespaceInput) (*svcsdk.CreatePrivateDnsNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePrivateDnsNamespace(input *svcsdk.CreatePrivateDnsNamespaceInput) (*svcsdk.CreatePrivateDnsNamespaceOutput, error) {
 	if m.MockCreatePrivateDNSNamespace == nil {
 		fmt.Println(".MockCreatePrivateDNSNamespace == nil")
 		return &svcsdk.CreatePrivateDnsNamespaceOutput{}, nil
@@ -54,7 +54,7 @@ func (m *MockServicediscoveryClient) CreatePrivateDnsNamespace(input *svcsdk.Cre
 }
 
 // CreatePublicDnsNamespace is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePublicDnsNamespace(input *svcsdk.CreatePublicDnsNamespaceInput) (*svcsdk.CreatePublicDnsNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePublicDnsNamespace(input *svcsdk.CreatePublicDnsNamespaceInput) (*svcsdk.CreatePublicDnsNamespaceOutput, error) {
 	if m.MockCreatePublicDNSNamespace == nil {
 		fmt.Println(".MockCreatePublicDNSNamespace == nil")
 		return &svcsdk.CreatePublicDnsNamespaceOutput{}, nil
@@ -63,7 +63,7 @@ func (m *MockServicediscoveryClient) CreatePublicDnsNamespace(input *svcsdk.Crea
 }
 
 // CreateHttpNamespace is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreateHttpNamespace(input *svcsdk.CreateHttpNamespaceInput) (*svcsdk.CreateHttpNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreateHttpNamespace(input *svcsdk.CreateHttpNamespaceInput) (*svcsdk.CreateHttpNamespaceOutput, error) {
 	if m.MockCreateHTTPNamespace == nil {
 		fmt.Println(".MockCreateHTTPNamespace == nil")
 		return &svcsdk.CreateHttpNamespaceOutput{}, nil
@@ -72,7 +72,7 @@ func (m *MockServicediscoveryClient) CreateHttpNamespace(input *svcsdk.CreateHtt
 }
 
 // CreatePrivateDnsNamespaceWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceWithContext(_ context.Context, input *svcsdk.CreatePrivateDnsNamespaceInput, _ ...request.Option) (*svcsdk.CreatePrivateDnsNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceWithContext(_ context.Context, input *svcsdk.CreatePrivateDnsNamespaceInput, _ ...request.Option) (*svcsdk.CreatePrivateDnsNamespaceOutput, error) {
 	if m.MockCreatePrivateDNSNamespace == nil {
 		fmt.Println(".MockCreatePrivateDNSNamespace == nil")
 		return &svcsdk.CreatePrivateDnsNamespaceOutput{}, nil
@@ -81,7 +81,7 @@ func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceWithContext(_ cont
 }
 
 // CreatePublicDnsNamespaceWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceWithContext(_ context.Context, input *svcsdk.CreatePublicDnsNamespaceInput, _ ...request.Option) (*svcsdk.CreatePublicDnsNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceWithContext(_ context.Context, input *svcsdk.CreatePublicDnsNamespaceInput, _ ...request.Option) (*svcsdk.CreatePublicDnsNamespaceOutput, error) { //nolint:golint
 	if m.MockCreatePublicDNSNamespace == nil {
 		fmt.Println(".MockCreatePublicDnsNamespace == nil")
 		return &svcsdk.CreatePublicDnsNamespaceOutput{}, nil
@@ -90,7 +90,7 @@ func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceWithContext(_ conte
 }
 
 // CreateHttpNamespaceWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreateHttpNamespaceWithContext(_ context.Context, input *svcsdk.CreateHttpNamespaceInput, _ ...request.Option) (*svcsdk.CreateHttpNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) CreateHttpNamespaceWithContext(_ context.Context, input *svcsdk.CreateHttpNamespaceInput, _ ...request.Option) (*svcsdk.CreateHttpNamespaceOutput, error) { //nolint:golint
 	if m.MockCreateHTTPNamespace == nil {
 		fmt.Println(".MockCreateHTTPNamespace == nil")
 		return &svcsdk.CreateHttpNamespaceOutput{}, nil
@@ -99,7 +99,7 @@ func (m *MockServicediscoveryClient) CreateHttpNamespaceWithContext(_ context.Co
 }
 
 // GetOperation is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetOperation(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) GetOperation(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) { //nolint:golint
 	if m.MockGetOperation == nil {
 		fmt.Println(".MockGetOperation == nil")
 		return &svcsdk.GetOperationOutput{}, nil
@@ -108,7 +108,7 @@ func (m *MockServicediscoveryClient) GetOperation(input *svcsdk.GetOperationInpu
 }
 
 // GetOperationWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetOperationWithContext(_ context.Context, input *svcsdk.GetOperationInput, _ ...request.Option) (*svcsdk.GetOperationOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) GetOperationWithContext(_ context.Context, input *svcsdk.GetOperationInput, _ ...request.Option) (*svcsdk.GetOperationOutput, error) { //nolint:golint
 	if m.MockGetOperation == nil {
 		fmt.Println(".MockGetOperation == nil")
 		return &svcsdk.GetOperationOutput{}, nil
@@ -117,7 +117,7 @@ func (m *MockServicediscoveryClient) GetOperationWithContext(_ context.Context, 
 }
 
 // GetNamespace is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetNamespace(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) GetNamespace(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) { //nolint:golint
 	if m.MockGetNamespace == nil {
 		fmt.Println(".MockGetNamespace == nil")
 		return &svcsdk.GetNamespaceOutput{}, nil
@@ -126,7 +126,7 @@ func (m *MockServicediscoveryClient) GetNamespace(input *svcsdk.GetNamespaceInpu
 }
 
 // GetNamespaceWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetNamespaceWithContext(_ context.Context, input *svcsdk.GetNamespaceInput, _ ...request.Option) (*svcsdk.GetNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) GetNamespaceWithContext(_ context.Context, input *svcsdk.GetNamespaceInput, _ ...request.Option) (*svcsdk.GetNamespaceOutput, error) { //nolint:golint
 	if m.MockGetNamespace == nil {
 		fmt.Println(".MockGetNamespace == nil")
 		return &svcsdk.GetNamespaceOutput{}, nil
@@ -135,7 +135,7 @@ func (m *MockServicediscoveryClient) GetNamespaceWithContext(_ context.Context, 
 }
 
 // DeleteNamespace is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) DeleteNamespace(input *svcsdk.DeleteNamespaceInput) (*svcsdk.DeleteNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) DeleteNamespace(input *svcsdk.DeleteNamespaceInput) (*svcsdk.DeleteNamespaceOutput, error) { //nolint:golint
 	if m.MockDeleteNamespace == nil {
 		fmt.Println(".MockDeleteNamespace == nil")
 		return &svcsdk.DeleteNamespaceOutput{}, nil
@@ -144,7 +144,7 @@ func (m *MockServicediscoveryClient) DeleteNamespace(input *svcsdk.DeleteNamespa
 }
 
 // DeleteNamespaceWithContext is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) DeleteNamespaceWithContext(_ context.Context, input *svcsdk.DeleteNamespaceInput, _ ...request.Option) (*svcsdk.DeleteNamespaceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) DeleteNamespaceWithContext(_ context.Context, input *svcsdk.DeleteNamespaceInput, _ ...request.Option) (*svcsdk.DeleteNamespaceOutput, error) { //nolint:golint
 	if m.MockDeleteNamespace == nil {
 		fmt.Println(".MockDeleteNamespace == nil")
 		return &svcsdk.DeleteNamespaceOutput{}, nil
@@ -153,7 +153,7 @@ func (m *MockServicediscoveryClient) DeleteNamespaceWithContext(_ context.Contex
 }
 
 // CreatePrivateDnsNamespaceRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceRequest(input *svcsdk.CreatePrivateDnsNamespaceInput) (*request.Request, *svcsdk.CreatePrivateDnsNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceRequest(input *svcsdk.CreatePrivateDnsNamespaceInput) (*request.Request, *svcsdk.CreatePrivateDnsNamespaceOutput) {
 	if m.MockCreatePrivateDNSNamespaceRequest == nil {
 		fmt.Println(".MockCreatePrivateDNSNamespaceRequest == nil")
 		return &request.Request{}, nil
@@ -162,7 +162,7 @@ func (m *MockServicediscoveryClient) CreatePrivateDnsNamespaceRequest(input *svc
 }
 
 // CreatePublicDnsNamespaceRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceRequest(input *svcsdk.CreatePublicDnsNamespaceInput) (*request.Request, *svcsdk.CreatePublicDnsNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceRequest(input *svcsdk.CreatePublicDnsNamespaceInput) (*request.Request, *svcsdk.CreatePublicDnsNamespaceOutput) {
 	if m.MockCreatePublicDNSNamespaceRequest == nil {
 		fmt.Println(".MockCreatePublicDNSNamespaceRequest == nil")
 		return &request.Request{}, nil
@@ -171,7 +171,7 @@ func (m *MockServicediscoveryClient) CreatePublicDnsNamespaceRequest(input *svcs
 }
 
 // CreateHttpNamespaceRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) CreateHttpNamespaceRequest(input *svcsdk.CreateHttpNamespaceInput) (*request.Request, *svcsdk.CreateHttpNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) CreateHttpNamespaceRequest(input *svcsdk.CreateHttpNamespaceInput) (*request.Request, *svcsdk.CreateHttpNamespaceOutput) {
 	if m.MockCreateHTTPNamespaceRequest == nil {
 		fmt.Println(".MockCreateHTTPNamespaceRequest == nil")
 		return &request.Request{}, nil
@@ -180,7 +180,7 @@ func (m *MockServicediscoveryClient) CreateHttpNamespaceRequest(input *svcsdk.Cr
 }
 
 // GetOperationRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetOperationRequest(input *svcsdk.GetOperationInput) (*request.Request, *svcsdk.GetOperationOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) GetOperationRequest(input *svcsdk.GetOperationInput) (*request.Request, *svcsdk.GetOperationOutput) { //nolint:golint
 	if m.MockGetOperationRequest == nil {
 		fmt.Println(".MockGetOperationRequest == nil")
 		return &request.Request{}, nil
@@ -189,7 +189,7 @@ func (m *MockServicediscoveryClient) GetOperationRequest(input *svcsdk.GetOperat
 }
 
 // GetOperationWithContextRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetOperationWithContextRequest(_ context.Context, input *svcsdk.GetOperationInput) (*request.Request, *svcsdk.GetOperationOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) GetOperationWithContextRequest(_ context.Context, input *svcsdk.GetOperationInput) (*request.Request, *svcsdk.GetOperationOutput) { //nolint:golint
 	if m.MockGetOperationRequest == nil {
 		fmt.Println(".MockGetOperationRequest == nil")
 		return &request.Request{}, nil
@@ -198,7 +198,7 @@ func (m *MockServicediscoveryClient) GetOperationWithContextRequest(_ context.Co
 }
 
 // GetNamespaceRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetNamespaceRequest(input *svcsdk.GetNamespaceInput) (*request.Request, *svcsdk.GetNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) GetNamespaceRequest(input *svcsdk.GetNamespaceInput) (*request.Request, *svcsdk.GetNamespaceOutput) { //nolint:golint
 	if m.MockGetNamespaceRequest == nil {
 		fmt.Println(".MockGetNamespaceRequest == nil")
 		return &request.Request{}, nil
@@ -207,7 +207,7 @@ func (m *MockServicediscoveryClient) GetNamespaceRequest(input *svcsdk.GetNamesp
 }
 
 // GetNamespaceWithContextRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) GetNamespaceWithContextRequest(_ context.Context, input *svcsdk.GetNamespaceInput) (*request.Request, *svcsdk.GetNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) GetNamespaceWithContextRequest(_ context.Context, input *svcsdk.GetNamespaceInput) (*request.Request, *svcsdk.GetNamespaceOutput) { //nolint:golint
 	if m.MockGetNamespaceRequest == nil {
 		return &request.Request{}, nil
 	}
@@ -215,7 +215,7 @@ func (m *MockServicediscoveryClient) GetNamespaceWithContextRequest(_ context.Co
 }
 
 // DeleteNamespaceRequest is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) DeleteNamespaceRequest(input *svcsdk.DeleteNamespaceInput) (*request.Request, *svcsdk.DeleteNamespaceOutput) { // nolint:golint
+func (m *MockServicediscoveryClient) DeleteNamespaceRequest(input *svcsdk.DeleteNamespaceInput) (*request.Request, *svcsdk.DeleteNamespaceOutput) { //nolint:golint
 	if m.MockDeleteNamespaceRequest == nil {
 		return &request.Request{}, nil
 	}
@@ -223,7 +223,7 @@ func (m *MockServicediscoveryClient) DeleteNamespaceRequest(input *svcsdk.Delete
 }
 
 // ListTagsForResource is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) ListTagsForResource(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) ListTagsForResource(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) { //nolint:golint
 	if m.MockListTagsForResource == nil {
 		return &svcsdk.ListTagsForResourceOutput{}, nil
 	}
@@ -231,7 +231,7 @@ func (m *MockServicediscoveryClient) ListTagsForResource(input *svcsdk.ListTagsF
 }
 
 // UntagResource is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) UntagResource(input *svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) UntagResource(input *svcsdk.UntagResourceInput) (*svcsdk.UntagResourceOutput, error) { //nolint:golint
 	if m.MockUntagResource == nil {
 		return &svcsdk.UntagResourceOutput{}, nil
 	}
@@ -239,7 +239,7 @@ func (m *MockServicediscoveryClient) UntagResource(input *svcsdk.UntagResourceIn
 }
 
 // TagResource is the interface function to call the mock function pointer
-func (m *MockServicediscoveryClient) TagResource(input *svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error) { // nolint:golint
+func (m *MockServicediscoveryClient) TagResource(input *svcsdk.TagResourceInput) (*svcsdk.TagResourceOutput, error) { //nolint:golint
 	if m.MockTagResource == nil {
 		return &svcsdk.TagResourceOutput{}, nil
 	}

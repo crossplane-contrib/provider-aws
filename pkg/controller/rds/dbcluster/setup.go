@@ -6,10 +6,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/password"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,16 +28,6 @@ import (
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/connection"
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
-	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/password"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // error constants
@@ -137,7 +135,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	return obs, nil
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) (err error) { // nolint:gocyclo
+func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) (err error) { //nolint:gocyclo
 	restoreFrom := cr.Spec.ForProvider.RestoreFrom
 	autogenerate := cr.Spec.ForProvider.AutogeneratePassword
 	masterUserPasswordSecretRef := cr.Spec.ForProvider.MasterUserPasswordSecretRef
@@ -206,7 +204,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	return nil
 }
 
-func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromS3Input { // nolint:gocyclo
+func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromS3Input { //nolint:gocyclo
 	res := &svcsdk.RestoreDBClusterFromS3Input{}
 
 	if cr.Spec.ForProvider.AvailabilityZones != nil {
@@ -342,7 +340,7 @@ func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.Rest
 	return res
 }
 
-func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { // nolint:gocyclo
+func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { //nolint:gocyclo
 	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
 
 	if cr.Spec.ForProvider.AvailabilityZones != nil {
@@ -475,7 +473,7 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 	return res
 }
 
-func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput { // nolint:gocyclo
+func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput { //nolint:gocyclo
 
 	p := cr.Spec.ForProvider
 	res := &svcsdk.RestoreDBClusterToPointInTimeInput{
@@ -553,7 +551,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	return res
 }
 
-func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { // nolint:gocyclo
+func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { //nolint:gocyclo
 	status := aws.StringValue(out.DBClusters[0].Status)
 	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
 		return true, "", nil
@@ -767,7 +765,7 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	return nil
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	if err != nil {
 		return upd, err

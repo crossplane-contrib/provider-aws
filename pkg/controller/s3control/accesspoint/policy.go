@@ -110,7 +110,7 @@ func (p *policyClient) delete(ctx context.Context, cr *svcapitypes.AccessPoint) 
 
 // isErrorPolicyNotFound returns whether the given error is of type NotFound or not.
 func isErrorPolicyNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error) //nolint
+	awsErr, ok := err.(awserr.Error) //nolint:errorlint
 	return ok && awsErr.Code() == "NoSuchAccessPointPolicy"
 }
 

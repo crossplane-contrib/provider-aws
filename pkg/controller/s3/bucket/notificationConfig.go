@@ -21,16 +21,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/barkimedes/go-deepcopy"
-
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/document"
+	"github.com/barkimedes/go-deepcopy"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -63,7 +61,7 @@ func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *
 }
 
 // IsNotificationConfigurationUpToDate determines whether a notification configuration needs to be updated
-func IsNotificationConfigurationUpToDate(cr *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationOutput) (ResourceStatus, error) { // nolint:gocyclo
+func IsNotificationConfigurationUpToDate(cr *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationOutput) (ResourceStatus, error) { //nolint:gocyclo
 	// Note - aws API treats nil configuration different than empty configuration
 	// As such, we can't prealloc this due to the API
 	// If no configuration is defined but there is one in aws, we must delete it
@@ -165,7 +163,7 @@ func sanitizedQueueConfigurations(configs []types.QueueConfiguration) []types.Qu
 func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []types.LambdaFunctionConfiguration {
 	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
 	// the array is 0 element vs nil.
-	var configurations []types.LambdaFunctionConfiguration // nolint:prealloc
+	var configurations []types.LambdaFunctionConfiguration //nolint:prealloc
 	for _, v := range config.LambdaFunctionConfigurations {
 		conf := types.LambdaFunctionConfiguration{
 			Filter:            nil,
@@ -187,7 +185,7 @@ func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []ty
 func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []types.TopicConfiguration {
 	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
 	// the array is 0 element vs nil.
-	var configurations []types.TopicConfiguration // nolint:prealloc
+	var configurations []types.TopicConfiguration //nolint:prealloc
 	for _, v := range config.TopicConfigurations {
 		conf := types.TopicConfiguration{
 			Id:       v.ID,
@@ -208,7 +206,7 @@ func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []ty
 func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []types.QueueConfiguration {
 	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
 	// the array is 0 element vs nil.
-	var configurations []types.QueueConfiguration // nolint:prealloc
+	var configurations []types.QueueConfiguration //nolint:prealloc
 	for _, v := range config.QueueConfigurations {
 		conf := types.QueueConfiguration{
 			Id:       v.ID,

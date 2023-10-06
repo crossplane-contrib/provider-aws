@@ -44,7 +44,7 @@ func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigu
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
+func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, awsclient.Wrap(err, versioningGetFailed)

@@ -16,16 +16,15 @@ package workgroup
 import (
 	"context"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/athena"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
+	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/athena/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -106,7 +105,6 @@ func preCreate(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.CreateW
 
 // LateInitialize fills the empty fields in *svcapitypes.WorkGroupParameters with
 // the values seen in svcsdk.GetWorkGroupOutput.
-// nolint:gocyclo
 func LateInitialize(cr *svcapitypes.WorkGroupParameters, obj *svcsdk.GetWorkGroupOutput) error {
 
 	if cr.Configuration == nil && obj.WorkGroup.Configuration != nil {

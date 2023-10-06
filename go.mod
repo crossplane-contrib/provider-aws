@@ -1,6 +1,6 @@
 module github.com/crossplane-contrib/provider-aws
 
-go 1.19
+go 1.21
 
 require (
 	github.com/aws-controllers-k8s/code-generator v0.26.1

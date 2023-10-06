@@ -20,24 +20,21 @@ import (
 	"context"
 	"testing"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	ecr "github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr/fake"

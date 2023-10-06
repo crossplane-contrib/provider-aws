@@ -17,9 +17,8 @@ limitations under the License.
 package common
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // BucketPolicyBody represents an S3 bucket policy in the manifest

@@ -18,14 +18,13 @@ package job
 
 import (
 	svcsdk "github.com/aws/aws-sdk-go/service/batch"
-
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/batch/manualv1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
-func generateJob(resp *svcsdk.DescribeJobsOutput) *svcapitypes.Job { // nolint:gocyclo
+func generateJob(resp *svcsdk.DescribeJobsOutput) *svcapitypes.Job { //nolint:gocyclo
 	cr := &svcapitypes.Job{}
 
 	for _, elem := range resp.Jobs {
@@ -242,7 +241,7 @@ func getContainerOverridesFromProperties(co *svcsdk.ContainerProperties) *svcapi
 	return specco
 }
 
-func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { // nolint:gocyclo
+func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { //nolint:gocyclo
 	res := &svcsdk.SubmitJobInput{}
 	res.JobName = awsclient.String(cr.Name)
 

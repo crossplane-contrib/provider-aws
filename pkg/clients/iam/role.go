@@ -5,17 +5,15 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/aws/smithy-go/document"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/smithy-go/document"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
-
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"

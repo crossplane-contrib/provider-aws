@@ -39,7 +39,7 @@ func GenerateSetRepositoryPolicyInput(params *v1beta1.RepositoryPolicyParameters
 
 // LateInitializeRepositoryPolicy fills the empty fields in *v1alpha1.RepositoryPolicyParameters with
 // the values seen in ecr.GetRepositoryPolicyResponse.
-func LateInitializeRepositoryPolicy(in *v1beta1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyOutput) { // nolint:gocyclo
+func LateInitializeRepositoryPolicy(in *v1beta1.RepositoryPolicyParameters, r *ecr.GetRepositoryPolicyOutput) {
 	if r == nil {
 		return
 	}
@@ -72,7 +72,7 @@ func Serialize(p *v1beta1.RepositoryPolicyBody) (interface{}, error) {
 }
 
 // SerializeRepositoryPolicyStatement is the custom marshaller for the RepositoryPolicyStatement
-func SerializeRepositoryPolicyStatement(p v1beta1.RepositoryPolicyStatement) (interface{}, error) { // nolint:gocyclo
+func SerializeRepositoryPolicyStatement(p v1beta1.RepositoryPolicyStatement) (interface{}, error) { //nolint:gocyclo
 	m := make(map[string]interface{})
 	if p.Principal != nil {
 		principal, err := SerializeRepositoryPrincipal(p.Principal)

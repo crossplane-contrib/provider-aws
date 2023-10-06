@@ -21,9 +21,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/iot"
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
 )

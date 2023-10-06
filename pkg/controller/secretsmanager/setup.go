@@ -17,9 +17,8 @@ limitations under the License.
 package secretsmanager
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/secretsmanager/secret"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"

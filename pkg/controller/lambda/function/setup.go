@@ -6,11 +6,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -18,6 +13,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -138,7 +137,7 @@ func preDelete(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.DeleteFu
 	return false, nil
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) (bool, string, error) {
 
 	// Compare CODE
@@ -358,7 +357,7 @@ func (u *updater) isLastUpdateStatusSuccessful(ctx context.Context, cr *svcapity
 	}
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*svcapitypes.Function)
 	if !ok {
@@ -454,7 +453,8 @@ func GenerateUpdateFunctionCodeInput(cr *svcapitypes.Function) *svcsdk.UpdateFun
 
 // GenerateUpdateFunctionConfigurationInput is similar to GenerateCreateFunctionConfigurationInput
 // Copied almost verbatim from the zz_conversions generated code
-// nolint:gocyclo
+//
+//nolint:gocyclo
 func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.UpdateFunctionConfigurationInput {
 	res := &svcsdk.UpdateFunctionConfigurationInput{}
 	res.SetFunctionName(cr.Name)

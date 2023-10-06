@@ -56,7 +56,7 @@ func GenerateSubnetObservation(subnet ec2types.Subnet) v1beta1.SubnetObservation
 
 // LateInitializeSubnet fills the empty fields in *v1beta1.SubnetParameters with
 // the values seen in ec2types.Subnet.
-func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) { // nolint:gocyclo
+func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) {
 	if s == nil {
 		return
 	}

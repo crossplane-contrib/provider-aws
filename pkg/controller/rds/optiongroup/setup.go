@@ -5,9 +5,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -15,6 +12,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -107,7 +106,7 @@ func filterList(cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOut
 	return resp
 }
 
-func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOutput) (bool, string, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOutput) (bool, string, error) {
 
 	if aws.StringValue(cr.Spec.ForProvider.OptionGroupDescription) != aws.StringValue(obj.OptionGroupsList[0].OptionGroupDescription) {
 		return false, "", nil

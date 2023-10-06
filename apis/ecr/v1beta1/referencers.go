@@ -20,10 +20,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )

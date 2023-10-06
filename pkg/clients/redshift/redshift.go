@@ -25,13 +25,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	redshifttypes "github.com/aws/aws-sdk-go-v2/service/redshift/types"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -52,7 +50,7 @@ func NewClient(cfg aws.Config) Client {
 
 // LateInitialize fills the empty fields in *v1alpha1.ClusterParameters with
 // the values seen in redshift.Cluster.
-func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) { // nolint:gocyclo
+func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) { //nolint:gocyclo
 	if cl == nil {
 		return
 	}
@@ -129,7 +127,7 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1alpha1.ClusterParameters, cl redshifttypes.Cluster) (bool, error) { // nolint:gocyclo
+func IsUpToDate(p v1alpha1.ClusterParameters, cl redshifttypes.Cluster) (bool, error) {
 	// We need to check it explicitly as redshift.Cluster can have multiple ClusterParameterGroups
 	found := isClusterParameterGroupNameUpdated(p.ClusterParameterGroupName, cl.ClusterParameterGroups)
 
@@ -328,7 +326,7 @@ func GenerateDeleteClusterInput(p *v1alpha1.ClusterParameters, cid *string) *red
 
 // GenerateObservation is used to produce v1alpha1.ClusterObservation from
 // redshift.Cluster.
-func GenerateObservation(in redshifttypes.Cluster) v1alpha1.ClusterObservation { // nolint:gocyclo
+func GenerateObservation(in redshifttypes.Cluster) v1alpha1.ClusterObservation { //nolint:gocyclo
 	o := v1alpha1.ClusterObservation{
 		ClusterPublicKey:                       aws.ToString(in.ClusterPublicKey),
 		ClusterRevisionNumber:                  aws.ToString(in.ClusterRevisionNumber),

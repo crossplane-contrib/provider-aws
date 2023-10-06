@@ -73,7 +73,7 @@ func GenerateIGObservation(ig ec2types.InternetGateway) v1beta1.InternetGatewayO
 
 // LateInitializeIG fills the empty fields in *v1beta1.InternetGatewayParameters with
 // the values seen in ec2types.InternetGateway.
-func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2types.InternetGateway) { // nolint:gocyclo
+func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2types.InternetGateway) {
 	if ig == nil {
 		return
 	}

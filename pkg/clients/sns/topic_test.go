@@ -20,16 +20,14 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 

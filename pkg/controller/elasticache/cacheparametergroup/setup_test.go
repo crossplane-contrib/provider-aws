@@ -24,11 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/elasticache"
 	"github.com/aws/aws-sdk-go/service/elasticache/elasticacheiface"
-
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elasticache/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"

@@ -4,15 +4,14 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dax"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/google/go-cmp/cmp"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"

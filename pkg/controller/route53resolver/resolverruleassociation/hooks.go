@@ -21,9 +21,6 @@ import (
 	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -31,6 +28,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/route53resolver/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -120,13 +119,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
 	}
 
-	switch res.ResolverRuleAssociation.Status { // nolint:exhaustive
+	switch res.ResolverRuleAssociation.Status {
 	case manualv1alpha1.ResolverRuleAssociationStatusComplete:
 		cr.Status.SetConditions(xpv1.Available())
 	case manualv1alpha1.ResolverRuleAssociationStatusCreating:
 		cr.Status.SetConditions(xpv1.Creating())
 	case manualv1alpha1.ResolverRuleAssociationStatusDeleting:
 		cr.Status.SetConditions(xpv1.Deleting())
+	case manualv1alpha1.ResolverRuleAssociationStatusFailed, manualv1alpha1.ResolverRuleAssociationStatusOverridden:
+		cr.Status.SetConditions(xpv1.Unavailable())
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}

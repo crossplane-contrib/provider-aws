@@ -17,9 +17,8 @@ limitations under the License.
 package cognitoidentity
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cognitoidentity/identitypool"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"

@@ -57,7 +57,7 @@ func GenerateRepositoryObservation(repo ecrtypes.Repository) v1beta1.RepositoryO
 
 // LateInitializeRepository fills the empty fields in *v1alpha1.RepositoryParameters with
 // the values seen in ecr.Repository.
-func LateInitializeRepository(in *v1beta1.RepositoryParameters, r *ecrtypes.Repository) { // nolint:gocyclo
+func LateInitializeRepository(in *v1beta1.RepositoryParameters, r *ecrtypes.Repository) {
 	if r == nil {
 		return
 	}

@@ -22,18 +22,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/elasticache"
+	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/aws/smithy-go/document"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/elasticache"
-	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
@@ -348,7 +346,7 @@ func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
 		minor, err := strconv.ParseInt(parts[1], 10, 64)
 		// if not a digit (i.e. .x, ignore)
 		if err != nil {
-			return p, nil // nolint:nilerr
+			return p, nil //nolint:nilerr
 		}
 		p.Minor = aws.Int64(minor)
 	}
@@ -356,7 +354,7 @@ func ParseVersion(ver *string) (*PartialSemanticVersion, error) {
 	if len(parts) > 2 {
 		patch, err := strconv.ParseInt(parts[2], 10, 64)
 		if err != nil {
-			return p, nil // nolint:nilerr
+			return p, nil //nolint:nilerr
 		}
 		p.Patch = aws.Int64(patch)
 	}
@@ -406,7 +404,7 @@ func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: go
 	return true
 }
 
-func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { // nolint:gocyclo
+func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { //nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
 	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
 		return "EngineVersion"

@@ -102,7 +102,7 @@ func GenerateVpcObservation(vpc ec2types.Vpc) v1beta1.VPCObservation {
 
 // LateInitializeVPC fills the empty fields in *v1beta1.VPCParameters with
 // the values seen in ec2.Vpc and ec2.DescribeVpcAttributeOutput.
-func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *ec2.DescribeVpcAttributeOutput) { // nolint:gocyclo
+func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *ec2.DescribeVpcAttributeOutput) {
 	if v == nil {
 		return
 	}

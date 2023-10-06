@@ -20,10 +20,9 @@ import (
 	"fmt"
 	"hash/fnv"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // PermissionParameters define the desired state of a Lambda Permission
@@ -121,7 +120,7 @@ func (ps *PermissionSpec) Hash() string {
 		// known, strongly typed struct.
 		return "unknown"
 	}
-	h.Write(y) //nolint:errcheck // Writing to a hash never errors.
+	h.Write(y)
 	return fmt.Sprintf("%x", h.Sum64())
 }
 

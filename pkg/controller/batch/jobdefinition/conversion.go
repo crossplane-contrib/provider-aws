@@ -18,12 +18,13 @@ package jobdefinition
 
 import (
 	svcsdk "github.com/aws/aws-sdk-go/service/batch"
+	"k8s.io/utils/ptr"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/batch/manualv1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
-func generateJobDefinition(resp *svcsdk.DescribeJobDefinitionsOutput) *svcapitypes.JobDefinition { // nolint:gocyclo
+func generateJobDefinition(resp *svcsdk.DescribeJobDefinitionsOutput) *svcapitypes.JobDefinition { //nolint:gocyclo
 	cr := &svcapitypes.JobDefinition{}
 
 	for _, elem := range resp.JobDefinitions {
@@ -112,7 +113,7 @@ func generateJobDefinition(resp *svcsdk.DescribeJobDefinitionsOutput) *svcapityp
 }
 
 // Helper for generateJobDefinition() with filling ContainerProperties
-func getContainerProperties(cp *svcsdk.ContainerProperties) *svcapitypes.ContainerProperties { // nolint:gocyclo
+func getContainerProperties(cp *svcsdk.ContainerProperties) *svcapitypes.ContainerProperties { //nolint:gocyclo
 	speccp := &svcapitypes.ContainerProperties{}
 	if cp != nil {
 		if cp.Command != nil {
@@ -286,7 +287,7 @@ func getContainerProperties(cp *svcsdk.ContainerProperties) *svcapitypes.Contain
 	return speccp
 }
 
-func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.RegisterJobDefinitionInput { // nolint:gocyclo
+func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.RegisterJobDefinitionInput { //nolint:gocyclo
 	res := &svcsdk.RegisterJobDefinitionInput{}
 	res.JobDefinitionName = awsclient.String(cr.Name)
 	res.Type = awsclient.String(cr.Spec.ForProvider.JobDefinitionType)
@@ -361,7 +362,7 @@ func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.R
 }
 
 // Helper for generateRegisterJobDefinitionInput() with filling ContainerProperties
-func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.ContainerProperties { // nolint:gocyclo
+func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.ContainerProperties { //nolint:gocyclo
 	sdkcp := &svcsdk.ContainerProperties{}
 	if cp != nil {
 		if cp.Command != nil {
@@ -423,7 +424,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 					tmpfs = append(tmpfs, &svcsdk.Tmpfs{
 						ContainerPath: awsclient.String(tmpf.ContainerPath),
 						MountOptions:  tmpf.MountOptions,
-						Size:          &tmpf.Size,
+						Size:          ptr.To(tmpf.Size),
 					})
 				}
 				lipa.Tmpfs = tmpfs
@@ -495,9 +496,9 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 			ulimits := []*svcsdk.Ulimit{}
 			for _, ulimit := range cp.Ulimits {
 				ulimits = append(ulimits, &svcsdk.Ulimit{
-					HardLimit: &ulimit.HardLimit,
+					HardLimit: ptr.To(ulimit.HardLimit),
 					Name:      awsclient.String(ulimit.Name),
-					SoftLimit: &ulimit.SoftLimit,
+					SoftLimit: ptr.To(ulimit.SoftLimit),
 				})
 			}
 			sdkcp.Ulimits = ulimits

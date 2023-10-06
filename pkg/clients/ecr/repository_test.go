@@ -5,16 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-
-	"github.com/aws/smithy-go/document"
-
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
