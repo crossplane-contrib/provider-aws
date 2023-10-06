@@ -61,6 +61,86 @@ type AggregateOperation struct {
 }
 
 // +kubebuilder:skipversion
+type AmazonRedshiftAdvancedOption struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AmazonRedshiftNodeData struct {
+	AccessType *string `json:"accessType,omitempty"`
+
+	Action *string `json:"action,omitempty"`
+
+	AdvancedOptions []*AmazonRedshiftAdvancedOption `json:"advancedOptions,omitempty"`
+	// Specifies an option value.
+	CatalogDatabase *Option `json:"catalogDatabase,omitempty"`
+
+	CatalogRedshiftSchema *string `json:"catalogRedshiftSchema,omitempty"`
+
+	CatalogRedshiftTable *string `json:"catalogRedshiftTable,omitempty"`
+	// Specifies an option value.
+	CatalogTable *Option `json:"catalogTable,omitempty"`
+	// Specifies an option value.
+	Connection *Option `json:"connection,omitempty"`
+
+	CrawlerConnection *string `json:"crawlerConnection,omitempty"`
+	// Specifies an option value.
+	IAMRole *Option `json:"iamRole,omitempty"`
+
+	MergeAction *string `json:"mergeAction,omitempty"`
+
+	MergeClause *string `json:"mergeClause,omitempty"`
+
+	MergeWhenMatched *string `json:"mergeWhenMatched,omitempty"`
+
+	MergeWhenNotMatched *string `json:"mergeWhenNotMatched,omitempty"`
+
+	PostAction *string `json:"postAction,omitempty"`
+
+	PreAction *string `json:"preAction,omitempty"`
+
+	SampleQuery *string `json:"sampleQuery,omitempty"`
+	// Specifies an option value.
+	Schema *Option `json:"schema,omitempty"`
+
+	SelectedColumns []*Option `json:"selectedColumns,omitempty"`
+
+	SourceType *string `json:"sourceType,omitempty"`
+
+	StagingTable *string `json:"stagingTable,omitempty"`
+	// Specifies an option value.
+	Table *Option `json:"table,omitempty"`
+
+	TablePrefix *string `json:"tablePrefix,omitempty"`
+
+	TableSchema []*Option `json:"tableSchema,omitempty"`
+
+	TempDir *string `json:"tempDir,omitempty"`
+
+	Upsert *bool `json:"upsert,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AmazonRedshiftSource struct {
+	// Specifies an Amazon Redshift node.
+	Data *AmazonRedshiftNodeData `json:"data,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AmazonRedshiftTarget struct {
+	// Specifies an Amazon Redshift node.
+	Data *AmazonRedshiftNodeData `json:"data,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ApplyMapping struct {
 	Inputs []*string `json:"inputs,omitempty"`
 
@@ -135,10 +215,36 @@ type BlueprintRun struct {
 }
 
 // +kubebuilder:skipversion
+type CatalogDeltaSource struct {
+	AdditionalDeltaOptions map[string]*string `json:"additionalDeltaOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CatalogEntry struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	TableName *string `json:"tableName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CatalogHudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -239,12 +345,20 @@ type CodeGenConfigurationNode struct {
 	// Specifies a transform that groups rows by chosen fields and computes the
 	// aggregated value by specified function.
 	Aggregate *Aggregate `json:"aggregate,omitempty"`
+	// Specifies an Amazon Redshift source.
+	AmazonRedshiftSource *AmazonRedshiftSource `json:"amazonRedshiftSource,omitempty"`
+	// Specifies an Amazon Redshift target.
+	AmazonRedshiftTarget *AmazonRedshiftTarget `json:"amazonRedshiftTarget,omitempty"`
 	// Specifies a transform that maps data property keys in the data source to
 	// data property keys in the data target. You can rename keys, modify the data
 	// types for keys, and choose which keys to drop from the dataset.
 	ApplyMapping *ApplyMapping `json:"applyMapping,omitempty"`
 	// Specifies a connector to an Amazon Athena data source.
 	AthenaConnectorSource *AthenaConnectorSource `json:"athenaConnectorSource,omitempty"`
+	// Specifies a Delta Lake data source that is registered in the Glue Data Catalog.
+	CatalogDeltaSource *CatalogDeltaSource `json:"catalogDeltaSource,omitempty"`
+	// Specifies a Hudi data source that is registered in the Glue Data Catalog.
+	CatalogHudiSource *CatalogHudiSource `json:"catalogHudiSource,omitempty"`
 	// Specifies an Apache Kafka data store in the Data Catalog.
 	CatalogKafkaSource *CatalogKafkaSource `json:"catalogKafkaSource,omitempty"`
 	// Specifies a Kinesis data source in the Glue Data Catalog.
@@ -256,6 +370,8 @@ type CodeGenConfigurationNode struct {
 	// Specifies a transform that uses custom code you provide to perform the data
 	// transformation. The output is a collection of DynamicFrames.
 	CustomCode *CustomCode `json:"customCode,omitempty"`
+	// Specifies the direct JDBC source connection.
+	DirectJDBCSource *DirectJDBCSource `json:"directJDBCSource,omitempty"`
 	// Specifies an Apache Kafka data store.
 	DirectKafkaSource *DirectKafkaSource `json:"directKafkaSource,omitempty"`
 	// Specifies a direct Amazon Kinesis data source.
@@ -277,6 +393,8 @@ type CodeGenConfigurationNode struct {
 	DynamoDBCatalogSource *DynamoDBCatalogSource `json:"dynamoDBCatalogSource,omitempty"`
 	// Specifies your data quality evaluation criteria.
 	EvaluateDataQuality *EvaluateDataQuality `json:"evaluateDataQuality,omitempty"`
+	// Specifies your data quality evaluation criteria.
+	EvaluateDataQualityMultiFrame *EvaluateDataQualityMultiFrame `json:"evaluateDataQualityMultiFrame,omitempty"`
 	// Specifies a transform that locates records in the dataset that have missing
 	// values and adds a new field with a value determined by imputation. The input
 	// data set is used to train the machine learning model that determines what
@@ -319,6 +437,8 @@ type CodeGenConfigurationNode struct {
 	PostgreSQLCatalogSource *PostgreSQLCatalogSource `json:"postgreSQLCatalogSource,omitempty"`
 	// Specifies a target that uses Postgres SQL.
 	PostgreSQLCatalogTarget *PostgreSQLCatalogTarget `json:"postgreSQLCatalogTarget,omitempty"`
+	// A Glue Studio node that uses a Glue DataBrew recipe in Glue jobs.
+	Recipe *Recipe `json:"recipe,omitempty"`
 	// Specifies an Amazon Redshift data store.
 	RedshiftSource *RedshiftSource `json:"redshiftSource,omitempty"`
 	// Specifies a target that uses Amazon Redshift.
@@ -327,17 +447,36 @@ type CodeGenConfigurationNode struct {
 	RelationalCatalogSource *RelationalCatalogSource `json:"relationalCatalogSource,omitempty"`
 	// Specifies a transform that renames a single data property key.
 	RenameField *RenameField `json:"renameField,omitempty"`
+	// Specifies a Delta Lake data source that is registered in the Glue Data Catalog.
+	// The data source must be stored in Amazon S3.
+	S3CatalogDeltaSource *S3CatalogDeltaSource `json:"s3CatalogDeltaSource,omitempty"`
+	// Specifies a Hudi data source that is registered in the Glue Data Catalog.
+	// The Hudi data source must be stored in Amazon S3.
+	S3CatalogHudiSource *S3CatalogHudiSource `json:"s3CatalogHudiSource,omitempty"`
 	// Specifies an Amazon S3 data store in the Glue Data Catalog.
 	S3CatalogSource *S3CatalogSource `json:"s3CatalogSource,omitempty"`
 	// Specifies a data target that writes to Amazon S3 using the Glue Data Catalog.
 	S3CatalogTarget *S3CatalogTarget `json:"s3CatalogTarget,omitempty"`
 	// Specifies a command-separated value (CSV) data store stored in Amazon S3.
 	S3CsvSource *S3CsvSource `json:"s3CsvSource,omitempty"`
+	// Specifies a target that writes to a Delta Lake data source in the Glue Data
+	// Catalog.
+	S3DeltaCatalogTarget *S3DeltaCatalogTarget `json:"s3DeltaCatalogTarget,omitempty"`
+	// Specifies a target that writes to a Delta Lake data source in Amazon S3.
+	S3DeltaDirectTarget *S3DeltaDirectTarget `json:"s3DeltaDirectTarget,omitempty"`
+	// Specifies a Delta Lake data source stored in Amazon S3.
+	S3DeltaSource *S3DeltaSource `json:"s3DeltaSource,omitempty"`
 	// Specifies a data target that writes to Amazon S3.
 	S3DirectTarget *S3DirectTarget `json:"s3DirectTarget,omitempty"`
 	// Specifies a data target that writes to Amazon S3 in Apache Parquet columnar
 	// storage.
 	S3GlueParquetTarget *S3GlueParquetTarget `json:"s3GlueParquetTarget,omitempty"`
+	// Specifies a target that writes to a Hudi data source in the Glue Data Catalog.
+	S3HudiCatalogTarget *S3HudiCatalogTarget `json:"s3HudiCatalogTarget,omitempty"`
+	// Specifies a target that writes to a Hudi data source in Amazon S3.
+	S3HudiDirectTarget *S3HudiDirectTarget `json:"s3HudiDirectTarget,omitempty"`
+	// Specifies a Hudi data source stored in Amazon S3.
+	S3HudiSource *S3HudiSource `json:"s3HudiSource,omitempty"`
 	// Specifies a JSON data store stored in Amazon S3.
 	S3JSONSource *S3JSONSource `json:"s3JSONSource,omitempty"`
 	// Specifies an Apache Parquet data store stored in Amazon S3.
@@ -348,6 +487,10 @@ type CodeGenConfigurationNode struct {
 	// Specifies a transform that chooses one DynamicFrame from a collection of
 	// DynamicFrames. The output is the selected DynamicFrame
 	SelectFromCollection *SelectFromCollection `json:"selectFromCollection,omitempty"`
+	// Specifies a Snowflake data source.
+	SnowflakeSource *SnowflakeSource `json:"snowflakeSource,omitempty"`
+	// Specifies a Snowflake target.
+	SnowflakeTarget *SnowflakeTarget `json:"snowflakeTarget,omitempty"`
 	// Specifies a connector to an Apache Spark data source.
 	SparkConnectorSource *SparkConnectorSource `json:"sparkConnectorSource,omitempty"`
 	// Specifies a target that uses an Apache Spark connector.
@@ -502,6 +645,10 @@ type CrawlerTargets struct {
 
 	DynamoDBTargets []*DynamoDBTarget `json:"dynamoDBTargets,omitempty"`
 
+	HudiTargets []*HudiTarget `json:"hudiTargets,omitempty"`
+
+	IcebergTargets []*IcebergTarget `json:"icebergTargets,omitempty"`
+
 	JdbcTargets []*JdbcTarget `json:"jdbcTargets,omitempty"`
 
 	MongoDBTargets []*MongoDBTarget `json:"mongoDBTargets,omitempty"`
@@ -580,6 +727,8 @@ type CreateCsvClassifierRequest struct {
 	Name *string `json:"name,omitempty"`
 
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
+
+	Serde *string `json:"serde,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -632,6 +781,8 @@ type CsvClassifier struct {
 	Name *string `json:"name,omitempty"`
 
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
+
+	Serde *string `json:"serde,omitempty"`
 
 	Version *int64 `json:"version,omitempty"`
 }
@@ -776,6 +927,8 @@ type DataQualityRulesetListDetails struct {
 
 // +kubebuilder:skipversion
 type DataQualityTargetTable struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	TableName *string `json:"tableName,omitempty"`
@@ -786,6 +939,8 @@ type DatabaseIdentifier struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
 	DatabaseName *string `json:"databaseName,omitempty"`
+
+	Region *string `json:"region,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -793,6 +948,8 @@ type DatabaseInput struct {
 	CreateTableDefaultPermissions []*PrincipalPermissions `json:"createTableDefaultPermissions,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+	// A database that points to an entity outside the Glue Data Catalog.
+	FederatedDatabase *FederatedDatabase `json:"federatedDatabase,omitempty"`
 
 	LocationURI *string `json:"locationURI,omitempty"`
 
@@ -812,6 +969,8 @@ type Database_SDK struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+	// A database that points to an entity outside the Glue Data Catalog.
+	FederatedDatabase *FederatedDatabase `json:"federatedDatabase,omitempty"`
 
 	LocationURI *string `json:"locationURI,omitempty"`
 
@@ -900,6 +1059,21 @@ type DevEndpointCustomLibraries struct {
 }
 
 // +kubebuilder:skipversion
+type DirectJDBCSource struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	ConnectionType *string `json:"connectionType,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	RedshiftTmpDir *string `json:"redshiftTmpDir,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DirectKafkaSource struct {
 	// Specifies options related to data preview for viewing a sample of your data.
 	DataPreviewOptions *StreamingDataPreviewOptions `json:"dataPreviewOptions,omitempty"`
@@ -975,6 +1149,8 @@ type DynamicTransform struct {
 
 	Name *string `json:"name,omitempty"`
 
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
 	Parameters []*TransformConfigParameter `json:"parameters,omitempty"`
 
 	Path *string `json:"path,omitempty"`
@@ -1048,6 +1224,24 @@ type EvaluateDataQuality struct {
 }
 
 // +kubebuilder:skipversion
+type EvaluateDataQualityMultiFrame struct {
+	AdditionalDataSources map[string]*string `json:"additionalDataSources,omitempty"`
+
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// Options to configure how your data quality evaluation results are published.
+	PublishingOptions *DQResultsPublishingOptions `json:"publishingOptions,omitempty"`
+
+	Ruleset *string `json:"ruleset,omitempty"`
+	// Options to configure how your job will stop if your data quality evaluation
+	// fails.
+	StopJobOnFailureOptions *DQStopJobOnFailureOptions `json:"stopJobOnFailureOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ExecutionProperty struct {
 	MaxConcurrentRuns *int64 `json:"maxConcurrentRuns,omitempty"`
 }
@@ -1055,6 +1249,22 @@ type ExecutionProperty struct {
 // +kubebuilder:skipversion
 type ExportLabelsTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FederatedDatabase struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Identifier *string `json:"identifier,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FederatedTable struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	DatabaseIdentifier *string `json:"databaseIdentifier,omitempty"`
+
+	Identifier *string `json:"identifier,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1178,6 +1388,28 @@ type GrokClassifier struct {
 }
 
 // +kubebuilder:skipversion
+type HudiTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Exclusions []*string `json:"exclusions,omitempty"`
+
+	MaximumTraversalDepth *int64 `json:"maximumTraversalDepth,omitempty"`
+
+	Paths []*string `json:"paths,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Exclusions []*string `json:"exclusions,omitempty"`
+
+	MaximumTraversalDepth *int64 `json:"maximumTraversalDepth,omitempty"`
+
+	Paths []*string `json:"paths,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ImportLabelsTaskRunProperties struct {
 	InputS3Path *string `json:"inputS3Path,omitempty"`
 }
@@ -1285,6 +1517,8 @@ type JobCommand struct {
 	Name *string `json:"name,omitempty"`
 
 	PythonVersion *string `json:"pythonVersion,omitempty"`
+
+	Runtime *string `json:"runtime,omitempty"`
 
 	ScriptLocation *string `json:"scriptLocation,omitempty"`
 }
@@ -1440,6 +1674,8 @@ type JoinColumn struct {
 
 // +kubebuilder:skipversion
 type KafkaStreamingSourceOptions struct {
+	AddRecordTimestamp *string `json:"addRecordTimestamp,omitempty"`
+
 	Assign *string `json:"assign,omitempty"`
 
 	BootstrapServers *string `json:"bootstrapServers,omitempty"`
@@ -1450,7 +1686,11 @@ type KafkaStreamingSourceOptions struct {
 
 	Delimiter *string `json:"delimiter,omitempty"`
 
+	EmitConsumerLagMetrics *string `json:"emitConsumerLagMetrics,omitempty"`
+
 	EndingOffsets *string `json:"endingOffsets,omitempty"`
+
+	IncludeHeaders *bool `json:"includeHeaders,omitempty"`
 
 	MaxOffsetsPerTrigger *int64 `json:"maxOffsetsPerTrigger,omitempty"`
 
@@ -1465,6 +1705,8 @@ type KafkaStreamingSourceOptions struct {
 	SecurityProtocol *string `json:"securityProtocol,omitempty"`
 
 	StartingOffsets *string `json:"startingOffsets,omitempty"`
+
+	StartingTimestamp *metav1.Time `json:"startingTimestamp,omitempty"`
 
 	SubscribePattern *string `json:"subscribePattern,omitempty"`
 
@@ -1482,6 +1724,8 @@ type KeySchemaElement struct {
 type KinesisStreamingSourceOptions struct {
 	AddIdleTimeBetweenReads *bool `json:"addIdleTimeBetweenReads,omitempty"`
 
+	AddRecordTimestamp *string `json:"addRecordTimestamp,omitempty"`
+
 	AvoidEmptyBatches *bool `json:"avoidEmptyBatches,omitempty"`
 
 	Classification *string `json:"classification,omitempty"`
@@ -1489,6 +1733,8 @@ type KinesisStreamingSourceOptions struct {
 	Delimiter *string `json:"delimiter,omitempty"`
 
 	DescribeShardInterval *int64 `json:"describeShardInterval,omitempty"`
+
+	EmitConsumerLagMetrics *string `json:"emitConsumerLagMetrics,omitempty"`
 
 	EndpointURL *string `json:"endpointURL,omitempty"`
 
@@ -1511,6 +1757,8 @@ type KinesisStreamingSourceOptions struct {
 	RoleSessionName *string `json:"roleSessionName,omitempty"`
 
 	StartingPosition *string `json:"startingPosition,omitempty"`
+
+	StartingTimestamp *metav1.Time `json:"startingTimestamp,omitempty"`
 
 	StreamARN *string `json:"streamARN,omitempty"`
 
@@ -1693,6 +1941,15 @@ type NullValueField struct {
 }
 
 // +kubebuilder:skipversion
+type Option struct {
+	Description *string `json:"description,omitempty"`
+
+	Label *string `json:"label,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type OracleSQLCatalogSource struct {
 	Database *string `json:"database,omitempty"`
 
@@ -1821,6 +2078,22 @@ type PropertyPredicate struct {
 }
 
 // +kubebuilder:skipversion
+type Recipe struct {
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// A reference to a Glue DataBrew recipe.
+	RecipeReference *RecipeReference `json:"recipeReference,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecipeReference struct {
+	RecipeARN *string `json:"recipeARN,omitempty"`
+
+	RecipeVersion *string `json:"recipeVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type RecrawlPolicy struct {
 	RecrawlBehavior *string `json:"recrawlBehavior,omitempty"`
 }
@@ -1883,6 +2156,32 @@ type RenameField struct {
 // +kubebuilder:skipversion
 type ResourceURI struct {
 	URI *string `json:"uri,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3CatalogDeltaSource struct {
+	AdditionalDeltaOptions map[string]*string `json:"additionalDeltaOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3CatalogHudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Table *string `json:"table,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1957,6 +2256,55 @@ type S3CsvSource struct {
 }
 
 // +kubebuilder:skipversion
+type S3DeltaCatalogTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *CatalogSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3DeltaDirectTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Compression *string `json:"compression,omitempty"`
+
+	Format *string `json:"format,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+
+	Path *string `json:"path,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *DirectSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3DeltaSource struct {
+	AdditionalDeltaOptions map[string]*string `json:"additionalDeltaOptions,omitempty"`
+	// Specifies additional connection options for the Amazon S3 data store.
+	AdditionalOptions *S3DirectSourceAdditionalOptions `json:"additionalOptions,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Paths []*string `json:"paths,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type S3DirectSourceAdditionalOptions struct {
 	BoundedFiles *int64 `json:"boundedFiles,omitempty"`
 
@@ -2004,6 +2352,55 @@ type S3GlueParquetTarget struct {
 	Path *string `json:"path,omitempty"`
 	// A policy that specifies update behavior for the crawler.
 	SchemaChangePolicy *DirectSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiCatalogTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *CatalogSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiDirectTarget struct {
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	Compression *string `json:"compression,omitempty"`
+
+	Format *string `json:"format,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PartitionKeys [][]*string `json:"partitionKeys,omitempty"`
+
+	Path *string `json:"path,omitempty"`
+	// A policy that specifies update behavior for the crawler.
+	SchemaChangePolicy *DirectSchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3HudiSource struct {
+	AdditionalHudiOptions map[string]*string `json:"additionalHudiOptions,omitempty"`
+	// Specifies additional connection options for the Amazon S3 data store.
+	AdditionalOptions *S3DirectSourceAdditionalOptions `json:"additionalOptions,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+
+	Paths []*string `json:"paths,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2153,14 +2550,19 @@ type SerDeInfo struct {
 
 // +kubebuilder:skipversion
 type Session struct {
+	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
 	// Specifies the connections used by a job.
 	Connections *ConnectionsList `json:"connections,omitempty"`
 
 	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
 
+	DPUSeconds *float64 `json:"dPUSeconds,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+
+	ExecutionTime *float64 `json:"executionTime,omitempty"`
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
@@ -2168,7 +2570,11 @@ type Session struct {
 
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 
+	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
+
 	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
+
+	WorkerType *string `json:"workerType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2176,6 +2582,71 @@ type SessionCommand struct {
 	Name *string `json:"name,omitempty"`
 
 	PythonVersion *string `json:"pythonVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeNodeData struct {
+	Action *string `json:"action,omitempty"`
+
+	AdditionalOptions map[string]*string `json:"additionalOptions,omitempty"`
+
+	AutoPushdown *bool `json:"autoPushdown,omitempty"`
+	// Specifies an option value.
+	Connection *Option `json:"connection,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+	// Specifies an option value.
+	IAMRole *Option `json:"iamRole,omitempty"`
+
+	MergeAction *string `json:"mergeAction,omitempty"`
+
+	MergeClause *string `json:"mergeClause,omitempty"`
+
+	MergeWhenMatched *string `json:"mergeWhenMatched,omitempty"`
+
+	MergeWhenNotMatched *string `json:"mergeWhenNotMatched,omitempty"`
+
+	PostAction *string `json:"postAction,omitempty"`
+
+	PreAction *string `json:"preAction,omitempty"`
+
+	SampleQuery *string `json:"sampleQuery,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+
+	SelectedColumns []*Option `json:"selectedColumns,omitempty"`
+
+	SourceType *string `json:"sourceType,omitempty"`
+
+	StagingTable *string `json:"stagingTable,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	TableSchema []*Option `json:"tableSchema,omitempty"`
+
+	TempDir *string `json:"tempDir,omitempty"`
+
+	Upsert *bool `json:"upsert,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeSource struct {
+	// Specifies configuration for Snowflake nodes in Glue Studio.
+	Data *SnowflakeNodeData `json:"data,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeTarget struct {
+	// Specifies configuration for Snowflake nodes in Glue Studio.
+	Data *SnowflakeNodeData `json:"data,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2365,6 +2836,8 @@ type TableIdentifier struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	Region *string `json:"region,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2497,6 +2970,8 @@ type UpdateCsvClassifierRequest struct {
 	Name *string `json:"name,omitempty"`
 
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
+
+	Serde *string `json:"serde,omitempty"`
 }
 
 // +kubebuilder:skipversion

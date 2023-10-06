@@ -25,7 +25,7 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
@@ -177,7 +177,7 @@ func TestPolicyObserve(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:          "aws:SecureTransport",
-								ConditionBooleanValue: pointer.Bool(false),
+								ConditionBooleanValue: ptr.To(false),
 							},
 						},
 					},

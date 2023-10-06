@@ -4,6 +4,7 @@ ignore:
     - FirewallDomainList
     - FirewallRule
     - FirewallRuleGroup
+    - OutpostResolver
   field_paths:
     - CreateResolverEndpointInput.SecurityGroupIds
     - CreateResolverEndpointInput.IpAddresses

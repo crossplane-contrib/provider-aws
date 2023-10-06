@@ -34,6 +34,7 @@ const (
 	BrokerState_RUNNING                  BrokerState = "RUNNING"
 	BrokerState_REBOOT_IN_PROGRESS       BrokerState = "REBOOT_IN_PROGRESS"
 	BrokerState_CRITICAL_ACTION_REQUIRED BrokerState = "CRITICAL_ACTION_REQUIRED"
+	BrokerState_REPLICA                  BrokerState = "REPLICA"
 )
 
 type BrokerStorageType string
@@ -49,6 +50,13 @@ const (
 	ChangeType_CREATE ChangeType = "CREATE"
 	ChangeType_UPDATE ChangeType = "UPDATE"
 	ChangeType_DELETE ChangeType = "DELETE"
+)
+
+type DataReplicationMode string
+
+const (
+	DataReplicationMode_NONE DataReplicationMode = "NONE"
+	DataReplicationMode_CRDR DataReplicationMode = "CRDR"
 )
 
 type DayOfWeek string
@@ -76,6 +84,13 @@ type EngineType string
 const (
 	EngineType_ACTIVEMQ EngineType = "ACTIVEMQ"
 	EngineType_RABBITMQ EngineType = "RABBITMQ"
+)
+
+type PromoteMode string
+
+const (
+	PromoteMode_SWITCHOVER PromoteMode = "SWITCHOVER"
+	PromoteMode_FAILOVER   PromoteMode = "FAILOVER"
 )
 
 type SanitizationWarningReason string

@@ -133,6 +133,9 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions != nil {
 			f0f2 := &svcsdk.LaunchTemplateCpuOptionsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp != nil {
+				f0f2.SetAmdSevSnp(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp)
+			}
 			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount != nil {
 				f0f2.SetCoreCount(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount)
 			}
@@ -554,22 +557,25 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 				if f0f23iter.NetworkInterfaceID != nil {
 					f0f23elem.SetNetworkInterfaceId(*f0f23iter.NetworkInterfaceID)
 				}
+				if f0f23iter.PrimaryIPv6 != nil {
+					f0f23elem.SetPrimaryIpv6(*f0f23iter.PrimaryIPv6)
+				}
 				if f0f23iter.PrivateIPAddress != nil {
 					f0f23elem.SetPrivateIpAddress(*f0f23iter.PrivateIPAddress)
 				}
 				if f0f23iter.PrivateIPAddresses != nil {
-					f0f23elemf16 := []*svcsdk.PrivateIpAddressSpecification{}
-					for _, f0f23elemf16iter := range f0f23iter.PrivateIPAddresses {
-						f0f23elemf16elem := &svcsdk.PrivateIpAddressSpecification{}
-						if f0f23elemf16iter.Primary != nil {
-							f0f23elemf16elem.SetPrimary(*f0f23elemf16iter.Primary)
+					f0f23elemf17 := []*svcsdk.PrivateIpAddressSpecification{}
+					for _, f0f23elemf17iter := range f0f23iter.PrivateIPAddresses {
+						f0f23elemf17elem := &svcsdk.PrivateIpAddressSpecification{}
+						if f0f23elemf17iter.Primary != nil {
+							f0f23elemf17elem.SetPrimary(*f0f23elemf17iter.Primary)
 						}
-						if f0f23elemf16iter.PrivateIPAddress != nil {
-							f0f23elemf16elem.SetPrivateIpAddress(*f0f23elemf16iter.PrivateIPAddress)
+						if f0f23elemf17iter.PrivateIPAddress != nil {
+							f0f23elemf17elem.SetPrivateIpAddress(*f0f23elemf17iter.PrivateIPAddress)
 						}
-						f0f23elemf16 = append(f0f23elemf16, f0f23elemf16elem)
+						f0f23elemf17 = append(f0f23elemf17, f0f23elemf17elem)
 					}
-					f0f23elem.SetPrivateIpAddresses(f0f23elemf16)
+					f0f23elem.SetPrivateIpAddresses(f0f23elemf17)
 				}
 				if f0f23iter.SecondaryPrivateIPAddressCount != nil {
 					f0f23elem.SetSecondaryPrivateIpAddressCount(*f0f23iter.SecondaryPrivateIPAddressCount)

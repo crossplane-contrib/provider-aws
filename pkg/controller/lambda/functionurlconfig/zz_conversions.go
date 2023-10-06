@@ -112,6 +112,11 @@ func GenerateFunctionURLConfig(resp *svcsdk.GetFunctionUrlConfigOutput) *svcapit
 	} else {
 		cr.Status.AtProvider.FunctionURL = nil
 	}
+	if resp.InvokeMode != nil {
+		cr.Spec.ForProvider.InvokeMode = resp.InvokeMode
+	} else {
+		cr.Spec.ForProvider.InvokeMode = nil
+	}
 
 	return cr
 }
@@ -168,6 +173,9 @@ func GenerateCreateFunctionUrlConfigInput(cr *svcapitypes.FunctionURLConfig) *sv
 			f1.SetMaxAge(*cr.Spec.ForProvider.CORS.MaxAge)
 		}
 		res.SetCors(f1)
+	}
+	if cr.Spec.ForProvider.InvokeMode != nil {
+		res.SetInvokeMode(*cr.Spec.ForProvider.InvokeMode)
 	}
 	if cr.Spec.ForProvider.Qualifier != nil {
 		res.SetQualifier(*cr.Spec.ForProvider.Qualifier)
@@ -228,6 +236,9 @@ func GenerateUpdateFunctionUrlConfigInput(cr *svcapitypes.FunctionURLConfig) *sv
 			f1.SetMaxAge(*cr.Spec.ForProvider.CORS.MaxAge)
 		}
 		res.SetCors(f1)
+	}
+	if cr.Spec.ForProvider.InvokeMode != nil {
+		res.SetInvokeMode(*cr.Spec.ForProvider.InvokeMode)
 	}
 	if cr.Spec.ForProvider.Qualifier != nil {
 		res.SetQualifier(*cr.Spec.ForProvider.Qualifier)

@@ -112,6 +112,15 @@ func GenerateJobRun(resp *svcsdk.DescribeJobRunOutput) *svcapitypes.JobRun {
 	} else {
 		cr.Spec.ForProvider.ReleaseLabel = nil
 	}
+	if resp.JobRun.RetryPolicyConfiguration != nil {
+		f11 := &svcapitypes.RetryPolicyConfiguration{}
+		if resp.JobRun.RetryPolicyConfiguration.MaxAttempts != nil {
+			f11.MaxAttempts = resp.JobRun.RetryPolicyConfiguration.MaxAttempts
+		}
+		cr.Spec.ForProvider.RetryPolicyConfiguration = f11
+	} else {
+		cr.Spec.ForProvider.RetryPolicyConfiguration = nil
+	}
 	if resp.JobRun.State != nil {
 		cr.Status.AtProvider.State = resp.JobRun.State
 	} else {
@@ -123,13 +132,13 @@ func GenerateJobRun(resp *svcsdk.DescribeJobRunOutput) *svcapitypes.JobRun {
 		cr.Status.AtProvider.StateDetails = nil
 	}
 	if resp.JobRun.Tags != nil {
-		f13 := map[string]*string{}
-		for f13key, f13valiter := range resp.JobRun.Tags {
-			var f13val string
-			f13val = *f13valiter
-			f13[f13key] = &f13val
+		f15 := map[string]*string{}
+		for f15key, f15valiter := range resp.JobRun.Tags {
+			var f15val string
+			f15val = *f15valiter
+			f15[f15key] = &f15val
 		}
-		cr.Spec.ForProvider.Tags = f13
+		cr.Spec.ForProvider.Tags = f15
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -197,14 +206,21 @@ func GenerateStartJobRunInput(cr *svcapitypes.JobRun) *svcsdk.StartJobRunInput {
 	if cr.Spec.ForProvider.ReleaseLabel != nil {
 		res.SetReleaseLabel(*cr.Spec.ForProvider.ReleaseLabel)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f5 := map[string]*string{}
-		for f5key, f5valiter := range cr.Spec.ForProvider.Tags {
-			var f5val string
-			f5val = *f5valiter
-			f5[f5key] = &f5val
+	if cr.Spec.ForProvider.RetryPolicyConfiguration != nil {
+		f5 := &svcsdk.RetryPolicyConfiguration{}
+		if cr.Spec.ForProvider.RetryPolicyConfiguration.MaxAttempts != nil {
+			f5.SetMaxAttempts(*cr.Spec.ForProvider.RetryPolicyConfiguration.MaxAttempts)
 		}
-		res.SetTags(f5)
+		res.SetRetryPolicyConfiguration(f5)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.Tags {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
+		}
+		res.SetTags(f6)
 	}
 
 	return res

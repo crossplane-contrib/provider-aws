@@ -63,9 +63,7 @@ type FlowLogParameters struct {
 	// in the Amazon VPC User Guide or Transit Gateway Flow Log records (https://docs.aws.amazon.com/vpc/latest/tgw/tgw-flow-logs.html#flow-log-records)
 	// in the Amazon Web Services Transit Gateway Guide.
 	//
-	// Specify the fields using the ${field-id} format, separated by spaces. For
-	// the CLI, surround this parameter value with single quotes on Linux or double
-	// quotes on Windows.
+	// Specify the fields using the ${field-id} format, separated by spaces.
 	LogFormat *string `json:"logFormat,omitempty"`
 	// The name of a new or existing CloudWatch Logs log group where Amazon EC2
 	// publishes your flow logs.

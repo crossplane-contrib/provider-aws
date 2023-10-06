@@ -160,14 +160,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.Name = nil
 	}
+	if resp.ResolverEndpoint.OutpostArn != nil {
+		cr.Spec.ForProvider.OutpostARN = resp.ResolverEndpoint.OutpostArn
+	} else {
+		cr.Spec.ForProvider.OutpostARN = nil
+	}
+	if resp.ResolverEndpoint.PreferredInstanceType != nil {
+		cr.Spec.ForProvider.PreferredInstanceType = resp.ResolverEndpoint.PreferredInstanceType
+	} else {
+		cr.Spec.ForProvider.PreferredInstanceType = nil
+	}
+	if resp.ResolverEndpoint.ResolverEndpointType != nil {
+		cr.Spec.ForProvider.ResolverEndpointType = resp.ResolverEndpoint.ResolverEndpointType
+	} else {
+		cr.Spec.ForProvider.ResolverEndpointType = nil
+	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.ResolverEndpoint.SecurityGroupIds {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f12 := []*string{}
+		for _, f12iter := range resp.ResolverEndpoint.SecurityGroupIds {
+			var f12elem string
+			f12elem = *f12iter
+			f12 = append(f12, &f12elem)
 		}
-		cr.Status.AtProvider.SecurityGroupIDs = f9
+		cr.Status.AtProvider.SecurityGroupIDs = f12
 	} else {
 		cr.Status.AtProvider.SecurityGroupIDs = nil
 	}

@@ -393,13 +393,13 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f10 := []*string{}
-		for _, f10iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f10elem string
-			f10elem = *f10iter
-			f10 = append(f10, &f10elem)
+		f11 := []*string{}
+		for _, f11iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f11elem string
+			f11elem = *f11iter
+			f11 = append(f11, &f11elem)
 		}
-		res.SetVpcSecurityGroupIds(f10)
+		res.SetVpcSecurityGroupIds(f11)
 	}
 
 	return res

@@ -321,8 +321,12 @@ spec:
                         type: array
                     type: object
                   userPoolAddOns:
-                    description: Enables advanced security risk detection. Set the
-                      key AdvancedSecurityMode to the value "AUDIT".
+                    description: "User pool add-ons. Contains settings for activation
+                      of advanced security features. To log user security information
+                      but take no action, set to AUDIT. To configure automatic security
+                      responses to risky traffic to your user pool, set to ENFORCED.
+                      \n For more information, see Adding advanced security to a user
+                      pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-settings-advanced-security.html)."
                     properties:
                       advancedSecurityMode:
                         type: string
@@ -342,11 +346,18 @@ spec:
                       type: string
                     type: array
                   usernameConfiguration:
-                    description: Case sensitivity on the username input for the selected
-                      sign-in option. For example, when case sensitivity is set to
-                      False, users can sign in using either "username" or "Username".
-                      This configuration is immutable once it has been set. For more
-                      information, see UsernameConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html).
+                    description: "Case sensitivity on the username input for the selected
+                      sign-in option. When case sensitivity is set to False (case
+                      insensitive), users can sign in with any combination of capital
+                      and lowercase letters. For example, username, USERNAME, or UserName,
+                      or for email, email@example.com or EMaiL@eXamplE.Com. For most
+                      use cases, set case sensitivity to False (case insensitive)
+                      as a best practice. When usernames and email addresses are case
+                      insensitive, Amazon Cognito treats any variation in case as
+                      the same user, and prevents a case variation from being assigned
+                      to the same attribute for a different user. \n This configuration
+                      is immutable after you set it. For more information, see UsernameConfigurationType
+                      (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html)."
                     properties:
                       caseSensitive:
                         type: boolean
@@ -580,7 +591,8 @@ spec:
                     description: The Amazon Resource Name (ARN) for the user pool.
                     type: string
                   creationDate:
-                    description: The date the user pool was created.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was created.
                     format: date-time
                     type: string
                   customDomain:
@@ -608,15 +620,23 @@ spec:
                     description: The ID of the user pool.
                     type: string
                   lastModifiedDate:
-                    description: The date the user pool was last modified.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was modified.
                     format: date-time
                     type: string
                   name:
                     description: The name of the user pool.
                     type: string
                   schemaAttributes:
-                    description: A container with the schema attributes of a user
-                      pool.
+                    description: "A list of the user attributes and their properties
+                      in your user pool. The attribute schema contains standard attributes,
+                      custom attributes with a custom: prefix, and developer attributes
+                      with a dev: prefix. For more information, see User pool attributes
+                      (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-attributes.html).
+                      \n Developer-only attributes are a legacy feature of user pools,
+                      are read-only to all app clients. You can create and update
+                      developer-only attributes only with IAM-authenticated API operations.
+                      Use app client read/write permissions instead."
                     items:
                       properties:
                         attributeDataType:
@@ -658,10 +678,10 @@ spec:
                       information, see SmsConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_SmsConfigurationType.html).
                       \n SNSSandbox \n The Amazon Web Services account is in the SNS
                       SMS Sandbox and messages will only reach verified end users.
-                      This parameter won’t get populated with SNSSandbox if the IAM
-                      user creating the user pool doesn’t have SNS permissions. To
-                      learn how to move your Amazon Web Services account out of the
-                      sandbox, see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
+                      This parameter won’t get populated with SNSSandbox if the user
+                      creating the user pool doesn’t have SNS permissions. To learn
+                      how to move your Amazon Web Services account out of the sandbox,
+                      see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html)."
                     type: string
                   status:
                     description: The status of a user pool.

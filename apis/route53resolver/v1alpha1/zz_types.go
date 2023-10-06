@@ -151,6 +151,8 @@ type IPAddressResponse struct {
 
 	IPID *string `json:"ipID,omitempty"`
 
+	IPv6 *string `json:"ipv6,omitempty"`
+
 	ModificationTime *string `json:"modificationTime,omitempty"`
 
 	StatusMessage *string `json:"statusMessage,omitempty"`
@@ -161,6 +163,25 @@ type IPAddressUpdate struct {
 	IP *string `json:"ip,omitempty"`
 
 	IPID *string `json:"ipID,omitempty"`
+
+	IPv6 *string `json:"ipv6,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OutpostResolver struct {
+	ARN *string `json:"arn,omitempty"`
+
+	CreationTime *string `json:"creationTime,omitempty"`
+
+	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	ModificationTime *string `json:"modificationTime,omitempty"`
+
+	OutpostARN *string `json:"outpostARN,omitempty"`
+
+	PreferredInstanceType *string `json:"preferredInstanceType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -200,6 +221,12 @@ type ResolverEndpoint_SDK struct {
 	ModificationTime *string `json:"modificationTime,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	OutpostARN *string `json:"outpostARN,omitempty"`
+
+	PreferredInstanceType *string `json:"preferredInstanceType,omitempty"`
+
+	ResolverEndpointType *string `json:"resolverEndpointType,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
@@ -285,5 +312,14 @@ type Tag struct {
 type TargetAddress struct {
 	IP *string `json:"ip,omitempty"`
 
+	IPv6 *string `json:"ipv6,omitempty"`
+
 	Port *int64 `json:"port,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type UpdateIPAddress struct {
+	IPID *string `json:"ipID,omitempty"`
+
+	IPv6 *string `json:"ipv6,omitempty"`
 }

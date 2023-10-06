@@ -387,6 +387,11 @@ type EKSVolume struct {
 }
 
 // +kubebuilder:skipversion
+type EphemeralStorage struct {
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EvaluateOnExit struct {
 	OnExitCode *string `json:"onExitCode,omitempty"`
 
@@ -581,6 +586,13 @@ type ResourceRequirement struct {
 // +kubebuilder:skipversion
 type RetryStrategy struct {
 	Attempts *int64 `json:"attempts,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RuntimePlatform struct {
+	CPUArchitecture *string `json:"cpuArchitecture,omitempty"`
+
+	OperatingSystemFamily *string `json:"operatingSystemFamily,omitempty"`
 }
 
 // +kubebuilder:skipversion

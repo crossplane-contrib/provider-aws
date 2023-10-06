@@ -114,6 +114,8 @@ type ClusterPendingModifiedValues struct {
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -147,6 +149,53 @@ type CustomDBEngineVersionAMI struct {
 	ImageID *string `json:"imageID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DBClusterAutomatedBackup struct {
+	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
+
+	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
+
+	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
+	ClusterCreateTime *metav1.Time `json:"clusterCreateTime,omitempty"`
+
+	DBClusterARN *string `json:"dbClusterARN,omitempty"`
+
+	DBClusterAutomatedBackupsARN *string `json:"dbClusterAutomatedBackupsARN,omitempty"`
+
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
+
+	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
+
+	EngineMode *string `json:"engineMode,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	LicenseModel *string `json:"licenseModel,omitempty"`
+
+	MasterUsername *string `json:"masterUsername,omitempty"`
+
+	Port *int64 `json:"port,omitempty"`
+
+	Region *string `json:"region,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
+
+	VPCID *string `json:"vpcID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -226,6 +275,8 @@ type DBClusterSnapshot struct {
 
 	DBSystemID *string `json:"dbSystemID,omitempty"`
 
+	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
+
 	Engine *string `json:"engine,omitempty"`
 
 	EngineMode *string `json:"engineMode,omitempty"`
@@ -253,6 +304,8 @@ type DBClusterSnapshot struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
 	TagList []*Tag `json:"tagList,omitempty"`
@@ -358,11 +411,15 @@ type DBCluster_SDK struct {
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
+
 	IOPS *int64 `json:"iops,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+
+	LocalWriteForwardingStatus *string `json:"localWriteForwardingStatus,omitempty"`
 	// Contains the secret managed by RDS in Amazon Web Services Secrets Manager
 	// for the master user password.
 	//
@@ -404,13 +461,13 @@ type DBCluster_SDK struct {
 	ReaderEndpoint *string `json:"readerEndpoint,omitempty"`
 
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
-	// Shows the scaling configuration for an Aurora DB cluster in serverless DB
-	// engine mode.
+	// The scaling configuration for an Aurora DB cluster in serverless DB engine
+	// mode.
 	//
 	// For more information, see Using Amazon Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 	// in the Amazon Aurora User Guide.
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
-	// Shows the scaling configuration for an Aurora Serverless v2 DB cluster.
+	// The scaling configuration for an Aurora Serverless v2 DB cluster.
 	//
 	// For more information, see Using Amazon Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html)
 	// in the Amazon Aurora User Guide.
@@ -465,6 +522,8 @@ type DBEngineVersion struct {
 	SupportsCertificateRotationWithoutRestart *bool `json:"supportsCertificateRotationWithoutRestart,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
+
+	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
 
@@ -715,6 +774,8 @@ type DBInstance_SDK struct {
 	// and contains changes that will be applied during the next maintenance window.
 	PendingModifiedValues *PendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 
+	PercentProgress *string `json:"percentProgress,omitempty"`
+
 	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
 
 	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
@@ -734,6 +795,8 @@ type DBInstance_SDK struct {
 	ReadReplicaDBClusterIdentifiers []*string `json:"readReplicaDBClusterIdentifiers,omitempty"`
 
 	ReadReplicaDBInstanceIdentifiers []*string `json:"readReplicaDBInstanceIdentifiers,omitempty"`
+
+	ReadReplicaSourceDBClusterIdentifier *string `json:"readReplicaSourceDBClusterIdentifier,omitempty"`
 
 	ReadReplicaSourceDBInstanceIdentifier *string `json:"readReplicaSourceDBInstanceIdentifier,omitempty"`
 
@@ -891,6 +954,8 @@ type DBSnapshot struct {
 
 	DBSnapshotIdentifier *string `json:"dbSnapshotIdentifier,omitempty"`
 
+	DBSystemID *string `json:"dbSystemID,omitempty"`
+
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 
 	Encrypted *bool `json:"encrypted,omitempty"`
@@ -983,11 +1048,17 @@ type DescribeDBLogFilesDetails struct {
 
 // +kubebuilder:skipversion
 type DomainMembership struct {
+	AuthSecretARN *string `json:"authSecretARN,omitempty"`
+
+	DNSIPs []*string `json:"dnsIPs,omitempty"`
+
 	Domain *string `json:"domain,omitempty"`
 
 	FQDN *string `json:"fQDN,omitempty"`
 
 	IAMRoleName *string `json:"iamRoleName,omitempty"`
+
+	OU *string `json:"oU,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
@@ -1093,6 +1164,8 @@ type ExportTask struct {
 type FailoverState struct {
 	FromDBClusterARN *string `json:"fromDBClusterARN,omitempty"`
 
+	IsDataLossAllowed *bool `json:"isDataLossAllowed,omitempty"`
+
 	Status *string `json:"status,omitempty"`
 
 	ToDBClusterARN *string `json:"toDBClusterARN,omitempty"`
@@ -1114,6 +1187,8 @@ type GlobalClusterMember struct {
 	IsWriter *bool `json:"isWriter,omitempty"`
 
 	Readers []*string `json:"readers,omitempty"`
+
+	SynchronizationStatus *string `json:"synchronizationStatus,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1125,9 +1200,9 @@ type GlobalCluster_SDK struct {
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// Contains the state of scheduled or in-process failover operations on an Aurora
-	// global database (GlobalCluster). This Data type is empty unless a failover
-	// operation is scheduled or is currently underway on the Aurora global database.
+	// Contains the state of scheduled or in-process operations on a global cluster
+	// (Aurora global database). This data type is empty unless a switchover or
+	// failover operation is scheduled or is in progress on the Aurora global database.
 	FailoverState *FailoverState `json:"failoverState,omitempty"`
 
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
@@ -1443,6 +1518,8 @@ type PendingModifiedValues struct {
 
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 
+	Engine *string `json:"engine,omitempty"`
+
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
@@ -1656,6 +1733,8 @@ type UpgradeTarget struct {
 	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
+
+	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 
 	SupportsParallelQuery *bool `json:"supportsParallelQuery,omitempty"`
 }

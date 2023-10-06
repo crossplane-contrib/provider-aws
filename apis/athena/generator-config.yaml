@@ -6,6 +6,7 @@ ignore:
     - Notebook
     - PresignedNotebook
     - PresignedNotebookUrl
+    - CapacityReservation
   field_paths:
     - CreateWorkGroupInput.Name
 resources:

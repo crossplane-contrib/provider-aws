@@ -452,7 +452,7 @@ spec:
                       the Name tag.
                     type: string
                   ownerID:
-                    description: Identified the Amazon Web Services account that owns
+                    description: Identifies the Amazon Web Services account that owns
                       the access point resource.
                     type: string
                 type: object

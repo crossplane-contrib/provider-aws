@@ -39,6 +39,10 @@ type BrokerParameters struct {
 
 	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 
+	DataReplicationMode *string `json:"dataReplicationMode,omitempty"`
+
+	DataReplicationPrimaryBrokerARN *string `json:"dataReplicationPrimaryBrokerARN,omitempty"`
+
 	// +kubebuilder:validation:Required
 	DeploymentMode *string `json:"deploymentMode"`
 

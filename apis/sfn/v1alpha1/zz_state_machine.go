@@ -57,6 +57,9 @@ type StateMachineParameters struct {
 	// A-Z, a-z, - and _.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
+	// Set to true to publish the first version of the state machine during creation.
+	// The default is false.
+	Publish *bool `json:"publish,omitempty"`
 	// Tags to be added when creating a state machine.
 	//
 	// An array of key-value pairs. For more information, see Using Cost Allocation
@@ -68,7 +71,11 @@ type StateMachineParameters struct {
 	// _ . : / = + - @.
 	Tags []*Tag `json:"tags,omitempty"`
 	// Selects whether X-Ray tracing is enabled.
-	TracingConfiguration         *TracingConfiguration `json:"tracingConfiguration,omitempty"`
+	TracingConfiguration *TracingConfiguration `json:"tracingConfiguration,omitempty"`
+	// Sets description about the state machine version. You can only set the description
+	// if the publish parameter is set to true. Otherwise, if you set versionDescription,
+	// but publish to false, this API action throws ValidationException.
+	VersionDescription           *string `json:"versionDescription,omitempty"`
 	CustomStateMachineParameters `json:",inline"`
 }
 
@@ -84,6 +91,10 @@ type StateMachineObservation struct {
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// The Amazon Resource Name (ARN) that identifies the created state machine.
 	StateMachineARN *string `json:"stateMachineARN,omitempty"`
+	// The Amazon Resource Name (ARN) that identifies the created state machine
+	// version. If you do not set the publish parameter to true, this field returns
+	// null value.
+	StateMachineVersionARN *string `json:"stateMachineVersionARN,omitempty"`
 }
 
 // StateMachineStatus defines the observed state of StateMachine.

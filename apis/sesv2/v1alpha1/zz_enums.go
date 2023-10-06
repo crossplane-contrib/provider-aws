@@ -25,6 +25,14 @@ const (
 	BehaviorOnMxFailure_REJECT_MESSAGE    BehaviorOnMxFailure = "REJECT_MESSAGE"
 )
 
+type BounceType string
+
+const (
+	BounceType_UNDETERMINED BounceType = "UNDETERMINED"
+	BounceType_TRANSIENT    BounceType = "TRANSIENT"
+	BounceType_PERMANENT    BounceType = "PERMANENT"
+)
+
 type BulkEmailStatus string
 
 const (
@@ -80,6 +88,17 @@ const (
 	DeliverabilityTestStatus_COMPLETED   DeliverabilityTestStatus = "COMPLETED"
 )
 
+type DeliveryEventType string
+
+const (
+	DeliveryEventType_SEND                DeliveryEventType = "SEND"
+	DeliveryEventType_DELIVERY            DeliveryEventType = "DELIVERY"
+	DeliveryEventType_TRANSIENT_BOUNCE    DeliveryEventType = "TRANSIENT_BOUNCE"
+	DeliveryEventType_PERMANENT_BOUNCE    DeliveryEventType = "PERMANENT_BOUNCE"
+	DeliveryEventType_UNDETERMINED_BOUNCE DeliveryEventType = "UNDETERMINED_BOUNCE"
+	DeliveryEventType_COMPLAINT           DeliveryEventType = "COMPLAINT"
+)
+
 type DimensionValueSource string
 
 const (
@@ -112,6 +131,13 @@ const (
 	DkimStatus_NOT_STARTED       DkimStatus = "NOT_STARTED"
 )
 
+type EngagementEventType string
+
+const (
+	EngagementEventType_OPEN  EngagementEventType = "OPEN"
+	EngagementEventType_CLICK EngagementEventType = "CLICK"
+)
+
 type EventType string
 
 const (
@@ -125,6 +151,13 @@ const (
 	EventType_RENDERING_FAILURE EventType = "RENDERING_FAILURE"
 	EventType_DELIVERY_DELAY    EventType = "DELIVERY_DELAY"
 	EventType_SUBSCRIPTION      EventType = "SUBSCRIPTION"
+)
+
+type ExportSourceType string
+
+const (
+	ExportSourceType_METRICS_DATA     ExportSourceType = "METRICS_DATA"
+	ExportSourceType_MESSAGE_INSIGHTS ExportSourceType = "MESSAGE_INSIGHTS"
 )
 
 type FeatureStatus string
@@ -156,6 +189,7 @@ const (
 	JobStatus_PROCESSING JobStatus = "PROCESSING"
 	JobStatus_COMPLETED  JobStatus = "COMPLETED"
 	JobStatus_FAILED     JobStatus = "FAILED"
+	JobStatus_CANCELLED  JobStatus = "CANCELLED"
 )
 
 type ListRecommendationsFilterKey string
@@ -196,6 +230,13 @@ const (
 	Metric_DELIVERY_OPEN      Metric = "DELIVERY_OPEN"
 	Metric_DELIVERY_CLICK     Metric = "DELIVERY_CLICK"
 	Metric_DELIVERY_COMPLAINT Metric = "DELIVERY_COMPLAINT"
+)
+
+type MetricAggregation string
+
+const (
+	MetricAggregation_RATE   MetricAggregation = "RATE"
+	MetricAggregation_VOLUME MetricAggregation = "VOLUME"
 )
 
 type MetricDimensionName string
@@ -239,6 +280,7 @@ const (
 	RecommendationType_DKIM  RecommendationType = "DKIM"
 	RecommendationType_DMARC RecommendationType = "DMARC"
 	RecommendationType_SPF   RecommendationType = "SPF"
+	RecommendationType_BIMI  RecommendationType = "BIMI"
 )
 
 type ReviewStatus string

@@ -29,8 +29,8 @@ type APIKeyParameters struct {
 	// Region is which region the APIKey will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// An AWS Marketplace customer identifier , when integrating with the AWS SaaS
-	// Marketplace.
+	// An Amazon Web Services Marketplace customer identifier, when integrating
+	// with the Amazon Web Services SaaS Marketplace.
 	CustomerID *string `json:"customerID,omitempty"`
 	// The description of the ApiKey.
 	Description *string `json:"description,omitempty"`

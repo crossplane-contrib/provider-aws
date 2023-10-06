@@ -56,6 +56,11 @@ func GenerateUser(resp *svcsdk.DescribeUserResponse) *svcapitypes.User {
 	} else {
 		cr.Spec.ForProvider.Groups = nil
 	}
+	if resp.ReplicationUser != nil {
+		cr.Spec.ForProvider.ReplicationUser = resp.ReplicationUser
+	} else {
+		cr.Spec.ForProvider.ReplicationUser = nil
+	}
 
 	return cr
 }
@@ -76,6 +81,9 @@ func GenerateCreateUserRequest(cr *svcapitypes.User) *svcsdk.CreateUserRequest {
 		}
 		res.SetGroups(f1)
 	}
+	if cr.Spec.ForProvider.ReplicationUser != nil {
+		res.SetReplicationUser(*cr.Spec.ForProvider.ReplicationUser)
+	}
 
 	return res
 }
@@ -95,6 +103,9 @@ func GenerateUpdateUserRequest(cr *svcapitypes.User) *svcsdk.UpdateUserRequest {
 			f2 = append(f2, &f2elem)
 		}
 		res.SetGroups(f2)
+	}
+	if cr.Spec.ForProvider.ReplicationUser != nil {
+		res.SetReplicationUser(*cr.Spec.ForProvider.ReplicationUser)
 	}
 
 	return res

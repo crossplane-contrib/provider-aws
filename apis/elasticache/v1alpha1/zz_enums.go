@@ -64,6 +64,14 @@ const (
 	ChangeType_requires_reboot ChangeType = "requires-reboot"
 )
 
+type ClusterMode string
+
+const (
+	ClusterMode_enabled    ClusterMode = "enabled"
+	ClusterMode_disabled   ClusterMode = "disabled"
+	ClusterMode_compatible ClusterMode = "compatible"
+)
+
 type DataTieringStatus string
 
 const (

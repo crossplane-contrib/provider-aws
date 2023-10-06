@@ -91,6 +91,7 @@ type FunctionRuntime string
 
 const (
 	FunctionRuntime_cloudfront_js_1_0 FunctionRuntime = "cloudfront-js-1.0"
+	FunctionRuntime_cloudfront_js_2_0 FunctionRuntime = "cloudfront-js-2.0"
 )
 
 type FunctionStage string
@@ -160,7 +161,8 @@ const (
 type OriginAccessControlOriginTypes string
 
 const (
-	OriginAccessControlOriginTypes_s3 OriginAccessControlOriginTypes = "s3"
+	OriginAccessControlOriginTypes_s3         OriginAccessControlOriginTypes = "s3"
+	OriginAccessControlOriginTypes_mediastore OriginAccessControlOriginTypes = "mediastore"
 )
 
 type OriginAccessControlSigningBehaviors string
@@ -191,6 +193,7 @@ const (
 	OriginRequestPolicyCookieBehavior_none      OriginRequestPolicyCookieBehavior = "none"
 	OriginRequestPolicyCookieBehavior_whitelist OriginRequestPolicyCookieBehavior = "whitelist"
 	OriginRequestPolicyCookieBehavior_all       OriginRequestPolicyCookieBehavior = "all"
+	OriginRequestPolicyCookieBehavior_allExcept OriginRequestPolicyCookieBehavior = "allExcept"
 )
 
 type OriginRequestPolicyHeaderBehavior string
@@ -200,6 +203,7 @@ const (
 	OriginRequestPolicyHeaderBehavior_whitelist                       OriginRequestPolicyHeaderBehavior = "whitelist"
 	OriginRequestPolicyHeaderBehavior_allViewer                       OriginRequestPolicyHeaderBehavior = "allViewer"
 	OriginRequestPolicyHeaderBehavior_allViewerAndWhitelistCloudFront OriginRequestPolicyHeaderBehavior = "allViewerAndWhitelistCloudFront"
+	OriginRequestPolicyHeaderBehavior_allExcept                       OriginRequestPolicyHeaderBehavior = "allExcept"
 )
 
 type OriginRequestPolicyQueryStringBehavior string
@@ -208,6 +212,7 @@ const (
 	OriginRequestPolicyQueryStringBehavior_none      OriginRequestPolicyQueryStringBehavior = "none"
 	OriginRequestPolicyQueryStringBehavior_whitelist OriginRequestPolicyQueryStringBehavior = "whitelist"
 	OriginRequestPolicyQueryStringBehavior_all       OriginRequestPolicyQueryStringBehavior = "all"
+	OriginRequestPolicyQueryStringBehavior_allExcept OriginRequestPolicyQueryStringBehavior = "allExcept"
 )
 
 type OriginRequestPolicyType string

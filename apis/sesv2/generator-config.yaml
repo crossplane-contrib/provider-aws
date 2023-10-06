@@ -26,5 +26,6 @@ ignore:
     - DeliverabilityTestReport #Not offered in AWS Web Console, alternatively view from Reputation metrics dashboard
     - DedicatedIpPool #Trigger manual flow through AWS Support for service limit increase is needed
     - EmailIdentityPolicy #Issue during pkg conversion - executing "sdk_find_read_many"
+    - ExportJob
     - ImportJob
     - ConfigurationSetEventDestination #Remove until PR fix in code-generator

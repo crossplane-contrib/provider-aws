@@ -2,6 +2,9 @@ ignore:
   field_paths:
     - CreateAutoScalingGroupInput.AutoScalingGroupName
     - DeleteAutoScalingGroupInput.AutoScalingGroupName
+    # TODO: Ignore for now because it generates a property that does not match
+    #       the convention (type_).
+    - CreateAutoScalingGroupInput.TrafficSources
   resource_names:
     - LaunchConfiguration
 resources:

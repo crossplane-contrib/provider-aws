@@ -94,8 +94,18 @@ spec:
                       type: string
                     type: array
                   allowedOAuthFlowsUserPoolClient:
-                    description: Set to true if the client is allowed to follow the
-                      OAuth protocol when interacting with Amazon Cognito user pools.
+                    description: "Set to true to use OAuth 2.0 features in your user
+                      pool app client. \n AllowedOAuthFlowsUserPoolClient must be
+                      true before you can configure the following features in your
+                      app client. \n * CallBackURLs: Callback URLs. \n * LogoutURLs:
+                      Sign-out redirect URLs. \n * AllowedOAuthScopes: OAuth 2.0 scopes.
+                      \n * AllowedOAuthFlows: Support for authorization code, implicit,
+                      and client credentials OAuth 2.0 grants. \n To use OAuth 2.0
+                      features, configure one of these features in the Amazon Cognito
+                      console or set AllowedOAuthFlowsUserPoolClient to true in a
+                      CreateUserPoolClient or UpdateUserPoolClient API request. If
+                      you don't set a value for AllowedOAuthFlowsUserPoolClient in
+                      a request with the CLI or SDKs, it defaults to false."
                     type: boolean
                   allowedOAuthScopes:
                     description: The allowed OAuth scopes. Possible values provided
@@ -213,7 +223,7 @@ spec:
                       a TokenValidityUnits value in your API request. \n For example,
                       when you set IdTokenValidity as 10 and TokenValidityUnits as
                       hours, your user can authenticate their session with their ID
-                      token for 10 hours. \n The default time unit for AccessTokenValidity
+                      token for 10 hours. \n The default time unit for IdTokenValidity
                       in an API request is hours. Valid range is displayed below in
                       seconds. \n If you don't specify otherwise in the configuration
                       of your app client, your ID tokens are valid for one hour."
@@ -590,11 +600,13 @@ spec:
                       client type.
                     type: string
                   creationDate:
-                    description: The date the user pool client was created.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was created.
                     format: date-time
                     type: string
                   lastModifiedDate:
-                    description: The date the user pool client was last modified.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was modified.
                     format: date-time
                     type: string
                   userPoolID:

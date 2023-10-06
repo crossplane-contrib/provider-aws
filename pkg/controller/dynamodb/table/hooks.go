@@ -26,7 +26,7 @@ import (
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -106,7 +106,7 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 	pitrStatusBool := pitrStatusToBool(pitrStatus)
 
 	if !isPitrUpToDate(cr, pitrStatusBool) {
-		pitrSpecEnabled := pointer.BoolDeref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
+		pitrSpecEnabled := ptr.Deref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
 
 		pitrInput := &svcsdk.UpdateContinuousBackupsInput{
 			TableName: aws.String(meta.GetExternalName(cr)),
@@ -451,7 +451,7 @@ func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, re
 }
 
 func pitrStatusToBool(pitrStatus *string) bool {
-	return pointer.StringDeref(pitrStatus, "") == string(svcapitypes.PointInTimeRecoveryStatus_ENABLED)
+	return ptr.Deref(pitrStatus, "") == string(svcapitypes.PointInTimeRecoveryStatus_ENABLED)
 }
 
 type updateClient struct {

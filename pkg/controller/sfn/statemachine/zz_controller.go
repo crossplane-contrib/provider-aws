@@ -126,6 +126,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.StateMachineARN = nil
 	}
+	if resp.StateMachineVersionArn != nil {
+		cr.Status.AtProvider.StateMachineVersionARN = resp.StateMachineVersionArn
+	} else {
+		cr.Status.AtProvider.StateMachineVersionARN = nil
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

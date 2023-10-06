@@ -26,6 +26,8 @@ ignore:
     - ThingType
     - TopicRule
     - TopicRuleDestination
+    - Package
+    - PackageVersion
   field_paths:
     - CreatePolicyInput.PolicyName
     - CreatePolicyOutput.PolicyName

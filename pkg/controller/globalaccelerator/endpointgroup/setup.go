@@ -13,7 +13,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
@@ -63,7 +63,7 @@ func preObserve(ctx context.Context, cr *svcapitypes.EndpointGroup, obj *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.EndpointGroup, obj *svcsdk.CreateEndpointGroupInput) error {
-	obj.ListenerArn = aws.String(pointer.StringDeref(cr.Spec.ForProvider.CustomEndpointGroupParameters.ListenerARN, ""))
+	obj.ListenerArn = aws.String(ptr.Deref(cr.Spec.ForProvider.CustomEndpointGroupParameters.ListenerARN, ""))
 	obj.IdempotencyToken = aws.String(string(cr.UID))
 	return nil
 }

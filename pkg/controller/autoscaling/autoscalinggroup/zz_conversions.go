@@ -569,11 +569,14 @@ func GenerateAutoScalingGroup(resp *svcsdk.DescribeAutoScalingGroupsOutput) *svc
 				if f30iter.Identifier != nil {
 					f30elem.Identifier = f30iter.Identifier
 				}
+				if f30iter.Type != nil {
+					f30elem.Type = f30iter.Type
+				}
 				f30 = append(f30, f30elem)
 			}
-			cr.Spec.ForProvider.TrafficSources = f30
+			cr.Status.AtProvider.TrafficSources = f30
 		} else {
-			cr.Spec.ForProvider.TrafficSources = nil
+			cr.Status.AtProvider.TrafficSources = nil
 		}
 		if elem.VPCZoneIdentifier != nil {
 			cr.Spec.ForProvider.VPCZoneIdentifier = elem.VPCZoneIdentifier
@@ -1026,17 +1029,6 @@ func GenerateCreateAutoScalingGroupInput(cr *svcapitypes.AutoScalingGroup) *svcs
 			f23 = append(f23, &f23elem)
 		}
 		res.SetTerminationPolicies(f23)
-	}
-	if cr.Spec.ForProvider.TrafficSources != nil {
-		f24 := []*svcsdk.TrafficSourceIdentifier{}
-		for _, f24iter := range cr.Spec.ForProvider.TrafficSources {
-			f24elem := &svcsdk.TrafficSourceIdentifier{}
-			if f24iter.Identifier != nil {
-				f24elem.SetIdentifier(*f24iter.Identifier)
-			}
-			f24 = append(f24, f24elem)
-		}
-		res.SetTrafficSources(f24)
 	}
 	if cr.Spec.ForProvider.VPCZoneIdentifier != nil {
 		res.SetVPCZoneIdentifier(*cr.Spec.ForProvider.VPCZoneIdentifier)

@@ -32,7 +32,9 @@ type UserParameters struct {
 
 	ConsoleAccess *bool `json:"consoleAccess,omitempty"`
 
-	Groups               []*string `json:"groups,omitempty"`
+	Groups []*string `json:"groups,omitempty"`
+
+	ReplicationUser      *bool `json:"replicationUser,omitempty"`
 	CustomUserParameters `json:",inline"`
 }
 

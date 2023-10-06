@@ -437,8 +437,9 @@ spec:
                     description: The identifier of a UsagePlan resource.
                     type: string
                   productCode:
-                    description: The AWS Markeplace product identifier to associate
-                      with the usage plan as a SaaS product on AWS Marketplace.
+                    description: The Amazon Web Services Marketplace product identifier
+                      to associate with the usage plan as a SaaS product on the Amazon
+                      Web Services Marketplace.
                     type: string
                 type: object
               conditions:

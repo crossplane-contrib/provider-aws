@@ -44,6 +44,13 @@ const (
 	AuthenticateOIDCActionConditionalBehaviorEnum_authenticate AuthenticateOIDCActionConditionalBehaviorEnum = "authenticate"
 )
 
+type EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum string
+
+const (
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_on  EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum = "on"
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_off EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum = "off"
+)
+
 type IPAddressType string
 
 const (

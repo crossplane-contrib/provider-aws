@@ -43,6 +43,8 @@ const (
 	ReplicationStatus_ENABLING ReplicationStatus = "ENABLING"
 	ReplicationStatus_DELETING ReplicationStatus = "DELETING"
 	ReplicationStatus_ERROR    ReplicationStatus = "ERROR"
+	ReplicationStatus_PAUSED   ReplicationStatus = "PAUSED"
+	ReplicationStatus_PAUSING  ReplicationStatus = "PAUSING"
 )
 
 type Resource string

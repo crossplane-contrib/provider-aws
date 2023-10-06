@@ -50,6 +50,11 @@ type CalculationStatus struct {
 }
 
 // +kubebuilder:skipversion
+type CapacityAllocation struct {
+	StatusMessage *string `json:"statusMessage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Column struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -131,11 +136,13 @@ type QueryExecution struct {
 	// The Athena engine version for running queries, or the PySpark engine version
 	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
-	// The location in Amazon S3 where query results are stored and the encryption
-	// option, if any, used for query results. These are known as "client-side settings".
-	// If workgroup settings override client-side settings, then the query uses
-	// the workgroup settings.
+	// The location in Amazon S3 where query and calculation results are stored
+	// and the encryption option, if any, used for query and calculation results.
+	// These are known as "client-side settings". If workgroup settings override
+	// client-side settings, then the query uses the workgroup settings.
 	ResultConfiguration *ResultConfiguration `json:"resultConfiguration,omitempty"`
+
+	SubstatementType *string `json:"substatementType,omitempty"`
 
 	WorkGroup *string `json:"workGroup,omitempty"`
 }
@@ -174,8 +181,8 @@ type ResultConfiguration struct {
 	// about S3 Object Ownership, see Object Ownership settings (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html#object-ownership-overview)
 	// in the Amazon S3 User Guide.
 	ACLConfiguration *ACLConfiguration `json:"aclConfiguration,omitempty"`
-	// If query results are encrypted in Amazon S3, indicates the encryption option
-	// used (for example, SSE_KMS or CSE_KMS) and key information.
+	// If query and calculation results are encrypted in Amazon S3, indicates the
+	// encryption option used (for example, SSE_KMS or CSE_KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
@@ -191,8 +198,8 @@ type ResultConfigurationUpdates struct {
 	// about S3 Object Ownership, see Object Ownership settings (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html#object-ownership-overview)
 	// in the Amazon S3 User Guide.
 	ACLConfiguration *ACLConfiguration `json:"aclConfiguration,omitempty"`
-	// If query results are encrypted in Amazon S3, indicates the encryption option
-	// used (for example, SSE_KMS or CSE_KMS) and key information.
+	// If query and calculation results are encrypted in Amazon S3, indicates the
+	// encryption option used (for example, SSE_KMS or CSE_KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ExpectedBucketOwner *string `json:"expectedBucketOwner,omitempty"`
@@ -210,8 +217,8 @@ type ResultConfigurationUpdates struct {
 
 // +kubebuilder:skipversion
 type SessionConfiguration struct {
-	// If query results are encrypted in Amazon S3, indicates the encryption option
-	// used (for example, SSE_KMS or CSE_KMS) and key information.
+	// If query and calculation results are encrypted in Amazon S3, indicates the
+	// encryption option used (for example, SSE_KMS or CSE_KMS) and key information.
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ExecutionRole *string `json:"executionRole,omitempty"`
@@ -257,7 +264,10 @@ type WorkGroupConfiguration struct {
 
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
 	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
+	// This setting does not apply to Athena SQL workgroups.
 	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
+
+	EnableMinimumEncryptionConfiguration *bool `json:"enableMinimumEncryptionConfiguration,omitempty"`
 
 	EnforceWorkGroupConfiguration *bool `json:"enforceWorkGroupConfiguration,omitempty"`
 	// The Athena engine version for running queries, or the PySpark engine version
@@ -269,10 +279,10 @@ type WorkGroupConfiguration struct {
 	PublishCloudWatchMetricsEnabled *bool `json:"publishCloudWatchMetricsEnabled,omitempty"`
 
 	RequesterPaysEnabled *bool `json:"requesterPaysEnabled,omitempty"`
-	// The location in Amazon S3 where query results are stored and the encryption
-	// option, if any, used for query results. These are known as "client-side settings".
-	// If workgroup settings override client-side settings, then the query uses
-	// the workgroup settings.
+	// The location in Amazon S3 where query and calculation results are stored
+	// and the encryption option, if any, used for query and calculation results.
+	// These are known as "client-side settings". If workgroup settings override
+	// client-side settings, then the query uses the workgroup settings.
 	ResultConfiguration *ResultConfiguration `json:"resultConfiguration,omitempty"`
 }
 
@@ -282,7 +292,10 @@ type WorkGroupConfigurationUpdates struct {
 
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
 	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
+	// This setting does not apply to Athena SQL workgroups.
 	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
+
+	EnableMinimumEncryptionConfiguration *bool `json:"enableMinimumEncryptionConfiguration,omitempty"`
 
 	EnforceWorkGroupConfiguration *bool `json:"enforceWorkGroupConfiguration,omitempty"`
 	// The Athena engine version for running queries, or the PySpark engine version
@@ -320,12 +333,13 @@ type WorkGroupSummary struct {
 // +kubebuilder:skipversion
 type WorkGroup_SDK struct {
 	// The configuration of the workgroup, which includes the location in Amazon
-	// S3 where query results are stored, the encryption option, if any, used for
-	// query results, whether the Amazon CloudWatch Metrics are enabled for the
-	// workgroup and whether workgroup settings override query settings, and the
-	// data usage limits for the amount of data scanned per query or per workgroup.
-	// The workgroup settings override is specified in EnforceWorkGroupConfiguration
-	// (true/false) in the WorkGroupConfiguration. See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
+	// S3 where query and calculation results are stored, the encryption option,
+	// if any, used for query and calculation results, whether the Amazon CloudWatch
+	// Metrics are enabled for the workgroup and whether workgroup settings override
+	// query settings, and the data usage limits for the amount of data scanned
+	// per query or per workgroup. The workgroup settings override is specified
+	// in EnforceWorkGroupConfiguration (true/false) in the WorkGroupConfiguration.
+	// See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
 	Configuration *WorkGroupConfiguration `json:"configuration,omitempty"`
 
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`

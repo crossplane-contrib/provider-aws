@@ -171,6 +171,8 @@ spec:
                   region:
                     description: Region is which region the User will be created.
                     type: string
+                  replicationUser:
+                    type: boolean
                 required:
                 - region
                 type: object

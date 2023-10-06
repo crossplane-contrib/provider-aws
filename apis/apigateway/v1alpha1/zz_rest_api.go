@@ -30,7 +30,7 @@ type RestAPIParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The source of the API key for metering requests according to a usage plan.
-	// Valid values are: >HEADER to read the API key from the X-API-Key header of
+	// Valid values are: HEADER to read the API key from the X-API-Key header of
 	// a request. AUTHORIZER to read the API key from the UsageIdentifierKey from
 	// a custom authorizer.
 	APIKeySource *string `json:"apiKeySource,omitempty"`
@@ -83,6 +83,8 @@ type RestAPIObservation struct {
 	// The API's identifier. This identifier is unique across all of your APIs in
 	// API Gateway.
 	ID *string `json:"id,omitempty"`
+	// The API's root resource ID.
+	RootResourceID *string `json:"rootResourceID,omitempty"`
 	// The warning messages reported when failonwarnings is turned on during API
 	// import.
 	Warnings []*string `json:"warnings,omitempty"`

@@ -68,9 +68,9 @@ spec:
                 description: DomainNameParameters defines the desired state of DomainName
                 properties:
                   certificateARN:
-                    description: The reference to an AWS-managed certificate that
-                      will be used by edge-optimized endpoint for this domain name.
-                      AWS Certificate Manager is the only supported source.
+                    description: The reference to an Amazon Web Services-managed certificate
+                      that will be used by edge-optimized endpoint for this domain
+                      name. Certificate Manager is the only supported source.
                     type: string
                   certificateBody:
                     description: '[Deprecated] The body of the server certificate
@@ -128,8 +128,8 @@ spec:
                     description: Region is which region the DomainName will be created.
                     type: string
                   regionalCertificateARN:
-                    description: The reference to an AWS-managed certificate that
-                      will be used by regional endpoint for this domain name. AWS
+                    description: The reference to an Amazon Web Services-managed certificate
+                      that will be used by regional endpoint for this domain name.
                       Certificate Manager is the only supported source.
                     type: string
                   regionalCertificateName:

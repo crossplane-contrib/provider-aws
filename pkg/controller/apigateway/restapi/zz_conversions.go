@@ -116,14 +116,19 @@ func GenerateRestAPI(resp *svcsdk.RestApi) *svcapitypes.RestAPI {
 	} else {
 		cr.Spec.ForProvider.Policy = nil
 	}
+	if resp.RootResourceId != nil {
+		cr.Status.AtProvider.RootResourceID = resp.RootResourceId
+	} else {
+		cr.Status.AtProvider.RootResourceID = nil
+	}
 	if resp.Tags != nil {
-		f10 := map[string]*string{}
-		for f10key, f10valiter := range resp.Tags {
-			var f10val string
-			f10val = *f10valiter
-			f10[f10key] = &f10val
+		f11 := map[string]*string{}
+		for f11key, f11valiter := range resp.Tags {
+			var f11val string
+			f11val = *f11valiter
+			f11[f11key] = &f11val
 		}
-		cr.Spec.ForProvider.Tags = f10
+		cr.Spec.ForProvider.Tags = f11
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -133,13 +138,13 @@ func GenerateRestAPI(resp *svcsdk.RestApi) *svcapitypes.RestAPI {
 		cr.Spec.ForProvider.Version = nil
 	}
 	if resp.Warnings != nil {
-		f12 := []*string{}
-		for _, f12iter := range resp.Warnings {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f13 := []*string{}
+		for _, f13iter := range resp.Warnings {
+			var f13elem string
+			f13elem = *f13iter
+			f13 = append(f13, &f13elem)
 		}
-		cr.Status.AtProvider.Warnings = f12
+		cr.Status.AtProvider.Warnings = f13
 	} else {
 		cr.Status.AtProvider.Warnings = nil
 	}

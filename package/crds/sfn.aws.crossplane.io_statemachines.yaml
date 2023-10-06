@@ -100,6 +100,10 @@ spec:
                       To enable logging with CloudWatch Logs, the name should only
                       contain 0-9, A-Z, a-z, - and _."
                     type: string
+                  publish:
+                    description: Set to true to publish the first version of the state
+                      machine during creation. The default is false.
+                    type: boolean
                   region:
                     description: Region is which region the StateMachine will be created.
                     type: string
@@ -212,6 +216,12 @@ spec:
                     enum:
                     - STANDARD
                     - EXPRESS
+                    type: string
+                  versionDescription:
+                    description: Sets description about the state machine version.
+                      You can only set the description if the publish parameter is
+                      set to true. Otherwise, if you set versionDescription, but publish
+                      to false, this API action throws ValidationException.
                     type: string
                 required:
                 - definition
@@ -429,6 +439,11 @@ spec:
                   stateMachineARN:
                     description: The Amazon Resource Name (ARN) that identifies the
                       created state machine.
+                    type: string
+                  stateMachineVersionARN:
+                    description: The Amazon Resource Name (ARN) that identifies the
+                      created state machine version. If you do not set the publish
+                      parameter to true, this field returns null value.
                     type: string
                 type: object
               conditions:

@@ -56,29 +56,29 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 		cr.Spec.ForProvider.Definition = nil
 	}
 	if resp.LoggingConfiguration != nil {
-		f3 := &svcapitypes.LoggingConfiguration{}
+		f4 := &svcapitypes.LoggingConfiguration{}
 		if resp.LoggingConfiguration.Destinations != nil {
-			f3f0 := []*svcapitypes.LogDestination{}
-			for _, f3f0iter := range resp.LoggingConfiguration.Destinations {
-				f3f0elem := &svcapitypes.LogDestination{}
-				if f3f0iter.CloudWatchLogsLogGroup != nil {
-					f3f0elemf0 := &svcapitypes.CloudWatchLogsLogGroup{}
-					if f3f0iter.CloudWatchLogsLogGroup.LogGroupArn != nil {
-						f3f0elemf0.LogGroupARN = f3f0iter.CloudWatchLogsLogGroup.LogGroupArn
+			f4f0 := []*svcapitypes.LogDestination{}
+			for _, f4f0iter := range resp.LoggingConfiguration.Destinations {
+				f4f0elem := &svcapitypes.LogDestination{}
+				if f4f0iter.CloudWatchLogsLogGroup != nil {
+					f4f0elemf0 := &svcapitypes.CloudWatchLogsLogGroup{}
+					if f4f0iter.CloudWatchLogsLogGroup.LogGroupArn != nil {
+						f4f0elemf0.LogGroupARN = f4f0iter.CloudWatchLogsLogGroup.LogGroupArn
 					}
-					f3f0elem.CloudWatchLogsLogGroup = f3f0elemf0
+					f4f0elem.CloudWatchLogsLogGroup = f4f0elemf0
 				}
-				f3f0 = append(f3f0, f3f0elem)
+				f4f0 = append(f4f0, f4f0elem)
 			}
-			f3.Destinations = f3f0
+			f4.Destinations = f4f0
 		}
 		if resp.LoggingConfiguration.IncludeExecutionData != nil {
-			f3.IncludeExecutionData = resp.LoggingConfiguration.IncludeExecutionData
+			f4.IncludeExecutionData = resp.LoggingConfiguration.IncludeExecutionData
 		}
 		if resp.LoggingConfiguration.Level != nil {
-			f3.Level = resp.LoggingConfiguration.Level
+			f4.Level = resp.LoggingConfiguration.Level
 		}
-		cr.Spec.ForProvider.LoggingConfiguration = f3
+		cr.Spec.ForProvider.LoggingConfiguration = f4
 	} else {
 		cr.Spec.ForProvider.LoggingConfiguration = nil
 	}
@@ -93,11 +93,11 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 		cr.Status.AtProvider.StateMachineARN = nil
 	}
 	if resp.TracingConfiguration != nil {
-		f8 := &svcapitypes.TracingConfiguration{}
+		f10 := &svcapitypes.TracingConfiguration{}
 		if resp.TracingConfiguration.Enabled != nil {
-			f8.Enabled = resp.TracingConfiguration.Enabled
+			f10.Enabled = resp.TracingConfiguration.Enabled
 		}
-		cr.Spec.ForProvider.TracingConfiguration = f8
+		cr.Spec.ForProvider.TracingConfiguration = f10
 	} else {
 		cr.Spec.ForProvider.TracingConfiguration = nil
 	}
@@ -140,26 +140,32 @@ func GenerateCreateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.Creat
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
+	if cr.Spec.ForProvider.Publish != nil {
+		res.SetPublish(*cr.Spec.ForProvider.Publish)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := []*svcsdk.Tag{}
-		for _, f3iter := range cr.Spec.ForProvider.Tags {
-			f3elem := &svcsdk.Tag{}
-			if f3iter.Key != nil {
-				f3elem.SetKey(*f3iter.Key)
+		f4 := []*svcsdk.Tag{}
+		for _, f4iter := range cr.Spec.ForProvider.Tags {
+			f4elem := &svcsdk.Tag{}
+			if f4iter.Key != nil {
+				f4elem.SetKey(*f4iter.Key)
 			}
-			if f3iter.Value != nil {
-				f3elem.SetValue(*f3iter.Value)
+			if f4iter.Value != nil {
+				f4elem.SetValue(*f4iter.Value)
 			}
-			f3 = append(f3, f3elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTags(f3)
+		res.SetTags(f4)
 	}
 	if cr.Spec.ForProvider.TracingConfiguration != nil {
-		f4 := &svcsdk.TracingConfiguration{}
+		f5 := &svcsdk.TracingConfiguration{}
 		if cr.Spec.ForProvider.TracingConfiguration.Enabled != nil {
-			f4.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
+			f5.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
 		}
-		res.SetTracingConfiguration(f4)
+		res.SetTracingConfiguration(f5)
+	}
+	if cr.Spec.ForProvider.VersionDescription != nil {
+		res.SetVersionDescription(*cr.Spec.ForProvider.VersionDescription)
 	}
 
 	return res
@@ -197,15 +203,21 @@ func GenerateUpdateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.Updat
 		}
 		res.SetLoggingConfiguration(f1)
 	}
+	if cr.Spec.ForProvider.Publish != nil {
+		res.SetPublish(*cr.Spec.ForProvider.Publish)
+	}
 	if cr.Status.AtProvider.StateMachineARN != nil {
 		res.SetStateMachineArn(*cr.Status.AtProvider.StateMachineARN)
 	}
 	if cr.Spec.ForProvider.TracingConfiguration != nil {
-		f4 := &svcsdk.TracingConfiguration{}
+		f5 := &svcsdk.TracingConfiguration{}
 		if cr.Spec.ForProvider.TracingConfiguration.Enabled != nil {
-			f4.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
+			f5.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
 		}
-		res.SetTracingConfiguration(f4)
+		res.SetTracingConfiguration(f5)
+	}
+	if cr.Spec.ForProvider.VersionDescription != nil {
+		res.SetVersionDescription(*cr.Spec.ForProvider.VersionDescription)
 	}
 
 	return res

@@ -57,6 +57,11 @@ type CreateMultiRegionAccessPointInput struct {
 }
 
 // +kubebuilder:skipversion
+type Destination struct {
+	Account *string `json:"account,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type JobManifestLocation struct {
 	ETag *string `json:"eTag,omitempty"`
 }
@@ -92,11 +97,15 @@ type PublicAccessBlockConfiguration struct {
 // +kubebuilder:skipversion
 type Region struct {
 	Bucket *string `json:"bucket,omitempty"`
+
+	BucketAccountID *string `json:"bucketAccountID,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type RegionReport struct {
 	Bucket *string `json:"bucket,omitempty"`
+
+	BucketAccountID *string `json:"bucketAccountID,omitempty"`
 }
 
 // +kubebuilder:skipversion

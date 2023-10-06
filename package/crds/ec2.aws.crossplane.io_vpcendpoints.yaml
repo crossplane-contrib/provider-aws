@@ -72,6 +72,8 @@ spec:
                     properties:
                       dnsRecordIPType:
                         type: string
+                      privateDNSOnlyForInboundResolverEndpoint:
+                        type: boolean
                     type: object
                   ipAddressType:
                     description: The IP address type for the endpoint.
@@ -267,10 +269,20 @@ spec:
                       type: string
                     type: array
                   serviceName:
-                    description: The service name. To get a list of available services,
-                      use the DescribeVpcEndpointServices request, or get the name
-                      from the service provider.
+                    description: The name of the endpoint service.
                     type: string
+                  subnetConfigurations:
+                    description: The subnet configurations for the endpoint.
+                    items:
+                      properties:
+                        ipv4:
+                          type: string
+                        ipv6:
+                          type: string
+                        subnetID:
+                          type: string
+                      type: object
+                    type: array
                   subnetIdRefs:
                     description: SubnetIDRefs is a list of references to Subnets used
                       to set the SubnetIDs.
@@ -703,8 +715,8 @@ spec:
                         type: string
                     type: object
                   networkInterfaceIDs:
-                    description: (Interface endpoint) One or more network interfaces
-                      for the endpoint.
+                    description: (Interface endpoint) The network interfaces for the
+                      endpoint.
                     items:
                       type: string
                     type: array
@@ -717,7 +729,7 @@ spec:
                       its service.
                     type: boolean
                   routeTableIDs:
-                    description: (Gateway endpoint) One or more route tables associated
+                    description: (Gateway endpoint) The IDs of the route tables associated
                       with the endpoint.
                     items:
                       type: string
@@ -731,7 +743,7 @@ spec:
                       type: string
                     type: array
                   tags:
-                    description: Any tags assigned to the endpoint.
+                    description: The tags assigned to the endpoint.
                     items:
                       properties:
                         key:

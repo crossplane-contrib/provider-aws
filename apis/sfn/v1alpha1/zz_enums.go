@@ -138,4 +138,5 @@ const (
 	ValidationExceptionReason_API_DOES_NOT_SUPPORT_LABELED_ARNS ValidationExceptionReason = "API_DOES_NOT_SUPPORT_LABELED_ARNS"
 	ValidationExceptionReason_MISSING_REQUIRED_PARAMETER        ValidationExceptionReason = "MISSING_REQUIRED_PARAMETER"
 	ValidationExceptionReason_CANNOT_UPDATE_COMPLETED_MAP_RUN   ValidationExceptionReason = "CANNOT_UPDATE_COMPLETED_MAP_RUN"
+	ValidationExceptionReason_INVALID_ROUTING_CONFIGURATION     ValidationExceptionReason = "INVALID_ROUTING_CONFIGURATION"
 )

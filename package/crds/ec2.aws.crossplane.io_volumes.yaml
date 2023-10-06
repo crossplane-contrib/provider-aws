@@ -68,7 +68,8 @@ spec:
                 description: VolumeParameters defines the desired state of Volume
                 properties:
                   availabilityZone:
-                    description: The Availability Zone in which to create the volume.
+                    description: The ID of the Availability Zone in which to create
+                      the volume. For example, us-east-1a.
                     type: string
                   encrypted:
                     description: "Indicates whether the volume should be encrypted.
@@ -248,8 +249,9 @@ spec:
                     description: "The volume type. This parameter can be one of the
                       following values: \n * General Purpose SSD: gp2 | gp3 \n * Provisioned
                       IOPS SSD: io1 | io2 \n * Throughput Optimized HDD: st1 \n *
-                      Cold HDD: sc1 \n * Magnetic: standard \n For more information,
-                      see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+                      Cold HDD: sc1 \n * Magnetic: standard \n Throughput Optimized
+                      HDD (st1) and Cold HDD (sc1) volumes can't be used as boot volumes.
+                      \n For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
                       in the Amazon Elastic Compute Cloud User Guide. \n Default:
                       gp2"
                     type: string
@@ -491,6 +493,9 @@ spec:
                     description: The Amazon Resource Name (ARN) of the Key Management
                       Service (KMS) KMS key that was used to protect the volume encryption
                       key for the volume.
+                    type: string
+                  sseType:
+                    description: Reserved for future use.
                     type: string
                   state:
                     description: The volume state.

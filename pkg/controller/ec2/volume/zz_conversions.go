@@ -127,24 +127,29 @@ func GenerateVolume(resp *svcsdk.DescribeVolumesOutput) *svcapitypes.Volume {
 		} else {
 			cr.Spec.ForProvider.SnapshotID = nil
 		}
+		if elem.SseType != nil {
+			cr.Status.AtProvider.SSEType = elem.SseType
+		} else {
+			cr.Status.AtProvider.SSEType = nil
+		}
 		if elem.State != nil {
 			cr.Status.AtProvider.State = elem.State
 		} else {
 			cr.Status.AtProvider.State = nil
 		}
 		if elem.Tags != nil {
-			f12 := []*svcapitypes.Tag{}
-			for _, f12iter := range elem.Tags {
-				f12elem := &svcapitypes.Tag{}
-				if f12iter.Key != nil {
-					f12elem.Key = f12iter.Key
+			f13 := []*svcapitypes.Tag{}
+			for _, f13iter := range elem.Tags {
+				f13elem := &svcapitypes.Tag{}
+				if f13iter.Key != nil {
+					f13elem.Key = f13iter.Key
 				}
-				if f12iter.Value != nil {
-					f12elem.Value = f12iter.Value
+				if f13iter.Value != nil {
+					f13elem.Value = f13iter.Value
 				}
-				f12 = append(f12, f12elem)
+				f13 = append(f13, f13elem)
 			}
-			cr.Status.AtProvider.Tags = f12
+			cr.Status.AtProvider.Tags = f13
 		} else {
 			cr.Status.AtProvider.Tags = nil
 		}

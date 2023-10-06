@@ -78,7 +78,7 @@ spec:
                           a job run or a managed endpoint.
                         properties:
                           eksInfo:
-                            description: The information about the EKS cluster.
+                            description: The information about the Amazon EKS cluster.
                             properties:
                               namespace:
                                 type: string

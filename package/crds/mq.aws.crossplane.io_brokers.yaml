@@ -81,6 +81,10 @@ spec:
                     type: object
                   creatorRequestID:
                     type: string
+                  dataReplicationMode:
+                    type: string
+                  dataReplicationPrimaryBrokerARN:
+                    type: string
                   deploymentMode:
                     type: string
                   encryptionOptions:
@@ -580,8 +584,7 @@ spec:
                   configurations:
                     properties:
                       current:
-                        description: "A list of information about the configuration.
-                          \n Does not apply to RabbitMQ brokers."
+                        description: A list of information about the configuration.
                         properties:
                           id:
                             type: string
@@ -600,8 +603,7 @@ spec:
                           type: object
                         type: array
                       pending:
-                        description: "A list of information about the configuration.
-                          \n Does not apply to RabbitMQ brokers."
+                        description: A list of information about the configuration.
                         properties:
                           id:
                             type: string

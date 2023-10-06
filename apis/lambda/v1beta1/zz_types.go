@@ -171,6 +171,8 @@ type FunctionConfiguration struct {
 	Role *string `json:"role,omitempty"`
 
 	Runtime *string `json:"runtime,omitempty"`
+	// The ARN of the runtime and any errors that occured.
+	RuntimeVersionConfig *RuntimeVersionConfig `json:"runtimeVersionConfig,omitempty"`
 
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 
@@ -214,6 +216,8 @@ type FunctionURLConfig_SDK struct {
 
 	FunctionURL *string `json:"functionURL,omitempty"`
 
+	InvokeMode *string `json:"invokeMode,omitempty"`
+
 	LastModifiedTime *string `json:"lastModifiedTime,omitempty"`
 }
 
@@ -240,6 +244,15 @@ type ImageConfigResponse struct {
 	// Configuration values that override the container image Dockerfile settings.
 	// For more information, see Container image settings (https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-parms).
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InvokeWithResponseStreamCompleteEvent struct {
+	ErrorCode *string `json:"errorCode,omitempty"`
+
+	ErrorDetails *string `json:"errorDetails,omitempty"`
+
+	LogResult *string `json:"logResult,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -287,6 +300,22 @@ type ProvisionedConcurrencyConfigListItem struct {
 // +kubebuilder:skipversion
 type PutFunctionConcurrencyOutput struct {
 	ReservedConcurrentExecutions *int64 `json:"reservedConcurrentExecutions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RuntimeVersionConfig struct {
+	// Any error returned when the runtime version information for the function
+	// could not be retrieved.
+	Error *RuntimeVersionError `json:"error,omitempty"`
+
+	RuntimeVersionARN *string `json:"runtimeVersionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RuntimeVersionError struct {
+	ErrorCode *string `json:"errorCode,omitempty"`
+
+	Message *string `json:"message,omitempty"`
 }
 
 // +kubebuilder:skipversion

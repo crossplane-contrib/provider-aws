@@ -146,6 +146,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.VpcEndpoint.DnsOptions.DnsRecordIpType != nil {
 			f2.DNSRecordIPType = resp.VpcEndpoint.DnsOptions.DnsRecordIpType
 		}
+		if resp.VpcEndpoint.DnsOptions.PrivateDnsOnlyForInboundResolverEndpoint != nil {
+			f2.PrivateDNSOnlyForInboundResolverEndpoint = resp.VpcEndpoint.DnsOptions.PrivateDnsOnlyForInboundResolverEndpoint
+		}
 		cr.Spec.ForProvider.DNSOptions = f2
 	} else {
 		cr.Spec.ForProvider.DNSOptions = nil

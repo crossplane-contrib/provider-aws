@@ -89,18 +89,18 @@ spec:
                           headers, cookies, and URL query strings. CloudFront uses
                           the cache key to find an object in its cache that it can
                           return to the viewer. \n The headers, cookies, and query
-                          strings that are included in the cache key are automatically
-                          included in requests that CloudFront sends to the origin.
-                          CloudFront sends a request when it can't find an object
-                          in its cache that matches the request's cache key. If you
-                          want to send values to the origin but not include them in
-                          the cache key, use OriginRequestPolicy."
+                          strings that are included in the cache key are also included
+                          in requests that CloudFront sends to the origin. CloudFront
+                          sends a request when it can't find an object in its cache
+                          that matches the request's cache key. If you want to send
+                          values to the origin but not include them in the cache key,
+                          use OriginRequestPolicy."
                         properties:
                           cookiesConfig:
                             description: An object that determines whether any cookies
                               in viewer requests (and if so, which cookies) are included
-                              in the cache key and automatically included in requests
-                              that CloudFront sends to the origin.
+                              in the cache key and in requests that CloudFront sends
+                              to the origin.
                             properties:
                               cookieBehavior:
                                 type: string
@@ -123,8 +123,8 @@ spec:
                           headersConfig:
                             description: An object that determines whether any HTTP
                               headers (and if so, which headers) are included in the
-                              cache key and automatically included in requests that
-                              CloudFront sends to the origin.
+                              cache key and in requests that CloudFront sends to the
+                              origin.
                             properties:
                               headerBehavior:
                                 type: string
@@ -140,8 +140,8 @@ spec:
                           queryStringsConfig:
                             description: An object that determines whether any URL
                               query strings in viewer requests (and if so, which query
-                              strings) are included in the cache key and automatically
-                              included in requests that CloudFront sends to the origin.
+                              strings) are included in the cache key and in requests
+                              that CloudFront sends to the origin.
                             properties:
                               queryStringBehavior:
                                 type: string
@@ -382,12 +382,12 @@ spec:
                           return to the viewer. \n * The default, minimum, and maximum
                           time to live (TTL) values that you want objects to stay
                           in the CloudFront cache. \n The headers, cookies, and query
-                          strings that are included in the cache key are automatically
-                          included in requests that CloudFront sends to the origin.
-                          CloudFront sends a request when it can't find a valid object
-                          in its cache that matches the request's cache key. If you
-                          want to send values to the origin but not include them in
-                          the cache key, use OriginRequestPolicy."
+                          strings that are included in the cache key are also included
+                          in requests that CloudFront sends to the origin. CloudFront
+                          sends a request when it can't find a valid object in its
+                          cache that matches the request's cache key. If you want
+                          to send values to the origin but not include them in the
+                          cache key, use OriginRequestPolicy."
                         properties:
                           comment:
                             type: string
@@ -409,18 +409,17 @@ spec:
                               uses the cache key to find an object in its cache that
                               it can return to the viewer. \n The headers, cookies,
                               and query strings that are included in the cache key
-                              are automatically included in requests that CloudFront
-                              sends to the origin. CloudFront sends a request when
-                              it can't find an object in its cache that matches the
-                              request's cache key. If you want to send values to the
-                              origin but not include them in the cache key, use OriginRequestPolicy."
+                              are also included in requests that CloudFront sends
+                              to the origin. CloudFront sends a request when it can't
+                              find an object in its cache that matches the request's
+                              cache key. If you want to send values to the origin
+                              but not include them in the cache key, use OriginRequestPolicy."
                             properties:
                               cookiesConfig:
                                 description: An object that determines whether any
                                   cookies in viewer requests (and if so, which cookies)
-                                  are included in the cache key and automatically
-                                  included in requests that CloudFront sends to the
-                                  origin.
+                                  are included in the cache key and in requests that
+                                  CloudFront sends to the origin.
                                 properties:
                                   cookieBehavior:
                                     type: string
@@ -443,8 +442,8 @@ spec:
                               headersConfig:
                                 description: An object that determines whether any
                                   HTTP headers (and if so, which headers) are included
-                                  in the cache key and automatically included in requests
-                                  that CloudFront sends to the origin.
+                                  in the cache key and in requests that CloudFront
+                                  sends to the origin.
                                 properties:
                                   headerBehavior:
                                     type: string
@@ -461,8 +460,7 @@ spec:
                                 description: An object that determines whether any
                                   URL query strings in viewer requests (and if so,
                                   which query strings) are included in the cache key
-                                  and automatically included in requests that CloudFront
-                                  sends to the origin.
+                                  and in requests that CloudFront sends to the origin.
                                 properties:
                                   queryStringBehavior:
                                     type: string
