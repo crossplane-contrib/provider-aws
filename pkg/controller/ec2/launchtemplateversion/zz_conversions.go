@@ -34,6 +34,10 @@ import (
 func GenerateDescribeLaunchTemplateVersionsInput(cr *svcapitypes.LaunchTemplateVersion) *svcsdk.DescribeLaunchTemplateVersionsInput {
 	res := &svcsdk.DescribeLaunchTemplateVersionsInput{}
 
+	if cr.Spec.ForProvider.ResolveAlias != nil {
+		res.SetResolveAlias(*cr.Spec.ForProvider.ResolveAlias)
+	}
+
 	return res
 }
 
@@ -109,6 +113,9 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 			}
 			if elem.LaunchTemplateData.CpuOptions != nil {
 				f3f2 := &svcapitypes.LaunchTemplateCPUOptionsRequest{}
+				if elem.LaunchTemplateData.CpuOptions.AmdSevSnp != nil {
+					f3f2.AmdSevSnp = elem.LaunchTemplateData.CpuOptions.AmdSevSnp
+				}
 				if elem.LaunchTemplateData.CpuOptions.CoreCount != nil {
 					f3f2.CoreCount = elem.LaunchTemplateData.CpuOptions.CoreCount
 				}
@@ -530,22 +537,25 @@ func GenerateLaunchTemplateVersion(resp *svcsdk.DescribeLaunchTemplateVersionsOu
 					if f3f23iter.NetworkInterfaceId != nil {
 						f3f23elem.NetworkInterfaceID = f3f23iter.NetworkInterfaceId
 					}
+					if f3f23iter.PrimaryIpv6 != nil {
+						f3f23elem.PrimaryIPv6 = f3f23iter.PrimaryIpv6
+					}
 					if f3f23iter.PrivateIpAddress != nil {
 						f3f23elem.PrivateIPAddress = f3f23iter.PrivateIpAddress
 					}
 					if f3f23iter.PrivateIpAddresses != nil {
-						f3f23elemf16 := []*svcapitypes.PrivateIPAddressSpecification{}
-						for _, f3f23elemf16iter := range f3f23iter.PrivateIpAddresses {
-							f3f23elemf16elem := &svcapitypes.PrivateIPAddressSpecification{}
-							if f3f23elemf16iter.Primary != nil {
-								f3f23elemf16elem.Primary = f3f23elemf16iter.Primary
+						f3f23elemf17 := []*svcapitypes.PrivateIPAddressSpecification{}
+						for _, f3f23elemf17iter := range f3f23iter.PrivateIpAddresses {
+							f3f23elemf17elem := &svcapitypes.PrivateIPAddressSpecification{}
+							if f3f23elemf17iter.Primary != nil {
+								f3f23elemf17elem.Primary = f3f23elemf17iter.Primary
 							}
-							if f3f23elemf16iter.PrivateIpAddress != nil {
-								f3f23elemf16elem.PrivateIPAddress = f3f23elemf16iter.PrivateIpAddress
+							if f3f23elemf17iter.PrivateIpAddress != nil {
+								f3f23elemf17elem.PrivateIPAddress = f3f23elemf17iter.PrivateIpAddress
 							}
-							f3f23elemf16 = append(f3f23elemf16, f3f23elemf16elem)
+							f3f23elemf17 = append(f3f23elemf17, f3f23elemf17elem)
 						}
-						f3f23elem.PrivateIPAddresses = f3f23elemf16
+						f3f23elem.PrivateIPAddresses = f3f23elemf17
 					}
 					if f3f23iter.SecondaryPrivateIpAddressCount != nil {
 						f3f23elem.SecondaryPrivateIPAddressCount = f3f23iter.SecondaryPrivateIpAddressCount
@@ -739,6 +749,9 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 		}
 		if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions != nil {
 			f0f2 := &svcsdk.LaunchTemplateCpuOptionsRequest{}
+			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp != nil {
+				f0f2.SetAmdSevSnp(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.AmdSevSnp)
+			}
 			if cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount != nil {
 				f0f2.SetCoreCount(*cr.Spec.ForProvider.LaunchTemplateData.CPUOptions.CoreCount)
 			}
@@ -1160,22 +1173,25 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 				if f0f23iter.NetworkInterfaceID != nil {
 					f0f23elem.SetNetworkInterfaceId(*f0f23iter.NetworkInterfaceID)
 				}
+				if f0f23iter.PrimaryIPv6 != nil {
+					f0f23elem.SetPrimaryIpv6(*f0f23iter.PrimaryIPv6)
+				}
 				if f0f23iter.PrivateIPAddress != nil {
 					f0f23elem.SetPrivateIpAddress(*f0f23iter.PrivateIPAddress)
 				}
 				if f0f23iter.PrivateIPAddresses != nil {
-					f0f23elemf16 := []*svcsdk.PrivateIpAddressSpecification{}
-					for _, f0f23elemf16iter := range f0f23iter.PrivateIPAddresses {
-						f0f23elemf16elem := &svcsdk.PrivateIpAddressSpecification{}
-						if f0f23elemf16iter.Primary != nil {
-							f0f23elemf16elem.SetPrimary(*f0f23elemf16iter.Primary)
+					f0f23elemf17 := []*svcsdk.PrivateIpAddressSpecification{}
+					for _, f0f23elemf17iter := range f0f23iter.PrivateIPAddresses {
+						f0f23elemf17elem := &svcsdk.PrivateIpAddressSpecification{}
+						if f0f23elemf17iter.Primary != nil {
+							f0f23elemf17elem.SetPrimary(*f0f23elemf17iter.Primary)
 						}
-						if f0f23elemf16iter.PrivateIPAddress != nil {
-							f0f23elemf16elem.SetPrivateIpAddress(*f0f23elemf16iter.PrivateIPAddress)
+						if f0f23elemf17iter.PrivateIPAddress != nil {
+							f0f23elemf17elem.SetPrivateIpAddress(*f0f23elemf17iter.PrivateIPAddress)
 						}
-						f0f23elemf16 = append(f0f23elemf16, f0f23elemf16elem)
+						f0f23elemf17 = append(f0f23elemf17, f0f23elemf17elem)
 					}
-					f0f23elem.SetPrivateIpAddresses(f0f23elemf16)
+					f0f23elem.SetPrivateIpAddresses(f0f23elemf17)
 				}
 				if f0f23iter.SecondaryPrivateIPAddressCount != nil {
 					f0f23elem.SetSecondaryPrivateIpAddressCount(*f0f23iter.SecondaryPrivateIPAddressCount)
@@ -1281,6 +1297,9 @@ func GenerateCreateLaunchTemplateVersionInput(cr *svcapitypes.LaunchTemplateVers
 			f0.SetUserData(*cr.Spec.ForProvider.LaunchTemplateData.UserData)
 		}
 		res.SetLaunchTemplateData(f0)
+	}
+	if cr.Spec.ForProvider.ResolveAlias != nil {
+		res.SetResolveAlias(*cr.Spec.ForProvider.ResolveAlias)
 	}
 	if cr.Spec.ForProvider.SourceVersion != nil {
 		res.SetSourceVersion(*cr.Spec.ForProvider.SourceVersion)

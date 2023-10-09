@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/globalaccelerator"
+	"k8s.io/utils/ptr"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -14,7 +15,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
@@ -62,7 +62,7 @@ func preObserve(ctx context.Context, cr *svcapitypes.Listener, obj *svcsdk.Descr
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Listener, obj *svcsdk.CreateListenerInput) error {
-	obj.AcceleratorArn = aws.String(pointer.StringDeref(cr.Spec.ForProvider.CustomListenerParameters.AcceleratorArn, ""))
+	obj.AcceleratorArn = aws.String(ptr.Deref(cr.Spec.ForProvider.CustomListenerParameters.AcceleratorArn, ""))
 	obj.IdempotencyToken = aws.String(string(cr.UID))
 	return nil
 }
@@ -119,11 +119,11 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Listener, resp *svcsdk.Descri
 		}
 	}
 
-	if pointer.StringDeref(cr.Spec.ForProvider.ClientAffinity, "") != *resp.Listener.ClientAffinity {
+	if ptr.Deref(cr.Spec.ForProvider.ClientAffinity, "") != *resp.Listener.ClientAffinity {
 		return false, "", nil
 	}
 
-	if pointer.StringDeref(cr.Spec.ForProvider.Protocol, "") != *resp.Listener.Protocol {
+	if ptr.Deref(cr.Spec.ForProvider.Protocol, "") != *resp.Listener.Protocol {
 		return false, "", nil
 	}
 

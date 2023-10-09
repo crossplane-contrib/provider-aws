@@ -83,14 +83,14 @@ type ServerParameters struct {
 	// server to a new server, don't update the host key. Accidentally changing
 	// a server's host key can be disruptive.
 	//
-	// For more information, see Update host keys for your SFTP-enabled server (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
+	// For more information, see Manage host keys for your SFTP-enabled server (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
 	// in the Transfer Family User Guide.
 	HostKey *string `json:"hostKey,omitempty"`
-	// Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE or API_GATEWAY.
-	// Accepts an array containing all of the information required to use a directory
-	// in AWS_DIRECTORY_SERVICE or invoke a customer-supplied authentication API,
-	// including the API Gateway URL. Not required when IdentityProviderType is
-	// set to SERVICE_MANAGED.
+	// Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE, Amazon
+	// Web Services_LAMBDA or API_GATEWAY. Accepts an array containing all of the
+	// information required to use a directory in AWS_DIRECTORY_SERVICE or invoke
+	// a customer-supplied authentication API, including the API Gateway URL. Not
+	// required when IdentityProviderType is set to SERVICE_MANAGED.
 	IdentityProviderDetails *IdentityProviderDetails `json:"identityProviderDetails,omitempty"`
 	// The mode of authentication for a server. The default value is SERVICE_MANAGED,
 	// which allows you to store and access user credentials within the Transfer
@@ -109,7 +109,7 @@ type ServerParameters struct {
 	//
 	// Use the AWS_LAMBDA value to directly use an Lambda function as your identity
 	// provider. If you choose this value, you must specify the ARN for the Lambda
-	// function in the Function parameter or the IdentityProviderDetails data type.
+	// function in the Function parameter for the IdentityProviderDetails data type.
 	IdentityProviderType *string `json:"identityProviderType,omitempty"`
 	// Specifies a string to display when users connect to a server. This string
 	// is displayed after the user authenticates.
@@ -166,27 +166,44 @@ type ServerParameters struct {
 	//    to it over FTPS.
 	//
 	//    * If Protocol includes either FTP or FTPS, then the EndpointType must
-	//    be VPC and the IdentityProviderType must be AWS_DIRECTORY_SERVICE or API_GATEWAY.
+	//    be VPC and the IdentityProviderType must be either AWS_DIRECTORY_SERVICE,
+	//    AWS_LAMBDA, or API_GATEWAY.
 	//
 	//    * If Protocol includes FTP, then AddressAllocationIds cannot be associated.
 	//
 	//    * If Protocol is set only to SFTP, the EndpointType can be set to PUBLIC
-	//    and the IdentityProviderType can be set to SERVICE_MANAGED.
+	//    and the IdentityProviderType can be set any of the supported identity
+	//    types: SERVICE_MANAGED, AWS_DIRECTORY_SERVICE, AWS_LAMBDA, or API_GATEWAY.
 	//
 	//    * If Protocol includes AS2, then the EndpointType must be VPC, and domain
 	//    must be Amazon S3.
 	Protocols []*string `json:"protocols,omitempty"`
 	// Specifies the name of the security policy that is attached to the server.
 	SecurityPolicyName *string `json:"securityPolicyName,omitempty"`
+	// Specifies the log groups to which your server logs are sent.
+	//
+	// To specify a log group, you must provide the ARN for an existing log group.
+	// In this case, the format of the log group is as follows:
+	//
+	// arn:aws:logs:region-name:amazon-account-id:log-group:log-group-name:*
+	//
+	// For example, arn:aws:logs:us-east-1:111122223333:log-group:mytestgroup:*
+	//
+	// If you have previously specified a log group for a server, you can clear
+	// it, and in effect turn off structured logging, by providing an empty value
+	// for this parameter in an update-server call. For example:
+	//
+	// update-server --server-id s-1234567890abcdef0 --structured-log-destinations
+	StructuredLogDestinations []*string `json:"structuredLogDestinations,omitempty"`
 	// Key-value pairs that can be used to group and search for servers.
 	Tags []*Tag `json:"tags,omitempty"`
 	// Specifies the workflow ID for the workflow to assign and the execution role
 	// that's used for executing the workflow.
 	//
-	// In additon to a workflow to execute when a file is uploaded completely, WorkflowDeatails
-	// can also contain a workflow ID (and execution role) for a workflow to execute
-	// on partial upload. A partial upload occurs when a file is open when the session
-	// disconnects.
+	// In addition to a workflow to execute when a file is uploaded completely,
+	// WorkflowDetails can also contain a workflow ID (and execution role) for a
+	// workflow to execute on partial upload. A partial upload occurs when the server
+	// session disconnects while the file is still being uploaded.
 	WorkflowDetails        *WorkflowDetails `json:"workflowDetails,omitempty"`
 	CustomServerParameters `json:",inline"`
 }

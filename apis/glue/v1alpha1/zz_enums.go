@@ -18,6 +18,12 @@ limitations under the License.
 
 package v1alpha1
 
+type AdditionalOptionKeys string
+
+const (
+	AdditionalOptionKeys_performanceTuning_caching AdditionalOptionKeys = "performanceTuning.caching"
+)
+
 type AggFunction string
 
 const (
@@ -155,6 +161,15 @@ const (
 	ConnectionPropertyKey_CONNECTOR_URL                            ConnectionPropertyKey = "CONNECTOR_URL"
 	ConnectionPropertyKey_CONNECTOR_TYPE                           ConnectionPropertyKey = "CONNECTOR_TYPE"
 	ConnectionPropertyKey_CONNECTOR_CLASS_NAME                     ConnectionPropertyKey = "CONNECTOR_CLASS_NAME"
+	ConnectionPropertyKey_KAFKA_SASL_MECHANISM                     ConnectionPropertyKey = "KAFKA_SASL_MECHANISM"
+	ConnectionPropertyKey_KAFKA_SASL_SCRAM_USERNAME                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_USERNAME"
+	ConnectionPropertyKey_KAFKA_SASL_SCRAM_PASSWORD                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_PASSWORD"
+	ConnectionPropertyKey_KAFKA_SASL_SCRAM_SECRETS_ARN             ConnectionPropertyKey = "KAFKA_SASL_SCRAM_SECRETS_ARN"
+	ConnectionPropertyKey_ENCRYPTED_KAFKA_SASL_SCRAM_PASSWORD      ConnectionPropertyKey = "ENCRYPTED_KAFKA_SASL_SCRAM_PASSWORD"
+	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_KEYTAB                 ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_KEYTAB"
+	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_KRB5_CONF              ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_KRB5_CONF"
+	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_SERVICE                ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_SERVICE"
+	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_PRINCIPAL              ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_PRINCIPAL"
 )
 
 type ConnectionType string
@@ -212,6 +227,14 @@ const (
 	CsvHeaderOption_ABSENT  CsvHeaderOption = "ABSENT"
 )
 
+type CsvSerdeOption string
+
+const (
+	CsvSerdeOption_OpenCSVSerDe    CsvSerdeOption = "OpenCSVSerDe"
+	CsvSerdeOption_LazySimpleSerDe CsvSerdeOption = "LazySimpleSerDe"
+	CsvSerdeOption_None            CsvSerdeOption = "None"
+)
+
 type DQStopJobOnFailureTiming string
 
 const (
@@ -250,6 +273,13 @@ const (
 	DeleteBehavior_DEPRECATE_IN_DATABASE DeleteBehavior = "DEPRECATE_IN_DATABASE"
 )
 
+type DeltaTargetCompressionType string
+
+const (
+	DeltaTargetCompressionType_uncompressed DeltaTargetCompressionType = "uncompressed"
+	DeltaTargetCompressionType_snappy       DeltaTargetCompressionType = "snappy"
+)
+
 type EnableHybridValues string
 
 const (
@@ -270,6 +300,16 @@ const (
 	ExistCondition_MUST_EXIST ExistCondition = "MUST_EXIST"
 	ExistCondition_NOT_EXIST  ExistCondition = "NOT_EXIST"
 	ExistCondition_NONE       ExistCondition = "NONE"
+)
+
+type FederationSourceErrorCode string
+
+const (
+	FederationSourceErrorCode_InvalidResponseException       FederationSourceErrorCode = "InvalidResponseException"
+	FederationSourceErrorCode_OperationTimeoutException      FederationSourceErrorCode = "OperationTimeoutException"
+	FederationSourceErrorCode_OperationNotSupportedException FederationSourceErrorCode = "OperationNotSupportedException"
+	FederationSourceErrorCode_InternalServiceException       FederationSourceErrorCode = "InternalServiceException"
+	FederationSourceErrorCode_ThrottlingException            FederationSourceErrorCode = "ThrottlingException"
 )
 
 type FieldName string
@@ -332,6 +372,25 @@ const (
 	GlueRecordType_BYTE       GlueRecordType = "BYTE"
 	GlueRecordType_SHORT      GlueRecordType = "SHORT"
 	GlueRecordType_DOUBLE     GlueRecordType = "DOUBLE"
+)
+
+type HudiTargetCompressionType string
+
+const (
+	HudiTargetCompressionType_gzip         HudiTargetCompressionType = "gzip"
+	HudiTargetCompressionType_lzo          HudiTargetCompressionType = "lzo"
+	HudiTargetCompressionType_uncompressed HudiTargetCompressionType = "uncompressed"
+	HudiTargetCompressionType_snappy       HudiTargetCompressionType = "snappy"
+)
+
+type JDBCConnectionType string
+
+const (
+	JDBCConnectionType_sqlserver  JDBCConnectionType = "sqlserver"
+	JDBCConnectionType_mysql      JDBCConnectionType = "mysql"
+	JDBCConnectionType_oracle     JDBCConnectionType = "oracle"
+	JDBCConnectionType_postgresql JDBCConnectionType = "postgresql"
+	JDBCConnectionType_redshift   JDBCConnectionType = "redshift"
 )
 
 type JDBCDataType string
@@ -452,6 +511,12 @@ const (
 	MLUserDataEncryptionModeString_SSE_KMS  MLUserDataEncryptionModeString = "SSE-KMS"
 )
 
+type MetadataOperation string
+
+const (
+	MetadataOperation_CREATE MetadataOperation = "CREATE"
+)
+
 type NodeType string
 
 const (
@@ -510,6 +575,8 @@ type PermissionType string
 const (
 	PermissionType_COLUMN_PERMISSION      PermissionType = "COLUMN_PERMISSION"
 	PermissionType_CELL_FILTER_PERMISSION PermissionType = "CELL_FILTER_PERMISSION"
+	PermissionType_NESTED_PERMISSION      PermissionType = "NESTED_PERMISSION"
+	PermissionType_NESTED_CELL_PERMISSION PermissionType = "NESTED_CELL_PERMISSION"
 )
 
 type PiiType string
@@ -556,8 +623,9 @@ const (
 type ResourceShareType string
 
 const (
-	ResourceShareType_FOREIGN ResourceShareType = "FOREIGN"
-	ResourceShareType_ALL     ResourceShareType = "ALL"
+	ResourceShareType_FOREIGN   ResourceShareType = "FOREIGN"
+	ResourceShareType_ALL       ResourceShareType = "ALL"
+	ResourceShareType_FEDERATED ResourceShareType = "FEDERATED"
 )
 
 type ResourceType string
@@ -662,6 +730,7 @@ const (
 	StartingPosition_latest       StartingPosition = "latest"
 	StartingPosition_trim_horizon StartingPosition = "trim_horizon"
 	StartingPosition_earliest     StartingPosition = "earliest"
+	StartingPosition_timestamp    StartingPosition = "timestamp"
 )
 
 type StatementState string
@@ -683,6 +752,8 @@ const (
 	TargetFormat_avro    TargetFormat = "avro"
 	TargetFormat_orc     TargetFormat = "orc"
 	TargetFormat_parquet TargetFormat = "parquet"
+	TargetFormat_hudi    TargetFormat = "hudi"
+	TargetFormat_delta   TargetFormat = "delta"
 )
 
 type TaskRunSortColumnType string
@@ -789,6 +860,9 @@ const (
 	WorkerType_G_1X     WorkerType = "G.1X"
 	WorkerType_G_2X     WorkerType = "G.2X"
 	WorkerType_G_025X   WorkerType = "G.025X"
+	WorkerType_G_4X     WorkerType = "G.4X"
+	WorkerType_G_8X     WorkerType = "G.8X"
+	WorkerType_Z_2X     WorkerType = "Z.2X"
 )
 
 type WorkflowRunStatus string

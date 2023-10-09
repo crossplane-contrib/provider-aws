@@ -72,15 +72,17 @@ spec:
                       to associate with the cluster. A capacity provider must be associated
                       with a cluster before it can be included as part of the default
                       capacity provider strategy of the cluster or used in a capacity
-                      provider strategy when calling the CreateService or RunTask
+                      provider strategy when calling the CreateService (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html)
+                      or RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html)
                       actions. \n If specifying a capacity provider that uses an Auto
                       Scaling group, the capacity provider must be created but not
                       associated with another cluster. New Auto Scaling group capacity
-                      providers can be created with the CreateCapacityProvider API
-                      operation. \n To use a Fargate capacity provider, specify either
-                      the FARGATE or FARGATE_SPOT capacity providers. The Fargate
+                      providers can be created with the CreateCapacityProvider (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateCapacityProvider.html)
+                      API operation. \n To use a Fargate capacity provider, specify
+                      either the FARGATE or FARGATE_SPOT capacity providers. The Fargate
                       capacity providers are available to all accounts and only need
-                      to be associated with a cluster to be used. \n The PutClusterCapacityProviders
+                      to be associated with a cluster to be used. \n The PutCapacityProvider
+                      (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PutCapacityProvider.html)
                       API operation is used to update the list of available capacity
                       providers for a cluster after the cluster is created."
                     items:
@@ -123,7 +125,8 @@ spec:
                   defaultCapacityProviderStrategy:
                     description: "The capacity provider strategy to set as the default
                       for the cluster. After a default capacity provider strategy
-                      is set for a cluster, when you call the RunTask or CreateService
+                      is set for a cluster, when you call the CreateService (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html)
+                      or RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html)
                       APIs with no capacity provider strategy or launch type specified,
                       the default capacity provider strategy for the cluster is used.
                       \n If a default capacity provider strategy isn't defined for

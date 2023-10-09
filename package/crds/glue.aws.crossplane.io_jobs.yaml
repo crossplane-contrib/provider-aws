@@ -108,6 +108,280 @@ spec:
                             name:
                               type: string
                           type: object
+                        amazonRedshiftSource:
+                          description: Specifies an Amazon Redshift source.
+                          properties:
+                            data:
+                              description: Specifies an Amazon Redshift node.
+                              properties:
+                                accessType:
+                                  type: string
+                                action:
+                                  type: string
+                                advancedOptions:
+                                  items:
+                                    properties:
+                                      key:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                catalogDatabase:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                catalogRedshiftSchema:
+                                  type: string
+                                catalogRedshiftTable:
+                                  type: string
+                                catalogTable:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                connection:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                crawlerConnection:
+                                  type: string
+                                iamRole:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                mergeAction:
+                                  type: string
+                                mergeClause:
+                                  type: string
+                                mergeWhenMatched:
+                                  type: string
+                                mergeWhenNotMatched:
+                                  type: string
+                                postAction:
+                                  type: string
+                                preAction:
+                                  type: string
+                                sampleQuery:
+                                  type: string
+                                schema:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                selectedColumns:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                sourceType:
+                                  type: string
+                                stagingTable:
+                                  type: string
+                                table:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                tablePrefix:
+                                  type: string
+                                tableSchema:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                tempDir:
+                                  type: string
+                                upsert:
+                                  type: boolean
+                              type: object
+                            name:
+                              type: string
+                          type: object
+                        amazonRedshiftTarget:
+                          description: Specifies an Amazon Redshift target.
+                          properties:
+                            data:
+                              description: Specifies an Amazon Redshift node.
+                              properties:
+                                accessType:
+                                  type: string
+                                action:
+                                  type: string
+                                advancedOptions:
+                                  items:
+                                    properties:
+                                      key:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                catalogDatabase:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                catalogRedshiftSchema:
+                                  type: string
+                                catalogRedshiftTable:
+                                  type: string
+                                catalogTable:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                connection:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                crawlerConnection:
+                                  type: string
+                                iamRole:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                mergeAction:
+                                  type: string
+                                mergeClause:
+                                  type: string
+                                mergeWhenMatched:
+                                  type: string
+                                mergeWhenNotMatched:
+                                  type: string
+                                postAction:
+                                  type: string
+                                preAction:
+                                  type: string
+                                sampleQuery:
+                                  type: string
+                                schema:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                selectedColumns:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                sourceType:
+                                  type: string
+                                stagingTable:
+                                  type: string
+                                table:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                tablePrefix:
+                                  type: string
+                                tableSchema:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                tempDir:
+                                  type: string
+                                upsert:
+                                  type: boolean
+                              type: object
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
                         applyMapping:
                           description: Specifies a transform that maps data property
                             keys in the data source to data property keys in the data
@@ -169,6 +443,64 @@ spec:
                             schemaName:
                               type: string
                           type: object
+                        catalogDeltaSource:
+                          description: Specifies a Delta Lake data source that is
+                            registered in the Glue Data Catalog.
+                          properties:
+                            additionalDeltaOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
+                          type: object
+                        catalogHudiSource:
+                          description: Specifies a Hudi data source that is registered
+                            in the Glue Data Catalog.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
+                          type: object
                         catalogKafkaSource:
                           description: Specifies an Apache Kafka data store in the
                             Data Catalog.
@@ -193,6 +525,8 @@ spec:
                             streamingOptions:
                               description: Additional options for streaming.
                               properties:
+                                addRecordTimestamp:
+                                  type: string
                                 assign:
                                   type: string
                                 bootstrapServers:
@@ -203,8 +537,12 @@ spec:
                                   type: string
                                 delimiter:
                                   type: string
+                                emitConsumerLagMetrics:
+                                  type: string
                                 endingOffsets:
                                   type: string
+                                includeHeaders:
+                                  type: boolean
                                 maxOffsetsPerTrigger:
                                   format: int64
                                   type: integer
@@ -223,6 +561,9 @@ spec:
                                 securityProtocol:
                                   type: string
                                 startingOffsets:
+                                  type: string
+                                startingTimestamp:
+                                  format: date-time
                                   type: string
                                 subscribePattern:
                                   type: string
@@ -262,6 +603,8 @@ spec:
                               properties:
                                 addIdleTimeBetweenReads:
                                   type: boolean
+                                addRecordTimestamp:
+                                  type: string
                                 avoidEmptyBatches:
                                   type: boolean
                                 classification:
@@ -271,6 +614,8 @@ spec:
                                 describeShardInterval:
                                   format: int64
                                   type: integer
+                                emitConsumerLagMetrics:
+                                  type: string
                                 endpointURL:
                                   type: string
                                 idleTimeBetweenReadsInMs:
@@ -299,6 +644,9 @@ spec:
                                 roleSessionName:
                                   type: string
                                 startingPosition:
+                                  type: string
+                                startingTimestamp:
+                                  format: date-time
                                   type: string
                                 streamARN:
                                   type: string
@@ -366,6 +714,22 @@ spec:
                                 type: object
                               type: array
                           type: object
+                        directJDBCSource:
+                          description: Specifies the direct JDBC source connection.
+                          properties:
+                            connectionName:
+                              type: string
+                            connectionType:
+                              type: string
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            redshiftTmpDir:
+                              type: string
+                            table:
+                              type: string
+                          type: object
                         directKafkaSource:
                           description: Specifies an Apache Kafka data store.
                           properties:
@@ -387,6 +751,8 @@ spec:
                             streamingOptions:
                               description: Additional options for streaming.
                               properties:
+                                addRecordTimestamp:
+                                  type: string
                                 assign:
                                   type: string
                                 bootstrapServers:
@@ -397,8 +763,12 @@ spec:
                                   type: string
                                 delimiter:
                                   type: string
+                                emitConsumerLagMetrics:
+                                  type: string
                                 endingOffsets:
                                   type: string
+                                includeHeaders:
+                                  type: boolean
                                 maxOffsetsPerTrigger:
                                   format: int64
                                   type: integer
@@ -417,6 +787,9 @@ spec:
                                 securityProtocol:
                                   type: string
                                 startingOffsets:
+                                  type: string
+                                startingTimestamp:
+                                  format: date-time
                                   type: string
                                 subscribePattern:
                                   type: string
@@ -451,6 +824,8 @@ spec:
                               properties:
                                 addIdleTimeBetweenReads:
                                   type: boolean
+                                addRecordTimestamp:
+                                  type: string
                                 avoidEmptyBatches:
                                   type: boolean
                                 classification:
@@ -460,6 +835,8 @@ spec:
                                 describeShardInterval:
                                   format: int64
                                   type: integer
+                                emitConsumerLagMetrics:
+                                  type: string
                                 endpointURL:
                                   type: string
                                 idleTimeBetweenReadsInMs:
@@ -488,6 +865,9 @@ spec:
                                 roleSessionName:
                                   type: string
                                 startingPosition:
+                                  type: string
+                                startingTimestamp:
+                                  format: date-time
                                   type: string
                                 streamARN:
                                   type: string
@@ -586,6 +966,20 @@ spec:
                               type: array
                             name:
                               type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
                             parameters:
                               items:
                                 properties:
@@ -635,6 +1029,46 @@ spec:
                             name:
                               type: string
                             output:
+                              type: string
+                            publishingOptions:
+                              description: Options to configure how your data quality
+                                evaluation results are published.
+                              properties:
+                                cloudWatchMetricsEnabled:
+                                  type: boolean
+                                evaluationContext:
+                                  type: string
+                                resultsPublishingEnabled:
+                                  type: boolean
+                                resultsS3Prefix:
+                                  type: string
+                              type: object
+                            ruleset:
+                              type: string
+                            stopJobOnFailureOptions:
+                              description: Options to configure how your job will
+                                stop if your data quality evaluation fails.
+                              properties:
+                                stopJobOnFailureTiming:
+                                  type: string
+                              type: object
+                          type: object
+                        evaluateDataQualityMultiFrame:
+                          description: Specifies your data quality evaluation criteria.
+                          properties:
+                            additionalDataSources:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
                               type: string
                             publishingOptions:
                               description: Options to configure how your data quality
@@ -1032,6 +1466,25 @@ spec:
                             table:
                               type: string
                           type: object
+                        recipe:
+                          description: A Glue Studio node that uses a Glue DataBrew
+                            recipe in Glue jobs.
+                          properties:
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            recipeReference:
+                              description: A reference to a Glue DataBrew recipe.
+                              properties:
+                                recipeARN:
+                                  type: string
+                                recipeVersion:
+                                  type: string
+                              type: object
+                          type: object
                         redshiftSource:
                           description: Specifies an Amazon Redshift data store.
                           properties:
@@ -1106,6 +1559,66 @@ spec:
                               items:
                                 type: string
                               type: array
+                          type: object
+                        s3CatalogDeltaSource:
+                          description: Specifies a Delta Lake data source that is
+                            registered in the Glue Data Catalog. The data source must
+                            be stored in Amazon S3.
+                          properties:
+                            additionalDeltaOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
+                          type: object
+                        s3CatalogHudiSource:
+                          description: Specifies a Hudi data source that is registered
+                            in the Glue Data Catalog. The Hudi data source must be
+                            stored in Amazon S3.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            table:
+                              type: string
                           type: object
                         s3CatalogSource:
                           description: Specifies an Amazon S3 data store in the Glue
@@ -1235,6 +1748,124 @@ spec:
                             writeHeader:
                               type: boolean
                           type: object
+                        s3DeltaCatalogTarget:
+                          description: Specifies a target that writes to a Delta Lake
+                            data source in the Glue Data Catalog.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                enableUpdateCatalog:
+                                  type: boolean
+                                updateBehavior:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                          type: object
+                        s3DeltaDirectTarget:
+                          description: Specifies a target that writes to a Delta Lake
+                            data source in Amazon S3.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            compression:
+                              type: string
+                            format:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            path:
+                              type: string
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                database:
+                                  type: string
+                                enableUpdateCatalog:
+                                  type: boolean
+                                table:
+                                  type: string
+                                updateBehavior:
+                                  type: string
+                              type: object
+                          type: object
+                        s3DeltaSource:
+                          description: Specifies a Delta Lake data source stored in
+                            Amazon S3.
+                          properties:
+                            additionalDeltaOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
+                          type: object
                         s3DirectTarget:
                           description: Specifies a data target that writes to Amazon
                             S3.
@@ -1304,6 +1935,124 @@ spec:
                                 updateBehavior:
                                   type: string
                               type: object
+                          type: object
+                        s3HudiCatalogTarget:
+                          description: Specifies a target that writes to a Hudi data
+                            source in the Glue Data Catalog.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            database:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                enableUpdateCatalog:
+                                  type: boolean
+                                updateBehavior:
+                                  type: string
+                              type: object
+                            table:
+                              type: string
+                          type: object
+                        s3HudiDirectTarget:
+                          description: Specifies a target that writes to a Hudi data
+                            source in Amazon S3.
+                          properties:
+                            additionalOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            compression:
+                              type: string
+                            format:
+                              type: string
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            partitionKeys:
+                              items:
+                                items:
+                                  type: string
+                                type: array
+                              type: array
+                            path:
+                              type: string
+                            schemaChangePolicy:
+                              description: A policy that specifies update behavior
+                                for the crawler.
+                              properties:
+                                database:
+                                  type: string
+                                enableUpdateCatalog:
+                                  type: boolean
+                                table:
+                                  type: string
+                                updateBehavior:
+                                  type: string
+                              type: object
+                          type: object
+                        s3HudiSource:
+                          description: Specifies a Hudi data source stored in Amazon
+                            S3.
+                          properties:
+                            additionalHudiOptions:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            additionalOptions:
+                              description: Specifies additional connection options
+                                for the Amazon S3 data store.
+                              properties:
+                                boundedFiles:
+                                  format: int64
+                                  type: integer
+                                boundedSize:
+                                  format: int64
+                                  type: integer
+                                enableSamplePath:
+                                  type: boolean
+                                samplePath:
+                                  type: string
+                              type: object
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            paths:
+                              items:
+                                type: string
+                              type: array
                           type: object
                         s3JSONSource:
                           description: Specifies a JSON data store stored in Amazon
@@ -1450,6 +2199,202 @@ spec:
                             index:
                               format: int64
                               type: integer
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
+                        snowflakeSource:
+                          description: Specifies a Snowflake data source.
+                          properties:
+                            data:
+                              description: Specifies configuration for Snowflake nodes
+                                in Glue Studio.
+                              properties:
+                                action:
+                                  type: string
+                                additionalOptions:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                autoPushdown:
+                                  type: boolean
+                                connection:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                database:
+                                  type: string
+                                iamRole:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                mergeAction:
+                                  type: string
+                                mergeClause:
+                                  type: string
+                                mergeWhenMatched:
+                                  type: string
+                                mergeWhenNotMatched:
+                                  type: string
+                                postAction:
+                                  type: string
+                                preAction:
+                                  type: string
+                                sampleQuery:
+                                  type: string
+                                schema:
+                                  type: string
+                                selectedColumns:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                sourceType:
+                                  type: string
+                                stagingTable:
+                                  type: string
+                                table:
+                                  type: string
+                                tableSchema:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                tempDir:
+                                  type: string
+                                upsert:
+                                  type: boolean
+                              type: object
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        snowflakeTarget:
+                          description: Specifies a Snowflake target.
+                          properties:
+                            data:
+                              description: Specifies configuration for Snowflake nodes
+                                in Glue Studio.
+                              properties:
+                                action:
+                                  type: string
+                                additionalOptions:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                autoPushdown:
+                                  type: boolean
+                                connection:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                database:
+                                  type: string
+                                iamRole:
+                                  description: Specifies an option value.
+                                  properties:
+                                    description:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                  type: object
+                                mergeAction:
+                                  type: string
+                                mergeClause:
+                                  type: string
+                                mergeWhenMatched:
+                                  type: string
+                                mergeWhenNotMatched:
+                                  type: string
+                                postAction:
+                                  type: string
+                                preAction:
+                                  type: string
+                                sampleQuery:
+                                  type: string
+                                schema:
+                                  type: string
+                                selectedColumns:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                sourceType:
+                                  type: string
+                                stagingTable:
+                                  type: string
+                                table:
+                                  type: string
+                                tableSchema:
+                                  items:
+                                    properties:
+                                      description:
+                                        type: string
+                                      label:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  type: array
+                                tempDir:
+                                  type: string
+                                upsert:
+                                  type: boolean
+                              type: object
                             inputs:
                               items:
                                 type: string
@@ -1622,6 +2567,8 @@ spec:
                         type: string
                       pythonVersion:
                         type: string
+                      runtime:
+                        type: string
                       scriptLocation:
                         type: string
                     type: object
@@ -1711,18 +2658,22 @@ spec:
                   defaultArguments:
                     additionalProperties:
                       type: string
-                    description: "The default arguments for this job. \n You can specify
-                      arguments here that your own job-execution script consumes,
-                      as well as arguments that Glue itself consumes. \n Job arguments
-                      may be logged. Do not pass plaintext secrets as arguments. Retrieve
+                    description: "The default arguments for every run of this job,
+                      specified as name-value pairs. \n You can specify arguments
+                      here that your own job-execution script consumes, as well as
+                      arguments that Glue itself consumes. \n Job arguments may be
+                      logged. Do not pass plaintext secrets as arguments. Retrieve
                       secrets from a Glue Connection, Secrets Manager or other secret
                       management mechanism if you intend to keep them within the Job.
                       \n For information about how to specify and consume your own
                       Job arguments, see the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
-                      topic in the developer guide. \n For information about the key-value
-                      pairs that Glue consumes to set up your job, see the Special
-                      Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
-                      topic in the developer guide."
+                      topic in the developer guide. \n For information about the arguments
+                      you can provide to this field when configuring Spark jobs, see
+                      the Special Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
+                      topic in the developer guide. \n For information about the arguments
+                      you can provide to this field when configuring Ray jobs, see
+                      Using job parameters in Ray jobs (https://docs.aws.amazon.com/glue/latest/dg/author-job-ray-job-parameters.html)
+                      in the developer guide."
                     type: object
                   description:
                     description: Description of the job being defined.
@@ -1747,11 +2698,15 @@ spec:
                         type: integer
                     type: object
                   glueVersion:
-                    description: "Glue version determines the versions of Apache Spark
-                      and Python that Glue supports. The Python version indicates
-                      the version supported for jobs of type Spark. \n For more information
-                      about the available Glue versions and corresponding Spark and
-                      Python versions, see Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
+                    description: "In Spark jobs, GlueVersion determines the versions
+                      of Apache Spark and Python that Glue available in a job. The
+                      Python version indicates the version supported for jobs of type
+                      Spark. \n Ray jobs should set GlueVersion to 4.0 or greater.
+                      However, the versions of Ray, Python and additional libraries
+                      available in your Ray job are determined by the Runtime parameter
+                      of the Job command. \n For more information about the available
+                      Glue versions and corresponding Spark and Python versions, see
+                      Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
                       in the developer guide. \n Jobs that are created without specifying
                       a Glue version default to Glue 0.9."
                     type: string
@@ -1765,18 +2720,18 @@ spec:
                       relative measure of processing power that consists of 4 vCPUs
                       of compute capacity and 16 GB of memory. For more information,
                       see the Glue pricing page (https://aws.amazon.com/glue/pricing/).
-                      \n Do not set Max Capacity if using WorkerType and NumberOfWorkers.
-                      \n The value that can be allocated for MaxCapacity depends on
-                      whether you are running a Python shell job or an Apache Spark
-                      ETL job: \n * When you specify a Python shell job (JobCommand.Name=\"pythonshell\"),
+                      \n For Glue version 2.0+ jobs, you cannot specify a Maximum
+                      capacity. Instead, you should specify a Worker type and the
+                      Number of workers. \n Do not set MaxCapacity if using WorkerType
+                      and NumberOfWorkers. \n The value that can be allocated for
+                      MaxCapacity depends on whether you are running a Python shell
+                      job, an Apache Spark ETL job, or an Apache Spark streaming ETL
+                      job: \n * When you specify a Python shell job (JobCommand.Name=\"pythonshell\"),
                       you can allocate either 0.0625 or 1 DPU. The default is 0.0625
                       DPU. \n * When you specify an Apache Spark ETL job (JobCommand.Name=\"glueetl\")
                       or Apache Spark streaming ETL job (JobCommand.Name=\"gluestreaming\"),
-                      you can allocate a minimum of 2 DPUs. The default is 10 DPUs.
-                      This job type cannot have a fractional DPU allocation. \n For
-                      Glue version 2.0 jobs, you cannot instead specify a Maximum
-                      capacity. Instead, you should specify a Worker type and the
-                      Number of workers."
+                      you can allocate from 2 to 100 DPUs. The default is 10 DPUs.
+                      This job type cannot have a fractional DPU allocation."
                     type: number
                   maxRetries:
                     description: The maximum number of times to retry this job if
@@ -1786,8 +2741,9 @@ spec:
                   nonOverridableArguments:
                     additionalProperties:
                       type: string
-                    description: Non-overridable arguments for this job, specified
-                      as name-value pairs.
+                    description: Arguments for this job that are not overridden when
+                      providing job arguments in a job run, specified as name-value
+                      pairs.
                     type: object
                   notificationProperty:
                     description: Specifies configuration properties of a job notification.
@@ -2001,20 +2957,43 @@ spec:
                     type: integer
                   workerType:
                     description: "The type of predefined worker that is allocated
-                      when a job runs. Accepts a value of Standard, G.1X, G.2X, or
-                      G.025X. \n * For the Standard worker type, each worker provides
-                      4 vCPU, 16 GB of memory and a 50GB disk, and 2 executors per
-                      worker. \n * For the G.1X worker type, each worker maps to 1
-                      DPU (4 vCPU, 16 GB of memory, 64 GB disk), and provides 1 executor
-                      per worker. We recommend this worker type for memory-intensive
-                      jobs. \n * For the G.2X worker type, each worker maps to 2 DPU
-                      (8 vCPU, 32 GB of memory, 128 GB disk), and provides 1 executor
-                      per worker. We recommend this worker type for memory-intensive
-                      jobs. \n * For the G.025X worker type, each worker maps to 0.25
-                      DPU (2 vCPU, 4 GB of memory, 64 GB disk), and provides 1 executor
-                      per worker. We recommend this worker type for low volume streaming
+                      when a job runs. Accepts a value of G.1X, G.2X, G.4X, G.8X or
+                      G.025X for Spark jobs. Accepts the value Z.2X for Ray jobs.
+                      \n * For the G.1X worker type, each worker maps to 1 DPU (4
+                      vCPUs, 16 GB of memory) with 84GB disk (approximately 34GB free),
+                      and provides 1 executor per worker. We recommend this worker
+                      type for workloads such as data transforms, joins, and queries,
+                      to offers a scalable and cost effective way to run most jobs.
+                      \n * For the G.2X worker type, each worker maps to 2 DPU (8
+                      vCPUs, 32 GB of memory) with 128GB disk (approximately 77GB
+                      free), and provides 1 executor per worker. We recommend this
+                      worker type for workloads such as data transforms, joins, and
+                      queries, to offers a scalable and cost effective way to run
+                      most jobs. \n * For the G.4X worker type, each worker maps to
+                      4 DPU (16 vCPUs, 64 GB of memory) with 256GB disk (approximately
+                      235GB free), and provides 1 executor per worker. We recommend
+                      this worker type for jobs whose workloads contain your most
+                      demanding transforms, aggregations, joins, and queries. This
+                      worker type is available only for Glue version 3.0 or later
+                      Spark ETL jobs in the following Amazon Web Services Regions:
+                      US East (Ohio), US East (N. Virginia), US West (Oregon), Asia
+                      Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo),
+                      Canada (Central), Europe (Frankfurt), Europe (Ireland), and
+                      Europe (Stockholm). \n * For the G.8X worker type, each worker
+                      maps to 8 DPU (32 vCPUs, 128 GB of memory) with 512GB disk (approximately
+                      487GB free), and provides 1 executor per worker. We recommend
+                      this worker type for jobs whose workloads contain your most
+                      demanding transforms, aggregations, joins, and queries. This
+                      worker type is available only for Glue version 3.0 or later
+                      Spark ETL jobs, in the same Amazon Web Services Regions as supported
+                      for the G.4X worker type. \n * For the G.025X worker type, each
+                      worker maps to 0.25 DPU (2 vCPUs, 4 GB of memory) with 84GB
+                      disk (approximately 34GB free), and provides 1 executor per
+                      worker. We recommend this worker type for low volume streaming
                       jobs. This worker type is only available for Glue version 3.0
-                      streaming jobs."
+                      streaming jobs. \n * For the Z.2X worker type, each worker maps
+                      to 2 M-DPU (8vCPUs, 64 GB of memory) with 128 GB disk (approximately
+                      120GB free), and provides up to 8 Ray workers based on the autoscaler."
                     type: string
                 required:
                 - command

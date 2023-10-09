@@ -68,8 +68,8 @@ spec:
                 description: APIKeyParameters defines the desired state of APIKey
                 properties:
                   customerID:
-                    description: An AWS Marketplace customer identifier , when integrating
-                      with the AWS SaaS Marketplace.
+                    description: An Amazon Web Services Marketplace customer identifier,
+                      when integrating with the Amazon Web Services SaaS Marketplace.
                     type: string
                   description:
                     description: The description of the ApiKey.

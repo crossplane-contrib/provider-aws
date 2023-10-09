@@ -23,7 +23,7 @@ import (
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
@@ -61,7 +61,7 @@ func TestTagger(t *testing.T) {
 	}
 
 	tag := func(k, v string) *v1alpha1.Tag {
-		return &v1alpha1.Tag{Key: pointer.String(k), Value: pointer.String(v)}
+		return &v1alpha1.Tag{Key: ptr.To(k), Value: ptr.To(v)}
 	}
 
 	cases := map[string]struct {

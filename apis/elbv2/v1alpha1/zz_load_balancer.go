@@ -57,8 +57,8 @@ type LoadBalancerParameters struct {
 	//
 	// You cannot specify a scheme for a Gateway Load Balancer.
 	Scheme *string `json:"scheme,omitempty"`
-	// [Application Load Balancers] The IDs of the security groups for the load
-	// balancer.
+	// [Application Load Balancers and Network Load Balancers] The IDs of the security
+	// groups for the load balancer.
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
 	// The IDs of the public subnets. You can specify only one subnet per Availability
 	// Zone. You must specify either subnets or subnet mappings, but not both.
@@ -120,6 +120,9 @@ type LoadBalancerObservation struct {
 	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
 	// The public DNS name of the load balancer.
 	DNSName *string `json:"dnsName,omitempty"`
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `json:"enforceSecurityGroupInboundRulesOnPrivateLinkTraffic,omitempty"`
 	// The Amazon Resource Name (ARN) of the load balancer.
 	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
 	// The name of the load balancer.

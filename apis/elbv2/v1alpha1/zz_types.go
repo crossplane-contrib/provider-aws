@@ -199,6 +199,8 @@ type LoadBalancer_SDK struct {
 
 	DNSName *string `json:"dnsName,omitempty"`
 
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `json:"enforceSecurityGroupInboundRulesOnPrivateLinkTraffic,omitempty"`
+
 	IPAddressType *string `json:"ipAddressType,omitempty"`
 
 	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`

@@ -69,13 +69,14 @@ spec:
                 properties:
                   configuration:
                     description: Contains configuration information for creating an
-                      Athena SQL workgroup, which includes the location in Amazon
-                      S3 where query results are stored, the encryption configuration,
-                      if any, used for encrypting query results, whether the Amazon
-                      CloudWatch Metrics are enabled for the workgroup, the limit
-                      for the amount of bytes scanned (cutoff) per query, if it is
-                      specified, and whether workgroup's settings (specified with
-                      EnforceWorkGroupConfiguration) in the WorkGroupConfiguration
+                      Athena SQL workgroup or Spark enabled Athena workgroup. Athena
+                      SQL workgroup configuration includes the location in Amazon
+                      S3 where query and calculation results are stored, the encryption
+                      configuration, if any, used for encrypting query results, whether
+                      the Amazon CloudWatch Metrics are enabled for the workgroup,
+                      the limit for the amount of bytes scanned (cutoff) per query,
+                      if it is specified, and whether workgroup's settings (specified
+                      with EnforceWorkGroupConfiguration) in the WorkGroupConfiguration
                       override client-side settings. See WorkGroupConfiguration$EnforceWorkGroupConfiguration.
                     properties:
                       additionalConfiguration:
@@ -85,11 +86,14 @@ spec:
                         type: integer
                       customerContentEncryptionConfiguration:
                         description: Specifies the KMS key that is used to encrypt
-                          the user's data stores in Athena.
+                          the user's data stores in Athena. This setting does not
+                          apply to Athena SQL workgroups.
                         properties:
                           kmsKey:
                             type: string
                         type: object
+                      enableMinimumEncryptionConfiguration:
+                        type: boolean
                       enforceWorkGroupConfiguration:
                         type: boolean
                       engineVersion:
@@ -108,11 +112,11 @@ spec:
                       requesterPaysEnabled:
                         type: boolean
                       resultConfiguration:
-                        description: The location in Amazon S3 where query results
-                          are stored and the encryption option, if any, used for query
-                          results. These are known as "client-side settings". If workgroup
-                          settings override client-side settings, then the query uses
-                          the workgroup settings.
+                        description: The location in Amazon S3 where query and calculation
+                          results are stored and the encryption option, if any, used
+                          for query and calculation results. These are known as "client-side
+                          settings". If workgroup settings override client-side settings,
+                          then the query uses the workgroup settings.
                         properties:
                           aclConfiguration:
                             description: Indicates that an Amazon S3 canned ACL should
@@ -127,9 +131,9 @@ spec:
                                 type: string
                             type: object
                           encryptionConfiguration:
-                            description: If query results are encrypted in Amazon
-                              S3, indicates the encryption option used (for example,
-                              SSE_KMS or CSE_KMS) and key information.
+                            description: If query and calculation results are encrypted
+                              in Amazon S3, indicates the encryption option used (for
+                              example, SSE_KMS or CSE_KMS) and key information.
                             properties:
                               encryptionOption:
                                 type: string

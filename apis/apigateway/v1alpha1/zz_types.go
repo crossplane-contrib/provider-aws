@@ -324,6 +324,8 @@ type RestAPI_SDK struct {
 
 	Policy *string `json:"policy,omitempty"`
 
+	RootResourceID *string `json:"rootResourceID,omitempty"`
+
 	Tags map[string]*string `json:"tags,omitempty"`
 
 	Version *string `json:"version,omitempty"`

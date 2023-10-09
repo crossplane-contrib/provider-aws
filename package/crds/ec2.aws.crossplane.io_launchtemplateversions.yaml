@@ -133,6 +133,8 @@ spec:
                         description: The CPU options for the instance. Both the core
                           count and threads per core must be specified in the request.
                         properties:
+                          amdSevSnp:
+                            type: string
                           coreCount:
                             format: int64
                             type: integer
@@ -223,21 +225,29 @@ spec:
                       instanceRequirements:
                         description: "The attributes for the instance types. When
                           you specify instance attributes, Amazon EC2 will identify
-                          instance types with these attributes. \n When you specify
-                          multiple attributes, you get instance types that satisfy
-                          all of the specified attributes. If you specify multiple
-                          values for an attribute, you get instance types that satisfy
-                          any of the specified values. \n To limit the list of instance
-                          types from which Amazon EC2 can identify matching instance
-                          types, you can use one of the following parameters, but
-                          not both in the same request: \n * AllowedInstanceTypes
+                          instance types with these attributes. \n You must specify
+                          VCpuCount and MemoryMiB. All other attributes are optional.
+                          Any unspecified optional attribute is set to its default.
+                          \n When you specify multiple attributes, you get instance
+                          types that satisfy all of the specified attributes. If you
+                          specify multiple values for an attribute, you get instance
+                          types that satisfy any of the specified values. \n To limit
+                          the list of instance types from which Amazon EC2 can identify
+                          matching instance types, you can use one of the following
+                          parameters, but not both in the same request: \n * AllowedInstanceTypes
                           - The instance types to include in the list. All other instance
                           types are ignored, even if they match your specified attributes.
                           \n * ExcludedInstanceTypes - The instance types to exclude
                           from the list, even if they match your specified attributes.
-                          \n You must specify VCpuCount and MemoryMiB. All other attributes
-                          are optional. Any unspecified optional attribute is set
-                          to its default. \n For more information, see Attribute-based
+                          \n If you specify InstanceRequirements, you can't specify
+                          InstanceType. \n Attribute-based instance type selection
+                          is only supported when using Auto Scaling groups, EC2 Fleet,
+                          and Spot Fleet to launch instances. If you plan to use the
+                          launch template in the launch instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html),
+                          or with the RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
+                          API or AWS::EC2::Instance (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html)
+                          Amazon Web Services CloudFormation resource, you can't specify
+                          InstanceRequirements. \n For more information, see Attribute-based
                           instance type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
                           Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
                           and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
@@ -490,6 +500,8 @@ spec:
                               type: integer
                             networkInterfaceID:
                               type: string
+                            primaryIPv6:
+                              type: boolean
                             privateIPAddress:
                               type: string
                             privateIPAddresses:
@@ -732,6 +744,14 @@ spec:
                     description: Region is which region the LaunchTemplateVersion
                       will be created.
                     type: string
+                  resolveAlias:
+                    description: "If true, and if a Systems Manager parameter is specified
+                      for ImageId, the AMI ID is displayed in the response for imageID.
+                      For more information, see Use a Systems Manager parameter instead
+                      of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+                      in the Amazon Elastic Compute Cloud User Guide. \n Default:
+                      false"
+                    type: boolean
                   sourceVersion:
                     description: The version number of the launch template version
                       on which to base the new version. The new version inherits the
@@ -1019,6 +1039,8 @@ spec:
                           cpuOptions:
                             description: The CPU options for the instance.
                             properties:
+                              amdSevSnp:
+                                type: string
                               coreCount:
                                 format: int64
                                 type: integer
@@ -1107,23 +1129,31 @@ spec:
                           instanceRequirements:
                             description: "The attributes for the instance types. When
                               you specify instance attributes, Amazon EC2 will identify
-                              instance types with these attributes. \n When you specify
-                              multiple attributes, you get instance types that satisfy
-                              all of the specified attributes. If you specify multiple
-                              values for an attribute, you get instance types that
-                              satisfy any of the specified values. \n To limit the
-                              list of instance types from which Amazon EC2 can identify
-                              matching instance types, you can use one of the following
-                              parameters, but not both in the same request: \n * AllowedInstanceTypes
+                              instance types with these attributes. \n You must specify
+                              VCpuCount and MemoryMiB. All other attributes are optional.
+                              Any unspecified optional attribute is set to its default.
+                              \n When you specify multiple attributes, you get instance
+                              types that satisfy all of the specified attributes.
+                              If you specify multiple values for an attribute, you
+                              get instance types that satisfy any of the specified
+                              values. \n To limit the list of instance types from
+                              which Amazon EC2 can identify matching instance types,
+                              you can use one of the following parameters, but not
+                              both in the same request: \n * AllowedInstanceTypes
                               - The instance types to include in the list. All other
                               instance types are ignored, even if they match your
                               specified attributes. \n * ExcludedInstanceTypes - The
                               instance types to exclude from the list, even if they
-                              match your specified attributes. \n You must specify
-                              VCpuCount and MemoryMiB. All other attributes are optional.
-                              Any unspecified optional attribute is set to its default.
-                              \n For more information, see Attribute-based instance
-                              type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+                              match your specified attributes. \n If you specify InstanceRequirements,
+                              you can't specify InstanceType. \n Attribute-based instance
+                              type selection is only supported when using Auto Scaling
+                              groups, EC2 Fleet, and Spot Fleet to launch instances.
+                              If you plan to use the launch template in the launch
+                              instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html)
+                              or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
+                              you can't specify InstanceRequirements. \n For more
+                              information, see Attribute-based instance type selection
+                              for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
                               Attribute-based instance type selection for Spot Fleet
                               (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
                               and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
@@ -1362,6 +1392,8 @@ spec:
                                     properties:
                                       ipv6Address:
                                         type: string
+                                      isPrimaryIPv6:
+                                        type: boolean
                                     type: object
                                   type: array
                                 ipv6PrefixCount:
@@ -1379,6 +1411,8 @@ spec:
                                   type: integer
                                 networkInterfaceID:
                                   type: string
+                                primaryIPv6:
+                                  type: boolean
                                 privateIPAddress:
                                   type: string
                                 privateIPAddresses:

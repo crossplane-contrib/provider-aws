@@ -52,10 +52,11 @@ type VPCEndpointParameters struct {
 	//
 	// Default: true
 	PrivateDNSEnabled *bool `json:"privateDNSEnabled,omitempty"`
-	// The service name. To get a list of available services, use the DescribeVpcEndpointServices
-	// request, or get the name from the service provider.
+	// The name of the endpoint service.
 	// +kubebuilder:validation:Required
 	ServiceName *string `json:"serviceName"`
+	// The subnet configurations for the endpoint.
+	SubnetConfigurations []*SubnetConfiguration `json:"subnetConfigurations,omitempty"`
 	// The tags to associate with the endpoint.
 	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
 	// The type of endpoint.
@@ -82,19 +83,19 @@ type VPCEndpointObservation struct {
 	Groups []*SecurityGroupIdentifier `json:"groups,omitempty"`
 	// The last error that occurred for endpoint.
 	LastError *LastError `json:"lastError,omitempty"`
-	// (Interface endpoint) One or more network interfaces for the endpoint.
+	// (Interface endpoint) The network interfaces for the endpoint.
 	NetworkInterfaceIDs []*string `json:"networkInterfaceIDs,omitempty"`
 	// The ID of the Amazon Web Services account that owns the endpoint.
 	OwnerID *string `json:"ownerID,omitempty"`
 	// Indicates whether the endpoint is being managed by its service.
 	RequesterManaged *bool `json:"requesterManaged,omitempty"`
-	// (Gateway endpoint) One or more route tables associated with the endpoint.
+	// (Gateway endpoint) The IDs of the route tables associated with the endpoint.
 	RouteTableIDs []*string `json:"routeTableIDs,omitempty"`
 	// The state of the endpoint.
 	State *string `json:"state,omitempty"`
 	// (Interface endpoint) The subnets for the endpoint.
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
-	// Any tags assigned to the endpoint.
+	// The tags assigned to the endpoint.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the endpoint.
 	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`

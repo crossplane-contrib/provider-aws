@@ -29,9 +29,9 @@ type DomainNameParameters struct {
 	// Region is which region the DomainName will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The reference to an AWS-managed certificate that will be used by edge-optimized
-	// endpoint for this domain name. AWS Certificate Manager is the only supported
-	// source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used by edge-optimized endpoint for this domain name. Certificate Manager
+	// is the only supported source.
 	CertificateARN *string `json:"certificateARN,omitempty"`
 	// [Deprecated] The body of the server certificate that will be used by edge-optimized
 	// endpoint for this domain name provided by your certificate authority.
@@ -62,9 +62,9 @@ type DomainNameParameters struct {
 	// your custom domain. Only required when configuring mutual TLS and using an
 	// ACM imported or private CA certificate ARN as the regionalCertificateArn.
 	OwnershipVerificationCertificateARN *string `json:"ownershipVerificationCertificateARN,omitempty"`
-	// The reference to an AWS-managed certificate that will be used by regional
-	// endpoint for this domain name. AWS Certificate Manager is the only supported
-	// source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used by regional endpoint for this domain name. Certificate Manager is the
+	// only supported source.
 	RegionalCertificateARN *string `json:"regionalCertificateARN,omitempty"`
 	// The user-friendly name of the certificate that will be used by regional endpoint
 	// for this domain name.

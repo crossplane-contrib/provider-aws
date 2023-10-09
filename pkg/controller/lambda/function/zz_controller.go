@@ -301,6 +301,25 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.Runtime = nil
 	}
+	if resp.RuntimeVersionConfig != nil {
+		f23 := &svcapitypes.RuntimeVersionConfig{}
+		if resp.RuntimeVersionConfig.Error != nil {
+			f23f0 := &svcapitypes.RuntimeVersionError{}
+			if resp.RuntimeVersionConfig.Error.ErrorCode != nil {
+				f23f0.ErrorCode = resp.RuntimeVersionConfig.Error.ErrorCode
+			}
+			if resp.RuntimeVersionConfig.Error.Message != nil {
+				f23f0.Message = resp.RuntimeVersionConfig.Error.Message
+			}
+			f23.Error = f23f0
+		}
+		if resp.RuntimeVersionConfig.RuntimeVersionArn != nil {
+			f23.RuntimeVersionARN = resp.RuntimeVersionConfig.RuntimeVersionArn
+		}
+		cr.Status.AtProvider.RuntimeVersionConfig = f23
+	} else {
+		cr.Status.AtProvider.RuntimeVersionConfig = nil
+	}
 	if resp.SigningJobArn != nil {
 		cr.Status.AtProvider.SigningJobARN = resp.SigningJobArn
 	} else {
@@ -312,11 +331,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.SigningProfileVersionARN = nil
 	}
 	if resp.SnapStart != nil {
-		f25 := &svcapitypes.SnapStart{}
+		f26 := &svcapitypes.SnapStart{}
 		if resp.SnapStart.ApplyOn != nil {
-			f25.ApplyOn = resp.SnapStart.ApplyOn
+			f26.ApplyOn = resp.SnapStart.ApplyOn
 		}
-		cr.Spec.ForProvider.SnapStart = f25
+		cr.Spec.ForProvider.SnapStart = f26
 	} else {
 		cr.Spec.ForProvider.SnapStart = nil
 	}
@@ -341,11 +360,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Spec.ForProvider.Timeout = nil
 	}
 	if resp.TracingConfig != nil {
-		f30 := &svcapitypes.TracingConfig{}
+		f31 := &svcapitypes.TracingConfig{}
 		if resp.TracingConfig.Mode != nil {
-			f30.Mode = resp.TracingConfig.Mode
+			f31.Mode = resp.TracingConfig.Mode
 		}
-		cr.Spec.ForProvider.TracingConfig = f30
+		cr.Spec.ForProvider.TracingConfig = f31
 	} else {
 		cr.Spec.ForProvider.TracingConfig = nil
 	}
@@ -355,29 +374,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f32 := &svcapitypes.VPCConfigResponse{}
+		f33 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f32f0 := []*string{}
-			for _, f32f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f32f0elem string
-				f32f0elem = *f32f0iter
-				f32f0 = append(f32f0, &f32f0elem)
+			f33f0 := []*string{}
+			for _, f33f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f33f0elem string
+				f33f0elem = *f33f0iter
+				f33f0 = append(f33f0, &f33f0elem)
 			}
-			f32.SecurityGroupIDs = f32f0
+			f33.SecurityGroupIDs = f33f0
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f32f1 := []*string{}
-			for _, f32f1iter := range resp.VpcConfig.SubnetIds {
-				var f32f1elem string
-				f32f1elem = *f32f1iter
-				f32f1 = append(f32f1, &f32f1elem)
+			f33f1 := []*string{}
+			for _, f33f1iter := range resp.VpcConfig.SubnetIds {
+				var f33f1elem string
+				f33f1elem = *f33f1iter
+				f33f1 = append(f33f1, &f33f1elem)
 			}
-			f32.SubnetIDs = f32f1
+			f33.SubnetIDs = f33f1
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f32.VPCID = resp.VpcConfig.VpcId
+			f33.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f32
+		cr.Status.AtProvider.VPCConfig = f33
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

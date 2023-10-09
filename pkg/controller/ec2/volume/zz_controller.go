@@ -198,24 +198,29 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Spec.ForProvider.SnapshotID = nil
 	}
+	if resp.SseType != nil {
+		cr.Status.AtProvider.SSEType = resp.SseType
+	} else {
+		cr.Status.AtProvider.SSEType = nil
+	}
 	if resp.State != nil {
 		cr.Status.AtProvider.State = resp.State
 	} else {
 		cr.Status.AtProvider.State = nil
 	}
 	if resp.Tags != nil {
-		f12 := []*svcapitypes.Tag{}
-		for _, f12iter := range resp.Tags {
-			f12elem := &svcapitypes.Tag{}
-			if f12iter.Key != nil {
-				f12elem.Key = f12iter.Key
+		f13 := []*svcapitypes.Tag{}
+		for _, f13iter := range resp.Tags {
+			f13elem := &svcapitypes.Tag{}
+			if f13iter.Key != nil {
+				f13elem.Key = f13iter.Key
 			}
-			if f12iter.Value != nil {
-				f12elem.Value = f12iter.Value
+			if f13iter.Value != nil {
+				f13elem.Value = f13iter.Value
 			}
-			f12 = append(f12, f12elem)
+			f13 = append(f13, f13elem)
 		}
-		cr.Status.AtProvider.Tags = f12
+		cr.Status.AtProvider.Tags = f13
 	} else {
 		cr.Status.AtProvider.Tags = nil
 	}

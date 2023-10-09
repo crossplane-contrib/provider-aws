@@ -72,6 +72,11 @@ type AuthenticationResultType struct {
 }
 
 // +kubebuilder:skipversion
+type CloudWatchLogsConfigurationType struct {
+	LogGroupARN *string `json:"logGroupARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CodeDeliveryDetailsType struct {
 	Destination *string `json:"destination,omitempty"`
 }
@@ -255,6 +260,11 @@ type LambdaConfigType struct {
 	UserMigration *string `json:"userMigration,omitempty"`
 
 	VerifyAuthChallengeResponse *string `json:"verifyAuthChallengeResponse,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LogDeliveryConfigurationType struct {
+	UserPoolID *string `json:"userPoolID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -492,7 +502,7 @@ type UserPoolClientType struct {
 	// The Amazon Pinpoint analytics configuration necessary to collect metrics
 	// for a user pool.
 	//
-	// In Regions where Amazon Pinpointisn't available, user pools only support
+	// In Regions where Amazon Pinpoint isn't available, user pools only support
 	// sending events to Amazon Pinpoint projects in us-east-1. In Regions where
 	// Amazon Pinpoint is available, user pools support sending events to Amazon
 	// Pinpoint projects within that same Region.
@@ -653,7 +663,12 @@ type UserPoolType struct {
 	// and phone number attributes. For more information, see Verifying updates
 	// to email addresses and phone numbers (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-email-phone-verification.html#user-pool-settings-verifications-verify-attribute-updates).
 	UserAttributeUpdateSettings *UserAttributeUpdateSettingsType `json:"userAttributeUpdateSettings,omitempty"`
-	// The user pool add-ons type.
+	// User pool add-ons. Contains settings for activation of advanced security
+	// features. To log user security information but take no action, set to AUDIT.
+	// To configure automatic security responses to risky traffic to your user pool,
+	// set to ENFORCED.
+	//
+	// For more information, see Adding advanced security to a user pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-settings-advanced-security.html).
 	UserPoolAddOns *UserPoolAddOnsType `json:"userPoolAddOns,omitempty"`
 
 	UserPoolTags map[string]*string `json:"userPoolTags,omitempty"`

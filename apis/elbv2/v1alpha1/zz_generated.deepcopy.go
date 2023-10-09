@@ -1019,6 +1019,11 @@ func (in *LoadBalancerObservation) DeepCopyInto(out *LoadBalancerObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic != nil {
+		in, out := &in.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic, &out.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic
+		*out = new(string)
+		**out = **in
+	}
 	if in.LoadBalancerARN != nil {
 		in, out := &in.LoadBalancerARN, &out.LoadBalancerARN
 		*out = new(string)
@@ -1225,6 +1230,11 @@ func (in *LoadBalancer_SDK) DeepCopyInto(out *LoadBalancer_SDK) {
 	}
 	if in.DNSName != nil {
 		in, out := &in.DNSName, &out.DNSName
+		*out = new(string)
+		**out = **in
+	}
+	if in.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic != nil {
+		in, out := &in.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic, &out.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic
 		*out = new(string)
 		**out = **in
 	}

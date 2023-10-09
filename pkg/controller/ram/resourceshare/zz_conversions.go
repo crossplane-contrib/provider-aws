@@ -122,19 +122,28 @@ func GenerateCreateResourceShareInput(cr *svcapitypes.ResourceShare) *svcsdk.Cre
 		}
 		res.SetResourceArns(f5)
 	}
-	if cr.Spec.ForProvider.Tags != nil {
-		f6 := []*svcsdk.Tag{}
-		for _, f6iter := range cr.Spec.ForProvider.Tags {
-			f6elem := &svcsdk.Tag{}
-			if f6iter.Key != nil {
-				f6elem.SetKey(*f6iter.Key)
-			}
-			if f6iter.Value != nil {
-				f6elem.SetValue(*f6iter.Value)
-			}
-			f6 = append(f6, f6elem)
+	if cr.Spec.ForProvider.Sources != nil {
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.Sources {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		res.SetTags(f6)
+		res.SetSources(f6)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		f7 := []*svcsdk.Tag{}
+		for _, f7iter := range cr.Spec.ForProvider.Tags {
+			f7elem := &svcsdk.Tag{}
+			if f7iter.Key != nil {
+				f7elem.SetKey(*f7iter.Key)
+			}
+			if f7iter.Value != nil {
+				f7elem.SetValue(*f7iter.Value)
+			}
+			f7 = append(f7, f7elem)
+		}
+		res.SetTags(f7)
 	}
 
 	return res

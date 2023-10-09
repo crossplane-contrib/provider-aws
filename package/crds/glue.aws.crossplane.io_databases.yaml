@@ -115,6 +115,8 @@ spec:
                             type: string
                           databaseName:
                             type: string
+                          region:
+                            type: string
                         type: object
                     type: object
                   region:

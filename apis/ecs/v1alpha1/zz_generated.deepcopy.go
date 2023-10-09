@@ -810,6 +810,17 @@ func (in *ContainerDefinition) DeepCopyInto(out *ContainerDefinition) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.CredentialSpecs != nil {
+		in, out := &in.CredentialSpecs, &out.CredentialSpecs
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.DependsOn != nil {
 		in, out := &in.DependsOn, &out.DependsOn
 		*out = make([]*ContainerDependency, len(*in))

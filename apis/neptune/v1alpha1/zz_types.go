@@ -47,6 +47,24 @@ type CloudwatchLogsExportConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type ClusterPendingModifiedValues struct {
+	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
+
+	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+	// A list of the log types whose configuration is still pending. In other words,
+	// these log types are in the process of being activated or deactivated.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DBClusterEndpoint struct {
 	CustomEndpointType *string `json:"customEndpointType,omitempty"`
 
@@ -200,6 +218,8 @@ type DBCluster_SDK struct {
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
+	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
+
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
@@ -211,6 +231,9 @@ type DBCluster_SDK struct {
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
 
@@ -600,6 +623,9 @@ type PendingModifiedValues struct {
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// A list of the log types whose configuration is still pending. In other words,
+	// these log types are in the process of being activated or deactivated.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 

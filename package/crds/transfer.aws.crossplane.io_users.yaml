@@ -86,9 +86,10 @@ spec:
                       \"Target\": \"/bucket_name/home/mydirectory\" } ] \n In most
                       cases, you can use this value instead of the session policy
                       to lock your user down to the designated home directory (\"chroot\").
-                      To do this, you can set Entry to / and set Target to the HomeDirectory
-                      parameter value. \n The following is an Entry and Target pair
-                      example for chroot. \n [ { \"Entry\": \"/\", \"Target\": \"/bucket_name/home/mydirectory\"
+                      To do this, you can set Entry to / and set Target to the value
+                      the user should see for their home directory when they log in.
+                      \n The following is an Entry and Target pair example for chroot.
+                      \n [ { \"Entry\": \"/\", \"Target\": \"/bucket_name/home/mydirectory\"
                       } ]"
                     items:
                       properties:
@@ -309,8 +310,14 @@ spec:
                     type: object
                   sshPublicKeyBody:
                     description: "The public portion of the Secure Shell (SSH) key
-                      used to authenticate the user to the server. \n Transfer Family
-                      accepts RSA, ECDSA, and ED25519 keys."
+                      used to authenticate the user to the server. \n The three standard
+                      SSH public key format elements are <key type>, <body base64>,
+                      and an optional <comment>, with spaces between each element.
+                      \n Transfer Family accepts RSA, ECDSA, and ED25519 keys. \n
+                      * For RSA keys, the key type is ssh-rsa. \n * For ED25519 keys,
+                      the key type is ssh-ed25519. \n * For ECDSA keys, the key type
+                      is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, or ecdsa-sha2-nistp521,
+                      depending on the size of the key you generated."
                     type: string
                   tags:
                     description: Key-value pairs that can be used to group and search
@@ -534,8 +541,8 @@ spec:
                       to.
                     type: string
                   userName:
-                    description: A unique string that identifies a user account associated
-                      with a server.
+                    description: A unique string that identifies a Transfer Family
+                      user.
                     type: string
                 type: object
               conditions:

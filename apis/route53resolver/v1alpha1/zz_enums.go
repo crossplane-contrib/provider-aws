@@ -29,8 +29,9 @@ const (
 type AutodefinedReverseFlag string
 
 const (
-	AutodefinedReverseFlag_ENABLE  AutodefinedReverseFlag = "ENABLE"
-	AutodefinedReverseFlag_DISABLE AutodefinedReverseFlag = "DISABLE"
+	AutodefinedReverseFlag_ENABLE                     AutodefinedReverseFlag = "ENABLE"
+	AutodefinedReverseFlag_DISABLE                    AutodefinedReverseFlag = "DISABLE"
+	AutodefinedReverseFlag_USE_LOCAL_RESOURCE_SETTING AutodefinedReverseFlag = "USE_LOCAL_RESOURCE_SETTING"
 )
 
 type BlockOverrideDNSType string
@@ -74,8 +75,9 @@ const (
 type FirewallFailOpenStatus string
 
 const (
-	FirewallFailOpenStatus_ENABLED  FirewallFailOpenStatus = "ENABLED"
-	FirewallFailOpenStatus_DISABLED FirewallFailOpenStatus = "DISABLED"
+	FirewallFailOpenStatus_ENABLED                    FirewallFailOpenStatus = "ENABLED"
+	FirewallFailOpenStatus_DISABLED                   FirewallFailOpenStatus = "DISABLED"
+	FirewallFailOpenStatus_USE_LOCAL_RESOURCE_SETTING FirewallFailOpenStatus = "USE_LOCAL_RESOURCE_SETTING"
 )
 
 type FirewallRuleGroupAssociationStatus string
@@ -107,6 +109,8 @@ const (
 	IPAddressStatus_FAILED_RESOURCE_GONE      IPAddressStatus = "FAILED_RESOURCE_GONE"
 	IPAddressStatus_DELETING                  IPAddressStatus = "DELETING"
 	IPAddressStatus_DELETE_FAILED_FAS_EXPIRED IPAddressStatus = "DELETE_FAILED_FAS_EXPIRED"
+	IPAddressStatus_UPDATING                  IPAddressStatus = "UPDATING"
+	IPAddressStatus_UPDATE_FAILED             IPAddressStatus = "UPDATE_FAILED"
 )
 
 type MutationProtectionStatus string
@@ -116,22 +120,38 @@ const (
 	MutationProtectionStatus_DISABLED MutationProtectionStatus = "DISABLED"
 )
 
+type OutpostResolverStatus string
+
+const (
+	OutpostResolverStatus_CREATING        OutpostResolverStatus = "CREATING"
+	OutpostResolverStatus_OPERATIONAL     OutpostResolverStatus = "OPERATIONAL"
+	OutpostResolverStatus_UPDATING        OutpostResolverStatus = "UPDATING"
+	OutpostResolverStatus_DELETING        OutpostResolverStatus = "DELETING"
+	OutpostResolverStatus_ACTION_NEEDED   OutpostResolverStatus = "ACTION_NEEDED"
+	OutpostResolverStatus_FAILED_CREATION OutpostResolverStatus = "FAILED_CREATION"
+	OutpostResolverStatus_FAILED_DELETION OutpostResolverStatus = "FAILED_DELETION"
+)
+
 type ResolverAutodefinedReverseStatus string
 
 const (
-	ResolverAutodefinedReverseStatus_ENABLING  ResolverAutodefinedReverseStatus = "ENABLING"
-	ResolverAutodefinedReverseStatus_ENABLED   ResolverAutodefinedReverseStatus = "ENABLED"
-	ResolverAutodefinedReverseStatus_DISABLING ResolverAutodefinedReverseStatus = "DISABLING"
-	ResolverAutodefinedReverseStatus_DISABLED  ResolverAutodefinedReverseStatus = "DISABLED"
+	ResolverAutodefinedReverseStatus_ENABLING                               ResolverAutodefinedReverseStatus = "ENABLING"
+	ResolverAutodefinedReverseStatus_ENABLED                                ResolverAutodefinedReverseStatus = "ENABLED"
+	ResolverAutodefinedReverseStatus_DISABLING                              ResolverAutodefinedReverseStatus = "DISABLING"
+	ResolverAutodefinedReverseStatus_DISABLED                               ResolverAutodefinedReverseStatus = "DISABLED"
+	ResolverAutodefinedReverseStatus_UPDATING_TO_USE_LOCAL_RESOURCE_SETTING ResolverAutodefinedReverseStatus = "UPDATING_TO_USE_LOCAL_RESOURCE_SETTING"
+	ResolverAutodefinedReverseStatus_USE_LOCAL_RESOURCE_SETTING             ResolverAutodefinedReverseStatus = "USE_LOCAL_RESOURCE_SETTING"
 )
 
 type ResolverDNSSECValidationStatus string
 
 const (
-	ResolverDNSSECValidationStatus_ENABLING  ResolverDNSSECValidationStatus = "ENABLING"
-	ResolverDNSSECValidationStatus_ENABLED   ResolverDNSSECValidationStatus = "ENABLED"
-	ResolverDNSSECValidationStatus_DISABLING ResolverDNSSECValidationStatus = "DISABLING"
-	ResolverDNSSECValidationStatus_DISABLED  ResolverDNSSECValidationStatus = "DISABLED"
+	ResolverDNSSECValidationStatus_ENABLING                               ResolverDNSSECValidationStatus = "ENABLING"
+	ResolverDNSSECValidationStatus_ENABLED                                ResolverDNSSECValidationStatus = "ENABLED"
+	ResolverDNSSECValidationStatus_DISABLING                              ResolverDNSSECValidationStatus = "DISABLING"
+	ResolverDNSSECValidationStatus_DISABLED                               ResolverDNSSECValidationStatus = "DISABLED"
+	ResolverDNSSECValidationStatus_UPDATING_TO_USE_LOCAL_RESOURCE_SETTING ResolverDNSSECValidationStatus = "UPDATING_TO_USE_LOCAL_RESOURCE_SETTING"
+	ResolverDNSSECValidationStatus_USE_LOCAL_RESOURCE_SETTING             ResolverDNSSECValidationStatus = "USE_LOCAL_RESOURCE_SETTING"
 )
 
 type ResolverEndpointDirection string
@@ -150,6 +170,14 @@ const (
 	ResolverEndpointStatus_SDK_AUTO_RECOVERING ResolverEndpointStatus_SDK = "AUTO_RECOVERING"
 	ResolverEndpointStatus_SDK_ACTION_NEEDED   ResolverEndpointStatus_SDK = "ACTION_NEEDED"
 	ResolverEndpointStatus_SDK_DELETING        ResolverEndpointStatus_SDK = "DELETING"
+)
+
+type ResolverEndpointType string
+
+const (
+	ResolverEndpointType_IPV6      ResolverEndpointType = "IPV6"
+	ResolverEndpointType_IPV4      ResolverEndpointType = "IPV4"
+	ResolverEndpointType_DUALSTACK ResolverEndpointType = "DUALSTACK"
 )
 
 type ResolverQueryLogConfigAssociationError string
@@ -215,6 +243,7 @@ const (
 type Validation string
 
 const (
-	Validation_ENABLE  Validation = "ENABLE"
-	Validation_DISABLE Validation = "DISABLE"
+	Validation_ENABLE                     Validation = "ENABLE"
+	Validation_DISABLE                    Validation = "DISABLE"
+	Validation_USE_LOCAL_RESOURCE_SETTING Validation = "USE_LOCAL_RESOURCE_SETTING"
 )

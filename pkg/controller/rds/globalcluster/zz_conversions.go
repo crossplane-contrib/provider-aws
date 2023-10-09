@@ -67,6 +67,9 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 			if elem.FailoverState.FromDbClusterArn != nil {
 				f4.FromDBClusterARN = elem.FailoverState.FromDbClusterArn
 			}
+			if elem.FailoverState.IsDataLossAllowed != nil {
+				f4.IsDataLossAllowed = elem.FailoverState.IsDataLossAllowed
+			}
 			if elem.FailoverState.Status != nil {
 				f4.Status = elem.FailoverState.Status
 			}
@@ -108,6 +111,9 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 						f7elemf3 = append(f7elemf3, &f7elemf3elem)
 					}
 					f7elem.Readers = f7elemf3
+				}
+				if f7iter.SynchronizationStatus != nil {
+					f7elem.SynchronizationStatus = f7iter.SynchronizationStatus
 				}
 				f7 = append(f7, f7elem)
 			}

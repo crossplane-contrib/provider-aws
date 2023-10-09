@@ -95,12 +95,15 @@ const (
 type InstanceRefreshStatus string
 
 const (
-	InstanceRefreshStatus_Pending    InstanceRefreshStatus = "Pending"
-	InstanceRefreshStatus_InProgress InstanceRefreshStatus = "InProgress"
-	InstanceRefreshStatus_Successful InstanceRefreshStatus = "Successful"
-	InstanceRefreshStatus_Failed     InstanceRefreshStatus = "Failed"
-	InstanceRefreshStatus_Cancelling InstanceRefreshStatus = "Cancelling"
-	InstanceRefreshStatus_Cancelled  InstanceRefreshStatus = "Cancelled"
+	InstanceRefreshStatus_Pending            InstanceRefreshStatus = "Pending"
+	InstanceRefreshStatus_InProgress         InstanceRefreshStatus = "InProgress"
+	InstanceRefreshStatus_Successful         InstanceRefreshStatus = "Successful"
+	InstanceRefreshStatus_Failed             InstanceRefreshStatus = "Failed"
+	InstanceRefreshStatus_Cancelling         InstanceRefreshStatus = "Cancelling"
+	InstanceRefreshStatus_Cancelled          InstanceRefreshStatus = "Cancelled"
+	InstanceRefreshStatus_RollbackInProgress InstanceRefreshStatus = "RollbackInProgress"
+	InstanceRefreshStatus_RollbackFailed     InstanceRefreshStatus = "RollbackFailed"
+	InstanceRefreshStatus_RollbackSuccessful InstanceRefreshStatus = "RollbackSuccessful"
 )
 
 type LifecycleState string
@@ -212,6 +215,14 @@ const (
 	RefreshStrategy_Rolling RefreshStrategy = "Rolling"
 )
 
+type ScaleInProtectedInstances string
+
+const (
+	ScaleInProtectedInstances_Refresh ScaleInProtectedInstances = "Refresh"
+	ScaleInProtectedInstances_Ignore  ScaleInProtectedInstances = "Ignore"
+	ScaleInProtectedInstances_Wait    ScaleInProtectedInstances = "Wait"
+)
+
 type ScalingActivityStatusCode string
 
 const (
@@ -227,6 +238,15 @@ const (
 	ScalingActivityStatusCode_Successful                      ScalingActivityStatusCode = "Successful"
 	ScalingActivityStatusCode_Failed                          ScalingActivityStatusCode = "Failed"
 	ScalingActivityStatusCode_Cancelled                       ScalingActivityStatusCode = "Cancelled"
+	ScalingActivityStatusCode_WaitingForConnectionDraining    ScalingActivityStatusCode = "WaitingForConnectionDraining"
+)
+
+type StandbyInstances string
+
+const (
+	StandbyInstances_Terminate StandbyInstances = "Terminate"
+	StandbyInstances_Ignore    StandbyInstances = "Ignore"
+	StandbyInstances_Wait      StandbyInstances = "Wait"
 )
 
 type WarmPoolState string

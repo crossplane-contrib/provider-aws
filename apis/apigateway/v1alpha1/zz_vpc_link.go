@@ -39,8 +39,8 @@ type VPCLinkParameters struct {
 	// tag value can be up to 256 characters.
 	Tags map[string]*string `json:"tags,omitempty"`
 	// The ARN of the network load balancer of the VPC targeted by the VPC link.
-	// The network load balancer must be owned by the same AWS account of the API
-	// owner.
+	// The network load balancer must be owned by the same Amazon Web Services account
+	// of the API owner.
 	// +kubebuilder:validation:Required
 	TargetARNs              []*string `json:"targetARNs"`
 	CustomVPCLinkParameters `json:",inline"`

@@ -47,9 +47,11 @@ type IdentityProviderSpec struct {
 
 // IdentityProviderObservation defines the observed state of IdentityProvider
 type IdentityProviderObservation struct {
-	// The date the IdP was created.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// The date the IdP was last modified.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The IdP name.
 	ProviderName *string `json:"providerName,omitempty"`

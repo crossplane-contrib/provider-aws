@@ -578,6 +578,41 @@ spec:
                     description: Specifies whether the DB cluster has instances in
                       multiple Availability Zones.
                     type: boolean
+                  pendingModifiedValues:
+                    description: This data type is used as a response element in the
+                      ModifyDBCluster operation and contains changes that will be
+                      applied during the next maintenance window.
+                    properties:
+                      allocatedStorage:
+                        format: int64
+                        type: integer
+                      backupRetentionPeriod:
+                        format: int64
+                        type: integer
+                      dbClusterIdentifier:
+                        type: string
+                      engineVersion:
+                        type: string
+                      iamDatabaseAuthenticationEnabled:
+                        type: boolean
+                      iops:
+                        format: int64
+                        type: integer
+                      pendingCloudwatchLogsExports:
+                        description: A list of the log types whose configuration is
+                          still pending. In other words, these log types are in the
+                          process of being activated or deactivated.
+                        properties:
+                          logTypesToDisable:
+                            items:
+                              type: string
+                            type: array
+                          logTypesToEnable:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
                   percentProgress:
                     description: Specifies the progress of the operation as a percentage.
                     type: string

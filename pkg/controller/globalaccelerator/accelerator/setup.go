@@ -13,7 +13,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
@@ -90,7 +90,7 @@ func (d gaClient) preDelete(ctx context.Context, cr *svcapitypes.Accelerator, ob
 		return false, err
 	}
 
-	if pointer.BoolDeref(descResp.Accelerator.Enabled, true) && pointer.StringDeref(descResp.Accelerator.Status, "") != svcsdk.AcceleratorStatusInProgress {
+	if ptr.Deref(descResp.Accelerator.Enabled, true) && ptr.Deref(descResp.Accelerator.Status, "") != svcsdk.AcceleratorStatusInProgress {
 		enabled := false
 		updReq := &svcsdk.UpdateAcceleratorInput{
 			Enabled:        &enabled,
@@ -135,11 +135,11 @@ func postCreate(_ context.Context, cr *svcapitypes.Accelerator, resp *svcsdk.Cre
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.Accelerator, resp *svcsdk.DescribeAcceleratorOutput) (bool, string, error) {
-	if pointer.BoolDeref(cr.Spec.ForProvider.Enabled, false) != pointer.BoolDeref(resp.Accelerator.Enabled, false) {
+	if ptr.Deref(cr.Spec.ForProvider.Enabled, false) != ptr.Deref(resp.Accelerator.Enabled, false) {
 		return false, "", nil
 	}
 
-	if pointer.StringDeref(cr.Spec.ForProvider.Name, "") != pointer.StringDeref(resp.Accelerator.Name, "") {
+	if ptr.Deref(cr.Spec.ForProvider.Name, "") != ptr.Deref(resp.Accelerator.Name, "") {
 		return false, "", nil
 	}
 

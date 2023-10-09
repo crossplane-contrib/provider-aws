@@ -60,9 +60,10 @@ const (
 type CRAllocationStrategy string
 
 const (
-	CRAllocationStrategy_BEST_FIT                CRAllocationStrategy = "BEST_FIT"
-	CRAllocationStrategy_BEST_FIT_PROGRESSIVE    CRAllocationStrategy = "BEST_FIT_PROGRESSIVE"
-	CRAllocationStrategy_SPOT_CAPACITY_OPTIMIZED CRAllocationStrategy = "SPOT_CAPACITY_OPTIMIZED"
+	CRAllocationStrategy_BEST_FIT                      CRAllocationStrategy = "BEST_FIT"
+	CRAllocationStrategy_BEST_FIT_PROGRESSIVE          CRAllocationStrategy = "BEST_FIT_PROGRESSIVE"
+	CRAllocationStrategy_SPOT_CAPACITY_OPTIMIZED       CRAllocationStrategy = "SPOT_CAPACITY_OPTIMIZED"
+	CRAllocationStrategy_SPOT_PRICE_CAPACITY_OPTIMIZED CRAllocationStrategy = "SPOT_PRICE_CAPACITY_OPTIMIZED"
 )
 
 type CRType string
@@ -77,8 +78,9 @@ const (
 type CRUpdateAllocationStrategy string
 
 const (
-	CRUpdateAllocationStrategy_BEST_FIT_PROGRESSIVE    CRUpdateAllocationStrategy = "BEST_FIT_PROGRESSIVE"
-	CRUpdateAllocationStrategy_SPOT_CAPACITY_OPTIMIZED CRUpdateAllocationStrategy = "SPOT_CAPACITY_OPTIMIZED"
+	CRUpdateAllocationStrategy_BEST_FIT_PROGRESSIVE          CRUpdateAllocationStrategy = "BEST_FIT_PROGRESSIVE"
+	CRUpdateAllocationStrategy_SPOT_CAPACITY_OPTIMIZED       CRUpdateAllocationStrategy = "SPOT_CAPACITY_OPTIMIZED"
+	CRUpdateAllocationStrategy_SPOT_PRICE_CAPACITY_OPTIMIZED CRUpdateAllocationStrategy = "SPOT_PRICE_CAPACITY_OPTIMIZED"
 )
 
 type DeviceCgroupPermission string

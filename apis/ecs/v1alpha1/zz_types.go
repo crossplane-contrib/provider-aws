@@ -195,6 +195,8 @@ type ContainerDefinition struct {
 
 	CPU *int64 `json:"cpu,omitempty"`
 
+	CredentialSpecs []*string `json:"credentialSpecs,omitempty"`
+
 	DependsOn []*ContainerDependency `json:"dependsOn,omitempty"`
 
 	DisableNetworking *bool `json:"disableNetworking,omitempty"`
@@ -224,7 +226,8 @@ type ContainerDefinition struct {
 	// An object representing a container health check. Health check parameters
 	// that are specified in a container definition override any Docker health checks
 	// that exist in the container image (such as those specified in a parent image
-	// or from the image's Dockerfile).
+	// or from the image's Dockerfile). This configuration maps to the HEALTHCHECK
+	// parameter of docker run (https://docs.docker.com/engine/reference/run/).
 	//
 	// The Amazon ECS container agent only monitors and reports on the health checks
 	// specified in the task definition. Amazon ECS does not monitor Docker health
@@ -234,6 +237,9 @@ type ContainerDefinition struct {
 	//
 	// You can view the health status of both individual containers and a task with
 	// the DescribeTasks API operation or when viewing the task details in the console.
+	//
+	// The health check is designed to make sure that your containers survive agent
+	// restarts, upgrades, or temporary unavailability.
 	//
 	// The following describes the possible healthStatus values for a container:
 	//
@@ -245,8 +251,8 @@ type ContainerDefinition struct {
 	//    container health check defined.
 	//
 	// The following describes the possible healthStatus values for a task. The
-	// container health check status of nonessential containers only affects the
-	// health status of a task if no essential containers have health checks defined.
+	// container health check status of non-essential containers don't have an effect
+	// on the health status of a task.
 	//
 	//    * HEALTHY-All essential containers within the task have passed their health
 	//    checks.
@@ -255,22 +261,22 @@ type ContainerDefinition struct {
 	//    check.
 	//
 	//    * UNKNOWN-The essential containers within the task are still having their
-	//    health checks evaluated or there are only nonessential containers with
-	//    health checks defined.
+	//    health checks evaluated, there are only nonessential containers with health
+	//    checks defined, or there are no container health checks defined.
 	//
 	// If a task is run manually, and not as part of a service, the task will continue
 	// its lifecycle regardless of its health status. For tasks that are part of
 	// a service, if the task reports as unhealthy then the task will be stopped
 	// and the service scheduler will replace it.
 	//
-	// For tasks that are a part of a service and the service uses the ECS rolling
-	// deployment type, the deployment is paused while the new tasks have the UNKNOWN
-	// task health check status. For example, tasks that define health checks for
-	// nonessential containers when no essential containers have health checks will
-	// have the UNKNOWN health check status indefinitely which prevents the deployment
-	// from completing.
-	//
 	// The following are notes about container health check support:
+	//
+	//    * When the Amazon ECS agent cannot connect to the Amazon ECS service,
+	//    the service reports the container as UNHEALTHY.
+	//
+	//    * The health check statuses are the "last heard from" response from the
+	//    Amazon ECS agent. There are no assumptions made about the status of the
+	//    container health checks.
 	//
 	//    * Container health checks require version 1.17.0 or greater of the Amazon
 	//    ECS container agent. For more information, see Updating the Amazon ECS
@@ -291,7 +297,8 @@ type ContainerDefinition struct {
 	Interactive *bool `json:"interactive,omitempty"`
 
 	Links []*string `json:"links,omitempty"`
-	// Linux-specific options that are applied to the container, such as Linux KernelCapabilities.
+	// The Linux-specific options that are applied to the container, such as Linux
+	// KernelCapabilities (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_KernelCapabilities.html).
 	LinuxParameters *LinuxParameters `json:"linuxParameters,omitempty"`
 	// The log configuration for the container. This parameter maps to LogConfig
 	// in the Create a container (https://docs.docker.com/engine/api/v1.35/#operation/ContainerCreate)
@@ -308,9 +315,11 @@ type ContainerDefinition struct {
 	// Understand the following when specifying a log configuration for your containers.
 	//
 	//    * Amazon ECS currently supports a subset of the logging drivers available
-	//    to the Docker daemon (shown in the valid values below). Additional log
-	//    drivers may be available in future releases of the Amazon ECS container
-	//    agent.
+	//    to the Docker daemon. Additional log drivers may be available in future
+	//    releases of the Amazon ECS container agent. For tasks on Fargate, the
+	//    supported log drivers are awslogs, splunk, and awsfirelens. For tasks
+	//    hosted on Amazon EC2 instances, the supported log drivers are awslogs,
+	//    fluentd, gelf, json-file, journald, logentries,syslog, splunk, and awsfirelens.
 	//
 	//    * This parameter requires version 1.18 of the Docker Remote API or greater
 	//    on your container instance.
@@ -445,7 +454,7 @@ type Deployment struct {
 	ID *string `json:"id,omitempty"`
 
 	LaunchType *string `json:"launchType,omitempty"`
-	// An object representing the network configuration for a task or service.
+	// The network configuration for a task or service.
 	NetworkConfiguration *NetworkConfiguration `json:"networkConfiguration,omitempty"`
 
 	PendingCount *int64 `json:"pendingCount,omitempty"`
@@ -515,13 +524,16 @@ type DeploymentConfiguration struct {
 	Alarms *DeploymentAlarms `json:"alarms,omitempty"`
 	//
 	// The deployment circuit breaker can only be used for services using the rolling
-	// update (ECS) deployment type that aren't behind a Classic Load Balancer.
+	// update (ECS) deployment type.
 	//
 	// The deployment circuit breaker determines whether a service deployment will
-	// fail if the service can't reach a steady state. If enabled, a service deployment
-	// will transition to a failed state and stop launching new tasks. You can also
-	// configure Amazon ECS to roll back your service to the last completed deployment
-	// after a failure. For more information, see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+	// fail if the service can't reach a steady state. If it is turned on, a service
+	// deployment will transition to a failed state and stop launching new tasks.
+	// You can also configure Amazon ECS to roll back your service to the last completed
+	// deployment after a failure. For more information, see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+	// in the Amazon Elastic Container Service Developer Guide.
+	//
+	// For more information about API failure reasons, see API failure reasons (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/api_failures_messages.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	DeploymentCircuitBreaker *DeploymentCircuitBreaker `json:"deploymentCircuitBreaker,omitempty"`
 
@@ -936,9 +948,11 @@ type ServiceConnectConfiguration struct {
 	// Understand the following when specifying a log configuration for your containers.
 	//
 	//    * Amazon ECS currently supports a subset of the logging drivers available
-	//    to the Docker daemon (shown in the valid values below). Additional log
-	//    drivers may be available in future releases of the Amazon ECS container
-	//    agent.
+	//    to the Docker daemon. Additional log drivers may be available in future
+	//    releases of the Amazon ECS container agent. For tasks on Fargate, the
+	//    supported log drivers are awslogs, splunk, and awsfirelens. For tasks
+	//    hosted on Amazon EC2 instances, the supported log drivers are awslogs,
+	//    fluentd, gelf, json-file, journald, logentries,syslog, splunk, and awsfirelens.
 	//
 	//    * This parameter requires version 1.18 of the Docker Remote API or greater
 	//    on your container instance.
@@ -1032,7 +1046,7 @@ type Service_SDK struct {
 	LaunchType *string `json:"launchType,omitempty"`
 
 	LoadBalancers []*LoadBalancer `json:"loadBalancers,omitempty"`
-	// An object representing the network configuration for a task or service.
+	// The network configuration for a task or service.
 	NetworkConfiguration *NetworkConfiguration `json:"networkConfiguration,omitempty"`
 
 	PendingCount *int64 `json:"pendingCount,omitempty"`
@@ -1123,9 +1137,12 @@ type Task struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using Linux
-	// platform version 1.4.0 or later. This parameter is not supported for Windows
-	// containers on Fargate.
+	// For tasks using the Fargate launch type, the task requires the following
+	// platforms:
+	//
+	//    * Linux platform version 1.4.0 or later.
+	//
+	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionStoppedAt *metav1.Time `json:"executionStoppedAt,omitempty"`
@@ -1187,9 +1204,12 @@ type TaskDefinition_SDK struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using Linux
-	// platform version 1.4.0 or later. This parameter is not supported for Windows
-	// containers on Fargate.
+	// For tasks using the Fargate launch type, the task requires the following
+	// platforms:
+	//
+	//    * Linux platform version 1.4.0 or later.
+	//
+	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
@@ -1250,9 +1270,12 @@ type TaskOverride struct {
 	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
 	// in the Amazon ECS User Guide for Fargate.
 	//
-	// This parameter is only supported for tasks hosted on Fargate using Linux
-	// platform version 1.4.0 or later. This parameter is not supported for Windows
-	// containers on Fargate.
+	// For tasks using the Fargate launch type, the task requires the following
+	// platforms:
+	//
+	//    * Linux platform version 1.4.0 or later.
+	//
+	//    * Windows platform version 1.0.0 or later.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
@@ -1279,7 +1302,7 @@ type TaskSet struct {
 	LaunchType *string `json:"launchType,omitempty"`
 
 	LoadBalancers []*LoadBalancer `json:"loadBalancers,omitempty"`
-	// An object representing the network configuration for a task or service.
+	// The network configuration for a task or service.
 	NetworkConfiguration *NetworkConfiguration `json:"networkConfiguration,omitempty"`
 
 	PendingCount *int64 `json:"pendingCount,omitempty"`

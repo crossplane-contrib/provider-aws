@@ -57,8 +57,8 @@ type UsagePlanObservation struct {
 	APIStages []*APIStage `json:"apiStages,omitempty"`
 	// The identifier of a UsagePlan resource.
 	ID *string `json:"id,omitempty"`
-	// The AWS Markeplace product identifier to associate with the usage plan as
-	// a SaaS product on AWS Marketplace.
+	// The Amazon Web Services Marketplace product identifier to associate with
+	// the usage plan as a SaaS product on the Amazon Web Services Marketplace.
 	ProductCode *string `json:"productCode,omitempty"`
 }
 

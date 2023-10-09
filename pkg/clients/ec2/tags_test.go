@@ -24,7 +24,7 @@ import (
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 func TestDiffEC2Tags(t *testing.T) {
@@ -239,7 +239,7 @@ func TestDiffEC2Tags(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			tagCmp := cmpopts.SortSlices(func(i, j ec2types.Tag) bool {
-				return pointer.StringDeref(i.Key, "") < pointer.StringDeref(j.Key, "")
+				return ptr.Deref(i.Key, "") < ptr.Deref(j.Key, "")
 			})
 			add, remove := DiffEC2Tags(tc.args.local, tc.args.remote)
 			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {

@@ -614,6 +614,17 @@ func (in *DescribedServer) DeepCopyInto(out *DescribedServer) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.StructuredLogDestinations != nil {
+		in, out := &in.StructuredLogDestinations, &out.StructuredLogDestinations
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]*Tag, len(*in))
@@ -864,6 +875,11 @@ func (in *IdentityProviderDetails) DeepCopyInto(out *IdentityProviderDetails) {
 	}
 	if in.InvocationRole != nil {
 		in, out := &in.InvocationRole, &out.InvocationRole
+		*out = new(string)
+		**out = **in
+	}
+	if in.SftpAuthenticationMethods != nil {
+		in, out := &in.SftpAuthenticationMethods, &out.SftpAuthenticationMethods
 		*out = new(string)
 		**out = **in
 	}
@@ -1392,6 +1408,17 @@ func (in *ServerParameters) DeepCopyInto(out *ServerParameters) {
 		in, out := &in.SecurityPolicyName, &out.SecurityPolicyName
 		*out = new(string)
 		**out = **in
+	}
+	if in.StructuredLogDestinations != nil {
+		in, out := &in.StructuredLogDestinations, &out.StructuredLogDestinations
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags

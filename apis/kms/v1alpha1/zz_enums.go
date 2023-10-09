@@ -21,9 +21,11 @@ package v1alpha1
 type AlgorithmSpec string
 
 const (
-	AlgorithmSpec_RSAES_PKCS1_V1_5   AlgorithmSpec = "RSAES_PKCS1_V1_5"
-	AlgorithmSpec_RSAES_OAEP_SHA_1   AlgorithmSpec = "RSAES_OAEP_SHA_1"
-	AlgorithmSpec_RSAES_OAEP_SHA_256 AlgorithmSpec = "RSAES_OAEP_SHA_256"
+	AlgorithmSpec_RSAES_PKCS1_V1_5         AlgorithmSpec = "RSAES_PKCS1_V1_5"
+	AlgorithmSpec_RSAES_OAEP_SHA_1         AlgorithmSpec = "RSAES_OAEP_SHA_1"
+	AlgorithmSpec_RSAES_OAEP_SHA_256       AlgorithmSpec = "RSAES_OAEP_SHA_256"
+	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_1   AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_1"
+	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_256 AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_256"
 )
 
 type ConnectionErrorCodeType string
@@ -141,6 +143,12 @@ const (
 	GrantOperation_VerifyMac                           GrantOperation = "VerifyMac"
 )
 
+type KeyEncryptionMechanism string
+
+const (
+	KeyEncryptionMechanism_RSAES_OAEP_SHA_256 KeyEncryptionMechanism = "RSAES_OAEP_SHA_256"
+)
+
 type KeyManagerType string
 
 const (
@@ -238,6 +246,8 @@ type WrappingKeySpec string
 
 const (
 	WrappingKeySpec_RSA_2048 WrappingKeySpec = "RSA_2048"
+	WrappingKeySpec_RSA_3072 WrappingKeySpec = "RSA_3072"
+	WrappingKeySpec_RSA_4096 WrappingKeySpec = "RSA_4096"
 )
 
 type XksProxyConnectivityType string

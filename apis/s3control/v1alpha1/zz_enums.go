@@ -58,6 +58,20 @@ const (
 	BucketVersioningStatus_Suspended BucketVersioningStatus = "Suspended"
 )
 
+type DeleteMarkerReplicationStatus string
+
+const (
+	DeleteMarkerReplicationStatus_Enabled  DeleteMarkerReplicationStatus = "Enabled"
+	DeleteMarkerReplicationStatus_Disabled DeleteMarkerReplicationStatus = "Disabled"
+)
+
+type ExistingObjectReplicationStatus string
+
+const (
+	ExistingObjectReplicationStatus_Enabled  ExistingObjectReplicationStatus = "Enabled"
+	ExistingObjectReplicationStatus_Disabled ExistingObjectReplicationStatus = "Disabled"
+)
+
 type ExpirationStatus string
 
 const (
@@ -139,6 +153,13 @@ const (
 	MFADeleteStatus_Disabled MFADeleteStatus = "Disabled"
 )
 
+type MetricsStatus string
+
+const (
+	MetricsStatus_Enabled  MetricsStatus = "Enabled"
+	MetricsStatus_Disabled MetricsStatus = "Disabled"
+)
+
 type MultiRegionAccessPointStatus string
 
 const (
@@ -155,6 +176,13 @@ type NetworkOrigin string
 const (
 	NetworkOrigin_Internet NetworkOrigin = "Internet"
 	NetworkOrigin_VPC      NetworkOrigin = "VPC"
+)
+
+type ObjectLambdaAccessPointAliasStatus string
+
+const (
+	ObjectLambdaAccessPointAliasStatus_PROVISIONING ObjectLambdaAccessPointAliasStatus = "PROVISIONING"
+	ObjectLambdaAccessPointAliasStatus_READY        ObjectLambdaAccessPointAliasStatus = "READY"
 )
 
 type ObjectLambdaAllowedFeature string
@@ -195,6 +223,26 @@ const (
 	OutputSchemaVersion_V_1 OutputSchemaVersion = "V_1"
 )
 
+type OwnerOverride string
+
+const (
+	OwnerOverride_Destination OwnerOverride = "Destination"
+)
+
+type ReplicaModificationsStatus string
+
+const (
+	ReplicaModificationsStatus_Enabled  ReplicaModificationsStatus = "Enabled"
+	ReplicaModificationsStatus_Disabled ReplicaModificationsStatus = "Disabled"
+)
+
+type ReplicationRuleStatus string
+
+const (
+	ReplicationRuleStatus_Enabled  ReplicationRuleStatus = "Enabled"
+	ReplicationRuleStatus_Disabled ReplicationRuleStatus = "Disabled"
+)
+
 type ReplicationStatus string
 
 const (
@@ -202,6 +250,27 @@ const (
 	ReplicationStatus_FAILED    ReplicationStatus = "FAILED"
 	ReplicationStatus_REPLICA   ReplicationStatus = "REPLICA"
 	ReplicationStatus_NONE      ReplicationStatus = "NONE"
+)
+
+type ReplicationStorageClass string
+
+const (
+	ReplicationStorageClass_STANDARD            ReplicationStorageClass = "STANDARD"
+	ReplicationStorageClass_REDUCED_REDUNDANCY  ReplicationStorageClass = "REDUCED_REDUNDANCY"
+	ReplicationStorageClass_STANDARD_IA         ReplicationStorageClass = "STANDARD_IA"
+	ReplicationStorageClass_ONEZONE_IA          ReplicationStorageClass = "ONEZONE_IA"
+	ReplicationStorageClass_INTELLIGENT_TIERING ReplicationStorageClass = "INTELLIGENT_TIERING"
+	ReplicationStorageClass_GLACIER             ReplicationStorageClass = "GLACIER"
+	ReplicationStorageClass_DEEP_ARCHIVE        ReplicationStorageClass = "DEEP_ARCHIVE"
+	ReplicationStorageClass_OUTPOSTS            ReplicationStorageClass = "OUTPOSTS"
+	ReplicationStorageClass_GLACIER_IR          ReplicationStorageClass = "GLACIER_IR"
+)
+
+type ReplicationTimeStatus string
+
+const (
+	ReplicationTimeStatus_Enabled  ReplicationTimeStatus = "Enabled"
+	ReplicationTimeStatus_Disabled ReplicationTimeStatus = "Disabled"
 )
 
 type RequestedJobStatus string
@@ -302,6 +371,13 @@ const (
 	S3StorageClass_INTELLIGENT_TIERING S3StorageClass = "INTELLIGENT_TIERING"
 	S3StorageClass_DEEP_ARCHIVE        S3StorageClass = "DEEP_ARCHIVE"
 	S3StorageClass_GLACIER_IR          S3StorageClass = "GLACIER_IR"
+)
+
+type SSEKMSEncryptedObjectsStatus string
+
+const (
+	SSEKMSEncryptedObjectsStatus_Enabled  SSEKMSEncryptedObjectsStatus = "Enabled"
+	SSEKMSEncryptedObjectsStatus_Disabled SSEKMSEncryptedObjectsStatus = "Disabled"
 )
 
 type TransitionStorageClass string

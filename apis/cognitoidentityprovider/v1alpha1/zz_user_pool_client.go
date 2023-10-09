@@ -59,8 +59,24 @@ type UserPoolClientParameters struct {
 	// Issue the access token from the /oauth2/token endpoint directly to a non-person
 	// user using a combination of the client ID and client secret.
 	AllowedOAuthFlows []*string `json:"allowedOAuthFlows,omitempty"`
-	// Set to true if the client is allowed to follow the OAuth protocol when interacting
-	// with Amazon Cognito user pools.
+	// Set to true to use OAuth 2.0 features in your user pool app client.
+	//
+	// AllowedOAuthFlowsUserPoolClient must be true before you can configure the
+	// following features in your app client.
+	//
+	//    * CallBackURLs: Callback URLs.
+	//
+	//    * LogoutURLs: Sign-out redirect URLs.
+	//
+	//    * AllowedOAuthScopes: OAuth 2.0 scopes.
+	//
+	//    * AllowedOAuthFlows: Support for authorization code, implicit, and client
+	//    credentials OAuth 2.0 grants.
+	//
+	// To use OAuth 2.0 features, configure one of these features in the Amazon
+	// Cognito console or set AllowedOAuthFlowsUserPoolClient to true in a CreateUserPoolClient
+	// or UpdateUserPoolClient API request. If you don't set a value for AllowedOAuthFlowsUserPoolClient
+	// in a request with the CLI or SDKs, it defaults to false.
 	AllowedOAuthFlowsUserPoolClient *bool `json:"allowedOAuthFlowsUserPoolClient,omitempty"`
 	// The allowed OAuth scopes. Possible values provided by OAuth are phone, email,
 	// openid, and profile. Possible values provided by Amazon Web Services are
@@ -175,8 +191,8 @@ type UserPoolClientParameters struct {
 	// hours, your user can authenticate their session with their ID token for 10
 	// hours.
 	//
-	// The default time unit for AccessTokenValidity in an API request is hours.
-	// Valid range is displayed below in seconds.
+	// The default time unit for IdTokenValidity in an API request is hours. Valid
+	// range is displayed below in seconds.
 	//
 	// If you don't specify otherwise in the configuration of your app client, your
 	// ID tokens are valid for one hour.
@@ -251,9 +267,11 @@ type UserPoolClientObservation struct {
 	ClientID *string `json:"clientID,omitempty"`
 	// The client secret from the user pool request of the client type.
 	ClientSecret *string `json:"clientSecret,omitempty"`
-	// The date the user pool client was created.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// The date the user pool client was last modified.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The user pool ID for the user pool client.
 	UserPoolID *string `json:"userPoolID,omitempty"`

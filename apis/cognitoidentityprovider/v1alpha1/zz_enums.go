@@ -173,6 +173,12 @@ const (
 	EventResponseType_InProgress EventResponseType = "InProgress"
 )
 
+type EventSourceName string
+
+const (
+	EventSourceName_userNotification EventSourceName = "userNotification"
+)
+
 type EventType string
 
 const (
@@ -212,6 +218,12 @@ const (
 	IdentityProviderTypeType_LoginWithAmazon IdentityProviderTypeType = "LoginWithAmazon"
 	IdentityProviderTypeType_SignInWithApple IdentityProviderTypeType = "SignInWithApple"
 	IdentityProviderTypeType_OIDC            IdentityProviderTypeType = "OIDC"
+)
+
+type LogLevel string
+
+const (
+	LogLevel_ERROR LogLevel = "ERROR"
 )
 
 type MessageActionType string

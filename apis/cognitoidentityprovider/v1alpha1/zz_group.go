@@ -58,11 +58,13 @@ type GroupSpec struct {
 
 // GroupObservation defines the observed state of Group
 type GroupObservation struct {
-	// The date the group was created.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// The name of the group.
 	GroupName *string `json:"groupName,omitempty"`
-	// The date the group was last modified.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The role Amazon Resource Name (ARN) for the group.
 	RoleARN *string `json:"roleARN,omitempty"`

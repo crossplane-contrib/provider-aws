@@ -588,6 +588,13 @@ type ProcessType struct {
 }
 
 // +kubebuilder:skipversion
+type RollbackDetails struct {
+	RollbackReason *string `json:"rollbackReason,omitempty"`
+
+	RollbackStartTime *metav1.Time `json:"rollbackStartTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ScalingPolicy struct {
 	AdjustmentType *string `json:"adjustmentType,omitempty"`
 
@@ -696,13 +703,19 @@ type TotalLocalStorageGBRequest struct {
 // +kubebuilder:skipversion
 type TrafficSourceIdentifier struct {
 	Identifier *string `json:"identifier,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TrafficSourceState struct {
+	Identifier *string `json:"identifier,omitempty"`
+
 	State *string `json:"state,omitempty"`
 
 	TrafficSource *string `json:"trafficSource,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -173,9 +173,23 @@ spec:
                     description: A friendly name that lets you easily find a configuration
                       in the Resolver dashboard in the Route 53 console.
                     type: string
+                  outpostARN:
+                    description: The Amazon Resource Name (ARN) of the Outpost. If
+                      you specify this, you must also specify a value for the PreferredInstanceType.
+                    type: string
+                  preferredInstanceType:
+                    description: The instance type. If you specify this, you must
+                      also specify a value for the OutpostArn.
+                    type: string
                   region:
                     description: Region is which region the ResolverEndpoint will
                       be created.
+                    type: string
+                  resolverEndpointType:
+                    description: For the endpoint type you can choose either IPv4,
+                      IPv6, or dual-stack. A dual-stack endpoint means that it will
+                      resolve via both IPv4 and IPv6. This endpoint type is applied
+                      to all IP addresses.
                     type: string
                   securityGroupIdRefs:
                     description: SecurityGroupIDRefs is a list of references to SecurityGroups

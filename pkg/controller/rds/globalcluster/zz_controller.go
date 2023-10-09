@@ -144,6 +144,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		if resp.GlobalCluster.FailoverState.FromDbClusterArn != nil {
 			f4.FromDBClusterARN = resp.GlobalCluster.FailoverState.FromDbClusterArn
 		}
+		if resp.GlobalCluster.FailoverState.IsDataLossAllowed != nil {
+			f4.IsDataLossAllowed = resp.GlobalCluster.FailoverState.IsDataLossAllowed
+		}
 		if resp.GlobalCluster.FailoverState.Status != nil {
 			f4.Status = resp.GlobalCluster.FailoverState.Status
 		}
@@ -185,6 +188,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f7elemf3 = append(f7elemf3, &f7elemf3elem)
 				}
 				f7elem.Readers = f7elemf3
+			}
+			if f7iter.SynchronizationStatus != nil {
+				f7elem.SynchronizationStatus = f7iter.SynchronizationStatus
 			}
 			f7 = append(f7, f7elem)
 		}

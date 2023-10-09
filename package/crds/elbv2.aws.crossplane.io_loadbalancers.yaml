@@ -179,8 +179,8 @@ spec:
                         type: object
                     type: object
                   securityGroups:
-                    description: '[Application Load Balancers] The IDs of the security
-                      groups for the load balancer.'
+                    description: '[Application Load Balancers and Network Load Balancers]
+                      The IDs of the security groups for the load balancer.'
                     items:
                       type: string
                     type: array
@@ -558,6 +558,11 @@ spec:
                     type: string
                   dnsName:
                     description: The public DNS name of the load balancer.
+                    type: string
+                  enforceSecurityGroupInboundRulesOnPrivateLinkTraffic:
+                    description: Indicates whether to evaluate inbound security group
+                      rules for traffic sent to a Network Load Balancer through Amazon
+                      Web Services PrivateLink.
                     type: string
                   loadBalancerARN:
                     description: The Amazon Resource Name (ARN) of the load balancer.

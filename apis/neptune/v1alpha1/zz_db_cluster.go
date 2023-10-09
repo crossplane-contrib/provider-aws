@@ -239,6 +239,9 @@ type DBClusterObservation struct {
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 	// Specifies whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 	// Specifies the progress of the operation as a percentage.
 	PercentProgress *string `json:"percentProgress,omitempty"`
 	// Contains one or more identifiers of the Read Replicas associated with this

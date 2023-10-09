@@ -194,15 +194,17 @@ spec:
                         type: object
                       deploymentCircuitBreaker:
                         description: "The deployment circuit breaker can only be used
-                          for services using the rolling update (ECS) deployment type
-                          that aren't behind a Classic Load Balancer. \n The deployment
-                          circuit breaker determines whether a service deployment
-                          will fail if the service can't reach a steady state. If
-                          enabled, a service deployment will transition to a failed
-                          state and stop launching new tasks. You can also configure
-                          Amazon ECS to roll back your service to the last completed
-                          deployment after a failure. For more information, see Rolling
-                          update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+                          for services using the rolling update (ECS) deployment type.
+                          \n The deployment circuit breaker determines whether a service
+                          deployment will fail if the service can't reach a steady
+                          state. If it is turned on, a service deployment will transition
+                          to a failed state and stop launching new tasks. You can
+                          also configure Amazon ECS to roll back your service to the
+                          last completed deployment after a failure. For more information,
+                          see Rolling update (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+                          in the Amazon Elastic Container Service Developer Guide.
+                          \n For more information about API failure reasons, see API
+                          failure reasons (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/api_failures_messages.html)
                           in the Amazon Elastic Container Service Developer Guide."
                         properties:
                           enable:
@@ -227,21 +229,23 @@ spec:
                     type: object
                   desiredCount:
                     description: "The number of instantiations of the specified task
-                      definition to place and keep running on your cluster. \n This
+                      definition to place and keep running in your service. \n This
                       is required if schedulingStrategy is REPLICA or isn't specified.
                       If schedulingStrategy is DAEMON then this isn't required."
                     format: int64
                     type: integer
                   enableECSManagedTags:
-                    description: Specifies whether to turn on Amazon ECS managed tags
-                      for the tasks within the service. For more information, see
-                      Tagging your Amazon ECS resources (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
-                      in the Amazon Elastic Container Service Developer Guide.
+                    description: "Specifies whether to turn on Amazon ECS managed
+                      tags for the tasks within the service. For more information,
+                      see Tagging your Amazon ECS resources (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html)
+                      in the Amazon Elastic Container Service Developer Guide. \n
+                      When you use Amazon ECS managed tags, you need to set the propagateTags
+                      request parameter."
                     type: boolean
                   enableExecuteCommand:
                     description: Determines whether the execute command functionality
-                      is enabled for the service. If true, this enables execute command
-                      functionality on all containers in the service tasks.
+                      is turned on for the service. If true, this enables execute
+                      command functionality on all containers in the service tasks.
                     type: boolean
                   forceDeletion:
                     description: Force Service to be deleted, even with task Running
@@ -751,11 +755,12 @@ spec:
                       in the Amazon Elastic Container Service Developer Guide.
                     type: string
                   propagateTags:
-                    description: Specifies whether to propagate the tags from the
+                    description: "Specifies whether to propagate the tags from the
                       task definition to the task. If no value is specified, the tags
                       aren't propagated. Tags can only be propagated to the task during
                       task creation. To add tags to a task after task creation, use
-                      the TagResource API action.
+                      the TagResource (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html)
+                      API action. \n The default is NONE."
                     type: string
                   region:
                     description: Region is which region the Service will be created.
@@ -834,17 +839,20 @@ spec:
                           in the Docker documentation. \n Understand the following
                           when specifying a log configuration for your containers.
                           \n * Amazon ECS currently supports a subset of the logging
-                          drivers available to the Docker daemon (shown in the valid
-                          values below). Additional log drivers may be available in
-                          future releases of the Amazon ECS container agent. \n *
-                          This parameter requires version 1.18 of the Docker Remote
-                          API or greater on your container instance. \n * For tasks
-                          that are hosted on Amazon EC2 instances, the Amazon ECS
-                          container agent must register the available logging drivers
-                          with the ECS_AVAILABLE_LOGGING_DRIVERS environment variable
-                          before containers placed on that instance can use these
-                          log configuration options. For more information, see Amazon
-                          ECS container agent configuration (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html)
+                          drivers available to the Docker daemon. Additional log drivers
+                          may be available in future releases of the Amazon ECS container
+                          agent. For tasks on Fargate, the supported log drivers are
+                          awslogs, splunk, and awsfirelens. For tasks hosted on Amazon
+                          EC2 instances, the supported log drivers are awslogs, fluentd,
+                          gelf, json-file, journald, logentries,syslog, splunk, and
+                          awsfirelens. \n * This parameter requires version 1.18 of
+                          the Docker Remote API or greater on your container instance.
+                          \n * For tasks that are hosted on Amazon EC2 instances,
+                          the Amazon ECS container agent must register the available
+                          logging drivers with the ECS_AVAILABLE_LOGGING_DRIVERS environment
+                          variable before containers placed on that instance can use
+                          these log configuration options. For more information, see
+                          Amazon ECS container agent configuration (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html)
                           in the Amazon Elastic Container Service Developer Guide.
                           \n * For tasks that are on Fargate, because you don't have
                           access to the underlying infrastructure your tasks are hosted
@@ -1270,8 +1278,7 @@ spec:
                         launchType:
                           type: string
                         networkConfiguration:
-                          description: An object representing the network configuration
-                            for a task or service.
+                          description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
                               description: An object representing the networking details
@@ -1335,19 +1342,22 @@ spec:
                                 in the Docker documentation. \n Understand the following
                                 when specifying a log configuration for your containers.
                                 \n * Amazon ECS currently supports a subset of the
-                                logging drivers available to the Docker daemon (shown
-                                in the valid values below). Additional log drivers
-                                may be available in future releases of the Amazon
-                                ECS container agent. \n * This parameter requires
-                                version 1.18 of the Docker Remote API or greater on
-                                your container instance. \n * For tasks that are hosted
-                                on Amazon EC2 instances, the Amazon ECS container
-                                agent must register the available logging drivers
-                                with the ECS_AVAILABLE_LOGGING_DRIVERS environment
-                                variable before containers placed on that instance
-                                can use these log configuration options. For more
-                                information, see Amazon ECS container agent configuration
-                                (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html)
+                                logging drivers available to the Docker daemon. Additional
+                                log drivers may be available in future releases of
+                                the Amazon ECS container agent. For tasks on Fargate,
+                                the supported log drivers are awslogs, splunk, and
+                                awsfirelens. For tasks hosted on Amazon EC2 instances,
+                                the supported log drivers are awslogs, fluentd, gelf,
+                                json-file, journald, logentries,syslog, splunk, and
+                                awsfirelens. \n * This parameter requires version
+                                1.18 of the Docker Remote API or greater on your container
+                                instance. \n * For tasks that are hosted on Amazon
+                                EC2 instances, the Amazon ECS container agent must
+                                register the available logging drivers with the ECS_AVAILABLE_LOGGING_DRIVERS
+                                environment variable before containers placed on that
+                                instance can use these log configuration options.
+                                For more information, see Amazon ECS container agent
+                                configuration (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html)
                                 in the Amazon Elastic Container Service Developer
                                 Guide. \n * For tasks that are on Fargate, because
                                 you don't have access to the underlying infrastructure
@@ -1561,8 +1571,7 @@ spec:
                             type: object
                           type: array
                         networkConfiguration:
-                          description: An object representing the network configuration
-                            for a task or service.
+                          description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
                               description: An object representing the networking details

@@ -137,6 +137,13 @@ type EventDestinationDefinition struct {
 }
 
 // +kubebuilder:skipversion
+type ExportJobSummary struct {
+	CompletedTimestamp *metav1.Time `json:"completedTimestamp,omitempty"`
+
+	CreatedTimestamp *metav1.Time `json:"createdTimestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type GuardianAttributes struct {
 	OptimizedSharedDelivery *string `json:"optimizedSharedDelivery,omitempty"`
 }
@@ -160,6 +167,11 @@ type IdentityInfo struct {
 // +kubebuilder:skipversion
 type InboxPlacementTrackingOption struct {
 	Global *bool `json:"global,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InsightsEvent struct {
+	Timestamp *metav1.Time `json:"timestamp,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -188,6 +200,20 @@ type MailFromAttributes struct {
 	//    * TEMPORARY_FAILURE – A temporary issue occurred, which prevented Amazon
 	//    SES from determining the status of the MAIL FROM domain.
 	MailFromDomainStatus *string `json:"mailFromDomainStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MessageInsightsDataSource struct {
+	EndDate *metav1.Time `json:"endDate,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MetricsDataSource struct {
+	EndDate *metav1.Time `json:"endDate,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
 }
 
 // +kubebuilder:skipversion

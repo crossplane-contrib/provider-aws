@@ -108,6 +108,11 @@ func GenerateLoadBalancer(resp *svcsdk.DescribeLoadBalancersOutput) *svcapitypes
 		} else {
 			cr.Status.AtProvider.DNSName = nil
 		}
+		if elem.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic != nil {
+			cr.Status.AtProvider.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = elem.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic
+		} else {
+			cr.Status.AtProvider.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = nil
+		}
 		if elem.IpAddressType != nil {
 			cr.Spec.ForProvider.IPAddressType = elem.IpAddressType
 		} else {
@@ -129,25 +134,25 @@ func GenerateLoadBalancer(resp *svcsdk.DescribeLoadBalancersOutput) *svcapitypes
 			cr.Spec.ForProvider.Scheme = nil
 		}
 		if elem.SecurityGroups != nil {
-			f9 := []*string{}
-			for _, f9iter := range elem.SecurityGroups {
-				var f9elem string
-				f9elem = *f9iter
-				f9 = append(f9, &f9elem)
+			f10 := []*string{}
+			for _, f10iter := range elem.SecurityGroups {
+				var f10elem string
+				f10elem = *f10iter
+				f10 = append(f10, &f10elem)
 			}
-			cr.Spec.ForProvider.SecurityGroups = f9
+			cr.Spec.ForProvider.SecurityGroups = f10
 		} else {
 			cr.Spec.ForProvider.SecurityGroups = nil
 		}
 		if elem.State != nil {
-			f10 := &svcapitypes.LoadBalancerState{}
+			f11 := &svcapitypes.LoadBalancerState{}
 			if elem.State.Code != nil {
-				f10.Code = elem.State.Code
+				f11.Code = elem.State.Code
 			}
 			if elem.State.Reason != nil {
-				f10.Reason = elem.State.Reason
+				f11.Reason = elem.State.Reason
 			}
-			cr.Status.AtProvider.State = f10
+			cr.Status.AtProvider.State = f11
 		} else {
 			cr.Status.AtProvider.State = nil
 		}

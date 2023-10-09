@@ -54,7 +54,9 @@ ignore:
     - VpnConnectionRoute
     - VpnConnection
     - VpnGateway
+    - InstanceConnectEndpoint
     - Ipam
+    - IpamResourceDiscovery
     - IpamScope
     - IpamPool
     - NetworkInsightsAccessScope

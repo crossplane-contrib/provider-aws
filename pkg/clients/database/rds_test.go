@@ -33,7 +33,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -349,12 +349,12 @@ func TestIsUpToDate(t *testing.T) {
 		"EngineVersionUpgrade": {
 			args: args{
 				db: rdstypes.DBInstance{
-					EngineVersion: pointer.String("12.3"),
+					EngineVersion: ptr.To("12.3"),
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							EngineVersion: pointer.String("12.7"),
+							EngineVersion: ptr.To("12.7"),
 						},
 					},
 				},
@@ -364,12 +364,12 @@ func TestIsUpToDate(t *testing.T) {
 		"EngineVersionUpgradeMajorVersion": {
 			args: args{
 				db: rdstypes.DBInstance{
-					EngineVersion: pointer.String("12.3"),
+					EngineVersion: ptr.To("12.3"),
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							EngineVersion: pointer.String("13.7"),
+							EngineVersion: ptr.To("13.7"),
 						},
 					},
 				},
@@ -379,12 +379,12 @@ func TestIsUpToDate(t *testing.T) {
 		"EngineVersionMajorVersionOnly": {
 			args: args{
 				db: rdstypes.DBInstance{
-					EngineVersion: pointer.String("12.3"),
+					EngineVersion: ptr.To("12.3"),
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							EngineVersion: pointer.String("12"),
+							EngineVersion: ptr.To("12"),
 						},
 					},
 				},
@@ -394,12 +394,12 @@ func TestIsUpToDate(t *testing.T) {
 		"EngineVersionDowngrade": {
 			args: args{
 				db: rdstypes.DBInstance{
-					EngineVersion: pointer.String("12.3"),
+					EngineVersion: ptr.To("12.3"),
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							EngineVersion: pointer.String("12.1"),
+							EngineVersion: ptr.To("12.1"),
 						},
 					},
 				},

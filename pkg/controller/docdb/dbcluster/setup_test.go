@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -2229,7 +2229,7 @@ func TestCreate(t *testing.T) {
 									{Key: awsclient.String(testTagKey), Value: awsclient.String(testTagValue)},
 									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
 								},
-								SnapshotIdentifier: pointer.String("abcd"),
+								SnapshotIdentifier: ptr.To("abcd"),
 							},
 						},
 					},
@@ -2372,9 +2372,9 @@ func TestCreate(t *testing.T) {
 					withMasterPasswordSecretRef(testMasterPasswordSecretNamespace, testMasterPasswordSecretName, testMasterPasswordSecretKey),
 					withRestoreToPointInTime(&svcapitypes.RestorePointInTimeConfiguration{
 						RestoreTime:               &metav1.Time{Time: timeNow},
-						UseLatestRestorableTime:   pointer.Bool(true),
+						UseLatestRestorableTime:   ptr.To(true),
 						SourceDBClusterIdentifier: "abcd",
-						RestoreType:               pointer.String("full-copy"),
+						RestoreType:               ptr.To("full-copy"),
 					}),
 				),
 			},
@@ -2419,9 +2419,9 @@ func TestCreate(t *testing.T) {
 					withStatusDBClusterParameterGroupName(testDBClusterParameterGroupName),
 					withRestoreToPointInTime(&svcapitypes.RestorePointInTimeConfiguration{
 						RestoreTime:               &metav1.Time{Time: timeNow},
-						UseLatestRestorableTime:   pointer.Bool(true),
+						UseLatestRestorableTime:   ptr.To(true),
 						SourceDBClusterIdentifier: "abcd",
-						RestoreType:               pointer.String("full-copy"),
+						RestoreType:               ptr.To("full-copy"),
 					}),
 				),
 				result: managed.ExternalCreation{
@@ -2456,9 +2456,9 @@ func TestCreate(t *testing.T) {
 									{Key: awsclient.String(testOtherTagKey), Value: awsclient.String(testOtherTagValue)},
 								},
 								RestoreToTime:             &timeNow,
-								UseLatestRestorableTime:   pointer.Bool(true),
-								SourceDBClusterIdentifier: pointer.String("abcd"),
-								RestoreType:               pointer.String("full-copy"),
+								UseLatestRestorableTime:   ptr.To(true),
+								SourceDBClusterIdentifier: ptr.To("abcd"),
+								RestoreType:               ptr.To("full-copy"),
 							},
 						},
 					},

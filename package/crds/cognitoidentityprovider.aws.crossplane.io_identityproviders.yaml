@@ -399,11 +399,13 @@ spec:
                   of IdentityProvider
                 properties:
                   creationDate:
-                    description: The date the IdP was created.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was created.
                     format: date-time
                     type: string
                   lastModifiedDate:
-                    description: The date the IdP was last modified.
+                    description: The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+                      format, when the item was modified.
                     format: date-time
                     type: string
                   providerName:

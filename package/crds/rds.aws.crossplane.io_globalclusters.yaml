@@ -69,30 +69,42 @@ spec:
                   GlobalCluster
                 properties:
                   databaseName:
-                    description: The name for your database of up to 64 alphanumeric
-                      characters. If you do not provide a name, Amazon Aurora will
-                      not create a database in the global database cluster you are
-                      creating.
+                    description: "The name for your database of up to 64 alphanumeric
+                      characters. If you don't specify a name, Amazon Aurora doesn't
+                      create a database in the global database cluster. \n Constraints:
+                      \n * Can't be specified if SourceDBClusterIdentifier is specified.
+                      In this case, Amazon Aurora uses the database name from the
+                      source DB cluster."
                     type: string
                   deletionProtection:
-                    description: The deletion protection setting for the new global
-                      database. The global database can't be deleted when deletion
-                      protection is enabled.
+                    description: Specifies whether to enable deletion protection for
+                      the new global database cluster. The global database can't be
+                      deleted when deletion protection is enabled.
                     type: boolean
                   engine:
-                    description: The name of the database engine to be used for this
-                      DB cluster.
+                    description: "The database engine to use for this global database
+                      cluster. \n Valid Values: aurora-mysql | aurora-postgresql \n
+                      Constraints: \n * Can't be specified if SourceDBClusterIdentifier
+                      is specified. In this case, Amazon Aurora uses the engine of
+                      the source DB cluster."
                     type: string
                   engineVersion:
-                    description: The engine version of the Aurora global database.
+                    description: "The engine version to use for this global database
+                      cluster. \n Constraints: \n * Can't be specified if SourceDBClusterIdentifier
+                      is specified. In this case, Amazon Aurora uses the engine version
+                      of the source DB cluster."
                     type: string
                   region:
                     description: Region is which region the GlobalCluster will be
                       created.
                     type: string
                   sourceDBClusterIdentifier:
-                    description: The Amazon Resource Name (ARN) to use as the primary
-                      cluster of the global database. This parameter is optional.
+                    description: "The Amazon Resource Name (ARN) to use as the primary
+                      cluster of the global database. \n If you provide a value for
+                      this parameter, don't specify values for the following settings
+                      because Amazon Aurora uses the values from the specified source
+                      DB cluster: \n * DatabaseName \n * Engine \n * EngineVersion
+                      \n * StorageEncrypted"
                     type: string
                   sourceDBClusterIdentifierRef:
                     description: SourceDBClusterIdentifierRef is a reference to a
@@ -170,8 +182,10 @@ spec:
                         type: object
                     type: object
                   storageEncrypted:
-                    description: The storage encryption setting for the new global
-                      database cluster.
+                    description: "Specifies whether to enable storage encryption for
+                      the new global database cluster. \n Constraints: \n * Can't
+                      be specified if SourceDBClusterIdentifier is specified. In this
+                      case, Amazon Aurora uses the setting from the source DB cluster."
                     type: boolean
                 required:
                 - region
@@ -382,13 +396,15 @@ spec:
                 properties:
                   failoverState:
                     description: A data object containing all properties for the current
-                      state of an in-process or pending failover process for this
-                      Aurora global database. This object is empty unless the FailoverGlobalCluster
-                      API operation has been called on this Aurora global database
-                      (GlobalCluster).
+                      state of an in-process or pending switchover or failover process
+                      for this global cluster (Aurora global database). This object
+                      is empty unless the SwitchoverGlobalCluster or FailoverGlobalCluster
+                      operation was called on this global cluster.
                     properties:
                       fromDBClusterARN:
                         type: string
+                      isDataLossAllowed:
+                        type: boolean
                       status:
                         type: string
                       toDBClusterARN:
@@ -404,8 +420,8 @@ spec:
                       a global database cluster.
                     type: string
                   globalClusterMembers:
-                    description: The list of cluster IDs for secondary clusters within
-                      the global database cluster. Currently limited to 1 item.
+                    description: The list of primary and secondary clusters within
+                      the global database cluster.
                     items:
                       properties:
                         dbClusterARN:
@@ -418,6 +434,8 @@ spec:
                           items:
                             type: string
                           type: array
+                        synchronizationStatus:
+                          type: string
                       type: object
                     type: array
                   globalClusterResourceID:

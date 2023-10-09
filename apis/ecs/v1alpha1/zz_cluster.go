@@ -32,20 +32,23 @@ type ClusterParameters struct {
 	// The short name of one or more capacity providers to associate with the cluster.
 	// A capacity provider must be associated with a cluster before it can be included
 	// as part of the default capacity provider strategy of the cluster or used
-	// in a capacity provider strategy when calling the CreateService or RunTask
+	// in a capacity provider strategy when calling the CreateService (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html)
+	// or RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html)
 	// actions.
 	//
 	// If specifying a capacity provider that uses an Auto Scaling group, the capacity
 	// provider must be created but not associated with another cluster. New Auto
 	// Scaling group capacity providers can be created with the CreateCapacityProvider
+	// (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateCapacityProvider.html)
 	// API operation.
 	//
 	// To use a Fargate capacity provider, specify either the FARGATE or FARGATE_SPOT
 	// capacity providers. The Fargate capacity providers are available to all accounts
 	// and only need to be associated with a cluster to be used.
 	//
-	// The PutClusterCapacityProviders API operation is used to update the list
-	// of available capacity providers for a cluster after the cluster is created.
+	// The PutCapacityProvider (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PutCapacityProvider.html)
+	// API operation is used to update the list of available capacity providers
+	// for a cluster after the cluster is created.
 	CapacityProviders []*string `json:"capacityProviders,omitempty"`
 	// The name of your cluster. If you don't specify a name for your cluster, you
 	// create a cluster that's named default. Up to 255 letters (uppercase and lowercase),
@@ -55,9 +58,10 @@ type ClusterParameters struct {
 	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
 	// The capacity provider strategy to set as the default for the cluster. After
 	// a default capacity provider strategy is set for a cluster, when you call
-	// the RunTask or CreateService APIs with no capacity provider strategy or launch
-	// type specified, the default capacity provider strategy for the cluster is
-	// used.
+	// the CreateService (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html)
+	// or RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html)
+	// APIs with no capacity provider strategy or launch type specified, the default
+	// capacity provider strategy for the cluster is used.
 	//
 	// If a default capacity provider strategy isn't defined for a cluster when
 	// it was created, it can be defined later with the PutClusterCapacityProviders

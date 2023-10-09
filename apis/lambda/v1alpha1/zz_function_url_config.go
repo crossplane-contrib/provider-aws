@@ -30,14 +30,25 @@ type FunctionURLConfigParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// The type of authentication that your function URL uses. Set to AWS_IAM if
-	// you want to restrict access to authenticated IAM users only. Set to NONE
-	// if you want to bypass IAM authentication to create a public endpoint. For
-	// more information, see Security and auth model for Lambda function URLs (https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html).
+	// you want to restrict access to authenticated users only. Set to NONE if you
+	// want to bypass IAM authentication to create a public endpoint. For more information,
+	// see Security and auth model for Lambda function URLs (https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html).
 	// +kubebuilder:validation:Required
 	AuthType *string `json:"authType"`
 	// The cross-origin resource sharing (CORS) (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 	// settings for your function URL.
 	CORS *CORS `json:"cors,omitempty"`
+	// Use one of the following options:
+	//
+	//    * BUFFERED – This is the default option. Lambda invokes your function
+	//    using the Invoke API operation. Invocation results are available when
+	//    the payload is complete. The maximum payload size is 6 MB.
+	//
+	//    * RESPONSE_STREAM – Your function streams payload results as they become
+	//    available. Lambda invokes your function using the InvokeWithResponseStream
+	//    API operation. The maximum response payload size is 20 MB, however, you
+	//    can request a quota increase (https://docs.aws.amazon.com/servicequotas/latest/userguide/request-quota-increase.html).
+	InvokeMode *string `json:"invokeMode,omitempty"`
 	// The alias name.
 	Qualifier                         *string `json:"qualifier,omitempty"`
 	CustomFunctionURLConfigParameters `json:",inline"`

@@ -142,12 +142,29 @@ const (
 	FailoverStatus_cancelling   FailoverStatus = "cancelling"
 )
 
+type GlobalClusterMemberSynchronizationStatus string
+
+const (
+	GlobalClusterMemberSynchronizationStatus_connected      GlobalClusterMemberSynchronizationStatus = "connected"
+	GlobalClusterMemberSynchronizationStatus_pending_resync GlobalClusterMemberSynchronizationStatus = "pending-resync"
+)
+
 type IAMAuthMode string
 
 const (
 	IAMAuthMode_DISABLED IAMAuthMode = "DISABLED"
 	IAMAuthMode_REQUIRED IAMAuthMode = "REQUIRED"
 	IAMAuthMode_ENABLED  IAMAuthMode = "ENABLED"
+)
+
+type LocalWriteForwardingStatus string
+
+const (
+	LocalWriteForwardingStatus_enabled   LocalWriteForwardingStatus = "enabled"
+	LocalWriteForwardingStatus_disabled  LocalWriteForwardingStatus = "disabled"
+	LocalWriteForwardingStatus_enabling  LocalWriteForwardingStatus = "enabling"
+	LocalWriteForwardingStatus_disabling LocalWriteForwardingStatus = "disabling"
+	LocalWriteForwardingStatus_requested LocalWriteForwardingStatus = "requested"
 )
 
 type ReplicaMode string

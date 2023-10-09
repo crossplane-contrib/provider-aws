@@ -324,7 +324,7 @@ type Role struct {
 	// if your Region began supporting these features within the last year. The
 	// role might have been used more than 400 days ago. For more information, see
 	// Regions where data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
-	// in the IAM User Guide.
+	// in the IAM user Guide.
 	//
 	// This data type is returned as a response element in the GetRole and GetAccountAuthorizationDetails
 	// operations.
@@ -368,7 +368,7 @@ type RoleDetail struct {
 	// if your Region began supporting these features within the last year. The
 	// role might have been used more than 400 days ago. For more information, see
 	// Regions where data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
-	// in the IAM User Guide.
+	// in the IAM user Guide.
 	//
 	// This data type is returned as a response element in the GetRole and GetAccountAuthorizationDetails
 	// operations.

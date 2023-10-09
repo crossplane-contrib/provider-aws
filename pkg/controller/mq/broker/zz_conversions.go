@@ -140,20 +140,25 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 	} else {
 		cr.Status.AtProvider.Created = nil
 	}
+	if resp.DataReplicationMode != nil {
+		cr.Spec.ForProvider.DataReplicationMode = resp.DataReplicationMode
+	} else {
+		cr.Spec.ForProvider.DataReplicationMode = nil
+	}
 	if resp.DeploymentMode != nil {
 		cr.Spec.ForProvider.DeploymentMode = resp.DeploymentMode
 	} else {
 		cr.Spec.ForProvider.DeploymentMode = nil
 	}
 	if resp.EncryptionOptions != nil {
-		f11 := &svcapitypes.EncryptionOptions{}
+		f13 := &svcapitypes.EncryptionOptions{}
 		if resp.EncryptionOptions.KmsKeyId != nil {
-			f11.KMSKeyID = resp.EncryptionOptions.KmsKeyId
+			f13.KMSKeyID = resp.EncryptionOptions.KmsKeyId
 		}
 		if resp.EncryptionOptions.UseAwsOwnedKey != nil {
-			f11.UseAWSOwnedKey = resp.EncryptionOptions.UseAwsOwnedKey
+			f13.UseAWSOwnedKey = resp.EncryptionOptions.UseAwsOwnedKey
 		}
-		cr.Spec.ForProvider.EncryptionOptions = f11
+		cr.Spec.ForProvider.EncryptionOptions = f13
 	} else {
 		cr.Spec.ForProvider.EncryptionOptions = nil
 	}
@@ -173,71 +178,71 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Spec.ForProvider.HostInstanceType = nil
 	}
 	if resp.LdapServerMetadata != nil {
-		f15 := &svcapitypes.LDAPServerMetadataInput{}
+		f17 := &svcapitypes.LDAPServerMetadataInput{}
 		if resp.LdapServerMetadata.Hosts != nil {
-			f15f0 := []*string{}
-			for _, f15f0iter := range resp.LdapServerMetadata.Hosts {
-				var f15f0elem string
-				f15f0elem = *f15f0iter
-				f15f0 = append(f15f0, &f15f0elem)
+			f17f0 := []*string{}
+			for _, f17f0iter := range resp.LdapServerMetadata.Hosts {
+				var f17f0elem string
+				f17f0elem = *f17f0iter
+				f17f0 = append(f17f0, &f17f0elem)
 			}
-			f15.Hosts = f15f0
+			f17.Hosts = f17f0
 		}
 		if resp.LdapServerMetadata.RoleBase != nil {
-			f15.RoleBase = resp.LdapServerMetadata.RoleBase
+			f17.RoleBase = resp.LdapServerMetadata.RoleBase
 		}
 		if resp.LdapServerMetadata.RoleName != nil {
-			f15.RoleName = resp.LdapServerMetadata.RoleName
+			f17.RoleName = resp.LdapServerMetadata.RoleName
 		}
 		if resp.LdapServerMetadata.RoleSearchMatching != nil {
-			f15.RoleSearchMatching = resp.LdapServerMetadata.RoleSearchMatching
+			f17.RoleSearchMatching = resp.LdapServerMetadata.RoleSearchMatching
 		}
 		if resp.LdapServerMetadata.RoleSearchSubtree != nil {
-			f15.RoleSearchSubtree = resp.LdapServerMetadata.RoleSearchSubtree
+			f17.RoleSearchSubtree = resp.LdapServerMetadata.RoleSearchSubtree
 		}
 		if resp.LdapServerMetadata.ServiceAccountUsername != nil {
-			f15.ServiceAccountUsername = resp.LdapServerMetadata.ServiceAccountUsername
+			f17.ServiceAccountUsername = resp.LdapServerMetadata.ServiceAccountUsername
 		}
 		if resp.LdapServerMetadata.UserBase != nil {
-			f15.UserBase = resp.LdapServerMetadata.UserBase
+			f17.UserBase = resp.LdapServerMetadata.UserBase
 		}
 		if resp.LdapServerMetadata.UserRoleName != nil {
-			f15.UserRoleName = resp.LdapServerMetadata.UserRoleName
+			f17.UserRoleName = resp.LdapServerMetadata.UserRoleName
 		}
 		if resp.LdapServerMetadata.UserSearchMatching != nil {
-			f15.UserSearchMatching = resp.LdapServerMetadata.UserSearchMatching
+			f17.UserSearchMatching = resp.LdapServerMetadata.UserSearchMatching
 		}
 		if resp.LdapServerMetadata.UserSearchSubtree != nil {
-			f15.UserSearchSubtree = resp.LdapServerMetadata.UserSearchSubtree
+			f17.UserSearchSubtree = resp.LdapServerMetadata.UserSearchSubtree
 		}
-		cr.Spec.ForProvider.LDAPServerMetadata = f15
+		cr.Spec.ForProvider.LDAPServerMetadata = f17
 	} else {
 		cr.Spec.ForProvider.LDAPServerMetadata = nil
 	}
 	if resp.Logs != nil {
-		f16 := &svcapitypes.Logs{}
+		f18 := &svcapitypes.Logs{}
 		if resp.Logs.Audit != nil {
-			f16.Audit = resp.Logs.Audit
+			f18.Audit = resp.Logs.Audit
 		}
 		if resp.Logs.General != nil {
-			f16.General = resp.Logs.General
+			f18.General = resp.Logs.General
 		}
-		cr.Spec.ForProvider.Logs = f16
+		cr.Spec.ForProvider.Logs = f18
 	} else {
 		cr.Spec.ForProvider.Logs = nil
 	}
 	if resp.MaintenanceWindowStartTime != nil {
-		f17 := &svcapitypes.WeeklyStartTime{}
+		f19 := &svcapitypes.WeeklyStartTime{}
 		if resp.MaintenanceWindowStartTime.DayOfWeek != nil {
-			f17.DayOfWeek = resp.MaintenanceWindowStartTime.DayOfWeek
+			f19.DayOfWeek = resp.MaintenanceWindowStartTime.DayOfWeek
 		}
 		if resp.MaintenanceWindowStartTime.TimeOfDay != nil {
-			f17.TimeOfDay = resp.MaintenanceWindowStartTime.TimeOfDay
+			f19.TimeOfDay = resp.MaintenanceWindowStartTime.TimeOfDay
 		}
 		if resp.MaintenanceWindowStartTime.TimeZone != nil {
-			f17.TimeZone = resp.MaintenanceWindowStartTime.TimeZone
+			f19.TimeZone = resp.MaintenanceWindowStartTime.TimeZone
 		}
-		cr.Spec.ForProvider.MaintenanceWindowStartTime = f17
+		cr.Spec.ForProvider.MaintenanceWindowStartTime = f19
 	} else {
 		cr.Spec.ForProvider.MaintenanceWindowStartTime = nil
 	}
@@ -257,55 +262,55 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Status.AtProvider.PendingHostInstanceType = nil
 	}
 	if resp.PendingLdapServerMetadata != nil {
-		f21 := &svcapitypes.LDAPServerMetadataOutput{}
+		f25 := &svcapitypes.LDAPServerMetadataOutput{}
 		if resp.PendingLdapServerMetadata.Hosts != nil {
-			f21f0 := []*string{}
-			for _, f21f0iter := range resp.PendingLdapServerMetadata.Hosts {
-				var f21f0elem string
-				f21f0elem = *f21f0iter
-				f21f0 = append(f21f0, &f21f0elem)
+			f25f0 := []*string{}
+			for _, f25f0iter := range resp.PendingLdapServerMetadata.Hosts {
+				var f25f0elem string
+				f25f0elem = *f25f0iter
+				f25f0 = append(f25f0, &f25f0elem)
 			}
-			f21.Hosts = f21f0
+			f25.Hosts = f25f0
 		}
 		if resp.PendingLdapServerMetadata.RoleBase != nil {
-			f21.RoleBase = resp.PendingLdapServerMetadata.RoleBase
+			f25.RoleBase = resp.PendingLdapServerMetadata.RoleBase
 		}
 		if resp.PendingLdapServerMetadata.RoleName != nil {
-			f21.RoleName = resp.PendingLdapServerMetadata.RoleName
+			f25.RoleName = resp.PendingLdapServerMetadata.RoleName
 		}
 		if resp.PendingLdapServerMetadata.RoleSearchMatching != nil {
-			f21.RoleSearchMatching = resp.PendingLdapServerMetadata.RoleSearchMatching
+			f25.RoleSearchMatching = resp.PendingLdapServerMetadata.RoleSearchMatching
 		}
 		if resp.PendingLdapServerMetadata.RoleSearchSubtree != nil {
-			f21.RoleSearchSubtree = resp.PendingLdapServerMetadata.RoleSearchSubtree
+			f25.RoleSearchSubtree = resp.PendingLdapServerMetadata.RoleSearchSubtree
 		}
 		if resp.PendingLdapServerMetadata.ServiceAccountUsername != nil {
-			f21.ServiceAccountUsername = resp.PendingLdapServerMetadata.ServiceAccountUsername
+			f25.ServiceAccountUsername = resp.PendingLdapServerMetadata.ServiceAccountUsername
 		}
 		if resp.PendingLdapServerMetadata.UserBase != nil {
-			f21.UserBase = resp.PendingLdapServerMetadata.UserBase
+			f25.UserBase = resp.PendingLdapServerMetadata.UserBase
 		}
 		if resp.PendingLdapServerMetadata.UserRoleName != nil {
-			f21.UserRoleName = resp.PendingLdapServerMetadata.UserRoleName
+			f25.UserRoleName = resp.PendingLdapServerMetadata.UserRoleName
 		}
 		if resp.PendingLdapServerMetadata.UserSearchMatching != nil {
-			f21.UserSearchMatching = resp.PendingLdapServerMetadata.UserSearchMatching
+			f25.UserSearchMatching = resp.PendingLdapServerMetadata.UserSearchMatching
 		}
 		if resp.PendingLdapServerMetadata.UserSearchSubtree != nil {
-			f21.UserSearchSubtree = resp.PendingLdapServerMetadata.UserSearchSubtree
+			f25.UserSearchSubtree = resp.PendingLdapServerMetadata.UserSearchSubtree
 		}
-		cr.Status.AtProvider.PendingLDAPServerMetadata = f21
+		cr.Status.AtProvider.PendingLDAPServerMetadata = f25
 	} else {
 		cr.Status.AtProvider.PendingLDAPServerMetadata = nil
 	}
 	if resp.PendingSecurityGroups != nil {
-		f22 := []*string{}
-		for _, f22iter := range resp.PendingSecurityGroups {
-			var f22elem string
-			f22elem = *f22iter
-			f22 = append(f22, &f22elem)
+		f26 := []*string{}
+		for _, f26iter := range resp.PendingSecurityGroups {
+			var f26elem string
+			f26elem = *f26iter
+			f26 = append(f26, &f26elem)
 		}
-		cr.Status.AtProvider.PendingSecurityGroups = f22
+		cr.Status.AtProvider.PendingSecurityGroups = f26
 	} else {
 		cr.Status.AtProvider.PendingSecurityGroups = nil
 	}
@@ -320,29 +325,29 @@ func GenerateBroker(resp *svcsdk.DescribeBrokerResponse) *svcapitypes.Broker {
 		cr.Spec.ForProvider.StorageType = nil
 	}
 	if resp.Tags != nil {
-		f27 := map[string]*string{}
-		for f27key, f27valiter := range resp.Tags {
-			var f27val string
-			f27val = *f27valiter
-			f27[f27key] = &f27val
+		f31 := map[string]*string{}
+		for f31key, f31valiter := range resp.Tags {
+			var f31val string
+			f31val = *f31valiter
+			f31[f31key] = &f31val
 		}
-		cr.Spec.ForProvider.Tags = f27
+		cr.Spec.ForProvider.Tags = f31
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
 	if resp.Users != nil {
-		f28 := []*svcapitypes.UserSummary{}
-		for _, f28iter := range resp.Users {
-			f28elem := &svcapitypes.UserSummary{}
-			if f28iter.PendingChange != nil {
-				f28elem.PendingChange = f28iter.PendingChange
+		f32 := []*svcapitypes.UserSummary{}
+		for _, f32iter := range resp.Users {
+			f32elem := &svcapitypes.UserSummary{}
+			if f32iter.PendingChange != nil {
+				f32elem.PendingChange = f32iter.PendingChange
 			}
-			if f28iter.Username != nil {
-				f28elem.Username = f28iter.Username
+			if f32iter.Username != nil {
+				f32elem.Username = f32iter.Username
 			}
-			f28 = append(f28, f28elem)
+			f32 = append(f32, f32elem)
 		}
-		cr.Status.AtProvider.Users = f28
+		cr.Status.AtProvider.Users = f32
 	} else {
 		cr.Status.AtProvider.Users = nil
 	}
@@ -373,18 +378,24 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 	if cr.Spec.ForProvider.CreatorRequestID != nil {
 		res.SetCreatorRequestId(*cr.Spec.ForProvider.CreatorRequestID)
 	}
+	if cr.Spec.ForProvider.DataReplicationMode != nil {
+		res.SetDataReplicationMode(*cr.Spec.ForProvider.DataReplicationMode)
+	}
+	if cr.Spec.ForProvider.DataReplicationPrimaryBrokerARN != nil {
+		res.SetDataReplicationPrimaryBrokerArn(*cr.Spec.ForProvider.DataReplicationPrimaryBrokerARN)
+	}
 	if cr.Spec.ForProvider.DeploymentMode != nil {
 		res.SetDeploymentMode(*cr.Spec.ForProvider.DeploymentMode)
 	}
 	if cr.Spec.ForProvider.EncryptionOptions != nil {
-		f5 := &svcsdk.EncryptionOptions{}
+		f7 := &svcsdk.EncryptionOptions{}
 		if cr.Spec.ForProvider.EncryptionOptions.KMSKeyID != nil {
-			f5.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionOptions.KMSKeyID)
+			f7.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionOptions.KMSKeyID)
 		}
 		if cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey != nil {
-			f5.SetUseAwsOwnedKey(*cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey)
+			f7.SetUseAwsOwnedKey(*cr.Spec.ForProvider.EncryptionOptions.UseAWSOwnedKey)
 		}
-		res.SetEncryptionOptions(f5)
+		res.SetEncryptionOptions(f7)
 	}
 	if cr.Spec.ForProvider.EngineType != nil {
 		res.SetEngineType(*cr.Spec.ForProvider.EngineType)
@@ -396,70 +407,70 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 		res.SetHostInstanceType(*cr.Spec.ForProvider.HostInstanceType)
 	}
 	if cr.Spec.ForProvider.LDAPServerMetadata != nil {
-		f9 := &svcsdk.LdapServerMetadataInput{}
+		f11 := &svcsdk.LdapServerMetadataInput{}
 		if cr.Spec.ForProvider.LDAPServerMetadata.Hosts != nil {
-			f9f0 := []*string{}
-			for _, f9f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
-				var f9f0elem string
-				f9f0elem = *f9f0iter
-				f9f0 = append(f9f0, &f9f0elem)
+			f11f0 := []*string{}
+			for _, f11f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
+				var f11f0elem string
+				f11f0elem = *f11f0iter
+				f11f0 = append(f11f0, &f11f0elem)
 			}
-			f9.SetHosts(f9f0)
+			f11.SetHosts(f11f0)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleBase != nil {
-			f9.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
+			f11.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleName != nil {
-			f9.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
+			f11.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching != nil {
-			f9.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
+			f11.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree != nil {
-			f9.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
+			f11.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword != nil {
-			f9.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
+			f11.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername != nil {
-			f9.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
+			f11.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserBase != nil {
-			f9.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
+			f11.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName != nil {
-			f9.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
+			f11.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching != nil {
-			f9.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
+			f11.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree != nil {
-			f9.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
+			f11.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
 		}
-		res.SetLdapServerMetadata(f9)
+		res.SetLdapServerMetadata(f11)
 	}
 	if cr.Spec.ForProvider.Logs != nil {
-		f10 := &svcsdk.Logs{}
+		f12 := &svcsdk.Logs{}
 		if cr.Spec.ForProvider.Logs.Audit != nil {
-			f10.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
+			f12.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
 		}
 		if cr.Spec.ForProvider.Logs.General != nil {
-			f10.SetGeneral(*cr.Spec.ForProvider.Logs.General)
+			f12.SetGeneral(*cr.Spec.ForProvider.Logs.General)
 		}
-		res.SetLogs(f10)
+		res.SetLogs(f12)
 	}
 	if cr.Spec.ForProvider.MaintenanceWindowStartTime != nil {
-		f11 := &svcsdk.WeeklyStartTime{}
+		f13 := &svcsdk.WeeklyStartTime{}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek != nil {
-			f11.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
+			f13.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay != nil {
-			f11.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
+			f13.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone != nil {
-			f11.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
+			f13.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
 		}
-		res.SetMaintenanceWindowStartTime(f11)
+		res.SetMaintenanceWindowStartTime(f13)
 	}
 	if cr.Spec.ForProvider.PubliclyAccessible != nil {
 		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
@@ -468,13 +479,13 @@ func GenerateCreateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.CreateBrokerReq
 		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f14 := map[string]*string{}
-		for f14key, f14valiter := range cr.Spec.ForProvider.Tags {
-			var f14val string
-			f14val = *f14valiter
-			f14[f14key] = &f14val
+		f16 := map[string]*string{}
+		for f16key, f16valiter := range cr.Spec.ForProvider.Tags {
+			var f16val string
+			f16val = *f16valiter
+			f16[f16key] = &f16val
 		}
-		res.SetTags(f14)
+		res.SetTags(f16)
 	}
 
 	return res
@@ -503,6 +514,9 @@ func GenerateUpdateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.UpdateBrokerReq
 		}
 		res.SetConfiguration(f3)
 	}
+	if cr.Spec.ForProvider.DataReplicationMode != nil {
+		res.SetDataReplicationMode(*cr.Spec.ForProvider.DataReplicationMode)
+	}
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
@@ -510,70 +524,70 @@ func GenerateUpdateBrokerRequest(cr *svcapitypes.Broker) *svcsdk.UpdateBrokerReq
 		res.SetHostInstanceType(*cr.Spec.ForProvider.HostInstanceType)
 	}
 	if cr.Spec.ForProvider.LDAPServerMetadata != nil {
-		f6 := &svcsdk.LdapServerMetadataInput{}
+		f7 := &svcsdk.LdapServerMetadataInput{}
 		if cr.Spec.ForProvider.LDAPServerMetadata.Hosts != nil {
-			f6f0 := []*string{}
-			for _, f6f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
-				var f6f0elem string
-				f6f0elem = *f6f0iter
-				f6f0 = append(f6f0, &f6f0elem)
+			f7f0 := []*string{}
+			for _, f7f0iter := range cr.Spec.ForProvider.LDAPServerMetadata.Hosts {
+				var f7f0elem string
+				f7f0elem = *f7f0iter
+				f7f0 = append(f7f0, &f7f0elem)
 			}
-			f6.SetHosts(f6f0)
+			f7.SetHosts(f7f0)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleBase != nil {
-			f6.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
+			f7.SetRoleBase(*cr.Spec.ForProvider.LDAPServerMetadata.RoleBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleName != nil {
-			f6.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
+			f7.SetRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.RoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching != nil {
-			f6.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
+			f7.SetRoleSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree != nil {
-			f6.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
+			f7.SetRoleSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.RoleSearchSubtree)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword != nil {
-			f6.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
+			f7.SetServiceAccountPassword(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountPassword)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername != nil {
-			f6.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
+			f7.SetServiceAccountUsername(*cr.Spec.ForProvider.LDAPServerMetadata.ServiceAccountUsername)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserBase != nil {
-			f6.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
+			f7.SetUserBase(*cr.Spec.ForProvider.LDAPServerMetadata.UserBase)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName != nil {
-			f6.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
+			f7.SetUserRoleName(*cr.Spec.ForProvider.LDAPServerMetadata.UserRoleName)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching != nil {
-			f6.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
+			f7.SetUserSearchMatching(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchMatching)
 		}
 		if cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree != nil {
-			f6.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
+			f7.SetUserSearchSubtree(*cr.Spec.ForProvider.LDAPServerMetadata.UserSearchSubtree)
 		}
-		res.SetLdapServerMetadata(f6)
+		res.SetLdapServerMetadata(f7)
 	}
 	if cr.Spec.ForProvider.Logs != nil {
-		f7 := &svcsdk.Logs{}
+		f8 := &svcsdk.Logs{}
 		if cr.Spec.ForProvider.Logs.Audit != nil {
-			f7.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
+			f8.SetAudit(*cr.Spec.ForProvider.Logs.Audit)
 		}
 		if cr.Spec.ForProvider.Logs.General != nil {
-			f7.SetGeneral(*cr.Spec.ForProvider.Logs.General)
+			f8.SetGeneral(*cr.Spec.ForProvider.Logs.General)
 		}
-		res.SetLogs(f7)
+		res.SetLogs(f8)
 	}
 	if cr.Spec.ForProvider.MaintenanceWindowStartTime != nil {
-		f8 := &svcsdk.WeeklyStartTime{}
+		f9 := &svcsdk.WeeklyStartTime{}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek != nil {
-			f8.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
+			f9.SetDayOfWeek(*cr.Spec.ForProvider.MaintenanceWindowStartTime.DayOfWeek)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay != nil {
-			f8.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
+			f9.SetTimeOfDay(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeOfDay)
 		}
 		if cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone != nil {
-			f8.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
+			f9.SetTimeZone(*cr.Spec.ForProvider.MaintenanceWindowStartTime.TimeZone)
 		}
-		res.SetMaintenanceWindowStartTime(f8)
+		res.SetMaintenanceWindowStartTime(f9)
 	}
 
 	return res

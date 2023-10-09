@@ -159,153 +159,162 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				if f1f1iter.Cpu != nil {
 					f1f1elem.CPU = f1f1iter.Cpu
 				}
-				if f1f1iter.DependsOn != nil {
-					f1f1elemf2 := []*svcapitypes.ContainerDependency{}
-					for _, f1f1elemf2iter := range f1f1iter.DependsOn {
-						f1f1elemf2elem := &svcapitypes.ContainerDependency{}
-						if f1f1elemf2iter.Condition != nil {
-							f1f1elemf2elem.Condition = f1f1elemf2iter.Condition
-						}
-						if f1f1elemf2iter.ContainerName != nil {
-							f1f1elemf2elem.ContainerName = f1f1elemf2iter.ContainerName
-						}
-						f1f1elemf2 = append(f1f1elemf2, f1f1elemf2elem)
+				if f1f1iter.CredentialSpecs != nil {
+					f1f1elemf2 := []*string{}
+					for _, f1f1elemf2iter := range f1f1iter.CredentialSpecs {
+						var f1f1elemf2elem string
+						f1f1elemf2elem = *f1f1elemf2iter
+						f1f1elemf2 = append(f1f1elemf2, &f1f1elemf2elem)
 					}
-					f1f1elem.DependsOn = f1f1elemf2
+					f1f1elem.CredentialSpecs = f1f1elemf2
+				}
+				if f1f1iter.DependsOn != nil {
+					f1f1elemf3 := []*svcapitypes.ContainerDependency{}
+					for _, f1f1elemf3iter := range f1f1iter.DependsOn {
+						f1f1elemf3elem := &svcapitypes.ContainerDependency{}
+						if f1f1elemf3iter.Condition != nil {
+							f1f1elemf3elem.Condition = f1f1elemf3iter.Condition
+						}
+						if f1f1elemf3iter.ContainerName != nil {
+							f1f1elemf3elem.ContainerName = f1f1elemf3iter.ContainerName
+						}
+						f1f1elemf3 = append(f1f1elemf3, f1f1elemf3elem)
+					}
+					f1f1elem.DependsOn = f1f1elemf3
 				}
 				if f1f1iter.DisableNetworking != nil {
 					f1f1elem.DisableNetworking = f1f1iter.DisableNetworking
 				}
 				if f1f1iter.DnsSearchDomains != nil {
-					f1f1elemf4 := []*string{}
-					for _, f1f1elemf4iter := range f1f1iter.DnsSearchDomains {
-						var f1f1elemf4elem string
-						f1f1elemf4elem = *f1f1elemf4iter
-						f1f1elemf4 = append(f1f1elemf4, &f1f1elemf4elem)
-					}
-					f1f1elem.DNSSearchDomains = f1f1elemf4
-				}
-				if f1f1iter.DnsServers != nil {
 					f1f1elemf5 := []*string{}
-					for _, f1f1elemf5iter := range f1f1iter.DnsServers {
+					for _, f1f1elemf5iter := range f1f1iter.DnsSearchDomains {
 						var f1f1elemf5elem string
 						f1f1elemf5elem = *f1f1elemf5iter
 						f1f1elemf5 = append(f1f1elemf5, &f1f1elemf5elem)
 					}
-					f1f1elem.DNSServers = f1f1elemf5
+					f1f1elem.DNSSearchDomains = f1f1elemf5
+				}
+				if f1f1iter.DnsServers != nil {
+					f1f1elemf6 := []*string{}
+					for _, f1f1elemf6iter := range f1f1iter.DnsServers {
+						var f1f1elemf6elem string
+						f1f1elemf6elem = *f1f1elemf6iter
+						f1f1elemf6 = append(f1f1elemf6, &f1f1elemf6elem)
+					}
+					f1f1elem.DNSServers = f1f1elemf6
 				}
 				if f1f1iter.DockerLabels != nil {
-					f1f1elemf6 := map[string]*string{}
-					for f1f1elemf6key, f1f1elemf6valiter := range f1f1iter.DockerLabels {
-						var f1f1elemf6val string
-						f1f1elemf6val = *f1f1elemf6valiter
-						f1f1elemf6[f1f1elemf6key] = &f1f1elemf6val
+					f1f1elemf7 := map[string]*string{}
+					for f1f1elemf7key, f1f1elemf7valiter := range f1f1iter.DockerLabels {
+						var f1f1elemf7val string
+						f1f1elemf7val = *f1f1elemf7valiter
+						f1f1elemf7[f1f1elemf7key] = &f1f1elemf7val
 					}
-					f1f1elem.DockerLabels = f1f1elemf6
+					f1f1elem.DockerLabels = f1f1elemf7
 				}
 				if f1f1iter.DockerSecurityOptions != nil {
-					f1f1elemf7 := []*string{}
-					for _, f1f1elemf7iter := range f1f1iter.DockerSecurityOptions {
-						var f1f1elemf7elem string
-						f1f1elemf7elem = *f1f1elemf7iter
-						f1f1elemf7 = append(f1f1elemf7, &f1f1elemf7elem)
-					}
-					f1f1elem.DockerSecurityOptions = f1f1elemf7
-				}
-				if f1f1iter.EntryPoint != nil {
 					f1f1elemf8 := []*string{}
-					for _, f1f1elemf8iter := range f1f1iter.EntryPoint {
+					for _, f1f1elemf8iter := range f1f1iter.DockerSecurityOptions {
 						var f1f1elemf8elem string
 						f1f1elemf8elem = *f1f1elemf8iter
 						f1f1elemf8 = append(f1f1elemf8, &f1f1elemf8elem)
 					}
-					f1f1elem.EntryPoint = f1f1elemf8
+					f1f1elem.DockerSecurityOptions = f1f1elemf8
+				}
+				if f1f1iter.EntryPoint != nil {
+					f1f1elemf9 := []*string{}
+					for _, f1f1elemf9iter := range f1f1iter.EntryPoint {
+						var f1f1elemf9elem string
+						f1f1elemf9elem = *f1f1elemf9iter
+						f1f1elemf9 = append(f1f1elemf9, &f1f1elemf9elem)
+					}
+					f1f1elem.EntryPoint = f1f1elemf9
 				}
 				if f1f1iter.Environment != nil {
-					f1f1elemf9 := []*svcapitypes.KeyValuePair{}
-					for _, f1f1elemf9iter := range f1f1iter.Environment {
-						f1f1elemf9elem := &svcapitypes.KeyValuePair{}
-						if f1f1elemf9iter.Name != nil {
-							f1f1elemf9elem.Name = f1f1elemf9iter.Name
-						}
-						if f1f1elemf9iter.Value != nil {
-							f1f1elemf9elem.Value = f1f1elemf9iter.Value
-						}
-						f1f1elemf9 = append(f1f1elemf9, f1f1elemf9elem)
-					}
-					f1f1elem.Environment = f1f1elemf9
-				}
-				if f1f1iter.EnvironmentFiles != nil {
-					f1f1elemf10 := []*svcapitypes.EnvironmentFile{}
-					for _, f1f1elemf10iter := range f1f1iter.EnvironmentFiles {
-						f1f1elemf10elem := &svcapitypes.EnvironmentFile{}
-						if f1f1elemf10iter.Type != nil {
-							f1f1elemf10elem.Type = f1f1elemf10iter.Type
+					f1f1elemf10 := []*svcapitypes.KeyValuePair{}
+					for _, f1f1elemf10iter := range f1f1iter.Environment {
+						f1f1elemf10elem := &svcapitypes.KeyValuePair{}
+						if f1f1elemf10iter.Name != nil {
+							f1f1elemf10elem.Name = f1f1elemf10iter.Name
 						}
 						if f1f1elemf10iter.Value != nil {
 							f1f1elemf10elem.Value = f1f1elemf10iter.Value
 						}
 						f1f1elemf10 = append(f1f1elemf10, f1f1elemf10elem)
 					}
-					f1f1elem.EnvironmentFiles = f1f1elemf10
+					f1f1elem.Environment = f1f1elemf10
+				}
+				if f1f1iter.EnvironmentFiles != nil {
+					f1f1elemf11 := []*svcapitypes.EnvironmentFile{}
+					for _, f1f1elemf11iter := range f1f1iter.EnvironmentFiles {
+						f1f1elemf11elem := &svcapitypes.EnvironmentFile{}
+						if f1f1elemf11iter.Type != nil {
+							f1f1elemf11elem.Type = f1f1elemf11iter.Type
+						}
+						if f1f1elemf11iter.Value != nil {
+							f1f1elemf11elem.Value = f1f1elemf11iter.Value
+						}
+						f1f1elemf11 = append(f1f1elemf11, f1f1elemf11elem)
+					}
+					f1f1elem.EnvironmentFiles = f1f1elemf11
 				}
 				if f1f1iter.Essential != nil {
 					f1f1elem.Essential = f1f1iter.Essential
 				}
 				if f1f1iter.ExtraHosts != nil {
-					f1f1elemf12 := []*svcapitypes.HostEntry{}
-					for _, f1f1elemf12iter := range f1f1iter.ExtraHosts {
-						f1f1elemf12elem := &svcapitypes.HostEntry{}
-						if f1f1elemf12iter.Hostname != nil {
-							f1f1elemf12elem.Hostname = f1f1elemf12iter.Hostname
+					f1f1elemf13 := []*svcapitypes.HostEntry{}
+					for _, f1f1elemf13iter := range f1f1iter.ExtraHosts {
+						f1f1elemf13elem := &svcapitypes.HostEntry{}
+						if f1f1elemf13iter.Hostname != nil {
+							f1f1elemf13elem.Hostname = f1f1elemf13iter.Hostname
 						}
-						if f1f1elemf12iter.IpAddress != nil {
-							f1f1elemf12elem.IPAddress = f1f1elemf12iter.IpAddress
+						if f1f1elemf13iter.IpAddress != nil {
+							f1f1elemf13elem.IPAddress = f1f1elemf13iter.IpAddress
 						}
-						f1f1elemf12 = append(f1f1elemf12, f1f1elemf12elem)
+						f1f1elemf13 = append(f1f1elemf13, f1f1elemf13elem)
 					}
-					f1f1elem.ExtraHosts = f1f1elemf12
+					f1f1elem.ExtraHosts = f1f1elemf13
 				}
 				if f1f1iter.FirelensConfiguration != nil {
-					f1f1elemf13 := &svcapitypes.FirelensConfiguration{}
+					f1f1elemf14 := &svcapitypes.FirelensConfiguration{}
 					if f1f1iter.FirelensConfiguration.Options != nil {
-						f1f1elemf13f0 := map[string]*string{}
-						for f1f1elemf13f0key, f1f1elemf13f0valiter := range f1f1iter.FirelensConfiguration.Options {
-							var f1f1elemf13f0val string
-							f1f1elemf13f0val = *f1f1elemf13f0valiter
-							f1f1elemf13f0[f1f1elemf13f0key] = &f1f1elemf13f0val
+						f1f1elemf14f0 := map[string]*string{}
+						for f1f1elemf14f0key, f1f1elemf14f0valiter := range f1f1iter.FirelensConfiguration.Options {
+							var f1f1elemf14f0val string
+							f1f1elemf14f0val = *f1f1elemf14f0valiter
+							f1f1elemf14f0[f1f1elemf14f0key] = &f1f1elemf14f0val
 						}
-						f1f1elemf13.Options = f1f1elemf13f0
+						f1f1elemf14.Options = f1f1elemf14f0
 					}
 					if f1f1iter.FirelensConfiguration.Type != nil {
-						f1f1elemf13.Type = f1f1iter.FirelensConfiguration.Type
+						f1f1elemf14.Type = f1f1iter.FirelensConfiguration.Type
 					}
-					f1f1elem.FirelensConfiguration = f1f1elemf13
+					f1f1elem.FirelensConfiguration = f1f1elemf14
 				}
 				if f1f1iter.HealthCheck != nil {
-					f1f1elemf14 := &svcapitypes.HealthCheck{}
+					f1f1elemf15 := &svcapitypes.HealthCheck{}
 					if f1f1iter.HealthCheck.Command != nil {
-						f1f1elemf14f0 := []*string{}
-						for _, f1f1elemf14f0iter := range f1f1iter.HealthCheck.Command {
-							var f1f1elemf14f0elem string
-							f1f1elemf14f0elem = *f1f1elemf14f0iter
-							f1f1elemf14f0 = append(f1f1elemf14f0, &f1f1elemf14f0elem)
+						f1f1elemf15f0 := []*string{}
+						for _, f1f1elemf15f0iter := range f1f1iter.HealthCheck.Command {
+							var f1f1elemf15f0elem string
+							f1f1elemf15f0elem = *f1f1elemf15f0iter
+							f1f1elemf15f0 = append(f1f1elemf15f0, &f1f1elemf15f0elem)
 						}
-						f1f1elemf14.Command = f1f1elemf14f0
+						f1f1elemf15.Command = f1f1elemf15f0
 					}
 					if f1f1iter.HealthCheck.Interval != nil {
-						f1f1elemf14.Interval = f1f1iter.HealthCheck.Interval
+						f1f1elemf15.Interval = f1f1iter.HealthCheck.Interval
 					}
 					if f1f1iter.HealthCheck.Retries != nil {
-						f1f1elemf14.Retries = f1f1iter.HealthCheck.Retries
+						f1f1elemf15.Retries = f1f1iter.HealthCheck.Retries
 					}
 					if f1f1iter.HealthCheck.StartPeriod != nil {
-						f1f1elemf14.StartPeriod = f1f1iter.HealthCheck.StartPeriod
+						f1f1elemf15.StartPeriod = f1f1iter.HealthCheck.StartPeriod
 					}
 					if f1f1iter.HealthCheck.Timeout != nil {
-						f1f1elemf14.Timeout = f1f1iter.HealthCheck.Timeout
+						f1f1elemf15.Timeout = f1f1iter.HealthCheck.Timeout
 					}
-					f1f1elem.HealthCheck = f1f1elemf14
+					f1f1elem.HealthCheck = f1f1elemf15
 				}
 				if f1f1iter.Hostname != nil {
 					f1f1elem.Hostname = f1f1iter.Hostname
@@ -317,127 +326,127 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f1f1elem.Interactive = f1f1iter.Interactive
 				}
 				if f1f1iter.Links != nil {
-					f1f1elemf18 := []*string{}
-					for _, f1f1elemf18iter := range f1f1iter.Links {
-						var f1f1elemf18elem string
-						f1f1elemf18elem = *f1f1elemf18iter
-						f1f1elemf18 = append(f1f1elemf18, &f1f1elemf18elem)
+					f1f1elemf19 := []*string{}
+					for _, f1f1elemf19iter := range f1f1iter.Links {
+						var f1f1elemf19elem string
+						f1f1elemf19elem = *f1f1elemf19iter
+						f1f1elemf19 = append(f1f1elemf19, &f1f1elemf19elem)
 					}
-					f1f1elem.Links = f1f1elemf18
+					f1f1elem.Links = f1f1elemf19
 				}
 				if f1f1iter.LinuxParameters != nil {
-					f1f1elemf19 := &svcapitypes.LinuxParameters{}
+					f1f1elemf20 := &svcapitypes.LinuxParameters{}
 					if f1f1iter.LinuxParameters.Capabilities != nil {
-						f1f1elemf19f0 := &svcapitypes.KernelCapabilities{}
+						f1f1elemf20f0 := &svcapitypes.KernelCapabilities{}
 						if f1f1iter.LinuxParameters.Capabilities.Add != nil {
-							f1f1elemf19f0f0 := []*string{}
-							for _, f1f1elemf19f0f0iter := range f1f1iter.LinuxParameters.Capabilities.Add {
-								var f1f1elemf19f0f0elem string
-								f1f1elemf19f0f0elem = *f1f1elemf19f0f0iter
-								f1f1elemf19f0f0 = append(f1f1elemf19f0f0, &f1f1elemf19f0f0elem)
+							f1f1elemf20f0f0 := []*string{}
+							for _, f1f1elemf20f0f0iter := range f1f1iter.LinuxParameters.Capabilities.Add {
+								var f1f1elemf20f0f0elem string
+								f1f1elemf20f0f0elem = *f1f1elemf20f0f0iter
+								f1f1elemf20f0f0 = append(f1f1elemf20f0f0, &f1f1elemf20f0f0elem)
 							}
-							f1f1elemf19f0.Add = f1f1elemf19f0f0
+							f1f1elemf20f0.Add = f1f1elemf20f0f0
 						}
 						if f1f1iter.LinuxParameters.Capabilities.Drop != nil {
-							f1f1elemf19f0f1 := []*string{}
-							for _, f1f1elemf19f0f1iter := range f1f1iter.LinuxParameters.Capabilities.Drop {
-								var f1f1elemf19f0f1elem string
-								f1f1elemf19f0f1elem = *f1f1elemf19f0f1iter
-								f1f1elemf19f0f1 = append(f1f1elemf19f0f1, &f1f1elemf19f0f1elem)
+							f1f1elemf20f0f1 := []*string{}
+							for _, f1f1elemf20f0f1iter := range f1f1iter.LinuxParameters.Capabilities.Drop {
+								var f1f1elemf20f0f1elem string
+								f1f1elemf20f0f1elem = *f1f1elemf20f0f1iter
+								f1f1elemf20f0f1 = append(f1f1elemf20f0f1, &f1f1elemf20f0f1elem)
 							}
-							f1f1elemf19f0.Drop = f1f1elemf19f0f1
+							f1f1elemf20f0.Drop = f1f1elemf20f0f1
 						}
-						f1f1elemf19.Capabilities = f1f1elemf19f0
+						f1f1elemf20.Capabilities = f1f1elemf20f0
 					}
 					if f1f1iter.LinuxParameters.Devices != nil {
-						f1f1elemf19f1 := []*svcapitypes.Device{}
-						for _, f1f1elemf19f1iter := range f1f1iter.LinuxParameters.Devices {
-							f1f1elemf19f1elem := &svcapitypes.Device{}
-							if f1f1elemf19f1iter.ContainerPath != nil {
-								f1f1elemf19f1elem.ContainerPath = f1f1elemf19f1iter.ContainerPath
+						f1f1elemf20f1 := []*svcapitypes.Device{}
+						for _, f1f1elemf20f1iter := range f1f1iter.LinuxParameters.Devices {
+							f1f1elemf20f1elem := &svcapitypes.Device{}
+							if f1f1elemf20f1iter.ContainerPath != nil {
+								f1f1elemf20f1elem.ContainerPath = f1f1elemf20f1iter.ContainerPath
 							}
-							if f1f1elemf19f1iter.HostPath != nil {
-								f1f1elemf19f1elem.HostPath = f1f1elemf19f1iter.HostPath
+							if f1f1elemf20f1iter.HostPath != nil {
+								f1f1elemf20f1elem.HostPath = f1f1elemf20f1iter.HostPath
 							}
-							if f1f1elemf19f1iter.Permissions != nil {
-								f1f1elemf19f1elemf2 := []*string{}
-								for _, f1f1elemf19f1elemf2iter := range f1f1elemf19f1iter.Permissions {
-									var f1f1elemf19f1elemf2elem string
-									f1f1elemf19f1elemf2elem = *f1f1elemf19f1elemf2iter
-									f1f1elemf19f1elemf2 = append(f1f1elemf19f1elemf2, &f1f1elemf19f1elemf2elem)
+							if f1f1elemf20f1iter.Permissions != nil {
+								f1f1elemf20f1elemf2 := []*string{}
+								for _, f1f1elemf20f1elemf2iter := range f1f1elemf20f1iter.Permissions {
+									var f1f1elemf20f1elemf2elem string
+									f1f1elemf20f1elemf2elem = *f1f1elemf20f1elemf2iter
+									f1f1elemf20f1elemf2 = append(f1f1elemf20f1elemf2, &f1f1elemf20f1elemf2elem)
 								}
-								f1f1elemf19f1elem.Permissions = f1f1elemf19f1elemf2
+								f1f1elemf20f1elem.Permissions = f1f1elemf20f1elemf2
 							}
-							f1f1elemf19f1 = append(f1f1elemf19f1, f1f1elemf19f1elem)
+							f1f1elemf20f1 = append(f1f1elemf20f1, f1f1elemf20f1elem)
 						}
-						f1f1elemf19.Devices = f1f1elemf19f1
+						f1f1elemf20.Devices = f1f1elemf20f1
 					}
 					if f1f1iter.LinuxParameters.InitProcessEnabled != nil {
-						f1f1elemf19.InitProcessEnabled = f1f1iter.LinuxParameters.InitProcessEnabled
+						f1f1elemf20.InitProcessEnabled = f1f1iter.LinuxParameters.InitProcessEnabled
 					}
 					if f1f1iter.LinuxParameters.MaxSwap != nil {
-						f1f1elemf19.MaxSwap = f1f1iter.LinuxParameters.MaxSwap
+						f1f1elemf20.MaxSwap = f1f1iter.LinuxParameters.MaxSwap
 					}
 					if f1f1iter.LinuxParameters.SharedMemorySize != nil {
-						f1f1elemf19.SharedMemorySize = f1f1iter.LinuxParameters.SharedMemorySize
+						f1f1elemf20.SharedMemorySize = f1f1iter.LinuxParameters.SharedMemorySize
 					}
 					if f1f1iter.LinuxParameters.Swappiness != nil {
-						f1f1elemf19.Swappiness = f1f1iter.LinuxParameters.Swappiness
+						f1f1elemf20.Swappiness = f1f1iter.LinuxParameters.Swappiness
 					}
 					if f1f1iter.LinuxParameters.Tmpfs != nil {
-						f1f1elemf19f6 := []*svcapitypes.Tmpfs{}
-						for _, f1f1elemf19f6iter := range f1f1iter.LinuxParameters.Tmpfs {
-							f1f1elemf19f6elem := &svcapitypes.Tmpfs{}
-							if f1f1elemf19f6iter.ContainerPath != nil {
-								f1f1elemf19f6elem.ContainerPath = f1f1elemf19f6iter.ContainerPath
+						f1f1elemf20f6 := []*svcapitypes.Tmpfs{}
+						for _, f1f1elemf20f6iter := range f1f1iter.LinuxParameters.Tmpfs {
+							f1f1elemf20f6elem := &svcapitypes.Tmpfs{}
+							if f1f1elemf20f6iter.ContainerPath != nil {
+								f1f1elemf20f6elem.ContainerPath = f1f1elemf20f6iter.ContainerPath
 							}
-							if f1f1elemf19f6iter.MountOptions != nil {
-								f1f1elemf19f6elemf1 := []*string{}
-								for _, f1f1elemf19f6elemf1iter := range f1f1elemf19f6iter.MountOptions {
-									var f1f1elemf19f6elemf1elem string
-									f1f1elemf19f6elemf1elem = *f1f1elemf19f6elemf1iter
-									f1f1elemf19f6elemf1 = append(f1f1elemf19f6elemf1, &f1f1elemf19f6elemf1elem)
+							if f1f1elemf20f6iter.MountOptions != nil {
+								f1f1elemf20f6elemf1 := []*string{}
+								for _, f1f1elemf20f6elemf1iter := range f1f1elemf20f6iter.MountOptions {
+									var f1f1elemf20f6elemf1elem string
+									f1f1elemf20f6elemf1elem = *f1f1elemf20f6elemf1iter
+									f1f1elemf20f6elemf1 = append(f1f1elemf20f6elemf1, &f1f1elemf20f6elemf1elem)
 								}
-								f1f1elemf19f6elem.MountOptions = f1f1elemf19f6elemf1
+								f1f1elemf20f6elem.MountOptions = f1f1elemf20f6elemf1
 							}
-							if f1f1elemf19f6iter.Size != nil {
-								f1f1elemf19f6elem.Size = f1f1elemf19f6iter.Size
+							if f1f1elemf20f6iter.Size != nil {
+								f1f1elemf20f6elem.Size = f1f1elemf20f6iter.Size
 							}
-							f1f1elemf19f6 = append(f1f1elemf19f6, f1f1elemf19f6elem)
+							f1f1elemf20f6 = append(f1f1elemf20f6, f1f1elemf20f6elem)
 						}
-						f1f1elemf19.Tmpfs = f1f1elemf19f6
+						f1f1elemf20.Tmpfs = f1f1elemf20f6
 					}
-					f1f1elem.LinuxParameters = f1f1elemf19
+					f1f1elem.LinuxParameters = f1f1elemf20
 				}
 				if f1f1iter.LogConfiguration != nil {
-					f1f1elemf20 := &svcapitypes.LogConfiguration{}
+					f1f1elemf21 := &svcapitypes.LogConfiguration{}
 					if f1f1iter.LogConfiguration.LogDriver != nil {
-						f1f1elemf20.LogDriver = f1f1iter.LogConfiguration.LogDriver
+						f1f1elemf21.LogDriver = f1f1iter.LogConfiguration.LogDriver
 					}
 					if f1f1iter.LogConfiguration.Options != nil {
-						f1f1elemf20f1 := map[string]*string{}
-						for f1f1elemf20f1key, f1f1elemf20f1valiter := range f1f1iter.LogConfiguration.Options {
-							var f1f1elemf20f1val string
-							f1f1elemf20f1val = *f1f1elemf20f1valiter
-							f1f1elemf20f1[f1f1elemf20f1key] = &f1f1elemf20f1val
+						f1f1elemf21f1 := map[string]*string{}
+						for f1f1elemf21f1key, f1f1elemf21f1valiter := range f1f1iter.LogConfiguration.Options {
+							var f1f1elemf21f1val string
+							f1f1elemf21f1val = *f1f1elemf21f1valiter
+							f1f1elemf21f1[f1f1elemf21f1key] = &f1f1elemf21f1val
 						}
-						f1f1elemf20.Options = f1f1elemf20f1
+						f1f1elemf21.Options = f1f1elemf21f1
 					}
 					if f1f1iter.LogConfiguration.SecretOptions != nil {
-						f1f1elemf20f2 := []*svcapitypes.Secret{}
-						for _, f1f1elemf20f2iter := range f1f1iter.LogConfiguration.SecretOptions {
-							f1f1elemf20f2elem := &svcapitypes.Secret{}
-							if f1f1elemf20f2iter.Name != nil {
-								f1f1elemf20f2elem.Name = f1f1elemf20f2iter.Name
+						f1f1elemf21f2 := []*svcapitypes.Secret{}
+						for _, f1f1elemf21f2iter := range f1f1iter.LogConfiguration.SecretOptions {
+							f1f1elemf21f2elem := &svcapitypes.Secret{}
+							if f1f1elemf21f2iter.Name != nil {
+								f1f1elemf21f2elem.Name = f1f1elemf21f2iter.Name
 							}
-							if f1f1elemf20f2iter.ValueFrom != nil {
-								f1f1elemf20f2elem.ValueFrom = f1f1elemf20f2iter.ValueFrom
+							if f1f1elemf21f2iter.ValueFrom != nil {
+								f1f1elemf21f2elem.ValueFrom = f1f1elemf21f2iter.ValueFrom
 							}
-							f1f1elemf20f2 = append(f1f1elemf20f2, f1f1elemf20f2elem)
+							f1f1elemf21f2 = append(f1f1elemf21f2, f1f1elemf21f2elem)
 						}
-						f1f1elemf20.SecretOptions = f1f1elemf20f2
+						f1f1elemf21.SecretOptions = f1f1elemf21f2
 					}
-					f1f1elem.LogConfiguration = f1f1elemf20
+					f1f1elem.LogConfiguration = f1f1elemf21
 				}
 				if f1f1iter.Memory != nil {
 					f1f1elem.Memory = f1f1iter.Memory
@@ -446,50 +455,50 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f1f1elem.MemoryReservation = f1f1iter.MemoryReservation
 				}
 				if f1f1iter.MountPoints != nil {
-					f1f1elemf23 := []*svcapitypes.MountPoint{}
-					for _, f1f1elemf23iter := range f1f1iter.MountPoints {
-						f1f1elemf23elem := &svcapitypes.MountPoint{}
-						if f1f1elemf23iter.ContainerPath != nil {
-							f1f1elemf23elem.ContainerPath = f1f1elemf23iter.ContainerPath
+					f1f1elemf24 := []*svcapitypes.MountPoint{}
+					for _, f1f1elemf24iter := range f1f1iter.MountPoints {
+						f1f1elemf24elem := &svcapitypes.MountPoint{}
+						if f1f1elemf24iter.ContainerPath != nil {
+							f1f1elemf24elem.ContainerPath = f1f1elemf24iter.ContainerPath
 						}
-						if f1f1elemf23iter.ReadOnly != nil {
-							f1f1elemf23elem.ReadOnly = f1f1elemf23iter.ReadOnly
+						if f1f1elemf24iter.ReadOnly != nil {
+							f1f1elemf24elem.ReadOnly = f1f1elemf24iter.ReadOnly
 						}
-						if f1f1elemf23iter.SourceVolume != nil {
-							f1f1elemf23elem.SourceVolume = f1f1elemf23iter.SourceVolume
+						if f1f1elemf24iter.SourceVolume != nil {
+							f1f1elemf24elem.SourceVolume = f1f1elemf24iter.SourceVolume
 						}
-						f1f1elemf23 = append(f1f1elemf23, f1f1elemf23elem)
+						f1f1elemf24 = append(f1f1elemf24, f1f1elemf24elem)
 					}
-					f1f1elem.MountPoints = f1f1elemf23
+					f1f1elem.MountPoints = f1f1elemf24
 				}
 				if f1f1iter.Name != nil {
 					f1f1elem.Name = f1f1iter.Name
 				}
 				if f1f1iter.PortMappings != nil {
-					f1f1elemf25 := []*svcapitypes.PortMapping{}
-					for _, f1f1elemf25iter := range f1f1iter.PortMappings {
-						f1f1elemf25elem := &svcapitypes.PortMapping{}
-						if f1f1elemf25iter.AppProtocol != nil {
-							f1f1elemf25elem.AppProtocol = f1f1elemf25iter.AppProtocol
+					f1f1elemf26 := []*svcapitypes.PortMapping{}
+					for _, f1f1elemf26iter := range f1f1iter.PortMappings {
+						f1f1elemf26elem := &svcapitypes.PortMapping{}
+						if f1f1elemf26iter.AppProtocol != nil {
+							f1f1elemf26elem.AppProtocol = f1f1elemf26iter.AppProtocol
 						}
-						if f1f1elemf25iter.ContainerPort != nil {
-							f1f1elemf25elem.ContainerPort = f1f1elemf25iter.ContainerPort
+						if f1f1elemf26iter.ContainerPort != nil {
+							f1f1elemf26elem.ContainerPort = f1f1elemf26iter.ContainerPort
 						}
-						if f1f1elemf25iter.ContainerPortRange != nil {
-							f1f1elemf25elem.ContainerPortRange = f1f1elemf25iter.ContainerPortRange
+						if f1f1elemf26iter.ContainerPortRange != nil {
+							f1f1elemf26elem.ContainerPortRange = f1f1elemf26iter.ContainerPortRange
 						}
-						if f1f1elemf25iter.HostPort != nil {
-							f1f1elemf25elem.HostPort = f1f1elemf25iter.HostPort
+						if f1f1elemf26iter.HostPort != nil {
+							f1f1elemf26elem.HostPort = f1f1elemf26iter.HostPort
 						}
-						if f1f1elemf25iter.Name != nil {
-							f1f1elemf25elem.Name = f1f1elemf25iter.Name
+						if f1f1elemf26iter.Name != nil {
+							f1f1elemf26elem.Name = f1f1elemf26iter.Name
 						}
-						if f1f1elemf25iter.Protocol != nil {
-							f1f1elemf25elem.Protocol = f1f1elemf25iter.Protocol
+						if f1f1elemf26iter.Protocol != nil {
+							f1f1elemf26elem.Protocol = f1f1elemf26iter.Protocol
 						}
-						f1f1elemf25 = append(f1f1elemf25, f1f1elemf25elem)
+						f1f1elemf26 = append(f1f1elemf26, f1f1elemf26elem)
 					}
-					f1f1elem.PortMappings = f1f1elemf25
+					f1f1elem.PortMappings = f1f1elemf26
 				}
 				if f1f1iter.Privileged != nil {
 					f1f1elem.Privileged = f1f1iter.Privileged
@@ -501,39 +510,39 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f1f1elem.ReadonlyRootFilesystem = f1f1iter.ReadonlyRootFilesystem
 				}
 				if f1f1iter.RepositoryCredentials != nil {
-					f1f1elemf29 := &svcapitypes.RepositoryCredentials{}
+					f1f1elemf30 := &svcapitypes.RepositoryCredentials{}
 					if f1f1iter.RepositoryCredentials.CredentialsParameter != nil {
-						f1f1elemf29.CredentialsParameter = f1f1iter.RepositoryCredentials.CredentialsParameter
+						f1f1elemf30.CredentialsParameter = f1f1iter.RepositoryCredentials.CredentialsParameter
 					}
-					f1f1elem.RepositoryCredentials = f1f1elemf29
+					f1f1elem.RepositoryCredentials = f1f1elemf30
 				}
 				if f1f1iter.ResourceRequirements != nil {
-					f1f1elemf30 := []*svcapitypes.ResourceRequirement{}
-					for _, f1f1elemf30iter := range f1f1iter.ResourceRequirements {
-						f1f1elemf30elem := &svcapitypes.ResourceRequirement{}
-						if f1f1elemf30iter.Type != nil {
-							f1f1elemf30elem.Type = f1f1elemf30iter.Type
+					f1f1elemf31 := []*svcapitypes.ResourceRequirement{}
+					for _, f1f1elemf31iter := range f1f1iter.ResourceRequirements {
+						f1f1elemf31elem := &svcapitypes.ResourceRequirement{}
+						if f1f1elemf31iter.Type != nil {
+							f1f1elemf31elem.Type = f1f1elemf31iter.Type
 						}
-						if f1f1elemf30iter.Value != nil {
-							f1f1elemf30elem.Value = f1f1elemf30iter.Value
-						}
-						f1f1elemf30 = append(f1f1elemf30, f1f1elemf30elem)
-					}
-					f1f1elem.ResourceRequirements = f1f1elemf30
-				}
-				if f1f1iter.Secrets != nil {
-					f1f1elemf31 := []*svcapitypes.Secret{}
-					for _, f1f1elemf31iter := range f1f1iter.Secrets {
-						f1f1elemf31elem := &svcapitypes.Secret{}
-						if f1f1elemf31iter.Name != nil {
-							f1f1elemf31elem.Name = f1f1elemf31iter.Name
-						}
-						if f1f1elemf31iter.ValueFrom != nil {
-							f1f1elemf31elem.ValueFrom = f1f1elemf31iter.ValueFrom
+						if f1f1elemf31iter.Value != nil {
+							f1f1elemf31elem.Value = f1f1elemf31iter.Value
 						}
 						f1f1elemf31 = append(f1f1elemf31, f1f1elemf31elem)
 					}
-					f1f1elem.Secrets = f1f1elemf31
+					f1f1elem.ResourceRequirements = f1f1elemf31
+				}
+				if f1f1iter.Secrets != nil {
+					f1f1elemf32 := []*svcapitypes.Secret{}
+					for _, f1f1elemf32iter := range f1f1iter.Secrets {
+						f1f1elemf32elem := &svcapitypes.Secret{}
+						if f1f1elemf32iter.Name != nil {
+							f1f1elemf32elem.Name = f1f1elemf32iter.Name
+						}
+						if f1f1elemf32iter.ValueFrom != nil {
+							f1f1elemf32elem.ValueFrom = f1f1elemf32iter.ValueFrom
+						}
+						f1f1elemf32 = append(f1f1elemf32, f1f1elemf32elem)
+					}
+					f1f1elem.Secrets = f1f1elemf32
 				}
 				if f1f1iter.StartTimeout != nil {
 					f1f1elem.StartTimeout = f1f1iter.StartTimeout
@@ -542,52 +551,52 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					f1f1elem.StopTimeout = f1f1iter.StopTimeout
 				}
 				if f1f1iter.SystemControls != nil {
-					f1f1elemf34 := []*svcapitypes.SystemControl{}
-					for _, f1f1elemf34iter := range f1f1iter.SystemControls {
-						f1f1elemf34elem := &svcapitypes.SystemControl{}
-						if f1f1elemf34iter.Namespace != nil {
-							f1f1elemf34elem.Namespace = f1f1elemf34iter.Namespace
+					f1f1elemf35 := []*svcapitypes.SystemControl{}
+					for _, f1f1elemf35iter := range f1f1iter.SystemControls {
+						f1f1elemf35elem := &svcapitypes.SystemControl{}
+						if f1f1elemf35iter.Namespace != nil {
+							f1f1elemf35elem.Namespace = f1f1elemf35iter.Namespace
 						}
-						if f1f1elemf34iter.Value != nil {
-							f1f1elemf34elem.Value = f1f1elemf34iter.Value
-						}
-						f1f1elemf34 = append(f1f1elemf34, f1f1elemf34elem)
-					}
-					f1f1elem.SystemControls = f1f1elemf34
-				}
-				if f1f1iter.Ulimits != nil {
-					f1f1elemf35 := []*svcapitypes.Ulimit{}
-					for _, f1f1elemf35iter := range f1f1iter.Ulimits {
-						f1f1elemf35elem := &svcapitypes.Ulimit{}
-						if f1f1elemf35iter.HardLimit != nil {
-							f1f1elemf35elem.HardLimit = f1f1elemf35iter.HardLimit
-						}
-						if f1f1elemf35iter.Name != nil {
-							f1f1elemf35elem.Name = f1f1elemf35iter.Name
-						}
-						if f1f1elemf35iter.SoftLimit != nil {
-							f1f1elemf35elem.SoftLimit = f1f1elemf35iter.SoftLimit
+						if f1f1elemf35iter.Value != nil {
+							f1f1elemf35elem.Value = f1f1elemf35iter.Value
 						}
 						f1f1elemf35 = append(f1f1elemf35, f1f1elemf35elem)
 					}
-					f1f1elem.Ulimits = f1f1elemf35
+					f1f1elem.SystemControls = f1f1elemf35
+				}
+				if f1f1iter.Ulimits != nil {
+					f1f1elemf36 := []*svcapitypes.Ulimit{}
+					for _, f1f1elemf36iter := range f1f1iter.Ulimits {
+						f1f1elemf36elem := &svcapitypes.Ulimit{}
+						if f1f1elemf36iter.HardLimit != nil {
+							f1f1elemf36elem.HardLimit = f1f1elemf36iter.HardLimit
+						}
+						if f1f1elemf36iter.Name != nil {
+							f1f1elemf36elem.Name = f1f1elemf36iter.Name
+						}
+						if f1f1elemf36iter.SoftLimit != nil {
+							f1f1elemf36elem.SoftLimit = f1f1elemf36iter.SoftLimit
+						}
+						f1f1elemf36 = append(f1f1elemf36, f1f1elemf36elem)
+					}
+					f1f1elem.Ulimits = f1f1elemf36
 				}
 				if f1f1iter.User != nil {
 					f1f1elem.User = f1f1iter.User
 				}
 				if f1f1iter.VolumesFrom != nil {
-					f1f1elemf37 := []*svcapitypes.VolumeFrom{}
-					for _, f1f1elemf37iter := range f1f1iter.VolumesFrom {
-						f1f1elemf37elem := &svcapitypes.VolumeFrom{}
-						if f1f1elemf37iter.ReadOnly != nil {
-							f1f1elemf37elem.ReadOnly = f1f1elemf37iter.ReadOnly
+					f1f1elemf38 := []*svcapitypes.VolumeFrom{}
+					for _, f1f1elemf38iter := range f1f1iter.VolumesFrom {
+						f1f1elemf38elem := &svcapitypes.VolumeFrom{}
+						if f1f1elemf38iter.ReadOnly != nil {
+							f1f1elemf38elem.ReadOnly = f1f1elemf38iter.ReadOnly
 						}
-						if f1f1elemf37iter.SourceContainer != nil {
-							f1f1elemf37elem.SourceContainer = f1f1elemf37iter.SourceContainer
+						if f1f1elemf38iter.SourceContainer != nil {
+							f1f1elemf38elem.SourceContainer = f1f1elemf38iter.SourceContainer
 						}
-						f1f1elemf37 = append(f1f1elemf37, f1f1elemf37elem)
+						f1f1elemf38 = append(f1f1elemf38, f1f1elemf38elem)
 					}
-					f1f1elem.VolumesFrom = f1f1elemf37
+					f1f1elem.VolumesFrom = f1f1elemf38
 				}
 				if f1f1iter.WorkingDirectory != nil {
 					f1f1elem.WorkingDirectory = f1f1iter.WorkingDirectory

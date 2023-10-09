@@ -29,21 +29,57 @@ type GlobalClusterParameters struct {
 	// Region is which region the GlobalCluster will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The name for your database of up to 64 alphanumeric characters. If you do
-	// not provide a name, Amazon Aurora will not create a database in the global
-	// database cluster you are creating.
+	// The name for your database of up to 64 alphanumeric characters. If you don't
+	// specify a name, Amazon Aurora doesn't create a database in the global database
+	// cluster.
+	//
+	// Constraints:
+	//
+	//    * Can't be specified if SourceDBClusterIdentifier is specified. In this
+	//    case, Amazon Aurora uses the database name from the source DB cluster.
 	DatabaseName *string `json:"databaseName,omitempty"`
-	// The deletion protection setting for the new global database. The global database
-	// can't be deleted when deletion protection is enabled.
+	// Specifies whether to enable deletion protection for the new global database
+	// cluster. The global database can't be deleted when deletion protection is
+	// enabled.
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-	// The name of the database engine to be used for this DB cluster.
+	// The database engine to use for this global database cluster.
+	//
+	// Valid Values: aurora-mysql | aurora-postgresql
+	//
+	// Constraints:
+	//
+	//    * Can't be specified if SourceDBClusterIdentifier is specified. In this
+	//    case, Amazon Aurora uses the engine of the source DB cluster.
 	Engine *string `json:"engine,omitempty"`
-	// The engine version of the Aurora global database.
+	// The engine version to use for this global database cluster.
+	//
+	// Constraints:
+	//
+	//    * Can't be specified if SourceDBClusterIdentifier is specified. In this
+	//    case, Amazon Aurora uses the engine version of the source DB cluster.
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The Amazon Resource Name (ARN) to use as the primary cluster of the global
-	// database. This parameter is optional.
+	// database.
+	//
+	// If you provide a value for this parameter, don't specify values for the following
+	// settings because Amazon Aurora uses the values from the specified source
+	// DB cluster:
+	//
+	//    * DatabaseName
+	//
+	//    * Engine
+	//
+	//    * EngineVersion
+	//
+	//    * StorageEncrypted
 	SourceDBClusterIdentifier *string `json:"sourceDBClusterIdentifier,omitempty"`
-	// The storage encryption setting for the new global database cluster.
+	// Specifies whether to enable storage encryption for the new global database
+	// cluster.
+	//
+	// Constraints:
+	//
+	//    * Can't be specified if SourceDBClusterIdentifier is specified. In this
+	//    case, Amazon Aurora uses the setting from the source DB cluster.
 	StorageEncrypted              *bool `json:"storageEncrypted,omitempty"`
 	CustomGlobalClusterParameters `json:",inline"`
 }
@@ -57,17 +93,16 @@ type GlobalClusterSpec struct {
 // GlobalClusterObservation defines the observed state of GlobalCluster
 type GlobalClusterObservation struct {
 	// A data object containing all properties for the current state of an in-process
-	// or pending failover process for this Aurora global database. This object
-	// is empty unless the FailoverGlobalCluster API operation has been called on
-	// this Aurora global database (GlobalCluster).
+	// or pending switchover or failover process for this global cluster (Aurora
+	// global database). This object is empty unless the SwitchoverGlobalCluster
+	// or FailoverGlobalCluster operation was called on this global cluster.
 	FailoverState *FailoverState `json:"failoverState,omitempty"`
 	// The Amazon Resource Name (ARN) for the global database cluster.
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
 	// Contains a user-supplied global database cluster identifier. This identifier
 	// is the unique key that identifies a global database cluster.
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
-	// The list of cluster IDs for secondary clusters within the global database
-	// cluster. Currently limited to 1 item.
+	// The list of primary and secondary clusters within the global database cluster.
 	GlobalClusterMembers []*GlobalClusterMember `json:"globalClusterMembers,omitempty"`
 	// The Amazon Web Services Region-unique, immutable identifier for the global
 	// database cluster. This identifier is found in Amazon Web Services CloudTrail

@@ -78,10 +78,18 @@ type DomainParameters struct {
 	// Elasticsearch_7.9. For more information, see Creating and managing Amazon
 	// OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// Key-value pairs to configure slow log publishing.
+	// Key-value pairs to configure log publishing.
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
 	// Enables node-to-node encryption.
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
+	// Specifies a daily 10-hour time block during which OpenSearch Service can
+	// perform configuration changes on the domain, including service software updates
+	// and Auto-Tune enhancements that require a blue/green deployment. If no options
+	// are specified, the default start time of 10:00 P.M. local time (for the Region
+	// that the domain is created in) is used.
+	OffPeakWindowOptions *OffPeakWindowOptions `json:"offPeakWindowOptions,omitempty"`
+	// Software update options for the domain.
+	SoftwareUpdateOptions *SoftwareUpdateOptions `json:"softwareUpdateOptions,omitempty"`
 	// List of tags to add to the domain upon creation.
 	Tags                   []*Tag `json:"tags,omitempty"`
 	CustomDomainParameters `json:",inline"`

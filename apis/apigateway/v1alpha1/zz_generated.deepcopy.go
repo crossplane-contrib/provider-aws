@@ -4392,6 +4392,11 @@ func (in *RestAPIObservation) DeepCopyInto(out *RestAPIObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RootResourceID != nil {
+		in, out := &in.RootResourceID, &out.RootResourceID
+		*out = new(string)
+		**out = **in
+	}
 	if in.Warnings != nil {
 		in, out := &in.Warnings, &out.Warnings
 		*out = make([]*string, len(*in))
@@ -4591,6 +4596,11 @@ func (in *RestAPI_SDK) DeepCopyInto(out *RestAPI_SDK) {
 	}
 	if in.Policy != nil {
 		in, out := &in.Policy, &out.Policy
+		*out = new(string)
+		**out = **in
+	}
+	if in.RootResourceID != nil {
+		in, out := &in.RootResourceID, &out.RootResourceID
 		*out = new(string)
 		**out = **in
 	}

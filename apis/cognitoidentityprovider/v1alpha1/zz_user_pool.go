@@ -107,8 +107,12 @@ type UserPoolParameters struct {
 	// and phone number attributes. For more information, see Verifying updates
 	// to email addresses and phone numbers (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-email-phone-verification.html#user-pool-settings-verifications-verify-attribute-updates).
 	UserAttributeUpdateSettings *UserAttributeUpdateSettingsType `json:"userAttributeUpdateSettings,omitempty"`
-	// Enables advanced security risk detection. Set the key AdvancedSecurityMode
-	// to the value "AUDIT".
+	// User pool add-ons. Contains settings for activation of advanced security
+	// features. To log user security information but take no action, set to AUDIT.
+	// To configure automatic security responses to risky traffic to your user pool,
+	// set to ENFORCED.
+	//
+	// For more information, see Adding advanced security to a user pool (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-settings-advanced-security.html).
 	UserPoolAddOns *UserPoolAddOnsType `json:"userPoolAddOns,omitempty"`
 	// The tag keys and values to assign to the user pool. A tag is a label that
 	// you can use to categorize and manage user pools in different ways, such as
@@ -117,10 +121,17 @@ type UserPoolParameters struct {
 	// Specifies whether a user can use an email address or phone number as a username
 	// when they sign up.
 	UsernameAttributes []*string `json:"usernameAttributes,omitempty"`
-	// Case sensitivity on the username input for the selected sign-in option. For
-	// example, when case sensitivity is set to False, users can sign in using either
-	// "username" or "Username". This configuration is immutable once it has been
-	// set. For more information, see UsernameConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html).
+	// Case sensitivity on the username input for the selected sign-in option. When
+	// case sensitivity is set to False (case insensitive), users can sign in with
+	// any combination of capital and lowercase letters. For example, username,
+	// USERNAME, or UserName, or for email, email@example.com or EMaiL@eXamplE.Com.
+	// For most use cases, set case sensitivity to False (case insensitive) as a
+	// best practice. When usernames and email addresses are case insensitive, Amazon
+	// Cognito treats any variation in case as the same user, and prevents a case
+	// variation from being assigned to the same attribute for a different user.
+	//
+	// This configuration is immutable after you set it. For more information, see
+	// UsernameConfigurationType (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UsernameConfigurationType.html).
 	UsernameConfiguration *UsernameConfigurationType `json:"usernameConfiguration,omitempty"`
 	// The template for the verification message that the user sees when the app
 	// requests permission to access the user's information.
@@ -138,7 +149,8 @@ type UserPoolSpec struct {
 type UserPoolObservation struct {
 	// The Amazon Resource Name (ARN) for the user pool.
 	ARN *string `json:"arn,omitempty"`
-	// The date the user pool was created.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// A custom domain name that you provide to Amazon Cognito. This parameter applies
 	// only if you use a custom domain to host the sign-up and sign-in pages for
@@ -156,11 +168,20 @@ type UserPoolObservation struct {
 	EstimatedNumberOfUsers *int64 `json:"estimatedNumberOfUsers,omitempty"`
 	// The ID of the user pool.
 	ID *string `json:"id,omitempty"`
-	// The date the user pool was last modified.
+	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
+	// format, when the item was modified.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The name of the user pool.
 	Name *string `json:"name,omitempty"`
-	// A container with the schema attributes of a user pool.
+	// A list of the user attributes and their properties in your user pool. The
+	// attribute schema contains standard attributes, custom attributes with a custom:
+	// prefix, and developer attributes with a dev: prefix. For more information,
+	// see User pool attributes (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-attributes.html).
+	//
+	// Developer-only attributes are a legacy feature of user pools, are read-only
+	// to all app clients. You can create and update developer-only attributes only
+	// with IAM-authenticated API operations. Use app client read/write permissions
+	// instead.
 	SchemaAttributes []*SchemaAttributeType `json:"schemaAttributes,omitempty"`
 	// The reason why the SMS configuration can't send the messages to your users.
 	//
@@ -177,7 +198,7 @@ type UserPoolObservation struct {
 	//
 	// The Amazon Web Services account is in the SNS SMS Sandbox and messages will
 	// only reach verified end users. This parameter won’t get populated with
-	// SNSSandbox if the IAM user creating the user pool doesn’t have SNS permissions.
+	// SNSSandbox if the user creating the user pool doesn’t have SNS permissions.
 	// To learn how to move your Amazon Web Services account out of the sandbox,
 	// see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`

@@ -134,9 +134,7 @@ type FileSystemObservation struct {
 	// The current number of mount targets that the file system has. For more information,
 	// see CreateMountTarget.
 	NumberOfMountTargets *int64 `json:"numberOfMountTargets,omitempty"`
-	// The Amazon Web Services account that created the file system. If the file
-	// system was created by an IAM user, the parent account to which the user belongs
-	// is the owner.
+	// The Amazon Web Services account that created the file system.
 	OwnerID *string `json:"ownerID,omitempty"`
 	// The latest known metered size (in bytes) of data stored in the file system,
 	// in its Value field, and the time at which that size was determined in its

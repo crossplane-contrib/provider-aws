@@ -376,6 +376,8 @@ const (
 	SettingName_containerInstanceLongArnFormat SettingName = "containerInstanceLongArnFormat"
 	SettingName_awsvpcTrunking                 SettingName = "awsvpcTrunking"
 	SettingName_containerInsights              SettingName = "containerInsights"
+	SettingName_fargateFIPSMode                SettingName = "fargateFIPSMode"
+	SettingName_tagResourceAuthorization       SettingName = "tagResourceAuthorization"
 )
 
 type SortOrder string
@@ -421,8 +423,9 @@ const (
 type TaskDefinitionStatus_SDK string
 
 const (
-	TaskDefinitionStatus_SDK_ACTIVE   TaskDefinitionStatus_SDK = "ACTIVE"
-	TaskDefinitionStatus_SDK_INACTIVE TaskDefinitionStatus_SDK = "INACTIVE"
+	TaskDefinitionStatus_SDK_ACTIVE             TaskDefinitionStatus_SDK = "ACTIVE"
+	TaskDefinitionStatus_SDK_INACTIVE           TaskDefinitionStatus_SDK = "INACTIVE"
+	TaskDefinitionStatus_SDK_DELETE_IN_PROGRESS TaskDefinitionStatus_SDK = "DELETE_IN_PROGRESS"
 )
 
 type TaskField string

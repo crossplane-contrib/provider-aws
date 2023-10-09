@@ -85,14 +85,29 @@ func GenerateResolverEndpoint(resp *svcsdk.GetResolverEndpointOutput) *svcapityp
 	} else {
 		cr.Spec.ForProvider.Name = nil
 	}
+	if resp.ResolverEndpoint.OutpostArn != nil {
+		cr.Spec.ForProvider.OutpostARN = resp.ResolverEndpoint.OutpostArn
+	} else {
+		cr.Spec.ForProvider.OutpostARN = nil
+	}
+	if resp.ResolverEndpoint.PreferredInstanceType != nil {
+		cr.Spec.ForProvider.PreferredInstanceType = resp.ResolverEndpoint.PreferredInstanceType
+	} else {
+		cr.Spec.ForProvider.PreferredInstanceType = nil
+	}
+	if resp.ResolverEndpoint.ResolverEndpointType != nil {
+		cr.Spec.ForProvider.ResolverEndpointType = resp.ResolverEndpoint.ResolverEndpointType
+	} else {
+		cr.Spec.ForProvider.ResolverEndpointType = nil
+	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
-		f9 := []*string{}
-		for _, f9iter := range resp.ResolverEndpoint.SecurityGroupIds {
-			var f9elem string
-			f9elem = *f9iter
-			f9 = append(f9, &f9elem)
+		f12 := []*string{}
+		for _, f12iter := range resp.ResolverEndpoint.SecurityGroupIds {
+			var f12elem string
+			f12elem = *f12iter
+			f12 = append(f12, &f12elem)
 		}
-		cr.Status.AtProvider.SecurityGroupIDs = f9
+		cr.Status.AtProvider.SecurityGroupIDs = f12
 	} else {
 		cr.Status.AtProvider.SecurityGroupIDs = nil
 	}
@@ -120,19 +135,28 @@ func GenerateCreateResolverEndpointInput(cr *svcapitypes.ResolverEndpoint) *svcs
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
+	if cr.Spec.ForProvider.OutpostARN != nil {
+		res.SetOutpostArn(*cr.Spec.ForProvider.OutpostARN)
+	}
+	if cr.Spec.ForProvider.PreferredInstanceType != nil {
+		res.SetPreferredInstanceType(*cr.Spec.ForProvider.PreferredInstanceType)
+	}
+	if cr.Spec.ForProvider.ResolverEndpointType != nil {
+		res.SetResolverEndpointType(*cr.Spec.ForProvider.ResolverEndpointType)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+		f5 := []*svcsdk.Tag{}
+		for _, f5iter := range cr.Spec.ForProvider.Tags {
+			f5elem := &svcsdk.Tag{}
+			if f5iter.Key != nil {
+				f5elem.SetKey(*f5iter.Key)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
+			if f5iter.Value != nil {
+				f5elem.SetValue(*f5iter.Value)
 			}
-			f2 = append(f2, f2elem)
+			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f2)
+		res.SetTags(f5)
 	}
 
 	return res
@@ -144,6 +168,9 @@ func GenerateUpdateResolverEndpointInput(cr *svcapitypes.ResolverEndpoint) *svcs
 
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.ResolverEndpointType != nil {
+		res.SetResolverEndpointType(*cr.Spec.ForProvider.ResolverEndpointType)
 	}
 
 	return res

@@ -128,15 +128,26 @@ type ConfigurationRevision struct {
 // +kubebuilder:skipversion
 type Configurations struct {
 	// A list of information about the configuration.
-	//
-	// Does not apply to RabbitMQ brokers.
 	Current *ConfigurationID `json:"current,omitempty"`
 
 	History []*ConfigurationID `json:"history,omitempty"`
 	// A list of information about the configuration.
-	//
-	// Does not apply to RabbitMQ brokers.
 	Pending *ConfigurationID `json:"pending,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DataReplicationCounterpart struct {
+	BrokerID *string `json:"brokerID,omitempty"`
+
+	Region *string `json:"region,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DataReplicationMetadataOutput struct {
+	// Specifies a broker in a data replication pair.
+	DataReplicationCounterpart *DataReplicationCounterpart `json:"dataReplicationCounterpart,omitempty"`
+
+	DataReplicationRole *string `json:"dataReplicationRole,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -257,6 +268,8 @@ type User_SDK struct {
 	Groups []*string `json:"groups,omitempty"`
 
 	Password *string `json:"password,omitempty"`
+
+	ReplicationUser *bool `json:"replicationUser,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }

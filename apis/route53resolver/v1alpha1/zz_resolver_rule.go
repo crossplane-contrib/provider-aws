@@ -60,7 +60,8 @@ type ResolverRuleParameters struct {
 	// A list of the tag keys and values that you want to associate with the endpoint.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The IPs that you want Resolver to forward DNS queries to. You can specify
-	// only IPv4 addresses. Separate IP addresses with a space.
+	// either Ipv4 or Ipv6 addresses but not both in the same rule. Separate IP
+	// addresses with a space.
 	//
 	// TargetIps is available only when the value of Rule type is FORWARD.
 	TargetIPs                    []*TargetAddress `json:"targetIPs,omitempty"`

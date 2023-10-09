@@ -45,11 +45,23 @@ const (
 	ExportTaskStatusCode_RUNNING        ExportTaskStatusCode = "RUNNING"
 )
 
+type InheritedProperty string
+
+const (
+	InheritedProperty_ACCOUNT_DATA_PROTECTION InheritedProperty = "ACCOUNT_DATA_PROTECTION"
+)
+
 type OrderBy string
 
 const (
 	OrderBy_LogStreamName OrderBy = "LogStreamName"
 	OrderBy_LastEventTime OrderBy = "LastEventTime"
+)
+
+type PolicyType string
+
+const (
+	PolicyType_DATA_PROTECTION_POLICY PolicyType = "DATA_PROTECTION_POLICY"
 )
 
 type QueryStatus string
@@ -62,6 +74,12 @@ const (
 	QueryStatus_Cancelled QueryStatus = "Cancelled"
 	QueryStatus_Timeout   QueryStatus = "Timeout"
 	QueryStatus_Unknown   QueryStatus = "Unknown"
+)
+
+type Scope string
+
+const (
+	Scope_ALL Scope = "ALL"
 )
 
 type StandardUnit string

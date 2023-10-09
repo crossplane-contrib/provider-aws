@@ -197,6 +197,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions != nil {
 				f0f3f2 := &svcapitypes.LaunchTemplateCPUOptions{}
+				if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.AmdSevSnp != nil {
+					f0f3f2.AmdSevSnp = resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.AmdSevSnp
+				}
 				if resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.CoreCount != nil {
 					f0f3f2.CoreCount = resp.LaunchTemplateVersion.LaunchTemplateData.CpuOptions.CoreCount
 				}
@@ -597,6 +600,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 							if f0f3f23elemf10iter.Ipv6Address != nil {
 								f0f3f23elemf10elem.IPv6Address = f0f3f23elemf10iter.Ipv6Address
 							}
+							if f0f3f23elemf10iter.IsPrimaryIpv6 != nil {
+								f0f3f23elemf10elem.IsPrimaryIPv6 = f0f3f23elemf10iter.IsPrimaryIpv6
+							}
 							f0f3f23elemf10 = append(f0f3f23elemf10, f0f3f23elemf10elem)
 						}
 						f0f3f23elem.IPv6Addresses = f0f3f23elemf10
@@ -621,22 +627,25 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 					if f0f3f23iter.NetworkInterfaceId != nil {
 						f0f3f23elem.NetworkInterfaceID = f0f3f23iter.NetworkInterfaceId
 					}
+					if f0f3f23iter.PrimaryIpv6 != nil {
+						f0f3f23elem.PrimaryIPv6 = f0f3f23iter.PrimaryIpv6
+					}
 					if f0f3f23iter.PrivateIpAddress != nil {
 						f0f3f23elem.PrivateIPAddress = f0f3f23iter.PrivateIpAddress
 					}
 					if f0f3f23iter.PrivateIpAddresses != nil {
-						f0f3f23elemf16 := []*svcapitypes.PrivateIPAddressSpecification{}
-						for _, f0f3f23elemf16iter := range f0f3f23iter.PrivateIpAddresses {
-							f0f3f23elemf16elem := &svcapitypes.PrivateIPAddressSpecification{}
-							if f0f3f23elemf16iter.Primary != nil {
-								f0f3f23elemf16elem.Primary = f0f3f23elemf16iter.Primary
+						f0f3f23elemf17 := []*svcapitypes.PrivateIPAddressSpecification{}
+						for _, f0f3f23elemf17iter := range f0f3f23iter.PrivateIpAddresses {
+							f0f3f23elemf17elem := &svcapitypes.PrivateIPAddressSpecification{}
+							if f0f3f23elemf17iter.Primary != nil {
+								f0f3f23elemf17elem.Primary = f0f3f23elemf17iter.Primary
 							}
-							if f0f3f23elemf16iter.PrivateIpAddress != nil {
-								f0f3f23elemf16elem.PrivateIPAddress = f0f3f23elemf16iter.PrivateIpAddress
+							if f0f3f23elemf17iter.PrivateIpAddress != nil {
+								f0f3f23elemf17elem.PrivateIPAddress = f0f3f23elemf17iter.PrivateIpAddress
 							}
-							f0f3f23elemf16 = append(f0f3f23elemf16, f0f3f23elemf16elem)
+							f0f3f23elemf17 = append(f0f3f23elemf17, f0f3f23elemf17elem)
 						}
-						f0f3f23elem.PrivateIPAddresses = f0f3f23elemf16
+						f0f3f23elem.PrivateIPAddresses = f0f3f23elemf17
 					}
 					if f0f3f23iter.SecondaryPrivateIpAddressCount != nil {
 						f0f3f23elem.SecondaryPrivateIPAddressCount = f0f3f23iter.SecondaryPrivateIpAddressCount
