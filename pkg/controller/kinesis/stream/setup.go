@@ -124,7 +124,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.CreateStr
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, cr.Name)
+	meta.SetExternalName(cr, *awsclients.String(meta.GetExternalName(cr)))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -189,7 +189,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	// we need information from stream for decisions
 	obj, err := u.client.DescribeStreamWithContext(ctx, &svcsdk.DescribeStreamInput{
-		StreamName: &cr.Name,
+		StreamName: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclients.Wrap(err, errCreate)
@@ -376,7 +376,7 @@ func (u *updater) ActiveShards(cr *svcapitypes.Stream) (int64, error) {
 	var count int64
 
 	shards, err := u.client.ListShards(&svcsdk.ListShardsInput{
-		StreamName: &cr.Name,
+		StreamName: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return count, err
@@ -395,7 +395,7 @@ func (u *updater) ActiveShards(cr *svcapitypes.Stream) (int64, error) {
 func (u *updater) ListTags(cr *svcapitypes.Stream) (*svcsdk.ListTagsForStreamOutput, error) {
 
 	tags, err := u.client.ListTagsForStream(&svcsdk.ListTagsForStreamInput{
-		StreamName: &cr.Name,
+		StreamName: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return nil, err
