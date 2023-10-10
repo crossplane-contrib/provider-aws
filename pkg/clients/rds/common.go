@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
+	kubeutils "github.com/crossplane-contrib/provider-aws/pkg/utils/kube"
 )
 
 // Publicly usable variables
@@ -53,8 +54,6 @@ const (
 	errGetCachedPassword    = "cannot get cached password"
 	errGetCachedRestoreInfo = "cannot get cached restore info"
 	errGetMasterPassword    = "cannot get master password"
-
-	secretNamespace = "crossplane-system"
 )
 
 type restoreSate string
@@ -168,6 +167,7 @@ func getCachedPassword(ctx context.Context, kube client.Client, mg resource.Mana
 func getCachingSecretRef(mg resource.Managed) xpv1.SecretReference {
 	secretName := mg.GetObjectKind().GroupVersionKind().Kind + "." + string(mg.GetUID())
 	secretName = strings.ToLower(secretName)
+	secretNamespace := kubeutils.GetProviderNamespace()
 
 	return xpv1.SecretReference{
 		Name:      secretName,

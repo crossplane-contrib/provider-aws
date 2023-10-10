@@ -20,6 +20,10 @@ import (
 	kubemock "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/kube"
 )
 
+const (
+	secretNamespace = "crossplane-system"
+)
+
 var (
 	errBoom = errors.New("boom")
 )
