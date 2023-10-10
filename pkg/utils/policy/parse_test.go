@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -36,12 +37,12 @@ func TestParsePolicy(t *testing.T) {
 					Version: "2012-10-17",
 					Statements: []Statement{
 						{
-							SID: "AllowPutObjectS3ServerAccessLogsPolicy",
+							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
 								Service: StringOrArray{
 									"logging.s3.amazonaws.com",
 								},
-								Federated: "cognito-identity.amazonaws.com",
+								Federated: ptr.To("cognito-identity.amazonaws.com"),
 								AWSPrincipals: StringOrArray{
 									"123456789012",
 								},
@@ -75,13 +76,13 @@ func TestParsePolicy(t *testing.T) {
 					Version: "2012-10-17",
 					Statements: []Statement{
 						{
-							SID: "AllowPutObjectS3ServerAccessLogsPolicy",
+							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
 								Service: StringOrArray{
 									"logging.s3.amazonaws.com",
 									"s3.amazonaws.com",
 								},
-								Federated: "cognito-identity.amazonaws.com",
+								Federated: ptr.To("cognito-identity.amazonaws.com"),
 								AWSPrincipals: StringOrArray{
 									"123456789012",
 									"452356421222",
@@ -108,7 +109,7 @@ func TestParsePolicy(t *testing.T) {
 							},
 						},
 						{
-							SID:    "RestrictToS3ServerAccessLogs",
+							SID:    ptr.To("RestrictToS3ServerAccessLogs"),
 							Effect: "Deny",
 							Principal: &Principal{
 								AllowAnon: true,

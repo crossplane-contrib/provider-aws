@@ -1,9 +1,12 @@
 /*
-Copyright 2021 The Crossplane Authors.
+Copyright 2023 The Crossplane Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +30,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -35,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 const (
@@ -42,6 +46,7 @@ const (
 	errUpdateBrokerType           = "cannot update BrokerType of Cluster in AWS"
 	errUpdateBrokerStorage        = "cannot update BrokerStorage of Cluster in AWS"
 	errUpdateBrokerCount          = "cannot update BrokerCount of Cluster in AWS"
+	errUpdateConnectivity         = "cannot update broker connectivity info"
 	errUpdateMonitoring           = "cannot update Monitoring of Cluster in AWS"
 	errUpdateClusterConfiguration = "cannot update ClusterConfiguration of Cluster in AWS"
 	errUpdateClusterKafkaVersion  = "cannot update ClusterKafkaVersion of Cluster in AWS"
@@ -49,6 +54,12 @@ const (
 	errUpdateTags                 = "cannot update Tags of Cluster in AWS"
 	errStateForUpdate             = "cannot update cluster if not in status ACTIVE"
 	stateActive                   = "ACTIVE"
+
+	errGetClusterPolicy     = "cannot get cluster policy"
+	errParseClusterPolicy   = "cannot parse cluster policy"
+	errPutClusterPolicy     = "cannot put cluster policy"
+	errDeleteClusterPolicy  = "cannot delete cluster policy"
+	errMarshalClusterPolicy = "cannot marshal cluster policy"
 )
 
 // SetupCluster adds a controller that reconciles Cluster.
@@ -56,16 +67,16 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
-			u := &updater{client: e.client}
+			h := &hooks{client: e.client}
 			e.preObserve = preObserve
-			e.postObserve = u.postObserve
+			e.postObserve = h.postObserve
 			e.preDelete = preDelete
 			e.postDelete = postDelete
 			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.lateInitialize = LateInitialize
-			e.update = u.update
-			e.isUpToDate = isUpToDate
+			e.update = h.update
+			e.isUpToDate = h.isUpToDate
 		},
 	}
 
@@ -99,6 +110,23 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 		Complete(r)
 }
 
+type subResourceState int
+
+const (
+	subResourceOK            subResourceState = 0
+	subResourceNeedsUpdate   subResourceState = 1
+	subResourceNeedsDeletion subResourceState = 2
+)
+
+type hooks struct {
+	client kafkaiface.KafkaAPI
+
+	cache struct {
+		clusterPolicyState subResourceState
+		brokerConnectivity subResourceState
+	}
+}
+
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
 	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
@@ -120,7 +148,7 @@ func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describe
 	return nil
 }
 
-func (u *updater) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -192,7 +220,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 
 // LateInitialize fills the empty fields in *svcapitypes.ClusterParameters with
 // the values seen in svcsdk.DescribeClusterOutput.
-func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error {
+func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error { //nolint:gocyclo
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
 		cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
@@ -202,15 +230,90 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 		cr.CustomBrokerNodeGroupInfo.SecurityGroups = obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups
 	}
 
-	if cr.EncryptionInfo == nil && obj.ClusterInfo.EncryptionInfo != nil {
-		cr.EncryptionInfo = &svcapitypes.EncryptionInfo{
-			EncryptionAtRest: &svcapitypes.EncryptionAtRest{
-				DataVolumeKMSKeyID: obj.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId,
-			},
-			EncryptionInTransit: &svcapitypes.EncryptionInTransit{
-				ClientBroker: obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker,
-				InCluster:    obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster,
-			},
+	if obj.ClusterInfo.EncryptionInfo != nil {
+		if cr.EncryptionInfo == nil {
+			cr.EncryptionInfo = &svcapitypes.EncryptionInfo{}
+		}
+		if obj.ClusterInfo.EncryptionInfo.EncryptionAtRest != nil {
+			if cr.EncryptionInfo.EncryptionAtRest == nil {
+				cr.EncryptionInfo.EncryptionAtRest = &svcapitypes.EncryptionAtRest{}
+			}
+			cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID = awsclients.LateInitializeStringPtr(
+				cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID,
+				obj.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId,
+			)
+		}
+		if obj.ClusterInfo.EncryptionInfo.EncryptionInTransit != nil {
+			if cr.EncryptionInfo.EncryptionInTransit == nil {
+				cr.EncryptionInfo.EncryptionInTransit = &svcapitypes.EncryptionInTransit{}
+			}
+			cr.EncryptionInfo.EncryptionInTransit.ClientBroker = awsclients.LateInitializeStringPtr(
+				cr.EncryptionInfo.EncryptionInTransit.ClientBroker,
+				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker,
+			)
+			cr.EncryptionInfo.EncryptionInTransit.InCluster = awsclients.LateInitializeBoolPtr(
+				cr.EncryptionInfo.EncryptionInTransit.InCluster,
+				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster,
+			)
+		}
+	}
+
+	if cr.CustomBrokerNodeGroupInfo != nil && obj.ClusterInfo.BrokerNodeGroupInfo != nil {
+		if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo != nil {
+			if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo == nil {
+				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo = &svcapitypes.CustomConnectivityInfo{}
+			}
+			if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.PublicAccess != nil {
+				if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess == nil {
+					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess = &svcapitypes.CustomPublicAccess{}
+				}
+				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type = awsclients.LateInitializeStringPtr(
+					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
+					obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
+				)
+			}
+			if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity != nil {
+				if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity == nil {
+					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity = &svcapitypes.VPCConnectivity{}
+				}
+				if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication != nil {
+					if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication == nil {
+						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication = &svcapitypes.VPCConnectivityClientAuthentication{}
+					}
+					if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl != nil {
+						if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL == nil {
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL = &svcapitypes.VPCConnectivitySASL{}
+						}
+						if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Iam != nil {
+							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM == nil {
+								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM = &svcapitypes.VPCConnectivityIAM{}
+							}
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled = awsclients.LateInitializeBoolPtr(
+								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled,
+								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Iam.Enabled,
+							)
+						}
+						if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Scram != nil {
+							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM == nil {
+								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM = &svcapitypes.VPCConnectivitySCRAM{}
+							}
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled = awsclients.LateInitializeBoolPtr(
+								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled,
+								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Scram.Enabled,
+							)
+						}
+					}
+					if obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Tls != nil {
+						if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS == nil {
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS = &svcapitypes.VPCConnectivityTLS{}
+						}
+						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled = awsclients.LateInitializeBoolPtr(
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled,
+							obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Tls.Enabled,
+						)
+					}
+				}
+			}
 		}
 	}
 
@@ -230,7 +333,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 	return nil
 }
 
-func isUpToDate(_ context.Context, wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, string, error) {
+func (u *hooks) isUpToDate(ctx context.Context, wanted *svcapitypes.Cluster, current *svcsdk.DescribeClusterOutput) (bool, string, error) {
 	forProvider := wanted.Spec.ForProvider
 	clusterInfo := current.ClusterInfo
 
@@ -251,7 +354,62 @@ func isUpToDate(_ context.Context, wanted *svcapitypes.Cluster, current *svcsdk.
 		!isTagsUpToDate(forProvider.Tags, clusterInfo.Tags):
 		return false, "", nil
 	}
+
+	if isUpToDate, diff := isConnectivityInfoUpToDate(wanted.Spec.ForProvider.CustomBrokerNodeGroupInfo, current.ClusterInfo.BrokerNodeGroupInfo); !isUpToDate {
+		u.cache.brokerConnectivity = subResourceNeedsUpdate
+		return false, diff, nil
+	}
+
+	clusterPolicyState, diff, err := u.getClusterPolicyState(ctx, wanted)
+	u.cache.clusterPolicyState = clusterPolicyState
+	if clusterPolicyState != subResourceOK {
+		return false, diff, err
+	}
+
 	return true, "", nil
+}
+
+func (u *hooks) getClusterPolicyState(ctx context.Context, wanted *svcapitypes.Cluster) (subResourceState, string, error) {
+	res, err := u.client.GetClusterPolicyWithContext(ctx, &svcsdk.GetClusterPolicyInput{
+		ClusterArn: awsclients.String(meta.GetExternalName(wanted)),
+	})
+	if IsNotFound(err) {
+		if wanted.Spec.ForProvider.ClusterPolicy == nil {
+			return subResourceOK, "spec.forProvider.clusterPolicy", nil
+		}
+		return subResourceNeedsUpdate, "spec.forProvider.clusterPolicy", nil
+	}
+	if err != nil {
+		return subResourceOK, "", errors.Wrap(err, errGetClusterPolicy)
+	}
+
+	if res.Policy == nil {
+		if wanted.Spec.ForProvider.ClusterPolicy == nil {
+			return subResourceNeedsDeletion, "spec.forProvider.clusterPolicy", nil
+		}
+		return subResourceOK, "spec.forProvider.clusterPolicy", nil
+	}
+
+	currentPolicy, err := policy.ParsePolicyString(*res.Policy)
+	if err != nil {
+		return subResourceOK, "", errors.Wrap(err, errParseClusterPolicy)
+	}
+	wantedPolicy := policy.ConvertResourcePolicyToPolicy(wanted.Spec.ForProvider.ClusterPolicy)
+
+	equal, diff := policy.ArePoliciesEqal(wantedPolicy, &currentPolicy)
+	if !equal {
+		return subResourceNeedsUpdate, diff, nil
+	}
+	return subResourceOK, diff, nil
+}
+
+func isConnectivityInfoUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, current *svcsdk.BrokerNodeGroupInfo) (bool, string) {
+	if current.ConnectivityInfo == nil {
+		return wanted.ConnectivityInfo == nil, "spec.forProvider.brokerNodeGroupInfo.connectivityInfo"
+	}
+	cur := generateManagedConnectivityInfo(current.ConnectivityInfo)
+	diff := cmp.Diff(wanted.ConnectivityInfo, cur)
+	return diff == "", "spec.forProvider.brokerNodeGroupInfo.connectivityInfo: " + diff
 }
 
 func isInstanceTypeUpToDate(wanted *svcapitypes.CustomBrokerNodeGroupInfo, current *svcsdk.BrokerNodeGroupInfo) bool {
@@ -599,11 +757,7 @@ func isClientAuthenticationUpToDate(wanted *svcapitypes.ClientAuthentication, cu
 	return true
 }
 
-type updater struct {
-	client kafkaiface.KafkaAPI
-}
-
-func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
+func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.Cluster)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -819,6 +973,37 @@ func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.Ex
 			}
 		}
 
+		if u.cache.brokerConnectivity == subResourceNeedsUpdate {
+			_, err := u.client.UpdateConnectivityWithContext(ctx, &svcsdk.UpdateConnectivityInput{
+				ConnectivityInfo: generateAWSConnectivityInfo(wanted.CustomBrokerNodeGroupInfo.ConnectivityInfo),
+				ClusterArn:       &currentARN,
+				CurrentVersion:   currentVersion,
+			})
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateConnectivity)
+			}
+		}
+
+		if u.cache.clusterPolicyState == subResourceNeedsUpdate {
+			policyRaw, err := policy.ConvertResourcePolicyToPolicyString(wanted.ClusterPolicy)
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errMarshalClusterPolicy)
+			}
+			_, err = u.client.PutClusterPolicyWithContext(ctx, &svcsdk.PutClusterPolicyInput{
+				ClusterArn: &currentARN,
+				Policy:     policyRaw,
+			})
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errPutClusterPolicy)
+			}
+		} else if u.cache.clusterPolicyState == subResourceNeedsDeletion {
+			_, err := u.client.DeleteClusterPolicyWithContext(ctx, &svcsdk.DeleteClusterPolicyInput{
+				ClusterArn: &currentARN,
+			})
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errDeleteClusterPolicy)
+			}
+		}
 	}
 
 	return managed.ExternalUpdate{}, nil
