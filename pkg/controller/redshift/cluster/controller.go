@@ -22,10 +22,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsredshift "github.com/aws/aws-sdk-go-v2/service/redshift"
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -34,6 +30,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	redshiftv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -109,7 +108,7 @@ type external struct {
 	client redshift.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)

@@ -6,20 +6,17 @@ import (
 	"testing"
 
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-
-	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
 )
 
 var (

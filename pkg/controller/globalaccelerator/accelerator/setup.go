@@ -18,9 +18,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
-
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupAccelerator adds a controller that reconciles an Accelerator.

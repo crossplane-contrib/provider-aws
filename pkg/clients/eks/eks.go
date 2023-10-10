@@ -21,7 +21,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-
 	"net"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,19 +28,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
-
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 const (
@@ -235,7 +232,7 @@ func GenerateUpdateClusterConfigInputForVPC(name string, p *v1beta1.ClusterParam
 
 // GenerateObservation is used to produce v1beta1.ClusterObservation from
 // ekstypes.Cluster.
-func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation { // nolint:gocyclo
+func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 	if cluster == nil {
 		return v1beta1.ClusterObservation{}
 	}
@@ -289,7 +286,7 @@ func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
 
 // LateInitialize fills the empty fields in *v1beta1.ClusterParameters with the
 // values seen in ekstypes.Cluster.
-func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { // nolint:gocyclo
+func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { //nolint:gocyclo
 	if cluster == nil {
 		return
 	}

@@ -2,14 +2,11 @@ package cognitoidentityprovider
 
 import (
 	"context"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-
-	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
-
 	"errors"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	cognitoidentityprovidertypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 )
 
 // GroupUserMembershipClient is the external client used for GroupUserMembership Custom Resource

@@ -19,15 +19,15 @@ package bucket
 import (
 	"context"
 
-	"github.com/aws/smithy-go/document"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -145,10 +145,10 @@ func GenerateLifecycleConfiguration(name string, config *v1beta1.BucketLifecycle
 }
 
 // GenerateLifecycleRules creates the list of LifecycleRules for the AWS SDK
-func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { // nolint:gocyclo
+func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { //nolint:gocyclo
 	// NOTE(muvaf): prealloc is disabled due to AWS requiring nil instead
 	// of 0-length for empty slices.
-	var result []types.LifecycleRule // nolint:prealloc
+	var result []types.LifecycleRule //nolint:prealloc
 	for _, local := range in {
 		rule := types.LifecycleRule{
 			ID:     local.ID,
@@ -165,7 +165,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 				ExpiredObjectDeleteMarker: local.Expiration.ExpiredObjectDeleteMarker,
 			}
 			if local.Expiration.Date != nil {
-				rule.Expiration.Date = &local.Expiration.Date.Time
+				rule.Expiration.Date = ptr.To(local.Expiration.Date.Time)
 			}
 		}
 		if local.NoncurrentVersionExpiration != nil {
@@ -188,7 +188,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 					StorageClass: types.TransitionStorageClass(transition.StorageClass),
 				}
 				if transition.Date != nil {
-					rule.Transitions[tIndex].Date = &transition.Date.Time
+					rule.Transitions[tIndex].Date = ptr.To(transition.Date.Time)
 				}
 			}
 		}
@@ -225,7 +225,7 @@ func sortFilterTags(rules []types.LifecycleRule) {
 	}
 }
 
-func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1beta1.BucketLifecycleConfiguration) { // nolint:gocyclo
+func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1beta1.BucketLifecycleConfiguration) { //nolint:gocyclo
 	if config.Rules != nil {
 		return
 	}

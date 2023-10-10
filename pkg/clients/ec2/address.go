@@ -56,7 +56,7 @@ func GenerateAddressObservation(address ec2types.Address) v1beta1.AddressObserva
 
 // LateInitializeAddress fills the empty fields in *v1beta1.AddressParameters with
 // the values seen in ec2types.Address.
-func LateInitializeAddress(in *v1beta1.AddressParameters, a *ec2types.Address) { // nolint:gocyclo
+func LateInitializeAddress(in *v1beta1.AddressParameters, a *ec2types.Address) {
 	if a == nil {
 		return
 	}

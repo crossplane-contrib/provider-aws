@@ -76,13 +76,13 @@ func GenerateIdentityProviderConfigObservation(ip *types.IdentityProviderConfigR
 
 // IsIdentityProviderConfigUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsIdentityProviderConfigUpToDate(p *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) bool { // nolint:gocyclo
+func IsIdentityProviderConfigUpToDate(p *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) bool {
 	return cmp.Equal(p.Tags, ip.Oidc.Tags, cmpopts.EquateEmpty())
 }
 
 // LateInitializeIdentityProviderConfig fills the empty fields in *manualv1alpha1.IdentityProviderConfigParameters with the
 // values seen in eks.IdentityProviderConfigResponse.
-func LateInitializeIdentityProviderConfig(in *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) { // nolint:gocyclo
+func LateInitializeIdentityProviderConfig(in *manualv1alpha1.IdentityProviderConfigParameters, ip *types.IdentityProviderConfigResponse) {
 	if ip == nil {
 		return
 	}

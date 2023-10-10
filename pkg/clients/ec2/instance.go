@@ -177,7 +177,7 @@ const (
 
 // LateInitializeInstance fills the empty fields in *manualv1alpha1.InstanceParameters with
 // the values seen in ec2.Instance and ec2.DescribeInstanceAttributeOutput.
-func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *types.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { // nolint:gocyclo
+func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *types.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { //nolint:gocyclo
 	if instance == nil {
 		return
 	}

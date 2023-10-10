@@ -51,7 +51,7 @@ func NewReplicationConfigurationClient(client s3.BucketClient) *ReplicationConfi
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
+func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
 	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.ReplicationConfiguration
 	if err != nil {
@@ -133,7 +133,7 @@ func (in *ReplicationConfigurationClient) SubresourceExists(bucket *v1beta1.Buck
 	return bucket.Spec.ForProvider.ReplicationConfiguration != nil
 }
 
-func createReplicationRulesFromExternal(external *types.ReplicationConfiguration, config *v1beta1.ReplicationConfiguration) { // nolint:gocyclo
+func createReplicationRulesFromExternal(external *types.ReplicationConfiguration, config *v1beta1.ReplicationConfiguration) { //nolint:gocyclo
 	if config.Rules != nil {
 		return
 	}

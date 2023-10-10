@@ -3,8 +3,6 @@ package parametergroup
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/dax"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dax/daxiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -15,6 +13,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"

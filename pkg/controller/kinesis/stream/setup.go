@@ -18,9 +18,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/kinesis"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -28,6 +25,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kinesis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -132,7 +131,7 @@ type updater struct {
 	client svcsdkapi.KinesisAPI
 }
 
-func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamOutput) (bool, string, error) { // nolint:gocyclo
+func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamOutput) (bool, string, error) { //nolint:gocyclo
 
 	// ResourceInUseException: Stream example-stream not ACTIVE, instead in state CREATING
 	if awsclients.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
@@ -181,7 +180,7 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.Stream, obj *svc
 	return true, "", nil
 }
 
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.Stream)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -445,7 +444,7 @@ func DiffTags(local []svcapitypes.CustomTag, remote []*svcsdk.Tag) (add map[stri
 
 // GenerateObservation is used to produce v1beta1.ClusterObservation from
 // ekstypes.Cluster.
-func GenerateObservation(obj *svcsdk.StreamDescription) svcapitypes.StreamObservation { // nolint:gocyclo
+func GenerateObservation(obj *svcsdk.StreamDescription) svcapitypes.StreamObservation { //nolint:gocyclo
 	if obj == nil {
 		return svcapitypes.StreamObservation{}
 	}

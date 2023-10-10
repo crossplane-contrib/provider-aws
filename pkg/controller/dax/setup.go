@@ -17,9 +17,8 @@ limitations under the License.
 package dax
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/dax/cluster"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/dax/parametergroup"

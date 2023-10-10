@@ -23,12 +23,6 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
 	"github.com/aws/aws-sdk-go/service/glue/glueiface"
 	svcsdksts "github.com/aws/aws-sdk-go/service/sts"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -36,6 +30,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -153,7 +153,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCraw
 	return obs, nil
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawlerOutput) error {
 
 	spec.Configuration = awsclients.LateInitializeStringPtr(spec.Configuration, resp.Crawler.Configuration)
@@ -240,7 +240,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svc
 	return areTagsUpToDate, "", err
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCrawlerInput) error {
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 
@@ -255,7 +255,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCra
 		catTars := []*svcsdk.CatalogTarget{}
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
-				DatabaseName: &catTarsIter.DatabaseName,
+				DatabaseName: ptr.To(catTarsIter.DatabaseName),
 				Tables:       awsclients.StringSliceToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
@@ -330,7 +330,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.Crawler, obj *sv
 	return upd, svcutils.UpdateTagsForResource(ctx, h.client, cr.Spec.ForProvider.Tags, crawlerARN)
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerInput) error {
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 
@@ -345,7 +345,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCra
 		catTars := []*svcsdk.CatalogTarget{}
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
-				DatabaseName: &catTarsIter.DatabaseName,
+				DatabaseName: ptr.To(catTarsIter.DatabaseName),
 				Tables:       awsclients.StringSliceToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
@@ -434,7 +434,8 @@ func (h *hooks) postCreate(ctx context.Context, cr *svcapitypes.Crawler, obj *sv
 }
 
 // Custom GenerateCrawler for isuptodate to fill the missing fields not forwarded by GenerateCrawler in zz_conversion.go
-// nolint:gocyclo
+//
+//nolint:gocyclo
 func customGenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 
 	cr := GenerateCrawler(resp)

@@ -19,16 +19,14 @@ package emailtemplate
 import (
 	"context"
 
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/sesv2"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"

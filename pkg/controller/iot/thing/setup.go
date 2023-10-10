@@ -22,9 +22,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/iot"
-	"github.com/google/go-cmp/cmp"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -32,6 +29,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	iottypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"

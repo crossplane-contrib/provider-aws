@@ -19,10 +19,9 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	kms "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"

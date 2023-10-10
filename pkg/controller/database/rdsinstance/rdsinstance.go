@@ -24,10 +24,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -36,6 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -119,7 +118,7 @@ type external struct {
 	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
@@ -199,7 +198,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error { // nolint:gocyclo
+func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance, pw string) error { //nolint:gocyclo
 	if cr.Spec.ForProvider.RestoreFrom == nil {
 		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateRDSInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
@@ -233,7 +232,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 	return nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRDSInstance)

@@ -75,8 +75,8 @@ type MockBucketClient struct {
 	MockPutBucketNotificationConfiguration func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error)
 	MockGetBucketNotificationConfiguration func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error)
 
-	MockGetBucketAcl func(ctx context.Context, input *s3.GetBucketAclInput, opts []func(*s3.Options)) (*s3.GetBucketAclOutput, error) //nolint
-	MockPutBucketAcl func(ctx context.Context, input *s3.PutBucketAclInput, opts []func(*s3.Options)) (*s3.PutBucketAclOutput, error) //nolint
+	MockGetBucketAcl func(ctx context.Context, input *s3.GetBucketAclInput, opts []func(*s3.Options)) (*s3.GetBucketAclOutput, error)
+	MockPutBucketAcl func(ctx context.Context, input *s3.PutBucketAclInput, opts []func(*s3.Options)) (*s3.PutBucketAclOutput, error)
 
 	MockGetPublicAccessBlock    func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
 	MockPutPublicAccessBlock    func(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error)
@@ -255,12 +255,12 @@ func (m MockBucketClient) GetBucketNotificationConfiguration(ctx context.Context
 }
 
 // GetBucketAcl is the fake method call to invoke the internal mock method
-func (m MockBucketClient) GetBucketAcl(ctx context.Context, input *s3.GetBucketAclInput, opts ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) { //nolint
+func (m MockBucketClient) GetBucketAcl(ctx context.Context, input *s3.GetBucketAclInput, opts ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) {
 	return m.MockGetBucketAcl(ctx, input, opts)
 }
 
 // PutBucketAcl is the fake method call to invoke the internal mock method
-func (m MockBucketClient) PutBucketAcl(ctx context.Context, input *s3.PutBucketAclInput, opts ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) { //nolint
+func (m MockBucketClient) PutBucketAcl(ctx context.Context, input *s3.PutBucketAclInput, opts ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) {
 	return m.MockPutBucketAcl(ctx, input, opts)
 }
 

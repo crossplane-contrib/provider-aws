@@ -26,6 +26,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	rdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -33,10 +36,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -421,7 +420,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 
 // GenerateObservation is used to produce v1alpha3.RDSInstanceObservation from
 // rds.DBInstance.
-func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
+func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { //nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
 		AllocatedStorage:                      int(db.AllocatedStorage),
 		AWSBackupRecoveryPointARN:             aws.ToString(db.AwsBackupRecoveryPointArn),
@@ -568,7 +567,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 
 // LateInitialize fills the empty fields in *v1beta1.RDSInstanceParameters with
 // the values seen in rds.DBInstance.
-func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) { // nolint:gocyclo
+func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) { //nolint:gocyclo
 	if db == nil {
 		return
 	}
@@ -652,7 +651,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 		}
 	}
 	// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
-	// nolint:staticcheck
+	//nolint:staticcheck
 	if len(in.EnableCloudwatchLogsExports) == 0 && in.CloudwatchLogsExportConfiguration != nil {
 		in.EnableCloudwatchLogsExports = in.CloudwatchLogsExportConfiguration.EnableLogTypes
 	}
@@ -680,7 +679,7 @@ func lateInitializeOptionGroupName(inOptionGroupName *string, members []rdstypes
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, error) { // nolint:gocyclo
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, error) {
 	_, pwdChanged, err := GetPassword(ctx, kube, r.Spec.ForProvider.MasterPasswordSecretRef, r.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return false, "", err

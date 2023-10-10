@@ -25,14 +25,13 @@ import (
 	svcapi "github.com/aws/aws-sdk-go/service/kms"
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/kms/kmsiface"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"

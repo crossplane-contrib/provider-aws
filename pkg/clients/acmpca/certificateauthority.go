@@ -64,7 +64,7 @@ func GenerateCreateCertificateAuthorityInput(p *v1beta1.CertificateAuthorityPara
 }
 
 // GenerateCertificateAuthorityConfiguration from CertificateAuthorityConfiguration
-func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityConfiguration) *types.CertificateAuthorityConfiguration { // nolint:gocyclo
+func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityConfiguration) *types.CertificateAuthorityConfiguration {
 
 	m := &types.CertificateAuthorityConfiguration{
 		Subject: &types.ASN1Subject{
@@ -110,7 +110,7 @@ func GenerateRevocationConfiguration(p *v1beta1.RevocationConfiguration) *types.
 
 // LateInitializeCertificateAuthority fills the empty fields in *v1beta1.CertificateAuthorityParameters with
 // the values seen in acmpca.CertificateAuthority.
-func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParameters, certificateAuthority *types.CertificateAuthority) { // nolint:gocyclo
+func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParameters, certificateAuthority *types.CertificateAuthority) { //nolint:gocyclo
 	if certificateAuthority == nil {
 		return
 	}
@@ -142,7 +142,7 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 }
 
 // IsCertificateAuthorityUpToDate checks whether there is a change in any of the modifiable fields.
-func IsCertificateAuthorityUpToDate(p *v1beta1.CertificateAuthority, cd types.CertificateAuthority, tags []types.Tag) bool { // nolint:gocyclo
+func IsCertificateAuthorityUpToDate(p *v1beta1.CertificateAuthority, cd types.CertificateAuthority, tags []types.Tag) bool { //nolint:gocyclo
 
 	if cd.RevocationConfiguration.CrlConfiguration.Enabled {
 		if !strings.EqualFold(aws.ToString(p.Spec.ForProvider.RevocationConfiguration.CustomCname), aws.ToString(cd.RevocationConfiguration.CrlConfiguration.CustomCname)) {

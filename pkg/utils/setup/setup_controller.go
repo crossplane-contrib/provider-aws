@@ -17,9 +17,8 @@ limitations under the License.
 package setup
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // SetupControllerFn is a delegate to initialize a controller.

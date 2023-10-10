@@ -173,7 +173,7 @@ func MapReplacer(m map[string]string) NameMapper {
 // Otherwise, an error will be returned. Returns `true` if at least one field has been stored
 // from source `responseObject` into a corresponding field of target `crObject`.
 //
-// nolint:gocyclo
+//nolint:gocyclo
 func LateInitializeFromResponse(parentName string, crObject interface{}, responseObject interface{},
 	opts ...LateInitOption) (bool, error) {
 	if crObject == nil || reflect.ValueOf(crObject).IsNil() ||
@@ -222,7 +222,7 @@ func LateInitializeFromResponse(parentName string, crObject interface{}, respons
 		var crFieldInitialized, crKeepField bool
 		var err error
 
-		switch crStructField.Type.Kind() { // nolint:exhaustive
+		switch crStructField.Type.Kind() { //nolint:exhaustive
 		// handle pointer struct field
 		case reflect.Ptr:
 			crFieldInitialized = allocate(crFieldValue, func(store, allocTypeValue reflect.Value) {
@@ -270,7 +270,7 @@ func allocate(crFieldValue reflect.Value, alloc allocator) bool {
 	return false
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFieldValue reflect.Value,
 	responseStructField *reflect.StructField, opts ...LateInitOption) (bool, error) {
 	crKeepField := false
@@ -319,7 +319,7 @@ func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFiel
 // elements from the desired slice (since they'd be late-init-ed right back in
 // during Observe, resetting the desired state).
 
-// nolint:gocyclo
+//nolint:gocyclo
 func handleSlice(cName string, crFieldInitialized bool, crFieldValue, responseFieldValue reflect.Value,
 	responseStructField *reflect.StructField, opts ...LateInitOption) (bool, error) {
 	crKeepField := false
@@ -354,7 +354,7 @@ func handleSlice(cName string, crFieldInitialized bool, crFieldValue, responseFi
 			// error from processing the next element of the slice
 			var err error
 			// check slice item's kind (not slice type)
-			switch item.Elem().Kind() { // nolint:exhaustive
+			switch item.Elem().Kind() { //nolint:exhaustive
 			// if dealing with a slice of pointers
 			case reflect.Ptr:
 				_, err = handlePtr(cName, crFieldInitialized, item.Elem(), responseFieldValue.Index(i), nil,

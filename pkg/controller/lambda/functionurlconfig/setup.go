@@ -5,22 +5,19 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
-
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 // SetupFunctionURL adds a controller that reconciles FunctionURLConfig.

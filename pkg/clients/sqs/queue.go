@@ -24,15 +24,13 @@ import (
 	"strings"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/smithy-go"
-	"github.com/google/go-cmp/cmp"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -75,7 +73,7 @@ func GenerateCreateAttributes(p *v1beta1.QueueParameters) map[string]string {
 }
 
 // GenerateQueueAttributes returns a map of queue attributes
-func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // nolint:gocyclo
+func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { //nolint:gocyclo
 	m := map[string]string{}
 	if p.DelaySeconds != nil {
 		m[v1beta1.AttributeDelaySeconds] = strconv.FormatInt(aws.ToInt64(p.DelaySeconds), 10)
@@ -182,7 +180,7 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags map[string]string) bool { // nolint:gocyclo
+func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags map[string]string) bool { //nolint:gocyclo
 	if len(p.Tags) != len(tags) {
 		return false
 	}

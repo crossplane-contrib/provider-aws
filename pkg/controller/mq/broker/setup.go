@@ -4,11 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/mq/mqiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -18,6 +13,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mq/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -82,7 +81,7 @@ func preObserve(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeB
 	return nil
 }
 
-// nolint:gocyclo
+//nolint:gocyclo
 func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
@@ -175,7 +174,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 
 // LateInitialize fills the empty fields in *svcapitypes.BrokerParameters with
 // the values seen in svcsdk.DescribeBrokerResponse.
-// nolint:gocyclo
+//
+//nolint:gocyclo
 func LateInitialize(cr *svcapitypes.BrokerParameters, obj *svcsdk.DescribeBrokerResponse) error {
 	if cr.AuthenticationStrategy == nil && obj.AuthenticationStrategy != nil {
 		cr.AuthenticationStrategy = awsclients.LateInitializeStringPtr(cr.AuthenticationStrategy, obj.AuthenticationStrategy)

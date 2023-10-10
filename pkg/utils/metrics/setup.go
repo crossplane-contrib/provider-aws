@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-
 	k8smetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 

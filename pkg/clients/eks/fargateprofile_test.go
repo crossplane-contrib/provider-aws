@@ -19,14 +19,13 @@ package eks
 import (
 	"testing"
 
-	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
-
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 )
 
 var (

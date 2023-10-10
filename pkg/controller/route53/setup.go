@@ -17,9 +17,8 @@ limitations under the License.
 package route53
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/resourcerecordset"

@@ -50,72 +50,72 @@ func WithArn(arn string) BucketModifier {
 }
 
 // WithConditions sets the Conditions for an S3 Bucket
-func WithConditions(c ...xpv1.Condition) BucketModifier { //nolint
+func WithConditions(c ...xpv1.Condition) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 // WithAccelerationConfig sets the AccelerateConfiguration for an S3 Bucket
-func WithAccelerationConfig(s *v1beta1.AccelerateConfiguration) BucketModifier { //nolint
+func WithAccelerationConfig(s *v1beta1.AccelerateConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.AccelerateConfiguration = s }
 }
 
 // WithSSEConfig sets the ServerSideEncryptionConfiguration for an S3 Bucket
-func WithSSEConfig(s *v1beta1.ServerSideEncryptionConfiguration) BucketModifier { //nolint
+func WithSSEConfig(s *v1beta1.ServerSideEncryptionConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ServerSideEncryptionConfiguration = s }
 }
 
 // WithVersioningConfig sets the VersioningConfiguration for an S3 Bucket
-func WithVersioningConfig(s *v1beta1.VersioningConfiguration) BucketModifier { //nolint
+func WithVersioningConfig(s *v1beta1.VersioningConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.VersioningConfiguration = s }
 }
 
 // WithCORSConfig sets the CORSConfiguration for an S3 Bucket
-func WithCORSConfig(s *v1beta1.CORSConfiguration) BucketModifier { //nolint
+func WithCORSConfig(s *v1beta1.CORSConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.CORSConfiguration = s }
 }
 
 // WithWebConfig sets the WebsiteConfiguration for an S3 Bucket
-func WithWebConfig(s *v1beta1.WebsiteConfiguration) BucketModifier { //nolint
+func WithWebConfig(s *v1beta1.WebsiteConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.WebsiteConfiguration = s }
 }
 
 // WithLoggingConfig sets the LoggingConfiguration for an S3 Bucket
-func WithLoggingConfig(s *v1beta1.LoggingConfiguration) BucketModifier { //nolint
+func WithLoggingConfig(s *v1beta1.LoggingConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LoggingConfiguration = s }
 }
 
 // WithPayerConfig sets the PaymentConfiguration for an S3 Bucket
-func WithPayerConfig(s *v1beta1.PaymentConfiguration) BucketModifier { //nolint
+func WithPayerConfig(s *v1beta1.PaymentConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PayerConfiguration = s }
 }
 
 // WithTaggingConfig sets the Tagging for an S3 Bucket
-func WithTaggingConfig(s *v1beta1.Tagging) BucketModifier { //nolint
+func WithTaggingConfig(s *v1beta1.Tagging) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.BucketTagging = s }
 }
 
 // WithReplConfig sets the ReplicationConfiguration for an S3 Bucket
-func WithReplConfig(s *v1beta1.ReplicationConfiguration) BucketModifier { //nolint
+func WithReplConfig(s *v1beta1.ReplicationConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ReplicationConfiguration = s }
 }
 
 // WithLifecycleConfig sets the BucketLifecycleConfiguration for an S3 Bucket
-func WithLifecycleConfig(s *v1beta1.BucketLifecycleConfiguration) BucketModifier { //nolint
+func WithLifecycleConfig(s *v1beta1.BucketLifecycleConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LifecycleConfiguration = s }
 }
 
 // WithNotificationConfig sets the NotificationConfiguration for an S3 Bucket
-func WithNotificationConfig(s *v1beta1.NotificationConfiguration) BucketModifier { //nolint
+func WithNotificationConfig(s *v1beta1.NotificationConfiguration) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.NotificationConfiguration = s }
 }
 
 // WithPolicy sets the policy for an S3 Bucket
-func WithPolicy(s *common.BucketPolicyBody) BucketModifier { // nolint
+func WithPolicy(s *common.BucketPolicyBody) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.Policy = s }
 }
 
 // WithPolicyUpdatePolicy sets BucketPolicyUpdatePolicy for an S3 Bucket.
-func WithPolicyUpdatePolicy(s *v1beta1.BucketPolicyUpdatePolicy) BucketModifier { // nolint
+func WithPolicyUpdatePolicy(s *v1beta1.BucketPolicyUpdatePolicy) BucketModifier {
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PolicyUpdatePolicy = s }
 }
 

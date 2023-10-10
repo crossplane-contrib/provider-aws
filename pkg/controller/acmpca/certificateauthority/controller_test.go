@@ -18,26 +18,22 @@ package certificateauthority
 
 import (
 	"context"
-
 	"testing"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
 	awsacmpcatypes "github.com/aws/aws-sdk-go-v2/service/acmpca/types"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pkg/errors"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	acmpca "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca/fake"

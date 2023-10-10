@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 
+	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
@@ -100,7 +99,7 @@ func GenerateCertificateStatus(certificate types.CertificateDetail) v1beta1.Cert
 
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
 // the values seen in iam.Certificate.
-func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *types.CertificateDetail) { // nolint:gocyclo
+func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *types.CertificateDetail) {
 	in.CertificateAuthorityARN = awsclients.LateInitializeStringPtr(in.CertificateAuthorityARN, certificate.CertificateAuthorityArn)
 	if in.Options == nil && certificate.Options != nil {
 		in.Options = &v1beta1.CertificateOptions{
@@ -127,7 +126,7 @@ func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *t
 }
 
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
-func IsCertificateUpToDate(p v1beta1.CertificateParameters, cd types.CertificateDetail, tags []types.Tag) bool { // nolint:gocyclo
+func IsCertificateUpToDate(p v1beta1.CertificateParameters, cd types.CertificateDetail, tags []types.Tag) bool {
 	if (p.Options != nil && cd.Options == nil) || (p.Options == nil && cd.Options != nil) {
 		return false
 	}

@@ -12,10 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -114,7 +113,7 @@ func GenerateRTObservation(rt ec2types.RouteTable) v1beta1.RouteTableObservation
 
 // LateInitializeRT fills the empty fields in *v1beta1.RouteTableParameters with
 // the values seen in ec2.RouteTable.
-func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable) { // nolint:gocyclo
+func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable) { //nolint:gocyclo
 	if rt == nil {
 		return
 	}

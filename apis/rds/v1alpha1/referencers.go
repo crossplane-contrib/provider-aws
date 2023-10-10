@@ -20,16 +20,15 @@ import (
 	"context"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	database "github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	network "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	kmsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ResolveReferences of this DBCluster

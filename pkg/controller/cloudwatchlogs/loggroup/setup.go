@@ -17,9 +17,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/pkg/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -29,6 +26,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -148,7 +147,7 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *s
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.LogGroup)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)

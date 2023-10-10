@@ -17,9 +17,8 @@ limitations under the License.
 package kafka
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kafka/configuration"

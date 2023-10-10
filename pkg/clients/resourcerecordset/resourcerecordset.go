@@ -26,15 +26,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/hostedzone"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
 	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/hostedzone"
 )
 
 const (

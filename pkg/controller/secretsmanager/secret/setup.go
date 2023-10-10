@@ -22,14 +22,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
-	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -37,6 +29,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/secretsmanager/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -195,7 +194,7 @@ func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.
 	return errors.Wrap(e.kube.Create(context.TODO(), sc), errCreateK8sSecret)
 }
 
-func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValueOutput) (map[string][]byte, error) { // nolint:gocyclo
+func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValueOutput) (map[string][]byte, error) {
 	if ref.Key != nil {
 		switch {
 		case awsclients.StringValue(s.SecretString) != "":
@@ -235,7 +234,7 @@ func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValue
 	return payload, nil
 }
 
-func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, string, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, string, error) {
 	if meta.WasDeleted(cr) {
 		return false, "", nil
 	}
@@ -356,7 +355,7 @@ func getSecretRef(params *svcapitypes.SecretParameters) (*svcapitypes.SecretRefe
 	return nil, errors.New(errNoSecretRef)
 }
 
-func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error { // nolint:gocyclo
+func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error { //nolint:gocyclo
 	resp, err := e.client.DescribeSecretWithContext(ctx, &svcsdk.DescribeSecretInput{
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})

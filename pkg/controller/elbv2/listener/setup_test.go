@@ -3,9 +3,8 @@ package listener
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/google/go-cmp/cmp"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 )

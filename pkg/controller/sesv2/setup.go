@@ -17,9 +17,8 @@ limitations under the License.
 package sesv2
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/configurationset"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/emailidentity"

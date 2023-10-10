@@ -20,17 +20,9 @@ import (
 	"context"
 	"strconv"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 	"github.com/aws/aws-sdk-go/service/docdb/docdbiface"
-	"github.com/pkg/errors"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -39,6 +31,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -142,7 +140,7 @@ func (e *hooks) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp
 	return obs, nil
 }
 
-func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDBClustersOutput) error { // nolint:gocyclo
+func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDBClustersOutput) error {
 	cluster := resp.DBClusters[0]
 
 	if cr.AvailabilityZones == nil {
@@ -173,7 +171,7 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 	return nil
 }
 
-func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, string, error) { // nolint:gocyclo
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, string, error) {
 	if meta.WasDeleted(cr) {
 		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
@@ -287,7 +285,7 @@ func (e *hooks) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 	return cre, nil
 }
 
-func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { // nolint:gocyclo
+func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromSnapshotInput { //nolint:gocyclo
 	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
 
 	if cr.Spec.ForProvider.AvailabilityZones != nil {
@@ -338,7 +336,7 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 	return res
 }
 
-func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput { // nolint:gocyclo
+func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterToPointInTimeInput {
 	p := cr.Spec.ForProvider
 	res := &svcsdk.RestoreDBClusterToPointInTimeInput{
 		DBSubnetGroupName:           p.DBSubnetGroupName,

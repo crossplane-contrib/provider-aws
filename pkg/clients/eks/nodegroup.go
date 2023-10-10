@@ -186,7 +186,7 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 
 // GenerateNodeGroupObservation is used to produce manualv1alpha1.NodeGroupObservation
 // from eks.Nodegroup.
-func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGroupObservation { // nolint:gocyclo
+func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGroupObservation { //nolint:gocyclo
 	if ng == nil {
 		return manualv1alpha1.NodeGroupObservation{}
 	}
@@ -244,7 +244,7 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 
 // LateInitializeNodeGroup fills the empty fields in *manualv1alpha1.NodeGroupParameters with the
 // values seen in eks.Nodegroup.
-func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) { // nolint:gocyclo
+func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) { //nolint:gocyclo
 	if ng == nil {
 		return
 	}
@@ -306,7 +306,7 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 }
 
 // IsNodeGroupUpToDate checks whether there is a change in any of the modifiable fields.
-func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) bool { // nolint:gocyclo
+func IsNodeGroupUpToDate(p *manualv1alpha1.NodeGroupParameters, ng *ekstypes.Nodegroup) bool { //nolint:gocyclo
 	if !cmp.Equal(p.Tags, ng.Tags, cmpopts.EquateEmpty()) {
 		return false
 	}

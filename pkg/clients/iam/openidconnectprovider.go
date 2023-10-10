@@ -19,13 +19,13 @@ package iam
 import (
 	"context"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 )
 
 // NewOpenIDConnectProviderClient returns a new client using AWS credentials as JSON encoded data.

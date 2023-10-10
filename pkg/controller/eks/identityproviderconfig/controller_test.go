@@ -22,14 +22,13 @@ import (
 
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
 	awsekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"

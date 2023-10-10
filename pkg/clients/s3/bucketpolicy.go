@@ -119,7 +119,7 @@ func Serialize(p *common.BucketPolicyBody) (interface{}, error) {
 }
 
 // SerializeBucketPolicyStatement is the custom marshaller for the BucketPolicyStatement
-func SerializeBucketPolicyStatement(p common.BucketPolicyStatement) (interface{}, error) { // nolint:gocyclo
+func SerializeBucketPolicyStatement(p common.BucketPolicyStatement) (interface{}, error) { //nolint:gocyclo
 	m := make(map[string]interface{})
 	if p.Principal != nil {
 		principal, err := SerializeBucketPrincipal(p.Principal)

@@ -130,7 +130,7 @@ func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) 
 }
 
 // CompareCORS compares the external and internal representations for the list of CORSRules
-func CompareCORS(local []v1beta1.CORSRule, external []types.CORSRule) ResourceStatus { // nolint:gocyclo
+func CompareCORS(local []v1beta1.CORSRule, external []types.CORSRule) ResourceStatus { //nolint:gocyclo
 	switch {
 	case len(local) == 0 && len(external) != 0:
 		return NeedsDeletion

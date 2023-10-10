@@ -3,12 +3,10 @@ package service
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ecs"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/google/go-cmp/cmp"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecs/v1alpha1"
 )

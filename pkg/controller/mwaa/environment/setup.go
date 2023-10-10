@@ -3,9 +3,6 @@ package environment
 import (
 	"context"
 
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/mwaa"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/mwaa/mwaaiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -17,6 +14,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mwaa/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"

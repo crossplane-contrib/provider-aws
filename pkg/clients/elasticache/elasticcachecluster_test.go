@@ -19,12 +19,11 @@ package elasticache
 import (
 	"testing"
 
-	"github.com/aws/smithy-go/document"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	awscachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"

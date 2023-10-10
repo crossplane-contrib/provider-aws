@@ -7,13 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-
-	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -23,6 +16,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
 const (
@@ -108,7 +107,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// If err is not nil, the sgr does not exist
 	if err != nil {
-		return managed.ExternalObservation{ // nolint:nilerr
+		return managed.ExternalObservation{ //nolint:nilerr
 			ResourceExists: false,
 		}, nil
 	}

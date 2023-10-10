@@ -17,9 +17,8 @@ limitations under the License.
 package elbv2
 
 import (
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/listener"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/loadbalancer"

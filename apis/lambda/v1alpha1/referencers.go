@@ -19,15 +19,14 @@ package v1alpha1
 import (
 	"context"
 
-	s3v1beta1 "github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	ec2 "github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	iamv1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	kms "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	s3v1beta1 "github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 )
 
 // ResolveReferences of this Function

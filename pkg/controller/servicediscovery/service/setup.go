@@ -20,6 +20,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
+	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -28,12 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
-	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
