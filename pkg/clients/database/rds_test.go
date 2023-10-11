@@ -141,6 +141,75 @@ func TestCreatePatch(t *testing.T) {
 				},
 			},
 		},
+		"DifferentTags": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1")},
+						{Key: ptr.To("tag2")},
+						{Key: ptr.To("tag3")},
+					},
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					Tags: []v1beta1.Tag{
+						{Key: "tag1"},
+						{Key: "tag5"},
+						{Key: "tag6"},
+					},
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{
+					Tags: []v1beta1.Tag{
+						{Key: "tag1"},
+						{Key: "tag5"},
+						{Key: "tag6"},
+					},
+				},
+			},
+		},
+		"SameTags": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1")},
+						{Key: ptr.To("tag2")},
+						{Key: ptr.To("tag3")},
+					},
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					Tags: []v1beta1.Tag{
+						{Key: "tag1"},
+						{Key: "tag2"},
+						{Key: "tag3"},
+					},
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{},
+			},
+		},
+		"SameTagsDifferentOrder": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1"), Value: ptr.To("val")},
+						{Key: ptr.To("tag2"), Value: ptr.To("val")},
+						{Key: ptr.To("tag3"), Value: ptr.To("val")},
+					},
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					Tags: []v1beta1.Tag{
+						{Key: "tag3", Value: "val"},
+						{Key: "tag2", Value: "val"},
+						{Key: "tag1", Value: "val"},
+					},
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{},
+			},
+		},
 	}
 
 	for name, tc := range cases {
