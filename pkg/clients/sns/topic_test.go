@@ -17,6 +17,7 @@ limitations under the License.
 package sns
 
 import (
+	_ "embed"
 	"strconv"
 	"testing"
 
@@ -24,11 +25,11 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	awssnstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/aws/smithy-go/document"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 var (
@@ -47,13 +48,22 @@ var (
 	tagValue1         = "value-1"
 	tagKey2           = "name-2"
 	tagValue2         = "value-2"
+
+	//go:embed testdata/policy_a.json
+	testPolicyA string
+
+	//go:embed testdata/policy_a2.json
+	testPolicyA2 string
+
+	//go:embed testdata/policy_b.json
+	testPolicyB string
 )
 
 // Topic Attribute Modifier
-type topicAttrModifier func(*map[string]string)
+type topicAttrModifier func(map[string]string)
 
-func topicAttributes(m ...topicAttrModifier) *map[string]string {
-	attr := &map[string]string{}
+func topicAttributes(m ...topicAttrModifier) map[string]string {
+	attr := map[string]string{}
 
 	for _, f := range m {
 		f(attr)
@@ -63,41 +73,40 @@ func topicAttributes(m ...topicAttrModifier) *map[string]string {
 }
 
 func withOwner(s *string) topicAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)[string(TopicOwner)] = *s
+	return func(attr map[string]string) {
+		attr[string(TopicOwner)] = *s
 	}
 }
 
 func withARN(s *string) topicAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)[string(TopicARN)] = *s
+	return func(attr map[string]string) {
+		attr[string(TopicARN)] = *s
 	}
 }
 
 func withTopicSubs(confirmed, pending, deleted string) topicAttrModifier {
-	return func(attr *map[string]string) {
-		a := *attr
-		a[string(TopicSubscriptionsConfirmed)] = confirmed
-		a[string(TopicSubscriptionsPending)] = pending
-		a[string(TopicSubscriptionsDeleted)] = deleted
+	return func(attr map[string]string) {
+		attr[string(TopicSubscriptionsConfirmed)] = confirmed
+		attr[string(TopicSubscriptionsPending)] = pending
+		attr[string(TopicSubscriptionsDeleted)] = deleted
 	}
 }
 
 func withAttrDisplayName(s *string) topicAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)[string(TopicDisplayName)] = *s
+	return func(attr map[string]string) {
+		attr[string(TopicDisplayName)] = *s
 	}
 }
 
 func withAttrFifoTopic(b *bool) topicAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)[string(TopicFifoTopic)] = strconv.FormatBool(*b)
+	return func(attr map[string]string) {
+		attr[string(TopicFifoTopic)] = strconv.FormatBool(*b)
 	}
 }
 
 func withAttrPolicy(s *string) topicAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)[string(TopicPolicy)] = *s
+	return func(attr map[string]string) {
+		attr[string(TopicPolicy)] = *s
 	}
 }
 
@@ -198,12 +207,17 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 func TestGetChangedAttributes(t *testing.T) {
 	type args struct {
 		p    v1beta1.TopicParameters
-		attr *map[string]string
+		attr map[string]string
+	}
+
+	type want struct {
+		attrs map[string]string
+		err   error
 	}
 
 	cases := map[string]struct {
 		args args
-		want *map[string]string
+		want want
 	}{
 		"NoChange": {
 			args: args{
@@ -215,7 +229,9 @@ func TestGetChangedAttributes(t *testing.T) {
 					withAttrDisplayName(&topicDisplayName),
 				),
 			},
-			want: topicAttributes(),
+			want: want{
+				attrs: topicAttributes(),
+			},
 		},
 		"Change": {
 			args: args{
@@ -227,9 +243,11 @@ func TestGetChangedAttributes(t *testing.T) {
 					withAttrDisplayName(&topicDisplayName2),
 				),
 			},
-			want: topicAttributes(
-				withAttrDisplayName(&topicDisplayName),
-			),
+			want: want{
+				attrs: topicAttributes(
+					withAttrDisplayName(&topicDisplayName),
+				),
+			},
 		},
 		"ChangeFifo": {
 			args: args{
@@ -241,17 +259,50 @@ func TestGetChangedAttributes(t *testing.T) {
 					withAttrFifoTopic(&falseFlag),
 				),
 			},
-			want: topicAttributes(
-				withAttrFifoTopic(&trueFlag),
-			),
+			want: want{
+				attrs: topicAttributes(
+					withAttrFifoTopic(&trueFlag),
+				),
+			},
+		},
+		"SamePolicyButDifferentFormat": {
+			args: args{
+				p: v1beta1.TopicParameters{
+					Policy: &testPolicyA,
+				},
+				attr: topicAttributes(
+					withAttrPolicy(&testPolicyA2),
+				),
+			},
+			want: want{
+				attrs: topicAttributes(),
+			},
+		},
+		"ChangedPolicy": {
+			args: args{
+				p: v1beta1.TopicParameters{
+					Policy: &testPolicyA,
+				},
+				attr: topicAttributes(
+					withAttrPolicy(&testPolicyB),
+				),
+			},
+			want: want{
+				attrs: topicAttributes(
+					withAttrPolicy(&testPolicyA),
+				),
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			c := GetChangedAttributes(tc.args.p, *tc.args.attr)
-			if diff := cmp.Diff(*tc.want, c); diff != "" {
+			attr, err := GetChangedAttributes(tc.args.p, tc.args.attr)
+			if diff := cmp.Diff(tc.want.attrs, attr); diff != "" {
 				t.Errorf("GetChangedAttributes(...): -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("err: -want, +got:\n%s", diff)
 			}
 		})
 	}
@@ -259,7 +310,7 @@ func TestGetChangedAttributes(t *testing.T) {
 
 func TestGenerateTopicObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  *map[string]string
+		in  map[string]string
 		out *v1beta1.TopicObservation
 	}{
 		"AllFilled": {
@@ -295,7 +346,7 @@ func TestGenerateTopicObservation(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			observation := GenerateTopicObservation(*tc.in)
+			observation := GenerateTopicObservation(tc.in)
 			if diff := cmp.Diff(*tc.out, observation); diff != "" {
 				t.Errorf("GenerateTopicObservation(...): -want, +got:\n%s", diff)
 			}
@@ -306,12 +357,16 @@ func TestGenerateTopicObservation(t *testing.T) {
 func TestIsSNSTopicUpToDate(t *testing.T) {
 	type args struct {
 		p    v1beta1.TopicParameters
-		attr *map[string]string
+		attr map[string]string
+	}
+	type want struct {
+		isUpToDate bool
+		err        error
 	}
 
 	cases := map[string]struct {
 		args args
-		want bool
+		want want
 	}{
 		"SameFieldsAndAllFilled": {
 			args: args{
@@ -324,7 +379,9 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 					FifoTopic:   &topicFifo,
 				},
 			},
-			want: true,
+			want: want{
+				isUpToDate: true,
+			},
 		},
 		"DifferentFields": {
 			args: args{
@@ -333,61 +390,46 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 				),
 				p: v1beta1.TopicParameters{},
 			},
-			want: false,
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"UpdateOnDifferentPolicy": {
+			args: args{
+				attr: topicAttributes(
+					withAttrPolicy(&testPolicyA),
+				),
+				p: v1beta1.TopicParameters{
+					Policy: &testPolicyB,
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
 		},
 		"NoUpdateExistsWithshuffledPolicy": {
 			args: args{
 				attr: topicAttributes(
-					withAttrPolicy(awsclients.String(`{
-						"Version": "2012-10-17",
-						"Statement": [
-							{
-								"Sid": "PublishToTopic",
-								"Effect": "Allow",
-								"Principal": {
-									"AWS": "arn:aws:iam::*****:role/my-role"
-								},
-								"Action": [
-									"SNS:Publish",
-									"SNS:GetTopicAttributes"
-								],
-								"Resource": "arn:aws:sns:eu-west-1:******:my-queue"
-							}
-						]
-					}`)),
+					withAttrPolicy(&testPolicyA),
 				),
 				p: v1beta1.TopicParameters{
-					Policy: awsclients.String(`{
-						"Statement": [
-							{
-								"Sid": "PublishToTopic",
-								"Effect": "Allow",
-								"Principal": {
-									"AWS": "arn:aws:iam::*****:role/my-role"
-								},
-								"Action": [
-									"SNS:Publish",
-									"SNS:GetTopicAttributes"
-								],
-								"Resource": "arn:aws:sns:eu-west-1:******:my-queue"
-							}
-						],
-						"Version": "2012-10-17"
-					}`),
+					Policy: &testPolicyA2,
 				},
 			},
-			want: false,
+			want: want{
+				isUpToDate: true,
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := IsSNSTopicUpToDate(tc.args.p, *tc.args.attr)
-			if err != nil {
-				t.Error(err)
+			isUpToDate, err := IsSNSTopicUpToDate(tc.args.p, tc.args.attr)
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
+				t.Errorf("isUpToDate: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("Topic : -want, +got:\n%s", diff)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("err: -want, +got:\n%s", diff)
 			}
 		})
 	}

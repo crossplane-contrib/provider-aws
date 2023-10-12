@@ -47,6 +47,7 @@ const (
 	errCreate           = "failed to create the SNS Topic"
 	errDelete           = "failed to delete the SNS Topic"
 	errUpdate           = "failed to update the SNS Topic"
+	errGetChangedAttr   = "failed to get changed topic attributes"
 )
 
 // SetupSNSTopic adds a controller that reconciles Topic.
@@ -176,7 +177,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Update Topic Attributes
-	attrs := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
+	attrs, err := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errGetChangedAttr)
+	}
 	for k, v := range attrs {
 		_, err = e.client.SetTopicAttributes(ctx, &awssns.SetTopicAttributesInput{
 			AttributeName:  aws.String(k),
