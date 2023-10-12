@@ -73,7 +73,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 	if mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo != nil {
 		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARN),
-			Extract:      reference.ExternalName(),
+			Extract:      ConfugurationARN(),
 			Reference:    mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARNRef,
 			Selector:     mg.Spec.ForProvider.CustomClusterParameters.CustomConfigurationInfo.ARNSelector,
 			To: reference.To{
