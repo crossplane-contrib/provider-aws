@@ -2,6 +2,7 @@ package autoscalinggroup
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/autoscaling"
@@ -13,6 +14,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
@@ -71,15 +73,15 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 	asg := obs.AutoScalingGroups[0]
 
 	if !cmp.Equal(in.CapacityRebalance, asg.CapacityRebalance) {
-		return false, "", nil
+		return false, "spec.forProvider.capacityRebalance", nil
 	}
 	// DefaultInstanceWarmup can be updated
 	if !cmp.Equal(in.DefaultInstanceWarmup, asg.DefaultInstanceWarmup) {
-		return false, "", nil
+		return false, "spec.forProvider.defaultInstanceWarmup", nil
 	}
 	// DesiredCapacityType can be updated
 	if !cmp.Equal(in.DesiredCapacityType, asg.DesiredCapacityType) {
-		return false, "", nil
+		return false, "spec.forProvider.desiredCapacityType", nil
 	}
 	// Context is reserved
 	// if !cmp.Equal(*in.Context, *asg.Context) {
@@ -87,68 +89,74 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 	// }
 	// DefaultCooldown can be updated
 	if !cmp.Equal(in.DefaultCooldown, asg.DefaultCooldown) {
-		return false, "", nil
+		return false, "spec.forProvider.defaultCooldown", nil
 	}
 	// DesiredCapacity can be updated
 	if !cmp.Equal(in.DesiredCapacity, asg.DesiredCapacity) {
-		return false, "", nil
+		return false, "spec.forProvider.desiredCapacity", nil
 	}
 	// HealthCheckGracePeriod can be updated
 	if !cmp.Equal(in.HealthCheckGracePeriod, asg.HealthCheckGracePeriod) {
-		return false, "", nil
+		return false, "spec.forProvider.healthCheckGracePeriod", nil
 	}
 	// HealthCheckType can be updated
 	if !cmp.Equal(in.HealthCheckType, asg.HealthCheckType) {
-		return false, "", nil
+		return false, "spec.forProvider.healthCheckType", nil
 	}
 	// MaxInstanceLifetime can be updated
 	if !cmp.Equal(in.MaxInstanceLifetime, asg.MaxInstanceLifetime) {
-		return false, "", nil
+		return false, "spec.forProvider.maxInstanceLifetime", nil
 	}
 	// MaxSize can be updated
 	if !cmp.Equal(in.MaxSize, asg.MaxSize) {
-		return false, "", nil
+		return false, "spec.forProvider.maxSize", nil
 	}
 	// MinSize can be updated
 	if !cmp.Equal(in.MinSize, asg.MinSize) {
-		return false, "", nil
+		return false, "spec.forProvider.minSize", nil
 	}
 	// NewInstancesProtectedFromScaleIn can be updated
 	if !cmp.Equal(in.NewInstancesProtectedFromScaleIn, asg.NewInstancesProtectedFromScaleIn) {
-		return false, "", nil
+		return false, "spec.forProvider.newInstancesProtectedFromScaleIn", nil
 	}
 	if !cmp.Equal(in.PlacementGroup, asg.PlacementGroup) {
-		return false, "", nil
+		return false, "spec.forProvider.placementGroup", nil
 	}
 	// VPCZoneIdentifier can be updated
 	if !cmp.Equal(in.VPCZoneIdentifier, asg.VPCZoneIdentifier) {
-		return false, "", nil
+		return false, "spec.forProvider.vpcZoneIdentifier", nil
 	}
 	// LaunchTemplate can be updated
 	if in.LaunchTemplate != nil && asg.LaunchTemplate != nil {
-		if !cmp.Equal(in.LaunchTemplate.LaunchTemplateID, asg.LaunchTemplate.LaunchTemplateId) {
-			return false, "", nil
+		if in.LaunchTemplate.LaunchTemplateID != nil {
+			if !cmp.Equal(in.LaunchTemplate.LaunchTemplateID, asg.LaunchTemplate.LaunchTemplateId) {
+				return false, "spec.forProvider.launchTemplate.launchTemplateID", nil
+			}
 		}
-		if !cmp.Equal(in.LaunchTemplate.LaunchTemplateName, asg.LaunchTemplate.LaunchTemplateName) {
-			return false, "", nil
+		if in.LaunchTemplate.LaunchTemplateName != nil {
+			if !cmp.Equal(in.LaunchTemplate.LaunchTemplateName, asg.LaunchTemplate.LaunchTemplateName) {
+				return false, "spec.forProvider.launchTemplate.launchTemplateName", nil
+			}
 		}
-		if !cmp.Equal(in.LaunchTemplate.Version, asg.LaunchTemplate.Version) {
-			return false, "", nil
+		if in.LaunchTemplate.Version != nil {
+			if !cmp.Equal(in.LaunchTemplate.Version, asg.LaunchTemplate.Version) {
+				return false, "spec.forProvider.launchTemplate.version", nil
+			}
 		}
 	}
 	// MixedInstancesPolicy can be updated
 	if in.MixedInstancesPolicy != nil && asg.MixedInstancesPolicy != nil {
 		if in.MixedInstancesPolicy.InstancesDistribution != nil && asg.MixedInstancesPolicy.InstancesDistribution != nil {
 			if !cmp.Equal(in.MixedInstancesPolicy.InstancesDistribution, asg.MixedInstancesPolicy.InstancesDistribution) {
-				return false, "", nil
+				return false, "spec.forProvider.mixedInstancesPolicy.instancesDistribution", nil
 			}
 		}
 		if in.MixedInstancesPolicy.LaunchTemplate != nil && asg.MixedInstancesPolicy.LaunchTemplate != nil {
 			if !cmp.Equal(in.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification, asg.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification) {
-				return false, "", nil
+				return false, "spec.forProvider.mixedInstancesPolicy.launchTemplate.launchTemplateSpecification", nil
 			}
 			if !cmp.Equal(in.MixedInstancesPolicy.LaunchTemplate.Overrides, asg.MixedInstancesPolicy.LaunchTemplate.Overrides) {
-				return false, "", nil
+				return false, "spec.forProvider.mixedInstancesPolicy.launchTemplate.overrides", nil
 			}
 		}
 	}
@@ -160,7 +168,7 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 		return *asg.AvailabilityZones[i] < *asg.AvailabilityZones[j]
 	})
 	if !cmp.Equal(in.AvailabilityZones, asg.AvailabilityZones) {
-		return false, "", nil
+		return false, "spec.forProvider.availabilityZones", nil
 	}
 	// LoadBalancerNames can be updated
 	sort.Slice(in.LoadBalancerNames, func(i, j int) bool {
@@ -170,7 +178,7 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 		return *asg.LoadBalancerNames[i] < *asg.LoadBalancerNames[j]
 	})
 	if !cmp.Equal(in.LoadBalancerNames, asg.LoadBalancerNames) {
-		return false, "", nil
+		return false, "spec.forProvider.loadBalancerNames", nil
 	}
 	// Tags can be updated
 	sort.Slice(in.Tags, func(i, j int) bool {
@@ -179,8 +187,21 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 	sort.Slice(asg.Tags, func(i, j int) bool {
 		return *asg.Tags[i].Key < *asg.Tags[j].Key
 	})
-	if !cmp.Equal(in.Tags, asg.Tags) {
-		return false, "", nil
+	if len(in.Tags) != len(asg.Tags) {
+		return false, "spec.forProvider.tags", nil
+	}
+	for i := range in.Tags {
+		a := in.Tags[i]
+		b := asg.Tags[i]
+		if !ptr.Equal(a.Key, b.Key) {
+			return false, fmt.Sprintf("spec.forProvider.tags[%d].key", i), nil
+		}
+		if !ptr.Equal(a.Value, b.Value) {
+			return false, fmt.Sprintf("spec.forProvider.tags[%d].value", i), nil
+		}
+		if !ptr.Equal(a.PropagateAtLaunch, b.PropagateAtLaunch) {
+			return false, fmt.Sprintf("spec.forProvider.tags[%d].propagateAtLaunch", i), nil
+		}
 	}
 
 	// TargetGroupARNs
@@ -202,7 +223,7 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 		return *asg.TerminationPolicies[i] < *asg.TerminationPolicies[j]
 	})
 	if !cmp.Equal(in.TerminationPolicies, asg.TerminationPolicies) {
-		return false, "", nil
+		return false, "spec.forProvider.terminationPolicies", nil
 	}
 
 	// TrafficSources
@@ -237,6 +258,7 @@ func lateInitialize(in *svcapitypes.AutoScalingGroupParameters, asg *svcsdk.Desc
 	in.TargetGroupARNs = awsclients.LateInitializeStringPtrSlice(in.TargetGroupARNs, obs.TargetGroupARNs)
 	in.TerminationPolicies = awsclients.LateInitializeStringPtrSlice(in.TerminationPolicies, obs.TerminationPolicies)
 	in.VPCZoneIdentifier = awsclients.LateInitializeStringPtr(in.VPCZoneIdentifier, obs.VPCZoneIdentifier)
+
 	return nil
 }
 
