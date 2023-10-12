@@ -17,6 +17,7 @@ limitations under the License.
 package utils
 
 import (
+	"context"
 	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
@@ -35,27 +36,27 @@ const (
 )
 
 // AreTagsUpToDate for spec and resourceName
-func AreTagsUpToDate(client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) (bool, error) {
-	current, err := ListTagsForResource(client, resourceName)
+func AreTagsUpToDate(ctx context.Context, client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) (bool, []*svcsdk.Tag, []*string, error) {
+	current, err := ListTagsForResource(ctx, client, resourceName)
 	if err != nil {
-		return false, err
+		return false, nil, nil, err
 	}
 
 	add, remove := DiffTags(spec, current)
 
-	return len(add) == 0 && len(remove) == 0, nil
+	return len(add) == 0 && len(remove) == 0, add, remove, nil
 }
 
 // UpdateTagsForResource with resourceName
-func UpdateTagsForResource(client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) error {
-	current, err := ListTagsForResource(client, resourceName)
+func UpdateTagsForResource(ctx context.Context, client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) error {
+	current, err := ListTagsForResource(ctx, client, resourceName)
 	if err != nil {
 		return err
 	}
 
 	add, remove := DiffTags(spec, current)
 	if len(remove) != 0 {
-		if _, err := client.RemoveTagsFromResource(&svcsdk.RemoveTagsFromResourceInput{
+		if _, err := client.RemoveTagsFromResourceWithContext(ctx, &svcsdk.RemoveTagsFromResourceInput{
 			ResourceName: resourceName,
 			TagKeys:      remove,
 		}); err != nil {
@@ -63,7 +64,7 @@ func UpdateTagsForResource(client rdsiface.RDSAPI, spec []*svcapitypes.Tag, reso
 		}
 	}
 	if len(add) != 0 {
-		if _, err := client.AddTagsToResource(&svcsdk.AddTagsToResourceInput{
+		if _, err := client.AddTagsToResourceWithContext(ctx, &svcsdk.AddTagsToResourceInput{
 			ResourceName: resourceName,
 			Tags:         add,
 		}); err != nil {
@@ -75,12 +76,12 @@ func UpdateTagsForResource(client rdsiface.RDSAPI, spec []*svcapitypes.Tag, reso
 }
 
 // ListTagsForResource for the given resource
-func ListTagsForResource(client rdsiface.RDSAPI, resourceName *string) ([]*svcsdk.Tag, error) {
+func ListTagsForResource(ctx context.Context, client rdsiface.RDSAPI, resourceName *string) ([]*svcsdk.Tag, error) {
 	req := &svcsdk.ListTagsForResourceInput{
 		ResourceName: resourceName,
 	}
 
-	resp, err := client.ListTagsForResource(req)
+	resp, err := client.ListTagsForResourceWithContext(ctx, req)
 	if err != nil {
 		return nil, errors.Wrap(err, errListTagsForResource)
 	}
