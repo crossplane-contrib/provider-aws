@@ -32,7 +32,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/eks/fake/eksiface"
+	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/eksiface"
 )
 
 var (

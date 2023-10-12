@@ -29,17 +29,10 @@ limitations under the License.
 // Generate crossplane-runtime methodsets (resource.Claim, etc)
 //go:generate go run -tags generate github.com/crossplane/crossplane-tools/cmd/angryjet generate-methodsets --header-file=../hack/boilerplate.go.txt ./...
 
-// TODO(muvaf): Remove the last mockgen usage in Addon resource and move to
-// current convention with tests.
-//go:generate go run github.com/golang/mock/mockgen  --build_flags=--mod=mod -package eksiface -copyright_file ../hack/boilerplate.go.txt -destination ../pkg/clients/eks/fake/eksiface/fake.go github.com/aws/aws-sdk-go/service/eks/eksiface EKSAPI
-
 package apis
 
 import (
 	_ "github.com/aws-controllers-k8s/code-generator/cmd/ack-generate" //nolint:typecheck
-
-	_ "github.com/golang/mock/mockgen"                  //nolint:typecheck
-	_ "sigs.k8s.io/controller-tools/cmd/controller-gen" //nolint:typecheck
-
-	_ "github.com/crossplane/crossplane-tools/cmd/angryjet" //nolint:typecheck
+	_ "github.com/crossplane/crossplane-tools/cmd/angryjet"            //nolint:typecheck
+	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"                //nolint:typecheck
 )
