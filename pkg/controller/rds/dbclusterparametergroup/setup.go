@@ -19,6 +19,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
@@ -31,6 +32,9 @@ const (
 	errDetermineDBParameterGroupFamily           = "cannot determine DB parametergroup family"
 	errGetDBEngineVersion                        = "cannot decsribe DB engine versions"
 	errNoDBEngineVersions                        = "no DB engine versions returned by AWS"
+	errListTags                                  = "cannot list tags"
+	errAddTags                                   = "cannot add tags"
+	errRemoveTags                                = "cannot remove tags"
 )
 
 // SetupDBClusterParameterGroup adds a controller that reconciles DBClusterParameterGroup.
@@ -42,6 +46,7 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 			e.preCreate = c.preCreate
 			e.preObserve = preObserve
 			e.preUpdate = c.preUpdate
+			e.postUpdate = c.postUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
 			e.lateInitialize = lateInitialize
@@ -81,6 +86,11 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 type custom struct {
 	kube   client.Client
 	client svcsdkapi.RDSAPI
+
+	cache struct {
+		addTags    []*svcsdk.Tag
+		removeTags []*string
+	}
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
@@ -152,6 +162,28 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	return nil
 }
 
+func (c *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DBClusterParameterGroupNameMessage, upd managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
+	if len(c.cache.addTags) > 0 {
+		_, err := c.client.AddTagsToResourceWithContext(ctx, &svcsdk.AddTagsToResourceInput{
+			ResourceName: cr.Status.AtProvider.DBClusterParameterGroupARN,
+			Tags:         c.cache.addTags,
+		})
+		if err != nil {
+			return upd, errors.Wrap(err, errAddTags)
+		}
+	}
+	if len(c.cache.removeTags) > 0 {
+		_, err := c.client.RemoveTagsFromResourceWithContext(ctx, &svcsdk.RemoveTagsFromResourceInput{
+			ResourceName: cr.Status.AtProvider.DBClusterParameterGroupARN,
+			TagKeys:      c.cache.removeTags,
+		})
+		if err != nil {
+			return upd, errors.Wrap(err, errRemoveTags)
+		}
+	}
+	return upd, nil
+}
+
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
 	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
@@ -164,7 +196,7 @@ func lateInitialize(spec *svcapitypes.DBClusterParameterGroupParameters, current
 	return nil
 }
 
-func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, string, error) {
+func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, out *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, string, error) {
 	results, err := c.getCurrentDBClusterParameters(ctx, cr)
 	if err != nil {
 		return false, "", err
@@ -174,7 +206,14 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParame
 		return false, "", nil
 	}
 
-	return true, "", err
+	areTagsUpToDate, addTags, removeTags, err := svcutils.AreTagsUpToDate(ctx, c.client, cr.Spec.ForProvider.Tags, out.DBClusterParameterGroups[0].DBClusterParameterGroupArn)
+	c.cache.addTags = addTags
+	c.cache.removeTags = removeTags
+	if err != nil || !areTagsUpToDate {
+		return false, "spec.forProvider.tags", errors.Wrap(err, errListTags)
+	}
+
+	return true, "", nil
 }
 
 func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) ([]*svcsdk.Parameter, error) {

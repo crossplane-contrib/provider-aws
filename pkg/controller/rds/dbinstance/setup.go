@@ -3,6 +3,7 @@ package dbinstance
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"sort"
 	"strconv"
@@ -39,6 +40,8 @@ const (
 	errSnapshotRestoreFailed    = "cannot restore DB instance from snapshot"
 	errPointInTimeRestoreFailed = "cannot restore DB instance from point in time"
 	errUnknownRestoreSource     = "unknown DB Instance restore source"
+	errAddTags                  = "cannot add tags"
+	errRemoveTags               = "cannot remove tags"
 )
 
 // time formats
@@ -104,6 +107,11 @@ type custom struct {
 	kube     client.Client
 	client   svcsdkapi.RDSAPI
 	external *external
+
+	cache struct {
+		addTags    []*svcsdk.Tag
+		removeTags []*string
+	}
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
@@ -256,6 +264,27 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	}
 
 	upd.ConnectionDetails, err = e.updateConnectionDetails(ctx, cr, upd.ConnectionDetails)
+
+	// Update tags if necessary
+	if len(e.cache.addTags) > 0 {
+		_, err := e.client.AddTagsToResourceWithContext(ctx, &svcsdk.AddTagsToResourceInput{
+			ResourceName: out.DBInstance.DBInstanceArn,
+			Tags:         e.cache.addTags,
+		})
+		if err != nil {
+			return upd, errors.Wrap(err, errAddTags)
+		}
+	}
+	if len(e.cache.removeTags) > 0 {
+		_, err := e.client.RemoveTagsFromResourceWithContext(ctx, &svcsdk.RemoveTagsFromResourceInput{
+			ResourceName: out.DBInstance.DBInstanceArn,
+			TagKeys:      e.cache.removeTags,
+		})
+		if err != nil {
+			return upd, errors.Wrap(err, errRemoveTags)
+		}
+	}
+
 	return upd, err
 }
 
@@ -455,7 +484,10 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged {
+	e.cache.addTags, e.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
+	tagsChanged := len(e.cache.addTags) != 0 && len(e.cache.removeTags) != 0
+
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
 		return true, diff, nil
 	}
 
@@ -471,6 +503,9 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		diff += *cr.Spec.ForProvider.PreferredBackupWindow
 		diff += "\nobserved backupWindow: "
 		diff += *db.PreferredBackupWindow
+	}
+	if tagsChanged {
+		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(e.cache.addTags), len(e.cache.removeTags))
 	}
 
 	log.Println(diff)
