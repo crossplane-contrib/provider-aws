@@ -109,15 +109,19 @@ func convertResourcePolicyConditions(conditions []common.Condition) ConditionMap
 
 			switch {
 			case c.ConditionStringValue != nil:
-				set[c.ConditionKey] = *c.ConditionStringValue
+				set[c.ConditionKey] = ConditionSettingsValue{*c.ConditionStringValue}
 			case c.ConditionBooleanValue != nil:
-				set[c.ConditionKey] = *c.ConditionBooleanValue
+				set[c.ConditionKey] = ConditionSettingsValue{*c.ConditionBooleanValue}
 			case c.ConditionNumericValue != nil:
-				set[c.ConditionKey] = *c.ConditionNumericValue
+				set[c.ConditionKey] = ConditionSettingsValue{*c.ConditionNumericValue}
 			case c.ConditionDateValue != nil:
-				set[c.ConditionKey] = c.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
+				set[c.ConditionKey] = ConditionSettingsValue{c.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")}
 			case c.ConditionListValue != nil:
-				set[c.ConditionKey] = c.ConditionListValue
+				listVal := make(ConditionSettingsValue, len(c.ConditionListValue))
+				for i, val := range c.ConditionListValue {
+					listVal[i] = val
+				}
+				set[c.ConditionKey] = listVal
 			}
 		}
 		m[cc.OperatorKey] = set
