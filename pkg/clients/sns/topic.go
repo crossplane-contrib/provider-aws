@@ -18,12 +18,13 @@ package sns
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
+	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
@@ -117,16 +118,24 @@ func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]strin
 // Please see https://docs.aws.amazon.com/sns/latest/api/API_SetTopicAttributes.html
 // So we need to compare each topic attribute and call SetTopicAttribute for ones which has
 // changed.
-func GetChangedAttributes(p v1beta1.TopicParameters, attrs map[string]string) map[string]string {
+func GetChangedAttributes(p v1beta1.TopicParameters, attrs map[string]string) (map[string]string, error) {
 	topicAttrs := getTopicAttributes(p)
 	changedAttrs := make(map[string]string)
 	for k, v := range topicAttrs {
-		if v != attrs[k] {
+		if k == string(TopicPolicy) {
+			isPolicyUpToDate, err := isSNSPolicyUpToDate(v, attrs[string(TopicPolicy)])
+			if err != nil {
+				return nil, errors.Wrap(err, "cannot compare policies")
+			}
+			if !isPolicyUpToDate {
+				changedAttrs[k] = v
+			}
+		} else if v != attrs[k] {
 			changedAttrs[k] = v
 		}
 	}
 
-	return changedAttrs
+	return changedAttrs, nil
 }
 
 // GenerateTopicObservation is used to produce TopicObservation from attributes
@@ -156,7 +165,7 @@ func GenerateTopicObservation(attr map[string]string) v1beta1.TopicObservation {
 func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) (bool, error) {
 	fifoTopic, _ := strconv.ParseBool(attr[string(TopicFifoTopic)])
 
-	policyChanged, err := IsSNSPolicyChanged(p, attr)
+	isPolicyUpToDate, err := isSNSPolicyUpToDate(ptr.Deref(p.Policy, ""), attr[string(TopicPolicy)])
 	if err != nil {
 		return false, err
 	}
@@ -165,30 +174,26 @@ func IsSNSTopicUpToDate(p v1beta1.TopicParameters, attr map[string]string) (bool
 		aws.ToString(p.DisplayName) == attr[string(TopicDisplayName)] &&
 		aws.ToString(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
 		aws.ToBool(p.FifoTopic) == fifoTopic &&
-		!policyChanged, nil
+		isPolicyUpToDate, nil
 }
 
 // IsSNSPolicyChanged determines whether a SNS topic policy needs to be updated
-func IsSNSPolicyChanged(p v1beta1.TopicParameters, attr map[string]string) (bool, error) {
-	currPolicyStr := attr[string(TopicPolicy)]
-	specPolicyStr := awsclients.StringValue(p.Policy)
-
-	if currPolicyStr == specPolicyStr {
+func isSNSPolicyUpToDate(specPolicyStr, currPolicyStr string) (bool, error) {
+	if specPolicyStr == "" {
+		return currPolicyStr == "", nil
+	} else if currPolicyStr == "" {
 		return false, nil
 	}
 
-	currPolicy, err := policyutils.ParsePolicyString(attr[string(TopicPolicy)])
+	currPolicy, err := policyutils.ParsePolicyString(currPolicyStr)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "current policy")
 	}
-
-	specPolicy, err := policyutils.ParsePolicyString(awsclients.StringValue(p.Policy))
+	specPolicy, err := policyutils.ParsePolicyString(specPolicyStr)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "spec policy")
 	}
-
 	equalPolicies, _ := policyutils.ArePoliciesEqal(&currPolicy, &specPolicy)
-
 	return equalPolicies, nil
 }
 

@@ -137,21 +137,55 @@ type ConditionMap map[string]ConditionSettings
 // ConditionSettings is a map of keys and values.
 // Depending on the type of operation, the values can strings, integers,
 // bools or lists of strings.
-type ConditionSettings map[string]any
+type ConditionSettings map[string]ConditionSettingsValue
+
+// // UnmarshalJSON unmarshals data into m.
+// func (m *ConditionSettings) UnmarshalJSON(data []byte) error {
+// 	res := map[string]ConditionSettingsValue{}
+// 	if err := json.Unmarshal(data, &res); err != nil {
+// 		return err
+// 	}
+// 	for k, v := range res {
+// 		// AWS converts bools into strings in conditions.
+// 		if b, isBool := v.(bool); isBool {
+// 			res[k] = strconv.FormatBool(b)
+// 		}
+// 	}
+// 	*m = res
+// 	return nil
+// }
+
+// ConditionSettingsValue represents a value for condition mapping.
+// It can be any kind of value but should be one of strings, integers, bools,
+// lists or slices of them.
+//
+// It contains a custom unmarshaller that is able to parse single items and
+// converts them into slices.
+type ConditionSettingsValue []any
 
 // UnmarshalJSON unmarshals data into m.
-func (m *ConditionSettings) UnmarshalJSON(data []byte) error {
-	res := map[string]any{}
-	if err := json.Unmarshal(data, &res); err != nil {
-		return err
+func (m *ConditionSettingsValue) UnmarshalJSON(data []byte) error {
+	var resSlice []any
+
+	// Try unmarshalling into an array first
+	if err := json.Unmarshal(data, &resSlice); err != nil {
+		// If that does not work, try to unmarshal a single value which may have
+		// any form.
+		var resSingle any
+		if err := json.Unmarshal(data, &resSingle); err != nil {
+			return err
+		}
+		resSlice = []any{resSingle}
 	}
-	for k, v := range res {
+
+	for k, v := range resSlice {
 		// AWS converts bools into strings in conditions.
 		if b, isBool := v.(bool); isBool {
-			res[k] = strconv.FormatBool(b)
+			resSlice[k] = strconv.FormatBool(b)
 		}
 	}
-	*m = res
+
+	*m = resSlice
 	return nil
 }
 
