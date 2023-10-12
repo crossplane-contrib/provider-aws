@@ -19,6 +19,7 @@ package rds
 import (
 	"context"
 	"encoding/json"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
@@ -320,6 +322,13 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
 
+	for _, t := range in.TagList {
+		currentParams.Tags = append(currentParams.Tags, v1beta1.Tag{
+			Key:   ptr.Deref(t.Key, ""),
+			Value: ptr.Deref(t.Value, ""),
+		})
+	}
+
 	// Don't attempt to scale down storage if autoscaling is enabled,
 	// and the current storage is larger than what was once
 	// requested. We still want to allow the user to manually scale
@@ -346,6 +355,9 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 		}
 	}
 
+	slices.SortFunc(currentParams.Tags, compareTags)
+	slices.SortFunc(target.Tags, compareTags)
+
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -355,6 +367,10 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 		return nil, err
 	}
 	return patch, nil
+}
+
+func compareTags(a, b v1beta1.Tag) int {
+	return strings.Compare(a.Key, b.Key)
 }
 
 // GenerateModifyDBInstanceInput from RDSInstanceSpec
