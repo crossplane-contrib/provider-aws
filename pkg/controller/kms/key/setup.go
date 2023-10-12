@@ -19,6 +19,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 // SetupKey adds a controller that reconciles Key.
@@ -309,8 +310,16 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 	if err != nil {
 		return false, "", awsclients.Wrap(err, "cannot get key policy")
 	}
-	if awsclients.StringValue(cr.Spec.ForProvider.Policy) != awsclients.StringValue(resPolicy.Policy) {
-		return false, "", nil
+	specPolicy, err := policy.ParsePolicyStringPtr(cr.Spec.ForProvider.Policy)
+	if err != nil {
+		return false, "", errors.Wrap(err, "cannot parse spec policy")
+	}
+	currentPolicy, err := policy.ParsePolicyStringPtr(resPolicy.Policy)
+	if err != nil {
+		return false, "", errors.Wrap(err, "cannot parse current policy")
+	}
+	if equal, diff := policy.ArePoliciesEqal(specPolicy, currentPolicy); !equal {
+		return false, "spec.forProvider.policy: " + diff, nil
 	}
 
 	// EnableKeyRotation
