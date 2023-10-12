@@ -17,14 +17,18 @@ limitations under the License.
 package table
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
+	kmstypes "github.com/aws/aws-sdk-go/service/kms"
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
-	"github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
+	mockkms "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/kmsiface"
 )
 
 var (
@@ -32,14 +36,17 @@ var (
 	writeCapacityUnits = 1
 )
 
+type kmsAPIModifier func(mock *mockkms.MockKMSAPI)
+
 func TestCreatePatch(t *testing.T) {
 	type args struct {
-		t *svcsdk.DescribeTableOutput
-		p *v1alpha1.TableParameters
+		kmsClient kmsAPIModifier
+		t         *svcsdk.DescribeTableOutput
+		p         *svcapitypes.TableParameters
 	}
 
 	type want struct {
-		patch *v1alpha1.TableParameters
+		patch *svcapitypes.TableParameters
 	}
 
 	cases := map[string]struct {
@@ -56,15 +63,15 @@ func TestCreatePatch(t *testing.T) {
 						},
 					},
 				},
-				p: &v1alpha1.TableParameters{
-					ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
+				p: &svcapitypes.TableParameters{
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
 						ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits)),
 						WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits)),
 					},
 				},
 			},
 			want: want{
-				patch: &v1alpha1.TableParameters{},
+				patch: &svcapitypes.TableParameters{},
 			},
 		},
 		"DifferentFields": {
@@ -77,18 +84,78 @@ func TestCreatePatch(t *testing.T) {
 						},
 					},
 				},
-				p: &v1alpha1.TableParameters{
-					ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
+				p: &svcapitypes.TableParameters{
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
 						ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits + 1)),
 						WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits + 1)),
 					},
 				},
 			},
 			want: want{
-				patch: &v1alpha1.TableParameters{
-					ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
+				patch: &svcapitypes.TableParameters{
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
 						ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits + 1)),
 						WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits + 1)),
+					},
+				},
+			},
+		},
+		"SameKMSMasterKeyButDifferentIDs": {
+			args: args{
+				kmsClient: func(mock *mockkms.MockKMSAPI) {
+					mock.EXPECT().DescribeKeyWithContext(context.Background(), &kmstypes.DescribeKeyInput{
+						KeyId: ptr.To("alias/test-key"),
+					}).Return(&kmstypes.DescribeKeyOutput{
+						KeyMetadata: &kmstypes.KeyMetadata{
+							Arn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					}, nil)
+				},
+				t: &svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						SSEDescription: &svcsdk.SSEDescription{
+							KMSMasterKeyArn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					},
+				},
+				p: &svcapitypes.TableParameters{
+					SSESpecification: &svcapitypes.SSESpecification{
+						KMSMasterKeyID: ptr.To("alias/test-key"),
+					},
+				},
+			},
+			want: want{
+				patch: &svcapitypes.TableParameters{},
+			},
+		},
+		"DifferentKMSMasterKeyIDs": {
+			args: args{
+				kmsClient: func(mock *mockkms.MockKMSAPI) {
+					mock.EXPECT().DescribeKeyWithContext(context.Background(), &kmstypes.DescribeKeyInput{
+						KeyId: ptr.To("alias/test-key"),
+					}).Return(&kmstypes.DescribeKeyOutput{
+						KeyMetadata: &kmstypes.KeyMetadata{
+							Arn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-bbbb-bbbbbbbb"),
+						},
+					}, nil)
+				},
+				t: &svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						SSEDescription: &svcsdk.SSEDescription{
+							KMSMasterKeyArn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					},
+				},
+				p: &svcapitypes.TableParameters{
+					SSESpecification: &svcapitypes.SSESpecification{
+						KMSMasterKeyID: ptr.To("alias/test-key"),
+					},
+				},
+			},
+			want: want{
+				patch: &svcapitypes.TableParameters{
+					SSESpecification: &svcapitypes.SSESpecification{
+						KMSMasterKeyID: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-bbbb-bbbbbbbb"),
 					},
 				},
 			},
@@ -97,7 +164,15 @@ func TestCreatePatch(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, _ := createPatch(tc.args.t, tc.args.p)
+			mockKms := mockkms.NewMockKMSAPI(gomock.NewController(t))
+			if tc.args.kmsClient != nil {
+				tc.args.kmsClient(mockKms)
+			}
+			updater := updateClient{
+				clientkms: mockKms,
+			}
+
+			result, _ := updater.createPatch(context.Background(), tc.args.t, tc.args.p)
 			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -107,8 +182,9 @@ func TestCreatePatch(t *testing.T) {
 
 func TestIsCoreResourceUpToDate(t *testing.T) {
 	type args struct {
-		t svcsdk.DescribeTableOutput
-		p v1alpha1.Table
+		kmsClient kmsAPIModifier
+		t         svcsdk.DescribeTableOutput
+		p         svcapitypes.Table
 	}
 
 	type want struct {
@@ -130,10 +206,10 @@ func TestIsCoreResourceUpToDate(t *testing.T) {
 						},
 					},
 				},
-				p: v1alpha1.Table{
-					Spec: v1alpha1.TableSpec{
-						ForProvider: v1alpha1.TableParameters{
-							ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
+				p: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
 								ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits)),
 								WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits)),
 							},
@@ -155,12 +231,76 @@ func TestIsCoreResourceUpToDate(t *testing.T) {
 						},
 					},
 				},
-				p: v1alpha1.Table{
-					Spec: v1alpha1.TableSpec{
-						ForProvider: v1alpha1.TableParameters{
-							ProvisionedThroughput: &v1alpha1.ProvisionedThroughput{
+				p: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
 								ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits + 1)),
 								WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits + 1)),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				result: false,
+			},
+		},
+		"SameKMSMasterKeyButDifferentIDs": {
+			args: args{
+				kmsClient: func(mock *mockkms.MockKMSAPI) {
+					mock.EXPECT().DescribeKeyWithContext(context.Background(), &kmstypes.DescribeKeyInput{
+						KeyId: ptr.To("alias/test-key"),
+					}).Return(&kmstypes.DescribeKeyOutput{
+						KeyMetadata: &kmstypes.KeyMetadata{
+							Arn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					}, nil)
+				},
+				t: svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						SSEDescription: &svcsdk.SSEDescription{
+							KMSMasterKeyArn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					},
+				},
+				p: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							SSESpecification: &svcapitypes.SSESpecification{
+								KMSMasterKeyID: ptr.To("alias/test-key"),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				result: true,
+			},
+		},
+		"DifferentKMSMasterKeyIDs": {
+			args: args{
+				kmsClient: func(mock *mockkms.MockKMSAPI) {
+					mock.EXPECT().DescribeKeyWithContext(context.Background(), &kmstypes.DescribeKeyInput{
+						KeyId: ptr.To("alias/test-key"),
+					}).Return(&kmstypes.DescribeKeyOutput{
+						KeyMetadata: &kmstypes.KeyMetadata{
+							Arn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-bbbb-bbbbbbbb"),
+						},
+					}, nil)
+				},
+				t: svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						SSEDescription: &svcsdk.SSEDescription{
+							KMSMasterKeyArn: ptr.To("arn:aws:kms:us-east-1:123456789123:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa"),
+						},
+					},
+				},
+				p: svcapitypes.Table{
+					Spec: svcapitypes.TableSpec{
+						ForProvider: svcapitypes.TableParameters{
+							SSESpecification: &svcapitypes.SSESpecification{
+								KMSMasterKeyID: ptr.To("alias/test-key"),
 							},
 						},
 					},
@@ -174,7 +314,15 @@ func TestIsCoreResourceUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := isCoreResourceUpToDate(&tc.args.p, &tc.args.t)
+			mockKms := mockkms.NewMockKMSAPI(gomock.NewController(t))
+			if tc.args.kmsClient != nil {
+				tc.args.kmsClient(mockKms)
+			}
+			updater := updateClient{
+				clientkms: mockKms,
+			}
+
+			got, err := updater.isCoreResourceUpToDate(context.Background(), &tc.args.p, &tc.args.t)
 			if diff := cmp.Diff(tc.want.result, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -258,11 +406,11 @@ func TestIsPitrUpToDate(t *testing.T) {
 
 func TestLateInitialize(t *testing.T) {
 	type args struct {
-		p  *v1alpha1.TableParameters
+		p  *svcapitypes.TableParameters
 		in *svcsdk.DescribeTableOutput
 	}
 	type want struct {
-		p   *v1alpha1.TableParameters
+		p   *svcapitypes.TableParameters
 		err error
 	}
 	cases := map[string]struct {
@@ -271,21 +419,21 @@ func TestLateInitialize(t *testing.T) {
 	}{
 		"NilOutput": {
 			args: args{
-				p: &v1alpha1.TableParameters{},
+				p: &svcapitypes.TableParameters{},
 			},
 			want: want{
-				p: &v1alpha1.TableParameters{},
+				p: &svcapitypes.TableParameters{},
 			},
 		},
 		"ImpliedValues": {
 			args: args{
-				p: &v1alpha1.TableParameters{},
+				p: &svcapitypes.TableParameters{},
 				in: &svcsdk.DescribeTableOutput{
 					Table: &svcsdk.TableDescription{},
 				},
 			},
 			want: want{
-				p: &v1alpha1.TableParameters{
+				p: &svcapitypes.TableParameters{
 					BillingMode:         aws.String(svcsdk.BillingModeProvisioned),
 					StreamSpecification: &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false)},
 				},
@@ -293,7 +441,7 @@ func TestLateInitialize(t *testing.T) {
 		},
 		"EmptyParams": {
 			args: args{
-				p: &v1alpha1.TableParameters{},
+				p: &svcapitypes.TableParameters{},
 				in: &svcsdk.DescribeTableOutput{
 					Table: &svcsdk.TableDescription{
 						AttributeDefinitions: []*svcsdk.AttributeDefinition{{
@@ -330,7 +478,7 @@ func TestLateInitialize(t *testing.T) {
 				},
 			},
 			want: want{
-				p: &v1alpha1.TableParameters{
+				p: &svcapitypes.TableParameters{
 					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
 					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
 						AttributeName: aws.String("N"),
@@ -364,7 +512,7 @@ func TestLateInitialize(t *testing.T) {
 		},
 		"ExistingParams": {
 			args: args{
-				p: &v1alpha1.TableParameters{
+				p: &svcapitypes.TableParameters{
 					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
 					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
 						AttributeName: aws.String("N"),
@@ -430,7 +578,7 @@ func TestLateInitialize(t *testing.T) {
 				},
 			},
 			want: want{
-				p: &v1alpha1.TableParameters{
+				p: &svcapitypes.TableParameters{
 					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
 					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
 						AttributeName: aws.String("N"),

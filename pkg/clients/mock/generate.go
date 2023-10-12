@@ -1,4 +1,5 @@
 //go:build generate
+// +build generate
 
 /*
 Copyright 2021 The Crossplane Authors.
@@ -16,9 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//go:generate go run -tags generate github.com/golang/mock/mockgen -package kube -destination ./kube/mock.go sigs.k8s.io/controller-runtime/pkg/client Client
-
-//go:generate go run -tags generate github.com/golang/mock/mockgen -package cognitoidentityprovider -destination ./cognitoidentityprovider/mock.go github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider ResolverService
+//go:generate go run -tags generate github.com/golang/mock/mockgen --build_flags=--mod=mod -copyright_file ../../../hack/boilerplate.go.txt -package eksiface  -destination ./eksiface/zz_eks_api.go github.com/aws/aws-sdk-go/service/eks/eksiface EKSAPI
+//go:generate go run -tags generate github.com/golang/mock/mockgen --build_flags=--mod=mod -copyright_file ../../../hack/boilerplate.go.txt -package kmsiface -destination ./kmsiface/zz_kms_api.go github.com/aws/aws-sdk-go/service/kms/kmsiface KMSAPI
+//go:generate go run -tags generate github.com/golang/mock/mockgen --build_flags=--mod=mod -copyright_file ../../../hack/boilerplate.go.txt -package kube -destination ./kube/zz_client.go sigs.k8s.io/controller-runtime/pkg/client Client
+//go:generate go run -tags generate github.com/golang/mock/mockgen --build_flags=--mod=mod -copyright_file ../../../hack/boilerplate.go.txt -package cognitoidentityprovider -destination ./cognitoidentityprovider/zz_resolver_service.go github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider ResolverService
 
 package mock
 
