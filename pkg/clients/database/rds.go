@@ -318,7 +318,8 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 // CreatePatch creates a *v1beta1.RDSInstanceParameters that has only the changed
 // values between the target *v1beta1.RDSInstanceParameters and the current
 // *rds.DBInstance
-func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) {
+func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) { //nolint:gocyclo
+	target := spec.DeepCopy()
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
 
@@ -327,6 +328,15 @@ func CreatePatch(in *rdstypes.DBInstance, target *v1beta1.RDSInstanceParameters)
 			Key:   ptr.Deref(t.Key, ""),
 			Value: ptr.Deref(t.Value, ""),
 		})
+	}
+
+	// AvailabilityZone parameters is not allowed for MultiAZ deployments.
+	// So set this to nil if that is the case to avoid unnecessary diffs.
+	if ptr.Deref(target.MultiAZ, false) {
+		target.AvailabilityZone = nil
+	}
+	if ptr.Deref(currentParams.MultiAZ, false) {
+		currentParams.AvailabilityZone = nil
 	}
 
 	// Don't attempt to scale down storage if autoscaling is enabled,
