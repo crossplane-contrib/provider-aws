@@ -128,16 +128,19 @@ func TestCreatePatch(t *testing.T) {
 					AllocatedStorage: allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
+					AvailabilityZone: ptr.To("az1"),
 				},
 				p: &v1beta1.RDSInstanceParameters{
 					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
+					AvailabilityZone: ptr.To("az2"),
 				},
 			},
 			want: want{
 				patch: &v1beta1.RDSInstanceParameters{
 					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					AvailabilityZone: ptr.To("az2"),
 				},
 			},
 		},
@@ -204,6 +207,21 @@ func TestCreatePatch(t *testing.T) {
 						{Key: "tag2", Value: "val"},
 						{Key: "tag1", Value: "val"},
 					},
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{},
+			},
+		},
+		"IgnoreDifferentAvailabilityZoneForMultiAZ": {
+			args: args{
+				db: &rdstypes.DBInstance{
+					AvailabilityZone: ptr.To("az1"),
+					MultiAZ:          true,
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					AvailabilityZone: ptr.To("az2"),
+					MultiAZ:          ptr.To(true),
 				},
 			},
 			want: want{
@@ -467,6 +485,23 @@ func TestIsUpToDate(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							EngineVersion: ptr.To("12.1"),
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"NoUpdateForDifferentAvailabilityZoneWhenMultiAZ": {
+			args: args{
+				db: rdstypes.DBInstance{
+					AvailabilityZone: ptr.To("az1"),
+					MultiAZ:          true,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							AvailabilityZone: ptr.To("az2"),
+							MultiAZ:          ptr.To(true),
 						},
 					},
 				},
