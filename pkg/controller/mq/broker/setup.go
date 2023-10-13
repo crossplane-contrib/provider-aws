@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
@@ -15,6 +16,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -158,6 +160,12 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.Broker, obj *svc
 			ConsoleAccess: cr.Spec.ForProvider.CustomUsers[0].ConsoleAccess,
 			Groups:        cr.Spec.ForProvider.CustomUsers[0].Groups,
 		},
+	}
+
+	// EncryptionOptions are not supported for RabbitMQ.
+	// See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-amazonmq-broker-encryptionoptions.html
+	if strings.ToLower(ptr.Deref(obj.EngineType, "")) == "rabbitmq" {
+		obj.EncryptionOptions = nil
 	}
 
 	return nil
