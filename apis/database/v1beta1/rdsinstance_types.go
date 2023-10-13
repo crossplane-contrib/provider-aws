@@ -276,8 +276,9 @@ type RDSInstanceParameters struct {
 	// Default: A random, system-chosen Availability Zone in the endpoint's AWS
 	// Region.
 	// Example: us-east-1d
-	// Constraint: The AvailabilityZone parameter can't be specified if the MultiAZ
-	// parameter is set to true. The specified Availability Zone must be in the
+	// Constraint: The AvailabilityZone parameter is ignored if the MultiAZ
+	// is set to true.
+	// The specified Availability Zone must be in the
 	// same AWS Region as the current endpoint.
 	// +immutable
 	// +optional
