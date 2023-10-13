@@ -40,7 +40,10 @@
             "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET-logs\/*",
             "Condition": {
                 "ForAllValues:StringNotEquals": {
-                    "aws:PrincipalServiceNamesList": "logging.s3.amazonaws.com"
+                    "aws:PrincipalServiceNamesList": [
+                        "logging.s3.amazonaws.com",
+                        "s3.amazonaws.com"
+                    ]
                 }
             }
         }

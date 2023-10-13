@@ -35,7 +35,7 @@ func TestParsePolicy(t *testing.T) {
 			want: want{
 				policy: &Policy{
 					Version: "2012-10-17",
-					Statements: []Statement{
+					Statements: StatementList{
 						{
 							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
@@ -56,10 +56,10 @@ func TestParsePolicy(t *testing.T) {
 							},
 							Condition: ConditionMap{
 								"StringEquals": ConditionSettings{
-									"aws:SourceAccount": "111111111111",
+									"aws:SourceAccount": ConditionSettingsValue{"111111111111"},
 								},
 								"ArnLike": ConditionSettings{
-									"aws:SourceArn": "arn:aws:s3:::EXAMPLE-SOURCE-BUCKET",
+									"aws:SourceArn": ConditionSettingsValue{"arn:aws:s3:::EXAMPLE-SOURCE-BUCKET"},
 								},
 							},
 						},
@@ -74,7 +74,7 @@ func TestParsePolicy(t *testing.T) {
 			want: want{
 				policy: &Policy{
 					Version: "2012-10-17",
-					Statements: []Statement{
+					Statements: StatementList{
 						{
 							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
@@ -104,7 +104,7 @@ func TestParsePolicy(t *testing.T) {
 									},
 								},
 								"ArnLike": ConditionSettings{
-									"aws:SourceArn": "arn:aws:s3:::EXAMPLE-SOURCE-BUCKET",
+									"aws:SourceArn": ConditionSettingsValue{"arn:aws:s3:::EXAMPLE-SOURCE-BUCKET"},
 								},
 							},
 						},
@@ -122,7 +122,10 @@ func TestParsePolicy(t *testing.T) {
 							},
 							Condition: ConditionMap{
 								"ForAllValues:StringNotEquals": ConditionSettings{
-									"aws:PrincipalServiceNamesList": "logging.s3.amazonaws.com",
+									"aws:PrincipalServiceNamesList": ConditionSettingsValue{
+										"logging.s3.amazonaws.com",
+										"s3.amazonaws.com",
+									},
 								},
 							},
 						},

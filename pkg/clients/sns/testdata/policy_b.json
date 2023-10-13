@@ -1,0 +1,16 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublishToTopic",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::*****:role/my-role"
+            },
+            "Action": [
+                "SNS:Publish"
+            ],
+            "Resource": "arn:aws:sns:eu-west-1:******:my-queue-2"
+        }
+    ]
+}
