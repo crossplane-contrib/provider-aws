@@ -45,6 +45,7 @@ type CustomConfigurationInfo struct {
 	// ARN of the configuration to use.
 	// +optional
 	// +crossplane:generate:reference:type=Configuration
+	// +crossplane:generate:reference:extractor=ConfugurationARN()
 	ARN *string `json:"arn,omitempty"`
 
 	// ARNRef is a reference to a Kafka Configuration used to set ARN.
