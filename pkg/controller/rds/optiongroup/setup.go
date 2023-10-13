@@ -106,7 +106,7 @@ func filterList(cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOut
 	return resp
 }
 
-func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOutput) (bool, string, error) {
+func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.OptionGroup, obj *svcsdk.DescribeOptionGroupsOutput) (bool, string, error) {
 
 	if aws.StringValue(cr.Spec.ForProvider.OptionGroupDescription) != aws.StringValue(obj.OptionGroupsList[0].OptionGroupDescription) {
 		return false, "", nil
@@ -122,9 +122,9 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.OptionGroup, obj *
 	}
 
 	// for tagging: at least one option must be added, modified, or removed.
-	tagsUpToDate, _ := svcutils.AreTagsUpToDate(e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.OptionGroupARN)
+	tagsUpToDate, _, _, _ := svcutils.AreTagsUpToDate(ctx, e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.OptionGroupARN)
 	if !tagsUpToDate {
-		err := svcutils.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.OptionGroupARN)
+		err := svcutils.UpdateTagsForResource(ctx, e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.OptionGroupARN)
 		if err != nil {
 			return true, "", aws.Wrap(err, errDescribe)
 		}
