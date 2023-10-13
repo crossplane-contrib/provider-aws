@@ -24,6 +24,8 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -31,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/utils/ptr"
@@ -43,23 +46,13 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 )
 
+const (
+	errResolveKMSMasterKeyArn = "cannot resolve kms master key ARN"
+)
+
 // SetupTable adds a controller that reconciles Table.
 func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.TableGroupKind)
-	opts := []option{
-		func(e *external) {
-			e.preObserve = preObserve
-			e.postObserve = postObserve
-			e.preCreate = preCreate
-			e.preDelete = preDelete
-			e.postDelete = postDelete
-			e.lateInitialize = lateInitialize
-			u := &updateClient{client: e.client}
-			e.preUpdate = u.preUpdate
-			e.isUpToDate = u.isUpToDate
-			e.postUpdate = u.postUpdate
-		},
-	}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
@@ -67,7 +60,7 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient()}),
 		managed.WithInitializers(
 			managed.NewNameAsExternalName(mgr.GetClient()),
 			managed.NewDefaultProviderConfig(mgr.GetClient()),
@@ -92,6 +85,44 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 		WithEventFilter(resource.DesiredStateChanged()).
 		For(&svcapitypes.Table{}).
 		Complete(r)
+}
+
+// customConnector is needed because the generated connector does not allow
+// the creation of the kms client.
+type customConnector struct {
+	kube client.Client
+}
+
+func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
+	cr, ok := mg.(*svcapitypes.Table)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	sess, err := aws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	if err != nil {
+		return nil, errors.Wrap(err, errCreateSession)
+	}
+
+	// Custom options are created here instead of Setup because the config is
+	// needed in order to create the kms client.
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.preDelete = preDelete
+			e.postDelete = postDelete
+			e.lateInitialize = lateInitialize
+			u := &updateClient{
+				client:    e.client,
+				clientkms: kms.New(sess),
+			}
+			e.preUpdate = u.preUpdate
+			e.isUpToDate = u.isUpToDate
+			e.postUpdate = u.postUpdate
+		},
+	}
+	return newExternal(c.kube, svcsdk.New(sess), opts), nil
 }
 
 func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.UpdateTableOutput, _ managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
@@ -348,10 +379,19 @@ func buildLocalIndexes(indexes []*svcsdk.LocalSecondaryIndexDescription) []*svca
 // createPatch creates a *svcapitypes.TableParameters that has only the changed
 // values between the target *svcapitypes.TableParameters and the current
 // *dynamodb.TableDescription
-func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParameters) (*svcapitypes.TableParameters, error) {
+func (e *updateClient) createPatch(ctx context.Context, in *svcsdk.DescribeTableOutput, spec *svcapitypes.TableParameters) (*svcapitypes.TableParameters, error) {
+	target := spec.DeepCopy()
 	currentParams := &svcapitypes.TableParameters{}
 	if err := lateInitialize(currentParams, in); err != nil {
 		return nil, err
+	}
+
+	if target.SSESpecification != nil && target.SSESpecification.KMSMasterKeyID != nil {
+		kmsMasterKeyArn, err := e.getKMsKeyArnFromID(ctx, target.SSESpecification.KMSMasterKeyID)
+		if err != nil {
+			return nil, errors.Wrap(err, errResolveKMSMasterKeyArn)
+		}
+		target.SSESpecification.KMSMasterKeyID = kmsMasterKeyArn
 	}
 
 	jsonPatch, err := aws.CreateJSONPatch(currentParams, target)
@@ -365,11 +405,22 @@ func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 	return patch, nil
 }
 
-func isCoreResourceUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
+// getKMsKeyArnFromID from an arbitrary identifier. Might be ARN, ID or alias.
+func (e *updateClient) getKMsKeyArnFromID(ctx context.Context, kmsKeyId *string) (*string, error) {
+	res, err := e.clientkms.DescribeKeyWithContext(ctx, &kms.DescribeKeyInput{
+		KeyId: kmsKeyId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.KeyMetadata.Arn, nil
+}
+
+func (e *updateClient) isCoreResourceUpToDate(ctx context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) (bool, error) {
 	// As continuous backup configuration lives in anoterh api, we extract the part of the isUpToDate logic
 	// which is concerned about the actual table-endpoint into a separate function in order to make it testable
 
-	patch, err := createPatch(resp, &cr.Spec.ForProvider)
+	patch, err := e.createPatch(ctx, resp, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
@@ -394,6 +445,8 @@ func isCoreResourceUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOut
 		// set to PAY_PER_REQUEST.
 		return false, nil
 	case patch.StreamSpecification != nil:
+		return false, nil
+	case patch.SSESpecification != nil:
 		return false, nil
 	case len(diffGlobalSecondaryIndexes(GenerateGlobalSecondaryIndexDescriptions(cr.Spec.ForProvider.GlobalSecondaryIndexes), resp.Table.GlobalSecondaryIndexes)) != 0:
 		return false, nil
@@ -424,7 +477,7 @@ func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, re
 		return true, "", nil
 	}
 
-	coreUpToDate, err := isCoreResourceUpToDate(cr, resp)
+	coreUpToDate, err := e.isCoreResourceUpToDate(ctx, cr, resp)
 	if err != nil {
 		return false, "", err
 	}
@@ -454,7 +507,8 @@ func pitrStatusToBool(pitrStatus *string) bool {
 }
 
 type updateClient struct {
-	client svcsdkapi.DynamoDBAPI
+	client    svcsdkapi.DynamoDBAPI
+	clientkms kmsiface.KMSAPI
 }
 
 func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
@@ -480,7 +534,7 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		return aws.Wrap(err, errDescribe)
 	}
 
-	p, err := createPatch(out, &cr.Spec.ForProvider)
+	p, err := e.createPatch(ctx, out, &cr.Spec.ForProvider)
 	if err != nil {
 		return err
 	}
