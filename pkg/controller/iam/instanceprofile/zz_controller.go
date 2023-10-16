@@ -35,7 +35,7 @@ import (
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
@@ -55,7 +55,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, awsclient.GlobalRegion)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, connectaws.GlobalRegion)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}

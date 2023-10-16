@@ -37,9 +37,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
@@ -330,7 +330,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Connection) (*stri
 	if cr.Spec.ForProvider.CatalogID != nil {
 		accountID = pointer.StringValue(cr.Spec.ForProvider.CatalogID)
 	} else {
-		sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
+		sess, err := connectaws.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 		if err != nil {
 			return nil, errorutils.Wrap(err, errBuildARN)
 		}

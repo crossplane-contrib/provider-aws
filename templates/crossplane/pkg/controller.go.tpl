@@ -21,7 +21,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/{{ .ServicePackageName }}/{{ .APIVersion}}"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
@@ -46,9 +46,9 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	{{- else}}
-	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, awsclient.GlobalRegion)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, connectaws.GlobalRegion)
 	{{- end}}
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)

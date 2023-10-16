@@ -22,8 +22,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
@@ -100,7 +100,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 	// The accept and modify operations for the Peer VPC have to be executed in the PeerRegion
 	var pc svcsdkapi.EC2API
 	if *cr.Spec.ForProvider.PeerRegion != cr.Spec.ForProvider.Region {
-		sess, err := awsclients.GetConfigV1(ctx, e.kube, cr, *cr.Spec.ForProvider.PeerRegion)
+		sess, err := connectaws.GetConfigV1(ctx, e.kube, cr, *cr.Spec.ForProvider.PeerRegion)
 		if err != nil {
 			return obs, errors.Wrap(err, errCreateSession)
 		}
